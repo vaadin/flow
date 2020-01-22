@@ -17,8 +17,6 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.page.ExtendedClientDetails;
-
 /**
  * Parses the user agent string from the browser and provides information about
  * the browser.
@@ -234,7 +232,7 @@ public class BrowserDetails implements Serializable {
                 || userAgent.contains("mac os x")) {
             isIPad = userAgent.contains("ipad");
             isIPhone = userAgent.contains("iphone");
-            if (isIPad || userAgent.contains("ipod") || isIPhone) {
+            if (isIPad || isIPhone) {
                 os = OperatingSystem.IOS;
                 parseIOSVersion(userAgent);
             } else {
@@ -440,19 +438,6 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is Safari or runs on IOS (covering also Chrome on
-     * iOS).
-     * 
-     * @return true if it is Safari or running on IOS, false otherwise
-     * @deprecated will return the wrong value for iOS 13 and later. Use
-     *             {@link ExtendedClientDetails#isIOS()} instead.
-     */
-    @Deprecated
-    public boolean isSafariOrIOS() {
-        return isSafari() || isIOS();
-    }
-
-    /**
      * Tests if the browser is Chrome.
      *
      * @return true if it is Chrome, false otherwise
@@ -569,17 +554,6 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is run in iOS.
-     *
-     * @return true if run in iOS, false otherwise
-     * @deprecated isIOS will return the wrong value for iOS 13 and later
-     */
-    @Deprecated
-    public boolean isIOS() {
-        return os == OperatingSystem.IOS;
-    }
-
-    /**
      * Tests if the browser is run on iPhone.
      *
      * @return true if run on iPhone, false otherwise
@@ -595,18 +569,6 @@ public class BrowserDetails implements Serializable {
      */
     public boolean isChromeOS() {
         return isChromeOS;
-    }
-
-    /**
-     * Tests if the browser is run on iPad.
-     *
-     * @return true if run on iPad, false otherwise
-     *
-     * @deprecated isIPad will return the wrong value for iOS 13 and later
-     */
-    @Deprecated
-    public boolean isIPad() {
-        return isIPad;
     }
 
     /**
@@ -636,12 +598,12 @@ public class BrowserDetails implements Serializable {
      *         supported or might work
      */
     public boolean isTooOldToFunctionProperly() {
-        // Check Trident version to detect compatibility mode
-        if (isIE() && getBrowserMajorVersion() < 11) {
+        // IE 11 and older versions are not supported
+        if (isIE() && getBrowserMajorVersion() <= 11) {
             return true;
         }
-        // Safari 9+
-        if (isSafari() && getBrowserMajorVersion() < 9) {
+        // Safari 13+
+        if (isSafari() && getBrowserMajorVersion() < 13) {
             return true;
         }
         // Firefox 43+ for now
@@ -654,76 +616,6 @@ public class BrowserDetails implements Serializable {
         }
         // Chrome 47+ for now
         if (isChrome() && getBrowserMajorVersion() < 47) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the browser supports ECMAScript 6, based on the user agent. The
-     * main features required to consider the browser ES6 compatible are ES6
-     * Classes, let/const support and arrow functions.
-     *
-     * @return <code>true</code> if the browser supports ES6, <code>false</code>
-     *         otherwise.
-     */
-    public boolean isEs6Supported() {
-
-        if (isEs5AdapterNeeded()) {
-            return false;
-        }
-
-        if (isWebKit() && getBrowserEngineVersion() >= 604) {
-            // Covers Safari 11+ and all kind of webkit views on iOS 11+
-            return true;
-        }
-
-        // Safari 10+.
-        if (isSafari() && getBrowserMajorVersion() >= 10) {
-            return true;
-        }
-        // Firefox 51+
-        if (isFirefox() && getBrowserMajorVersion() >= 51) {
-            return true;
-        }
-        // Opera 36+
-        if (isOpera() && getBrowserMajorVersion() >= 36) {
-            return true;
-        }
-        // Chrome 49+
-        if (isChrome() && getBrowserMajorVersion() >= 49) {
-            return true;
-        }
-        // Edge 15.15063+
-        if (isEdge() && (getBrowserMajorVersion() > 15
-                || (getBrowserMajorVersion() == 15
-                        && getBrowserMinorVersion() >= 15063))) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if the browser needs `custom-elements-es5-adapter.js` to be
-     * loaded.
-     * <p>
-     * This adapter file is needed when the browser has some ES6 capabilities,
-     * but a ES5 files are served instead. This happens when the browser doesn't
-     * support all ES6 features needed for Flow to work properly, or when some
-     * ES6 features have bugs under conditions used by the application.
-     *
-     * @return <code>true</code> if the browser needs the adapter,
-     *         <code>false</code> otherwise.
-     */
-    public boolean isEs5AdapterNeeded() {
-        // Safari 10 / IOS 10 has a known issue on
-        // https://caniuse.com/#feat=let, which
-        // needs a separate Es5 adapter for production mode
-        if (isIOS() && getOperatingSystemMajorVersion() == 10) {
-            return true;
-        }
-        if (isSafari() && getBrowserMajorVersion() == 10) {
             return true;
         }
         return false;

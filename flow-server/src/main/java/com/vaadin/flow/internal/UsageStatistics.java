@@ -106,4 +106,15 @@ public class UsageStatistics {
     public static Stream<UsageEntry> getEntries() {
         return entires.values().stream();
     }
+
+    /**
+     * Remove a entry of the current usage entries.
+     *
+     * @param name
+     *            the feature name
+     *            want to be removed, not <code>null</code>
+     */
+    public static void removeEntry(String name) {
+        entires.remove(name);
+    }
 }

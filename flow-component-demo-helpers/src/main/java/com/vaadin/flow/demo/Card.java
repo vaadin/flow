@@ -27,7 +27,7 @@ import com.vaadin.flow.dom.ElementFactory;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@StyleSheet("src/css/component-card.css")
+@StyleSheet("frontend/src/css/component-card.css")
 public class Card extends Div {
 
     /**

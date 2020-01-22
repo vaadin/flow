@@ -17,7 +17,6 @@ package com.vaadin.flow.component.polymertemplate;
 
 import org.jsoup.nodes.Element;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -26,7 +25,7 @@ import com.vaadin.flow.server.VaadinService;
  * It returns a JSOUP element representing the content of template for the given
  * template class.
  *
- * @see DefaultTemplateParser
+ * @see NpmTemplateParser
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -38,8 +37,8 @@ public interface TemplateParser {
     /**
      * Wrapper for the parsing result.
      * <p>
-     * The data contains {@link HtmlImport} uri where the template is declared
-     * and its content as an {@link Element} instance.
+     * The data contains path uri where the template is declared and its content
+     * as an {@link Element} instance.
      *
      * @author Vaadin Ltd
      * @since 1.0
@@ -47,21 +46,21 @@ public interface TemplateParser {
      */
     class TemplateData {
 
-        private final String htmlImportUri;
+        private final String modulePath;
         private final Element templateElement;
 
         public TemplateData(String uri, Element element) {
-            htmlImportUri = uri;
+            modulePath = uri;
             templateElement = element;
         }
 
         /**
-         * Gets the {@link HtmlImport} uri where the template is declared.
+         * Gets the uri where the template is declared.
          *
          * @return template uri
          */
-        public String getHtmlImportUri() {
-            return htmlImportUri;
+        public String getModulePath() {
+            return modulePath;
         }
 
         /**

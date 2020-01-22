@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -31,16 +32,12 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
-import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.server.webcomponent.WebComponentGenerator;
 
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 
 /**
@@ -89,8 +86,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
 
-        final boolean compatibilityMode = session.getService()
-                .getDeploymentConfiguration().isCompatibilityMode();
         final ComponentInfo componentInfo = new ComponentInfo(pathInfo);
 
         if (!componentInfo.hasExtension()) {
@@ -108,17 +103,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return false;
         }
 
-        if (componentInfo.isHTML() && !compatibilityMode) {
+        if (componentInfo.isHTML()) {
             LoggerFactory.getLogger(WebComponentProvider.class).info(
                     "Received web-component request for html component in npm"
-                            + " mode with request path {}",
-                    pathInfo);
-            return false;
-        }
-
-        if (componentInfo.isJS() && compatibilityMode) {
-            LoggerFactory.getLogger(WebComponentProvider.class).info(
-                    "Received web-component request for js component in compatibility"
                             + " mode with request path {}",
                     pathInfo);
             return false;
@@ -136,16 +123,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
             String generated;
             Supplier<String> responder;
-            if (compatibilityMode) {
-                responder = () ->
-                        generateBowerResponse(webComponentConfiguration,
-                                session, request, response);
-            } else {
-                response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
-                responder = () ->
-                        generateNPMResponse(webComponentConfiguration.getTag(),
-                                request, response);
-            }
+            response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
+            responder = () -> generateNPMResponse(
+                    webComponentConfiguration.getTag(), request, response);
             if (cache == null) {
                 generated = responder.get();
             } else {
@@ -178,7 +158,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      * Enable / disable bootstrap HTML fragment caching based on component tag.
      * Calling this method has the side effect of always clearing the cache.
      *
-     * @param cacheEnabled whether bootstrap fragments should be cached per tag
+     * @param cacheEnabled
+     *            whether bootstrap fragments should be cached per tag
      */
     public void setCacheEnabled(boolean cacheEnabled) {
         if (cacheEnabled) {
@@ -188,70 +169,15 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
     }
 
-    private String generateBowerResponse(
-            WebComponentConfiguration<? extends Component> configuration,
-            VaadinSession session, VaadinRequest request,
-            VaadinResponse response) {
-        if (session.getConfiguration().useCompiledFrontendResources()) {
-            response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
-            return generateCompiledUIDeclaration(session, request,
-                    configuration.getTag());
-        } else {
-            response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
-            return WebComponentGenerator.generateModule(configuration,
-                    getFrontendPath(request), true);
-        }
-    }
-
-    private String generateCompiledUIDeclaration(VaadinSession session,
-            VaadinRequest request, String tagName) {
-        String contextRootRelativePath = request.getService()
-                .getContextRootRelativePath(request);
-
-        BootstrapUriResolver resolver = new BootstrapUriResolver(
-                contextRootRelativePath, session);
-        String polyFillsUri = resolver
-                .resolveVaadinUri(BootstrapHandler.POLYFILLS_JS);
-
-        // `thisScript` below allows to refer the currently executing script
-        return getThisScript(tagName)
-                + generateAddPolyfillsScript(polyFillsUri, "thisScript")
-                + generateUiImport("thisScript");
-    }
-
-    private String generateAddPolyfillsScript(String polyFillsUri,
-            String jsParentRef) {
-        return "var scriptUri = " + jsParentRef + ".src;"
-                + "var indx = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
-                + "');" + "var embeddedWebApp = scriptUri.substring(0, indx);"
-                + "var js = document.createElement('script');"
-                + "js.setAttribute('type','text/javascript');"
-                + "js.setAttribute('src', embeddedWebApp+'" + polyFillsUri
-                + "');" + "document.head.insertBefore(js, " + jsParentRef
-                + ".nextSibling);";
-    }
-
-    private String generateUiImport(String jsParentRef) {
-        return "var scriptUri = " + jsParentRef + ".src;"
-                + "var indx = scriptUri.lastIndexOf('" + WEB_COMPONENT_PATH
-                + "');" + "var uiUri = scriptUri.substring(0, indx+"
-                + WEB_COMPONENT_PATH.length() + ");"
-                + "var link = document.createElement('link');"
-                + "link.setAttribute('rel','import');"
-                + "link.setAttribute('href', uiUri+'web-component-ui.html');"
-                + "document.head.insertBefore(link, " + jsParentRef
-                + ".nextSibling);";
-    }
-
     /**
      * Generate the npm response for the web component.
      *
      * @param tagName
-     *         tag name of component
+     *            tag name of component
      * @param request
-     *         current VaadinRequest
+     *            current VaadinRequest
      * @param response
-     *         current VaadinResponse
+     *            current VaadinResponse
      * @return npm response script
      */
     protected String generateNPMResponse(String tagName, VaadinRequest request,
@@ -282,23 +208,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
                 + "  uiScript.setAttribute('type','text/javascript');"
                 + "  uiScript.setAttribute('src', bootstrapAddress);"
                 + "  document.head.appendChild(uiScript);" + "}";
-    }
-
-    private static String getFrontendPath(VaadinRequest request) {
-        if (request == null) {
-            return null;
-        }
-        String contextPath = request.getContextPath();
-        if (contextPath.isEmpty()) {
-            return "/frontend/";
-        }
-        if (!contextPath.startsWith("/")) {
-            contextPath = "/" + contextPath;
-        }
-        if (contextPath.endsWith("/")) {
-            contextPath = contextPath.substring(0, contextPath.length() - 1);
-        }
-        return contextPath + "/frontend/";
     }
 
     private static String getThisScript(String tag) {
@@ -348,8 +257,5 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             return HTML_EXTENSION.equals(extension);
         }
 
-        boolean isJS() {
-            return JS_EXTENSION.equals(extension);
-        }
     }
 }

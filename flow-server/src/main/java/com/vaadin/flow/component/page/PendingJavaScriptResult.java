@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
 import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
@@ -42,8 +43,8 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @since 2.0
  */
-@SuppressWarnings("deprecation")
-public interface PendingJavaScriptResult extends ExecutionCanceler {
+public interface PendingJavaScriptResult
+        extends Serializable, ExecutionCanceler {
 
     /**
      * Exception used when a {@link CompletableFuture} returned from
@@ -62,7 +63,13 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
         }
     }
 
-    // Explicitly defined to clear the inherited deprecation marker
+    /**
+     * Cancel the javascript execution, if it was not yet sent to the
+     * browser for execution.
+     *
+     * @return <code>true</code> if the execution was canceled,
+     *         <code>false</code> if not
+     */
     @Override
     boolean cancelExecution();
 

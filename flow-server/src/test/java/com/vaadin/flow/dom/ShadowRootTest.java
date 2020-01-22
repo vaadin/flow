@@ -290,8 +290,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
     @Test
     public void visitOnlyNode_hasDescendants_nodeVisitedAndNoDescendantsVisited() {
-        TestNodeVisitor visitor = new TestNodeVisitor();
-        visitor.visitDescendants = false;
+        TestNodeVisitor visitor = new TestNodeVisitor(false);
 
         Map<Node<?>, ElementType> map = new HashMap<>();
 
@@ -299,16 +298,15 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         ShadowRootStateProvider.get().visit(subject.getNode(), visitor);
 
-        Assert.assertEquals(1, visitor.visited.size());
+        Assert.assertEquals(1, visitor.getVisited().size());
         Assert.assertEquals(subject,
-                visitor.visited.keySet().iterator().next());
-        Assert.assertEquals(null, visitor.visited.values().iterator().next());
+                visitor.getVisited().keySet().iterator().next());
+        Assert.assertEquals(null, visitor.getVisited().values().iterator().next());
     }
 
     @Test
     public void visitOnlyNode_hasDescendants_nodeAndDescendatnsAreVisited() {
-        TestNodeVisitor visitor = new TestNodeVisitor();
-        visitor.visitDescendants = true;
+        TestNodeVisitor visitor = new TestNodeVisitor(true);
 
         Map<Node<?>, ElementType> map = new HashMap<>();
 
@@ -320,7 +318,7 @@ public class ShadowRootTest extends AbstractNodeTest {
 
         Assert.assertEquals(
                 "The collected descendants doesn't match expected descendatns",
-                map, visitor.visited);
+                map, visitor.getVisited());
     }
 
     private ShadowRoot createHierarchy(Map<Node<?>, ElementType> map) {

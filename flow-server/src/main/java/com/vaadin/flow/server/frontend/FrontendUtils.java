@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,6 +41,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +59,12 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -116,16 +123,22 @@ public class FrontendUtils {
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
 
     /**
+     * Default target folder for the java project.
+     */
+    public static final String TARGET = "target/";
+
+    /**
      * The NPM package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
+
     /**
-     * Default target folder for the java project.
+     * Default folder for copying front-end resources present in the classpath jars.
      */
-    public static final String TARGET = "target/";
+    public static final String DEAULT_FLOW_RESOURCES_FOLDER = TARGET + "flow-frontend";
 
     /**
      * Default folder name for flow generated stuff relative to the
@@ -139,6 +152,47 @@ public class FrontendUtils {
      * generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
+
+    /**
+     * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME} file.
+     */
+    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
+
+    /**
+     * File name of the index.html in useDeprecatedV14Bootstrapping.
+     */
+    public static final String INDEX_HTML = "index.html";
+
+    /**
+     * File name of the index.ts in useDeprecatedV14Bootstrapping.
+     */
+    public static final String INDEX_TS = "index.ts";
+
+    /**
+     * File name of the index.js in useDeprecatedV14Bootstrapping.
+     */
+    public static final String INDEX_JS = "index.js";
+
+    /**
+     * Default Java source folder for OpenAPI generator.
+     */
+    public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main/java";
+
+    /**
+     * Default application properties file path in Connect project.
+     */
+    public static final String DEFAULT_CONNECT_APPLICATION_PROPERTIES = "src/main/resources/application.properties";
+
+    /**
+     * Default generated path for OpenAPI spec file.
+     */
+    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
+            + "generated-resources/openapi.json";
+
+    /**
+     * Default generated path for generated TS files.
+     */
+    public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR + "generated/";
 
     /**
      * Name of the file that contains all application imports, javascript, theme
@@ -277,6 +331,12 @@ public class FrontendUtils {
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private static String operatingSystem = null;
+
+    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+
+    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+
+    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     /**
      * Only static stuff here.
@@ -555,6 +615,58 @@ public class FrontendUtils {
     }
 
     /**
+     * Gets the content of the <code>frontend/index.html</code> file which is
+     * served by webpack-dev-server in dev-mode and read from classpath in
+     * production mode. NOTE: In dev mode, the file content file is fetched via
+     * webpack http request. So that we don't need to have a separate
+     * index.html's content watcher, auto-reloading will work automatically,
+     * like other files managed by webpack in `frontend/` folder.
+     *
+     * @param service
+     *            the vaadin service
+     * @return the content of the index html file as a string, null if not
+     *         found.
+     * @throws IOException
+     *             on error when reading file
+     *
+     */
+    public static String getIndexHtmlContent(VaadinService service)
+            throws IOException {
+        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + INDEX_HTML;
+        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
+                + INDEX_HTML;
+        return getFileContent(service, indexHtmlPathInDevMode,
+                indexHtmlPathInProductionMode);
+    }
+
+    private static String getFileContent(VaadinService service,
+            String pathInDevMode, String pathInProductionMode)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        InputStream content = null;
+
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            content = getFileFromWebpack(pathInDevMode);
+        }
+
+        if (content == null) {
+            content = getFileFromClassPath(service, pathInProductionMode);
+        }
+        return content != null ? streamToString(content) : null;
+    }
+
+    private static InputStream getFileFromClassPath(VaadinService service,
+            String filePath) {
+        InputStream stream = service.getClassLoader()
+                .getResourceAsStream(filePath);
+        if (stream == null) {
+            getLogger().error("Cannot get the '{}' from the classpath",
+                    filePath);
+        }
+        return stream;
+    }
+
+    /**
      * Get the latest has for the stats file in development mode. This is
      * requested from the webpack-dev-server.
      * <p>
@@ -669,6 +781,12 @@ public class FrontendUtils {
                     stats);
         }
         return stream;
+    }
+
+    private static InputStream getFileFromWebpack(String filePath)
+            throws IOException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        return handler.prepareConnection(filePath, "GET").getInputStream();
     }
 
     /**
@@ -897,6 +1015,8 @@ public class FrontendUtils {
         command.add("install");
         command.add("pnpm@" + DEFAULT_PNPM_VERSION);
 
+        console(YELLOW, commandToString(baseDir, command));
+
         ProcessBuilder builder = createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
         builder.directory(new File(baseDir));
@@ -956,6 +1076,21 @@ public class FrontendUtils {
     }
 
     /**
+     * Get directory where project's frontend files are located.
+     *
+     * @param configuration
+     *            the current deployment configuration
+     *
+     * @return {@link #DEFAULT_FRONTEND_DIR} or value of
+     *         {@link #PARAM_FRONTEND_DIR} if it is set.
+     */
+    public static String getProjectFrontendDir(
+            DeploymentConfiguration configuration) {
+        return configuration
+                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+    }
+
+    /**
      * Checks whether the {@code file} is a webpack configuration file with the
      * expected content (includes a configuration generated by Flow).
      *
@@ -970,6 +1105,31 @@ public class FrontendUtils {
         return file.exists()
                 && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
                         .contains("./webpack.generated.js");
+    }
+
+    /**
+     * Get relative path from a source path to a target path in Unix form. All
+     * the Windows' path separator will be replaced.
+     *
+     * @param source
+     *            the source path
+     * @param target
+     *            the target path
+     * @return unix relative path from source to target
+     */
+    public static String getUnixRelativePath(Path source, Path target) {
+        return getUnixPath(source.relativize(target));
+    }
+
+    /**
+     * Get path as a String in Unix form.
+     *
+     * @param source
+     *            path to get
+     * @return path as a String in Unix form.
+     */
+    public static String getUnixPath(Path source) {
+        return source.toString().replaceAll("\\\\", "/");
     }
 
     /**
@@ -1179,5 +1339,38 @@ public class FrontendUtils {
                     .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
                     .toLocalDateTime();
         }
+    }
+
+    /**
+     * Pretty prints a command line order. It split in lines adapting to 80
+     * columns, and allowing copy and paste in console. It also removes the
+     * current directory to avoid security issues in log files.
+     *
+     * @param baseDir
+     *            the current directory
+     * @param command
+     *            the command and it's arguments
+     * @return the string for printing in logs
+     */
+    public static String commandToString(String baseDir, List<String> command) {
+        return "\n" + WordUtils
+                .wrap(String.join(" ", command).replace(baseDir, "."), 50)
+                .replace("\n", " \\ \n    ") + "\n";
+    }
+
+    /**
+     * Intentionally send to console instead to log, useful when executing
+     * external processes.
+     *
+     * @param format
+     *            Format of the line to send to console, it must contain a `%s`
+     *            outlet for the message
+     * @param message
+     *            the string to show
+     */
+    @SuppressWarnings("squid:S106")
+    public
+    static void console(String format, Object message) {
+        System.out.print(format(format, message));
     }
 }

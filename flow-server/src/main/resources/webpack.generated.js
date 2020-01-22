@@ -6,22 +6,27 @@
  */
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const {BabelMultiTargetPlugin} = require('webpack-babel-multi-target-plugin');
 
 const path = require('path');
 const baseDir = path.resolve(__dirname);
-// the folder of app resources (main.js and flow templates)
-const frontendFolder = '[to-be-generated-by-flow]';
 
+// the folder of app resources:
+//  - flow templates for classic Flow
+//  - client code with index.html and index.[ts/js] for CCDM
+const frontendFolder = '[to-be-generated-by-flow]';
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
-
+const useClientSideIndexFileForBootstrapping = '[to-be-generated-by-flow]';
+const clientSideIndexHTML = '[to-be-generated-by-flow]';
+const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
 const config = 'config';
-// folder for outputting index.js bundle, etc.
+// folder for outputting index.[ts/js] bundle, etc.
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 // folder for outputting stats.json
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
@@ -74,7 +79,7 @@ module.exports = {
   mode: 'production',
   context: frontendFolder,
   entry: {
-    bundle: fileNameOfTheFlowGeneratedMainEntryPoint
+    bundle: useClientSideIndexFileForBootstrapping ? clientSideIndexEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
   },
 
   output: {
@@ -84,6 +89,7 @@ module.exports = {
   },
 
   resolve: {
+    extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
     }
@@ -112,9 +118,11 @@ module.exports = {
 
   module: {
     rules: [
-      { // Files that Babel has to transpile
-        test: /\.js$/,
-        use: [BabelMultiTargetPlugin.loader()]
+      {
+        test: /\.ts$/,
+        use: [
+          'awesome-typescript-loader'
+        ]
       },
       {
         test: /\.css$/i,
@@ -167,8 +175,8 @@ module.exports = {
     function (compiler) {
       compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
         let statsJson = compilation.getStats().toJson();
-        // Get bundles as accepted keys (except any es5 bundle)
-        let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0 && !asset.chunkNames.toString().includes("es5"))
+        // Get bundles as accepted keys
+        let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0)
           .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
 
         // Collect all modules for the given keys
@@ -207,7 +215,16 @@ module.exports = {
       from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
       to: `${build}/webcomponentsjs/`
     }]),
-  ]
+
+    // Includes JS output bundles into "index.html"
+    useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
+      template: clientSideIndexHTML,
+      inject: 'head'
+    }),
+    useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
+      defaultAttribute: 'defer'
+    }),
+  ].filter(Boolean)
 };
 
 /**
@@ -264,7 +281,7 @@ function collectModules(statsJson, acceptedChunks) {
         let subModules = [];
         // Create sub modules only if they are available
         if (module.modules) {
-          module.modules.filter(module => !module.name.includes("es5")).forEach(function (module) {
+          module.modules.forEach(function (module) {
             const subModule = {
               name: module.name,
               source: module.source

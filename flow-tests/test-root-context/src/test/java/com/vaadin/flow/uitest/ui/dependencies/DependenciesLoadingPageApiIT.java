@@ -1,9 +1,5 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import org.junit.experimental.categories.Category;
-
-import com.vaadin.flow.testcategory.IgnoreNPM;
-
 /**
  * See {@link DependenciesLoadingAnnotationsIT} for more details about the test.
  * Test runs and performs the same checks as
@@ -14,7 +10,11 @@ import com.vaadin.flow.testcategory.IgnoreNPM;
  * @since 1.0.
  * @see DependenciesLoadingAnnotationsIT
  */
-@Category(IgnoreNPM.class)
 public class DependenciesLoadingPageApiIT
         extends DependenciesLoadingAnnotationsIT {
+
+    @Override
+    protected String getCssSuffix() {
+        return "WebRes";
+    }
 }

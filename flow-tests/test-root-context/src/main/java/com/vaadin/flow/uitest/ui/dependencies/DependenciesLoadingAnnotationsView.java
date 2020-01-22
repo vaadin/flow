@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -13,15 +13,17 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @since 1.0.
  */
 @Route("com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsView")
-@JavaScript(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.js", loadMode = LoadMode.INLINE)
-@StyleSheet(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.css", loadMode = LoadMode.INLINE)
-@HtmlImport(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/inline.html", loadMode = LoadMode.INLINE)
-@JavaScript(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.js", loadMode = LoadMode.LAZY)
-@StyleSheet(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.css", loadMode = LoadMode.LAZY)
-@HtmlImport(value = "frontend://com/vaadin/flow/uitest/ui/dependencies/lazy.html", loadMode = LoadMode.LAZY)
-@JavaScript("frontend://com/vaadin/flow/uitest/ui/dependencies/eager.js")
-@StyleSheet("frontend://com/vaadin/flow/uitest/ui/dependencies/eager.css")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/dependencies/eager.html")
+@JavaScript(value = "./dependencies/inline.js", loadMode = LoadMode.INLINE)
+@StyleSheet(value = "./dependencies/inline.css", loadMode = LoadMode.INLINE)
+@JavaScript(value = "./dependencies/lazy.js", loadMode = LoadMode.LAZY)
+@StyleSheet(value = "./dependencies/lazy.css", loadMode = LoadMode.LAZY)
+@JavaScript("./dependencies/eager.js")
+@StyleSheet("./dependencies/eager.css")
+@JsModule("./dependencies/eager-module.js")
 public class DependenciesLoadingAnnotationsView
         extends DependenciesLoadingBaseView {
+
+    public DependenciesLoadingAnnotationsView() {
+        super("");
+    }
 }

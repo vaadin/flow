@@ -29,13 +29,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -46,14 +39,19 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import elemental.json.Json;
 
@@ -724,8 +722,10 @@ public class ComponentTest {
         ui.addAttachListener(e -> {
             initialAttach.set(e.isInitialAttach());
         });
-        ui.getInternals()
-                .setSession(new VaadinSession(new MockVaadinServletService()));
+
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        ui.getInternals().setSession(
+                new VaadinSession(new MockVaadinServletService(config)));
         Assert.assertTrue(initialAttach.get());
         // UI is never detached and reattached
     }
@@ -943,31 +943,22 @@ public class ComponentTest {
         }
     }
 
-    private void assertSynchronizedProperties(Element element,
+    private void assertSynchronizedProperties(String domEventName, Element element,
             String... properties) {
         Set<String> expected = Stream.of(properties)
                 .collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedProperties()
-                .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
 
-    }
+        Set<String> expressions = element.getNode()
+                .getFeature(ElementListenerMap.class).getExpressions(domEventName);
 
-    private void assertSynchronizedPropertiesEvents(Element element,
-            String... events) {
-        Set<String> expected = Stream.of(events).collect(Collectors.toSet());
-        Set<String> actual = element.getSynchronizedPropertyEvents()
-                .collect(Collectors.toSet());
-        Assert.assertEquals(expected, actual);
-
+        Assert.assertEquals(expected, expressions);
     }
 
     @Test
     public void synchronizePropertyBasedOnGetterName() {
         SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}foo");
     }
 
     @Test
@@ -975,8 +966,7 @@ public class ComponentTest {
         SynchronizePropertyUsingElementConstructor component = new SynchronizePropertyUsingElementConstructor();
         component.customInit();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}foo");
     }
 
     @Test
@@ -993,26 +983,15 @@ public class ComponentTest {
     public void synchronizePropertyWithPropertyName() {
         SynchronizePropertyOnChangeGivenPropertyComponent component = new SynchronizePropertyOnChangeGivenPropertyComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "bar");
-        assertSynchronizedPropertiesEvents(element, "change");
+        assertSynchronizedProperties("change", element, "}bar");
     }
 
     @Test
     public void synchronizePropertyWithMultipleEvents() {
         SynchronizePropertyOnMultipleEventsComponent component = new SynchronizePropertyOnMultipleEventsComponent();
         Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "blur", "input");
-    }
-
-    @Test
-    public void synchronizePropertyOverride() {
-        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
-        component.getElement().removeSynchronizedProperty("foo");
-        component.getElement().removeSynchronizedPropertyEvent("change");
-        Element element = component.getElement();
-        assertSynchronizedProperties(element);
-        assertSynchronizedPropertiesEvents(element);
+        assertSynchronizedProperties("input", element, "}foo");
+        assertSynchronizedProperties("blur", element, "}foo");
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1021,7 +1000,6 @@ public class ComponentTest {
     }
 
     @Tag("div")
-    @HtmlImport("html.html")
     @JavaScript("js.js")
     @StyleSheet("css.css")
     public static class ComponentWithDependencies extends Component {
@@ -1037,20 +1015,19 @@ public class ComponentTest {
 
     @Tag("span")
     @Uses(UsesComponentWithDependencies.class)
-    @HtmlImport("usesuses.html")
     public static class UsesUsesComponentWithDependencies extends Component {
 
     }
 
     @Tag("div")
-    @JavaScript("dep1.js")
+    @StyleSheet("css1.css")
     @Uses(CircularDependencies2.class)
     public static class CircularDependencies1 extends Component {
 
     }
 
     @Tag("div")
-    @JavaScript("dep2.js")
+    @StyleSheet("css2.css")
     @Uses(CircularDependencies1.class)
     public static class CircularDependencies2 extends Component {
 
@@ -1059,21 +1036,14 @@ public class ComponentTest {
     @Test
     public void usesComponent() {
         UI ui = UI.getCurrent();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         ui.getInternals()
                 .addComponentDependencies(UsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 ui.getInternals().getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(4, pendingDependencies.size());
+        Assert.assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
@@ -1081,23 +1051,14 @@ public class ComponentTest {
     @Test
     public void usesChain() {
         UIInternals internals = UI.getCurrent().getInternals();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
 
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 internals.getDependencyList().getPendingSendToClient());
-        Assert.assertEquals(5, pendingDependencies.size());
+        Assert.assertEquals(1, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.HTML_IMPORT, "usesuses.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.HTML_IMPORT, "html.html",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "uses.js",
-                pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "js.js",
-                pendingDependencies);
         assertDependency(Dependency.Type.STYLESHEET, "css.css",
                 pendingDependencies);
     }
@@ -1106,16 +1067,15 @@ public class ComponentTest {
     public void circularDependencies() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         internals.addComponentDependencies(CircularDependencies1.class);
         Map<String, Dependency> pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
 
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
                 pendingDependencies);
 
         internals = new MockUI().getInternals();
@@ -1124,40 +1084,44 @@ public class ComponentTest {
         pendingDependencies = getDependenciesMap(
                 dependencyList.getPendingSendToClient());
         Assert.assertEquals(2, pendingDependencies.size());
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep2.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css1.css",
                 pendingDependencies);
-        assertDependency(Dependency.Type.JAVASCRIPT, "dep1.js",
+        assertDependency(Dependency.Type.STYLESHEET, "css2.css",
                 pendingDependencies);
 
     }
 
     @Test
-    public void inNpmModeNoJsDependenciesAreAdded() {
-        mocks.getDeploymentConfiguration().setCompatibilityMode(false);
+    public void noJsDependenciesAreAdded() {
         UIInternals internals = new MockUI().getInternals();
         DependencyList dependencyList = internals.getDependencyList();
 
-        internals.addComponentDependencies(CircularDependencies1.class);
+        internals.addComponentDependencies(ComponentWithDependencies.class);
 
-        Assert.assertTrue(dependencyList.getPendingSendToClient().isEmpty());
+        Map<String, Dependency> pendingDependencies = getDependenciesMap(
+                dependencyList.getPendingSendToClient());
+        Assert.assertEquals(1, pendingDependencies.size());
+        assertDependency(Dependency.Type.STYLESHEET, "css.css",
+                pendingDependencies);
     }
 
     @Test
     public void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
         TestDiv div = new TestDiv();
-        SynchronizedPropertiesList list = div.getElement().getNode()
-                .getFeature(SynchronizedPropertiesList.class);
 
-        Set<String> props = list.getSynchronizedProperties();
+        ElementListenerMap feature = div.getElement().getNode().getFeature(ElementListenerMap.class);
 
-        Assert.assertTrue(props.contains("bar"));
-        Assert.assertTrue(props.contains("baz"));
-        Assert.assertEquals(2, props.size());
-
-        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
-                list.getDisabledUpdateMode("bar"));
+        Set<String> props = feature.getExpressions("bar");
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("}baz"));
         Assert.assertEquals(DisabledUpdateMode.ALWAYS,
-                list.getDisabledUpdateMode("baz"));
+                feature.getPropertySynchronizationMode("baz"));
+
+        props = feature.getExpressions("foo");
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("}bar"));
+        Assert.assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                feature.getPropertySynchronizationMode("bar"));
     }
 
     @Test
@@ -1222,12 +1186,12 @@ public class ComponentTest {
 
     private void assertDependency(Dependency.Type type, String url,
             Map<String, Dependency> pendingDependencies) {
-        Dependency dependency = pendingDependencies.get("frontend://" + url);
+        Dependency dependency = pendingDependencies.get(url);
         Assert.assertNotNull(
                 "Could not locate a dependency object for url=" + url,
                 dependency);
         Assert.assertEquals(type, dependency.getType());
-        Assert.assertEquals("frontend://" + url, dependency.getUrl());
+        Assert.assertEquals(url, dependency.getUrl());
     }
 
     private Map<String, Dependency> getDependenciesMap(

@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.CssData;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -47,7 +48,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREFIX;
 
 /**
  * Common logic for generate import file JS content.
@@ -57,10 +57,12 @@ import static com.vaadin.flow.shared.ApplicationConstants.FRONTEND_PROTOCOL_PREF
  */
 abstract class AbstractUpdateImports implements Runnable {
 
-    private static final String CSS_PREPARE = "function addCssBlock(block) {\n"
+    private static final String EXPORT_MODULES = "export const addCssBlock = function(block, before = false) {\n"
             + " const tpl = document.createElement('template');\n"
             + " tpl.innerHTML = block;\n"
-            + " document.head.appendChild(tpl.content);\n" + "}";
+            + " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n"
+            + "};";
+
     private static final String CSS_PRE = "import $css_%d from '%s';%n"
             + "addCssBlock(`";
     private static final String CSS_POST = "`);";
@@ -98,6 +100,7 @@ abstract class AbstractUpdateImports implements Runnable {
     public void run() {
         List<String> lines = new ArrayList<>();
 
+        lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
 
@@ -154,6 +157,17 @@ abstract class AbstractUpdateImports implements Runnable {
     protected abstract Set<CssData> getCss();
 
     /**
+     * Get exported modules.
+     *
+     * @return exported lines.
+     */
+    protected Collection<String> getExportLines() {
+        Collection<String> lines = new ArrayList<>();
+        addLines(lines, EXPORT_MODULES);
+        return lines;
+    }
+
+    /**
      * Get theme lines for the generated imports file content.
      *
      * @return theme related generated JS lines
@@ -174,10 +188,12 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     protected abstract Logger getLogger();
 
-    List<String> resolveModules(Collection<String> modules,
-            boolean isJsModule) {
-        return modules.stream()
-                .map(module -> resolveResource(module, isJsModule)).sorted()
+    List<String> resolveModules(Collection<String> modules) {
+        return modules.stream().filter(module ->
+                !module.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                        && !module
+                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX))
+                .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
     }
 
@@ -187,7 +203,6 @@ abstract class AbstractUpdateImports implements Runnable {
             return Collections.emptyList();
         }
         Collection<String> lines = new ArrayList<>();
-        addLines(lines, CSS_PREPARE);
 
         Set<String> cssNotFound = new HashSet<>();
         int i = 0;
@@ -235,21 +250,9 @@ abstract class AbstractUpdateImports implements Runnable {
         }
     }
 
-    protected String resolveResource(String importPath, boolean isJsModule) {
+    protected String resolveResource(String importPath) {
         String resolved = importPath;
         if (!importPath.startsWith("@")) {
-
-            if (importPath.startsWith(FRONTEND_PROTOCOL_PREFIX)) {
-                resolved = importPath.replaceFirst(FRONTEND_PROTOCOL_PREFIX,
-                        "./");
-                if (isJsModule) {
-                    // Remove this when all flow components annotated with
-                    // @JsModule have the './' prefix instead of 'frontend://'
-                    getLogger().warn(
-                            "Do not use the '{}' protocol in '@JsModule', changing '{}' to '{}', please update your component.",
-                            FRONTEND_PROTOCOL_PREFIX, importPath, resolved);
-                }
-            }
 
             // We only should check here those paths starting with './' when all
             // flow components
@@ -275,8 +278,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private void collectModules(List<String> lines) {
         Set<String> modules = new LinkedHashSet<>();
-        modules.addAll(resolveModules(getModules(), true));
-        modules.addAll(resolveModules(getScripts(), false));
+        modules.addAll(resolveModules(getModules()));
+        modules.addAll(resolveModules(getScripts()));
 
         modules.addAll(getGeneratedModules());
 
@@ -422,8 +425,7 @@ abstract class AbstractUpdateImports implements Runnable {
         }
         // file is a flow resource e.g.
         // /node_modules/@vaadin/flow-frontend/gridConnector.js
-        file = getFile(new File(getNodeModulesDir(), NODE_MODULES),
-                FLOW_NPM_PACKAGE_NAME, jsImport);
+        file = getFile(getNodeModulesDir(), FLOW_NPM_PACKAGE_NAME, jsImport);
         return file.exists() ? file : null;
     }
 
@@ -441,7 +443,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private boolean addCssLines(Collection<String> lines, CssData cssData,
             int i) {
-        String cssFile = resolveResource(cssData.getValue(), false);
+        String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
         String include = cssData.getInclude() != null

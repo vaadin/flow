@@ -25,6 +25,11 @@ import com.vaadin.flow.theme.Theme;
 @Theme(MyTheme.class)
 @Tag("npm-themed-component")
 @JsModule("./src/npm-themed-component.js")
+/*
+ * Note that this is using component instead of polymer template, because
+ * otherwise the themed module would have to import the original /src module, and
+ * that would make testing the actual feature here (theme rewrite) more complex.
+ */
 public class NpmThemedComponentView extends Component {
 
 }
