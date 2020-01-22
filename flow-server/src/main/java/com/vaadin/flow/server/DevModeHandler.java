@@ -190,7 +190,8 @@ public final class DevModeHandler implements Serializable {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
-            getLogger().info("Waiting for webpack compilation before proceeding.");
+            getLogger()
+                    .info("Running webpack to compile frontend resources. This may take a moment, please stand by...");
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
