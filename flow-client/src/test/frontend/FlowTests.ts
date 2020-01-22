@@ -95,6 +95,7 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
 suite("Flow", () => {
 
   beforeEach(() => {
+    delete $wnd.Vaadin;
     mock.setup();
   });
 
@@ -224,7 +225,7 @@ suite("Flow", () => {
 
   test("should throw when an incorrect server response is received", () => {
     // Configure an invalid server response
-    mock.get(/^.*\?v-r=init&location=.+/, (req, res) => {
+    mock.get(/^.*\?v-r=init&location=.*/, (req, res) => {
       assert.equal('GET', req.method());
       return res
         .status(500)
@@ -250,6 +251,11 @@ suite("Flow", () => {
     assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
     const route = flow.serverSideRoutes[0];
+
+    // Check the `isAcive` flag at the time the action is being executed
+    let wasActive = false;
+    setTimeout(() => wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
+
     return route
       .action({pathname: "Foo/Bar.baz"})
       .then(() => {
@@ -270,9 +276,10 @@ suite("Flow", () => {
         assert.isDefined(flowRoot.$);
         assert.isDefined(flowRoot.$['foobar-1111111']);
 
-        // When calling action TypeScript.isActive should be true,
-        // since navigation has not been called yet
-        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+        // Check that `isActive` flag was active during the action
+        assert.isTrue(wasActive);
+        // Check that `isActive` flag is set to false after the action
+        assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
   });
 
@@ -351,13 +358,16 @@ suite("Flow", () => {
         // When using router API, it should expose the onBeforeEnter handler
         assert.isDefined(elem.onBeforeEnter);
 
-        // inform TB that a server action is in progress
-        assert.isTrue($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+        // after action TB isActive flag should be false
+        assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
+        // Store `isAcive` flag when the onBeforeEnter is being executed
+        let wasActive = false;
+        setTimeout(() => wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
         // @ts-ignore
-        elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {})
-
-        // inform TB that server action has finished
+        await elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {});
+        // TB should be informed when the server call was in progress and when it is finished
+        assert.isTrue(wasActive);
         assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
         // Assert server side has put content in the container
@@ -411,7 +421,7 @@ suite("Flow", () => {
         assert.isDefined(elem.onBeforeLeave);
         assert.equal('Foo', flow.pathname);
 
-        elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
+        return elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
           // set cancel to false even though server is cancelling
           return {cancel: false};
         }})
@@ -513,6 +523,7 @@ suite("Flow", () => {
 
 function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp) {
   let container : any;
+
   // Stub remote function exported in JavaScriptBootstrapUI.
   flowRoot.$server = {
     connectClient: (localName: string, elemId: string, route: string) => {
@@ -538,15 +549,16 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
 
       container.appendChild(document.createElement('div'));
 
-      // Resolve the promise
-      flowRoot.$[elemId].serverConnected(cancel);
-
-      // container should be visible when not cancelled
-      assert.equal(cancel ? 'none' : '', container.style.display);
+      // asynchronously resolve the remote server call
+      setTimeout(() => {
+        container.serverConnected(cancel);
+        // container should be visible when not cancelled
+        assert.equal(cancel ? 'none' : '', container.style.display);
+      }, 10);
     },
     leaveNavigation: () => {
-      // Resolve the promise
-      container.serverConnected(cancel);
+      // asynchronously resolve the promise
+      setTimeout(() => container.serverConnected(cancel), 10);
     }
   };
 }

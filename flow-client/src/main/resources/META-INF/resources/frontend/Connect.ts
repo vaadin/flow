@@ -1,12 +1,9 @@
 /* tslint:disable:max-classes-per-file */
 
-// @ts-ignore
-window.Vaadin = window.Vaadin || {};
-// @ts-ignore
-window.Vaadin.registrations = window.Vaadin.registratios || [];
-
-// @ts-ignore
-window.Vaadin.registrations.push({
+const $wnd = window as any;
+$wnd.Vaadin = $wnd.Vaadin || {};
+$wnd.Vaadin.registrations = $wnd.Vaadin.registrations || [];
+$wnd.Vaadin.registrations.push({
   is: '@vaadin/flow-frontend/Connect'
 });
 
@@ -284,11 +281,10 @@ export class ConnectClient {
 
     const headers: Record<string, string> = {
       'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken || ''
     };
 
-    // @ts-ignore
-    headers['X-CSRF-Token'] = window.Vaadin && window.Vaadin.TypeScript && window.Vaadin.TypeScript.csrfToken || '';
 
     // helper to keep the undefined value in object after JSON.stringify
     const nullForUndefined = (obj: any): any => {

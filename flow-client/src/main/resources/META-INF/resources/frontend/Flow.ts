@@ -39,8 +39,9 @@ export interface NavigationCommands {
   prevent: () => any;
 }
 
+// flow uses body for keeping references
+const flowRoot: FlowRoot = window.document.body as any;
 const $wnd = window as any;
-let isActive = false;
 
 /**
  * Client API for flow UI operations.
@@ -49,16 +50,17 @@ export class Flow {
   config: FlowConfig;
   response ?: AppInitResponse;
   pathname = '';
-  // flow uses body for keeping references
-  flowRoot : FlowRoot = document.body as any;
+
   // @ts-ignore
   container : HTMLRouterContainer;
 
+  // flag used to inform Testbench whether a server route is in progress
+  private isActive = false;
+
   private baseRegex = /^\//;
 
-
   constructor(config?: FlowConfig) {
-    this.flowRoot.$ = this.flowRoot.$ || {};
+    flowRoot.$ = flowRoot.$ || [];
     this.config = config || {};
 
     // TB checks for the existence of window.Vaadin.Flow in order
@@ -68,7 +70,7 @@ export class Flow {
       $wnd.Vaadin.Flow = {
         clients: {
           TypeScript: {
-            isActive: () => isActive
+            isActive: () => this.isActive
           }
         }
       };
@@ -103,9 +105,6 @@ export class Flow {
     // the syntax `...serverSideRoutes` in vaadin-router.
     // @ts-ignore
     return async (params: NavigationParameters) => {
-      // flag used to inform Testbench whether a server route is in progress
-      isActive = true;
-
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
@@ -131,15 +130,16 @@ export class Flow {
     }
     // 'server -> client'
     return new Promise(resolve => {
+      this.isActive = true;
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = cancel => {
         resolve(cmd && cancel ? cmd.prevent() : {});
         // Make Testbench know that server request has finished
-        isActive = false;
+        this.isActive = false;
       }
 
       // Call server side to check whether we can leave the view
-      this.flowRoot.$server.leaveNavigation(this.getFlowRoute(ctx));
+      flowRoot.$server.leaveNavigation(this.getFlowRoute(ctx));
     });
   }
 
@@ -147,6 +147,7 @@ export class Flow {
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
+      this.isActive = true;
       // The callback to run from server side once the view is ready
       this.container.serverConnected = cancel => {
         if (cmd && cancel) {
@@ -156,11 +157,11 @@ export class Flow {
           resolve(this.container);
         }
         // Make Testbench know that navigation finished
-        isActive = false;
+        this.isActive = false;
       };
 
       // Call server side to navigate to the given route
-      this.flowRoot.$server
+      flowRoot.$server
         .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
     });
   }
@@ -173,6 +174,7 @@ export class Flow {
   private async flowInit(serverSideRouting = false): Promise<AppInitResponse> {
     // Do not start flow twice
     if (!this.response) {
+      this.isActive = true;
       // Initialize server side UI
       this.response = await this.flowInitUi(serverSideRouting);
 
@@ -204,7 +206,7 @@ export class Flow {
       if (!serverSideRouting) {
         // we use a custom tag for the flow app container
         const tag = `flow-container-${appId.toLowerCase()}`;
-        this.container = this.flowRoot.$[appId] = document.createElement(tag);
+        this.container = flowRoot.$[appId] = document.createElement(tag);
         this.container.id = appId;
 
         // It might be that components created from server expect that their content has been rendered.
@@ -213,6 +215,7 @@ export class Flow {
         this.container.style.display = 'none';
         document.body.appendChild(this.container);
       }
+      this.isActive = false;
     }
     return this.response;
   }
@@ -265,19 +268,24 @@ export class Flow {
 
     // send a request to the `JavaScriptBootstrapHandler`
     return new Promise((resolve, reject) => {
-      const httpRequest = new (window as any).XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
+      const httpRequest = xhr as any;
       const currentPath = location.pathname || '/';
       const requestPath = `${currentPath}?v-r=init` +
-                                  (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+            (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+
       httpRequest.open('GET', requestPath);
+
+      httpRequest.onerror = () => reject(new Error(
+        `Invalid server response when initializing Flow UI.
+        ${httpRequest.status}
+        ${httpRequest.responseText}`));
+
       httpRequest.onload = () => {
         if (httpRequest.getResponseHeader('content-type') === 'application/json') {
           resolve(JSON.parse(httpRequest.responseText));
         } else {
-          reject(new Error(
-            `Invalid server response when initializing Flow UI.
-            ${httpRequest.status}
-            ${httpRequest.responseText}`));
+          httpRequest.onerror();
         }
       };
       httpRequest.send();
