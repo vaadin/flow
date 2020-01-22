@@ -216,9 +216,9 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
     /**
-     * Configuration parameter name for disabling pnpm.
+     * Configuration parameter name for enabling pnpm.
      */
-    public static final String SERVLET_PARAMETER_DISABLE_PNPM = "disable.pnpm";
+    public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
      * The path used in the vaadin servlet for handling static resources.

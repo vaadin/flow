@@ -51,7 +51,7 @@ public class MigrationConfiguration {
 
     private File compiledClassDirectory;
 
-    private boolean disablePnpm;
+    private boolean enablePnpm;
 
     private MigrationConfiguration(File baseDir) {
         baseDirectory = baseDir;
@@ -168,12 +168,12 @@ public class MigrationConfiguration {
     }
 
     /**
-     * Checks whether pnpm tool is disabled and npm should be used instead.
+     * Checks whether pnpm tool is enabled or npm should be used instead.
      *
-     * @return whether PNPM should be disabled
+     * @return whether PNPM should be enabled
      */
-    public boolean isPnpmDisabled() {
-        return disablePnpm;
+    public boolean isPnpmEnabled() {
+        return enablePnpm;
     }
 
     /**
@@ -342,14 +342,14 @@ public class MigrationConfiguration {
         }
 
         /**
-         * Disables default "pnpm" tool so that "npm" will be used instead to
+         * Enables "pnpm" tool so that it will be used instead of "npm" to
          * install frontend resources.
          *
-         * @param disable
-         *            disables pnpm
+         * @param enable
+         *            enable pnpm
          */
-        public void setDisablePnpm(boolean disable) {
-            config.disablePnpm = disable;
+        public void setEnablePnpm(boolean enable) {
+            config.enablePnpm = enable;
         }
 
         /**

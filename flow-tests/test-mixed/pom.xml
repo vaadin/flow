@@ -79,6 +79,11 @@
                             <name>vaadin.reuseDevServer</name>
                             <value>false</value>
                         </systemProperty>
+			<systemProperty>
+                            <!-- disable PNPM -->
+                            <name>vaadin.pnpm.enable</name>
+                            <value>true</value>
+                        </systemProperty>
                     </systemProperties>
                     <webApp>
                         <!-- We deploy the app with a context in the servlet container in order to test
