@@ -22,11 +22,10 @@ const {serverSideRoutes} = new Flow({
 });
 
 const routes = [
-  // Send all routes to  server-side.
-  // If you have client-side views add them above this line.
-  // For more info, please check out the 'Client-side Routing'
-  // page in `https://vaadin.com/docs/v15/flow/typescript/client-side-routing.html`
-  ...serverSideRoutes
+  // for client-side, place routes below (more info https://vaadin.com/docs/v15/flow/typescript/creating-routes.html)
+
+  // for server-side, the next magic line sends all unmatched routes:
+  ...serverSideRoutes // IMPORTANT: this must be the last entry in the array
 ];
 
 // Vaadin router needs an outlet in the index.html page to display views
