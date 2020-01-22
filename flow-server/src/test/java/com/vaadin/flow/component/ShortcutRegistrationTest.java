@@ -168,9 +168,6 @@ public class ShortcutRegistrationTest {
         ShortcutRegistration registration = new ShortcutRegistration(
                 lifecycleOwner, () -> listenOn, event -> {}, Key.KEY_A);
 
-        // No response, no listenOn component
-        assertNull(registration.getOwners());
-
         clientResponse();
 
         // listenOn component should be set after client response
