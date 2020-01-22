@@ -102,6 +102,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                             "'key' cannot belong to %s",
                     KeyModifier.class.getSimpleName()));
         }
+        Objects.requireNonNull(listenOnSuppliers, "listenOnSuppliers may not be null!");
 
         this.eventListener = eventListener;
         this.listenOnSuppliers = listenOnSuppliers;
