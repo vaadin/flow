@@ -17,7 +17,14 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -82,7 +89,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @param listenOnSuppliers Suppliers for components to which the shortcut listeners are
      *                          bound to. Suppliers are given in order to get around some
      *                          cases where the components might not be immediately
-     *                          available.
+     *                          available. Must not be null.
      * @param eventListener     The listener to invoke when the shortcut detected
      * @param key               Primary key of the shortcut. This can not be a
      *                          {@link KeyModifier}.
@@ -221,11 +228,11 @@ public class ShortcutRegistration implements Registration, Serializable {
      * {@code component} it was bound to.
      *
      * @param listenOnComponents {@code Component}s onto which the shortcut
-     *                           listeners are bound.
+     *                           listeners are bound. Must not be null.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration listenOn(Component... listenOnComponents) {
-        Objects.requireNonNull(listenOnComponents);
+        Objects.requireNonNull(listenOnComponents, "listenOnComponents must not be null!");
         removeAllListenerRegistrations();
         this.listenOnSuppliers = () -> listenOnComponents;
         prepareForClientResponse();
@@ -367,8 +374,11 @@ public class ShortcutRegistration implements Registration, Serializable {
      */
     @Deprecated
     public Component getOwner() {
-        assert listenOnComponents != null;
-        assert listenOnComponents.length > 0;
+        Objects.requireNonNull(listenOnComponents, "listenOnComponents must be initialized " +
+                "(by calling listenOn()) before calling this method!");
+        if (listenOnComponents.length <= 0 || listenOnComponents[0] == null) {
+            throw new IllegalStateException("listenOnComponents must not be empty!");
+        }
         return listenOnComponents[0];
     }
 
@@ -378,6 +388,8 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return Component[]
      */
     public Component[] getOwners() {
+        Objects.requireNonNull(listenOnComponents, "listenOnComponents must be initialized " +
+                "(by calling listenOn()) before calling this method!");
         return listenOnComponents;
     }
 
