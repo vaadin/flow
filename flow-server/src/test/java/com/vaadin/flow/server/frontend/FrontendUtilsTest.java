@@ -65,7 +65,7 @@ public class FrontendUtilsTest {
             .collect(Collectors.joining(File.separator));
 
     public static final String PNPM_INSTALL_LOCATION = Stream
-            .of("node_modules","pnpm","bin","pnpm.js")
+            .of("node_modules", "pnpm", "bin", "pnpm.js")
             .collect(Collectors.joining(File.separator));
 
     @Rule
@@ -126,11 +126,13 @@ public class FrontendUtilsTest {
         assertThat(FrontendUtils.getNodeExecutable(baseDir),
                 not(containsString(NPM_CLI_STRING)));
 
-        assertEquals(2, FrontendUtils.getNpmExecutable(baseDir).size());
+        assertEquals(3, FrontendUtils.getNpmExecutable(baseDir).size());
         assertThat(FrontendUtils.getNpmExecutable(baseDir).get(0),
                 containsString("npm"));
         assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
                 containsString("--no-update-notifier"));
+        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(2),
+                containsString("--no-audit"));
     }
 
     @Test
@@ -305,11 +307,10 @@ public class FrontendUtilsTest {
     @Test
     public void ensurePnpm_requestInstall_keepPackageJson_removePackageLock_ignoredPnpmExists_localPnpmIsRemoved()
             throws IOException {
-        Assume.assumeTrue(FrontendUtils.getPnpmExecutable(baseDir,
-                false).isEmpty());
+        Assume.assumeTrue(
+                FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
         File packageJson = new File(baseDir, "package.json");
-        FileUtils.writeStringToFile(packageJson, "{}",
-                StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(packageJson, "{}", StandardCharsets.UTF_8);
 
         File packageLockJson = new File(baseDir, "package-lock.json");
         FileUtils.writeStringToFile(packageLockJson, "{}",

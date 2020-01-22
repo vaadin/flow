@@ -4,4 +4,5 @@ Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
 Import-Package: *
-Export-Package: com.vaadin.flow.component.dnd.internal.*, com.vaadin.flow.component.dnd,com.vaadin.flow.component.dnd.osgi
+Export-Package: !com.vaadin.flow.component.dnd.internal*,\
+        com.vaadin.flow.component.dnd*;-noimport:=true

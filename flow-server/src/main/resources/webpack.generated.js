@@ -61,7 +61,7 @@ function setupWatchDog(){
     client.on('close', function() {
         client.destroy();
         setupWatchDog();
-    });  
+    });
 }
 
 if (watchDogPort){
@@ -135,14 +135,14 @@ module.exports = {
     maxAssetSize: 2097152 // 2MB
   },
   plugins: [
-    // Generate compressed bundles
-    new CompressionPlugin(),
+    // Generate compressed bundles when not devMode
+    ...(devMode ? [] : [new CompressionPlugin()]),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
       compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
         let statsJson = compilation.getStats().toJson();
-        // Get bundles as accepted keys 
+        // Get bundles as accepted keys
         let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0)
           .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
 
