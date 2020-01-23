@@ -135,7 +135,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private boolean optimizeBundle;
 
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "true")
-    private boolean enablePnpm;
+    private boolean pnpmEnable;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -186,7 +186,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .withTokenFile(getTokenFile()).enablePnpm(enablePnpm)
+                        .withTokenFile(getTokenFile()).enablePnpm(pnpmEnable)
                         .build().execute();
     }
 

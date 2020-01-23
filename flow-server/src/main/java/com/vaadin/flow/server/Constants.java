@@ -217,6 +217,8 @@ public final class Constants implements Serializable {
 
     /**
      * Configuration parameter name for enabling pnpm.
+     *
+     * @since 2.2
      */
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 

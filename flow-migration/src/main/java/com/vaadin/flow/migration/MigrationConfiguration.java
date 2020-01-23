@@ -51,7 +51,7 @@ public class MigrationConfiguration {
 
     private File compiledClassDirectory;
 
-    private boolean enablePnpm;
+    private boolean pnpmEnable;
 
     private MigrationConfiguration(File baseDir) {
         baseDirectory = baseDir;
@@ -173,7 +173,7 @@ public class MigrationConfiguration {
      * @return whether PNPM should be enabled
      */
     public boolean isPnpmEnabled() {
-        return enablePnpm;
+        return pnpmEnable;
     }
 
     /**
@@ -348,8 +348,8 @@ public class MigrationConfiguration {
          * @param enable
          *            enable pnpm
          */
-        public void setEnablePnpm(boolean enable) {
-            config.enablePnpm = enable;
+        public void setPnpmEnabled(boolean enable) {
+            config.pnpmEnable = enable;
         }
 
         /**

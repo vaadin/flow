@@ -84,7 +84,7 @@ public class MigrateMojo extends AbstractMojo {
     private boolean ignoreModulizerErrors;
 
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "true")
-    private boolean enablePnpm;
+    private boolean pnpmEnable;
 
     /**
      * Allows to specify the strategy to use to rewrite
@@ -117,7 +117,7 @@ public class MigrateMojo extends AbstractMojo {
         builder.setResourceDirectories(getResources());
         builder.setTargetDirectory(frontendDirectory);
         builder.setTemporaryMigrationFolder(migrateFolder);
-        builder.setEnablePnpm(enablePnpm);
+        builder.setPnpmEnabled(pnpmEnable);
 
         MigrationConfiguration configuration = builder.build();
         Migration migration = new Migration(configuration);
