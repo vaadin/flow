@@ -15,6 +15,7 @@ public class NativeJSRequestLifecycleEventsFireIT extends ChromeBrowserTest {
     private WebElement vaadinDoneCount;
     private WebElement image;
     private WebElement imageMultiClick;
+    private WebElement eventDetailsInStartRequest;
 
     @Override
     public void setup() throws Exception {
@@ -28,6 +29,7 @@ public class NativeJSRequestLifecycleEventsFireIT extends ChromeBrowserTest {
         vaadinDoneCount = findElement(By.id("vaadinDoneCount"));
         image = findElement(By.id("image"));
         imageMultiClick = findElement(By.id("imageMultiClick"));
+        eventDetailsInStartRequest = findElement(By.id("reqDetails"));
     }
 
     @Test
@@ -88,6 +90,25 @@ public class NativeJSRequestLifecycleEventsFireIT extends ChromeBrowserTest {
         // would be requestCount+1
         Assert.assertEquals("2", vaadinDoneCount.getText());
 
+    }
+
+    @Test
+    public void testRequestEventsFire_requestStartEventShouldContainRequestPayload() {
+
+        Assert.assertEquals("", eventDetailsInStartRequest.getText().trim());
+
+        image.click();
+
+        Assert.assertNotEquals("", eventDetailsInStartRequest.getText().trim());
+
+        // Ensure that the content changes on each request
+
+        String oldRequestDetails = eventDetailsInStartRequest.getText().trim();
+
+        image.click();
+
+        Assert.assertNotEquals(oldRequestDetails,
+                eventDetailsInStartRequest.getText().trim());
     }
 
     private void assertInitialState() {

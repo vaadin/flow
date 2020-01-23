@@ -91,6 +91,16 @@ public class NativeJSRequestLifecycleEventsFireView extends AbstractDivView {
         addDOMListener(VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT,
                 "vaadinDoneCount");
 
+        // To verify in test that the "vaadin-request-start" event has the
+        // request payload in the details section
+        Div requestStartDetails = new Div();
+        requestStartDetails.setText("");
+        requestStartDetails.setId("reqDetails");
+        add(requestStartDetails);
+
+        UI.getCurrent().getPage().executeJs(
+                "document.addEventListener('vaadin-request-start', e => {document.getElementById('reqDetails').innerText = e.detail;});");
+
     }
 
     private void addDOMListener(String listenerId, String elToIncrementId) {
