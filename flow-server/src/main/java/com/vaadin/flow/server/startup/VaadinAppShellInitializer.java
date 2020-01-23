@@ -17,6 +17,8 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
@@ -63,9 +65,11 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_CON
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
         BodySize.class, PageTitle.class, PageConfigurator.class, Push.class })
+//@WebListener is needed so that servlet containers know that they have to run it
 @WebListener
 public class VaadinAppShellInitializer implements ServletContainerInitializer,
-        Serializable {
+        //implementing ServletContextListener is needed for the @WebListener annotation.
+        ServletContextListener, Serializable {
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -207,4 +211,14 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinAppShellInitializer.class);
     }
- }
+
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        // No need to do anything on init
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        // No need to do anything on destroy
+    }
+}
