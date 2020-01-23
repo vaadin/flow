@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>flow-tests</artifactId>
@@ -44,7 +44,7 @@
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
-            <!--  Run flow plugin to build frontend -->
+            <!-- Run flow plugin to build frontend -->
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
@@ -52,7 +52,8 @@
                 <executions>
                     <execution>
                         <goals>
-                            <!-- only need prepare-frontend because we run tests in dev mode -->
+                            <!-- only need prepare-frontend because we run 
+                                tests in dev mode -->
                             <goal>prepare-frontend</goal>
                         </goals>
                     </execution>
@@ -69,21 +70,22 @@
                 <configuration>
                     <systemProperties>
                         <systemProperty>
-                            <!-- this avoids an issue in chrome not loading the components
-                                 randomly when webpack dev server is not in debug mode -->
+                            <!-- this avoids an issue in chrome not loading 
+                                the components randomly when webpack dev server is not in debug mode -->
                             <name>vaadin.devmode.webpack.options</name>
                             <value>--debug</value>
                         </systemProperty>
                         <systemProperty>
-                            <!-- make sure we do not leave webpack-dev-server running after IT -->
+                            <!-- make sure we do not leave webpack-dev-server 
+                                running after IT -->
                             <name>vaadin.reuseDevServer</name>
                             <value>false</value>
                         </systemProperty>
                     </systemProperties>
                     <webApp>
-                        <!-- We deploy the app with a context in the servlet container in order to test
-                             that bootstrap code resolves correctly the application context and do
-                             not render absolute references to the root path -->
+                        <!-- We deploy the app with a context in the servlet 
+                            container in order to test that bootstrap code resolves correctly the application 
+                            context and do not render absolute references to the root path -->
                         <contextPath>/context-path</contextPath>
                     </webApp>
                 </configuration>
