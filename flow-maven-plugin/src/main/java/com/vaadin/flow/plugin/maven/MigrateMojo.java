@@ -35,6 +35,7 @@ import com.vaadin.flow.migration.MigrationConfiguration.Builder;
 import com.vaadin.flow.migration.MigrationFailureException;
 import com.vaadin.flow.migration.MigrationToolsException;
 import com.vaadin.flow.plugin.common.FlowPluginFrontendUtils;
+import com.vaadin.flow.server.Constants;
 
 /**
  * This goal migrates project from compatibility mode to NPM mode.
@@ -82,7 +83,7 @@ public class MigrateMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean ignoreModulizerErrors;
 
-    @Parameter(property = "pnpmEnable", defaultValue = "false")
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
     private boolean enablePnpm;
 
     /**
