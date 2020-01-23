@@ -31,6 +31,7 @@ import elemental.dom.Document;
 import elemental.dom.Document.Events;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.events.CustomEvent;
 import elemental.events.Event;
 
 /**
@@ -119,13 +120,15 @@ public class ApplicationConnection {
      *            <code>true</code> if the event can bubble
      * @param canCancel
      *            <code>true</code> if the event can be cancelled
+     * @param details
+     *            <code>details</code> any additional details that should be added to the event or null
      */
     public static void fireDomEventEvent(String eventTypeArg, boolean canBubble,
-            boolean canCancel) {
+            boolean canCancel, String details) {
         Document document = Browser.getDocument();
-        Event requestStartNativeEvent = document.createEvent(Events.CUSTOM);
-        requestStartNativeEvent.initEvent(eventTypeArg, canBubble, canCancel);
-        document.dispatchEvent(requestStartNativeEvent);
+        CustomEvent customEvent = (CustomEvent) document.createEvent(Events.CUSTOM);
+        customEvent.initCustomEvent(eventTypeArg, canBubble, canCancel, details);
+        document.dispatchEvent(customEvent);
     }
 
     /**
@@ -136,7 +139,7 @@ public class ApplicationConnection {
     public void fireAllProcessingDoneEventIfIdle() {
         if (!isActive()) {
             fireDomEventEvent(Xhr.VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT,
-                    true, false);
+                    true, false, null);
         }
     }
 
