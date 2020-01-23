@@ -29,8 +29,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Override
-    protected boolean isNpm() {
-        return false;
+    protected boolean isPnpm() {
+        return true;
     }
 
     @Override
