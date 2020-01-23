@@ -121,13 +121,16 @@ public class ApplicationConnection {
      * @param canCancel
      *            <code>true</code> if the event can be cancelled
      * @param details
-     *            <code>details</code> any additional details that should be added to the event or null
+     *            <code>details</code> any additional details that should be
+     *            added to the event or null
      */
     public static void fireDomEventEvent(String eventTypeArg, boolean canBubble,
             boolean canCancel, String details) {
         Document document = Browser.getDocument();
-        CustomEvent customEvent = (CustomEvent) document.createEvent(Events.CUSTOM);
-        customEvent.initCustomEvent(eventTypeArg, canBubble, canCancel, details);
+        CustomEvent customEvent = (CustomEvent) document
+                .createEvent(Events.CUSTOM);
+        customEvent.initCustomEvent(eventTypeArg, canBubble, canCancel,
+                details);
         document.dispatchEvent(customEvent);
     }
 
