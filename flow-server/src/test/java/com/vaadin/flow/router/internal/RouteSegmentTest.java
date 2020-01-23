@@ -18,6 +18,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
@@ -43,6 +44,10 @@ public class RouteSegmentTest {
     public static class BranchEdit extends Component {
     }
 
+    @Tag(Tag.DIV)
+    public static class FlowerEdit extends Component {
+    }
+
     @Test
     public void test() {
 
@@ -52,65 +57,93 @@ public class RouteSegmentTest {
         root.addPath("trunk/branch/:id<int>", Branch.class);
         root.addPath("trunk/:[name]/:[type]/branch/:[id<int>]/edit",
                 BranchEdit.class);
+        root.addPath(
+                "trunk/:name/:[type]/branch/:id<int>/flower/:open<bool>/edit",
+                FlowerEdit.class);
 
         RouteSegment.RouteSearchResult result;
         String path;
 
         path = "";
         result = root.getRoute(path);
-        assertResult(result, path, Root.class, Collections.emptyMap());
+        assertResult(result, path, Root.class, null);
 
         path = "trunk";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, Trunk.class, null);
 
         path = "trunk/branch";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, null, null);
 
         path = "trunk/branch/12";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
-
-        path = "trunk/branch/";
-        result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, Branch.class, parameters("id", "12"));
 
         path = "trunk/branch/view";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, null, null);
 
         path = "trunk/branch/edit";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, BranchEdit.class, null);
 
         path = "trunk/red/branch/12/edit";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, BranchEdit.class,
+                parameters("id", "12", "name", "red"));
 
         path = "trunk/branch/12/edit";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, BranchEdit.class, parameters("id", "12"));
 
         path = "trunk/red/birch/branch/12/edit";
         result = root.getRoute(path);
-        System.out.println("result: " + result);
+        assertResult(result, path, BranchEdit.class,
+                parameters("id", "12", "name", "red", "type", "birch"));
+
+        path = "trunk/red/branch/12/flower/true/edit";
+        result = root.getRoute(path);
+        assertResult(result, path, FlowerEdit.class,
+                parameters("id", "12", "name", "red", "open", "true"));
+
+        path = "trunk/red/branch/12/flower/edit";
+        result = root.getRoute(path);
+        assertResult(result, path, null, null);
 
     }
 
+    private Map<String, String> parameters(String... keysAndValues) {
+        Map<String, String> result = new HashMap<>(keysAndValues.length / 2);
+
+        for (int i = 0; i < keysAndValues.length; i++) {
+            result.put(keysAndValues[i], keysAndValues[++i]);
+        }
+
+        return result;
+    }
+
     private void assertResult(RouteSegment.RouteSearchResult result,
-                              String path, Class<? extends Component> target,
-                              Map<String, String> urlParameters) {
+            String path, Class<? extends Component> target,
+            Map<String, String> urlParameters) {
 
         System.out.println("result: " + result);
 
+        if (urlParameters == null) {
+            urlParameters = Collections.emptyMap();
+        }
+
         Assert.assertEquals("Invalid path", path, result.getPath());
 
-        Assert.assertEquals("Weird target", target == null,
-                result.getTarget() == null);
+        Assert.assertEquals(
+                "Weird expected target [" + target + "], actual result ["
+                        + result + "]",
+                target == null, result.getTarget() == null);
 
         if (target != null) {
-            Assert.assertTrue("Invalid target",
+            Assert.assertTrue(
+                    "Invalid expected target [" + target + "], actual "
+                            + result.getTarget().getRoutes(),
                     result.getTarget().containsTarget(target));
         }
 
