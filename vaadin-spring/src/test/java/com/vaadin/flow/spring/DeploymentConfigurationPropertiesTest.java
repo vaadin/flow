@@ -27,7 +27,7 @@ import org.junit.Test;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinSession;
 
-public class DeploymentConfigurationProperties {
+public class DeploymentConfigurationPropertiesTest {
 
     /**
      * Checks that we don't miss any newly added constant into {@link Constants}
@@ -59,7 +59,7 @@ public class DeploymentConfigurationProperties {
 
         // Check that we have added all other constants as parameters (except
         // those we know)
-        Assert.assertEquals(24, constantsCopy.size());
+        Assert.assertEquals(37, constantsCopy.size());
 
         Assert.assertTrue(constantsCopy
                 .contains(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION));

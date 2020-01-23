@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.spring;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
@@ -71,6 +71,7 @@ public class SpringServlet extends VaadinServlet {
             Constants.FRONTEND_URL_ES5, Constants.FRONTEND_URL_ES6,
             Constants.I18N_PROVIDER,
             Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION,
+            Constants.SERVLET_PARAMETER_ENABLE_PNPM,
             VaadinSession.UI_PARAMETER);
 
     private final ApplicationContext context;
