@@ -88,11 +88,17 @@ class RouteSegment implements Serializable {
         }
 
         boolean isEligible(String value) {
-            // We only expect primitive types or as is for now.
-            return true;// isPrimitiveEligible(value);
+
+            Optional<Boolean> primitiveEligible = isPrimitiveEligible(value);
+
+            if (primitiveEligible.isPresent()) {
+                return primitiveEligible.get();
+            }
+
+            return true;
         }
 
-        private boolean isPrimitiveEligible(String value) {
+        private Optional<Boolean> isPrimitiveEligible(String value) {
             if (eligiblePrimitiveType != null) {
 
                 if (eligiblePrimitiveType.equals("int")) {
@@ -100,20 +106,22 @@ class RouteSegment implements Serializable {
                     try {
                         Integer.valueOf(value);
 
-                        return true;
+                        return Optional.of(Boolean.TRUE);
                     } catch (NumberFormatException e) {
                     }
 
-                } else if (eligiblePrimitiveType.equals("bool")) {
+                } else if (eligiblePrimitiveType.equals("bool")
+                        || eligiblePrimitiveType.equals("boolean")) {
                     if (value.equalsIgnoreCase("true")
                             || value.equalsIgnoreCase("false")) {
-                        return true;
+                        return Optional.of(Boolean.TRUE);
                     }
                 }
 
+                return Optional.of(Boolean.FALSE);
             }
 
-            return false;
+            return Optional.empty();
         }
 
         private void extractTypeDef(String patternDef) {
@@ -154,9 +162,9 @@ class RouteSegment implements Serializable {
 
         @Override
         public String toString() {
-            return "[path: \"" + path + "\", target: " + (target != null
-                    ? target.getRoutes().toString()
-                    : null) + ", parameters: " + urlParameters + "]";
+            return "[path: \"" + path + "\", target: "
+                    + (target != null ? target.getRoutes().toString() : null)
+                    + ", parameters: " + urlParameters + "]";
         }
     }
 
