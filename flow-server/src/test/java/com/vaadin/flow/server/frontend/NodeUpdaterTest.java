@@ -145,15 +145,10 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEPENDENCIES)
-                .put("@webcomponents/webcomponentsjs", "^2.1.1");
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
                 "3.3.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("^2.2.10",
-                packageJson.getObject(NodeUpdater.DEPENDENCIES)
-                        .getString("@webcomponents/webcomponentsjs"));
         Assert.assertEquals("4.30.0", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
@@ -164,15 +159,10 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEPENDENCIES)
-                .put("@webcomponents/webcomponentsjs", "2.3.1");
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
                 "5.0.1");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("2.3.1",
-                packageJson.getObject(NodeUpdater.DEPENDENCIES)
-                        .getString("@webcomponents/webcomponentsjs"));
         Assert.assertEquals("5.0.1", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }

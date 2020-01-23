@@ -195,7 +195,7 @@ public class PrepareFrontendMojoTest {
         JsonObject packageJsonObject = getPackageJson(packageJson);
 
         assertContainsPackage(packageJsonObject.getObject("dependencies"),
-                "@webcomponents/webcomponentsjs", "@polymer/polymer");
+                 "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
                 "webpack", "webpack-cli", "webpack-dev-server",
