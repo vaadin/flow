@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,17 @@ public class DeploymentConfigurationPropertiesTest {
 
         Set<Object> constants = new HashSet<Object>();
         for (Field constant : Constants.class.getDeclaredFields()) {
+            Assert.assertTrue(
+                    "Field " + constant.getName() + " is not a constant",
+                    constant.getName().startsWith("$") || (Modifier
+                            .isStatic(constant.getModifiers())
+                            && Modifier.isPublic(constant.getModifiers())));
+            if (constant.getName().startsWith("$")) {
+                // thanks to java code coverage which adds non-existent
+                // initially variables everywhere: we should skip this extra
+                // field
+                continue;
+            }
             constants.add(constant.get(null));
         }
 
