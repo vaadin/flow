@@ -81,8 +81,8 @@
                         </systemProperty>
                         <systemProperty>
                             <!-- disable PNPM -->
-                            <name>vaadin.disable.pnpm</name>
-                            <value>true</value>
+                            <name>vaadin.pnpm.enable</name>
+                            <value>false</value>
                         </systemProperty>
                     </systemProperties>
                     <webApp>

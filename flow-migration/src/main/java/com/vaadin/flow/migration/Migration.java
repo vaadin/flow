@@ -310,13 +310,13 @@ public class Migration {
 
     private List<String> getFrontendInstallToolExec() {
         List<String> executable;
-        if (configuration.isPnpmDisabled()) {
-            executable = FrontendUtils.getNpmExecutable(
-                    configuration.getBaseDirectory().getPath());
-        } else {
+        if (configuration.isPnpmEnabled()) {
             FrontendUtils
                     .ensurePnpm(configuration.getBaseDirectory().getPath());
             executable = FrontendUtils.getPnpmExecutable(
+                    configuration.getBaseDirectory().getPath());
+        } else {
+            executable = FrontendUtils.getNpmExecutable(
                     configuration.getBaseDirectory().getPath());
         }
         return executable;

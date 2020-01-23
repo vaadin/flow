@@ -82,7 +82,7 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private boolean disablePnpm;
+        private boolean enablePnpm;
 
         /**
          * Directory for for npm and folders and files.
@@ -331,16 +331,16 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Disables pnpm tool.
+         * Enables pnpm tool.
          * <p>
-         * "npm" will be used instead of "pnpm".
+         * "pnpm" will be used instead of "npm".
          *
-         * @param disable
-         *            disables pnpm.
+         * @param enable
+         *            enables pnpm.
          * @return the builder, for chaining
          */
-        public Builder disablePnpm(boolean disable) {
-            disablePnpm = disable;
+        public Builder enablePnpm(boolean enable) {
+            enablePnpm = enable;
             return this;
         }
     }
@@ -377,12 +377,12 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
                     builder.generatedFolder, builder.cleanNpmFiles,
-                    builder.disablePnpm);
+                    builder.enablePnpm);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater,
-                        builder.disablePnpm));
+                        builder.enablePnpm));
             }
         }
 
@@ -410,7 +410,7 @@ public class NodeTasks implements FallibleCommand {
                             finder -> getFallbackScanner(builder, finder),
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData, builder.disablePnpm));
+                            builder.tokenFileData, builder.enablePnpm));
 
         }
     }
