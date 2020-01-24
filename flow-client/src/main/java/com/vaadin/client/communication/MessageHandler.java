@@ -134,6 +134,8 @@ public class MessageHandler {
     private final Registry registry;
 
     private boolean initialMessageHandled;
+    
+    private boolean resyncInProgress;
 
     /**
      * Timer used to make sure that no misbehaving components can delay response
@@ -220,7 +222,16 @@ public class MessageHandler {
     protected void handleJSON(final ValueMap valueMap) {
         final int serverId = getServerId(valueMap);
 
-        if (isResynchronize(valueMap) && !isNextExpectedMessage(serverId)) {
+        boolean hasResynchronize = isResynchronize(valueMap);
+
+        if (!hasResynchronize && resyncInProgress) {
+            Console.warn("Dropping the response of a request before a resync request.");
+            return;
+        }
+
+        resyncInProgress = false;
+
+        if (hasResynchronize && !isNextExpectedMessage(serverId)) {
             // Resynchronize request. We must remove any old pending
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
@@ -283,7 +294,7 @@ public class MessageHandler {
             int serverNextExpected = valueMap
                     .getInt(ApplicationConstants.CLIENT_TO_SERVER_ID);
             registry.getMessageSender().setClientToServerMessageId(
-                    serverNextExpected, isResynchronize(valueMap));
+                    serverNextExpected, hasResynchronize);
         }
 
         if (serverId != -1) {
@@ -794,4 +805,7 @@ public class MessageHandler {
         this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
     }
 
+    public void onResynchronize() {
+        resyncInProgress = true;
+    }
 }
