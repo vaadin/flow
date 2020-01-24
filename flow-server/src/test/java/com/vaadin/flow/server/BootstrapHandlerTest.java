@@ -991,14 +991,6 @@ public class BootstrapHandlerTest {
         Elements allElements = page.head().getAllElements();
 
         Assert.assertTrue(
-                "webcomponents-loader.js should be added to head. (not deferred)",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element.equals(
-                                "<script type=\"text/javascript\" src=\"./"
-                                        + VAADIN_MAPPING
-                                        + "build/webcomponentsjs/webcomponents-loader.js\"></script>")));
-
-        Assert.assertTrue(
                 "index.js should be added to head for ES6 browsers. (type module with crossorigin)",
                 allElements.stream().map(Object::toString)
                         .anyMatch(element -> element
