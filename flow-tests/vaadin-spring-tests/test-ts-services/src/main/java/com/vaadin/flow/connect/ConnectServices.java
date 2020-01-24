@@ -5,13 +5,13 @@ import javax.annotation.security.RolesAllowed;
 
 import java.util.Optional;
 
-import com.vaadin.flow.server.connect.VaadinService;
+import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
 /**
  * Simple Vaadin Connect Service definition.
  */
-@VaadinService
+@Endpoint
 public class ConnectServices {
     
     public String hello(String name, @Nullable String title) {

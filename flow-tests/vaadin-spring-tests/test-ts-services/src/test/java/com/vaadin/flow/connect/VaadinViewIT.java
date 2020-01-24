@@ -132,7 +132,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
         login("user", "user");
 
         // Verify admin calls
-        verifyCallingAdminService("Unauthorized access to vaadin service");
+        verifyCallingAdminService("Unauthorized access to Vaadin endpoint");
 
         // Verify logged in user calls
         verifyCallingAuthorizedService();
