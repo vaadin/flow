@@ -85,7 +85,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(response.getOutputStream()).thenReturn(responseOutput);
         deploymentConfiguration = mocks.getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
-        deploymentConfiguration.setClientSideMode(true);
+        deploymentConfiguration.useDeprecatedV14Bootstrapping(false);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
     }
 

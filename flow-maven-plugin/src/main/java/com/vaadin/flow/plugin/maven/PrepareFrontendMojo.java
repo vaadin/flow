@@ -51,7 +51,7 @@ import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -112,7 +112,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
-                            .enableClientSideMode(isClientSideMode())
+                            .useDeprecatedV14Bootstrapping(useDeprecatedV14Bootstrapping())
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
@@ -141,7 +141,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
-        buildInfo.put(SERVLET_PARAMETER_CLIENT_SIDE_MODE, isClientSideMode());
+        buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, useDeprecatedV14Bootstrapping());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL, eagerServerLoad);
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());

@@ -81,12 +81,12 @@ public class ServiceInitEvent extends EventObject {
      */
     @Deprecated
     public void addBootstrapListener(BootstrapListener bootstrapListener) {
-        if (getSource().getDeploymentConfiguration().isClientSideMode()) {
+        if (!getSource().getDeploymentConfiguration().useV14Bootstrap()) {
             throw new IllegalStateException(""
                     + "The BootstrapListener API is not supported in the "
                     + "client-side mode. Please use the IndexHtmlRequestListener "
                     + "API instead, or disable the client-side mode with"
-                    + "-Dvaadin.useDeprecatedV14Bootstrapping=false to keep compatibility "
+                    + "-Dvaadin.useDeprecatedV14Bootstrapping=true to keep compatibility "
                     + "with V14.");
         }
 
