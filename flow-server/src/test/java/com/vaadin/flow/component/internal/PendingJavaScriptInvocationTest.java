@@ -339,6 +339,9 @@ public class PendingJavaScriptInvocationTest {
             JsonObject value = Json.createObject();
             invocation.complete(value);
 
+            executor.shutdown();
+            executor.awaitTermination(100, TimeUnit.MILLISECONDS);
+
             Assert.assertEquals("All futures should be done", futures.size(),
                     futures.stream().filter(Future::isDone).count());
 
