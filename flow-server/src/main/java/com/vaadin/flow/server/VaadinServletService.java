@@ -102,11 +102,12 @@ public class VaadinServletService extends VaadinService {
     private void addBootstrapHandler(List<RequestHandler> handlers) {
         if (!getDeploymentConfiguration().useV14Bootstrap()) {
             handlers.add(0, new IndexHtmlRequestHandler());
-            getLogger().debug("Using '{}' in useDeprecatedV14Bootstrapping",
+            getLogger().debug("Using '{}' in client mode bootstrapping",
                     IndexHtmlRequestHandler.class.getName());
+            UsageStatistics.markAsUsed(IndexHtmlRequestHandler.class.getSimpleName(), Version.getFullVersion());
         } else {
             handlers.add(0, new BootstrapHandler());
-            getLogger().debug("Using '{}' in default mode",
+            getLogger().debug("Using '{}' in deprecated V14 bootstrapping",
                     BootstrapHandler.class.getName());
             UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
         }
