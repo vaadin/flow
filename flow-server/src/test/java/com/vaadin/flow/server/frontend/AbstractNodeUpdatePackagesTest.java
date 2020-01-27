@@ -89,7 +89,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, true);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, false);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -170,13 +170,13 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, true);
+                getScanner(classFinder), baseDir, generatedDir, null, false, false);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, false);
+                getScanner(classFinder), baseDir, generatedDir, null, false, true);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -187,7 +187,7 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, true);
+                getScanner(classFinder), baseDir, generatedDir, null, false, false);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -195,7 +195,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, false);
+                getScanner(classFinder), baseDir, generatedDir, null, false, true);
         packageUpdater.execute();
         Assert.assertFalse(packageLock.exists());
     }
@@ -280,7 +280,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
     @Test
     public void versionsDoNotMatch_inMainJson_npm_cleanUp() throws IOException {
-        versionsDoNotMatch_inMainJson_cleanUp(true);
+        versionsDoNotMatch_inMainJson_cleanUp(false);
         assertVersionAndCleanUp();
     }
 
@@ -292,9 +292,10 @@ public abstract class AbstractNodeUpdatePackagesTest
                 .get(SHRINKWRAP);
         Assert.assertEquals("1.2.3", value.asString());
 
-        // nothing is removed
-        Assert.assertFalse(mainNodeModules.exists());
-        Assert.assertFalse(appNodeModules.exists());
+        // nothing is removed except package-lock
+        Assert.assertTrue(mainNodeModules.exists());
+        Assert.assertTrue(appNodeModules.exists());
+        // package-lock is removed
         Assert.assertFalse(packageLock.exists());
     }
 
@@ -314,7 +315,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -343,7 +344,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, true, true);
+                getScanner(classFinder), baseDir, generatedDir, null, true, false);
         packageUpdater.execute();
 
         // clean up happened
@@ -365,7 +366,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -395,7 +396,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -440,7 +441,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -471,7 +472,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -494,7 +495,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -520,7 +521,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -548,7 +549,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         JsonObject json = getPackageJson(packageJson);
@@ -581,7 +582,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -627,7 +628,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, true);
+                baseDir, generatedDir, null, false, false);
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -679,9 +680,6 @@ public abstract class AbstractNodeUpdatePackagesTest
                     dependencies.hasKey(entry.getKey()));
         }
 
-        Assert.assertTrue(dependencies.hasKey(NodeUpdater.DEP_NAME_FLOW_JARS));
-
-
         JsonObject devDependencies = json.getObject(DEV_DEPENDENCIES);
         for (Map.Entry<String, String> entry : NodeUpdater
                 .getDefaultDevDependencies().entrySet()) {
@@ -712,7 +710,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         return object;
     }
 
-    private void versionsDoNotMatch_inMainJson_cleanUp(boolean isNpm)
+    private void versionsDoNotMatch_inMainJson_cleanUp(boolean isPnpm)
             throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
@@ -728,7 +726,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
         packageUpdater = new TaskUpdatePackages(null, frontendDependencies,
-                baseDir, generatedDir, null, false, isNpm);
+                baseDir, generatedDir, null, false, isPnpm);
 
         // Generate package json in a proper format first
         packageCreator.execute();

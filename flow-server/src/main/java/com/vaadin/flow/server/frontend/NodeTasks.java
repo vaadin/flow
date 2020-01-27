@@ -82,6 +82,8 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
+        private boolean enablePnpm;
+
         private File connectJavaSourceFolder;
 
         private File connectGeneratedOpenApiFile;
@@ -90,7 +92,6 @@ public class NodeTasks implements FallibleCommand {
 
         private File connectClientTsApiFolder;
 
-        private boolean disablePnpm;
 
         /**
          * Directory for for npm and folders and files.
@@ -133,9 +134,8 @@ public class NodeTasks implements FallibleCommand {
         public Builder(ClassFinder classFinder, File npmFolder,
                 File generatedPath) {
             this(classFinder, npmFolder, generatedPath,
-                    new File(npmFolder,
-                            System.getProperty(PARAM_FRONTEND_DIR,
-                                    DEFAULT_FRONTEND_DIR)));
+                    new File(npmFolder, System.getProperty(PARAM_FRONTEND_DIR,
+                            DEFAULT_FRONTEND_DIR)));
         }
 
         /**
@@ -426,16 +426,16 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Disables pnpm tool.
+         * Enables pnpm tool.
          * <p>
-         * "npm" will be used instead of "pnpm".
+         * "pnpm" will be used instead of "npm".
          *
-         * @param disable
-         *            disables pnpm.
+         * @param enable
+         *            enables pnpm.
          * @return the builder, for chaining
          */
-        public Builder disablePnpm(boolean disable) {
-            disablePnpm = disable;
+        public Builder enablePnpm(boolean enable) {
+            enablePnpm = enable;
             return this;
         }
     }
@@ -482,12 +482,12 @@ public class NodeTasks implements FallibleCommand {
                     classFinder, frontendDependencies, builder.npmFolder,
                     builder.generatedFolder, builder.flowResourcesFolder,
                     builder.cleanNpmFiles,
-                    builder.disablePnpm);
+                    builder.enablePnpm);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater,
-                        builder.disablePnpm));
+                        builder.enablePnpm));
             }
         }
 
@@ -518,7 +518,7 @@ public class NodeTasks implements FallibleCommand {
                             finder -> getFallbackScanner(builder, finder),
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData, builder.disablePnpm));
+                            builder.tokenFileData, builder.enablePnpm));
         }
     }
 

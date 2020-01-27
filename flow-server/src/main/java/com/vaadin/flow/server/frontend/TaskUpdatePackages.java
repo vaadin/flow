@@ -54,7 +54,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private final boolean forceCleanUp;
-    private final boolean disablePnpm;
+    private final boolean enablePnpm;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -74,16 +74,16 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
-     * @param disablePnpm
-     *            if {@code true} then npm is used instead of pnpm, otherwise
-     *            pnpm is used
+     * @param enablePnpm
+     *            if {@code true} then pnpm is used instead of npm, otherwise
+     *            npm is used
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, boolean forceCleanUp, boolean disablePnpm) {
+            File generatedPath, File flowResourcesPath, boolean forceCleanUp, boolean enablePnpm) {
         super(finder, frontendDependencies, npmFolder, generatedPath, flowResourcesPath);
         this.forceCleanUp = forceCleanUp;
-        this.disablePnpm = disablePnpm;
+        this.enablePnpm = enablePnpm;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 }
             }
             doCleanUp = doCleanUp
-                    || disablePnpm && !ensureReleaseVersion(dependencies);
+                    || !enablePnpm && !ensureReleaseVersion(dependencies);
         }
 
         if (removed > 0) {
@@ -217,11 +217,11 @@ public class TaskUpdatePackages extends NodeUpdater {
                 result = true;
             }
         }
-        if (disablePnpm) {
+        if (!enablePnpm) {
             return result;
         }
         /*
-         * In case of PNPM tool we package-lock should not be used at all.
+         * In case of PNPM tool the package-lock should not be used at all.
          */
         File packageLockFile = getPackageLockFile();
         if (packageLockFile.exists()) {

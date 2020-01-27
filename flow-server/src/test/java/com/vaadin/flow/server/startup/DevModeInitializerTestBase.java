@@ -74,7 +74,7 @@ public class DevModeInitializerTestBase {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
-        initParams.put(Constants.SERVLET_PARAMETER_DISABLE_PNPM, "true");
+        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, "true");
 
         Mockito.when(registration.getInitParameters()).thenReturn(initParams);
 

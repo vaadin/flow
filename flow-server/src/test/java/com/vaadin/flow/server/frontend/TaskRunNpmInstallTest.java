@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +61,7 @@ public class TaskRunNpmInstallTest {
             }
 
         };
-        task = new TaskRunNpmInstall(nodeUpdater, isNpm());
+        task = new TaskRunNpmInstall(nodeUpdater, isPnpm());
     }
 
     @Test
@@ -109,7 +110,7 @@ public class TaskRunNpmInstallTest {
     }
 
     private String getRunningMsg() {
-        return"Running `" + getToolName() + " install` to "
+        return "Running `" + getToolName() + " install` to "
                 + "resolve and optionally download frontend dependencies. "
                 + "This may take a moment, please stand by...";
     }
@@ -118,8 +119,8 @@ public class TaskRunNpmInstallTest {
         return nodeUpdater;
     }
 
-    protected boolean isNpm() {
-        return true;
+    protected boolean isPnpm() {
+        return false;
     }
 
     protected String getToolName() {
