@@ -810,7 +810,8 @@ public class MessageHandler {
         this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
     }
 
-    public void onResynchronize() {
+    // Called by MessageSender when resyncronize starts
+    protected void onResynchronize() {
         resyncInProgress = true;
     }
 }
