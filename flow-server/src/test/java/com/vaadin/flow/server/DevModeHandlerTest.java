@@ -21,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -139,23 +138,14 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_CreateInstance_After_TimeoutWaitingForPattern()
-            throws Exception {
-        configuration.setApplicationOrSystemProperty(
-                SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
-        createStubWebpackServer("Foo", 300, baseDir);
-        assertNotNull(DevModeHandler.start(configuration, npmFolder));
-        int port = DevModeHandler.getDevModeHandler().getPort();
-        assertTrue(port > 0);
-        Thread.sleep(350); // NOSONAR
-    }
-
-    @Test
     public void should_CaptureWebpackOutput_When_Failed() throws Exception {
         configuration.setApplicationOrSystemProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300, baseDir);
         assertNotNull(DevModeHandler.start(configuration, npmFolder));
+        int port = DevModeHandler.getDevModeHandler().getPort();
+        assertTrue(port > 0);
+
         // Wait for server to stop running before checking the output stream
         Thread.sleep(350); // NOSONAR
         assertNotNull(
@@ -179,17 +169,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
-        configuration.setProductionMode(true);
+        configuration.setCompatibilityMode(true);
         assertNull(DevModeHandler.start(configuration, npmFolder));
-        Thread.sleep(150); // NOSONAR
-    }
-
-    @Test
-    public void should_RunWebpack_When_WebpackNotListening() throws Exception {
-        DevModeHandler.start(configuration, npmFolder);
-        assertTrue(new File(baseDir,
-                FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
-                        .canRead());
         Thread.sleep(150); // NOSONAR
     }
 
@@ -240,78 +221,52 @@ public class DevModeHandlerTest {
                 .isDevModeRequest(request));
     }
 
-    @Test(expected = ConnectException.class)
-    public void should_ThrowAnException_When_WebpackNotListening()
-            throws IOException {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        DevModeHandler.start(0, configuration, npmFolder)
-                .serveDevModeRequest(request, null);
-    }
-
     @Test
-    public void should_ReturnTrue_When_WebpackResponseOK() throws Exception {
+    public void webpack_forDifferentRequests_shouldHaveCorrectResponse()
+            throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "bar");
 
-        assertTrue(DevModeHandler.start(port, configuration, npmFolder)
-                .serveDevModeRequest(request, response));
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder);
+        assertTrue(devModeHandler.serveDevModeRequest(request, response));
         assertEquals(HTTP_OK, responseStatus);
-    }
 
-    @Test
-    public void should_ReturnFalse_When_WebpackResponseNotFound()
-            throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_NOT_FOUND, "");
-
-        assertFalse(DevModeHandler.start(port, configuration, npmFolder)
-                .serveDevModeRequest(request, response));
+        httpServer.stop(0);
+        prepareHttpServer(port, HTTP_NOT_FOUND, "");
+        assertFalse(devModeHandler.serveDevModeRequest(request, response));
         assertEquals(200, responseStatus);
-    }
 
-    @Test
-    public void should_ReturnTrue_When_OtherResponseCodes() throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_UNAUTHORIZED, "");
-
-        assertTrue(DevModeHandler.start(port, configuration, npmFolder)
-                .serveDevModeRequest(request, response));
+        httpServer.stop(0);
+        prepareHttpServer(port, HTTP_UNAUTHORIZED, "");
+        assertTrue(devModeHandler.serveDevModeRequest(request, response));
         assertEquals(HTTP_UNAUTHORIZED, responseError);
-    }
 
-    @Test(expected = ConnectException.class)
-    public void servlet_should_ThrowAnException_When_WebpackNotListening()
-            throws Exception {
-        VaadinServlet servlet = prepareServlet(0);
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        servlet.service(request, response);
-        Thread.sleep(150); // NOSONAR
+        httpServer.stop(0);
+        exception.expect(ConnectException.class);
+        devModeHandler.serveDevModeRequest(request, null);
     }
 
     @Test
-    public void servlet_should_GetValidResponse_When_WebpackListening()
+    public void vaadinServlet_forDifferentRequests_shouldHaveCorrectResponse()
             throws Exception {
         HttpServletRequest request = prepareRequest("/foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "");
 
-        prepareServlet(port).service(request, response);
+        VaadinServlet servlet = prepareServlet(port);
+        servlet.service(request, response);
         assertEquals(HTTP_OK, responseStatus);
-    }
 
-    @Test
-    public void servlet_getValidRedirectResponse_When_WebpackListening()
-            throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_NOT_MODIFIED, "");
-
-        prepareServlet(port).service(request, response);
+        httpServer.stop(0);
+        prepareHttpServer(port, HTTP_NOT_MODIFIED, "");
+        servlet.service(request, response);
         assertEquals(HTTP_NOT_MODIFIED, responseStatus);
+
+        httpServer.stop(0);
+        exception.expect(ConnectException.class);
+        servlet.service(request, response);
     }
 
     @Test
