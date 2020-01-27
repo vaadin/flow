@@ -32,7 +32,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -46,7 +45,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
-import com.vaadin.flow.theme.ThemeUtil;
 
 import elemental.json.JsonObject;
 
@@ -63,27 +61,7 @@ public class WebComponentUI extends UI {
     public void doInit(VaadinRequest request, int uiId) {
         super.doInit(request, uiId);
 
-        assignTheme();
-        VaadinSession session = getSession();
-        DeploymentConfiguration deploymentConfiguration = session.getService()
-                .getDeploymentConfiguration();
-        if (deploymentConfiguration.isCompatibilityMode()
-                && deploymentConfiguration.useCompiledFrontendResources()) {
-            /*
-             * This code adds a number of HTML dependencies to the page but in
-             * fact there are no such HTML files: they should have been
-             * generated during transpilation via maven plugin. To be able to
-             * activate transpiled code the embedded application imports the
-             * "dependencies" which represent the transpiled files.
-             *
-             * This code is not needed when in npm mode, since the web
-             * components will be contained within index.js
-             */
-            getConfigurationRegistry().getConfigurations()
-                    .forEach(config -> getPage()
-                            .addHtmlImport(getWebComponentHtmlPath(config)));
-        }
-
+        assignThemeVariant();
         getEventBus().addListener(WebComponentConnectEvent.class,
                 this::connectWebComponent);
     }
@@ -200,8 +178,9 @@ public class WebComponentUI extends UI {
                             getInternals().getExtendedClientDetails()));
         } else {
             getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
-                attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
-                        event, getComponentHash(event, extendedClientDetails));
+                attachCachedOrCreatedWebComponent(
+                        webComponentConfiguration.get(), event,
+                        getComponentHash(event, extendedClientDetails));
             });
         }
     }
@@ -286,12 +265,6 @@ public class WebComponentUI extends UI {
     }
 
     @Override
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.empty();
-    }
-
-    @Override
     public void navigate(String location) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
@@ -312,24 +285,16 @@ public class WebComponentUI extends UI {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 
-    private void assignTheme() {
+    private void assignThemeVariant() {
         WebComponentConfigurationRegistry registry = getConfigurationRegistry();
         Optional<Theme> theme = registry
                 .getEmbeddedApplicationAnnotation(Theme.class);
-        if (theme.isPresent()) {
-            getInternals().setTheme(theme.get().value());
-            assignVariant(registry, theme.get());
-        } else {
-            ThemeUtil.getLumoThemeDefinition().map(ThemeDefinition::getTheme)
-                    .ifPresent(getInternals()::setTheme);
+        if (!theme.isPresent()) {
+            return;
         }
-    }
-
-    private void assignVariant(WebComponentConfigurationRegistry registry,
-            Theme theme) {
         AbstractTheme themeInstance = Instantiator.get(this)
-                .getOrCreate(theme.value());
-        ThemeDefinition definition = new ThemeDefinition(theme);
+                .getOrCreate(theme.get().value());
+        ThemeDefinition definition = new ThemeDefinition(theme.get());
         Map<String, String> attributes = themeInstance
                 .getHtmlAttributes(definition.getVariant());
 
@@ -347,15 +312,6 @@ public class WebComponentUI extends UI {
                 .append("', '").append(value).append("');"));
         builder.append("}");
         getPage().executeJs(builder.toString());
-    }
-
-    private String getWebComponentHtmlPath(
-            WebComponentConfiguration<? extends Component> config) {
-        DeploymentConfiguration deploymentConfiguration = getSession()
-                .getService().getDeploymentConfiguration();
-        String path = deploymentConfiguration.getCompiledWebComponentsPath();
-
-        return path + '/' + config.getTag() + ".html";
     }
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
@@ -400,7 +356,7 @@ public class WebComponentUI extends UI {
          * new one will be ignored.
          * <p>
          * This is an atomic operation.
-         * 
+         *
          * @param identifier
          *            Unique identifier for the {@code element}
          * @param element
@@ -416,7 +372,7 @@ public class WebComponentUI extends UI {
         /**
          * Retrieves the {@link com.vaadin.flow.dom.Element} stored in the
          * registry, identified by {@code identifier}.
-         * 
+         *
          * @param identifier
          *            Unique identifier for the {@link Element}
          * @return an {@link Element}, or {@code null} if nothing is stored for

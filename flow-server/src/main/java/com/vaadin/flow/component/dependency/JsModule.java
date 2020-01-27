@@ -24,7 +24,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Annotation for defining JavaScript Module dependencies on a {@link Component}
@@ -80,19 +79,6 @@ public @interface JsModule {
      * @return a JavaScript module identifier
      */
     String value();
-
-    /**
-     * Determines the dependency load mode. Refer to {@link LoadMode} for the
-     * details.
-     *
-     * @return load mode for the dependency
-     * @deprecated {@code LoadMode} does not function with JavaScript modules.
-     *             If the module is local, it is included into the frontend
-     *             resource bundle. If the module is external, it is loaded as
-     *             deferred due to {@code type=module} in {@code scrip} tag.
-     */
-    @Deprecated
-    LoadMode loadMode() default LoadMode.EAGER;
 
     /**
      * Internal annotation to enable use of multiple {@link JsModule}

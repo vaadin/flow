@@ -20,6 +20,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -675,14 +676,13 @@ public class StaticFileServerTest implements Serializable {
 
     /**
      * Returns a byte array for a valid stats.json containing only chunks
-     * 
+     *
      * @return
      */
     public byte[] getStatsData() {
         return ("{ " + "\"assetsByChunkName\" :{ "
-                + "\"index\": \"build/vaadin-bundle-1234.cache.js\", "
-                + "\"index.es5\": \"build/vaadin-bundle.es5-1234.cache.js\" "
-                + "} }").getBytes(StandardCharsets.UTF_8);
+                + "\"index\": \"build/vaadin-bundle-1234.cache.js\"} }")
+                        .getBytes(StandardCharsets.UTF_8);
     }
 
     @Test

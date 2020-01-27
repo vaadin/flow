@@ -241,11 +241,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         }
         StateNode node = getNode();
 
-        if (node.hasFeature(SynchronizedPropertiesList.class)
-                && node.getFeature(SynchronizedPropertiesList.class)
-                        .getSynchronizedProperties().contains(property)) {
-            return AllowUpdate.EXPLICITLY_ALLOW;
-        } else if (node.hasFeature(ElementListenerMap.class)
+        if (node.hasFeature(ElementListenerMap.class)
                 && node.getFeature(ElementListenerMap.class)
                         .getPropertySynchronizationMode(property) != null) {
             return AllowUpdate.EXPLICITLY_ALLOW;

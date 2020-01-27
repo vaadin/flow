@@ -30,7 +30,6 @@ import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,27 +40,18 @@ public abstract class AbstractDnDUnitTest {
 
     protected MockUI ui;
     protected boolean compatibilityMode;
-    protected boolean iOS;
 
     @Before
     public void setup() {
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
-                VaadinServlet.class, new Properties()) {
-            @Override
-            public boolean isCompatibilityMode() {
-                return compatibilityMode;
-            }
-        };
-        WebBrowser browser = Mockito.mock(WebBrowser.class);
-        Mockito.when(browser.isIOS()).then(invocation -> iOS);
+                VaadinServlet.class, new Properties());
 
         VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.resolveResource(Mockito.anyString(),
-                Mockito.any(WebBrowser.class))).thenReturn("");
+        Mockito.when(service.resolveResource(Mockito.anyString()))
+                .thenReturn("");
 
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
-        Mockito.when(session.getBrowser()).thenReturn(browser);
         Mockito.when(session.getService()).thenReturn(service);
 
         ui = new MockUI(session);
@@ -74,27 +64,6 @@ public abstract class AbstractDnDUnitTest {
         Assert.assertTrue("No usage statistics for generic dnd reported",
                 UsageStatistics.getEntries().anyMatch(
                         entry -> entry.getName().contains("generic-dnd")));
-    }
-
-    @Test
-    public void testExtension_staticApiInCompatibilityMode_connectorDependencyAddedDynamically() {
-        compatibilityMode = true;
-        ui.getInternals().getDependencyList().clearPendingSendToClient();
-
-        RouterLink component = new RouterLink();
-        ui.add(component);
-        runStaticCreateMethodForExtension(component);
-
-        DependencyList dependencyList = ui.getInternals().getDependencyList();
-        Collection<Dependency> pendingSendToClient = dependencyList
-                .getPendingSendToClient();
-
-        Assert.assertEquals("No dependency added", 1,
-                pendingSendToClient.size());
-
-        Dependency dependency = pendingSendToClient.iterator().next();
-        Assert.assertEquals("Wrong dependency loaded",
-                "frontend://dndConnector.js", dependency.getUrl());
     }
 
     @Test
@@ -114,8 +83,7 @@ public abstract class AbstractDnDUnitTest {
     }
 
     @Test
-    public void testExtension_iOS_mobileDnDpolyfillScriptInjected() {
-        iOS = true;
+    public void testExtension_mobileDnDpolyfillScriptInjected() {
         ui.getInternals().dumpPendingJavaScriptInvocations();
 
         RouterLink component = new RouterLink();

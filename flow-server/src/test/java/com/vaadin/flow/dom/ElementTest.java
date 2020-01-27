@@ -19,24 +19,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.easymock.EasyMock;
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -46,11 +48,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
-import net.jcip.annotations.NotThreadSafe;
-import org.easymock.EasyMock;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -1247,124 +1244,6 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(2, invocations.get());
     }
 
-    @Test
-    public void getSetSynchronizedProperty() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedProperty("foo").addSynchronizedProperty("bar");
-
-        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
-
-        List<String> list = e.getSynchronizedProperties()
-                .collect(Collectors.toList());
-        Assert.assertEquals(expected.size(), list.size());
-        expected.removeAll(list);
-        Assert.assertEquals(0, expected.size());
-    }
-
-    @Test
-    public void setSameSynchronizedPropertyManyTimes() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedProperty("foo").addSynchronizedProperty("foo");
-        String[] expected = new String[] { "foo" };
-
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedProperties().toArray());
-
-        AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getFeature(SynchronizedPropertiesList.class)
-                .collectChanges(change -> i.addAndGet(
-                        ((ListAddChange<?>) change).getNewItems().size()));
-        Assert.assertEquals(1, i.get());
-    }
-
-    @Test
-    public void synchronizeProperty() {
-        Element element = ElementFactory.createDiv();
-        element.synchronizeProperty("foo", "event");
-
-        Assert.assertTrue(element.getSynchronizedProperties()
-                .allMatch(prop -> prop.equals("foo")));
-        Assert.assertTrue(element.getSynchronizedPropertyEvents()
-                .allMatch(event -> event.equals("event")));
-    }
-
-    @Test
-    public void removeSynchronizedProperty() {
-        Element element = ElementFactory.createDiv();
-        element.addSynchronizedProperty("foo");
-        element.addSynchronizedProperty("bar");
-
-        element.removeSynchronizedProperty("foo");
-        Assert.assertTrue(element.getSynchronizedProperties()
-                .allMatch(prop -> prop.equals("bar")));
-    }
-
-    @Test
-    public void removeSynchronizedPropertyEvent() {
-        Element element = ElementFactory.createDiv();
-        element.addSynchronizedPropertyEvent("foo");
-        element.addSynchronizedPropertyEvent("bar");
-
-        element.removeSynchronizedPropertyEvent("foo");
-        Assert.assertTrue(element.getSynchronizedPropertyEvents()
-                .allMatch(event -> event.equals("bar")));
-    }
-
-    @Test
-    public void setSameSynchronizedEventManyTimes() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedPropertyEvent("foo")
-                .addSynchronizedPropertyEvent("foo");
-        String[] expected = new String[] { "foo" };
-
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedPropertyEvents().toArray());
-
-        AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getFeature(SynchronizedPropertyEventsList.class)
-                .collectChanges(change -> i.addAndGet(
-                        ((ListAddChange<?>) change).getNewItems().size()));
-        Assert.assertEquals(1, i.get());
-    }
-
-    @Test
-    public void getDefaultSynchronizedProperties() {
-        Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedProperties().count());
-    }
-
-    @Test
-    public void getDefaultSynchronizedPropertiesEvent() {
-        Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedPropertyEvents().count());
-    }
-
-    @Test
-    public void getSetSynchronizedEvent() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedPropertyEvent("foo")
-                .addSynchronizedPropertyEvent("bar");
-        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
-
-        List<String> list = e.getSynchronizedPropertyEvents()
-                .collect(Collectors.toList());
-        Assert.assertEquals(expected.size(), list.size());
-        expected.removeAll(list);
-        Assert.assertEquals(0, expected.size());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedEvent() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedPropertyEvent(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedProperty() {
-        Element e = ElementFactory.createDiv();
-        e.addSynchronizedProperty(null);
-    }
-
     @Test(expected = IllegalStateException.class)
     public void addAsOwnChild() {
         Element element = ElementFactory.createDiv();
@@ -2401,29 +2280,6 @@ public class ElementTest extends AbstractNodeTest {
                         .isPresent());
     }
 
-    public void syncProperty_delegateTo3ArgsMethod() {
-        Element element = Mockito.mock(Element.class);
-
-        Mockito.doCallRealMethod().when(element)
-                .synchronizeProperty(Mockito.anyString(), Mockito.anyString());
-        element.synchronizeProperty("foo", "bar");
-
-        Mockito.verify(element).synchronizeProperty("foo", "bar",
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
-    }
-
-    @Test
-    public void addSyncProperty_delegateTo2ArgsMethod() {
-        Element element = Mockito.mock(Element.class);
-
-        Mockito.doCallRealMethod().when(element)
-                .addSynchronizedProperty(Mockito.anyString());
-        element.addSynchronizedProperty("foo");
-
-        Mockito.verify(element).addSynchronizedProperty("foo",
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
-    }
-
     @Test
     public void virtualChildren_areIdentifiedAsSuch() {
         Element parent = ElementFactory.createDiv();
@@ -2457,10 +2313,6 @@ public class ElementTest extends AbstractNodeTest {
                 DisabledUpdateMode.ONLY_WHEN_ENABLED,
                 element.getNode().getFeature(ElementListenerMap.class)
                         .getPropertySynchronizationMode("property"));
-
-        Assert.assertEquals(
-                "There should not be any 'conventional' property sync events",
-                0, element.getSynchronizedPropertyEvents().count());
 
         ElementListenerMap listenerMap = element.getNode()
                 .getFeature(ElementListenerMap.class);
@@ -2535,6 +2387,60 @@ public class ElementTest extends AbstractNodeTest {
         parent.appendVirtualChild(child1);
 
         child1.removeFromParent();
+    }
+
+    @Test
+    public void executeJavaScript_delegatesToExecJs() {
+        AtomicReference<String> invokedExpression = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Element element = new Element("div") {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... parameters) {
+                String oldExpression = invokedExpression.getAndSet(expression);
+                Assert.assertNull("There should be no old expression",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        element.executeJavaScript("foo", 1, true);
+
+        Assert.assertEquals("foo", invokedExpression.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
+    }
+
+    @Test
+    public void callFunction_delegatesToCallJsFunction() {
+        AtomicReference<String> invokedFuction = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Element element = new Element("div") {
+            @Override
+            public PendingJavaScriptResult callJsFunction(String functionName,
+                    Serializable... arguments) {
+                String oldExpression = invokedFuction.getAndSet(functionName);
+                Assert.assertNull("There should be no old function name",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(arguments);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        element.callFunction("foo", 1, true);
+
+        Assert.assertEquals("foo", invokedFuction.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 
     @Override

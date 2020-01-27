@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -107,7 +108,7 @@ public class Page implements Serializable {
         private final ResizeEventReceiver receiver;
 
         private ResizeRegistration(ResizeEventReceiver receiver,
-                Registration origin) {
+                                   Registration origin) {
             this.origin = origin;
             this.receiver = receiver;
         }
@@ -286,82 +287,6 @@ public class Page implements Serializable {
     }
 
     /**
-     * Adds the given external JavaScript module to the page and ensures that it
-     * is loaded successfully.
-     * <p>
-     * If the JavaScript modules do not need to be added dynamically, you should
-     * use the {@link JsModule @JsModule} annotation instead.
-     *
-     * @param url
-     *            the URL to load the JavaScript module from, not
-     *            <code>null</code>
-     * @param loadMode
-     *            this argument is ignored and the <code>loadMode</code> will
-     *            always be {@link LoadMode#EAGER} since {@link LoadMode}
-     *            doesn't work with {@link Type#JS_MODULE}. See Deprecated
-     *            section for more details.
-     * @deprecated {@code LoadMode} is not functional with external JavaScript
-     *             modules, as those are loaded as deferred due to
-     *             {@code type=module} in {@code scrip} tag. Use
-     *             {@link #addJsModule(String)} instead.
-     */
-    @Deprecated
-    public void addJsModule(String url, LoadMode loadMode) {
-        addJsModule(url);
-    }
-
-    /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
-     * with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     * <p>
-     * Is is guaranteed that html import will be loaded before the first page
-     * load. For more options, refer to {@link #addHtmlImport(String, LoadMode)}
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url) {
-        addHtmlImport(url, LoadMode.EAGER);
-    }
-
-    /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
-     * with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url, LoadMode loadMode) {
-        if (ui.getSession().getConfiguration().isCompatibilityMode()) {
-            addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
-        } else {
-            throw new UnsupportedOperationException("Adding html imports is "
-                    + "only supported in compatibility mode. Either run the "
-                    + "application in compatibility mode or add the "
-                    + "dependency via annotation (@NpmPackage and @JsModule).");
-        }
-    }
-
-    /**
      * Adds a dynamic import using a JavaScript {@code expression} which is
      * supposed to return a JavaScript {@code Promise}.
      * <p>
@@ -371,7 +296,6 @@ public class Page implements Serializable {
      * {@link #addJsModule(String)}, etc.)
      *
      *
-     * @see #addHtmlImport(String)
      * @param expression
      *            the JavaScript expression which return a Promise
      */
@@ -450,7 +374,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+                                             Serializable... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -556,7 +480,7 @@ public class Page implements Serializable {
      *            the name of the window.
      */
     public void open(String url, String windowName) {
-        executeJavaScript("window.open($0, $1)", url, windowName);
+        executeJs("window.open($0, $1)", url, windowName);
     }
 
     /**
@@ -595,9 +519,9 @@ public class Page implements Serializable {
         private static String readJS() {
             try (InputStream stream = Page.class
                     .getResourceAsStream(JS_FILE_NAME);
-                    BufferedReader bf = new BufferedReader(
-                            new InputStreamReader(stream,
-                                    StandardCharsets.UTF_8))) {
+                 BufferedReader bf = new BufferedReader(
+                         new InputStreamReader(stream,
+                                 StandardCharsets.UTF_8))) {
                 StringBuilder builder = new StringBuilder();
                 bf.lines().forEach(builder::append);
                 return builder.toString();

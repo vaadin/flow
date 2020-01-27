@@ -15,21 +15,53 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebElement;
 
-public class AttachExistingElementByIdIT
-        extends AbstractAttachExistingElementByIdIT {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
+
+public class AttachExistingElementByIdIT extends ChromeBrowserTest {
 
     @Test
     public void elementsAreBoundOnTheServerSide() {
         open();
 
         assertTemplate("simple-path");
-        assertTemplate("context-path");
-        assertTemplate("frontend-path");
     }
 
     private void assertTemplate(String id) {
         assertTemplate(id, "default", "Type here to update label");
+    }
+
+    private void assertTemplate(String id, String initialLabelText,
+            String placeholder) {
+        WebElement input = getInput(id);
+
+        Assert.assertEquals(initialLabelText, getLabel(id).getText());
+
+        Assert.assertEquals(placeholder, input.getAttribute("placeholder"));
+
+        input.sendKeys("Harley!");
+        input.sendKeys(Keys.ENTER);
+
+        Assert.assertEquals("Text from input Harley!", getLabel(id).getText());
+
+        // Reset values to defaults
+        $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("button")
+                .click();
+
+        Assert.assertEquals("default", getLabel(id).getText());
+    }
+
+    private WebElement getInput(String id) {
+        return getInShadowRoot(findElement(By.id(id)), By.id("input"));
+    }
+
+    private WebElement getLabel(String id) {
+        return getInShadowRoot(findElement(By.id(id)), By.id("label"));
     }
 }

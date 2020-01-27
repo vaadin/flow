@@ -30,13 +30,12 @@ public class StartupPerformanceIT {
     @Test
     public void devModeInitializerToWebpackUpIsBelow5500ms() {
         int startupTime = measureLogEntryTimeDistance(
-                "com.vaadin.flow.server.startup.DevModeInitializer - Starting dev-mode updaters in",
-                "dev-webpack.*Webpack startup and compilation completed in [0-9]+ms",
-                true);
+                "- Starting dev-mode updaters in",
+                "- (Started|Reusing) webpack-dev-server", true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
-                "dev-updater - Running `pnpm install`",
-                "dev-updater - Frontend dependencies resolved successfully",
+                "- Running `pnpm install`",
+                "- Frontend dependencies resolved successfully",
                 false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.ModelItem;
@@ -37,7 +36,6 @@ import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindin
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListBindingView", layout = ViewTestLayout.class)
 @Tag("list-binding")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/collections/ListBinding.html")
 @JsModule("ListBinding.js")
 public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");

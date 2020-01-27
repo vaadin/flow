@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -47,22 +46,23 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update Flow imports file
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
- * classes with {@link JsModule} {@link HtmlImport} and {@link Theme}
+ * classes with {@link JsModule}  and {@link Theme}
  * annotations.
  *
  * @since 2.0
  */
 public class TaskUpdateImports extends NodeUpdater {
 
-    private static final String THEME_PREPARE = "const div = document.createElement('div');";
-    private static final String THEME_LINE_TPL = "div.innerHTML = '%s';%n"
-            + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
+    private static final String THEME_LINE_TPL = "addCssBlock('%s', true);";
     private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
@@ -70,15 +70,16 @@ public class TaskUpdateImports extends NodeUpdater {
 
     private final File frontendDirectory;
     private final FrontendDependenciesScanner fallbackScanner;
-    private final ClassFinder finder;
     private final File tokenFile;
     private final JsonObject tokenFileData;
 
     private final boolean disablePnpm;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
+        private static final String EXPORT_MODULES_DEF = "export declare const addCssBlock: (block: string, before?: boolean) => void;";
 
         private final File generatedFlowImports;
+        private final File generatedFlowDefinitions;
         private final File fallBackImports;
         private final ClassFinder finder;
 
@@ -87,43 +88,39 @@ public class TaskUpdateImports extends NodeUpdater {
                 File fallBackImports) {
             super(frontendDirectory, npmDirectory, generatedDirectory);
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
+            generatedFlowDefinitions = new File(generatedDirectory,
+                    IMPORTS_D_TS_NAME);
             finder = classFinder;
             this.fallBackImports = fallBackImports;
         }
 
         @Override
         protected void writeImportLines(List<String> lines) {
-            if (fallBackImports != null) {
-                lines.add(
-                        "var scripts = document.getElementsByTagName('script');");
-                lines.add("var thisScript;");
-                lines.add(
-                        "var elements = document.getElementsByTagName('script');");
-                lines.add("for (var i = 0; i < elements.length; i++) {");
-                lines.add("    var script = elements[i];");
-                lines.add(
-                        "    if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {");
-                lines.add("        thisScript = script;break;");
-                lines.add("     }");
+            if (fallBackImports != null) { // @formatter:off
+                lines.add("let thisScript;");
+                lines.add("const elements = document.getElementsByTagName('script');");
+                lines.add("for (let i = 0; i < elements.length; i++) {");
+                lines.add(" const script = elements[i];");
+                lines.add(" if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {");
+                lines.add("  thisScript = script;");
+                lines.add("  break;");
+                lines.add(" }");
                 lines.add("}");
                 lines.add("if (!thisScript) {");
-                lines.add(
-                        "    throw new Error('Could not find the bundle script to identify the application id');");
+                lines.add(" throw new Error('Could not find the bundle script to identify the application id');");
                 lines.add("}");
                 lines.add("thisScript['vaadin-bundle'] = true;");
-                lines.add(
-                        "if (!window.Vaadin.Flow.fallbacks) { window.Vaadin.Flow.fallbacks={}; }");
-                lines.add("var fallbacks = window.Vaadin.Flow.fallbacks;");
-                lines.add(
-                        "fallbacks[thisScript.getAttribute('data-app-id')] = {}");
-                lines.add(
-                        "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback(){");
-                lines.add("   return import('./" + fallBackImports.getName()
-                        + "');");
+                lines.add("if (!window.Vaadin.Flow.fallbacks) { window.Vaadin.Flow.fallbacks={}; }");
+                lines.add("const fallbacks = window.Vaadin.Flow.fallbacks;");
+                lines.add("fallbacks[thisScript.getAttribute('data-app-id')] = {}");
+                lines.add("fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback() {");
+                lines.add(" return import('./" + fallBackImports.getName() + "');");
                 lines.add("}");
-            }
+            } // @formatter:on
             try {
                 updateImportsFile(generatedFlowImports, lines);
+                updateImportsFile(generatedFlowDefinitions,
+                        getDefinitionLines());
             } catch (IOException e) {
                 throw new IllegalStateException(String.format(
                         "Failed to update the Flow imports file '%s'",
@@ -138,7 +135,7 @@ public class TaskUpdateImports extends NodeUpdater {
             ThemeDefinition themeDef = getThemeDefinition();
             if (theme != null) {
                 if (!theme.getHeaderInlineContents().isEmpty()) {
-                    lines.add(THEME_PREPARE);
+                    lines.add("");
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
                                     String.format(THEME_LINE_TPL, NEW_LINE_TRIM
@@ -199,10 +196,15 @@ public class TaskUpdateImports extends NodeUpdater {
         protected String getImportsNotFoundMessage() {
             return getAbsentPackagesMessage();
         }
+
+        protected List<String> getDefinitionLines() {
+            List<String> lines = new ArrayList<>();
+            addLines(lines, EXPORT_MODULES_DEF);
+            return lines;
+        }
     }
 
     private class UpdateFallBackImportsFile extends AbstractUpdateImports {
-
         private final File generatedFallBack;
         private final ClassFinder finder;
 
@@ -348,10 +350,9 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean disablePnpm) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath);
+        super(finder, frontendDepScanner, npmFolder, generatedPath, null);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
-        this.finder = finder;
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
         this.disablePnpm = disablePnpm;

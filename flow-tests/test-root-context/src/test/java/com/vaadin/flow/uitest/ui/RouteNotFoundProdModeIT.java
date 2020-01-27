@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("disabled, because production mode can't be enabled via init servlet parameter, see https://github.com/vaadin/flow/issues/7281")
 public class RouteNotFoundProdModeIT extends RouteNotFoundIT {
 
     @Test

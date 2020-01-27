@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.TestCase;
 import org.easymock.EasyMock;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-
-import junit.framework.TestCase;
 
 public class CustomUIClassLoaderTest extends TestCase {
 
@@ -59,8 +58,6 @@ public class CustomUIClassLoaderTest extends TestCase {
 
     private static DeploymentConfiguration createConfigurationMock() {
         Properties properties = new Properties();
-        properties.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         properties.put(VaadinSession.UI_PARAMETER, MyUI.class.getName());
         return new DefaultDeploymentConfiguration(CustomUIClassLoaderTest.class,
                 properties);

@@ -18,8 +18,8 @@ package com.vaadin.flow.contexttest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
@@ -40,12 +40,17 @@ public class DependencyUI extends UI {
 
     }
 
-    @JavaScript("context://test-files/js/body-click-listener.js")
     public static class JsResourceComponent extends Div {
 
         public JsResourceComponent() {
             setText("Hello, click the body please");
             setId("hello");
+        }
+
+        @Override
+        protected void onAttach(AttachEvent attachEvent) {
+            attachEvent.getUI().getPage().addJavaScript(
+                    "context://frontend/test-files/js/body-click-listener.js");
         }
     }
 
@@ -58,11 +63,11 @@ public class DependencyUI extends UI {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
-        StreamRegistration jsStreamRegistration = getSession().getResourceRegistry()
-                .registerResource(getJsResource());
+        StreamRegistration jsStreamRegistration = getSession()
+                .getResourceRegistry().registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
-            getPage()
-                    .addJavaScript("base://" + jsStreamRegistration.getResourceUri().toString());
+            getPage().addJavaScript("base://"
+                    + jsStreamRegistration.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")

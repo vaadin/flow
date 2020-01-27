@@ -363,8 +363,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .replace("\r", "");
 
         Assert.assertThat(output, CoreMatchers.containsString(
-                "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'"));
-        Assert.assertThat(output, CoreMatchers.containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
         Assert.assertThat(output, CoreMatchers
                 .containsString("Use the './' prefix for files in the '"
@@ -447,6 +445,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // - Generated webcompoents
         // - JsModules (internal e.g. in frontend/)
         List<String> expectedImports = new ArrayList<>();
+        expectedImports.addAll(updater.getExportLines());
         expectedImports.addAll(updater.getThemeLines());
 
         getAnntotationsAsStream(JsModule.class, testClasses)
