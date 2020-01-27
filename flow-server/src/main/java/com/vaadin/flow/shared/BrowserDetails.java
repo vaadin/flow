@@ -598,8 +598,12 @@ public class BrowserDetails implements Serializable {
      *         supported or might work
      */
     public boolean isTooOldToFunctionProperly() {
-        // IE 11 and older versions are not supported
-        if (isIE() && getBrowserMajorVersion() <= 11) {
+        // IE is not supported
+        if (isIE()) {
+            return true;
+        }
+        // Only ChromeEdge is supported
+        if (isEdge() && getBrowserMajorVersion() < 79) {
             return true;
         }
         // Safari 13+
