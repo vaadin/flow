@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.connect;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,19 +29,26 @@ import com.vaadin.testbench.TestBenchElement;
 /**
  * Class for testing issues in a spring-boot container.
  */
-public class VaadinViewIT extends ChromeBrowserTest {
-    @Override
-    protected String getTestPath() {
-        return "/foo";
+public class AppViewIT extends ChromeBrowserTest {
+
+    private void openTestUrl(String url) {
+        getDriver().get(getRootURL() + "/foo" + url);
     }
 
     private TestBenchElement testComponent;
+    private WebElement content;
 
     @Before
     public void setup() throws Exception {
         super.setup();
-        open();
+        openTestUrl("/");
         testComponent = $("test-component").first();
+        content = testComponent.$(TestBenchElement.class).id("content");
+    }
+
+    @After
+    public void tearDown() {
+        openTestUrl("/logout");
     }
 
     /**
@@ -48,10 +56,9 @@ public class VaadinViewIT extends ChromeBrowserTest {
      */
     @Test
     public void should_load_web_component() {
-        WebElement content = testComponent.$(TestBenchElement.class).id("content");
         WebElement button = testComponent.$(TestBenchElement.class).id("button");
         button.click();
-        Assert.assertEquals("Hello World", content.getText());
+        verifyContent("Hello World");
     }
 
     /**
@@ -60,39 +67,36 @@ public class VaadinViewIT extends ChromeBrowserTest {
      */
     @Test
     public void should_request_connect_service() throws Exception {
-        WebElement button = testComponent.$(TestBenchElement.class).id("connect");
+        WebElement button = testComponent.$(TestBenchElement.class).id("hello");
         button.click();
 
-        WebElement content = testComponent.$(TestBenchElement.class).id("content");
         // Wait for the server connect response
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "Anonymous access is not allowed"), 25);
+        verifyContent("Anonymous access is not allowed");
     }
 
     @Test
     public void should_requestAnonymously_connect_service() throws Exception {
         WebElement button = testComponent.$(TestBenchElement.class).id(
-                "connectAnonymous");
+                "helloAnonymous");
         button.click();
 
-        WebElement content = testComponent.$(TestBenchElement.class).id("content");
         // Wait for the server connect response
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "Hello, stranger!"), 25);
+        verifyContent("Hello, stranger!");
     }
 
     @Test
     public void should_requestAnonymously_when_CallConnectServiceFromANestedUrl() throws Exception {
-        getDriver().get(getRootURL() + getTestPath() + "/more/levels/url");
+        openTestUrl("/more/levels/url");
+
         testComponent = $("test-component").first();
+        content = testComponent.$(TestBenchElement.class).id("content");
+
         WebElement button = testComponent.$(TestBenchElement.class).id(
-                "connectAnonymous");
+                "helloAnonymous");
         button.click();
 
-        WebElement content = testComponent.$(TestBenchElement.class).id("content");
         // Wait for the server connect response
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "Hello, stranger!"), 25);
+        verifyContent("Hello, stranger!");
     }
 
     @Test
@@ -101,11 +105,8 @@ public class VaadinViewIT extends ChromeBrowserTest {
                 "echoWithOptional");
         button.click();
 
-        WebElement content = testComponent.$(TestBenchElement.class)
-                .id("content");
         // Wait for the server connect response
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "1. one 3. three 4. four"), 25);
+        verifyContent("1. one 3. three 4. four");
     }
 
     @Test
@@ -115,7 +116,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_RequestAdminOnly_when_LoggedInAsAdmin() {
-        login("admin", "admin");
+        login("admin");
 
         // Verify admin calls
         verifyCallingAdminService("Hello, admin!");
@@ -129,7 +130,7 @@ public class VaadinViewIT extends ChromeBrowserTest {
 
     @Test
     public void should_NotRequestAdminOnly_when_LoggedInAsUser() {
-        login("user", "user");
+        login("user");
 
         // Verify admin calls
         verifyCallingAdminService("Unauthorized access to Vaadin endpoint");
@@ -154,46 +155,76 @@ public class VaadinViewIT extends ChromeBrowserTest {
         Assert.assertTrue(pwa.getText().contains("My App"));
     }
 
-    private void login(String username, String password) {
-        String testUrl = getTestURL(getRootURL(), getTestPath() + "/login",
-                new String[0]);
-        getDriver().get(testUrl);
+    @Test
+    public void should_beAble_toLogin_usingSpringForm() {
+        // Login by using the Spring Login Form
+        openTestUrl("/login");
+
         TestBenchElement container = $("div")
                 .attributeContains("class", "container").first();
-        container.$(TestBenchElement.class).id("username").sendKeys(username);
-        container.$(TestBenchElement.class).id("password").sendKeys(password);
+        container.$(TestBenchElement.class).id("username").sendKeys("admin");
+        container.$(TestBenchElement.class).id("password").sendKeys("admin");
         container.$("button").first().click();
+
         // Wait for the server connect response
         testComponent = $("test-component").first();
+        content = testComponent.$(TestBenchElement.class).id("content");
+
+        // Verify admin calls
+        verifyCallingAdminService("Hello, admin!");
+    }
+
+    @Test
+    public void should_checkAnonymousUser() {
+        testComponent.$(TestBenchElement.class).id("checkUser").click();
+        verifyCheckUser("anonymousUser");
+    }
+
+    @Test
+    public void should_checkUser() {
+        login("user");
+        testComponent.$(TestBenchElement.class).id("checkUser").click();
+        verifyCheckUser("user");
+    }
+    @Test
+    public void should_checkAdminUser() {
+        login("admin");
+        testComponent.$(TestBenchElement.class).id("checkUser").click();
+        verifyCheckUser("admin");
+    }
+
+    private void login(String user) {
+        // Use form in the test component
+        testComponent.$(TestBenchElement.class).id("username").sendKeys(user);
+        testComponent.$(TestBenchElement.class).id("password").sendKeys(user);
+        testComponent.$(TestBenchElement.class).id("login").click();
+        testComponent = $("test-component").first();
+        content = testComponent.$(TestBenchElement.class).id("content");
     }
 
     private void verifyCallingAdminService(String expectedMessage) {
-        WebElement button = testComponent.$(TestBenchElement.class)
-                .id("helloAdmin");
-        button.click();
-        WebElement content = testComponent.$(TestBenchElement.class)
-                .id("content");
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                expectedMessage), 25);
+        testComponent.$(TestBenchElement.class).id("helloAdmin").click();
+        verifyContent(expectedMessage);
     }
 
     private void verifyCallingAuthorizedService() {
-        WebElement content;
-        WebElement connect = testComponent.$(TestBenchElement.class)
-                .id("connect");
-        connect.click();
-        content = testComponent.$(TestBenchElement.class).id("content");
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "Hello, Friend!"), 25);
+        testComponent.$(TestBenchElement.class).id("hello").click();
+        verifyContent("Hello, Friend!");
     }
 
     private void verifyCallingAnonymousService() {
-        WebElement content;
-        WebElement connectAnonymous = testComponent.$(TestBenchElement.class)
-                .id("connectAnonymous");
-        connectAnonymous.click();
-        content = testComponent.$(TestBenchElement.class).id("content");
-        waitUntil(ExpectedConditions.textToBePresentInElement(content,
-                "Hello, stranger!"), 25);
+        testComponent.$(TestBenchElement.class).id("helloAnonymous").click();
+        verifyContent("Hello, stranger!");
+    }
+
+    private void verifyCheckUser(String expectedMessage) {
+        testComponent.$(TestBenchElement.class).id("checkUser").click();
+        verifyContent(expectedMessage);
+    }
+
+    private void verifyContent(String expected) {
+        waitUntil(
+                ExpectedConditions.textToBePresentInElement(content, expected),
+                25);
     }
 }

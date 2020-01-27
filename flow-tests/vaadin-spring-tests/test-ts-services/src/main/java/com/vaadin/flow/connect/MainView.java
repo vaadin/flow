@@ -22,9 +22,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.WildcardParameter;
 
 @Route(value = "")
-public class VaadinView extends Div implements HasUrlParameter<String> {
+public class MainView extends Div implements HasUrlParameter<String> {
 
-    public VaadinView() {
+    public MainView() {
         add(new TestComponent());
     }
 
