@@ -72,7 +72,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private final SerializableConsumer<ExecutionContext>
             beforeClientResponseConsumer = executionContext -> {
         if (listenOnComponents == null) {
-            registerOwnerListeners();
+            listenOnComponents = registerOwnerListeners();
         }
 
         for (Component component: listenOnComponents) {
@@ -375,8 +375,9 @@ public class ShortcutRegistration implements Registration, Serializable {
      */
     @Deprecated
     public Component getOwner() {
-        Objects.requireNonNull(listenOnComponents, "listenOnComponents must be initialized " +
-                "(by calling listenOn()) before calling this method!");
+        if (listenOnComponents == null) {
+            return null;
+        }
         if (listenOnComponents.length <= 0 || listenOnComponents[0] == null) {
             throw new IllegalStateException("listenOnComponents must not be empty!");
         }
@@ -389,8 +390,9 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return Component[]
      */
     public Component[] getOwners() {
-        Objects.requireNonNull(listenOnComponents, "listenOnComponents must be initialized " +
-                "(by calling listenOn()) before calling this method!");
+        if (listenOnComponents == null) {
+            return new Component[0];
+        }
         return listenOnComponents;
     }
 
@@ -559,7 +561,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 detachRegistration);
     }
 
-    private void registerOwnerListeners() {
+    private Component[] registerOwnerListeners() {
         assert listenOnSuppliers != null;
 
         listenOnComponents = listenOnSuppliers.get();
@@ -598,6 +600,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 updateHandlerListenerRegistration(component);
             }
         }
+        return listenOnComponents;
     }
 
     private void removeAllListenerRegistrations() {
