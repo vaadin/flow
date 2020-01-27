@@ -100,7 +100,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     private void addBootstrapHandler(List<RequestHandler> handlers) {
-        if (getDeploymentConfiguration().isClientSideMode()) {
+        if (!getDeploymentConfiguration().useV14Bootstrap()) {
             handlers.add(0, new IndexHtmlRequestHandler());
             getLogger().debug("Using '{}' in useDeprecatedV14Bootstrapping",
                     IndexHtmlRequestHandler.class.getName());

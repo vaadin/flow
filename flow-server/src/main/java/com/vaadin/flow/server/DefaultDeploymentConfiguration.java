@@ -57,6 +57,16 @@ public class DefaultDeploymentConfiguration
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
             + "See http://vaadin.com/docs for more information." + SEPARATOR;
 
+    public static final String WARNING_V14_BOOTSTRAP = SEPARATOR
+            + "\nUsing Vaadin 14 bootstrap mode.\n\n"
+            + "This mode disallows the usage of client-side views written in TypeScript\n\n"
+            + "Vaadin 15+ (Flow 3+) bootstraping enables client-side and server-side views.\n\n"
+            + "See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information."
+            + SEPARATOR;
+
+    public static final String WARNING_V15_BOOTSTRAP = SEPARATOR
+            + "%nUsing Vaadin 15 bootstrap mode.%n%s%n%s" + SEPARATOR;
+
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
             + SEPARATOR;
@@ -71,8 +81,9 @@ public class DefaultDeploymentConfiguration
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
 
-    private static final String INDEX_NOT_FOUND = "- '%s' is not found from '%s'. Generating a default one in '%s%s'.%n"
-            + "Copy this file to the '%s' folder if you want to customize it.%n";
+    private static final String INDEX_NOT_FOUND = "- '%s' is not found from '%s'.%n"
+            + "Generating a default one in '%s%s'."
+            + "Move it to the '%s' folder if you want to customize it.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -155,7 +166,7 @@ public class DefaultDeploymentConfiguration
      *
      */
     @Override
-    public boolean isClientSideMode() {
+    public boolean useV14Bootstrap() {
         return useDeprecatedV14Bootstrapping;
     }
 
@@ -257,20 +268,24 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a message if Vaadin is running in useDeprecatedV14Bootstrapping.
+     * Log a message about the bootstrapping being used.
      */
     private void checkClientSideMode(boolean loggWarning) {
+        if (!loggWarning) {
+            return;
+        }
         useDeprecatedV14Bootstrapping = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
-        if (useDeprecatedV14Bootstrapping && loggWarning && !productionMode) {
+                Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+
+        if (useDeprecatedV14Bootstrapping) {
+            getLogger().info(WARNING_V14_BOOTSTRAP);
+        } else if (!productionMode) {
             String frontendDir = getStringProperty(PARAM_FRONTEND_DIR, System
                     .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
             String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
             String entryPointMessage = getEntryPointMessage(frontendDir);
-            String outputMessage = SEPARATOR
-                    + "\nRunning the application in 'useDeprecatedV14Bootstrapping'.\n"
-                    + indexHTMLMessage + entryPointMessage + SEPARATOR;
-            getLogger().info(outputMessage);
+            getLogger().info(String.format(WARNING_V15_BOOTSTRAP,
+                    indexHTMLMessage, entryPointMessage));
         }
     }
 

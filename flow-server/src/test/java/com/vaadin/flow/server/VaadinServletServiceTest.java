@@ -120,7 +120,7 @@ public class VaadinServletServiceTest {
 
     @Test
     public void should_report_flow_bootstrapHandler() {
-        mocks.getDeploymentConfiguration().setClientSideMode(false);
+        mocks.getDeploymentConfiguration().useDeprecatedV14Bootstrapping(true);
 
         Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName())));

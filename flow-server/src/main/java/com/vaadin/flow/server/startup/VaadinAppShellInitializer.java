@@ -103,7 +103,7 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
     public static void init(Set<Class<?>> classes, ServletContext context,
             DeploymentConfiguration config) {
 
-        if (!config.isClientSideMode()) {
+        if (config.useV14Bootstrap()) {
             return;
         }
 

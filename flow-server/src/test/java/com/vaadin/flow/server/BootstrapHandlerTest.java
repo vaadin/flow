@@ -1066,7 +1066,7 @@ public class BootstrapHandlerTest {
     @Test(expected = IllegalStateException.class)
     public void bootstrapListener_throwsInClientSideMode()
             throws ServiceException {
-        deploymentConfiguration.setClientSideMode(true);
+        deploymentConfiguration.useDeprecatedV14Bootstrapping(false);
 
         ServiceInitEvent event = new ServiceInitEvent(service);
         event.addBootstrapListener(evt -> {
