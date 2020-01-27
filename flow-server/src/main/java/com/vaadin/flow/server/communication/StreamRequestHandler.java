@@ -63,7 +63,7 @@ public class StreamRequestHandler implements RequestHandler {
         this(new StreamReceiverHandler());
     }
 
-    protected StreamRequestHandler(StreamReceiverHandler receiverHandler) {
+    public StreamRequestHandler(StreamReceiverHandler receiverHandler) {
         this.receiverHandler = receiverHandler;
     }
 
