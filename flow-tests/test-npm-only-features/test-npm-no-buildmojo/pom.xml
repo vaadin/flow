@@ -124,7 +124,7 @@
 <!--                            <goal>build-frontend</goal>-->
                         </goals>
                         <configuration>
-                            <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
+                            <useDeprecatedV14Bootstrapping>true</useDeprecatedV14Bootstrapping>
                         </configuration>
                     </execution>
                 </executions>

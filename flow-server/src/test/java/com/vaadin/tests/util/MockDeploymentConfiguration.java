@@ -14,7 +14,7 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
-    private boolean useDeprecatedV14Bootstrapping = false;
+    private boolean useDeprecatedV14Bootstrapping = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int webComponentDisconnect = 300;
@@ -158,11 +158,11 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public boolean isClientSideMode() {
+    public boolean useV14Bootstrap() {
         return useDeprecatedV14Bootstrapping;
     }
 
-    public void setClientSideMode(boolean useDeprecatedV14Bootstrapping) {
+    public void useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
         this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
     }
 

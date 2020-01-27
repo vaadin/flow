@@ -100,7 +100,7 @@ public class NodeTasksTest {
                                 WEBPACK_CONFIG, WEBPACK_GENERATED)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
-                        .enableClientSideMode(true);
+                        .useDeprecatedV14Bootstrapping(true);
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
@@ -123,7 +123,6 @@ public class NodeTasksTest {
                         .enablePackagesUpdate(false)
                         .enableImportsUpdate(false)
                         .withEmbeddableWebComponents(false)
-                        .enableClientSideMode(true)
                         .withConnectJavaSourceFolder(src)
                         .withConnectGeneratedOpenApiJson(json)
                         .withConnectClientTsApiFolder(new File(dir, "api"));
