@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
@@ -280,16 +281,17 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns an array with polyfills to be loaded when the app is loaded.
      *
-     * The default value is
-     * <code>build/webcomponentsjs/webcomponents-loader.js</code> but it can be
-     * changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS} as a
-     * comma separated list of JS files to load.
+     * The default value is empty, but it can be changed by setting the
+     * {@link Constants#SERVLET_PARAMETER_POLYFILLS} as a comma separated list
+     * of JS files to load.
      *
      * @return polyfills to load
      */
     default List<String> getPolyfills() {
         return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
-                POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
+                POLYFILLS_DEFAULT_VALUE).split("[, ]+")).stream()
+                .filter(polyfill -> !polyfill.isEmpty())
+                .collect(Collectors.toList());
     }
 
     /**

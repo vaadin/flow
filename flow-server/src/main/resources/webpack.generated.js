@@ -176,13 +176,6 @@ module.exports = {
       });
     },
 
-    // Copy webcomponents polyfills. They are not bundled because they
-    // have its own loader based on browser quirks.
-    new CopyWebpackPlugin([{
-      from: `${baseDir}/node_modules/@webcomponents/webcomponentsjs`,
-      to: `${build}/webcomponentsjs/`
-    }]),
-
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
       template: clientSideIndexHTML,
