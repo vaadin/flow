@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,7 +28,7 @@ import org.junit.Test;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinSession;
 
-public class DeploymentConfigurationProperties {
+public class DeploymentConfigurationPropertiesTest {
 
     /**
      * Checks that we don't miss any newly added constant into {@link Constants}
@@ -44,6 +45,17 @@ public class DeploymentConfigurationProperties {
 
         Set<Object> constants = new HashSet<Object>();
         for (Field constant : Constants.class.getDeclaredFields()) {
+            Assert.assertTrue(
+                    "Field " + constant.getName() + " is not a constant",
+                    constant.getName().startsWith("$") || (Modifier
+                            .isStatic(constant.getModifiers())
+                            && Modifier.isPublic(constant.getModifiers())));
+            if (constant.getName().startsWith("$")) {
+                // thanks to java code coverage which adds non-existent
+                // initially variables everywhere: we should skip this extra
+                // field
+                continue;
+            }
             constants.add(constant.get(null));
         }
 
@@ -59,7 +71,7 @@ public class DeploymentConfigurationProperties {
 
         // Check that we have added all other constants as parameters (except
         // those we know)
-        Assert.assertEquals(24, constantsCopy.size());
+        Assert.assertEquals(45, constantsCopy.size());
 
         Assert.assertTrue(constantsCopy
                 .contains(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION));
