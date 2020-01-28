@@ -117,7 +117,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * @return true if the `useDeprecatedV14Bootstrapping` property is not defined or empty.
      */
     public boolean useDeprecatedV14Bootstrapping() {
-        if (useDeprecatedV14Bootstrapping != null && useDeprecatedV14Bootstrapping.isEmpty()) {
+        if (useDeprecatedV14Bootstrapping == null) {
+            return false;
+        }
+        if (useDeprecatedV14Bootstrapping.isEmpty()) {
             return true;
         }
         return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
