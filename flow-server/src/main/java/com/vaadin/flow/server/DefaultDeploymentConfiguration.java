@@ -139,7 +139,7 @@ public class DefaultDeploymentConfiguration
         boolean log = loggWarning.getAndSet(false);
 
         checkProductionMode(log);
-        checkClientSideMode(log);
+        checkV14Bootsrapping(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -270,22 +270,20 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a message about the bootstrapping being used.
      */
-    private void checkClientSideMode(boolean loggWarning) {
-        if (!loggWarning) {
-            return;
-        }
+    private void checkV14Bootsrapping(boolean loggWarning) {
         useDeprecatedV14Bootstrapping = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
-
-        if (useDeprecatedV14Bootstrapping) {
-            getLogger().info(WARNING_V14_BOOTSTRAP);
-        } else if (!productionMode) {
-            String frontendDir = getStringProperty(PARAM_FRONTEND_DIR, System
-                    .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
-            String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
-            String entryPointMessage = getEntryPointMessage(frontendDir);
-            getLogger().info(String.format(WARNING_V15_BOOTSTRAP,
-                    indexHTMLMessage, entryPointMessage));
+        if (loggWarning) {
+            if (useDeprecatedV14Bootstrapping) {
+                getLogger().info(WARNING_V14_BOOTSTRAP);
+            } else if (!productionMode && getLogger().isInfoEnabled()) {
+                String frontendDir = getStringProperty(PARAM_FRONTEND_DIR, System
+                        .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+                String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
+                String entryPointMessage = getEntryPointMessage(frontendDir);
+                getLogger().info(String.format(WARNING_V15_BOOTSTRAP,
+                        indexHTMLMessage, entryPointMessage));
+            }
         }
     }
 

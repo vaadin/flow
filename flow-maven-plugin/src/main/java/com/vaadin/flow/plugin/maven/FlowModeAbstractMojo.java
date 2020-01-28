@@ -114,7 +114,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     /**
      * Check if the plugin is running in legacy V14 bootstrap mode or not. Default: false.
      *
-     * @return true if the `useDeprecatedV14Bootstrapping` property is not defined or empty.
+     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
      */
     public boolean useDeprecatedV14Bootstrapping() {
         if (useDeprecatedV14Bootstrapping == null) {
