@@ -65,7 +65,7 @@ public class DefaultDeploymentConfiguration
             + SEPARATOR;
 
     public static final String WARNING_V15_BOOTSTRAP = SEPARATOR
-            + "%nUsing Vaadin 15 bootstrap mode.%n%s%n%s" + SEPARATOR;
+            + "%nUsing Vaadin 15 (Flow 3) bootstrap mode.%n%s%n%s" + SEPARATOR;
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
@@ -82,7 +82,7 @@ public class DefaultDeploymentConfiguration
             + SEPARATOR;
 
     private static final String INDEX_NOT_FOUND = "- '%s' is not found from '%s'.%n"
-            + "Generating a default one in '%s%s'."
+            + "Generating a default one in '%s%s'. "
             + "Move it to the '%s' folder if you want to customize it.";
 
     /**

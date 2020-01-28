@@ -327,7 +327,7 @@ public class NodeTasks implements FallibleCommand {
          *            <code>true</code> to use legacy V14 bootstrapping
          * @return the builder, for chaining
          */
-        public Builder useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
+        public Builder useV14Bootstrap(boolean useDeprecatedV14Bootstrapping) {
             this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
             return this;
         }
@@ -508,7 +508,8 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.webpackTemplate, builder.webpackGeneratedTemplate,
-                    new File(builder.generatedFolder, IMPORTS_NAME), !builder.useDeprecatedV14Bootstrapping));
+                    new File(builder.generatedFolder, IMPORTS_NAME),
+                    builder.useDeprecatedV14Bootstrapping));
         }
 
         if (builder.enableImportsUpdate) {

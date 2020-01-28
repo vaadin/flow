@@ -100,7 +100,7 @@ public class NodeTasksTest {
                                 WEBPACK_CONFIG, WEBPACK_GENERATED)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
-                        .useDeprecatedV14Bootstrapping(true);
+                        .useV14Bootstrap(false);
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())

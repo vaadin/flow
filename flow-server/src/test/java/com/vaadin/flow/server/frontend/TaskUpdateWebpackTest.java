@@ -61,7 +61,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false);
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true);
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
         webpackGenerated = new File(baseDir, WEBPACK_GENERATED);
@@ -160,7 +160,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_notSetClientSideBootstrapMode_when_runningByDefault()
+    public void should_notSetClientSideBootstrapMode_when_runningV14Bootstrapping()
             throws IOException {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
@@ -175,13 +175,13 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_setClientSideBootstrapMode_when_itIsSet()
+    public void should_setClientSideBootstrapMode_when_runningV15Bootsrapping()
             throws IOException {
         webpackUpdater = new TaskUpdateWebpack(
                 frontendFolder, baseDir,
                 new File(baseDir, TARGET + "classes"),
                 WEBPACK_CONFIG, WEBPACK_GENERATED,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true);
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false);
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));

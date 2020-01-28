@@ -112,7 +112,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                     frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
-                            .useDeprecatedV14Bootstrapping(useDeprecatedV14Bootstrapping())
+                            .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)

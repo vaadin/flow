@@ -261,7 +261,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     FrontendUtils.WEBPACK_GENERATED);
         }
 
-        builder.useDeprecatedV14Bootstrapping(config.useV14Bootstrap());
+        builder.useV14Bootstrap(config.useV14Bootstrap());
 
         if (!config.useV14Bootstrap()) {
             String connectJavaSourceFolder = config.getStringProperty(
