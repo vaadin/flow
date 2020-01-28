@@ -22,7 +22,7 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
-        <vaadin.useDeprecatedV14Bootstrapping>false</vaadin.useDeprecatedV14Bootstrapping>
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>

@@ -28,7 +28,7 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 /**
@@ -52,8 +52,8 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return true if in useDeprecatedV14Bootstrapping, false otherwise.
      */
-    default boolean isClientSideMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE, true);
+    default boolean useV14Bootstrap() {
+        return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
     }
 
     /**

@@ -66,8 +66,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public boolean productionMode;
 
     /**
-     * Whether or not we are running in client-side bootstrap mode (CCDM). True
-     * if not defined.
+     * Whether or not we are running in legacy V14 bootstrap mode.
+     * True if defined or if it's set to true.
      */
     @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
     private String useDeprecatedV14Bootstrapping;
@@ -112,12 +112,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File generatedTsFolder;
 
     /**
-     * Check if the plugin is running in `useDeprecatedV14Bootstrapping` or not. Default: true.
+     * Check if the plugin is running in legacy V14 bootstrap mode or not. Default: false.
      *
-     * @return true if the `useDeprecatedV14Bootstrapping` property is not defined or empty.
+     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
      */
-    public boolean isClientSideMode() {
-        if (useDeprecatedV14Bootstrapping == null || useDeprecatedV14Bootstrapping.isEmpty()) {
+    public boolean useDeprecatedV14Bootstrapping() {
+        if (useDeprecatedV14Bootstrapping == null) {
+            return false;
+        }
+        if (useDeprecatedV14Bootstrapping.isEmpty()) {
             return true;
         }
         return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);

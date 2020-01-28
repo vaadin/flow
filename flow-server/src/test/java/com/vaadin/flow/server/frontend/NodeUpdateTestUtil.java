@@ -82,13 +82,13 @@ public class NodeUpdateTestUtil {
                     "node/node_modules/npm/bin/npm-cli.js");
             FileUtils.forceMkdirParent(npmCli);
             FileUtils.writeStringToFile(npmCli,
-                    "process.argv[2] == '--version' && console.log('5.6.0');",
+                    "process.argv.includes('--version') && console.log('5.6.0');",
                     StandardCharsets.UTF_8);
 
             File ppmCli = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
             FileUtils.forceMkdirParent(ppmCli);
             FileUtils.writeStringToFile(ppmCli,
-                    "process.argv[2] == '--version' && console.log('4.1.0');",
+                    "process.argv.includes('--version') && console.log('4.1.0');",
                     StandardCharsets.UTF_8);
         }
         if (stubNode) {

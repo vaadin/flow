@@ -51,7 +51,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path flowImportsFilePath;
     private final Path webpackConfigPath;
     private final Path frontendDirectory;
-    private final boolean isClientSideMode;
+    private final boolean useV14Bootstrapping;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -70,20 +70,20 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            creating the <code>webpack.generated.js</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
-     * @param isClientSideMode
-     *            whether the application running with clientSideBootstrapMode*
+     * @param useV14Bootstrapping
+     *            whether the application running with deprecated V14 bootstrapping
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
             String webpackGeneratedTemplate, File generatedFlowImports,
-            boolean isClientSideMode) {
+            boolean useV14Bootstrapping) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
-        this.isClientSideMode = isClientSideMode;
+        this.useV14Bootstrapping = useV14Bootstrapping;
     }
 
     @Override
@@ -144,7 +144,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
         String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
-                + isClientSideMode + ";";
+                + !useV14Bootstrapping + ";";
         for (int i = 0; i < lines.size(); i++) {
             if (lines.get(i).startsWith(
                     "const fileNameOfTheFlowGeneratedMainEntryPoint")) {

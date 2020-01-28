@@ -36,7 +36,7 @@ public class IndexHtmlResponse {
     private final Document document;
 
     /**
-     * Create a response object in useDeprecatedV14Bootstrapping with UI.
+     * Create a response object for client side bootstrapping with UI.
      *
      * @param vaadinRequest
      *            the vaadin request which is handling
@@ -55,7 +55,7 @@ public class IndexHtmlResponse {
     }
 
     /**
-     * Create a response object in useDeprecatedV14Bootstrapping.
+     * Create a response object for client side bootstrapping.
      *
      * @param vaadinRequest
      *            the vaadin request which is handling

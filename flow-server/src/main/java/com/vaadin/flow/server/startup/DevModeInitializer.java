@@ -261,8 +261,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     FrontendUtils.WEBPACK_GENERATED);
         }
 
-        if (config.isClientSideMode()) {
-            builder.enableClientSideMode(config.isClientSideMode());
+        builder.useV14Bootstrap(config.useV14Bootstrap());
+
+        if (!config.useV14Bootstrap()) {
             String connectJavaSourceFolder = config.getStringProperty(
                     CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)

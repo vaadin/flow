@@ -321,14 +321,13 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Enable useDeprecatedV14Bootstrapping which uses `frontend/index` as the entry
-         * point.
+         * Use V14 bootstrapping that disables index.html entry point.
          *
          * @param useDeprecatedV14Bootstrapping
-         *            <code>true</code> to enable the mode, false otherwise.
+         *            <code>true</code> to use legacy V14 bootstrapping
          * @return the builder, for chaining
          */
-        public Builder enableClientSideMode(boolean useDeprecatedV14Bootstrapping) {
+        public Builder useV14Bootstrap(boolean useDeprecatedV14Bootstrapping) {
             this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
             return this;
         }
@@ -467,7 +466,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageCreator);
         }
 
-        if (builder.useDeprecatedV14Bootstrapping) {
+        if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
             if (builder.connectJavaSourceFolder != null
@@ -509,7 +508,8 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.webpackTemplate, builder.webpackGeneratedTemplate,
-                    new File(builder.generatedFolder, IMPORTS_NAME), builder.useDeprecatedV14Bootstrapping));
+                    new File(builder.generatedFolder, IMPORTS_NAME),
+                    builder.useDeprecatedV14Bootstrapping));
         }
 
         if (builder.enableImportsUpdate) {

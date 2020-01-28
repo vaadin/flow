@@ -53,7 +53,7 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLIENT_SIDE_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -194,14 +194,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // NO OTHER CONFIGURATION:
                 return;
             }
-            if (buildInfo.hasKey(SERVLET_PARAMETER_CLIENT_SIDE_MODE)) {
-                initParameters.setProperty(SERVLET_PARAMETER_CLIENT_SIDE_MODE,
+            if (buildInfo.hasKey(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+                initParameters.setProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
                         String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_CLIENT_SIDE_MODE)));
+                                SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
                 // Need to be sure that we remove the system property,
                 // because it has priority in the configuration getter
                 System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_CLIENT_SIDE_MODE);
+                        VAADIN_PREFIX + SERVLET_PARAMETER_USE_V14_BOOTSTRAP);
             }
             if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
                 initParameters.setProperty(SERVLET_PARAMETER_INITIAL_UIDL,

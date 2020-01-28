@@ -152,7 +152,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         new NodeTasks.Builder(getClassFinder(project),
                 npmFolder, generatedFolder, frontendDirectory)
                         .runNpmInstall(runNpmInstall)
-                        .enableClientSideMode(isClientSideMode())
+                        .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
                         .withFlowResourcesFolder(flowResourcesFolder)
