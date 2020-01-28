@@ -38,9 +38,10 @@ public class BasicElementView extends AbstractDivView {
 
         Element button = ElementFactory.createButton("Click me");
 
-        Element input = ElementFactory.createInput()
-                .setAttribute("placeholder", "Synchronized on change event")
-                .synchronizeProperty("value", "change");
+        Element input = ElementFactory.createInput().setAttribute("placeholder",
+                "Synchronized on change event");
+        input.addPropertyChangeListener("value", "change", event -> {
+        });
 
         button.addEventListener("click", e -> {
             JsonObject eventData = e.getEventData();
@@ -56,7 +57,8 @@ public class BasicElementView extends AbstractDivView {
                     e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
-        }, "element.textContent", "event.clientX", "event.clientY");
+        }).addEventData("element.textContent").addEventData("event.clientX")
+                .addEventData("event.clientY");
 
         Element helloWorldElement = ElementFactory.createDiv("Hello world");
 

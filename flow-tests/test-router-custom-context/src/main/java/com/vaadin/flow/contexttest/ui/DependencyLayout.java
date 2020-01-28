@@ -61,7 +61,7 @@ public abstract class DependencyLayout extends Div {
 
     }
 
-    @JavaScript("context://test-files/js/body-click-listener.js")
+    @JavaScript("./test-files/js/body-click-listener.js")
     public static class JsResourceComponent extends Div {
 
         public JsResourceComponent() {

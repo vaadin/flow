@@ -20,18 +20,15 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -51,7 +48,6 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private WebJarServer webJarServer;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -74,13 +70,7 @@ public class VaadinServlet extends HttpServlet {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
 
-        DeploymentConfiguration deploymentConfiguration = servletService
-                .getDeploymentConfiguration();
-
         staticFileHandler = createStaticFileHandler(servletService);
-        if (deploymentConfiguration.areWebJarsEnabled()) {
-            webJarServer = new WebJarServer(deploymentConfiguration);
-        }
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -287,8 +277,7 @@ public class VaadinServlet extends HttpServlet {
             return true;
         }
 
-        return webJarServer != null
-                && webJarServer.tryServeWebJarResource(request, response);
+        return false;
     }
 
     /**
@@ -439,12 +428,9 @@ public class VaadinServlet extends HttpServlet {
      *             if the application is denied access to the persistent data
      *             store represented by the given URL.
      *
-     * @deprecated As of 1.0. Will be removed in 3.0. 
-     *
      * @return current application URL
      */
-    @Deprecated
-    protected URL getApplicationUrl(HttpServletRequest request)
+    static URL getApplicationUrl(HttpServletRequest request)
             throws MalformedURLException {
         final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
                 + request.getServerName()
@@ -485,53 +471,5 @@ public class VaadinServlet extends HttpServlet {
         super.destroy();
         getService().destroy();
     }
-
-    /**
-     * Escapes characters to html entities. An exception is made for some "safe
-     * characters" to keep the text somewhat readable.
-     *
-     * @param unsafe
-     *            non-escaped string
-     * @return a safe string to be added inside an html tag
-     *
-     * @deprecated As of 1.0. Will be removed in 3.0. Use
-     * {@link org.jsoup.nodes.Entities#escape(String)} instead.
-     */
-    @Deprecated
-    public static String safeEscapeForHtml(String unsafe) {
-        if (null == unsafe) {
-            return null;
-        }
-        StringBuilder safe = new StringBuilder();
-        char[] charArray = unsafe.toCharArray();
-        for (char c : charArray) {
-            if (isSafe(c)) {
-                safe.append(c);
-            } else {
-                safe.append("&#");
-                safe.append((int) c);
-                safe.append(";");
-            }
-        }
-
-        return safe.toString();
-    }
-
-    private static boolean isSafe(char c) {
-        return //
-        c > 47 && c < 58 || // alphanum
-                c > 64 && c < 91 || // A-Z
-                c > 96 && c < 123 // a-z
-        ;
-    }
-
-    /**
-     * Gets the web jar server.
-     *
-     * @return the web jar server or an empty optional if no web jar server is
-     *         used
-     */
-    protected Optional<WebJarServer> getWebJarServer() {
-        return Optional.ofNullable(webJarServer);
-    }
 }
+

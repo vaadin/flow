@@ -24,6 +24,6 @@ public class ImplicitLumoTemplateIT extends AbstractThemedTemplateIT {
 
     @Override
     protected String getThemedTemplate() {
-        return "theme/lumo/ImplicitLumoThemedTemplate.html";
+        return "theme/lumo/ImplicitLumoThemedTemplate.js";
     }
 }

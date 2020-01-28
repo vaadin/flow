@@ -15,20 +15,19 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -102,6 +101,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> command = new ArrayList<>(executable);
         command.add("install");
 
+        console(YELLOW, commandToString(
+                packageUpdater.npmFolder.getAbsolutePath(), command));
+
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
         builder.environment().put("NO_UPDATE_NOTIFIER", "1");
@@ -112,30 +114,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         String toolName = enablePnpm ? "pnpm" : "npm";
 
-        String commandString = command.stream()
-                .collect(Collectors.joining(" "));
-
         Process process = null;
         try {
-            process = builder.start();
 
-            packageUpdater.log().debug("Output of `{}`:", commandString);
-            StringBuilder toolOutput = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
-                String stdoutLine;
-                while ((stdoutLine = reader.readLine()) != null) {
-                    packageUpdater.log().debug(stdoutLine);
-                    toolOutput.append(stdoutLine);
-                }
-            }
-
+            process = builder.inheritIO().start();
             int errorCode = process.waitFor();
             if (errorCode != 0) {
-                // Echo the stdout from pnpm/npm to error level log
-                packageUpdater.log().error("Command `{}` failed:\n{}",
-                        commandString, toolOutput);
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",

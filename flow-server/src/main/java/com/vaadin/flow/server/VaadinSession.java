@@ -120,6 +120,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
 
+    /*
+     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
+     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
+     * and UUID.randomUUID() is defined to use a cryptographically secure random
+     * generator.
+     */
+    private final String csrfToken = UUID.randomUUID().toString();
+
     private final String pushId = UUID.randomUUID().toString();
 
     private final Attributes attributes = new Attributes();
@@ -1021,4 +1029,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return resourceRegistry;
     }
 
+    /**
+     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * against Cross Site Request Forgery attacks.
+     *
+     * @return the csrf token string
+     * @since 2.0
+     */
+    public String getCsrfToken() {
+        return csrfToken;
+    }
 }

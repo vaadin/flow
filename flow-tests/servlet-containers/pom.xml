@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>2.3-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-servlet-containers-test</artifactId>
     <name>flow-servlet-containers-test</name>
@@ -96,12 +96,6 @@
             <modules>
                 <module>tomcat85</module>
                 <module>tomcat9</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>felix-jetty</id>
-            <modules>
-                <module>felix-jetty</module>
             </modules>
         </profile>
         <profile>

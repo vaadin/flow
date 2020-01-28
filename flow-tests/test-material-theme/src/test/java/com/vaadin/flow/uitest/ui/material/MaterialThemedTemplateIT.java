@@ -15,23 +15,15 @@
  */
 package com.vaadin.flow.uitest.ui.material;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class MaterialThemedTemplateIT extends ChromeBrowserTest {
 
     @Test
-    public void themedUrlsAreAdded() {
+    public void materialThemeUsed_themedTemplateAndThemeResourcesLoaded() {
         open();
 
         // check that all imported templates are available in the DOM
@@ -41,29 +33,13 @@ public class MaterialThemedTemplateIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Material themed Template", div.getText());
 
-        TestBenchElement head = $("head").first();
+        // this is silly, but a concrete way to test that the material files are
+        // imported by verifying that the material css variables introduced in the
+        // files work
+        Assert.assertEquals("color variable not applied", "rgba(176, 0, 32, 1)",
+                div.getCssValue("color"));
+        Assert.assertEquals("typography variable not applied","16px", div.getCssValue("font-size"));
 
-        List<String> hrefs = head.$("link").attribute("rel", "import").all()
-                .stream().map(element -> element.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Collection<String> expectedSuffices = new LinkedList<>(Arrays.asList(
-                "themed-template/theme/material/MaterialThemedTemplate.html",
-                "vaadin-material-styles/color.html",
-                "vaadin-material-styles/typography.html"));
-
-        for (String href : hrefs) {
-            Optional<String> matched = expectedSuffices.stream()
-                    .filter(suffix -> href.endsWith(suffix)).findFirst();
-            if (matched.isPresent()) {
-                expectedSuffices.remove(matched.get());
-            }
-        }
-
-        if (!expectedSuffices.isEmpty()) {
-            Assert.fail("No imports found for the lumo specific HTML file(s) : "
-                    + expectedSuffices);
-        }
     }
 
 }

@@ -1,6 +1,7 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +26,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 
 /**
- * Tests for {@link ApplicationRouteRegistry} instance inside OSGi container.
+ * Tests for {@link ApplicationRouteRegistry} instance .
  */
 public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
 
