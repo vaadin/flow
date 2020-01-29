@@ -141,7 +141,11 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     public void setRoute(String pathPattern,
             Class<? extends Component> navigationTarget) {
 
-        // TODO: throw exceptions if path doesn't make sense in current configuration.
+        // Backward compatibility with HasUrlParameter for which the parameters
+        // were stored in RouteTarget.
+        pathPattern = transformWithHasUrlParameter(pathPattern, navigationTarget);
+
+        // TODO: throw backward compatible exceptions if path doesn't make sense in current configuration.
 
         final RouteTarget target = new RouteTarget(navigationTarget);
         getRouteModel().addPath(pathPattern, target);
@@ -155,6 +159,20 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
         // This is for backwards compatibility
         getRoutesMap().put(pathPattern, target);
+    }
+
+    private String transformWithHasUrlParameter(String pathPattern, Class<? extends Component> navigationTarget) {
+        if (RouteTarget.hasUrlParameter(navigationTarget)) {
+
+            if (RouteTarget.hasOptionalParameter(navigationTarget)) {
+                pathPattern += "/[:param]";
+            } else if (RouteTarget.hasWildcardParameter(navigationTarget)) {
+                pathPattern += "/...:param";
+            } else {
+                pathPattern += "/:param";
+            }
+        }
+        return pathPattern;
     }
 
     /**
