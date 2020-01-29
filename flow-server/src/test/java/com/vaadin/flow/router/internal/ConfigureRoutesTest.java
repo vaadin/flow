@@ -37,7 +37,7 @@ public class ConfigureRoutesTest {
     public void mutableConfiguration_canSetTargetRoute() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
-        mutable.setTargetRoute(BaseTarget.class, "");
+        mutable.setRoute("", BaseTarget.class);
 
         Assert.assertTrue("", mutable.hasRouteTarget(BaseTarget.class));
 
@@ -50,7 +50,6 @@ public class ConfigureRoutesTest {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
-        mutable.setTargetRoute(BaseTarget.class, "");
 
         ConfiguredRoutes immutable = new ConfiguredRoutes(mutable);
 
@@ -85,7 +84,6 @@ public class ConfigureRoutesTest {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
-        mutable.setTargetRoute(BaseTarget.class, "");
 
         mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
 
@@ -111,10 +109,8 @@ public class ConfigureRoutesTest {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
-        mutable.setTargetRoute(BaseTarget.class, "");
 
         mutable.setRoute("", ParamTarget.class);
-        mutable.setTargetRoute(ParamTarget.class, "");
 
         Assert.assertEquals(
                 "Path '' with no parameters should return BaseTarget",
@@ -142,10 +138,8 @@ public class ConfigureRoutesTest {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
-        mutable.setTargetRoute(BaseTarget.class, "");
 
         mutable.setRoute("",ParamTarget.class);
-        mutable.setTargetRoute(ParamTarget.class, "");
 
         Assert.assertEquals(
                 "Path '' with no parameters should return BaseTarget",
