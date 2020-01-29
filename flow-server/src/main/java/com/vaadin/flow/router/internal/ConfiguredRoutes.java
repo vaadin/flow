@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,9 @@ import com.vaadin.flow.router.RouterLayout;
  */
 public class ConfiguredRoutes implements Serializable {
 
+    // Stores targets accessed by urls with parameters.
+    private final RouteSegment routeModel;
+
     private final Map<String, RouteTarget> routes;
     private final Map<Class<? extends Component>, String> targetRoutes;
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets;
@@ -45,6 +49,7 @@ public class ConfiguredRoutes implements Serializable {
      * Create an immutable RouteConfiguration.
      */
     public ConfiguredRoutes() {
+        routeModel = RouteSegment.createRoot();
         routes = Collections.emptyMap();
         targetRoutes = Collections.emptyMap();
         exceptionTargets = Collections.emptyMap();
@@ -57,7 +62,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param original
      *         original configuration to get data from
      */
-    public ConfiguredRoutes(ConfigureRoutes original) {
+    public ConfiguredRoutes(ConfiguredRoutes original) {
         Map<String, RouteTarget> routeMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRouteMap = new HashMap<>();
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap = new HashMap<>();
@@ -69,9 +74,14 @@ public class ConfiguredRoutes implements Serializable {
         targetRouteMap.putAll(original.getTargetRoutes());
         exceptionTargetMap.putAll(original.getExceptionHandlers());
 
+        // TODO: maybe copy
+        this.routeModel = original.getRouteModel();
+
+        // TODO: investigate this.routes = this.routeModel.getRoutes();
         this.routes = routeMap.isEmpty() ?
                 Collections.emptyMap() :
                 Collections.unmodifiableMap(routeMap);
+
         this.targetRoutes = targetRouteMap.isEmpty() ?
                 Collections.emptyMap() :
                 Collections.unmodifiableMap(targetRouteMap);
@@ -82,6 +92,10 @@ public class ConfiguredRoutes implements Serializable {
 
     protected Map<String, RouteTarget> getRoutesMap() {
         return routes;
+    }
+
+    RouteSegment getRouteModel() {
+        return routeModel;
     }
 
     /*---------------------------------*/
@@ -106,14 +120,25 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * See if configuration contains a registered route for given path.
+     * See if configuration contains a registered route for given path pattern.
      *
-     * @param path
+     * @param pathPattern
      *         path to check
      * @return true if configuration contains route
      */
-    public boolean hasRoute(String path) {
-        return getRoutesMap().containsKey(path);
+    public boolean hasRoute(String pathPattern) {
+        return getRoutesMap().containsKey(pathPattern);
+    }
+
+    /**
+     * See if configuration matches the given path with any registered route.
+     *
+     * @param url
+     *         url to check
+     * @return true if configuration matches the given url.
+     */
+    public boolean hasUrl(String url) {
+        return getRouteModel().getRoute(url).hasTarget();
     }
 
     /**
@@ -125,12 +150,12 @@ public class ConfiguredRoutes implements Serializable {
      * @param segments
      *         path segments for route
      * @return true if a route is found, else false
+     * @deprecated use {@link #hasUrl(String)} instead.
      */
+    @Deprecated
     public boolean hasRoute(String pathString, List<String> segments) {
-        if (hasRoute(pathString)) {
-            return getRouteTarget(pathString).getTarget(segments) != null;
-        }
-        return false;
+        // TODO: join segments with pathString
+        return hasUrl(pathString);
     }
 
     /**
@@ -145,6 +170,26 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
+     * Get the route class matching the given path.
+     *
+     * @param pathString
+     *         string to get the route for
+     * @return {@link Optional} containing the navigationTarget class if found
+     */
+    public Optional<Class<? extends Component>> getRoute(String pathString) {
+        final RouteSearchResult result = getRouteModel().getRoute(pathString);
+
+        // TODO: return url parameters as well.
+
+        if (result.hasTarget()) {
+            final RouteTarget routeTarget = result.getTarget();
+            return Optional.ofNullable(routeTarget.getTarget());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Get the route class matching the given path and path segments.
      *
      * @param pathString
@@ -152,14 +197,13 @@ public class ConfiguredRoutes implements Serializable {
      * @param segments
      *         possible path segments
      * @return {@link Optional} containing the navigationTarget class if found
+     *
+     * @deprecated use {@link #getRoute(String)} instead.
      */
+    @Deprecated
     public Optional<Class<? extends Component>> getRoute(String pathString,
             List<String> segments) {
-        if (hasRoute(pathString)) {
-            RouteTarget routeTarget = getRouteTarget(pathString);
-            return Optional.ofNullable(routeTarget.getTarget(segments));
-        }
-        return Optional.empty();
+        return getRoute(pathString);
     }
 
     /**
@@ -224,7 +268,19 @@ public class ConfiguredRoutes implements Serializable {
      */
     public List<Class<? extends RouterLayout>> getParentLayouts(String path,
             Class<? extends Component> navigationTarget) {
-        return getRouteTarget(path).getParentLayouts(navigationTarget);
+        final RouteSearchResult result = getRouteModel().getRoute(path);
+
+        if (result.hasTarget()) {
+            final RouteTarget routeTarget = result.getTarget();
+
+            if (!Objects.equals(routeTarget.getTarget(), navigationTarget)) {
+                throw new IllegalArgumentException("Invalid navigationTarget argument");
+            }
+            
+            return routeTarget.getParentLayouts();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**
