@@ -121,17 +121,6 @@ public class SpringVaadinServletService extends VaadinServletService {
         return resource;
     }
 
-    @Override
-    public URL getResource(String path, WebBrowser browser,
-            AbstractTheme theme) {
-        URL resource = super.getResource(path, browser, theme);
-        if (resource == null) {
-            resource = getResourceURL(
-                    getThemeResolvedPath(path, browser, theme));
-        }
-        return resource;
-    }
-
     private URL getResourceURL(String path) {
         if (!isSpringBootConfigured()) {
             return null;
@@ -177,35 +166,4 @@ public class SpringVaadinServletService extends VaadinServletService {
         return true;
     }
 
-    @Override
-    public InputStream getResourceAsStream(String path, WebBrowser browser,
-            AbstractTheme theme) {
-        InputStream resourceAsStream = super
-                .getResourceAsStream(path, browser, theme);
-        if (resourceAsStream == null) {
-            URL resourceURL = getResourceURL(
-                    getThemeResolvedPath(path, browser, theme));
-            if (resourceURL != null) {
-                try {
-                    resourceAsStream = resourceURL.openStream();
-                } catch (IOException e) {
-                    // NO-OP return null stream
-                }
-            }
-        }
-        return resourceAsStream;
-    }
-
-    private String getThemeResolvedPath(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        String resourceUrl = resolveResource(url, browser);
-        if (theme != null) {
-            String themeUrl = theme.translateUrl(resourceUrl);
-            if (!resourceUrl.equals(themeUrl)
-                    && getResourceURL(themeUrl) != null) {
-                return themeUrl;
-            }
-        }
-        return resourceUrl;
-    }
 }

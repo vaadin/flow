@@ -47,11 +47,6 @@ public class SpringVaadinServletServiceTest {
 
     private static final Properties BASE_PROPERTIES = new Properties();
 
-    {
-        BASE_PROPERTIES.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
-    }
-
     @Autowired
     private ApplicationContext context;
 

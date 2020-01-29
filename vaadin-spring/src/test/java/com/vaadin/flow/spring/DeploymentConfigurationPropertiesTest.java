@@ -71,13 +71,11 @@ public class DeploymentConfigurationPropertiesTest {
 
         // Check that we have added all other constants as parameters (except
         // those we know)
-        Assert.assertEquals(37, constantsCopy.size());
+        Assert.assertEquals(45, constantsCopy.size());
 
         Assert.assertTrue(constantsCopy
                 .contains(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION));
         Assert.assertTrue(constantsCopy.contains(Constants.VAADIN_PREFIX));
-        Assert.assertTrue(
-                constantsCopy.contains(Constants.SERVLET_PARAMETER_BOWER_MODE));
         Assert.assertTrue(
                 constantsCopy.contains(Constants.SUPPORTED_NODE_MAJOR_VERSION));
         Assert.assertTrue(
@@ -94,10 +92,6 @@ public class DeploymentConfigurationPropertiesTest {
                 .contains(Constants.SHOULD_WORK_NPM_MAJOR_VERSION));
         Assert.assertTrue(constantsCopy
                 .contains(Constants.SHOULD_WORK_NPM_MINOR_VERSION));
-        Assert.assertTrue(constantsCopy
-                .contains(Constants.FRONTEND_URL_ES5_DEFAULT_VALUE));
-        Assert.assertTrue(constantsCopy
-                .contains(Constants.FRONTEND_URL_ES6_DEFAULT_VALUE));
         Assert.assertTrue(constantsCopy.contains(Constants.META_INF));
         Assert.assertTrue(
                 constantsCopy.contains(Constants.VAADIN_CONFIGURATION));
@@ -111,8 +105,6 @@ public class DeploymentConfigurationPropertiesTest {
         Assert.assertTrue(constantsCopy.contains(Constants.VAADIN_BUILD));
         Assert.assertTrue(
                 constantsCopy.contains(Constants.VAADIN_BUILD_FILES_PATH));
-        Assert.assertTrue(
-                constantsCopy.contains(Constants.FRONTEND_URL_DEV_DEFAULT));
         Assert.assertTrue(
                 constantsCopy.contains(Constants.POLYFILLS_DEFAULT_VALUE));
         Assert.assertTrue(
