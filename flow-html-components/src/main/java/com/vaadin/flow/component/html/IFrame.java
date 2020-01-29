@@ -126,6 +126,7 @@ public class IFrame extends HtmlComponent {
 
   /**
    * Sets the source of the iframe.
+   * The value doesn't need to be reset but calling #reload() can be used to trigger reload.
    * @param src Source URL.
    */
   public void setSrc(String src) { set(srcDescriptor, src); }
@@ -230,4 +231,10 @@ public class IFrame extends HtmlComponent {
             .map(collection -> collection.toArray(new SandboxType[collection.size()]));
   }
 
+  /**
+   * Reloads the IFrame.
+   */
+  public void reload() {
+    getElement().executeJs("this.src = this.src");
+  }
 }
