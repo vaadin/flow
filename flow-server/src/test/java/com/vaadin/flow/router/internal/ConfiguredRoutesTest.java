@@ -42,7 +42,6 @@ public class ConfiguredRoutesTest {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         mutable.setRoute("", BaseTarget.class);
-        mutable.setTargetRoute(BaseTarget.class, "");
         RouteTarget routeTarget = mutable.getRouteTarget("");
         routeTarget.setParentLayouts(BaseTarget.class,
                 Arrays.asList(SecondParentTarget.class, ParentTarget.class));
