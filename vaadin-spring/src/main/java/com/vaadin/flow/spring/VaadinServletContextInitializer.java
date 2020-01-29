@@ -422,7 +422,7 @@ public class VaadinServletContextInitializer
             DeploymentConfiguration config = SpringStubServletConfig
                     .createDeploymentConfiguration(this, event, appContext);
 
-            if (config == null || !config.isClientSideMode()) {
+            if (config == null || config.useV14Bootstrap()) {
                 return;
             }
 
