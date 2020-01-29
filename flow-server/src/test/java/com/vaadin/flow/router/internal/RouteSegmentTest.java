@@ -17,6 +17,7 @@
 
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +42,10 @@ public class RouteSegmentTest {
     }
 
     @Tag(Tag.DIV)
+    public static class BranchChildren extends Component {
+    }
+
+    @Tag(Tag.DIV)
     public static class BranchEdit extends Component {
     }
 
@@ -54,14 +59,17 @@ public class RouteSegmentTest {
         RouteSegment root = RouteSegment.createRoot();
         root.addPath("", Root.class);
         root.addPath("trunk", Trunk.class);
-        root.addPath("trunk/branch/:id<int>", Branch.class);
-        root.addPath("trunk/:[name]/:[type]/branch/:[id<int>]/edit",
+        root.addPath("trunk/branch/:id:int", Branch.class);
+        root.addPath("trunk/branch/:id:int/[...:list]", BranchChildren.class);
+        root.addPath("trunk/[:name]/[:type]/branch/[:id:int]/edit",
                 BranchEdit.class);
         root.addPath(
-                "trunk/:name/:[type]/branch/:id<int>/flower/:open<bool>/edit",
+                "trunk/:name/[:type]/branch/:id:int/flower/:open:bool/edit",
                 FlowerEdit.class);
 
-        RouteSegment.RouteSearchResult result;
+        System.out.println(root.getRoutes());
+
+        RouteSearchResult result;
         String path;
 
         path = "";
@@ -79,6 +87,11 @@ public class RouteSegmentTest {
         path = "trunk/branch/12";
         result = root.getRoute(path);
         assertResult(result, path, Branch.class, parameters("id", "12"));
+
+        path = "trunk/branch/12/a/b/c/d/e/f/g";
+        result = root.getRoute(path);
+        assertResult(result, path, Branch.class, parameters("id", "12", "list",
+                new String[] { "a", "b", "c", "d", "e", "f", "g" }));
 
         path = "trunk/branch/view";
         result = root.getRoute(path);
@@ -113,19 +126,43 @@ public class RouteSegmentTest {
 
     }
 
-    private Map<String, String> parameters(String... keysAndValues) {
-        Map<String, String> result = new HashMap<>(keysAndValues.length / 2);
+    @Test
+    public void varargs_url_parameter_is_defined_only_as_last_segment() {
+
+        RouteSegment root = RouteSegment.createRoot();
+        try {
+            root.addPath("trunk/...:vararg/edit", Root.class);
+
+            Assert.fail(
+                    "Varargs url parameter accepted in the middle of the path.");
+        } catch (IllegalArgumentException e) {
+        }
+
+        try {
+            root.addPath("trunk/[...:vararg]/edit", Root.class);
+
+            Assert.fail(
+                    "Optional varargs url parameter accepted in the middle of the path.");
+        } catch (IllegalArgumentException e) {
+        }
+
+    }
+
+    private Map<String, Serializable> parameters(
+            Serializable... keysAndValues) {
+        Map<String, Serializable> result = new HashMap<>(
+                keysAndValues.length / 2);
 
         for (int i = 0; i < keysAndValues.length; i++) {
-            result.put(keysAndValues[i], keysAndValues[++i]);
+            result.put((String) keysAndValues[i], keysAndValues[++i]);
         }
 
         return result;
     }
 
-    private void assertResult(RouteSegment.RouteSearchResult result,
+    private void assertResult(RouteSearchResult result,
             String path, Class<? extends Component> target,
-            Map<String, String> urlParameters) {
+            Map<String, Serializable> urlParameters) {
 
         System.out.println("result: " + result);
 

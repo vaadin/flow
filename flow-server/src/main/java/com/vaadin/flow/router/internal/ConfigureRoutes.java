@@ -36,6 +36,9 @@ import com.vaadin.flow.component.Component;
  */
 public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
+    // Stores targets accessed by urls with parameters.
+    private final RouteSegment routesModel;
+
     private final Map<String, RouteTarget> routeMap;
     private final Map<Class<? extends Component>, String> targetRouteMap;
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
@@ -44,6 +47,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Create an immutable RouteConfiguration.
      */
     public ConfigureRoutes() {
+        routesModel = RouteSegment.createRoot();
         routeMap = new HashMap<>();
         targetRouteMap = new HashMap<>();
         exceptionTargetMap = new HashMap<>();
@@ -68,6 +72,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         targetRoutesMap.putAll(original.getTargetRoutes());
         exceptionTargetsMap.putAll(original.getExceptionHandlers());
 
+        // TODO: copy
+        this.routesModel = original.getRouteModel();
+
         this.routeMap = routesMap;
         this.targetRouteMap = targetRoutesMap;
         this.exceptionTargetMap = exceptionTargetsMap;
@@ -81,6 +88,11 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     @Override
     protected Map<String, RouteTarget> getRoutesMap() {
         return routeMap;
+    }
+
+    @Override
+    RouteSegment getRouteModel() {
+        return routesModel;
     }
 
     /**
@@ -117,23 +129,32 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Set a new {@link RouteTarget} for the given path.
+     * Set a new {@link RouteTarget} for the given pathPattern.
      * <p>
      * Note! this will override any previous value.
      *
-     * @param path
-     *         path for which to set route target for
+     * @param pathPattern
+     *         path pattern for which to set route target for
      * @param navigationTarget
      *         navigation target to add
      */
-    public void setRoute(String path,
+    public void setRoute(String pathPattern,
             Class<? extends Component> navigationTarget) {
-        if (hasRoute(path)) {
-            getRoutesMap().get(path).addRoute(navigationTarget);
-        } else {
-            getRoutesMap().computeIfAbsent(path,
-                    key -> new RouteTarget(navigationTarget, true));
+
+        // TODO: throw exceptions if path doesn't make sense in current configuration.
+
+        final RouteTarget target = new RouteTarget(navigationTarget);
+        getRouteModel().addPath(pathPattern, target);
+
+        if (!hasRouteTarget(navigationTarget)) {
+            // This seems inconsistent with the case when adding same
+            // navigationTarget with different parent layouts. In that case the
+            // new registered route is not an alias.
+            getTargetRoutes().put(navigationTarget, pathPattern);
         }
+
+        // This is for backwards compatibility
+        getRoutesMap().put(pathPattern, target);
     }
 
     /**
@@ -143,10 +164,14 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * parameters, for the main route of this navigation target.
      *
      * @param navigationTarget
-     *         navigation target to map
+     *            navigation target to map
      * @param path
-     *         path for given navigation target
+     *            path for given navigation target
+     * 
+     * @deprecated use only {@link #setRoute(String, Class)} which also handles
+     *             the reverse mapping.
      */
+    @Deprecated
     public void setTargetRoute(Class<? extends Component> navigationTarget,
             String path) {
         getTargetRoutes().put(navigationTarget, path);
@@ -192,7 +217,10 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
                 emptyRoutes.add(route);
             }
         });
-        emptyRoutes.forEach(getRoutesMap()::remove);
+        emptyRoutes.forEach(route -> {
+            getRouteModel().removePath(route);
+            getRoutesMap().remove(route);
+        });
     }
 
     /**
@@ -211,6 +239,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             return;
         }
 
+        getRouteModel().removePath(path);
         RouteTarget removedRoute = getRoutesMap().remove(path);
         for (Class<? extends Component> targetRoute : removedRoute
                 .getRoutes()) {
