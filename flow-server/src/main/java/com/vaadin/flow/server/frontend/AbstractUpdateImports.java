@@ -511,6 +511,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 // don't do anything if such file doesn't exist at all
                 continue;
             }
+            resolvedPath  = normalizePath(resolvedPath);
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)
@@ -569,10 +570,13 @@ abstract class AbstractUpdateImports implements Runnable {
         return resolvedPath;
     }
 
-    private String normalizeImportPath(String path) {
-        String importPath = toValidBrowserImport(path);
-        File file = new File(importPath);
+    private String normalizePath(String path) {
+        File file = new File(path);
         return file.toPath().normalize().toString().replace("\\", "/");
+    }
+
+    private String normalizeImportPath(String path) {
+        return toValidBrowserImport(normalizePath(path));
     }
 
     private static String generatedResourcePathIntoRelativePath(String path) {
