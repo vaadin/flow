@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +79,7 @@ import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ServletVerifier;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -123,8 +125,8 @@ public class VaadinServletContextInitializer
     private static class ClassPathScanner
             extends ClassPathScanningCandidateComponentProvider {
         private ClassPathScanner(ResourceLoader resourceLoader,
-                Collection<Class<? extends Annotation>> annotations,
-                Collection<Class<?>> types) {
+                                 Collection<Class<? extends Annotation>> annotations,
+                                 Collection<Class<?>> types) {
             super(false);
             setResourceLoader(resourceLoader);
 
@@ -142,14 +144,42 @@ public class VaadinServletContextInitializer
         }
     }
 
+     /*
+     * A wrapper interface for {@link ServletContextListener} that allows not
+     * running more listeners when one fails. This allows that user does not
+     * wait until the last listener has been run.
+     */
+    private interface FailFastServletContextListener
+            extends ServletContextListener, Serializable {
+
+        static String ATTR = "failed-"
+                + FailFastServletContextListener.class.getName();
+
+        @Override
+        default void contextInitialized(ServletContextEvent event) {
+            if (event.getServletContext().getAttribute(ATTR) == null) {
+                try {
+                    failFastContextInitialized(event);
+                } catch (Exception e) {
+                    event.getServletContext().setAttribute(ATTR, true);
+                    throw new RuntimeException("Unable to initialize "
+                            + this.getClass().getName(), e);
+                }
+            }
+        }
+
+        void failFastContextInitialized(ServletContextEvent event) throws ServletException;
+    }
+
     private class RouteServletContextListener extends
-            AbstractRouteRegistryInitializer implements ServletContextListener {
+            AbstractRouteRegistryInitializer implements FailFastServletContextListener {
 
         @SuppressWarnings("unchecked")
         @Override
-        public void contextInitialized(ServletContextEvent event) {
+        public void failFastContextInitialized(ServletContextEvent event) {
             ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                    .getInstance(event.getServletContext());
+                    .getInstance(new VaadinServletContext(
+                            event.getServletContext()));
 
             getLogger().debug(
                     "Servlet Context initialized. Running route discovering....");
@@ -188,12 +218,6 @@ public class VaadinServletContextInitializer
                         "Skipped discovery as there was {} routes already in registry",
                         registry.getRegisteredRoutes().size());
             }
-
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            // no need to do anything
         }
 
         private void setAnnotatedRoutes(RouteConfiguration routeConfiguration,
@@ -231,13 +255,13 @@ public class VaadinServletContextInitializer
     }
 
     private class ErrorParameterServletContextListener
-            implements ServletContextListener {
+            implements FailFastServletContextListener {
 
         @Override
         @SuppressWarnings("unchecked")
-        public void contextInitialized(ServletContextEvent event) {
+        public void failFastContextInitialized(ServletContextEvent event) {
             ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                    .getInstance(event.getServletContext());
+                    .getInstance(new VaadinServletContext(event.getServletContext()));
 
             Stream<Class<? extends Component>> hasErrorComponents = findBySuperType(
                     getErrorParameterPackages(), HasErrorParameter.class)
@@ -246,19 +270,13 @@ public class VaadinServletContextInitializer
             registry.setErrorNavigationTargets(
                     hasErrorComponents.collect(Collectors.toSet()));
         }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            // no need to do anything
-        }
-
     }
 
     private class AnnotationValidatorServletContextListener
-            implements ServletContextListener {
+            implements FailFastServletContextListener {
 
         @Override
-        public void contextInitialized(ServletContextEvent event) {
+        public void failFastContextInitialized(ServletContextEvent event) {
             AnnotationValidator annotationValidator = new AnnotationValidator();
             validateAnnotations(annotationValidator, event.getServletContext(),
                     annotationValidator.getAnnotations());
@@ -266,11 +284,6 @@ public class VaadinServletContextInitializer
             WebComponentExporterAwareValidator extraValidator = new WebComponentExporterAwareValidator();
             validateAnnotations(extraValidator, event.getServletContext(),
                     extraValidator.getAnnotations());
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            // no need to do anything
         }
 
         @SuppressWarnings("unchecked")
@@ -294,29 +307,15 @@ public class VaadinServletContextInitializer
     }
 
     private class DevModeServletContextListener
-            implements ServletContextListener {
+            implements FailFastServletContextListener {
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
-        public void contextInitialized(ServletContextEvent event) {
-
-            ServletRegistrationBean servletRegistrationBean = appContext
-                    .getBean("servletRegistrationBean",
-                            ServletRegistrationBean.class);
-
-            if (servletRegistrationBean == null) {
-                getLogger().warn(
-                        "No servlet registration found. DevServer will not be started!");
-                return;
-            }
-
+        public void failFastContextInitialized(ServletContextEvent event) throws ServletException {
             DeploymentConfiguration config = SpringStubServletConfig
-                    .createDeploymentConfiguration(event.getServletContext(),
-                            servletRegistrationBean, SpringServlet.class,
-                            appContext);
+                    .createDeploymentConfiguration(this.getClass(), event, appContext);
 
-            if (config.isCompatibilityMode() || config.isProductionMode()
-                    || !config.enableDevServer()) {
+            if (config == null || config.isProductionMode() || !config
+                    .enableDevServer()) {
                 return;
             }
 
@@ -327,7 +326,7 @@ public class VaadinServletContextInitializer
                 basePackages = Collections.singleton("");
             }
 
-            long start = System.currentTimeMillis();
+            long start = System.nanoTime();
 
             List<Class<? extends Annotation>> annotations = new ArrayList<>();
             List<Class<?>> superTypes = new ArrayList<>();
@@ -337,10 +336,10 @@ public class VaadinServletContextInitializer
                     customLoader, annotations, superTypes)
                             .collect(Collectors.toSet());
 
-            final long classScanning = System.currentTimeMillis();
+            long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(
-                    "Search for subclasses and classes with annotations took {} seconds",
-                    (classScanning - start) / 1000);
+                    "Search for subclasses and classes with annotations took {} ms",
+                    ms);
 
             try {
                 DevModeInitializer.initDevModeHandler(classes,
@@ -352,8 +351,11 @@ public class VaadinServletContextInitializer
         }
 
         @Override
-        public void contextDestroyed(ServletContextEvent event) {
-            // NO-OP
+        public void contextDestroyed(ServletContextEvent sce) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            if (handler != null && !handler.reuseDevServer()) {
+                handler.stop();
+            }
         }
 
         private Collection<String> getWhiteListPackages() {
@@ -387,10 +389,11 @@ public class VaadinServletContextInitializer
     }
 
     private class WebComponentServletContextListener
-            implements ServletContextListener {
+            implements FailFastServletContextListener {
 
         @Override
-        public void contextInitialized(ServletContextEvent event) {
+        public void failFastContextInitialized(ServletContextEvent event) throws ServletException {
+
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(new VaadinServletContext(
                             event.getServletContext()));
@@ -403,25 +406,36 @@ public class VaadinServletContextInitializer
                         getWebComponentPackages(), WebComponentExporter.class)
                                 .collect(Collectors.toSet());
 
-                try {
-                    initializer.onStartup(webComponentExporters,
-                            event.getServletContext());
-                } catch (ServletException e) {
-                    throw new RuntimeException(
-                            String.format("Failed to initialize %s",
-                                    WebComponentConfigurationRegistry.class
-                                            .getSimpleName()),
-                            e);
-                }
+                initializer.onStartup(webComponentExporters,
+                        event.getServletContext());
             }
         }
+    }
+
+    private class VaadinAppShellContextListener
+            implements FailFastServletContextListener {
 
         @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            if (handler != null && !handler.reuseDevServer()) {
-                handler.stop();
+        public void failFastContextInitialized(ServletContextEvent event) {
+            long start = System.nanoTime();
+
+            DeploymentConfiguration config = SpringStubServletConfig
+                    .createDeploymentConfiguration(this, event, appContext);
+
+            if (config == null || config.useV14Bootstrap()) {
+                return;
             }
+
+            Set<Class<?>> classes = findByAnnotationOrSuperType(
+                    getVerifiableAnnotationPackages(), customLoader,
+                    VaadinAppShellInitializer.getValidAnnotations(),
+                    VaadinAppShellInitializer.getValidSupers())
+                            .collect(Collectors.toSet());
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().info("Search for VaadinAppShell took {} ms", ms);
+
+            VaadinAppShellInitializer.init(classes, event.getServletContext(), config);
         }
 
     }
@@ -472,8 +486,11 @@ public class VaadinServletContextInitializer
         // Verify servlet version also for SpringBoot.
         ServletVerifier.verifyServletVersion();
 
+        servletContext.addListener(new VaadinAppShellContextListener());
+
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(servletContext);
+                .getInstance(new VaadinServletContext(servletContext));
+
         // If the registry is already initialized then RouteRegistryInitializer
         // has done its job already, skip the custom routes search
         if (registry.getRegisteredRoutes().isEmpty()) {
@@ -709,7 +726,7 @@ public class VaadinServletContextInitializer
     protected static class SpringStubServletConfig implements ServletConfig {
 
         private final ServletContext context;
-        private final ServletRegistrationBean registration;
+        private final ServletRegistrationBean<?> registration;
         private final ApplicationContext appContext;
 
         /**
@@ -721,7 +738,7 @@ public class VaadinServletContextInitializer
          *            the ServletRegistration for this ServletConfig instance
          */
         private SpringStubServletConfig(ServletContext context,
-                ServletRegistrationBean registration,
+                ServletRegistrationBean<?> registration,
                 ApplicationContext appContext) {
             this.context = context;
             this.registration = registration;
@@ -738,7 +755,6 @@ public class VaadinServletContextInitializer
             return context;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public String getInitParameter(String name) {
             Environment env = appContext.getBean(Environment.class);
@@ -751,7 +767,6 @@ public class VaadinServletContextInitializer
                     .get(name);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public Enumeration<String> getInitParameterNames() {
             Environment env = appContext.getBean(Environment.class);
@@ -761,6 +776,26 @@ public class VaadinServletContextInitializer
                     .collect(Collectors.toList());
             initParameters.addAll(registration.getInitParameters().keySet());
             return Collections.enumeration(initParameters);
+        }
+
+        private static DeploymentConfiguration createDeploymentConfiguration(
+                Object listener, ServletContextEvent event,
+                ApplicationContext appContext) {
+
+            ServletRegistrationBean<?> servletRegistrationBean = appContext
+                    .getBean("servletRegistrationBean",
+                            ServletRegistrationBean.class);
+
+            if (servletRegistrationBean == null) {
+                getLogger().warn(
+                        "No servlet registration found. {} will not be started!",
+                        listener.getClass().getSimpleName());
+                return null;
+            }
+
+            return SpringStubServletConfig.createDeploymentConfiguration(
+                    event.getServletContext(), servletRegistrationBean,
+                    SpringServlet.class, appContext);
         }
 
         /**
@@ -775,7 +810,7 @@ public class VaadinServletContextInitializer
          * @return a DeploymentConfiguration instance
          */
         public static DeploymentConfiguration createDeploymentConfiguration(
-                ServletContext context, ServletRegistrationBean registration,
+                ServletContext context, ServletRegistrationBean<?> registration,
                 Class<?> servletClass, ApplicationContext appContext) {
             try {
                 ServletConfig servletConfig = new SpringStubServletConfig(

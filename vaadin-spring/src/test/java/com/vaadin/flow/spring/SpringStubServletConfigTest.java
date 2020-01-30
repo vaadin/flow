@@ -70,26 +70,4 @@ public class SpringStubServletConfigTest {
                 "ProductionMode should have been 'true' as it was in the environment.",
                 deploymentConfiguration.isProductionMode());
     }
-
-    @Test
-    public void compatibilityMode_isReadFromEnvironmentVariables() {
-        DeploymentConfiguration deploymentConfiguration = VaadinServletContextInitializer.SpringStubServletConfig
-                .createDeploymentConfiguration(context, registration,
-                        SpringServlet.class, applicationContext);
-
-        Assert.assertFalse("Compatibility mode should be 'false' by default.",
-                deploymentConfiguration.isCompatibilityMode());
-
-        when(environment.getProperty(
-                "vaadin." + Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE))
-                        .thenReturn(Boolean.TRUE.toString());
-
-        deploymentConfiguration = VaadinServletContextInitializer.SpringStubServletConfig
-                .createDeploymentConfiguration(context, registration,
-                        SpringServlet.class, applicationContext);
-
-        Assert.assertTrue(
-                "CompatibilityMode should have been 'true' as it was in the environment.",
-                deploymentConfiguration.isCompatibilityMode());
-    }
 }

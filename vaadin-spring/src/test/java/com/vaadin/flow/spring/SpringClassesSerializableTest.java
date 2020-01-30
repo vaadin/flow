@@ -122,8 +122,6 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     private TestBeanStore createStore() {
         final Properties initParameters = new Properties();
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.FALSE.toString());
         VaadinService service = new VaadinServletService(new VaadinServlet(),
                 new DefaultDeploymentConfiguration(getClass(),
                         initParameters));
