@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
@@ -146,6 +148,10 @@ public final class DevModeHandler {
         command.add("--port");
         command.add(String.valueOf(port));
         command.add("--watchDogPort=" + watchDog.getWatchDogPort());
+        if (config.getBooleanProperty(SERVLET_PARAMETER_DEVMODE_TRANSPILE,
+                SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT)) {
+            command.add("--transpile-es5");
+        }
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "-d --inline=false")
