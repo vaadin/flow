@@ -222,7 +222,7 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_TRANSPILE = "devmode.transpile";
 
     /**
-     * Default value of {@link Constants::SERVLET_PARAMETER_DEVMODE_TRANSPILE}.
+     * Default value of {@link #SERVLET_PARAMETER_DEVMODE_TRANSPILE}.
      */
     public static final boolean SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT = false;
 
