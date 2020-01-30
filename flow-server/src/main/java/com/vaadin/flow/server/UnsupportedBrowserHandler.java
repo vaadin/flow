@@ -18,6 +18,9 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.io.Writer;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT;
+
 /**
  * A {@link RequestHandler} that presents an informative page if the browser in
  * use is unsupported.
@@ -85,11 +88,24 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                 return true; // request handled
             }
         }
+
         // check for trying to run ie11 in development mode
         if (browser.isIE() && !session.getConfiguration().isProductionMode() && session.getConfiguration().isCompatibilityMode()) {
             // bypass if cookie set
             if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
                 writeIE11InDevelopmentModePage(response);
+                return true;
+            }
+        }
+
+        if (!session.getConfiguration().isCompatibilityMode()
+                && !session.getConfiguration().isProductionMode()
+                && !browser.isEs6Supported()
+                && !session.getConfiguration().getBooleanProperty(
+                        SERVLET_PARAMETER_DEVMODE_TRANSPILE,
+                        SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT)) {
+            if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
+                writeES5TranspilationRequiredInDevelopmentModePage(response);
                 return true;
             }
         }
@@ -168,6 +184,31 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                         + "</html>");
         // @formatter:on
 
+        page.close();
+    }
+
+    /**
+     * Writes a page that explains that transpilation is required for development mode.
+     *
+     * @param response the response object to write response to
+     * @throws IOException if an IO error occurred
+     */
+    private void writeES5TranspilationRequiredInDevelopmentModePage(VaadinResponse response) throws IOException {
+        Writer page = response.getWriter();
+
+        // @formatter:off
+        page.write(
+                "<html>"
+                        + UNSUPPORTED_PAGE_HEAD_CONTENT
+                        + "<body style=\"width:34em;\"><h1>This browser requires transpilation to ES5.</h1>"
+                        + "<p>To test your app with this browser, enable transpilation in development mode.</p>"
+                        + "<p>Transpilation can be enabled by setting the <code>vaadin.devmode.transpile=true</code> "
+                        + "property for the deployment configuration using an application or a system property.<p>"
+                        + "<p>Note that transpilation is always enabled when running the <code>build-frontend</code> Maven goal as part of a "
+                        + "production mode build.</p>"
+                        + "</body>\n"
+                        + "</html>");
+        // @formatter:on
         page.close();
     }
 }
