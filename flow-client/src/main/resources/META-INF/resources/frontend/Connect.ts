@@ -49,7 +49,7 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
     if (errorJson !== null) {
       throwConnectException(errorJson);
     } else if (errorText !== null && errorText.length > 0) {
-      throw new VaadinConnectError(errorText);
+      throw new VaadinConnectError(errorText, "VaadinConnectError", response.status);
     } else {
       throw new VaadinConnectError(
         'expected "200 OK" response, but got ' +
