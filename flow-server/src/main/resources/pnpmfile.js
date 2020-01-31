@@ -9,8 +9,6 @@ if (!fs.existsSync(versionsFile)) {
 }
 const versions = JSON.parse(fs.readFileSync(versionsFile, 'utf-8'));
 
-let vaadinDeps;
-
 module.exports = {
   hooks: {
     readPackage
@@ -23,17 +21,12 @@ function getExactVersion(string) {
 
 
 function readPackage(pkg) {
-  const deps = versions;
-
   const { dependencies } = pkg;
 
   if (dependencies) {
-    for (let k in deps) {
-      if (dependencies[k] && dependencies[k] !== deps[k]) {
-        console.log(
-          `Pinned ${k} required by ${pkg.name} from ${dependencies[k]} to ${deps[k]}`
-        );
-        pkg.dependencies[k] = deps[k];
+    for (let k in versions) {
+      if (dependencies[k] && dependencies[k] !== versions[k]) {
+        pkg.dependencies[k] = versions[k];
       }
     }
   }
