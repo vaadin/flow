@@ -89,25 +89,24 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
             }
         }
 
-        // check for trying to run ie11 in development mode
-        if (browser.isIE() && !session.getConfiguration().isProductionMode() && session.getConfiguration().isCompatibilityMode()) {
-            // bypass if cookie set
-            if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
-                writeIE11InDevelopmentModePage(response);
-                return true;
-            }
+        // check for trying to run ie11 in development mode, bypass if cookie set
+        if (browser.isIE() && !session.getConfiguration().isProductionMode()
+                && session.getConfiguration().isCompatibilityMode()
+                && (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE))) {
+            writeIE11InDevelopmentModePage(response);
+            return true;
         }
 
+        // check for trying to run non-ES6 browser in dev mode without transpilation
         if (!session.getConfiguration().isCompatibilityMode()
                 && !session.getConfiguration().isProductionMode()
                 && !browser.isEs6Supported()
                 && !session.getConfiguration().getBooleanProperty(
                         SERVLET_PARAMETER_DEVMODE_TRANSPILE,
-                        SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT)) {
-            if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
-                writeES5TranspilationRequiredInDevelopmentModePage(response);
-                return true;
-            }
+                        SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT)
+                && (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE))) {
+            writeES5TranspilationRequiredInDevelopmentModePage(response);
+            return true;
         }
 
         return false; // pass to next handler
