@@ -203,8 +203,8 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                         + "<p>To test your app with this browser, enable transpilation in development mode.</p>"
                         + "<p>Transpilation can be enabled by setting the <code>vaadin.devmode.transpile=true</code> "
                         + "property for the deployment configuration using an application or a system property.<p>"
-                        + "<p>Note that transpilation is always enabled when running the <code>build-frontend</code> Maven goal as part of a "
-                        + "production mode build.</p>"
+                        + "<p>Note that transpilation is always enabled for the <code>build-frontend</code> Maven goal, "
+                        + "which is also used when creating a production build of the application.</p>"
                         + "<p><sub><a onclick=\"document.cookie='"
                         + FORCE_LOAD_COOKIE
                         + "';window.location.reload();return false;\" href=\"#\">Continue anyway<br>"
