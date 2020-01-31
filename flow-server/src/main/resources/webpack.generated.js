@@ -41,7 +41,7 @@ if (watchDogPort){
     watchDogPort = watchDogPort.substr(watchDogPrefix.length);
 }
 
-const transpile = process.argv.find(v => v.indexOf('--transpile-es5') >= 0);
+const transpile = !devMode || process.argv.find(v => v.indexOf('--transpile-es5') >= 0);
 
 const net = require('net');
 
