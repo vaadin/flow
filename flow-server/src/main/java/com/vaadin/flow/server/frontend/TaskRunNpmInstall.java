@@ -17,9 +17,15 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -69,6 +75,36 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
     }
 
+    /**
+     * Gets shrink-wrap versions file path.
+     *
+     * @return shrink-wrap versions file path
+     * @throws IOException
+     */
+    protected String getVersionsJsonPath() throws IOException {
+        try (InputStream content = TaskRunNpmInstall.class
+                .getResourceAsStream("/vaadin_versions.json")) {
+            if (content == null) {
+                packageUpdater.log().warn(
+                        "Couldn't find vaadin_versions.json file to pin dependency versions."
+                                + " Transitive dependencies won't be pinned.");
+                return null;
+            }
+            ConvertVersionsJson convert = new ConvertVersionsJson(
+                    IOUtils.toString(content, StandardCharsets.UTF_8));
+            File versions = new File(packageUpdater.generatedFolder,
+                    "vesions.json");
+            convert.convert(versions);
+            Path versionsPath = versions.toPath();
+            if (versions.isAbsolute()) {
+                return FrontendUtils.getUnixRelativePath(
+                        packageUpdater.npmFolder.toPath(), versionsPath);
+            } else {
+                return FrontendUtils.getUnixPath(versionsPath);
+            }
+        }
+    }
+
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
             // Ignore .bin and pnpm folders as those are always installed for
@@ -89,6 +125,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
+        if (enablePnpm) {
+            try {
+                createPnpmFile(getVersionsJsonPath());
+            } catch (IOException exception) {
+                throw new ExecutionFailedException(
+                        "Couldn't pin transitive dependecies versions",
+                        exception);
+            }
+        }
+
         List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
         try {
@@ -143,6 +189,44 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
+    }
+
+    private void createPnpmFile(String versionsPath) throws IOException {
+        if (versionsPath == null) {
+            return;
+        }
+
+        File pnpmFile = new File(packageUpdater.npmFolder.getAbsolutePath(),
+                "pnpmfile.js");
+        try (InputStream content = TaskRunNpmInstall.class
+                .getResourceAsStream("/pnpmfile.js")) {
+            if (content == null) {
+                throw new IOException(
+                        "Couldn't find template pnpmfile.js in the classpath");
+            }
+            FileUtils.copyInputStreamToFile(content, pnpmFile);
+            packageUpdater.log().info("Generated pnpmfile hook file: '{}'",
+                    pnpmFile);
+
+            FileUtils.writeLines(pnpmFile,
+                    modifyPnpmFile(pnpmFile, versionsPath));
+        }
+    }
+
+    private List<String> modifyPnpmFile(File generatedFile, String versionsPath)
+            throws IOException {
+        List<String> lines = FileUtils.readLines(generatedFile,
+                StandardCharsets.UTF_8);
+        int i = 0;
+        for (String line : lines) {
+            if (line.startsWith("const versionsFile")) {
+                lines.set(i,
+                        "const versionsFile = require('path').resolve(__dirname, '"
+                                + versionsPath + "');");
+            }
+            i++;
+        }
+        return lines;
     }
 
 }
