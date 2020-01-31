@@ -7,6 +7,10 @@ $wnd.Vaadin.registrations.push({
   is: '@vaadin/flow-frontend/Connect'
 });
 
+interface VaadinConnectErrorDetail {
+  status: number
+}
+
 interface ConnectExceptionData {
   message: string;
   type: string;
@@ -49,7 +53,10 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
     if (errorJson !== null) {
       throwConnectException(errorJson);
     } else if (errorText !== null && errorText.length > 0) {
-      throw new VaadinConnectError(errorText, "VaadinConnectError", response.status);
+      const detail: VaadinConnectErrorDetail = {
+        status: response.status
+      }
+      throw new VaadinConnectError(errorText, response.type, detail.status);
     } else {
       throw new VaadinConnectError(
         'expected "200 OK" response, but got ' +
