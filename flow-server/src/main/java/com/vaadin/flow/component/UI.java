@@ -1064,7 +1064,7 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> this,
+        return new ShortcutRegistration(this, () -> new Component[] {this},
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -1099,7 +1099,7 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> this, listener, key)
+        return new ShortcutRegistration(this, () -> new Component[] { this }, listener, key)
                 .withModifiers(keyModifiers);
     }
 
