@@ -65,6 +65,10 @@ public class NpmTemplateParser implements TemplateParser {
     private final ReentrantLock lock = new ReentrantLock();
     private JsonObject jsonStats;
 
+    /**
+     * The default constructor. Protected in order to prevent direct instantiation,
+     * but not private in order to allow mocking/overrides for testing purposes.
+     */
     protected NpmTemplateParser() {
     }
 
