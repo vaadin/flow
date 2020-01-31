@@ -33,64 +33,66 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class JsonTestEndpointGeneratedTest
-    extends AbstractEndpointGenerationTest {
+        extends AbstractEndpointGenerationTest {
 
-  public JsonTestEndpointGeneratedTest() {
-    super(Arrays.asList(JsonTestEndpoint.class, Version.class));
-  }
+    public JsonTestEndpointGeneratedTest() {
+        super(Arrays.asList(JsonTestEndpoint.class, Version.class));
+    }
 
-  @Test
-  public void should_GenerateOpenApi_When_NoApplicationPropertiesInput() {
-    String expectedImport = String.format("import client from '%s';",
-        VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
-    verifyGenerationFully(null,
-        getClass().getResource("expected-openapi.json"));
+    @Test
+    public void should_GenerateOpenApi_When_NoApplicationPropertiesInput() {
+        String expectedImport = String.format("import client from '%s';",
+                VaadinConnectClientGenerator.CONNECT_CLIENT_IMPORT_PATH);
+        verifyGenerationFully(null,
+                getClass().getResource("expected-openapi.json"));
 
-    getTsFiles(outputDirectory.getRoot()).stream().map(File::toPath)
-        .map(this::readFile).forEach(
-            fileContents -> assertTrue(fileContents.contains(expectedImport)));
-  }
+        getTsFiles(outputDirectory.getRoot()).stream().map(File::toPath)
+                .map(this::readFile).forEach(fileContents -> assertTrue(
+                        fileContents.contains(expectedImport)));
+    }
 
-  @Test
-  public void should_GenerateOpenApiWithCustomApplicationProperties_When_InputApplicationPropertiesGiven() {
-    verifyGenerationFully(
-        AbstractEndpointGenerationTest.class
-            .getResource("../application.properties.for.testing"),
-        getClass().getResource(
-            "expected-openapi-custom-application-properties.json"));
-  }
+    @Test
+    public void should_GenerateOpenApiWithCustomApplicationProperties_When_InputApplicationPropertiesGiven() {
+        verifyGenerationFully(
+                AbstractEndpointGenerationTest.class
+                        .getResource("../application.properties.for.testing"),
+                getClass().getResource(
+                        "expected-openapi-custom-application-properties.json"));
+    }
 
-  @Test
-  public void should_GenerateJsClassWithCustomClientPath_When_CustomClientPathGiven() {
-    String customConnectClientPath = "../my-connect-client.js";
-    String expectedImport = String.format("import client from '%s';",
-        customConnectClientPath);
+    @Test
+    public void should_GenerateJsClassWithCustomClientPath_When_CustomClientPathGiven() {
+        String customConnectClientPath = "../my-connect-client.js";
+        String expectedImport = String.format("import client from '%s';",
+                customConnectClientPath);
 
-    new OpenApiSpecGenerator(new Properties()).generateOpenApiSpec(
-        Collections
-            .singletonList(java.nio.file.Paths.get("src/test/java", getClass()
-                .getPackage().getName().replace('.', File.separatorChar))),
-        openApiJsonOutput);
+        new OpenApiSpecGenerator(new Properties()).generateOpenApiSpec(
+                Collections
+                        .singletonList(java.nio.file.Paths.get("src/test/java",
+                                getClass().getPackage().getName().replace('.',
+                                        File.separatorChar))),
+                openApiJsonOutput);
 
-    VaadinConnectTsGenerator.launch(openApiJsonOutput.toFile(),
-        outputDirectory.getRoot(), customConnectClientPath);
+        VaadinConnectTsGenerator.launch(openApiJsonOutput.toFile(),
+                outputDirectory.getRoot(), customConnectClientPath);
 
-    getTsFiles(outputDirectory.getRoot()).stream().map(File::toPath)
-        .map(this::readFile).forEach(
-            fileContents -> assertTrue(fileContents.contains(expectedImport)));
-  }
+        getTsFiles(outputDirectory.getRoot()).stream().map(File::toPath)
+                .map(this::readFile).forEach(fileContents -> assertTrue(
+                        fileContents.contains(expectedImport)));
+    }
 
-  @Test
-  public void should_GenerateJsClass_When_ThereIsOpenApiInputAndNoTargetDirectory() {
-    File nonExistingOutputDirectory = new File(outputDirectory.getRoot(),
-        "whatever");
-    assertFalse(nonExistingOutputDirectory.isDirectory());
+    @Test
+    public void should_GenerateJsClass_When_ThereIsOpenApiInputAndNoTargetDirectory() {
+        File nonExistingOutputDirectory = new File(outputDirectory.getRoot(),
+                "whatever");
+        assertFalse(nonExistingOutputDirectory.isDirectory());
 
-    VaadinConnectTsGenerator.launch(new File(getClass()
-        .getResource("expected-openapi-custom-application-properties.json")
-        .getPath()), nonExistingOutputDirectory);
-    assertTrue(nonExistingOutputDirectory.isDirectory());
-    assertFalse(getTsFiles(nonExistingOutputDirectory).isEmpty());
-  }
+        VaadinConnectTsGenerator.launch(new File(getClass()
+                .getResource(
+                        "expected-openapi-custom-application-properties.json")
+                .getPath()), nonExistingOutputDirectory);
+        assertTrue(nonExistingOutputDirectory.isDirectory());
+        assertFalse(getTsFiles(nonExistingOutputDirectory).isEmpty());
+    }
 
 }

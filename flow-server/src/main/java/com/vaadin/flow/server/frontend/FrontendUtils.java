@@ -61,9 +61,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static java.lang.String.format;
 
 /**
@@ -1355,7 +1352,7 @@ public class FrontendUtils {
     public static String commandToString(String baseDir, List<String> command) {
         return "\n" + WordUtils
                 .wrap(String.join(" ", command).replace(baseDir, "."), 50)
-                .replace("\n", " \\ \n    ") + "\n";
+                .replace("\r",  "").replace("\n", " \\ \n    ") + "\n";
     }
 
     /**

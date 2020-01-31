@@ -47,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -90,12 +91,11 @@ import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.Model;
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.ParentModel;
 
+import static com.vaadin.flow.server.connect.generator.TestUtils.equalsIgnoreWhiteSpaces;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import static com.vaadin.flow.server.connect.generator.TestUtils.equalsIgnoreWhiteSpaces;
 
 public abstract class AbstractEndpointGenerationTest {
     private static final List<Class<?>> JSON_NUMBER_CLASSES = Arrays.asList(
@@ -504,12 +504,6 @@ public abstract class AbstractEndpointGenerationTest {
     }
 
     private void verifyOpenApiJson(URL expectedOpenApiJsonResourceUrl) {
-        // Verify OpenAPI object instead of the JSON string to avoid
-        // false-positive when the content is the same but the order is
-        // different.
-        // To easily identify the difference, please use
-        // `verifyOpenApiJsonByString` method.
-        //
         OpenAPIV3Parser parser = new OpenAPIV3Parser();
         OpenAPI generated = parser
                 .read(openApiJsonOutput.toAbsolutePath().toString());
@@ -517,18 +511,26 @@ public abstract class AbstractEndpointGenerationTest {
             OpenAPI expected = parser
                     .read(new File(expectedOpenApiJsonResourceUrl.toURI()).toPath()
                             .toAbsolutePath().toString());
+
             removeAndCompareFilePathExtensionInTags(generated, expected);
             removeAndCompareFilePathExtensionInSchemas(generated, expected);
+            sortTagsAndSchemas(generated);
+            sortTagsAndSchemas(expected);
 
-            generated.getTags().sort(Comparator.comparing(Tag::getName));
-            expected.getTags().sort(Comparator.comparing(Tag::getName));
+            equalsIgnoreWhiteSpaces("The generated OpenAPI does not match",
+                    expected.toString(), generated.toString());
 
-            Assert.assertEquals("The generated OpenAPI does not match",
-                    expected, generated);
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Can't compare OpenAPI json.", e);
         }
+    }
 
+    private void sortTagsAndSchemas(OpenAPI api) {
+        // sort tags
+        api.getTags().sort(Comparator.comparing(Tag::getName));
+        // sort component schemas
+        api.getComponents()
+                .setSchemas(new TreeMap<>(api.getComponents().getSchemas()));
     }
 
     private void removeAndCompareFilePathExtensionInSchemas(OpenAPI generated,
