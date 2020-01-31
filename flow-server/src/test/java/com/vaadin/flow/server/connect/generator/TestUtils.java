@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
+
 public final class TestUtils {
     private TestUtils() {
     }
@@ -49,5 +51,14 @@ public final class TestUtils {
                     "Failed to read resource from '%s'", resourceUrl), e);
         }
         return text;
+    }
+
+    public static void equalsIgnoreWhiteSpaces(String expected, String actual) {
+        equalsIgnoreWhiteSpaces(null, expected, actual);
+    }
+
+    public static void equalsIgnoreWhiteSpaces(String msg, String expected, String actual) {
+        Assert.assertEquals(msg, expected.replaceAll("\\s+", " ").trim(),
+                actual.replaceAll("\\s++", " ").trim());
     }
 }

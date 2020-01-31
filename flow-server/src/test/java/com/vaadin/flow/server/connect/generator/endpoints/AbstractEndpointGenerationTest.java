@@ -95,12 +95,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static com.vaadin.flow.server.connect.generator.TestUtils.equalsIgnoreWhiteSpaces;
+
 public abstract class AbstractEndpointGenerationTest {
     private static final List<Class<?>> JSON_NUMBER_CLASSES = Arrays.asList(
             Number.class, byte.class, char.class, short.class, int.class,
             long.class, float.class, double.class);
     private static final Pattern JAVA_PATH_REFERENCE_REGEX = Pattern
-            .compile("( \\* @see \\{@link file:\\/\\/(.*)\\}\n)");
+            .compile("( \\* @see \\{@link file:\\/\\/(.*)\\}\r?\n)");
 
     /**
      * Classes in this list are simulated as classes from different jars so that
@@ -545,12 +547,15 @@ public abstract class AbstractEndpointGenerationTest {
                     && expectedSchemaAndFilePathMap.get(key) == null;
             String errorMessage = String.format(
                     "File path doesn't match " + "for schema '%s'", key);
-            Assert.assertTrue(errorMessage, isBothNull || (value != null
-                    && value.endsWith(expectedSchemaAndFilePathMap.get(key))));
+
+            String ending = expectedSchemaAndFilePathMap.get(key).replace('/',
+                    File.separatorChar);
+            Assert.assertTrue(errorMessage,
+                    isBothNull || (value != null && value.endsWith(ending)));
         }
     }
 
-    private Map<String, Schema> getSchemaNameAndFilePathMap(OpenAPI openAPI,
+    private void getSchemaNameAndFilePathMap(OpenAPI openAPI,
             Map<String, String> schemaNameAndFilePathMap) {
         Map<String, Schema> schemas = openAPI.getComponents().getSchemas();
         for (Map.Entry<String, Schema> stringSchemaEntry : schemas.entrySet()) {
@@ -562,7 +567,6 @@ public abstract class AbstractEndpointGenerationTest {
                         OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH);
             }
         }
-        return schemas;
     }
 
     private void removeAndCompareFilePathExtensionInTags(OpenAPI generated,
@@ -586,9 +590,10 @@ public abstract class AbstractEndpointGenerationTest {
             String errorMessage = String.format(
                     "File path doesn't match for tag '%s'",
                     key);
+            String ending = expectedFilePath.get(key).replace('/',
+                    File.separatorChar);
             Assert.assertTrue(errorMessage,
-                    isBothNull || (value != null
-                            && value.endsWith(expectedFilePath.get(key))));
+                    isBothNull || (value != null && value.endsWith(ending)));
         }
     }
 
@@ -668,7 +673,7 @@ public abstract class AbstractEndpointGenerationTest {
                 .startsWith("com.vaadin.flow.server")
                 || DENY_LIST_CHECKING_ABSOLUTE_PATH.contains(expectedClass)) {
             // the class comes from jars
-            Assert.assertEquals(errorMessage, expectedTs, actualContent);
+            equalsIgnoreWhiteSpaces(errorMessage, expectedTs, actualContent);
             return;
         }
         removeAbsolutePathAndCompare(expectedClass, expectedTs, errorMessage,
@@ -682,9 +687,10 @@ public abstract class AbstractEndpointGenerationTest {
         Assert.assertTrue(errorMessage, matcher.find());
 
         String actualJavaFileReference = matcher.group(1);
+
         String actualContentWithoutPathReference = actualContent
                 .replace(actualJavaFileReference, "");
-        Assert.assertEquals(errorMessage, expectedTs,
+        equalsIgnoreWhiteSpaces(errorMessage, expectedTs,
                 actualContentWithoutPathReference);
 
         String javaFilePathReference = matcher.group(2);
@@ -694,7 +700,7 @@ public abstract class AbstractEndpointGenerationTest {
             declaringClass = declaringClass.getDeclaringClass();
         }
         String expectedEndingJavaFilePath = StringUtils.replaceChars(
-                declaringClass.getCanonicalName(), '.', '/') + ".java";
+                declaringClass.getCanonicalName(), '.', File.separatorChar) + ".java";
         String wrongPathMessage = String.format(
                 "The generated model class '%s' refers to Java path '%s'. The path should end with '%s'",
                 expectedClass, actualJavaFileReference,
