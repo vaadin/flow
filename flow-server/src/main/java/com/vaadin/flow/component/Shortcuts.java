@@ -50,7 +50,7 @@ public final class Shortcuts {
      * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component)}.
+     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component...)}.
      *
      * @param lifecycleOwner
      *         the component that controls, when the shortcut is active. If the
@@ -81,7 +81,7 @@ public final class Shortcuts {
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
+        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -92,7 +92,7 @@ public final class Shortcuts {
      * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component)}.
+     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component...)}.
      *
      * @param lifecycleOwner
      *         the component that controls, when the shortcut is active. If the
@@ -125,7 +125,7 @@ public final class Shortcuts {
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, UI::getCurrent,
+        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
                 listener, key).withModifiers(keyModifiers);
     }
 }
