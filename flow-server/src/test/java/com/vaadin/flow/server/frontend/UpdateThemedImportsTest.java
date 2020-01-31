@@ -149,7 +149,6 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
     public void themedClientSideModulesAreWrittenIntoImportsFile()
             throws Exception {
         updater.execute();
-
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
         Assert.assertThat(content, CoreMatchers.allOf(
