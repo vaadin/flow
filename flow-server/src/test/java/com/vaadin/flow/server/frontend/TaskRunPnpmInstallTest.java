@@ -102,7 +102,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask() {
         return new TaskRunNpmInstall(getNodeUpdater(), true) {
             @Override
-            protected String getVersionsJsonPath() {
+            protected String generateVersionsJson() {
                 return null;
             }
         };
@@ -111,7 +111,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask(String versionsContent) {
         return new TaskRunNpmInstall(getNodeUpdater(), true) {
             @Override
-            protected String getVersionsJsonPath() {
+            protected String generateVersionsJson() {
                 try {
                     FileUtils.write(
                             new File(getNodeUpdater().npmFolder,

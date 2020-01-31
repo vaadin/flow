@@ -15,20 +15,17 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.io.FileUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-import static elemental.json.impl.JsonUtil.stringify;
-
 /**
- * Copies platform versions.json file and converts to simplified format.
+ * Converts platform versions file to internal format which doesn't contain
+ * extra information.
+ * <p>
+ * The result contains all dependencies as keys and their versions as value.
  *
  * @author Vaadin Ltd
  *
@@ -39,16 +36,14 @@ class ConvertVersionsJson {
     private static final String NPM_NAME = "npmName";
     private final JsonObject convertedObject;
 
-    ConvertVersionsJson(String versions) {
+    ConvertVersionsJson(JsonObject platformVersions) {
         convertedObject = Json.createObject();
-        JsonObject object = Json.parse(versions);
 
-        collectDependencies(object);
+        collectDependencies(platformVersions);
     }
 
-    void convert(File file) throws IOException {
-        FileUtils.write(file, stringify(convertedObject, 2) + "\n",
-                StandardCharsets.UTF_8);
+    JsonObject convert() throws IOException {
+        return convertedObject;
     }
 
     private void collectDependencies(JsonObject obj) {

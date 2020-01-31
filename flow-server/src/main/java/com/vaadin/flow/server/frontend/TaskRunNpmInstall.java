@@ -27,13 +27,17 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
+
+import elemental.json.Json;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static elemental.json.impl.JsonUtil.stringify;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -76,25 +80,27 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     /**
-     * Gets shrink-wrap versions file path.
+     * Generate versions json file.
      *
-     * @return shrink-wrap versions file path
+     * @return generated versions json file path
      * @throws IOException
      */
-    protected String getVersionsJsonPath() throws IOException {
+    protected String generateVersionsJson() throws IOException {
         try (InputStream content = TaskRunNpmInstall.class
-                .getResourceAsStream("/vaadin_versions.json")) {
+                .getResourceAsStream("/" + Constants.VAADIN_VERSIONS_JSON)) {
             if (content == null) {
                 packageUpdater.log().warn(
-                        "Couldn't find vaadin_versions.json file to pin dependency versions."
-                                + " Transitive dependencies won't be pinned.");
+                        "Couldn't find {} file to pin dependency versions."
+                                + " Transitive dependencies won't be pinned for pnpm.",
+                        Constants.VAADIN_VERSIONS_JSON);
                 return null;
             }
-            ConvertVersionsJson convert = new ConvertVersionsJson(
-                    IOUtils.toString(content, StandardCharsets.UTF_8));
             File versions = new File(packageUpdater.generatedFolder,
-                    "vesions.json");
-            convert.convert(versions);
+                    "versions.json");
+            ConvertVersionsJson convert = new ConvertVersionsJson(Json
+                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
+            FileUtils.write(versions, stringify(convert.convert(), 2) + "\n",
+                    StandardCharsets.UTF_8);
             Path versionsPath = versions.toPath();
             if (versions.isAbsolute()) {
                 return FrontendUtils.getUnixRelativePath(
@@ -127,10 +133,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private void runNpmInstall() throws ExecutionFailedException {
         if (enablePnpm) {
             try {
-                createPnpmFile(getVersionsJsonPath());
+                createPnpmFile(generateVersionsJson());
             } catch (IOException exception) {
                 throw new ExecutionFailedException(
-                        "Couldn't pin transitive dependecies versions",
+                        "Couldn't pin transitive dependencies versions",
                         exception);
             }
         }
@@ -191,6 +197,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
     }
 
+    /*
+     * The pnpmfile.js file is recreated from scratch every time when `pnpm
+     * install` is executed. It doesn't take much time to recreate it and it's
+     * not supposed that it can be modified by the user. This is done in the
+     * same way as for webpack.generated.js.
+     */
     private void createPnpmFile(String versionsPath) throws IOException {
         if (versionsPath == null) {
             return;

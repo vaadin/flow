@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,12 +50,8 @@ public class ConvertVersionsJsonTest {
                 + "}";
         // @formatter:on
 
-        ConvertVersionsJson convert = new ConvertVersionsJson(json);
-        File versions = temporaryFolder.newFile();
-        convert.convert(versions);
-        String content = FileUtils.readFileToString(versions,
-                StandardCharsets.UTF_8);
-        JsonObject conertedJson = Json.parse(content);
+        ConvertVersionsJson convert = new ConvertVersionsJson(Json.parse(json));
+        JsonObject conertedJson = convert.convert();
         Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-upload"));
 
