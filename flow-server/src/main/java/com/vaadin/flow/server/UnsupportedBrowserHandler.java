@@ -78,21 +78,22 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
                                              VaadinRequest request, VaadinResponse response) throws IOException {
 
-        // Check if the browser is supported
-        WebBrowser browser = session.getBrowser();
+        // bypass checks if cookie set
         final String cookie = request.getHeader("Cookie");
-        if (browser.isTooOldToFunctionProperly()) {
-            // bypass if cookie set
-            if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
-                writeBrowserTooOldPage(request, response);
-                return true; // request handled
-            }
+        if (cookie != null && cookie.contains(FORCE_LOAD_COOKIE)) {
+            return false;
         }
 
-        // check for trying to run ie11 in development mode, bypass if cookie set
+        // check if the browser is supported
+        WebBrowser browser = session.getBrowser();
+        if (browser.isTooOldToFunctionProperly()) {
+            writeBrowserTooOldPage(request, response);
+            return true; // request handled
+        }
+
+        // check for trying to run ie11 in development mode
         if (browser.isIE() && !session.getConfiguration().isProductionMode()
-                && session.getConfiguration().isCompatibilityMode()
-                && (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE))) {
+                && session.getConfiguration().isCompatibilityMode()) {
             writeIE11InDevelopmentModePage(response);
             return true;
         }
@@ -103,8 +104,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                 && !browser.isEs6Supported()
                 && !session.getConfiguration().getBooleanProperty(
                         SERVLET_PARAMETER_DEVMODE_TRANSPILE,
-                        SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT)
-                && (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE))) {
+                        SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT)) {
             writeES5TranspilationRequiredInDevelopmentModePage(response);
             return true;
         }
