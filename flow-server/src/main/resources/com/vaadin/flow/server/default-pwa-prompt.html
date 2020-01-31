@@ -117,6 +117,8 @@
 
 <script type="application/javascript">
     window.addEventListener("load", function() {
+        window.Vaadin = window.Vaadin || {};
+        window.Vaadin.Flow = window.Vaadin.Flow || {};
         window.Vaadin.Flow.pwaIPUI = document.getElementById("pwa-ip");
         window.addEventListener("beforeinstallprompt", function(e) {
             e.preventDefault();

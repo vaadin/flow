@@ -85,9 +85,18 @@ public class HistoryIT extends ChromeBrowserTest {
 
         // Navigate to empty string should go to the context path root
         stateField.clear();
+        locationField.setValue("qwerty/x");
+        pushButton.click();
         locationField.clear();
         pushButton.click();
 
+        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+
+        // Replacing with empty string should go to the context path root
+        locationField.setValue("qwerty/x");
+        replaceButton.click();
+        locationField.clear();
+        replaceButton.click();
         Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
     }
 

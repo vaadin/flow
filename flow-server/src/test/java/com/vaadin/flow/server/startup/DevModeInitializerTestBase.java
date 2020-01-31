@@ -2,6 +2,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,20 +22,21 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.DevModeHandler;
-import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeUpdater;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
+import static org.junit.Assert.assertNull;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -58,11 +60,13 @@ public class DevModeInitializerTestBase {
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
+        assertNull(getDevModeHandler());
+
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 0, baseDir);
+        createStubWebpackServer("Compiled", 500, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration registration = Mockito
@@ -70,7 +74,7 @@ public class DevModeInitializerTestBase {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
-        initParams.put(Constants.SERVLET_PARAMETER_DISABLE_PNPM, "true");
+        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, "true");
 
         Mockito.when(registration.getInitParameters()).thenReturn(initParams);
 
@@ -90,14 +94,13 @@ public class DevModeInitializerTestBase {
         webpackFile = new File(baseDir, WEBPACK_CONFIG);
 
         // Not this needs to update according to dependencies in
-        // NodeUpdater.getDefaultDependencies and NodeUpdater.getDefaultDevDependencies
+        // NodeUpdater.getDefaultDependencies and
+        // NodeUpdater.getDefaultDevDependencies
         FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(),
                 "UTF-8");
         webpackFile.createNewFile();
-
-        // Default is Bower Mode, change to Npm Mode
-        System.setProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                "false");
+        FileUtils.forceMkdir(
+                new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
         devModeInitializer = new DevModeInitializer();
     }
@@ -109,7 +112,6 @@ public class DevModeInitializerTestBase {
         vaadinPackages.put("dependencies", Json.createObject());
         JsonObject defaults = vaadinPackages.getObject("dependencies");
         defaults.put("@polymer/polymer", "3.2.0");
-        defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
         vaadinPackages.put("devDependencies", Json.createObject());
         defaults = vaadinPackages.getObject("devDependencies");
@@ -131,17 +133,16 @@ public class DevModeInitializerTestBase {
 
     @After
     public void teardown() throws Exception, SecurityException {
-        System.clearProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
+        System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
         webpackFile.delete();
         mainPackageFile.delete();
         temporaryFolder.delete();
-        if (DevModeHandler.getDevModeHandler() != null) {
-            DevModeHandler.getDevModeHandler().removeRunningDevServerPort();
+        if (getDevModeHandler() != null) {
+            getDevModeHandler().stop();
         }
-        DevModeHandlerTest.removeDevModeHandlerInstance();
     }
 
     public void runOnStartup() throws Exception {
@@ -164,7 +165,4 @@ public class DevModeInitializerTestBase {
                 }).collect(Collectors.toList());
     }
 
-    public DevModeHandler getDevModeHandler() {
-        return DevModeHandler.getDevModeHandler();
-    }
 }

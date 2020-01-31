@@ -62,8 +62,6 @@ public class BootstrapHandlerPushConfigurationTest {
                 }
             }
         });
-        mocks.setBrowserEs6(false);
-
         // Update sessionRegistry due to after init change of global registry
         SessionRouteRegistry sessionRegistry = new SessionRouteRegistry(
                 session);

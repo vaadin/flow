@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -22,6 +22,7 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>
@@ -197,6 +198,12 @@
                         <stopPort>${server.stop.port}</stopPort>
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
+                        <systemProperties>
+                            <systemProperty>
+                                <name>vaadin.useDeprecatedV14Bootstrapping</name>
+                                <value>${vaadin.useDeprecatedV14Bootstrapping}</value>
+                            </systemProperty>
+                        </systemProperties>
                     </configuration>
                 </plugin>
             </plugins>
@@ -219,21 +226,18 @@
             </activation>
 
             <modules>
-                <module>test-pwa</module>
-
                 <module>test-mixed</module>
                 <module>test-mixed/pom-npm.xml</module>
-
                 <module>test-dev-mode</module>
-                <module>test-root-ui-context</module>
-                <module>test-frontend-production-custom-context</module>
-                <module>test-router-custom-context</module>
+                <module>test-pwa</module>
                 <module>test-subcontext</module>
+                <module>test-root-ui-context</module>
+                <module>test-router-custom-context</module>
+
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
-                <module>test-themes/pom-npm.xml</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
                 <module>servlet-containers</module>
@@ -243,16 +247,14 @@
 
                 <!-- tests running in both modes -->
                 <module>test-misc</module>
-                <module>test-misc/pom-bower.xml</module>
 
                 <module>test-mixed/pom-pnpm-production.xml</module>
                 <module>test-mixed/pom-npm-production.xml</module>
-                <module>test-mixed/pom-bower-devmode.xml</module>
-                <module>test-mixed/pom-bower-production.xml</module>
                 <module>test-npm-only-features</module>
                 <module>test-multi-war</module>
+                <module>test-ccdm</module>
+                <module>test-ccdm/pom-production.xml</module>                
 
-                <!-- This test fails in local -->
                 <module>test-root-context</module>
             </modules>
         </profile>
@@ -326,12 +328,6 @@
             <properties>
                 <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11</test.excludegroup>
             </properties>
-        </profile>
-        <profile>
-            <id>npm</id>
-            <modules>
-                <module>test-root-context/pom-npm.xml</module>
-            </modules>
         </profile>
     </profiles>
 

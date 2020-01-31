@@ -21,6 +21,8 @@ import com.vaadin.flow.component.internal.UIInternals;
 
 /**
  * A utility class providing static constants. Mostly for internal use.
+ * <p>
+ * Also available for the client side part of the framework.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -31,12 +33,6 @@ public class ApplicationConstants implements Serializable {
      * Protocol used for referencing the application context path.
      */
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
-
-    /**
-     * Protocol used for referencing different files based on the browser
-     * capability of interpreting ECMAScript 6.
-     */
-    public static final String FRONTEND_PROTOCOL_PREFIX = "frontend://";
 
     /**
      * Protocol used for referencing resources relative the base URI of the
@@ -150,9 +146,21 @@ public class ApplicationConstants implements Serializable {
             + "client";
 
     /**
+     * Parameter for the initial router location when JavaScript bootstrapping.
+     * It is optional when {@link ApplicationConstants#REQUEST_TYPE_PARAMETER}
+     * has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value
+     */
+    public static final String REQUEST_LOCATION_PARAMETER = "location";
+
+    /**
      * Get parameter used in framework requests to identify the request type.
      */
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
+
+    /**
+     * Request type parameter value indicating an init request.
+     */
+    public static final String REQUEST_TYPE_INIT = "init";
 
     /**
      * Request type parameter value indicating a UIDL request.
@@ -178,10 +186,5 @@ public class ApplicationConstants implements Serializable {
      * Configuration parameter for the build URL of ES6 web components.
      */
     public static final String FRONTEND_URL_ES6 = "frontendUrlEs6";
-
-    /**
-     * Configuration parameter for the build URL of ES5 web components.
-     */
-    public static final String FRONTEND_URL_ES5 = "frontendUrlEs5";
 
 }

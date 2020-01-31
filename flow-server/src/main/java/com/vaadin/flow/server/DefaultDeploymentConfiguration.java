@@ -16,15 +16,22 @@
 
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
@@ -38,17 +45,27 @@ public class DefaultDeploymentConfiguration
     private static final String SEPARATOR = "\n====================================================================";
 
     public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
-            + "\nVaadin is running in DEBUG MODE.\n" +
-            "In order to run your application in production mode and disable debug features, " +
-            "you should enable it by setting the servlet init parameter productionMode to true.\n" +
-            "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html " +
-            "for more information about the production mode." + SEPARATOR;
+            + "\nVaadin is running in DEBUG MODE.\n"
+            + "In order to run your application in production mode and disable debug features, "
+            + "you should enable it by setting the servlet init parameter productionMode to true.\n"
+            + "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html "
+            + "for more information about the production mode." + SEPARATOR;
 
     public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
             + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
             + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
             + "See http://vaadin.com/docs for more information." + SEPARATOR;
+
+    public static final String WARNING_V14_BOOTSTRAP = SEPARATOR
+            + "\nUsing Vaadin 14 (Flow 2) bootstrap mode.\n"
+            + "This mode disallows the usage of client-side views written in TypeScript\n\n"
+            + "Otherwise, Vaadin 15+ (Flow 3+) enables client-side and server-side views.\n"
+            + "See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information."
+            + SEPARATOR;
+
+    public static final String WARNING_V15_BOOTSTRAP = SEPARATOR
+            + "%nUsing Vaadin 15 (Flow 3) bootstrap mode.%n%s%n%s" + SEPARATOR;
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
             + "\nWARNING: Cross-site request forgery protection is disabled!"
@@ -63,6 +80,11 @@ public class DefaultDeploymentConfiguration
             + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used."
             + SEPARATOR;
+
+    private static final String INDEX_NOT_FOUND = "- '%s' is not found from '%s'.%n"
+            + "Generating a default one in '%s%s'. "
+            + "Move it to the '%s' folder if you want to customize it.";
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -87,7 +109,7 @@ public class DefaultDeploymentConfiguration
     public static final boolean DEFAULT_SEND_URLS_AS_PARAMETERS = true;
 
     private boolean productionMode;
-    private boolean compatibilityMode;
+    private boolean useDeprecatedV14Bootstrapping;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
     private int webComponentDisconnect;
@@ -117,7 +139,7 @@ public class DefaultDeploymentConfiguration
         boolean log = loggWarning.getAndSet(false);
 
         checkProductionMode(log);
-        checkCompatibilityMode(log);
+        checkV14Bootsrapping(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -140,13 +162,12 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritDoc} The default is true.
      *
-     * The default is false.
      */
     @Override
-    public boolean isBowerMode() {
-        return compatibilityMode;
+    public boolean useV14Bootstrap() {
+        return useDeprecatedV14Bootstrapping;
     }
 
     /**
@@ -247,38 +268,57 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a warning if Vaadin is running in compatibility mode. Throw
-     * {@link IllegalStateException} if the mode could not be determined from
-     * parameters.
+     * Log a message about the bootstrapping being used.
      */
-    private void checkCompatibilityMode(boolean loggWarning) {
-        boolean explicitlySet = false;
-        if (getStringProperty(Constants.SERVLET_PARAMETER_BOWER_MODE,
-                null) != null) {
-            compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_BOWER_MODE, false);
-            explicitlySet = true;
-        } else if (getStringProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, null) != null) {
-            compatibilityMode = getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
-            explicitlySet = true;
-        }
-
-        @SuppressWarnings("unchecked")
-        Consumer<CompatibilityModeStatus> consumer = (Consumer<CompatibilityModeStatus>) getInitParameters()
-                .get(DeploymentConfigurationFactory.DEV_MODE_ENABLE_STRATEGY);
-        if (consumer != null) {
-            if (explicitlySet && !compatibilityMode) {
-                consumer.accept(CompatibilityModeStatus.EXPLICITLY_SET_FALSE);
-            } else if (!explicitlySet) {
-                consumer.accept(CompatibilityModeStatus.UNDEFINED);
+    private void checkV14Bootsrapping(boolean loggWarning) {
+        useDeprecatedV14Bootstrapping = getBooleanProperty(
+                Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+        if (loggWarning) {
+            if (useDeprecatedV14Bootstrapping) {
+                getLogger().info(WARNING_V14_BOOTSTRAP);
+            } else if (!productionMode && getLogger().isInfoEnabled()) {
+                String frontendDir = getStringProperty(PARAM_FRONTEND_DIR, System
+                        .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+                String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
+                String entryPointMessage = getEntryPointMessage(frontendDir);
+                getLogger().info(String.format(WARNING_V15_BOOTSTRAP,
+                        indexHTMLMessage, entryPointMessage));
             }
         }
+    }
 
-        if (compatibilityMode && loggWarning) {
-            getLogger().warn(WARNING_COMPATIBILITY_MODE);
+    private String getEntryPointMessage(String frontendDir) {
+        File indexEntry = new File(frontendDir, INDEX_JS);
+        File indexEntryTs = new File(frontendDir, INDEX_TS);
+        String entryPointMessage;
+        if (!indexEntry.exists() && !indexEntryTs.exists()) {
+            entryPointMessage = String.format(INDEX_NOT_FOUND,
+                    indexEntryTs.getName(), indexEntryTs.getPath(), TARGET,
+                    indexEntryTs.getName(),
+                    indexEntryTs.getParentFile().getPath());
+        } else {
+            String fileName = indexEntry.exists() ? "index.js" : "index.ts";
+            String filePath = indexEntry.exists() ? indexEntry.getPath()
+                    : indexEntryTs.getPath();
+            entryPointMessage = String.format("Using '%s' from '%s'", fileName,
+                    filePath);
         }
+        return entryPointMessage;
+    }
+
+    private String getIndexHTMLMessage(String frontendDir) {
+        File indexHTML = new File(frontendDir, INDEX_HTML);
+
+        String indexHTMLMessage;
+        if (!indexHTML.exists()) {
+            indexHTMLMessage = String.format(INDEX_NOT_FOUND,
+                    indexHTML.getName(), indexHTML.getPath(), TARGET,
+                    indexHTML.getName(), indexHTML.getParentFile().getPath());
+        } else {
+            indexHTMLMessage = String.format("Using 'index.html' from '%s'%n",
+                    indexHTML.getPath());
+        }
+        return indexHTMLMessage;
     }
 
     /**

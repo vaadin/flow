@@ -48,8 +48,8 @@ import com.vaadin.flow.theme.lumo.Lumo;
  */
 @Tag(Tag.DIV)
 @Theme(Lumo.class)
-@StyleSheet("src/css/demo.css")
-@StyleSheet("src/css/prism.css")
+@StyleSheet("frontend/src/css/demo.css")
+@StyleSheet("frontend/src/css/prism.css")
 public abstract class DemoView extends Component
         implements HasComponents, HasUrlParameter<String>, HasStyle {
     static final String VARIANT_TOGGLE_BUTTONS_DIV_ID = "variantToggleButtonsDiv";

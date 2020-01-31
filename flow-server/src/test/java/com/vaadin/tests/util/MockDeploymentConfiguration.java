@@ -14,7 +14,7 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
-    private boolean compatibilityMode = false;
+    private boolean useDeprecatedV14Bootstrapping = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int webComponentDisconnect = 300;
@@ -26,15 +26,11 @@ public class MockDeploymentConfiguration
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
+    private boolean eagerServerLoad = false;
 
     @Override
     public boolean isProductionMode() {
         return productionMode;
-    }
-
-    @Override
-    public boolean isBowerMode() {
-        return compatibilityMode;
     }
 
     @Override
@@ -161,8 +157,21 @@ public class MockDeploymentConfiguration
         this.brotli = brotli;
     }
 
-    public void setCompatibilityMode(boolean compatibility) {
-        compatibilityMode = compatibility;
+    @Override
+    public boolean useV14Bootstrap() {
+        return useDeprecatedV14Bootstrapping;
     }
 
+    public void useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
+        this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
+    }
+
+    @Override
+    public boolean isEagerServerLoad() {
+        return this.eagerServerLoad;
+    }
+
+    public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
+        this.eagerServerLoad = includeBootsrapInitialUidl;
+    }
 }

@@ -34,10 +34,6 @@ public class WebComponentsIT extends ChromeBrowserTest {
     public void testPolyfillLoaded() {
         open();
 
-        Assert.assertTrue(driver.findElements(By.tagName("script")).stream()
-                .anyMatch(element -> element.getAttribute("src")
-                        .endsWith("webcomponents-loader.js")));
-
         if (BrowserUtil.isIE(getDesiredCapabilities())) {
             // Console logs are not available from IE11
             return;

@@ -1246,8 +1246,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
                 "Child node should not have any features from list "
@@ -1298,8 +1297,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
                 "Child node should not have any features from list "
@@ -1349,8 +1347,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         Binder.bind(node, element);
 
@@ -1424,8 +1421,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         Reactive.flush();
 

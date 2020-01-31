@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@JavaScript("frontend://in-memory-connector.js")
+@JavaScript("./in-memory-connector.js")
 @Route(value = "com.vaadin.flow.uitest.ui.InMemoryChildrenView", layout = ViewTestLayout.class)
 public class InMemoryChildrenView extends AbstractDivView {
 

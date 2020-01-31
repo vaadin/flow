@@ -89,12 +89,6 @@ public class NodeFeatureRegistry {
                 NodeFeatures.ELEMENT_ATTRIBUTES);
         registerFeature(ElementListenerMap.class, ElementListenerMap::new,
                 NodeFeatures.ELEMENT_LISTENERS);
-        registerFeature(SynchronizedPropertiesList.class,
-                SynchronizedPropertiesList::new,
-                NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        registerFeature(SynchronizedPropertyEventsList.class,
-                SynchronizedPropertyEventsList::new,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         registerFeature(VirtualChildrenList.class, VirtualChildrenList::new,
                 NodeFeatures.VIRTUAL_CHILDREN);
 

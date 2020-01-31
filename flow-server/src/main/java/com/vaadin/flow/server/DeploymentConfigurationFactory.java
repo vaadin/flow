@@ -36,21 +36,26 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
@@ -67,22 +72,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  */
 public final class DeploymentConfigurationFactory implements Serializable {
 
-    public static final Object DEV_MODE_ENABLE_STRATEGY = new Serializable() {
-    };
-
     public static final Object FALLBACK_CHUNK = new Serializable() {
     };
 
-    public static final String ERROR_COMPATIBILITY_MODE_UNSET = "Unable to determine mode of operation. To use npm mode, ensure "
-            + "'flow-build-info.json' exists on the classpath. With Maven, "
-            + "this is handled by the 'prepare-frontend' goal. To use "
-            + "compatibility mode, add the 'flow-server-compatibility-mode' "
-            + "dependency. If using Vaadin with Spring Boot, instead set the "
-            + "property 'vaadin.compatibilityMode' to 'true' in "
-            + "'application.properties'.";
-
-    public static final String ERROR_DEV_MODE_NO_FILES = "The compatibility mode is explicitly set to 'false', "
-            + "but there are neither 'flow-build-info.json' nor 'webpack.config.js' file available in "
+    public static final String ERROR_DEV_MODE_NO_FILES = "There are neither 'flow-build-info.json' nor 'webpack.config.js' file available in "
             + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
             + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
 
@@ -103,7 +96,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws VaadinConfigurationException thrown if property construction fails
+     * @throws VaadinConfigurationException
+     *             thrown if property construction fails
      */
     public static DeploymentConfiguration createDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
@@ -122,7 +116,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws VaadinConfigurationException thrown if property construction fails
+     * @throws VaadinConfigurationException
+     *             thrown if property construction fails
      */
     public static DeploymentConfiguration createPropertyDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
@@ -136,11 +131,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * in current application.
      *
      * @param systemPropertyBaseClass
-     *         the class to look for properties defined with annotations
+     *            the class to look for properties defined with annotations
      * @param vaadinConfig
-     *         the config to get the rest of the properties from
+     *            the config to get the rest of the properties from
      * @return {@link Properties} instance
-     * @throws VaadinConfigurationException thrown if property construction fails
+     * @throws VaadinConfigurationException
+     *             thrown if property construction fails
      */
     protected static Properties createInitParameters(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
@@ -159,10 +155,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = vaadinConfig
-                .getConfigParameterNames(); e.hasMoreElements(); ) {
+                .getConfigParameterNames(); e.hasMoreElements();) {
             final String name = e.nextElement();
-            initParameters
-                    .setProperty(name, vaadinConfig.getConfigParameter(name));
+            initParameters.setProperty(name,
+                    vaadinConfig.getConfigParameter(name));
         }
 
         readBuildInfo(initParameters);
@@ -181,14 +177,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_PRODUCTION_MODE)));
             }
-            if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN) || buildInfo
-                    .hasKey(EXTERNAL_STATS_URL_TOKEN)) {
-                // If external stats file is flagged then compatibility mode and
-                // dev server should both be false - only variable that can
+            if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
+                    || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                // If external stats file is flagged then
+                // dev server should be false - only variable that can
                 // be configured, in addition to stats variables, is
                 // production mode
-                initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.toString(false));
                 initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
                         Boolean.toString(false));
                 initParameters.setProperty(EXTERNAL_STATS_FILE,
@@ -200,14 +194,23 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // NO OTHER CONFIGURATION:
                 return;
             }
-            if (buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)) {
-                initParameters.setProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
+            if (buildInfo.hasKey(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+                initParameters.setProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
                         String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_COMPATIBILITY_MODE)));
+                                SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
                 // Need to be sure that we remove the system property,
                 // because it has priority in the configuration getter
                 System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_COMPATIBILITY_MODE);
+                        VAADIN_PREFIX + SERVLET_PARAMETER_USE_V14_BOOTSTRAP);
+            }
+            if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
+                initParameters.setProperty(SERVLET_PARAMETER_INITIAL_UIDL,
+                        String.valueOf(buildInfo
+                                .getBoolean(SERVLET_PARAMETER_INITIAL_UIDL)));
+                // Need to be sure that we remove the system property,
+                // because it has priority in the configuration getter
+                System.clearProperty(
+                        VAADIN_PREFIX + SERVLET_PARAMETER_INITIAL_UIDL);
             }
 
             if (buildInfo.hasKey(NPM_TOKEN)) {
@@ -243,6 +246,23 @@ public final class DeploymentConfigurationFactory implements Serializable {
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_REUSE_DEV_SERVER)));
             }
+            if (buildInfo.hasKey(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
+                initParameters.setProperty(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                        buildInfo.getString(CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
+            }
+            if (buildInfo.hasKey(CONNECT_OPEN_API_FILE_TOKEN)) {
+                initParameters.setProperty(CONNECT_OPEN_API_FILE_TOKEN,
+                        buildInfo.getString(CONNECT_OPEN_API_FILE_TOKEN));
+            }
+            if (buildInfo.hasKey(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
+                initParameters.setProperty(CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                        buildInfo.getString(
+                                CONNECT_APPLICATION_PROPERTIES_TOKEN));
+            }
+            if (buildInfo.hasKey(CONNECT_GENERATED_TS_DIR_TOKEN)) {
+                initParameters.setProperty(CONNECT_GENERATED_TS_DIR_TOKEN,
+                        buildInfo.getString(CONNECT_GENERATED_TS_DIR_TOKEN));
+            }
 
             FallbackChunk fallbackChunk = FrontendUtils
                     .readFallbackChunk(buildInfo);
@@ -252,11 +272,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
 
         try {
-            boolean hasWebPackConfig = hasWebpackConfig(initParameters);
-            boolean hasTokenFile = json != null;
-            SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
-                    value, hasTokenFile, hasWebPackConfig);
-            initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
+            verifyMode(json != null, hasWebpackConfig(initParameters));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -284,21 +300,19 @@ public final class DeploymentConfigurationFactory implements Serializable {
         if (tokenLocation != null) {
             File tokenFile = new File(tokenLocation);
             if (tokenFile != null && tokenFile.canRead()) {
-                json = FileUtils
-                        .readFileToString(tokenFile, StandardCharsets.UTF_8);
+                json = FileUtils.readFileToString(tokenFile,
+                        StandardCharsets.UTF_8);
             }
         }
         return json;
     }
 
-    private static String getResourceFromClassloader()
-            throws IOException {
+    private static String getResourceFromClassloader() throws IOException {
         String json = null;
         // token file is in the class-path of the application
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-        List<URL> resources = Collections
-                .list(DeploymentConfiguration.class.getClassLoader()
-                        .getResources(tokenResource));
+        List<URL> resources = Collections.list(DeploymentConfiguration.class
+                .getClassLoader().getResources(tokenResource));
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
         URL resource = resources.stream()
@@ -315,41 +329,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return json;
     }
 
-    private static boolean isProductionMode(Properties initParameters) {
-        String booleanString;
-        // First check system property then initParameters
-        if (System
-                .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE)
-                != null) {
-            booleanString = System.getProperty(
-                    VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
-        } else {
-            booleanString = initParameters
-                    .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
-                            Boolean.FALSE.toString());
-        }
-
-        boolean parsedBoolean = Boolean.parseBoolean(booleanString);
-        if (Boolean.toString(parsedBoolean).equalsIgnoreCase(booleanString)) {
-            return parsedBoolean;
-        }
-        logger.debug(String.format(
-                "Property named '%s' is boolean, but contains incorrect value '%s' that is not boolean '%s'",
-                SERVLET_PARAMETER_PRODUCTION_MODE, booleanString,
-                parsedBoolean));
-        return false;
-    }
-
     /**
      * Check if the webpack.generated.js resources is inside 2 jars
      * (flow-server.jar and application.jar) if this is the case then we can
-     * accept a build info file from inside  jar with a single jar in the path.
+     * accept a build info file from inside jar with a single jar in the path.
      *
      * @param resources
-     *         flow-build-info url resource files
-     * @return flow-build-info json string or <code>null</code> if no applicable files found
+     *            flow-build-info url resource files
+     * @return flow-build-info json string or <code>null</code> if no applicable
+     *         files found
      * @throws IOException
-     *         exception reading stream
+     *             exception reading stream
      */
     private static String getPossibleJarResource(List<URL> resources)
             throws IOException {
@@ -368,17 +358,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
         } else {
             URL firstResource = resources.get(0);
             if (resources.size() > 1) {
-                String warningMessage = String
-                        .format("Unable to fully determine correct flow-build-info.%n"
-                                        + "Accepting file '%s' first match of '%s' possible.%n"
-                                        + "Please verify flow-build-info file content.",
-                                firstResource.getPath(), resources.size());
+                String warningMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s' first match of '%s' possible.%n"
+                                + "Please verify flow-build-info file content.",
+                        firstResource.getPath(), resources.size());
                 logger.warn(warningMessage);
             } else {
-                String debugMessage = String
-                        .format("Unable to fully determine correct flow-build-info.%n"
-                                        + "Accepting file '%s'",
-                                firstResource.getPath());
+                String debugMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s'",
+                        firstResource.getPath());
                 logger.debug(debugMessage);
             }
             return FrontendUtils.streamToString(firstResource.openStream());
@@ -413,20 +403,11 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
     }
 
-    private static void verifyMode(CompatibilityModeStatus value,
-            boolean hasTokenFile, boolean hasWebpackConfig) {
-        // Don't handle the case when compatibility mode is enabled.
+    private static void verifyMode(boolean hasTokenFile,
+            boolean hasWebpackConfig) {
 
-        // If no compatibility mode setting is defined
-        // and the project/working directory doesn't contain an appropriate
-        // webpack.config.js, then show the error message.
-        if (value == CompatibilityModeStatus.UNDEFINED) {
-            if (!hasWebpackConfig) {
-                throw new IllegalStateException(ERROR_COMPATIBILITY_MODE_UNSET);
-            }
-        } else if (!hasTokenFile && !hasWebpackConfig) {
-            // If compatibility mode is explicitly set to false, no
-            // flow-build-info.json file exists, and no appropriate
+        if (!hasTokenFile && !hasWebpackConfig) {
+            // If no flow-build-info.json file exists, and no appropriate
             // webpack.config.js is found in the current working directory, then
             // show an error message that suggest either triggering creation of
             // flow-bulid-info.json or ensuring webpack.config.js is present in
@@ -474,12 +455,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * value pairs and add them to the intial properties object.
      *
      * @param systemPropertyBaseClass
-     *         base class for constructing the configuration
+     *            base class for constructing the configuration
      * @param initParameters
-     *         current initParameters object
+     *            current initParameters object
      * @throws VaadinConfigurationException
-     *         exception thrown for failure in invoking method on configuration
-     *         annotation
+     *             exception thrown for failure in invoking method on
+     *             configuration annotation
      */
     private static void readConfigurationAnnotation(
             Class<?> systemPropertyBaseClass, Properties initParameters)
@@ -517,7 +498,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // This should never happen
                 throw new VaadinConfigurationException(
                         "Could not read @VaadinServletConfiguration value "
-                                + method.getName(), e);
+                                + method.getName(),
+                        e);
             }
         }
     }

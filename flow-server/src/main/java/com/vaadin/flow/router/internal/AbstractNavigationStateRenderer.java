@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -739,7 +739,7 @@ public abstract class AbstractNavigationStateRenderer
                 // Transfer all remaining UI child elements (typically dialogs
                 // and notifications) to the new UI
                 maybePrevUI.ifPresent(prevUi ->
-                        moveElementsToNewUI(prevUi, ui));
+                        ui.getInternals().moveElementsFrom(prevUi));
 
                 return Optional.of(chain);
             }
@@ -832,16 +832,6 @@ public abstract class AbstractNavigationStateRenderer
                 || routeLayoutTypes.stream().anyMatch(layoutType ->
                 layoutType.isAnnotationPresent(PreserveOnRefresh.class)
         );
-    }
-
-    private void moveElementsToNewUI(UI prevUi, UI newUi) {
-        final List<Element> uiChildren = prevUi.getElement()
-                .getChildren()
-                .collect(Collectors.toList());
-        uiChildren.forEach(element -> {
-            element.removeFromTree();
-            newUi.getElement().appendChild(element);
-        });
     }
 
     // maps window.name to (location, chain)

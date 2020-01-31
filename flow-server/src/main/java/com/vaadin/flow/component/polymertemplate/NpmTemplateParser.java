@@ -35,10 +35,9 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.JsonObject;
 
@@ -49,8 +48,9 @@ import elemental.json.JsonObject;
  * class and tries to find the one that contains template definition using the
  * tag name.
  * <p>
- * The class is Singleton. Use {@link DefaultTemplateParser#getInstance()} to
- * get its instance.
+ * The class is Singleton. Use {@link NpmTemplateParser#getInstance()} to get
+ * its instance.
+ *
  *
  * @author Vaadin Ltd
  * @since 2.0
@@ -81,19 +81,16 @@ public class NpmTemplateParser implements TemplateParser {
             Class<? extends PolymerTemplate<?>> clazz, String tag,
             VaadinService service) {
 
-        WebBrowser browser = FakeBrowser.getEs6();
-
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, JsModule.class).stream()
-                .map(htmlImport -> new Dependency(Dependency.Type.JS_MODULE,
-                        htmlImport.value(), htmlImport.loadMode()))
+                .map(jsModule -> new Dependency(Dependency.Type.JS_MODULE,
+                        jsModule.value(),
+                        LoadMode.EAGER)) // load mode doesn't matter here
                 .collect(Collectors.toList());
 
-        DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(
-                service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {
             dependencies = filter.filter(new ArrayList<>(dependencies),
-                    filterContext);
+                    service);
         }
 
         Pair<Dependency, String> chosenDep = null;

@@ -388,10 +388,6 @@ public class StateTree {
             nodeFeatureDebugName.set(NodeFeatures.CLASS_LIST, "classList");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
-            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTIES,
-                    "synchronizedProperties");
-            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS,
-                    "synchronizedPropertyEvents");
             nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING,
                     "componentMapping");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,

@@ -42,7 +42,7 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
                 .$("client-side-component").first();
         List<TestBenchElement> divsInClientSideComponent = nestedClientSideComponent
                 .$("div").all();
-        // Fist of all: the client side component is correctly rsolved so it has
+        // Fist of all: the client side component is correctly resolved so it has
         // something inside its shadow root
         Assert.assertTrue(
                 "The client side component inside themed component is not resolved",

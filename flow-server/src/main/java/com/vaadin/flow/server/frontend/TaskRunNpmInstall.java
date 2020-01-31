@@ -15,20 +15,19 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -39,9 +38,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final NodeUpdater packageUpdater;
 
-    private final List<String> ignoredNodeFolders = Arrays
-            .asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".modules.yaml");
-    private final boolean disablePnpm;
+    private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
+            "pnpm", ".ignored_pnpm", ".pnpm", ".modules.yaml");
+    private final boolean enablePnpm;
 
     /**
      * Create an instance of the command.
@@ -49,15 +48,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * @param packageUpdater
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
+     * @param enablePnpm
+     *            whether PNPM should be used instead of NPM
      */
-    TaskRunNpmInstall(NodeUpdater packageUpdater, boolean disablePnpm) {
+    TaskRunNpmInstall(NodeUpdater packageUpdater, boolean enablePnpm) {
         this.packageUpdater = packageUpdater;
-        this.disablePnpm = disablePnpm;
+        this.enablePnpm = enablePnpm;
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
-        String toolName = disablePnpm ? "npm" : "pnpm";
+        String toolName = enablePnpm ? "pnpm" : "npm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
             packageUpdater.log().info("Running `" + toolName + " install` to "
                     + "resolve and optionally download frontend dependencies. "
@@ -73,7 +74,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             // Ignore .bin and pnpm folders as those are always installed for
             // pnpm execution
             File[] installedPackages = packageUpdater.nodeModulesFolder
-                    .listFiles((dir, name) -> !ignoredNodeFolders.contains(name));
+                    .listFiles(
+                            (dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
@@ -90,14 +92,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
         try {
-            executable = disablePnpm ? FrontendUtils.getNpmExecutable(baseDir)
-                    : FrontendUtils.getPnpmExecutable(baseDir);
+            executable = enablePnpm ? FrontendUtils.getPnpmExecutable(baseDir)
+                    : FrontendUtils.getNpmExecutable(baseDir);
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
         }
         List<String> command = new ArrayList<>(executable);
         command.add("install");
+
+        console(YELLOW, commandToString(
+                packageUpdater.npmFolder.getAbsolutePath(), command));
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
@@ -107,32 +112,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
         builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
-        String toolName = disablePnpm ? "npm" : "pnpm";
-
-        String commandString = command.stream()
-                .collect(Collectors.joining(" "));
+        String toolName = enablePnpm ? "pnpm" : "npm";
 
         Process process = null;
         try {
-            process = builder.start();
 
-            packageUpdater.log().debug("Output of `{}`:", commandString);
-            StringBuilder toolOutput = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
-                String stdoutLine;
-                while ((stdoutLine = reader.readLine()) != null) {
-                    packageUpdater.log().debug(stdoutLine);
-                    toolOutput.append(stdoutLine);
-                }
-            }
-
+            process = builder.inheritIO().start();
             int errorCode = process.waitFor();
             if (errorCode != 0) {
-                // Echo the stdout from pnpm/npm to error level log
-                packageUpdater.log().error("Command `{}` failed:\n{}",
-                        commandString, toolOutput);
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",
@@ -143,8 +130,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "Some dependencies are not installed. Check "
                                 + toolName + " command output");
             } else {
-                packageUpdater.log().info(
-                        "Frontend dependencies resolved successfully.");
+                packageUpdater.log()
+                        .info("Frontend dependencies resolved successfully.");
             }
         } catch (InterruptedException | IOException e) {
             packageUpdater.log().error("Error when running `{} install`",

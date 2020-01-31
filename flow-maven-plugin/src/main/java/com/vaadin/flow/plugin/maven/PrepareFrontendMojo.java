@@ -42,13 +42,18 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -61,34 +66,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 @Mojo(name = "prepare-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
-    /**
-     * This goal checks that node and npm tools are installed, copies frontend
-     * resources available inside `.jar` dependencies to `node_modules`, and
-     * creates or updates `package.json` and `webpack.config.json` files.
-     *
-     * @deprecated use {@link PrepareFrontendMojo} instead
-     */
-    @Deprecated
-    @Mojo(name = "validate", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
-    public static class VaildateMojo extends PrepareFrontendMojo {
-        @Override
-        public void execute()
-                throws MojoExecutionException, MojoFailureException {
-            getLog().warn(
-                    "\n\n   You are using the 'validate' goal which has been renamed to 'prepare-frontend', please update your 'pom.xml'.\n");
-            super.execute();
-        }
-    }
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
-     */
-    @Parameter(defaultValue = "${project.basedir}")
-    private File npmFolder;
 
     /**
      * Copy the `webapp.config.js` from the specified URL if missing. Default is
@@ -106,35 +85,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
     private String webpackGeneratedTemplate;
 
-    /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
-    private File generatedFolder;
-
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
-    /**
-     * A directory with project's frontend source files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    private File frontendDirectory;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
         // propagate info via System properties and token file
         propagateBuildInfo();
-
-        // Do nothing when compatibility mode
-        if (compatibility) {
-            getLog().debug(
-                    "Skipped 'prepare-frontend' goal because compatibility mode is set.");
-            return;
-        }
 
         try {
             FrontendUtils
@@ -145,21 +102,25 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             FileUtils.forceMkdir(generatedFolder);
         } catch (IOException e) {
-            throw new MojoFailureException(
-                    "Failed to create folder '" + generatedFolder
-                            + "'. Verify that you may write to path.", e);
+            throw new MojoFailureException("Failed to create folder '"
+                    + generatedFolder + "'. Verify that you may write to path.",
+                    e);
         }
         try {
-            NodeTasks.Builder builder = new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder, frontendDirectory)
+            NodeTasks.Builder builder = new NodeTasks.Builder(
+                    getClassFinder(project), npmFolder, generatedFolder,
+                    frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
+                            .useV14Bootstrap(useDeprecatedV14Bootstrapping())
+                            .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false);
-            // If building a jar project copy jar artifact contents now as we might
+            // If building a jar project copy jar artifact contents now as we
+            // might
             // not be able to read files from jar path.
-            if("jar".equals(project.getPackaging())) {
+            if ("jar".equals(project.getPackaging())) {
                 Set<File> jarFiles = project.getArtifacts().stream()
                         .filter(artifact -> "jar".equals(artifact.getType()))
                         .map(Artifact::getFile).collect(Collectors.toSet());
@@ -179,11 +140,21 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // token file with the information about the build
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
-        buildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, compatibility);
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
+        buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, useDeprecatedV14Bootstrapping());
+        buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL, eagerServerLoad);
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN, frontendDirectory.getAbsolutePath());
+        buildInfo.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                javaSourceFolder.getAbsolutePath());
+        buildInfo.put(CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                applicationProperties.getAbsolutePath());
+        buildInfo.put(CONNECT_OPEN_API_FILE_TOKEN,
+                openApiJsonFile.getAbsolutePath());
+        buildInfo.put(CONNECT_GENERATED_TS_DIR_TOKEN,
+                generatedTsFolder.getAbsolutePath());
+
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
@@ -206,22 +177,16 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             + ".properties:%n productionMode: %s%n bowerMode:"
                             + " %s%n compatibilityMode: %s%n webpackPort: %s%n "
                             + "project.basedir: %s%nGoal parameters:%n "
-                            + "productionMode: %s%n compatibilityMode: %s%n "
-                            + "compatibility: %b%n npmFolder: %s%nToken file: "
-                            + "%s%n" + "Token content: %s%n",
+                            + "productionMode: %s%n "
+                            + "npmFolder: %s%nToken file: " + "%s%n"
+                            + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
                     System.getProperty("vaadin.bowerMode"),
-                    System.getProperty("vaadin.compatibiityMode"),
                     System.getProperty("vaadin.devmode.webpack.running-port"),
                     System.getProperty("project.basedir"), productionMode,
-                    compatibilityMode, compatibility, npmFolder,
-                    token.getAbsolutePath(), buildInfo.toJson()));
+                    npmFolder, token.getAbsolutePath(), buildInfo.toJson()));
         }
     }
 
-    @Override
-    boolean isDefaultCompatibility() {
-        return false;
-    }
 }

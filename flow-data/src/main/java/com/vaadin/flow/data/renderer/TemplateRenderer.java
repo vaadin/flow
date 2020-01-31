@@ -16,6 +16,9 @@
 package com.vaadin.flow.data.renderer;
 
 import java.util.Objects;
+import java.util.regex.Pattern;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.ValueProvider;
@@ -23,18 +26,21 @@ import com.vaadin.flow.internal.JsonSerializer;
 
 /**
  * Helper class to create {@link Renderer} instances, with fluent API.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
  * @param <SOURCE>
  *            the type of the input object used inside the template
- * 
+ *
  * @see #of(String)
  * @see <a href=
  *      "https://www.polymer-project.org/2.0/docs/devguide/templates">https://www.polymer-project.org/2.0/docs/devguide/templates</a>
  */
 public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
+
+    private static final Pattern BINDING_MISSING_DOLLAR = Pattern
+            .compile("\\s(class|style)\\s*=\\s*['\"]?[{\\[]{2}");
 
     /**
      * Creates a new TemplateRenderer based on the provided template. The
@@ -42,17 +48,17 @@ public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
      * element, and works with Polymer data binding syntax.
      * <p>
      * Examples:
-     * 
+     *
      * <pre>
      * {@code
      * // Prints the index of the item inside a repeating list
      * TemplateRenderer.of("[[index]]");
-     * 
+     *
      * // Prints the property of an item
      * TemplateRenderer.of("<div>Property: [[item.property]]</div>");
      * }
      * </pre>
-     * 
+     *
      * @param <SOURCE>
      *            the type of the input object used inside the template
      * @param template
@@ -62,8 +68,23 @@ public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
      */
     public static <SOURCE> TemplateRenderer<SOURCE> of(String template) {
         Objects.requireNonNull(template);
+        warnIfClassOrStyleWithoutDollar(template);
         TemplateRenderer<SOURCE> renderer = new TemplateRenderer<>(template);
         return renderer;
+    }
+
+    private static void warnIfClassOrStyleWithoutDollar(String template) {
+        if (hasClassOrStyleWithoutDollar(template)) {
+            LoggerFactory.getLogger(TemplateRenderer.class)
+                    .warn("Bindings for 'class' and 'style' need a $ prefix (e.g. 'class$=\"[[item.className]]\"') to use an attribute binding instead of a property binding."
+                            + " Apparent omission detected in the template '{}'",
+                            template);
+        }
+    }
+
+    // Not private for testing purposes
+    static boolean hasClassOrStyleWithoutDollar(String template) {
+        return BINDING_MISSING_DOLLAR.matcher(template).find();
     }
 
     private TemplateRenderer(String template) {
@@ -76,28 +97,28 @@ public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
      * syntax.
      * <p>
      * Examples:
-     * 
+     *
      * <pre>
      * {@code
      * // Regular property
      * TemplateRenderer.<Person> of("<div>Name: [[item.name]]</div>")
      *          .withProperty("name", Person::getName);
-     * 
+     *
      * // Property that uses a bean. Note that in this case the entire "Address" object will be sent to the template.
      * // Note that even properties of the bean which are not used in the template are sent to the client, so use
      * // this feature with caution.
      * TemplateRenderer.<Person> of("<span>Street: [[item.address.street]]</span>")
-     *          .withProperty("address", Person::getAddress); 
-     * 
+     *          .withProperty("address", Person::getAddress);
+     *
      * // In this case only the street field inside the Address object is sent
      * TemplateRenderer.<Person> of("<span>Street: [[item.street]]</span>")
      *          .withProperty("street", person -> person.getAddress().getStreet());
      * }
      * </pre>
-     * 
+     *
      * Any types supported by the {@link JsonSerializer} are valid types for the
      * TemplateRenderer.
-     * 
+     *
      * @param property
      *            the name of the property used inside the template, not
      *            <code>null</code>
@@ -118,24 +139,24 @@ public final class TemplateRenderer<SOURCE> extends Renderer<SOURCE> {
      * syntax.
      * <p>
      * Examples:
-     * 
+     *
      * <pre>
      * {@code
      * // Standard event
      * TemplateRenderer.of("<button on-click='handleClick'>Click me</button>")
      *          .withEventHandler("handleClick", object -> doSomething());
-     * 
+     *
      * // You can handle custom events from webcomponents as well, using the same syntax
      * TemplateRenderer.of("<my-webcomponent on-customevent=
     'onCustomEvent'></my-webcomponent>")
      *          .withEventHandler("onCustomEvent", object -> doSomething());
      * }
      * </pre>
-     * 
+     *
      * The name of the function used on the {@code on-event} attribute should be
      * the name used at the handlerName parameter. This name must be a valid
      * Javascript function name.
-     * 
+     *
      * @param handlerName
      *            the name of the handler used inside the
      *            {@code on-event="handlerName"}, not <code>null</code>

@@ -44,14 +44,6 @@ public enum KeyLocation {
     RIGHT(2),
 
     /**
-     * This value contains a typo. Please use RIGHT instead.
-     *
-     * @see RIGHT
-     */
-    @Deprecated
-    RIGTH(2),
-
-    /**
      * Numeric pad key location.
      */
     NUMPAD(3);

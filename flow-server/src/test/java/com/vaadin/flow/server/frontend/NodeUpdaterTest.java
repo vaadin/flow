@@ -37,6 +37,7 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 public class NodeUpdaterTest {
 
@@ -58,7 +59,7 @@ public class NodeUpdaterTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File("")) {
+                new File(""), null) {
 
             @Override
             public void execute() {
@@ -69,8 +70,8 @@ public class NodeUpdaterTest {
 
     @Test
     public void resolveResource_startsWithAt_returnsPassedArg() {
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo", true));
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo", false));
+        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
+        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
     }
 
     @Test
@@ -115,7 +116,8 @@ public class NodeUpdaterTest {
     @Test
     public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
         JsonObject object = Json.createObject();
-        object.put(nodeUpdater.VAADIN_DEP_KEY, nodeUpdater.createVaadinPackagesJson());
+        object.put(nodeUpdater.VAADIN_DEP_KEY,
+                nodeUpdater.createVaadinPackagesJson());
         nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
@@ -128,7 +130,8 @@ public class NodeUpdaterTest {
         JsonObject dependencies = Json.createObject();
         dependencies.put("@polymer/polymer", "4.0.0");
         object.put(NodeUpdater.DEPENDENCIES, dependencies);
-        object.put(NodeUpdater.VAADIN_DEP_KEY, nodeUpdater.createVaadinPackagesJson());
+        object.put(NodeUpdater.VAADIN_DEP_KEY,
+                nodeUpdater.createVaadinPackagesJson());
 
         nodeUpdater.updateDefaultDependencies(object);
 
@@ -142,27 +145,26 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEPENDENCIES).put("@webcomponents/webcomponentsjs", "^2.1.1");
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
                 "3.3.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("^2.2.10", packageJson.getObject(NodeUpdater.DEPENDENCIES).getString("@webcomponents/webcomponentsjs"));
-        Assert.assertEquals("4.30.0", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("4.30.0", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
-    @Test //#6907 test when user has set newer versions
-    public void updateDefaultDependencies_newerVersionsAreNotChanged() throws IOException {
+    @Test // #6907 test when user has set newer versions
+    public void updateDefaultDependencies_newerVersionsAreNotChanged()
+            throws IOException {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEPENDENCIES).put("@webcomponents/webcomponentsjs", "2.3.1");
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
                 "5.0.1");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("2.3.1", packageJson.getObject(NodeUpdater.DEPENDENCIES).getString("@webcomponents/webcomponentsjs"));
-        Assert.assertEquals("5.0.1", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("5.0.1", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
     private String getPolymerVersion(JsonObject object) {
@@ -174,16 +176,16 @@ public class NodeUpdaterTest {
     private void resolveResource_happyPath(String resourceFolder) {
         Mockito.when(finder.getResource(resourceFolder + "/foo"))
                 .thenReturn(url);
-        Assert.assertEquals(FrontendUtils.FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo", true));
-        Assert.assertEquals(FrontendUtils.FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo", false));
+        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
+                nodeUpdater.resolveResource("foo"));
+        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
+                nodeUpdater.resolveResource("foo"));
     }
 
     private void resolveResource_unhappyPath(String resourceFolder) {
         Mockito.when(finder.getResource(resourceFolder + "/foo"))
                 .thenReturn(null);
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo", true));
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo", false));
+        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
+        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
     }
 }
