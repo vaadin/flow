@@ -205,6 +205,10 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                         + "property for the deployment configuration using an application or a system property.<p>"
                         + "<p>Note that transpilation is always enabled when running the <code>build-frontend</code> Maven goal as part of a "
                         + "production mode build.</p>"
+                        + "<p><sub><a onclick=\"document.cookie='"
+                        + FORCE_LOAD_COOKIE
+                        + "';window.location.reload();return false;\" href=\"#\">Continue anyway<br>"
+                        + "(eg. if you've setup ES5 transpilation in a custom webpack configuration)</sub></p>"
                         + "</body>\n"
                         + "</html>");
         // @formatter:on
