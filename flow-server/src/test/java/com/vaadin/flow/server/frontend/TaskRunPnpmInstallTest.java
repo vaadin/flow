@@ -33,6 +33,8 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
+    private static final String PINNED_VERSION = "3.2.17";
+
     @Override
     @Before
     public void setUp() throws IOException {
@@ -41,7 +43,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_overlayVersionIsPinnedViaShrinkWrap_installedOverlayVersionIsSpecifiedByShrinkWrap()
+    public void runPnpmInstall_overlayVersionIsPinnedViaPlatform_installedOverlayVersionIsSpecifiedByPlatform()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -53,22 +55,24 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         + "\"@vaadin/vaadin-dialog\": \"2.2.1\"}}",
                 StandardCharsets.UTF_8);
 
-        // Shrink wrap defines a pinned version
+        // Platform defines a pinned version
         TaskRunNpmInstall task = createTask(
-                "{ \"@vaadin/vaadin-overlay\":\"3.2.17\"}");
+                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
                 "@vaadin/vaadin-overlay/package.json");
 
-        // The resulting version should be the one specified in the shrink-wrap
+        // The resulting version should be the one specified via platform
+        // versions file
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals("3.2.17", overlayPackage.getString("version"));
+        Assert.assertEquals(PINNED_VERSION,
+                overlayPackage.getString("version"));
     }
 
     @Test
-    public void runPnpmInstall_overlayVersionIsNotPinned_installedOverlayVersionDifffersFromSpecifiedByShrinkWrap()
+    public void runPnpmInstall_overlayVersionIsNotPinned_installedOverlayVersionIsNotPinned()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -80,17 +84,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         + "\"@vaadin/vaadin-dialog\": \"2.2.1\" }}",
                 StandardCharsets.UTF_8);
 
-        // Shrink wrap defines a pinned version
         TaskRunNpmInstall task = createTask();
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
                 "@vaadin/vaadin-overlay/package.json");
 
-        // The resulting version should be the one specified in the shrink-wrap
+        // The resulting version should not be the custom pinned version
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertNotEquals("3.2.17", overlayPackage.getString("version"));
+        Assert.assertNotEquals(PINNED_VERSION,
+                overlayPackage.getString("version"));
     }
 
     @Override

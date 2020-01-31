@@ -97,7 +97,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
             File versions = new File(packageUpdater.generatedFolder,
                     "versions.json");
-            ConvertVersionsJson convert = new ConvertVersionsJson(Json
+            VersionsJsonConverter convert = new VersionsJsonConverter(Json
                     .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
             FileUtils.write(versions, stringify(convert.convert(), 2) + "\n",
                     StandardCharsets.UTF_8);
@@ -136,7 +136,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 createPnpmFile(generateVersionsJson());
             } catch (IOException exception) {
                 throw new ExecutionFailedException(
-                        "Couldn't pin transitive dependencies versions",
+                        "Failed to read frontend version data from vaadin-core "
+                                + "and make it available to pnpm for locking transitive dependencies.\n"
+                                + "Please report an issue, as a workaround try running project "
+                                + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
                         exception);
             }
         }

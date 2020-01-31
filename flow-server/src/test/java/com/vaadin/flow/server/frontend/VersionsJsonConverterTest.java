@@ -25,7 +25,7 @@ import org.junit.rules.TemporaryFolder;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-public class ConvertVersionsJsonTest {
+public class VersionsJsonConverterTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -50,7 +50,7 @@ public class ConvertVersionsJsonTest {
                 + "}";
         // @formatter:on
 
-        ConvertVersionsJson convert = new ConvertVersionsJson(Json.parse(json));
+        VersionsJsonConverter convert = new VersionsJsonConverter(Json.parse(json));
         JsonObject conertedJson = convert.convert();
         Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-upload"));

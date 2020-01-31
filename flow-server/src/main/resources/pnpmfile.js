@@ -1,3 +1,11 @@
+/**
+ * NOTICE: this is an auto-generated file
+ *
+ * This file has been generated for `pnpm install` task.
+ * It is used to pin client side dependencies. 
+ * This file will be overwritten on every run. 
+ */
+
 const fs = require('fs');
 
 const packageJson = JSON.parse(fs.readFileSync('./package.json', 'utf-8'));

@@ -30,13 +30,13 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-class ConvertVersionsJson {
+class VersionsJsonConverter {
 
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
     private final JsonObject convertedObject;
 
-    ConvertVersionsJson(JsonObject platformVersions) {
+    VersionsJsonConverter(JsonObject platformVersions) {
         convertedObject = Json.createObject();
 
         collectDependencies(platformVersions);
