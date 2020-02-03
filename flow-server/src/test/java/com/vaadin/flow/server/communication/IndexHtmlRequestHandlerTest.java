@@ -390,7 +390,7 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Assert.assertTrue(
                 "Should have a system error dialog",
-                indexHtml.contains("<div class=\"v-system-error\">"));
+                indexHtml.contains("<div class=\"v-system-error\" onclick=\"this.parentElement.removeChild(this)\">"));
         Assert.assertTrue(
                 "Should show webpack failure error",
                 indexHtml.contains("Failed to compile"));
