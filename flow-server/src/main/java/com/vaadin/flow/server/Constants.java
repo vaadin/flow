@@ -21,6 +21,9 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Constants used by the server side framework.
+ * <p>
+ * Not available on the client side, for that use
+ * {@link com.vaadin.flow.shared.ApplicationConstants}.
  *
  * @since 1.0
  */
@@ -296,6 +299,11 @@ public final class Constants implements Serializable {
      * Default location to look for the external stats.json.
      */
     public static final String DEFAULT_EXTERNAL_STATS_URL = "/vaadin-static/VAADIN/config/stats.json";
+
+    /**
+     * The name of platform versions file.
+     */
+    public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
     private Constants() {
         // prevent instantiation constants class only
