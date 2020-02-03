@@ -17,12 +17,11 @@ package com.vaadin.flow.router.internal;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.HasUrlParameterUtil;
 import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
@@ -73,7 +72,7 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
                 .getNavigationTarget();
 
         final String value = navigationState.getUrlParametersMap()
-                .get(RouteTarget.HAS_URL_PARAMETER_NAME);
+                .get(HasUrlParameterUtil.PARAMETER_NAME);
 
         // TODO: handle varargs/wildcard
         if (value != null) {

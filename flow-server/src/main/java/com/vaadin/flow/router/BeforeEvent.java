@@ -415,7 +415,8 @@ public abstract class BeforeEvent extends EventObject {
         }
 
         return new NavigationStateBuilder(ui.getRouter())
-                .withTarget(target, segments).build();
+                .withTarget(target, HasUrlParameterUtil.getParameters(segments))
+                .build();
     }
 
     /**
