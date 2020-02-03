@@ -236,15 +236,14 @@
                 <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>pnpm-install</id>
+                        <id>npm-install</id>
                         <phase>validate</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>pnpm</executable>
+                            <executable>npm</executable>
                             <arguments>
-                                <argument>--shamefully-hoist=true</argument>
                                 <argument>install</argument>
                             </arguments>
                         </configuration>
