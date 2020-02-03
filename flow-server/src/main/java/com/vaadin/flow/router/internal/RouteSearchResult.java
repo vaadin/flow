@@ -19,7 +19,15 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-class RouteSearchResult {
+/**
+ * Contains the information resulted from searching a route target using a
+ * navigation url as input.
+ * 
+ * The result of the search contains the target itself if found, and the url
+ * parameter values extracted from the input path according with the route
+ * configuration.
+ */
+public class RouteSearchResult {
 
     // Processed path.
     private String path;
@@ -28,23 +36,39 @@ class RouteSearchResult {
     private RouteTarget target;
 
     // Parameters found in the path.
-    private Map<String, Serializable> urlParameters;
+    private Map<String, String> urlParameters;
 
     RouteSearchResult(String path, RouteTarget target,
-            Map<String, Serializable> urlParameters) {
+            Map<String, String> urlParameters) {
         this.path = path;
         this.target = target;
         this.urlParameters = Collections.unmodifiableMap(urlParameters);
     }
 
+    /**
+     * Gets whether this search result instance contains a navigation target.
+     * 
+     * @return true if this search result instance contains a navigation target,
+     *         otherwise false.
+     */
     public boolean hasTarget() {
         return target != null;
     }
 
+    /**
+     * Gets the input path for the search.
+     * 
+     * @return the input path for the search.
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     * Gets the navigation target.
+     * 
+     * @return the navigation target.
+     */
     public RouteTarget getTarget() {
         return target;
     }
@@ -54,7 +78,7 @@ class RouteSearchResult {
      * 
      * @return the url parameters for this search response.
      */
-    public Map<String, Serializable> getUrlParameters() {
+    public Map<String, String> getUrlParameters() {
         return urlParameters;
     }
 

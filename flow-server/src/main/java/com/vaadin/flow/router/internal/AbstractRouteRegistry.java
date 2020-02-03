@@ -362,6 +362,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                     "addRouteToConfiguration requires the registry lock and a mutable configuration.");
         }
 
+        // Backward compatibility with HasUrlParameter for which the parameters
+        // were stored in RouteTarget.
+        path = transformWithHasUrlParameter(path, navigationTarget);
+
+        // TODO: throw backward compatible exceptions if path doesn't make sense in current configuration.
+
         configuration.setRoute(path, navigationTarget);
 
         if (!configuration.hasRouteTarget(navigationTarget)) {
@@ -396,6 +402,20 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         } else {
             exceptionTargetsMap.put(exceptionType, target);
         }
+    }
+
+    private String transformWithHasUrlParameter(String pathPattern, Class<? extends Component> navigationTarget) {
+        if (RouteTarget.hasUrlParameter(navigationTarget)) {
+
+            if (RouteTarget.hasOptionalParameter(navigationTarget)) {
+                pathPattern += "/[:param]";
+            } else if (RouteTarget.hasWildcardParameter(navigationTarget)) {
+                pathPattern += "/...:param";
+            } else {
+                pathPattern += "/:param";
+            }
+        }
+        return pathPattern;
     }
 
     /**
