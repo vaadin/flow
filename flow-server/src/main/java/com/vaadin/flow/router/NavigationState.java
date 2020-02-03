@@ -16,6 +16,8 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,7 +34,7 @@ import com.vaadin.flow.component.Component;
 public class NavigationState implements Serializable {
 
     private Class<? extends Component> navigationTarget;
-    private List<String> urlParameters;
+    private Map<String, String> urlParameters;
     private String resolvedPath;
     private final Router router;
 
@@ -92,13 +94,44 @@ public class NavigationState implements Serializable {
     }
 
     /**
+     * Sets the url parameters.
+     * 
+     * @param urlParameters
+     *            url parameters.
+     */
+    public void setUrlParametersMap(Map<String, String> urlParameters) {
+        this.urlParameters = urlParameters;
+    }
+
+    /**
+     * Gets the url parameters map.
+     * 
+     * @return url parameters.
+     */
+    public Map<String, String> getUrlParametersMap() {
+        if (urlParameters != null) {
+            return Collections.unmodifiableMap(urlParameters);
+        } else {
+            return Collections.EMPTY_MAP;
+        }
+    }
+
+    /**
      * Gets the list of strings that correspond to the raw string url
      * parameters.
      *
      * @return the url parameters of this navigation state
+     * @deprecated use {@link #getUrlParametersMap()}
      */
+    @Deprecated
     public Optional<List<String>> getUrlParameters() {
-        return Optional.ofNullable(urlParameters);
+//        if (urlParameters != null) {
+//            for
+//            return Optional.of(new ArrayList<>(urlParameters.values()));
+//        }
+//        return Optional.ofNullable(urlParameters);
+        // TODO: implement backward compatibility
+        return Optional.empty();
     }
 
     /**
@@ -106,8 +139,12 @@ public class NavigationState implements Serializable {
      *
      * @param urlParameters
      *            the url parameters to set
+     * @deprecated use {@link #setUrlParametersMap(Map)} instead.
      */
+    @Deprecated
     public void setUrlParameters(List<String> urlParameters) {
-        this.urlParameters = urlParameters;
+//        this.urlParameters = urlParameters;
+        // TODO: implement backward compatibility
+
     }
 }

@@ -31,6 +31,8 @@ import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
+import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteSearchResult;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -143,28 +145,30 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
+    public RouteSearchResult getNavigationRoute(String path) {
+        final RouteSearchResult routeSearchResult = getConfiguration().getRouteSearchResult(path);
+        if (routeSearchResult.hasTarget()) {
+            return routeSearchResult;
+        }
+        return getParentRegistry().getNavigationRoute(path);
+    }
+
+    @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
-        Optional<Class<? extends Component>> navigationTarget = getNavigationTarget(
-                pathString, Collections.emptyList());
-
-        if (navigationTarget.isPresent()) {
-            return navigationTarget;
+        if (getConfiguration().hasUrl(pathString)) {
+            return getConfiguration().getRoute(pathString);
         }
 
         return getParentRegistry().getNavigationTarget(pathString);
     }
 
     @Override
+    @Deprecated
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-        if (getConfiguration().hasRoute(pathString, segments)) {
-            return getConfiguration().getRoute(pathString, segments);
-        }
-
-        return getParentRegistry().getNavigationTarget(pathString, segments);
+        return getNavigationTarget(PathUtil.getPath(pathString, segments));
     }
 
     @Override

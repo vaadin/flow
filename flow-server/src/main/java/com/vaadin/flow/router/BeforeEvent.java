@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,6 +46,7 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
+    private final Map<String, String> urlParameters;
     private final List<Class<? extends RouterLayout>> layouts;
     private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
@@ -61,6 +63,23 @@ public abstract class BeforeEvent extends EventObject {
      *            Navigation layout chain
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
+            List<Class<? extends RouterLayout>> layouts) {
+        this(event.getSource(), event.getTrigger(), event.getLocation(),
+                navigationTarget, event.getUI(), layouts);
+    }
+
+    /**
+     * Construct event from a NavigationEvent.
+     *
+     * @param event
+     *            NavigationEvent that is on-going
+     * @param navigationTarget
+     *            Navigation target
+     * @param layouts
+     *            Navigation layout chain
+     */
+    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
+            Map<String, String> urlParameters,
             List<Class<? extends RouterLayout>> layouts) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, event.getUI(), layouts);
