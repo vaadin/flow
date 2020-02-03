@@ -92,7 +92,7 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Collect all routes for which given routeTarget is registered.
      * This is mainly for handling route aliases as reading from the class
-     * annotations doesn't specifically return the actual registartions as they
+     * annotations doesn't specifically return the actual registrations as they
      * can change during runtime.
      *
      * @param routeTarget

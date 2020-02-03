@@ -497,9 +497,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                           |                 |                         |        |                      |
                           |                 |                         |        | NO_EXPLICIT_STATUS   |
     +-----------------+   |                 |                         |        |                      |
-    |                 |   |                 v                         +----&gt;   |   The proeprty is    |
+    |                 |   |                 v                         +----&gt;   |   The property is    |
     |  DISALLOW       |&lt;--        +----------------------------------+         |not forbidden and     |
-    |                 |           |           ALLOW                  |         |it is not synhronized |
+    |                 |           |           ALLOW                  |         |it is not synchronized |
     | The property is |           | The property is explicitly       |         |  Check whether       |
     | forbidden and   |           | synchronized and should allow    |         |updateFromClientFilter|
     |  filter is not  |           |       update                     |         | exists and disallows |

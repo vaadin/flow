@@ -78,7 +78,7 @@ public abstract class AbstractBasicModelType<T> implements ModelType {
     /**
      * Converts the given model value to the application type of this model
      * type. The conversion automatically handles default values for primitive
-     * types and conversion of client-originiated numbers to the expected Java
+     * types and conversion of client-originated numbers to the expected Java
      * number type.
      *
      * @param modelValue

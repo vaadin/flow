@@ -250,7 +250,7 @@
             </exclusions>
         </dependency>
 
-        <!-- Connect Testing dependendies -->
+        <!-- Connect Testing dependencies -->
 
         <!-- TODO: re-enable tests mocking final classes in the connect
           package by using the org.mockito.plugins.MockMaker plugin with
