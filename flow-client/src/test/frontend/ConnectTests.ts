@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, VaadinConnectError, VaadinConnectValidationError } from "../../main/resources/META-INF/resources/frontend/Connect";
+import { ConnectClient, VaadinConnectError, VaadinConnectValidationError, VaadinConnectResponseError } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -192,6 +192,26 @@ describe('ConnectClient', () => {
         expect(err).to.have.property('message').that.is.string(expectedObject.message);
         expect(err).to.have.property('type').that.is.string(expectedObject.type);
         expect(err).to.have.deep.property('detail', expectedObject.detail);
+      }
+    });
+
+    it('should reject with extra unexpected response parameters in the exception if response body has the data', async() => {
+      const body = 'Unexpected error';
+      const errorResponse = new Response(
+          body,
+          {
+            status: 500,
+            statusText: 'Internal Server Error'
+          }
+      );
+      fetchMock.post(base + '/connect/FooEndpoint/vaadinConnectResponse', errorResponse);
+
+      try {
+        await client.call('FooEndpoint', 'vaadinConnectResponse');
+      } catch (err) {
+        expect(err).to.be.instanceOf(VaadinConnectResponseError);
+        expect(err).to.have.property('message').that.is.string(body);
+        expect(err).to.have.deep.property('response', errorResponse);
       }
     });
 
