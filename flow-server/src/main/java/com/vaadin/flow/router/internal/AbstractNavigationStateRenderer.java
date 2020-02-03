@@ -148,7 +148,7 @@ public abstract class AbstractNavigationStateRenderer
         checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
-                event, routeTargetType, routeLayoutTypes);
+                event, routeTargetType, urlParameters, routeLayoutTypes);
 
         Deque<BeforeLeaveHandler> leaveHandlers;
         if (postponed != null) {
@@ -212,7 +212,7 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
-                event, routeTargetType, routeLayoutTypes);
+                event, routeTargetType, urlParameters, routeLayoutTypes);
 
         transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
                 beforeNavigationActivating, event, chain);

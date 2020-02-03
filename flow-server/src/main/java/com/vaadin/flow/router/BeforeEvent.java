@@ -75,6 +75,8 @@ public abstract class BeforeEvent extends EventObject {
      *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
+     * @param urlParameters
+     *            url parameters
      * @param layouts
      *            Navigation layout chain
      */
@@ -82,7 +84,7 @@ public abstract class BeforeEvent extends EventObject {
             Map<String, String> urlParameters,
             List<Class<? extends RouterLayout>> layouts) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
-                navigationTarget, event.getUI(), layouts);
+                navigationTarget, urlParameters, event.getUI(), layouts);
 
     }
 
@@ -104,19 +106,48 @@ public abstract class BeforeEvent extends EventObject {
      *            the layout chain for the navigation target
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui,
+                       Location location, Class<?> navigationTarget, UI ui,
+                       List<Class<? extends RouterLayout>> layouts) {
+        this(router, trigger, location, navigationTarget, Collections.emptyMap(),
+                ui, Collections.emptyList());
+    }
+    
+    /**
+     * Constructs a new BeforeNavigation Event.
+     *
+     * @param router
+     *            the router that triggered the change, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
+     * @param location
+     *            the new location, not {@code null}
+     * @param navigationTarget
+     *            navigation target class
+     * @param urlParameters
+     *            url parameters
+     * @param ui
+     *            the UI related to the navigation
+     * @param layouts
+     *            the layout chain for the navigation target
+     */
+    public BeforeEvent(Router router, NavigationTrigger trigger,
+            Location location, Class<?> navigationTarget,
+            Map<String, String> urlParameters, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router);
 
         assert trigger != null;
         assert location != null;
         assert navigationTarget != null;
+        assert urlParameters != null;
         assert ui != null;
         assert layouts != null;
 
         this.trigger = trigger;
         this.location = location;
         this.navigationTarget = navigationTarget;
+        this.urlParameters = Collections.unmodifiableMap(urlParameters);
         this.ui = ui;
         this.layouts = Collections.unmodifiableList(new ArrayList<>(layouts));
     }
@@ -444,6 +475,10 @@ public abstract class BeforeEvent extends EventObject {
      */
     public Class<?> getNavigationTarget() {
         return navigationTarget;
+    }
+
+    public Map<String, String> getUrlParameters() {
+        return urlParameters;
     }
 
     /**
