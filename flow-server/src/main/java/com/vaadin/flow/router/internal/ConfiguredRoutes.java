@@ -154,8 +154,7 @@ public class ConfiguredRoutes implements Serializable {
      */
     @Deprecated
     public boolean hasRoute(String pathString, List<String> segments) {
-        // TODO: join segments with pathString
-        return hasUrl(pathString);
+        return hasUrl(PathUtil.getPath(pathString, segments));
     }
 
     /**
@@ -170,6 +169,20 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
+     * Search for a route target using given navigation <code>path</code>
+     * argument.
+     * 
+     * @param path
+     *            the navigation path used as input for searching a route
+     *            target.
+     * @return the result containing a valid target is found, and the url
+     *         parameter values found in the <code>path</code> argument.
+     */
+    public RouteSearchResult getRouteSearchResult(String path) {
+        return getRouteModel().getRoute(path);
+    }
+
+    /**
      * Get the route class matching the given path.
      *
      * @param pathString
@@ -178,9 +191,6 @@ public class ConfiguredRoutes implements Serializable {
      */
     public Optional<Class<? extends Component>> getRoute(String pathString) {
         final RouteSearchResult result = getRouteModel().getRoute(pathString);
-
-        // TODO: return url parameters as well.
-
         if (result.hasTarget()) {
             final RouteTarget routeTarget = result.getTarget();
             return Optional.ofNullable(routeTarget.getTarget());
