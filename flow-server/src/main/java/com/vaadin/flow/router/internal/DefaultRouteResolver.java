@@ -45,35 +45,22 @@ public class DefaultRouteResolver implements RouteResolver {
     @Override
     public NavigationState resolve(ResolveRequest request) {
         RouteRegistry registry = request.getRouter().getRegistry();
-        PathDetails path = findPathString(registry,
-                request.getLocation().getSegments());
-        if (path == null) {
+
+        final String path = request.getLocation().getPath();
+        RouteSearchResult navigationResult = getNavigationTarget(registry,
+                path);
+
+        if (!navigationResult.hasTarget()) {
             return null;
         }
-
+        
         NavigationStateBuilder builder = new NavigationStateBuilder(
                 request.getRouter());
-        Class<? extends Component> navigationTarget;
         try {
-            if (!path.segments.isEmpty()) {
-                navigationTarget = getNavigationTargetWithParameter(registry,
-                        path.path, path.segments);
-            } else {
-                navigationTarget = getNavigationTarget(registry, path.path);
-            }
 
-            if (HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
-                List<String> pathParameters = getPathParameters(
-                        request.getLocation().getPath(), path.path);
-                if (!ParameterDeserializer.verifyParameters(navigationTarget,
-                        pathParameters)) {
-                    return null;
-                }
-                builder.withTarget(navigationTarget, pathParameters);
-            } else {
-                builder.withTarget(navigationTarget);
-            }
-            builder.withPath(path.path);
+            builder.withTarget(navigationResult.getTarget().getTarget(),
+                    navigationResult.getUrlParameters());
+            builder.withPath(navigationResult.getPath());
         } catch (NotFoundException nfe) {
             String message = "Exception while navigation to path " + path;
             LoggerFactory.getLogger(this.getClass().getName()).warn(message,
@@ -84,66 +71,15 @@ public class DefaultRouteResolver implements RouteResolver {
         return builder.build();
     }
 
-    private static class PathDetails implements Serializable {
-        private final String path;
-        private final List<String> segments;
-
-        /**
-         * Constructor for path with segment details.
-         *
-         * @param path
-         *            path
-         * @param segments
-         *            segments for path
-         */
-        public PathDetails(String path, List<String> segments) {
-            this.path = path;
-            this.segments = segments;
-        }
-    }
-
-    private PathDetails findPathString(RouteRegistry registry,
-            List<String> pathSegments) {
-        if (pathSegments.isEmpty()) {
-            return null;
-        }
-
-        Deque<PathDetails> paths = new ArrayDeque<>();
-        StringBuilder pathBuilder = new StringBuilder(pathSegments.get(0));
-        if (!"".equals(pathSegments.get(0))) {
-            paths.push(new PathDetails("", pathSegments));
-        }
-        for (int i = 0; i < pathSegments.size(); i++) {
-            if (i != 0) {
-                pathBuilder.append("/").append(pathSegments.get(i));
-            }
-            paths.push(new PathDetails(pathBuilder.toString(),
-                    pathSegments.subList(i + 1, pathSegments.size())));
-        }
-        while (!paths.isEmpty()) {
-            PathDetails pathDetails = paths.pop();
-            Optional<?> target = registry.getNavigationTarget(pathDetails.path,
-                    pathDetails.segments);
-            if (target.isPresent()) {
-                return pathDetails;
-            }
-        }
-        return null;
-    }
-
-    private Class<? extends Component> getNavigationTarget(
+    private RouteSearchResult getNavigationTarget(
             RouteRegistry registry, String path) throws NotFoundException {
-        return registry.getNavigationTarget(path)
-                .orElseThrow(() -> new NotFoundException(String.format(
-                        "No navigation target found for path '%s'.", path)));
-    }
-
-    private Class<? extends Component> getNavigationTargetWithParameter(
-            RouteRegistry registry, String path, List<String> segments)
-            throws NotFoundException {
-        return registry.getNavigationTarget(path, segments)
-                .orElseThrow(() -> new NotFoundException(String.format(
-                        "No navigation target found for path '%s'.", path)));
+        final RouteSearchResult navigationRoute = registry.getNavigationRoute(path);
+        if (navigationRoute.hasTarget()) {
+            return navigationRoute;
+        } else {
+            throw new NotFoundException(String.format(
+                    "No navigation target found for path '%s'.", path));
+        }
     }
 
     private List<String> getPathParameters(String completePath,

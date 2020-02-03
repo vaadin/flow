@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.internal.RouteSearchResult;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -191,19 +193,25 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
-        return getNavigationTarget(pathString, Collections.emptyList());
+    public RouteSearchResult getNavigationRoute(String path) {
+        return getConfiguration().getRouteSearchResult(path);
     }
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString, List<String> segments) {
-        if (getConfiguration().hasRoute(pathString, segments)) {
-            return getConfiguration().getRoute(pathString, segments);
+            String pathString) {
+        Objects.requireNonNull(pathString, "pathString must not be null.");
+        if (getConfiguration().hasUrl(pathString)) {
+            return getConfiguration().getRoute(pathString);
         }
         return Optional.empty();
+    }
+
+    @Override
+    @Deprecated
+    public Optional<Class<? extends Component>> getNavigationTarget(
+            String pathString, List<String> segments) {
+        return getNavigationTarget(PathUtil.getPath(pathString, segments));
     }
 
     /**

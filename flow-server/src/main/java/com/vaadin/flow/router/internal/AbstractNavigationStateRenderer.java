@@ -25,6 +25,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -136,6 +137,7 @@ public abstract class AbstractNavigationStateRenderer
 
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
+        Map<String, String> urlParameters = navigationState.getUrlParametersMap();
         List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
                 routeTargetType, ui.getRouter());
 
