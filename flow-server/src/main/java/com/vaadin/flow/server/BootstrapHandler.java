@@ -1368,13 +1368,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (devMode != null) {
             String errorMsg = devMode.getFailedOutput();
             if (errorMsg != null) {
-                document.body()
-                        .appendChild(new Element(Tag.valueOf("div"), "")
-                                .attr("class", "v-system-error")
-                                .html("<h3>Webpack Error</h3><pre>" + errorMsg
-                                        // Make error lines more prominent
-                                        .replaceAll("(ERROR.+?\n)", "<b>$1</b>")
-                                        + "</pre>"));
+                // Make error lines more prominent
+                errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");
+
+                Element errorElement = document.createElement("div");
+                errorElement.setBaseUri("");
+                errorElement.attr("class", "v-system-error");
+                errorElement.attr("onclick",
+                        "this.parentElement.removeChild(this)");
+                errorElement
+                        .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
+                                + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
+                                + "<pre>" + errorMsg + "</pre>");
+                document.body().appendChild(errorElement);
             }
         }
     }
