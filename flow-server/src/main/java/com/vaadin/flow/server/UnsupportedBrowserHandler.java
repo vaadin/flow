@@ -18,6 +18,9 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.io.Writer;
 
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT;
+
 /**
  * A {@link RequestHandler} that presents an informative page if the browser in
  * use is unsupported.
@@ -75,23 +78,35 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
                                              VaadinRequest request, VaadinResponse response) throws IOException {
 
-        // Check if the browser is supported
-        WebBrowser browser = session.getBrowser();
+        // bypass checks if cookie set
         final String cookie = request.getHeader("Cookie");
-        if (browser.isTooOldToFunctionProperly()) {
-            // bypass if cookie set
-            if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
-                writeBrowserTooOldPage(request, response);
-                return true; // request handled
-            }
+        if (cookie != null && cookie.contains(FORCE_LOAD_COOKIE)) {
+            return false;
         }
+
+        // check if the browser is supported
+        WebBrowser browser = session.getBrowser();
+        if (browser.isTooOldToFunctionProperly()) {
+            writeBrowserTooOldPage(request, response);
+            return true; // request handled
+        }
+
         // check for trying to run ie11 in development mode
-        if (browser.isIE() && !session.getConfiguration().isProductionMode() && session.getConfiguration().isCompatibilityMode()) {
-            // bypass if cookie set
-            if (cookie == null || !cookie.contains(FORCE_LOAD_COOKIE)) {
-                writeIE11InDevelopmentModePage(response);
-                return true;
-            }
+        if (browser.isIE() && !session.getConfiguration().isProductionMode()
+                && session.getConfiguration().isCompatibilityMode()) {
+            writeIE11InDevelopmentModePage(response);
+            return true;
+        }
+
+        // check for trying to run non-ES6 browser in dev mode without transpilation
+        if (!session.getConfiguration().isCompatibilityMode()
+                && !session.getConfiguration().isProductionMode()
+                && !browser.isEs6Supported()
+                && !session.getConfiguration().getBooleanProperty(
+                        SERVLET_PARAMETER_DEVMODE_TRANSPILE,
+                        SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT)) {
+            writeES5TranspilationRequiredInDevelopmentModePage(response);
+            return true;
         }
 
         return false; // pass to next handler
@@ -168,6 +183,35 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                         + "</html>");
         // @formatter:on
 
+        page.close();
+    }
+
+    /**
+     * Writes a page that explains that transpilation is required for development mode.
+     *
+     * @param response the response object to write response to
+     * @throws IOException if an IO error occurred
+     */
+    private void writeES5TranspilationRequiredInDevelopmentModePage(VaadinResponse response) throws IOException {
+        Writer page = response.getWriter();
+
+        // @formatter:off
+        page.write(
+                "<html>"
+                        + UNSUPPORTED_PAGE_HEAD_CONTENT
+                        + "<body style=\"width:34em;\"><h1>This browser requires transpilation to ES5.</h1>"
+                        + "<p>To test your app with this browser, enable transpilation in development mode.</p>"
+                        + "<p>Transpilation can be enabled by setting the <code>vaadin.devmode.transpile=true</code> "
+                        + "property for the deployment configuration using an application or a system property.<p>"
+                        + "<p>Note that transpilation is always enabled for the <code>build-frontend</code> Maven goal, "
+                        + "which is also used when creating a production build of the application.</p>"
+                        + "<p><sub><a onclick=\"document.cookie='"
+                        + FORCE_LOAD_COOKIE
+                        + "';window.location.reload();return false;\" href=\"#\">Continue anyway<br>"
+                        + "(eg. if you've setup ES5 transpilation in a custom webpack configuration)</sub></p>"
+                        + "</body>\n"
+                        + "</html>");
+        // @formatter:on
         page.close();
     }
 }

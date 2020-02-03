@@ -41,6 +41,8 @@ if (watchDogPort){
     watchDogPort = watchDogPort.substr(watchDogPrefix.length);
 }
 
+const transpile = !devMode || process.argv.find(v => v.indexOf('--transpile-es5') >= 0);
+
 const net = require('net');
 
 function setupWatchDog(){
@@ -112,10 +114,10 @@ module.exports = {
 
   module: {
     rules: [
-      { // Files that Babel has to transpile
+      ...(transpile ? [{ // Files that Babel has to transpile
         test: /\.js$/,
         use: [BabelMultiTargetPlugin.loader()]
-      },
+      }] : []),
       {
         test: /\.css$/i,
         use: ['raw-loader']
@@ -131,7 +133,7 @@ module.exports = {
     ...(devMode ? [] : [new CompressionPlugin()]),
 
     // Transpile with babel, and produce different bundles per browser
-    new BabelMultiTargetPlugin({
+    ...(transpile ? [new BabelMultiTargetPlugin({
       babel: {
         plugins: [
           // workaround for Safari 10 scope issue (https://bugs.webkit.org/show_bug.cgi?id=159270)
@@ -161,7 +163,7 @@ module.exports = {
           tagAssetsWithKey: true, // append a suffix to the file name
         }
       }
-    }),
+    })] : []),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {

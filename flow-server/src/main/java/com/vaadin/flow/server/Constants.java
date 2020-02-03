@@ -216,6 +216,17 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
     /**
+     * Boolean parameter for enabling/disabling transpilation for IE11 with the
+     * BabelMultiTargetPlugin in dev mode.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_TRANSPILE = "devmode.transpile";
+
+    /**
+     * Default value of {@link #SERVLET_PARAMETER_DEVMODE_TRANSPILE}.
+     */
+    public static final boolean SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT = false;
+
+    /**
      * Configuration parameter name for enabling pnpm.
      *
      * @since 2.2
