@@ -112,7 +112,7 @@ public class NavigationState implements Serializable {
         if (urlParameters != null) {
             return Collections.unmodifiableMap(urlParameters);
         } else {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap();
         }
     }
 

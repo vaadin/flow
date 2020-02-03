@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
@@ -404,15 +405,27 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
     }
 
-    private String transformWithHasUrlParameter(String pathPattern, Class<? extends Component> navigationTarget) {
+    private String transformWithHasUrlParameter(String pathPattern,
+            Class<? extends Component> navigationTarget) {
         if (RouteTarget.hasUrlParameter(navigationTarget)) {
 
             if (RouteTarget.hasOptionalParameter(navigationTarget)) {
-                pathPattern += "/[:param]";
+                pathPattern += "/[:" + RouteTarget.HAS_URL_PARAMETER_NAME + "]";
             } else if (RouteTarget.hasWildcardParameter(navigationTarget)) {
-                pathPattern += "/...:param";
+                pathPattern += "/...:" + RouteTarget.HAS_URL_PARAMETER_NAME;
             } else {
-                pathPattern += "/:param";
+                pathPattern += "/:" + RouteTarget.HAS_URL_PARAMETER_NAME;
+            }
+
+            final Class<?> parameterType = ParameterDeserializer
+                    .getClassType(navigationTarget);
+
+            if (parameterType.isAssignableFrom(Integer.class)) {
+                pathPattern += ":int";
+            } else if (parameterType.isAssignableFrom(Long.class)) {
+                pathPattern += ":long";
+            } else if (parameterType.isAssignableFrom(Boolean.class)) {
+                pathPattern += ":bool";
             }
         }
         return pathPattern;
