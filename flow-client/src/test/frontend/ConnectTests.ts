@@ -189,7 +189,7 @@ describe('ConnectClient', () => {
         await client.call('FooEndpoint', 'vaadinException');
       } catch (err) {
         expect(err).to.be.instanceOf(VaadinConnectError);
-        expect(err).to.have.property('message').that.is.string(expectedObject.message);
+        expect(err).to.have.property('originalErrorMessage').that.is.string(expectedObject.message);
         expect(err).to.have.property('type').that.is.string(expectedObject.type);
         expect(err).to.have.deep.property('detail', expectedObject.detail);
       }
