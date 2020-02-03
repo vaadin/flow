@@ -23,11 +23,6 @@ module.exports = {
   }
 };
 
-function getExactVersion(string) {
-  return string.replace('^', '');
-}
-
-
 function readPackage(pkg) {
   const { dependencies } = pkg;
 

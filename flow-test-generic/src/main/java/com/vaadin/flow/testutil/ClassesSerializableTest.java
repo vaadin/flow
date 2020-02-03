@@ -176,7 +176,7 @@ public abstract class ClassesSerializableTest {
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.ConvertVersionsJson",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
                 // connect is stateless
                 "com\\.vaadin\\.flow\\.server\\.connect\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
