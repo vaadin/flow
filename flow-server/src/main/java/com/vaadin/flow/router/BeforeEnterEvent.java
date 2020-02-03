@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.component.UI;
 
@@ -43,6 +44,23 @@ public class BeforeEnterEvent extends BeforeEvent {
     }
 
     /**
+     * Construct event from a NavigationEvent.
+     *
+     * @param event
+     *            NavigationEvent that is on-going
+     * @param navigationTarget
+     *            Navigation target
+     * @param urlParameters
+     *            url parameters
+     * @param layouts
+     *            Navigation layout chain
+     */
+    public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
+            Map<String, String> urlParameters, List<Class<? extends RouterLayout>> layouts) {
+        super(event, navigationTarget, urlParameters, layouts);
+    }
+
+    /**
      * Constructs a new BeforeNavigation Event.
      *
      * @param router
@@ -63,5 +81,31 @@ public class BeforeEnterEvent extends BeforeEvent {
             Location location, Class<?> navigationTarget, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, ui, layouts);
+    }
+
+    /**
+     * Constructs a new BeforeNavigation Event.
+     *
+     * @param router
+     *            the router that triggered the change, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
+     * @param location
+     *            the new location, not {@code null}
+     * @param navigationTarget
+     *            navigation target class
+     * @param urlParameters
+     *            url parameters
+     * @param ui
+     *            the UI related to the navigation
+     * @param layouts
+     *            the layout chain for the navigation target
+     */
+    public BeforeEnterEvent(Router router, NavigationTrigger trigger,
+            Location location, Class<?> navigationTarget,
+            Map<String, String> urlParameters, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
+        super(router, trigger, location, navigationTarget, urlParameters, ui, layouts);
     }
 }

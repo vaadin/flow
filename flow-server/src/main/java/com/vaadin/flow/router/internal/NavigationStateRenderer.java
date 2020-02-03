@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
@@ -70,14 +72,16 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        Optional<List<String>> urlParameters = navigationState
-                .getUrlParameters();
-        if (urlParameters.isPresent()) {
+        final String value = navigationState.getUrlParametersMap()
+                .get(RouteTarget.HAS_URL_PARAMETER_NAME);
+
+        // TODO: handle varargs/wildcard
+        if (value != null) {
             Object deserializedParameter = null;
             try {
                 deserializedParameter = ParameterDeserializer
                         .deserializeUrlParameters(routeTargetType,
-                                urlParameters.get());
+                                Collections.singletonList(value));
 
             } catch (Exception e) {
                 beforeEnterEvent.rerouteToError(NotFoundException.class,
