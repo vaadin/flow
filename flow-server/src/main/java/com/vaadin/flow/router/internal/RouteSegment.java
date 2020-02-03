@@ -156,6 +156,14 @@ class RouteSegment implements Serializable {
                         return Optional.of(Boolean.TRUE);
                     } catch (NumberFormatException e) {
                     }
+                } else if (eligiblePrimitiveType.equals("long")) {
+
+                    try {
+                        Long.valueOf(value);
+
+                        return Optional.of(Boolean.TRUE);
+                    } catch (NumberFormatException e) {
+                    }
 
                 } else if (eligiblePrimitiveType.equals("bool")
                         || eligiblePrimitiveType.equals("boolean")) {
@@ -268,7 +276,7 @@ class RouteSegment implements Serializable {
     }
 
     void addPath(String pathPattern,
-                 Class<? extends Component> targetComponentClass) {
+            Class<? extends Component> targetComponentClass) {
         addPath(pathPattern, new RouteTarget(targetComponentClass));
     }
 
