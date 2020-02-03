@@ -31,7 +31,7 @@ import java.util.Objects;
  *
  * @see EndpointException
  */
-public class VaadinConnectValidationException extends EndpointException {
+public class EndpointValidationException extends EndpointException {
 
     /**
      * A validation error data.
@@ -97,7 +97,7 @@ public class VaadinConnectValidationException extends EndpointException {
      * @param data
      *            validation error data, mandatory (cannot be {@code null})
      */
-    public VaadinConnectValidationException(ValidationErrorData data) {
+    public EndpointValidationException(ValidationErrorData data) {
         this(Collections.singletonList(Objects.requireNonNull(data,
                 "At least one 'validation error' is required")));
     }
@@ -109,7 +109,7 @@ public class VaadinConnectValidationException extends EndpointException {
      *            A list of validation error data, must not be {@code null} or
      *            empty.
      */
-    public VaadinConnectValidationException(
+    public EndpointValidationException(
             List<ValidationErrorData> validationErrorData) {
         this("Validation failed", validationErrorData);
     }
@@ -123,7 +123,7 @@ public class VaadinConnectValidationException extends EndpointException {
      *            A list of validation error data, must not be {@code null} or
      *            empty.
      */
-    public VaadinConnectValidationException(String message,
+    public EndpointValidationException(String message,
             List<ValidationErrorData> validationErrorData) {
         super(message);
         if (validationErrorData == null || validationErrorData.isEmpty()) {

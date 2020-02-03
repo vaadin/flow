@@ -43,7 +43,7 @@ import org.springframework.http.ResponseEntity;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
-import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
+import com.vaadin.flow.server.connect.exception.EndpointValidationException;
 import com.vaadin.flow.server.connect.testendpoint.BridgeMethodTestEndpoint;
 
 import static org.junit.Assert.assertEquals;
@@ -840,7 +840,7 @@ public class VaadinConnectControllerTest {
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
                 ObjectNode.class);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(1, jsonNodes.get("validationErrorData").size());
@@ -872,7 +872,7 @@ public class VaadinConnectControllerTest {
                 ObjectNode.class);
         assertNotNull(jsonNodes);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(2, jsonNodes.get("validationErrorData").size());
@@ -900,7 +900,7 @@ public class VaadinConnectControllerTest {
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
                 ObjectNode.class);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(1, jsonNodes.get("validationErrorData").size());
@@ -938,7 +938,7 @@ public class VaadinConnectControllerTest {
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
                 ObjectNode.class);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(1, jsonNodes.get("validationErrorData").size());
