@@ -65,8 +65,11 @@ public class NpmTemplateParser implements TemplateParser {
     private final ReentrantLock lock = new ReentrantLock();
     private JsonObject jsonStats;
 
-    private NpmTemplateParser() {
-        // Doesn't allow external instantiation
+    /**
+     * The default constructor. Protected in order to prevent direct instantiation,
+     * but not private in order to allow mocking/overrides for testing purposes.
+     */
+    protected NpmTemplateParser() {
     }
 
     public static TemplateParser getInstance() {
@@ -153,7 +156,17 @@ public class NpmTemplateParser implements TemplateParser {
         return url.endsWith("/" + tag + ".js");
     }
 
-    private String getSourcesFromTemplate(String tag, String url) {
+    /**
+     * Finds the JavaScript sources for given tag.
+     *
+     * @param tag the value of the {@link com.vaadin.flow.component.Tag} annotation,
+     *            e.g. `my-component`
+     * @param url the URL resolved according to the {@link com.vaadin.flow.component.dependency.JsModule}
+     *            spec, for example {@code ./view/my-view.js} or {@code @vaadin/vaadin-button.js}.
+     * @return the .js source which declares given custom element, or null if no
+     *         such source can be found.
+     */
+    protected String getSourcesFromTemplate(String tag, String url) {
         InputStream content = getClass().getClassLoader()
                 .getResourceAsStream(url);
         if (content != null) {
