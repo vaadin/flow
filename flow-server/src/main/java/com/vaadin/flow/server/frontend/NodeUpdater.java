@@ -255,7 +255,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("html-webpack-plugin", "3.2.0");
         defaults.put("script-ext-html-webpack-plugin", "2.1.4");
-        defaults.put("typescript", "3.5.3");
+        defaults.put("typescript", "3.7.3");
         defaults.put("awesome-typescript-loader", "5.2.1");
 
         defaults.put("webpack", "4.30.0");
