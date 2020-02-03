@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.HasUrlParameterUtil;
 import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
@@ -365,7 +366,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         // Backward compatibility with HasUrlParameter for which the parameters
         // were stored in RouteTarget.
-        path = transformWithHasUrlParameter(path, navigationTarget);
+        path = HasUrlParameterUtil.getPathWithHasUrlParameter(path, navigationTarget);
 
         // TODO: throw backward compatible exceptions if path doesn't make sense in current configuration.
 
@@ -403,32 +404,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         } else {
             exceptionTargetsMap.put(exceptionType, target);
         }
-    }
-
-    private String transformWithHasUrlParameter(String pathPattern,
-            Class<? extends Component> navigationTarget) {
-        if (RouteTarget.hasUrlParameter(navigationTarget)) {
-
-            if (RouteTarget.hasOptionalParameter(navigationTarget)) {
-                pathPattern += "/[:" + RouteTarget.HAS_URL_PARAMETER_NAME + "]";
-            } else if (RouteTarget.hasWildcardParameter(navigationTarget)) {
-                pathPattern += "/...:" + RouteTarget.HAS_URL_PARAMETER_NAME;
-            } else {
-                pathPattern += "/:" + RouteTarget.HAS_URL_PARAMETER_NAME;
-            }
-
-            final Class<?> parameterType = ParameterDeserializer
-                    .getClassType(navigationTarget);
-
-            if (parameterType.isAssignableFrom(Integer.class)) {
-                pathPattern += ":int";
-            } else if (parameterType.isAssignableFrom(Long.class)) {
-                pathPattern += ":long";
-            } else if (parameterType.isAssignableFrom(Boolean.class)) {
-                pathPattern += ":bool";
-            }
-        }
-        return pathPattern;
     }
 
     /**
