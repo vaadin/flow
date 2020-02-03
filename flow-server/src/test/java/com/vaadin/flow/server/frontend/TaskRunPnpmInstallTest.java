@@ -71,32 +71,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 overlayPackage.getString("version"));
     }
 
-    @Test
-    public void runPnpmInstall_overlayVersionIsNotPinned_installedOverlayVersionIsNotPinned()
-            throws IOException, ExecutionFailedException {
-        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file: dialog doesn't pin its Overlay version which
-        // is transitive dependency.
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.2.1\" }}",
-                StandardCharsets.UTF_8);
-
-        TaskRunNpmInstall task = createTask();
-        task.execute();
-
-        File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
-                "@vaadin/vaadin-overlay/package.json");
-
-        // The resulting version should not be the custom pinned version
-        JsonObject overlayPackage = Json.parse(FileUtils
-                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertNotEquals(PINNED_VERSION,
-                overlayPackage.getString("version"));
-    }
-
     @Override
     protected String getToolName() {
         return "pnpm";
