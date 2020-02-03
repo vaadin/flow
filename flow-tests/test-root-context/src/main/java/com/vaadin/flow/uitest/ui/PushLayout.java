@@ -17,9 +17,15 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 
 @Push
+@Route("com.vaadin.flow.uitest.ui.PushLayout")
 public class PushLayout extends Div implements RouterLayout {
+
+    public PushLayout() {
+        setId("push-layout");
+    }
 
 }

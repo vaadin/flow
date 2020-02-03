@@ -22,8 +22,10 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RouteNotFoundError;
 
+@ParentLayout(PushLayout.class)
 public class PushRouteNotFoundView extends RouteNotFoundError {
 
     public static String PUSH_NON_EXISTENT_PATH = "push-no-route";
