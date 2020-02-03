@@ -26,12 +26,12 @@ import java.util.Objects;
  * A validation exception class that is intended to be thrown when any endpoint
  * method receives invalid parameter(s).
  *
- * Behaves similar to the {@link VaadinConnectException} and contains additional
+ * Behaves similar to the {@link EndpointException} and contains additional
  * information about the validation errors.
  *
- * @see VaadinConnectException
+ * @see EndpointException
  */
-public class VaadinConnectValidationException extends VaadinConnectException {
+public class VaadinConnectValidationException extends EndpointException {
 
     /**
      * A validation error data.
