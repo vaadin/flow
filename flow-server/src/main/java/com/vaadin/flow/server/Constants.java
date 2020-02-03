@@ -22,7 +22,7 @@ import java.io.Serializable;
  * <p>
  * Not available on the client side, for that use
  * {@link com.vaadin.flow.shared.ApplicationConstants}.
- * 
+ *
  * @since 1.0
  */
 public final class Constants implements Serializable {
@@ -273,6 +273,11 @@ public final class Constants implements Serializable {
      * UsageEntry name for UsageStatistics Hybrid.
      */
     public static final String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
+
+    /**
+     * The name of platform versions file.
+     */
+    public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
     private Constants() {
         // prevent instantiation constants class only
