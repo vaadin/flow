@@ -41,61 +41,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  */
 public class RouteTarget implements Serializable {
 
-    /**
-     * Reserved parameter name used when setup internally route path pattern
-     * with the parameter design for backward compatibility with
-     * {@link HasUrlParameter}
-     */
-    static String HAS_URL_PARAMETER_NAME = "___url_parameter";
-
-    /**
-     * Returns whether the target argument implements {@link HasUrlParameter}
-     * 
-     * @param target
-     *            target component class.
-     * @return true if the target component class implements
-     *         {@link HasUrlParameter}, otherwise false.
-     */
-    static boolean hasUrlParameter(Class<? extends Component> target) {
-        return HasUrlParameter.class.isAssignableFrom(target);
-    }
-
-    /**
-     * Returns whether the target class annotate the
-     * {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter with
-     * {@link OptionalParameter}
-     * 
-     * @param target
-     *            target component class.
-     * @return true if the target class annotate the
-     *         {@link HasUrlParameter#setParameter(BeforeEvent, Object)}
-     *         parameter with {@link OptionalParameter}, otherwise false.
-     */
-    static boolean hasOptionalParameter(Class<? extends Component> target) {
-        return ParameterDeserializer.isAnnotatedParameter(target,
-                OptionalParameter.class);
-    }
-
-    /**
-     * Returns whether the target class annotate the
-     * {@link HasUrlParameter#setParameter(BeforeEvent, Object)} parameter with
-     * {@link WildcardParameter}
-     *
-     * @param target
-     *            target component class.
-     * @return true if the target class annotate the
-     *         {@link HasUrlParameter#setParameter(BeforeEvent, Object)}
-     *         parameter with {@link WildcardParameter}, otherwise false.
-     */
-    static boolean hasWildcardParameter(Class<? extends Component> target) {
-        return ParameterDeserializer.isAnnotatedParameter(target,
-                WildcardParameter.class);
-    }
-
-    private static boolean isAnnotatedParameter(Class<? extends Component> target) {
-        return hasOptionalParameter(target) || hasWildcardParameter(target);
-    }
-
     private Class<? extends Component> target;
 
     private List<Class<? extends RouterLayout>> parentLayouts;
