@@ -61,7 +61,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
-import com.vaadin.flow.server.connect.exception.VaadinConnectException;
+import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
 import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException.ValidationErrorData;
 
@@ -346,7 +346,7 @@ public class VaadinConnectController {
         String implicitNullError = this.explicitNullableTypeChecker
                 .checkValueForAnnotatedElement(returnValue, methodToInvoke);
         if (implicitNullError != null) {
-            VaadinConnectException returnValueException = new VaadinConnectException(
+            EndpointException returnValueException = new EndpointException(
                     String.format(
                             "Unexpected return value in endpoint '%s' method '%s'. %s",
                             endpointName, methodName, implicitNullError));
@@ -373,9 +373,9 @@ public class VaadinConnectController {
     private ResponseEntity<String> handleMethodExecutionError(
             String endpointName, String methodName, InvocationTargetException e)
             throws JsonProcessingException {
-        if (VaadinConnectException.class
+        if (EndpointException.class
                 .isAssignableFrom(e.getCause().getClass())) {
-            VaadinConnectException endpointException = ((VaadinConnectException) e
+            EndpointException endpointException = ((EndpointException) e
                     .getCause());
             getLogger().debug("Endpoint '{}' method '{}' aborted the execution",
                     endpointName, methodName, endpointException);
@@ -395,7 +395,7 @@ public class VaadinConnectController {
     private String createResponseErrorObject(String errorMessage)
             throws JsonProcessingException {
         return vaadinEndpointMapper.writeValueAsString(Collections.singletonMap(
-                VaadinConnectException.ERROR_MESSAGE_FIELD, errorMessage));
+                EndpointException.ERROR_MESSAGE_FIELD, errorMessage));
     }
 
     private String listMethodParameterTypes(Parameter[] javaParameters) {
