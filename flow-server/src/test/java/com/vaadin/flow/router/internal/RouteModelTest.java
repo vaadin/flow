@@ -18,6 +18,8 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +29,7 @@ import com.vaadin.flow.component.Tag;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class RouteSegmentTest {
+public class RouteModelTest {
 
     @Tag(Tag.DIV)
     public static class Root extends Component {
@@ -56,11 +58,11 @@ public class RouteSegmentTest {
     @Test
     public void test() {
 
-        RouteSegment root = RouteSegment.createRoot();
+        RouteModel root = RouteModel.create();
         root.addPath("", Root.class);
         root.addPath("trunk", Trunk.class);
-        root.addPath("trunk/branch/[:id]", Branch.class);
-        root.addPath("trunk/branch/:id:int/[...:list]", BranchChildren.class);
+        root.addPath("trunk/branch/[:id:int]", Branch.class);
+        root.addPath("trunk/branch/:id:int/...:list:long", BranchChildren.class);
         root.addPath("trunk/[:name]/[:type]/branch/[:id:int]/edit",
                 BranchEdit.class);
         root.addPath(
@@ -88,10 +90,10 @@ public class RouteSegmentTest {
         result = root.getRoute(path);
         assertResult(result, path, Branch.class, parameters("id", "12"));
 
-        path = "trunk/branch/12/a/b/c/d/e/f/g";
+        path = "trunk/branch/12/1/2/3/4/5/6/7";
         result = root.getRoute(path);
-        assertResult(result, path, Branch.class, parameters("id", "12", "list",
-                new String[] { "a", "b", "c", "d", "e", "f", "g" }));
+        assertResult(result, path, BranchChildren.class, parameters("id", "12",
+                "list", varargs("1", "2", "3", "4", "5", "6", "7")));
 
         path = "trunk/branch/view";
         result = root.getRoute(path);
@@ -129,7 +131,7 @@ public class RouteSegmentTest {
     @Test
     public void varargs_url_parameter_is_defined_only_as_last_segment() {
 
-        RouteSegment root = RouteSegment.createRoot();
+        RouteModel root = RouteModel.create();
         try {
             root.addPath("trunk/...:vararg/edit", Root.class);
 
@@ -160,8 +162,12 @@ public class RouteSegmentTest {
         return result;
     }
 
-    private void assertResult(RouteSearchResult result,
-            String path, Class<? extends Component> target,
+    private ArrayList<String> varargs(String... varargs) {
+        return new ArrayList(Arrays.asList(varargs));
+    }
+
+    private void assertResult(RouteSearchResult result, String path,
+            Class<? extends Component> target,
             Map<String, Serializable> urlParameters) {
 
         System.out.println("result: " + result);
