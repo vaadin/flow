@@ -49,7 +49,7 @@ public class ConfiguredRoutes implements Serializable {
      * Create an immutable RouteConfiguration.
      */
     public ConfiguredRoutes() {
-        routeModel = RouteModel.createRoot();
+        routeModel = RouteModel.create();
         routes = Collections.emptyMap();
         targetRoutes = Collections.emptyMap();
         exceptionTargets = Collections.emptyMap();
