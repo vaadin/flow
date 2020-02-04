@@ -307,7 +307,7 @@ class RouteSegment implements Serializable {
      */
     RouteSearchResult getRoute(String path) {
 
-        Map<String, String> urlParameters = new HashMap<>();
+        Map<String, Serializable> urlParameters = new HashMap<>();
 
         RouteTarget target = findRouteTarget(PathUtil.getSegmentsList(path),
                 urlParameters);
@@ -437,7 +437,7 @@ class RouteSegment implements Serializable {
     }
 
     private RouteTarget findRouteTarget(List<String> segments,
-            Map<String, String> urlParameters) {
+            Map<String, Serializable> urlParameters) {
 
         // First try with a static segment (non a parameter). An empty segments
         // list should happen only on root, so this instance should resemble
@@ -468,7 +468,7 @@ class RouteSegment implements Serializable {
                 // Try ignoring the parameter if optional and look into its
                 // children using the same segments.
                 if (parameter.parameterDetails.isOptional()) {
-                    Map<String, String> outputParameters = new HashMap<>();
+                    Map<String, Serializable> outputParameters = new HashMap<>();
                     target = parameter.findRouteTarget(segments,
                             outputParameters);
 
@@ -489,9 +489,9 @@ class RouteSegment implements Serializable {
     }
 
     private RouteTarget findRouteTarget(RouteSegment potentialSegment,
-            List<String> segments, Map<String, String> urlParameters) {
+            List<String> segments, Map<String, Serializable> urlParameters) {
 
-        Map<String, String> outputParameters = new HashMap<>();
+        Map<String, Serializable> outputParameters = new HashMap<>();
 
         if (potentialSegment.isParameter()) {
             final String value = segments.get(0);
