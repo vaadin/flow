@@ -48,6 +48,10 @@ public class RouteModelTest {
     }
 
     @Tag(Tag.DIV)
+    public static class Twig extends Component {
+    }
+
+    @Tag(Tag.DIV)
     public static class BranchEdit extends Component {
     }
 
@@ -62,17 +66,28 @@ public class RouteModelTest {
         root.addPath("", Root.class);
         root.addPath("trunk", Trunk.class);
         root.addPath("trunk/branch/[:id:int]", Branch.class);
-        root.addPath("trunk/branch/:id:int/...:list:long", BranchChildren.class);
+        root.addPath("trunk/branch/:id:int/...:list:long",
+                BranchChildren.class);
         root.addPath("trunk/[:name]/[:type]/branch/[:id:int]/edit",
                 BranchEdit.class);
         root.addPath(
                 "trunk/:name/[:type]/branch/:id:int/flower/:open:bool/edit",
                 FlowerEdit.class);
+        root.addPath("trunk/twig/...:leafs", Twig.class);
 
         System.out.println(root.getRoutes());
 
         RouteSearchResult result;
         String path;
+
+        path = "trunk/twig";
+        result = root.getRoute(path);
+        assertResult(result, path, Twig.class, null);
+
+        path = "trunk/twig/a/b/c";
+        result = root.getRoute(path);
+        assertResult(result, path, Twig.class,
+                parameters("leafs", varargs("a", "b", "c")));
 
         path = "";
         result = root.getRoute(path);
@@ -84,7 +99,7 @@ public class RouteModelTest {
 
         path = "trunk/branch";
         result = root.getRoute(path);
-        assertResult(result, path, null, null);
+        assertResult(result, path, Branch.class, null);
 
         path = "trunk/branch/12";
         result = root.getRoute(path);
@@ -129,7 +144,7 @@ public class RouteModelTest {
     }
 
     @Test
-    public void varargs_url_parameter_is_defined_only_as_last_segment() {
+    public void varargs_url_parameter_defined_only_as_last_segment() {
 
         RouteModel root = RouteModel.create();
         try {
@@ -140,13 +155,12 @@ public class RouteModelTest {
         } catch (IllegalArgumentException e) {
         }
 
-        try {
-            root.addPath("trunk/[...:vararg]/edit", Root.class);
+        root.addPath("trunk/edit/...:vararg", Root.class);
 
-            Assert.fail(
-                    "Optional varargs url parameter accepted in the middle of the path.");
-        } catch (IllegalArgumentException e) {
-        }
+        String path = "trunk/edit/1/2/3";
+        RouteSearchResult result = root.getRoute(path);
+        assertResult(result, path, Root.class,
+                parameters("vararg", varargs("1", "2", "3")));
 
     }
 

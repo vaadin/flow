@@ -67,6 +67,11 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
     protected void notifyNavigationTarget(Component componentInstance,
             NavigationEvent navigationEvent, BeforeEnterEvent beforeEnterEvent,
             LocationChangeEvent locationChangeEvent) {
+
+        if (!(componentInstance instanceof HasUrlParameter)) {
+            return;
+        }
+
         NavigationState navigationState = getNavigationState();
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
@@ -83,23 +88,22 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
             }
         }
 
-        if (parameters != null) {
-            Object deserializedParameter = null;
-            try {
-                deserializedParameter = ParameterDeserializer
-                        .deserializeUrlParameters(routeTargetType, parameters);
-
-            } catch (Exception e) {
-                beforeEnterEvent.rerouteToError(NotFoundException.class,
-                        String.format(
-                                "Failed to parse url parameter, exception: %s",
-                                e));
-            }
-            @SuppressWarnings("unchecked")
-            HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
-            hasUrlParameter.setParameter(beforeEnterEvent,
-                    deserializedParameter);
+        if (parameters == null) {
+            parameters = Collections.emptyList();
         }
+
+        Object deserializedParameter = null;
+        try {
+            deserializedParameter = ParameterDeserializer
+                    .deserializeUrlParameters(routeTargetType, parameters);
+
+        } catch (Exception e) {
+            beforeEnterEvent.rerouteToError(NotFoundException.class, String
+                    .format("Failed to parse url parameter, exception: %s", e));
+        }
+
+        HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
+        hasUrlParameter.setParameter(beforeEnterEvent, deserializedParameter);
     }
 
 }

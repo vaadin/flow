@@ -44,8 +44,8 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Define a route url segment tree data model which is used to store internally
-     * registered routes.
+     * Define a route url segment tree data model which is used to store
+     * internally registered routes.
      * <p>
      * A segment may contain a set of the next segment(s) in route(s) and also a
      * {@link RouteTarget} in case this segment is also the last which defines a
@@ -54,8 +54,8 @@ class RouteModel implements Serializable {
     private static class RouteSegment implements Serializable {
 
         /**
-         * Create a new root segment instance. This is an empty segment defining the
-         * root of the routes tree.
+         * Create a new root segment instance. This is an empty segment defining
+         * the root of the routes tree.
          */
         static RouteSegment createRoot() {
             return new RouteSegment("");
@@ -64,9 +64,10 @@ class RouteModel implements Serializable {
         /**
          * Returns whether the specified pathPattern contains url parameters.
          *
-         * @param pathPattern a path pattern.
+         * @param pathPattern
+         *            a path pattern.
          * @return true if the specified pathPattern contains url parameters,
-         * otherwise false.
+         *         otherwise false.
          */
         static boolean hasParameters(String pathPattern) {
             return pathPattern.contains(":");
@@ -77,14 +78,11 @@ class RouteModel implements Serializable {
         }
 
         private static boolean isVarargsParameter(String segmentPattern) {
-            return segmentPattern.startsWith("...:")
-                    // In case of optional parameter.
-                    || segmentPattern.startsWith("[...:");
+            return segmentPattern.startsWith("...:");
         }
 
         private static boolean isOptionalParameter(String segmentPattern) {
-            return segmentPattern.startsWith("[:")
-                    || segmentPattern.startsWith("[...:");
+            return segmentPattern.startsWith("[:");
         }
 
         /**
@@ -100,14 +98,17 @@ class RouteModel implements Serializable {
             // ParameterDetails constructor and provided to the RouteSegment.
             private String name;
 
-            // In case the eligible type is a primitive this is set to the type of
+            // In case the eligible type is a primitive this is set to the type
+            // of
             // the primitive.
             private String eligiblePrimitiveType;
 
             /**
-             * Creates the parameter details using the input segmentPattern pattern.
+             * Creates the parameter details using the input segmentPattern
+             * pattern.
              *
-             * @param segmentPattern segment pattern.
+             * @param segmentPattern
+             *            segment pattern.
              */
             private ParameterDetails(String segmentPattern) {
                 optional = segmentPattern.startsWith("[")
@@ -152,7 +153,8 @@ class RouteModel implements Serializable {
 
             boolean isEligible(String value) {
 
-                Optional<Boolean> primitiveEligible = isPrimitiveEligible(value);
+                Optional<Boolean> primitiveEligible = isPrimitiveEligible(
+                        value);
 
                 if (primitiveEligible.isPresent()) {
                     return primitiveEligible.get();
@@ -215,9 +217,9 @@ class RouteModel implements Serializable {
 
         /**
          * Segment pattern string as provided in constructor. This is used
-         * internally as a key in the parent's mapping, to make clear distinction
-         * between static segment values and parameters which are defined as a
-         * pattern used to extract the value from a url path.
+         * internally as a key in the parent's mapping, to make clear
+         * distinction between static segment values and parameters which are
+         * defined as a pattern used to extract the value from a url path.
          */
         private String segmentPattern;
 
@@ -232,7 +234,8 @@ class RouteModel implements Serializable {
         private Map<String, RouteSegment> parameterSegments;
 
         /**
-         * Mapping varargs parameter segments in the routes by the segment pattern.
+         * Mapping varargs parameter segments in the routes by the segment
+         * pattern.
          */
         private Map<String, RouteSegment> varargsSegments;
 
@@ -266,7 +269,8 @@ class RouteModel implements Serializable {
         /**
          * Collects all routes in an unmodifiable {@link Map}.
          *
-         * @return a {@link Map} containing all paths and their specific targets.
+         * @return a {@link Map} containing all paths and their specific
+         *         targets.
          */
         Map<String, RouteTarget> getRoutes() {
 
@@ -292,17 +296,19 @@ class RouteModel implements Serializable {
         }
 
         void addPath(String pathPattern,
-                     Class<? extends Component> targetComponentClass) {
+                Class<? extends Component> targetComponentClass) {
             addPath(pathPattern, new RouteTarget(targetComponentClass));
         }
 
         /**
-         * Add a pathPattern pattern following this route segment. If the pattern
-         * already exists and exception is thrown.
+         * Add a pathPattern pattern following this route segment. If the
+         * pattern already exists and exception is thrown.
          *
-         * @param pathPattern a path pattern where parameters are defined by their ids and
-         *                    details.
-         * @param target      target to set for the given path pattern
+         * @param pathPattern
+         *            a path pattern where parameters are defined by their ids
+         *            and details.
+         * @param target
+         *            target to set for the given path pattern
          */
         void addPath(String pathPattern, RouteTarget target) {
             addPath(PathUtil.getSegmentsList(pathPattern), target);
@@ -311,12 +317,13 @@ class RouteModel implements Serializable {
         /**
          * Finds a route for the given path.
          *
-         * @param path real navigation path where the parameters are provided with
-         *             their real value. The method is looking to map the value
-         *             provided in the path with the ids found in the stored
-         *             patterns.
-         * @return a route result containing the target and parameter values mapped
-         * by their ids.
+         * @param path
+         *            real navigation path where the parameters are provided
+         *            with their real value. The method is looking to map the
+         *            value provided in the path with the ids found in the
+         *            stored patterns.
+         * @return a route result containing the target and parameter values
+         *         mapped by their ids.
          */
         RouteSearchResult getRoute(String path) {
 
@@ -353,7 +360,7 @@ class RouteModel implements Serializable {
         }
 
         private void collectRoutes(Map<String, RouteTarget> result,
-                                   Map<String, RouteSegment> children) {
+                Map<String, RouteSegment> children) {
             for (Map.Entry<String, RouteSegment> segmentEntry : children
                     .entrySet()) {
 
@@ -425,7 +432,8 @@ class RouteModel implements Serializable {
                             "A varargs url parameter may be defined only as the last path segment");
                 }
 
-                if (isParameter(segmentPattern) && segmentPatterns.size() == 1) {
+                if (isParameter(segmentPattern)
+                        && segmentPatterns.size() == 1) {
 
                     // TODO implement exceptions
 
@@ -437,7 +445,8 @@ class RouteModel implements Serializable {
 
             if (segmentPatterns.size() > 1) {
                 routeSegment.addPath(
-                        segmentPatterns.subList(1, segmentPatterns.size()), target);
+                        segmentPatterns.subList(1, segmentPatterns.size()),
+                        target);
 
             } else {
                 if (!routeSegment.hasTarget()) {
@@ -450,9 +459,10 @@ class RouteModel implements Serializable {
         }
 
         private RouteTarget findRouteTarget(List<String> segments,
-                                            Map<String, Serializable> urlParameters) {
+                Map<String, Serializable> urlParameters) {
 
-            // First try with a static segment (non a parameter). An empty segments
+            // First try with a static segment (non a parameter). An empty
+            // segments
             // list should happen only on root, so this instance should resemble
             // only the root.
             RouteSegment routeSegment = segments.isEmpty() ? this
@@ -491,9 +501,10 @@ class RouteModel implements Serializable {
                     }
                 }
 
-                for (RouteSegment varargParameter : getVarargsSegments().values()) {
-                    RouteTarget target = findRouteTarget(varargParameter, segments,
-                            urlParameters);
+                for (RouteSegment varargParameter : getVarargsSegments()
+                        .values()) {
+                    RouteTarget target = findRouteTarget(varargParameter,
+                            segments, urlParameters);
                     if (target != null) {
                         return target;
                     }
@@ -504,7 +515,8 @@ class RouteModel implements Serializable {
         }
 
         private RouteTarget findRouteTarget(RouteSegment potentialSegment,
-                                            List<String> segments, Map<String, Serializable> urlParameters) {
+                List<String> segments,
+                Map<String, Serializable> urlParameters) {
 
             Map<String, Serializable> outputParameters = new HashMap<>();
 
@@ -516,7 +528,8 @@ class RouteModel implements Serializable {
                     for (String value : segments) {
                         if (!potentialSegment.getParameterDetails()
                                 .isEligible(value)) {
-                            // If any value is not eligible we don't want to go any
+                            // If any value is not eligible we don't want to go
+                            // any
                             // further.
                             return null;
                         }
@@ -530,7 +543,8 @@ class RouteModel implements Serializable {
                     // Handle one parameter value.
                     String value = segments.get(0);
 
-                    if (potentialSegment.getParameterDetails().isEligible(value)) {
+                    if (potentialSegment.getParameterDetails()
+                            .isEligible(value)) {
                         outputParameters.put(potentialSegment.getName(), value);
 
                     } else {
@@ -547,10 +561,27 @@ class RouteModel implements Serializable {
                     : segments.subList(1, segments.size());
 
             if (segments.size() > 0) {
+                // Continue looking if there any more segments.
                 target = potentialSegment.findRouteTarget(segments,
                         outputParameters);
-            } else {
+
+            } else if (potentialSegment.target != null) {
+                // Found target.
                 target = potentialSegment.target;
+
+            } else {
+                // Look for target in an optional child.
+
+                // TODO: or instead of this, set the same target to the parent
+                // of the optional, or maybe not, since we need to handle both
+                // add and remove.
+                RouteSegment optionalChild = potentialSegment
+                        .getAnyOptionalParameterWithTarget();
+                if (optionalChild != null) {
+                    target = optionalChild.target;
+                } else {
+                    target = null;
+                }
             }
 
             if (target != null) {
@@ -560,6 +591,28 @@ class RouteModel implements Serializable {
             return target;
         }
 
+        /**
+         * Returns any optional or varargs (since that's optional too) parameter
+         * child with a target set so in case there's no target on a potential
+         * targeted segment we use the target from the optional child.
+         */
+        private RouteSegment getAnyOptionalParameterWithTarget() {
+            for (RouteSegment parameter : getParameterSegments().values()) {
+                if (parameter.getParameterDetails().isOptional()
+                        && parameter.hasTarget()) {
+                    return parameter;
+                }
+            }
+
+            final Map<String, RouteSegment> varargsSegments = getVarargsSegments();
+            if (!varargsSegments.isEmpty()) {
+                return varargsSegments.values().iterator().next();
+
+            } else {
+                return null;
+            }
+        }
+
         private boolean isEmpty() {
             return target == null && getStaticSegments().isEmpty()
                     && getParameterSegments().isEmpty()
@@ -567,13 +620,13 @@ class RouteModel implements Serializable {
         }
 
         /**
-         * Gets the children mapping, either static segments or parameters, which
-         * are siblings to segmentPattern.
+         * Gets the children mapping, either static segments or parameters,
+         * which are siblings to segmentPattern.
          */
         private Map<String, RouteSegment> getChildren(String segmentPattern) {
             return isVarargsParameter(segmentPattern) ? getVarargsSegments()
                     : isParameter(segmentPattern) ? getParameterSegments()
-                    : getStaticSegments();
+                            : getStaticSegments();
         }
 
         private Map<String, RouteSegment> getStaticSegments() {
@@ -619,7 +672,7 @@ class RouteModel implements Serializable {
     }
 
     void addPath(String pathPattern,
-                 Class<? extends Component> targetComponentClass) {
+            Class<? extends Component> targetComponentClass) {
         root.addPath(pathPattern, targetComponentClass);
     }
 
@@ -627,9 +680,11 @@ class RouteModel implements Serializable {
      * Add a pathPattern pattern following this route segment. If the pattern
      * already exists and exception is thrown.
      *
-     * @param pathPattern a path pattern where parameters are defined by their ids and
-     *                    details.
-     * @param target      target to set for the given path pattern
+     * @param pathPattern
+     *            a path pattern where parameters are defined by their ids and
+     *            details.
+     * @param target
+     *            target to set for the given path pattern
      */
     void addPath(String pathPattern, RouteTarget target) {
         root.addPath(pathPattern, target);
@@ -638,12 +693,13 @@ class RouteModel implements Serializable {
     /**
      * Finds a route for the given path.
      *
-     * @param path real navigation path where the parameters are provided with
-     *             their real value. The method is looking to map the value
-     *             provided in the path with the ids found in the stored
-     *             patterns.
+     * @param path
+     *            real navigation path where the parameters are provided with
+     *            their real value. The method is looking to map the value
+     *            provided in the path with the ids found in the stored
+     *            patterns.
      * @return a route result containing the target and parameter values mapped
-     * by their ids.
+     *         by their ids.
      */
     RouteSearchResult getRoute(String path) {
         return root.getRoute(path);
