@@ -314,6 +314,7 @@ public abstract class AbstractNavigationStateRenderer
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
+        // TODO: get this from target, or should be added in the navigation state.
         List<Class<? extends RouterLayout>> routeLayoutTypes = new ArrayList<>(
                 getRouterLayoutTypes(routeTargetType,
                         event.getUI().getRouter()));
