@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -268,6 +269,17 @@ public class FrontendUtilsTest {
     }
 
     @Test
+    public void noStatsFile_assetsByChunkReturnsNull()
+            throws IOException {
+        VaadinService service = getServiceWithResource(null);
+
+        String statsAssetsByChunkName = FrontendUtils
+                .getStatsAssetsByChunkName(service);
+
+        Assert.assertNull(statsAssetsByChunkName);
+    }
+
+    @Test
     public void should_getUnixRelativePath_when_givenTwoPaths() {
         Path sourcePath = Mockito.mock(Path.class);
         Path relativePath = Mockito.mock(Path.class);
@@ -342,6 +354,10 @@ public class FrontendUtilsTest {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
                 .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
 
+        return getServiceWithResource(new ByteArrayInputStream(stats.getBytes()));
+    }
+
+    private VaadinService getServiceWithResource(InputStream stats) {
         VaadinService service = Mockito.mock(VaadinService.class);
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         DeploymentConfiguration deploymentConfiguration = Mockito
@@ -356,7 +372,7 @@ public class FrontendUtilsTest {
                 .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
         Mockito.when(classLoader.getResourceAsStream(
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(new ByteArrayInputStream(stats.getBytes()));
+                .thenReturn(stats);
         return service;
     }
 }
