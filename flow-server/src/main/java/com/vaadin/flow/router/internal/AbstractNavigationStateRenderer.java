@@ -59,6 +59,7 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -137,7 +138,7 @@ public abstract class AbstractNavigationStateRenderer
 
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
-        Map<String, String> urlParameters = navigationState.getUrlParametersMap();
+        UrlParameters urlParameters = navigationState.getParameters();
         List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
                 routeTargetType, ui.getRouter());
 
