@@ -39,23 +39,48 @@ public class UrlParameters {
     }
 
     public String get(String parameterName) {
-        return params.get(parameterName).toString();
+        final Object value = getObject(parameterName);
+        if (value == null) {
+            return null;
+        }
+
+        return value.toString();
     }
 
     public Integer getInt(String parameterName) {
-        return new Integer(get(parameterName));
+        final String value = get(parameterName);
+        if (value == null) {
+            return null;
+        }
+
+        return new Integer(value);
     }
 
     public Long getLong(String parameterName) {
-        return new Long(get(parameterName));
+        final String value = get(parameterName);
+        if (value == null) {
+            return null;
+        }
+
+        return new Long(value);
     }
 
     public Boolean getBool(String parameterName) {
-        return new Boolean(get(parameterName));
+        final String value = get(parameterName);
+        if (value == null) {
+            return null;
+        }
+
+        return new Boolean(value);
     }
 
     public List<String> getList(String parameterName) {
-        return (List<String>) params.get(parameterName);
+        final Object value = getObject(parameterName);
+        if (value == null) {
+            return null;
+        }
+
+        return (List<String>) value;
     }
 
     public Object getObject(String parameterName) {
