@@ -173,7 +173,7 @@ public class ElementListenerMap extends NodeMap {
                 DisabledUpdateMode disabledUpdateMode) {
             if (disabledUpdateMode == null) {
                 throw new IllegalArgumentException(
-                        "RPC comunication control mode for disabled element must not be null");
+                        "RPC communication control mode for disabled element must not be null");
             }
 
             mode = disabledUpdateMode;

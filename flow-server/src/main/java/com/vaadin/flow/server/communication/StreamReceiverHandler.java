@@ -43,7 +43,6 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.NoInputStreamException;
 import com.vaadin.flow.server.NoOutputStreamException;
 import com.vaadin.flow.server.StreamReceiver;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamVariable;
 import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
@@ -58,7 +57,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
+ * Handles {@link StreamReceiver} instances registered in {@link VaadinSession}.
  *
  * @author Vaadin Ltd
  * @since 1.0
