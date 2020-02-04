@@ -61,9 +61,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static java.lang.String.format;
 
 /**
@@ -795,10 +792,11 @@ public class FrontendUtils {
      * object string.
      *
      * @param service
-     *            the Vaadin service.
-     * @return json for assetsByChunkName object in stats.json
+     *         the Vaadin service.
+     * @return json for assetsByChunkName object in stats.json or {@code null}
+     *         if stats.json not found or content not found.
      * @throws IOException
-     *             if an I/O error occurs while creating the input stream.
+     *         if an I/O error occurs while creating the input stream.
      */
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
@@ -819,13 +817,10 @@ public class FrontendUtils {
             resourceAsStream = getStatsFromExternalUrl(
                     config.getExternalStatsUrl(), service.getContext());
         } else {
-            String stats = config
-                    .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                            VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                    // Remove absolute
-                    .replaceFirst("^/", "");
-            resourceAsStream = service.getClassLoader()
-                    .getResourceAsStream(stats);
+            resourceAsStream = getStatsFromClassPath(service);
+        }
+        if(resourceAsStream == null) {
+            return null;
         }
         try (Scanner scan = new Scanner(resourceAsStream,
                 StandardCharsets.UTF_8.name())) {
@@ -850,6 +845,7 @@ public class FrontendUtils {
                 }
                 assets.append(line);
             }
+            getLogger().error("Could not parse assetsByChunkName from stats.json");
         }
         return null;
     }
