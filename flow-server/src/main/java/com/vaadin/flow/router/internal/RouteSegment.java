@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -327,8 +328,8 @@ class RouteSegment implements Serializable {
         return parameterDetails != null;
     }
 
-    private Optional<ParameterDetails> getParameterDetails() {
-        return Optional.ofNullable(parameterDetails);
+    private ParameterDetails getParameterDetails() {
+        return parameterDetails;
     }
 
     private boolean hasTarget() {
@@ -458,7 +459,6 @@ class RouteSegment implements Serializable {
         if (!segments.isEmpty()) {
 
             for (RouteSegment parameter : getParameterSegments().values()) {
-
                 RouteTarget target = findRouteTarget(parameter, segments,
                         urlParameters);
                 if (target != null) {
@@ -467,7 +467,7 @@ class RouteSegment implements Serializable {
 
                 // Try ignoring the parameter if optional and look into its
                 // children using the same segments.
-                if (parameter.parameterDetails.isOptional()) {
+                if (parameter.getParameterDetails().isOptional()) {
                     Map<String, Serializable> outputParameters = new HashMap<>();
                     target = parameter.findRouteTarget(segments,
                             outputParameters);
@@ -476,12 +476,15 @@ class RouteSegment implements Serializable {
                         urlParameters.putAll(outputParameters);
                         return target;
                     }
-
                 }
             }
 
-            for (RouteSegment parameter : getVarargsSegments().values()) {
-                // TODO implement this
+            for (RouteSegment varargParameter : getVarargsSegments().values()) {
+                RouteTarget target = findRouteTarget(varargParameter, segments,
+                        urlParameters);
+                if (target != null) {
+                    return target;
+                }
             }
         }
 
@@ -494,14 +497,35 @@ class RouteSegment implements Serializable {
         Map<String, Serializable> outputParameters = new HashMap<>();
 
         if (potentialSegment.isParameter()) {
-            final String value = segments.get(0);
 
-            if (potentialSegment.parameterDetails.isEligible(value)) {
-                outputParameters.put(potentialSegment.getName(), value);
+            // Handle varargs.
+            if (potentialSegment.getParameterDetails().isVarargs()) {
+
+                for (String value : segments) {
+                    if (!potentialSegment.getParameterDetails()
+                            .isEligible(value)) {
+                        // If any value is not eligible we don't want to go any
+                        // further.
+                        return null;
+                    }
+                }
+
+                outputParameters.put(potentialSegment.getName(),
+                        new ArrayList<>(segments));
+                segments = Collections.emptyList();
 
             } else {
-                // If the value is not eligible we don't want to go any further.
-                return null;
+                // Handle one parameter value.
+                String value = segments.get(0);
+
+                if (potentialSegment.getParameterDetails().isEligible(value)) {
+                    outputParameters.put(potentialSegment.getName(), value);
+
+                } else {
+                    // If the value is not eligible we don't want to go any
+                    // further.
+                    return null;
+                }
             }
         }
 

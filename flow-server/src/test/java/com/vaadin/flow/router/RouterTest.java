@@ -3186,13 +3186,16 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
 
-        String exceptionText1 = String.format("Could not navigate to '%s'",
+        String exceptionText1 = String.format("No navigation target found for path '%s'",
                 locationString);
 
-        String exceptionText2 = String
-                .format("Reason: Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String.format(
+                "Reason: No navigation target found for path '%s'",
+                locationString);
 
-        String exceptionText3 = "<li>optional (requires parameter)</li>";
+        String exceptionText3 = "<li>optional/:"
+                + HasUrlParameterUtil.PARAMETER_NAME
+                + " (requires parameter)</li>";
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2, exceptionText3);

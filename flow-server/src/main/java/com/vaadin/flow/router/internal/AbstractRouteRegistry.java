@@ -252,7 +252,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget) {
-        if (getConfiguration().hasRoute(path)) {
+        if (getConfiguration().hasUrl(path)) {
             return getConfiguration().getParentLayouts(path, navigationTarget);
         }
         return Collections.emptyList();
