@@ -22,11 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.OptionalParameter;
-import com.vaadin.flow.router.ParameterDeserializer;
-import com.vaadin.flow.router.WildcardParameter;
 
 public class HasUrlParameterUtil {
 
@@ -37,30 +32,30 @@ public class HasUrlParameterUtil {
      */
     public static String PARAMETER_NAME = "___url_parameter";
 
-    public static String getPathWithHasUrlParameter(String pathPattern,
+    public static String getPathWithHasUrlParameter(String path,
             Class<? extends Component> navigationTarget) {
         if (hasUrlParameter(navigationTarget)) {
 
             if (hasOptionalParameter(navigationTarget)) {
-                pathPattern += "/[:" + PARAMETER_NAME + "]";
+                path += "/[:" + PARAMETER_NAME + "]";
             } else if (hasWildcardParameter(navigationTarget)) {
-                pathPattern += "/...:" + PARAMETER_NAME;
+                path += "/...:" + PARAMETER_NAME;
             } else {
-                pathPattern += "/:" + PARAMETER_NAME;
+                path += "/:" + PARAMETER_NAME;
             }
 
             final Class<?> parameterType = ParameterDeserializer
                     .getClassType(navigationTarget);
 
             if (parameterType.isAssignableFrom(Integer.class)) {
-                pathPattern += ":int";
+                path += ":int";
             } else if (parameterType.isAssignableFrom(Long.class)) {
-                pathPattern += ":long";
+                path += ":long";
             } else if (parameterType.isAssignableFrom(Boolean.class)) {
-                pathPattern += ":bool";
+                path += ":bool";
             }
         }
-        return pathPattern;
+        return path;
     }
 
     public static <T> UrlParameters getParameters(List<T> parametersList) {
