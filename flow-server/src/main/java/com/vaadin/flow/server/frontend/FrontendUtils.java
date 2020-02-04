@@ -532,10 +532,11 @@ public class FrontendUtils {
      * object string.
      *
      * @param service
-     *            the Vaadin service.
-     * @return json for assetsByChunkName object in stats.json
+     *         the Vaadin service.
+     * @return json for assetsByChunkName object in stats.json or {@code null}
+     *         if stats.json not found or content not found.
      * @throws IOException
-     *             if an I/O error occurs while creating the input stream.
+     *         if an I/O error occurs while creating the input stream.
      */
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
@@ -553,13 +554,10 @@ public class FrontendUtils {
             return streamToString(assetsConnection.getInputStream());
         }
 
-        String stats = config
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-        InputStream resourceAsStream = service.getClassLoader()
-                .getResourceAsStream(stats);
+        InputStream resourceAsStream =  getStatsFromClassPath(service);
+        if(resourceAsStream == null) {
+            return null;
+        }
         try (Scanner scan = new Scanner(resourceAsStream,
                 StandardCharsets.UTF_8.name())) {
             StringBuilder assets = new StringBuilder();
@@ -583,6 +581,7 @@ public class FrontendUtils {
                 }
                 assets.append(line);
             }
+            getLogger().error("Could not parse assetsByChunkName from stats.json");
         }
         return null;
     }
