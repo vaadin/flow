@@ -47,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -90,6 +91,7 @@ import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.Model;
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.ParentModel;
 
+import static com.vaadin.flow.server.connect.generator.TestUtils.equalsIgnoreWhiteSpaces;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -100,7 +102,7 @@ public abstract class AbstractEndpointGenerationTest {
             Number.class, byte.class, char.class, short.class, int.class,
             long.class, float.class, double.class);
     private static final Pattern JAVA_PATH_REFERENCE_REGEX = Pattern
-            .compile("( \\* @see \\{@link file:\\/\\/(.*)\\}\n)");
+            .compile("( \\* @see \\{@link file:\\/\\/(.*)\\}\r?\n)");
 
     /**
      * Classes in this list are simulated as classes from different jars so that
@@ -502,12 +504,6 @@ public abstract class AbstractEndpointGenerationTest {
     }
 
     private void verifyOpenApiJson(URL expectedOpenApiJsonResourceUrl) {
-        // Verify OpenAPI object instead of the JSON string to avoid
-        // false-positive when the content is the same but the order is
-        // different.
-        // To easily identify the difference, please use
-        // `verifyOpenApiJsonByString` method.
-        //
         OpenAPIV3Parser parser = new OpenAPIV3Parser();
         OpenAPI generated = parser
                 .read(openApiJsonOutput.toAbsolutePath().toString());
@@ -515,18 +511,26 @@ public abstract class AbstractEndpointGenerationTest {
             OpenAPI expected = parser
                     .read(new File(expectedOpenApiJsonResourceUrl.toURI()).toPath()
                             .toAbsolutePath().toString());
+
             removeAndCompareFilePathExtensionInTags(generated, expected);
             removeAndCompareFilePathExtensionInSchemas(generated, expected);
+            sortTagsAndSchemas(generated);
+            sortTagsAndSchemas(expected);
 
-            generated.getTags().sort(Comparator.comparing(Tag::getName));
-            expected.getTags().sort(Comparator.comparing(Tag::getName));
+            equalsIgnoreWhiteSpaces("The generated OpenAPI does not match",
+                    expected.toString(), generated.toString());
 
-            Assert.assertEquals("The generated OpenAPI does not match",
-                    expected, generated);
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Can't compare OpenAPI json.", e);
         }
+    }
 
+    private void sortTagsAndSchemas(OpenAPI api) {
+        // sort tags
+        api.getTags().sort(Comparator.comparing(Tag::getName));
+        // sort component schemas
+        api.getComponents()
+                .setSchemas(new TreeMap<>(api.getComponents().getSchemas()));
     }
 
     private void removeAndCompareFilePathExtensionInSchemas(OpenAPI generated,
@@ -545,12 +549,15 @@ public abstract class AbstractEndpointGenerationTest {
                     && expectedSchemaAndFilePathMap.get(key) == null;
             String errorMessage = String.format(
                     "File path doesn't match " + "for schema '%s'", key);
-            Assert.assertTrue(errorMessage, isBothNull || (value != null
-                    && value.endsWith(expectedSchemaAndFilePathMap.get(key))));
+
+            String ending = expectedSchemaAndFilePathMap.get(key).replace('/',
+                    File.separatorChar);
+            Assert.assertTrue(errorMessage,
+                    isBothNull || (value != null && value.endsWith(ending)));
         }
     }
 
-    private Map<String, Schema> getSchemaNameAndFilePathMap(OpenAPI openAPI,
+    private void getSchemaNameAndFilePathMap(OpenAPI openAPI,
             Map<String, String> schemaNameAndFilePathMap) {
         Map<String, Schema> schemas = openAPI.getComponents().getSchemas();
         for (Map.Entry<String, Schema> stringSchemaEntry : schemas.entrySet()) {
@@ -562,7 +569,6 @@ public abstract class AbstractEndpointGenerationTest {
                         OpenApiObjectGenerator.EXTENSION_VAADIN_FILE_PATH);
             }
         }
-        return schemas;
     }
 
     private void removeAndCompareFilePathExtensionInTags(OpenAPI generated,
@@ -586,9 +592,10 @@ public abstract class AbstractEndpointGenerationTest {
             String errorMessage = String.format(
                     "File path doesn't match for tag '%s'",
                     key);
+            String ending = expectedFilePath.get(key).replace('/',
+                    File.separatorChar);
             Assert.assertTrue(errorMessage,
-                    isBothNull || (value != null
-                            && value.endsWith(expectedFilePath.get(key))));
+                    isBothNull || (value != null && value.endsWith(ending)));
         }
     }
 
@@ -668,7 +675,7 @@ public abstract class AbstractEndpointGenerationTest {
                 .startsWith("com.vaadin.flow.server")
                 || DENY_LIST_CHECKING_ABSOLUTE_PATH.contains(expectedClass)) {
             // the class comes from jars
-            Assert.assertEquals(errorMessage, expectedTs, actualContent);
+            equalsIgnoreWhiteSpaces(errorMessage, expectedTs, actualContent);
             return;
         }
         removeAbsolutePathAndCompare(expectedClass, expectedTs, errorMessage,
@@ -682,9 +689,10 @@ public abstract class AbstractEndpointGenerationTest {
         Assert.assertTrue(errorMessage, matcher.find());
 
         String actualJavaFileReference = matcher.group(1);
+
         String actualContentWithoutPathReference = actualContent
                 .replace(actualJavaFileReference, "");
-        Assert.assertEquals(errorMessage, expectedTs,
+        equalsIgnoreWhiteSpaces(errorMessage, expectedTs,
                 actualContentWithoutPathReference);
 
         String javaFilePathReference = matcher.group(2);
@@ -694,7 +702,7 @@ public abstract class AbstractEndpointGenerationTest {
             declaringClass = declaringClass.getDeclaringClass();
         }
         String expectedEndingJavaFilePath = StringUtils.replaceChars(
-                declaringClass.getCanonicalName(), '.', '/') + ".java";
+                declaringClass.getCanonicalName(), '.', File.separatorChar) + ".java";
         String wrongPathMessage = String.format(
                 "The generated model class '%s' refers to Java path '%s'. The path should end with '%s'",
                 expectedClass, actualJavaFileReference,

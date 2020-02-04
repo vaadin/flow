@@ -26,7 +26,6 @@ import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,6 +39,7 @@ import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static com.vaadin.flow.server.connect.generator.TestUtils.equalsIgnoreWhiteSpaces;
 
 public class OpenApiSpecBasedTests {
     @Rule
@@ -147,7 +147,7 @@ public class OpenApiSpecBasedTests {
 
         String expected = TestUtils
                 .readResource(getClass().getResource("expected-no-tsdoc.ts"));
-        Assert.assertEquals(expected, actual);
+        equalsIgnoreWhiteSpaces(expected, actual);
     }
 
     @Test
@@ -162,7 +162,7 @@ public class OpenApiSpecBasedTests {
         String expected = TestUtils.readResource(
                 getClass().getResource("expected-partly-tsdoc.ts"));
 
-        Assert.assertEquals(expected, actual);
+        equalsIgnoreWhiteSpaces(expected, actual);
     }
 
     @Test
@@ -178,17 +178,17 @@ public class OpenApiSpecBasedTests {
         String firstActualTs = StringUtils
                 .toEncodedString(Files.readAllBytes(firstOutputFilePath),
                         StandardCharsets.UTF_8)
-                .trim();
+                .trim().replace("\r", "");
         String secondActualTs = StringUtils
                 .toEncodedString(Files.readAllBytes(secondOutputFilePath),
                         StandardCharsets.UTF_8)
-                .trim();
+                .trim().replace("\r", "");
         String expectedFirstClass = TestUtils.readResource(getClass()
                 .getResource("expected-first-class-multiple-tags.ts"));
         String expectedSecondClass = TestUtils.readResource(getClass()
                 .getResource("expected-second-class-multiple-tags.ts"));
-        Assert.assertEquals(expectedFirstClass, firstActualTs);
-        Assert.assertEquals(expectedSecondClass, secondActualTs);
+        equalsIgnoreWhiteSpaces(expectedFirstClass, firstActualTs);
+        equalsIgnoreWhiteSpaces(expectedSecondClass, secondActualTs);
     }
 
     @Test
@@ -200,7 +200,7 @@ public class OpenApiSpecBasedTests {
         String actualTs = readFileInTempDir("Default.ts");
         String expectedFirstClass = TestUtils.readResource(
                 getClass().getResource("expected-default-class-no-tag.ts"));
-        Assert.assertEquals(expectedFirstClass, actualTs);
+        equalsIgnoreWhiteSpaces(expectedFirstClass, actualTs);
     }
 
     @Test
@@ -212,13 +212,13 @@ public class OpenApiSpecBasedTests {
         String actualTs = readFileInTempDir("GeneratorTestClass.ts");
         String expectedTs = TestUtils.readResource(getClass()
                 .getResource("expected-multiple-lines-description.ts"));
-        Assert.assertEquals(expectedTs, actualTs);
+        equalsIgnoreWhiteSpaces(expectedTs, actualTs);
     }
 
     private String readFileInTempDir(String fileName) throws IOException {
         Path outputPath = outputDirectory.getRoot().toPath().resolve(fileName);
         return StringUtils.toEncodedString(Files.readAllBytes(outputPath),
-                StandardCharsets.UTF_8).trim();
+                StandardCharsets.UTF_8);
     }
 
     private File getResourcePath(String resourceName) {
@@ -232,17 +232,17 @@ public class OpenApiSpecBasedTests {
         try {
             actualTs = StringUtils
                     .toEncodedString(Files.readAllBytes(outputFilePath),
-                            StandardCharsets.UTF_8)
-                    .trim();
+                            StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
         String expectedTs = TestUtils.readResource(getClass()
                 .getResource(String.format("expected-%s.ts", expectedClass)));
 
-        Assert.assertEquals(
+        equalsIgnoreWhiteSpaces(
                 String.format("Class '%s' has unexpected json produced",
                         expectedClass),
                 expectedTs, actualTs);
     }
+
 }

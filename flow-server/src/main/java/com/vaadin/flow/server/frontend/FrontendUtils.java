@@ -1351,7 +1351,7 @@ public class FrontendUtils {
     public static String commandToString(String baseDir, List<String> command) {
         return "\n" + WordUtils
                 .wrap(String.join(" ", command).replace(baseDir, "."), 50)
-                .replace("\n", " \\ \n    ") + "\n";
+                .replace("\r",  "").replace("\n", " \\ \n    ") + "\n";
     }
 
     /**
