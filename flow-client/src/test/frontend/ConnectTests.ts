@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, VaadinConnectError, VaadinConnectValidationError, VaadinConnectResponseError } from "../../main/resources/META-INF/resources/frontend/Connect";
+import { ConnectClient, EndpointError, EndpointValidationError, EndpointResponseError } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -170,7 +170,7 @@ describe('ConnectClient', () => {
       try {
         await client.call('FooEndpoint', 'notFound');
       } catch (err) {
-        expect(err).to.be.instanceOf(VaadinConnectError)
+        expect(err).to.be.instanceOf(EndpointError)
           .and.have.property('message').that.has.string('404 Not Found');
       }
     });
@@ -188,7 +188,7 @@ describe('ConnectClient', () => {
       try {
         await client.call('FooEndpoint', 'vaadinException');
       } catch (err) {
-        expect(err).to.be.instanceOf(VaadinConnectError);
+        expect(err).to.be.instanceOf(EndpointError);
         expect(err).to.have.property('message').that.is.string(expectedObject.message);
         expect(err).to.have.property('type').that.is.string(expectedObject.type);
         expect(err).to.have.deep.property('detail', expectedObject.detail);
@@ -209,7 +209,7 @@ describe('ConnectClient', () => {
       try {
         await client.call('FooEndpoint', 'vaadinConnectResponse');
       } catch (err) {
-        expect(err).to.be.instanceOf(VaadinConnectResponseError);
+        expect(err).to.be.instanceOf(EndpointResponseError);
         expect(err).to.have.property('message').that.is.string(body);
         expect(err).to.have.deep.property('response', errorResponse);
       }
@@ -217,7 +217,7 @@ describe('ConnectClient', () => {
 
     it('should reject with extra validation parameters in the exception if response body has the data', async() => {
       const expectedObject = {
-        type: 'com.vaadin.connect.exception.VaadinConnectValidationException',
+        type: 'com.vaadin.connect.exception.EndpointValidationException',
         message: 'Validation failed',
         validationErrorData: [
           {
@@ -233,7 +233,7 @@ describe('ConnectClient', () => {
       try {
         await client.call('FooEndpoint', 'validationException');
       } catch (err) {
-        expect(err).to.be.instanceOf(VaadinConnectValidationError);
+        expect(err).to.be.instanceOf(EndpointValidationError);
         expect(err).to.have.property('message').that.is.string(expectedObject.message);
         expect(err).to.have.property('type').that.is.string(expectedObject.type);
         expect(err).to.have.property('detail');
