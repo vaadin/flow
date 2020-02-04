@@ -36,7 +36,8 @@ public class UrlParameters {
      *            parameters mapping.
      */
     public UrlParameters(Map<String, Serializable> params) {
-        this.params = params != null ? params : Collections.emptyMap();
+        this.params = params != null ? Collections.unmodifiableMap(params)
+                : Collections.emptyMap();
     }
 
     public String get(String parameterName) {
@@ -82,7 +83,7 @@ public class UrlParameters {
         }
 
         if (value instanceof List) {
-            return (List<String>) value;
+            return Collections.unmodifiableList((List<String>) value);
         } else {
             return null;
         }
