@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,11 @@ public class UrlParameters {
             return null;
         }
 
-        return (List<String>) value;
+        if (value instanceof List) {
+            return (List<String>) value;
+        } else {
+            return null;
+        }
     }
 
     public Object getObject(String parameterName) {
