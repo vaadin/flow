@@ -76,19 +76,12 @@ export class VaadinConnectError extends Error {
   detail?: any;
 
   /**
-   * An original exception error message.
-   */
-  originalErrorMessage: string;
-
-  /**
    * @param message the `message` property value
    * @param type the `type` property value
    * @param detail the `detail` property value
    */
   constructor(message: string, type?: string, detail?: any) {
-    super(
-      `Message: '${message}', additional details: '${JSON.stringify(detail)}'`);
-    this.originalErrorMessage = message;
+    super(message);
     this.type = type;
     this.detail = detail;
   }
