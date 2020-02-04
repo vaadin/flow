@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 
@@ -52,7 +51,7 @@ public class NavigationStateBuilder {
      * @param urlParameters
      *            the url parameter of the navigation target
      * @return this builder, for chaining
-     * @deprecated use {@link #withTarget(Class, Map)} instead.
+     * @deprecated use {@link #withTarget(Class, UrlParameters)} instead.
      */
     @Deprecated
     public NavigationStateBuilder withTarget(
@@ -75,9 +74,9 @@ public class NavigationStateBuilder {
      */
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
-            Map<String, String> urlParameters) {
+            UrlParameters urlParameters) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setUrlParametersMap(urlParameters);
+        currentState.setParameters(urlParameters);
         return this;
     }
 
@@ -91,7 +90,6 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setUrlParametersMap(null);
         return this;
     }
 

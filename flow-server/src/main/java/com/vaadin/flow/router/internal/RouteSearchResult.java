@@ -36,10 +36,10 @@ public class RouteSearchResult {
     private RouteTarget target;
 
     // Parameters found in the path.
-    private Map<String, String> urlParameters;
+    private Map<String, Serializable> urlParameters;
 
     RouteSearchResult(String path, RouteTarget target,
-            Map<String, String> urlParameters) {
+            Map<String, Serializable> urlParameters) {
         this.path = path;
         this.target = target;
         this.urlParameters = Collections.unmodifiableMap(urlParameters);
@@ -78,7 +78,7 @@ public class RouteSearchResult {
      * 
      * @return the url parameters for this search response.
      */
-    public Map<String, String> getUrlParameters() {
+    public Map<String, Serializable> getUrlParameters() {
         return urlParameters;
     }
 

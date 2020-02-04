@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import java.util.List;
-import java.util.Map;
 
 import com.vaadin.flow.component.UI;
 
@@ -56,7 +55,8 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            Navigation layout chain
      */
     public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
-            Map<String, String> urlParameters, List<Class<? extends RouterLayout>> layouts) {
+            UrlParameters urlParameters,
+            List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, urlParameters, layouts);
     }
 
@@ -104,7 +104,7 @@ public class BeforeEnterEvent extends BeforeEvent {
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget,
-            Map<String, String> urlParameters, UI ui,
+            UrlParameters urlParameters, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, urlParameters, ui, layouts);
     }
