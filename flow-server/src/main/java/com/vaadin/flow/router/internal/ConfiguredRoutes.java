@@ -128,8 +128,8 @@ public class ConfiguredRoutes implements Serializable {
      * @return true if a route is found, else false
      */
     public boolean hasRoute(String pathString, List<String> segments) {
-        if (getRoutesMap().containsKey(pathString)) {
-            return getRoutesMap().get(pathString).getTarget(segments) != null;
+        if (hasRoute(pathString)) {
+            return getRouteTarget(pathString).getTarget(segments) != null;
         }
         return false;
     }
@@ -156,8 +156,8 @@ public class ConfiguredRoutes implements Serializable {
      */
     public Optional<Class<? extends Component>> getRoute(String pathString,
             List<String> segments) {
-        if (getRoutesMap().containsKey(pathString)) {
-            RouteTarget routeTarget = getRoutesMap().get(pathString);
+        if (hasRoute(pathString)) {
+            RouteTarget routeTarget = getRouteTarget(pathString);
             return Optional.ofNullable(routeTarget.getTarget(segments));
         }
         return Optional.empty();
@@ -225,7 +225,7 @@ public class ConfiguredRoutes implements Serializable {
      */
     public List<Class<? extends RouterLayout>> getParentLayouts(String path,
             Class<? extends Component> navigationTarget) {
-        return getRoutesMap().get(path).getParentLayouts(navigationTarget);
+        return getRouteTarget(path).getParentLayouts(navigationTarget);
     }
 
     /**
