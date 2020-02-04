@@ -23,6 +23,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
 
+import com.vaadin.flow.router.UrlParameters;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -59,7 +60,7 @@ public class DefaultRouteResolver implements RouteResolver {
         try {
 
             builder.withTarget(navigationResult.getTarget().getTarget(),
-                    navigationResult.getUrlParameters());
+                    new UrlParameters(navigationResult.getUrlParameters()));
             builder.withPath(navigationResult.getPath());
         } catch (NotFoundException nfe) {
             String message = "Exception while navigation to path " + path;

@@ -71,7 +71,7 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        final String value = navigationState.getUrlParametersMap()
+        final String value = navigationState.getParameters()
                 .get(HasUrlParameterUtil.PARAMETER_NAME);
 
         // TODO: handle varargs/wildcard

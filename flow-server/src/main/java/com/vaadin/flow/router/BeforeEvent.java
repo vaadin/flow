@@ -46,7 +46,7 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
-    private final Map<String, String> urlParameters;
+    private final UrlParameters urlParameters;
     private final List<Class<? extends RouterLayout>> layouts;
     private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
@@ -81,7 +81,7 @@ public abstract class BeforeEvent extends EventObject {
      *            Navigation layout chain
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
-            Map<String, String> urlParameters,
+            UrlParameters urlParameters,
             List<Class<? extends RouterLayout>> layouts) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, urlParameters, event.getUI(), layouts);
@@ -108,7 +108,7 @@ public abstract class BeforeEvent extends EventObject {
     public BeforeEvent(Router router, NavigationTrigger trigger,
                        Location location, Class<?> navigationTarget, UI ui,
                        List<Class<? extends RouterLayout>> layouts) {
-        this(router, trigger, location, navigationTarget, Collections.emptyMap(),
+        this(router, trigger, location, navigationTarget, new UrlParameters(null),
                 ui, Collections.emptyList());
     }
     
@@ -133,7 +133,7 @@ public abstract class BeforeEvent extends EventObject {
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget,
-            Map<String, String> urlParameters, UI ui,
+            UrlParameters urlParameters, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router);
 
@@ -147,7 +147,7 @@ public abstract class BeforeEvent extends EventObject {
         this.trigger = trigger;
         this.location = location;
         this.navigationTarget = navigationTarget;
-        this.urlParameters = Collections.unmodifiableMap(urlParameters);
+        this.urlParameters = urlParameters;
         this.ui = ui;
         this.layouts = Collections.unmodifiableList(new ArrayList<>(layouts));
     }
@@ -478,7 +478,7 @@ public abstract class BeforeEvent extends EventObject {
         return navigationTarget;
     }
 
-    public Map<String, String> getUrlParameters() {
+    public UrlParameters getUrlParameters() {
         return urlParameters;
     }
 

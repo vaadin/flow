@@ -16,6 +16,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -62,12 +63,12 @@ public class HasUrlParameterUtil {
         return pathPattern;
     }
 
-    public static <T> Map<String, String> getParameters(List<T> parametersList) {
+    public static <T> UrlParameters getParameters(List<T> parametersList) {
         // TODO: handle wildcard
-        Map<String, String> result = Collections.singletonMap(PARAMETER_NAME,
+        Map<String, Serializable> map = Collections.singletonMap(PARAMETER_NAME,
                 parametersList.get(0).toString());
 
-        return result;
+        return new UrlParameters(map);
     }
 
     /**
