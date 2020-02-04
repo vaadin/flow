@@ -59,7 +59,7 @@ class DevServerWatchDog {
                     accept.setSoTimeout(0);
                 } catch (IOException e) {
                     getLogger().debug(
-                            "Error occured during accept a connection", e);
+                            "Error occurred during accept a connection", e);
                 }
             }
         }
@@ -70,7 +70,7 @@ class DevServerWatchDog {
                     server.close();
                 } catch (IOException e) {
                     getLogger().debug(
-                            "Error occured during close the server socket", e);
+                            "Error occurred during close the server socket", e);
                 }
             }
         }

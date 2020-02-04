@@ -34,7 +34,7 @@ public class RpcDecodeException extends Exception {
      * Creates a new instance with the given {@code message}.
      *
      * @param message
-     *            the exception messsage
+     *            the exception message
      */
     public RpcDecodeException(String message) {
         super(message);
@@ -44,7 +44,7 @@ public class RpcDecodeException extends Exception {
      * Creates a new instance with the given {@code cause}.
      *
      * @param cause
-     *            the cause of the failed convertion
+     *            the cause of the failed conversion
      */
     public RpcDecodeException(Throwable cause) {
         super(cause);

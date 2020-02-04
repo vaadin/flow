@@ -30,7 +30,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
  * routing.
  * <p>
  * There is also {@link RouteAlias} annotation which may be declared in addition
- * to this annotation and may be used mutiple times.
+ * to this annotation and may be used multiple times.
  *
  * @see RouteAlias
  * @see RoutePrefix

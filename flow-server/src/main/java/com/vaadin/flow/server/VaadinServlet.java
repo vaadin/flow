@@ -267,7 +267,7 @@ public class VaadinServlet extends HttpServlet {
      *            the HTTP servlet response object that contains the response
      *            the servlet returns to the client
      * @return <code>true</code> if the request was handled a response written;
-     *         oterwise <code>false</code>
+     *         otherwise <code>false</code>
      *
      * @exception IOException
      *                if an input or output error occurs while the servlet is
