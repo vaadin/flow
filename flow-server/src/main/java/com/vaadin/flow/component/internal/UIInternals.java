@@ -1028,7 +1028,7 @@ public class UIInternals implements Serializable {
      * Set a {@link ContinueNavigationAction} or null to clear existing action.
      *
      * @param continueNavigationAction
-     *            continue navigatio action to store or null
+     *            continue navigation action to store or null
      */
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {
