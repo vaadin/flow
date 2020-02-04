@@ -59,7 +59,7 @@ public class RouteSegmentTest {
         RouteSegment root = RouteSegment.createRoot();
         root.addPath("", Root.class);
         root.addPath("trunk", Trunk.class);
-        root.addPath("trunk/branch/:id:int", Branch.class);
+        root.addPath("trunk/branch/[:id]", Branch.class);
         root.addPath("trunk/branch/:id:int/[...:list]", BranchChildren.class);
         root.addPath("trunk/[:name]/[:type]/branch/[:id:int]/edit",
                 BranchEdit.class);
