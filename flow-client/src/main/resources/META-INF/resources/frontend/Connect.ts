@@ -49,7 +49,7 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
     if (errorJson !== null) {
       throwConnectException(errorJson);
     } else if (errorText !== null && errorText.length > 0) {
-      throw new VaadinConnectError(errorText);
+      throw new VaadinConnectResponseError(errorText, response);
     } else {
       throw new VaadinConnectError(
         'expected "200 OK" response, but got ' +
@@ -58,6 +58,25 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
     }
   }
 };
+
+/**
+ * An exception that gets thrown for unexpected HTTP response.
+ */
+export class VaadinConnectResponseError extends Error {
+  /**
+   * The optional response object, containing the HTTP response error
+   */
+  response: Response;
+
+  /**
+   * @param message the `message` property value
+   * @param response the `response` property value
+   */
+  constructor(message: string, response: Response) {
+    super(message);
+    this.response = response;
+  }
+}
 
 /**
  * An exception that gets thrown when the Vaadin Connect backend responds
