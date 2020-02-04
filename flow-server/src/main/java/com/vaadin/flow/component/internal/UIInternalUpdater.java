@@ -56,7 +56,7 @@ public interface UIInternalUpdater extends Serializable {
      * Move all the children from the old UI to the new UI.
      * 
      * @param oldUI
-     *            the old UI whose children will be transfered to new UI
+     *            the old UI whose children will be transferred to new UI
      * @param newUI
      *            the new UI where children of the old UI will be landed
      */

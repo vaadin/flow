@@ -49,7 +49,7 @@ public abstract class CustomAttribute implements Serializable {
      *
      * @param name
      *            the name of the attribute
-     * @return and optional custom attribute, or an emtpy optional if there is
+     * @return and optional custom attribute, or an empty optional if there is
      *         no attribute with the given name
      */
     public static Optional<CustomAttribute> get(String name) {

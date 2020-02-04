@@ -84,7 +84,7 @@ public class DependencyTreeCache<T> implements Serializable {
             Thread.currentThread().interrupt();
 
             throw new RuntimeException(
-                    "Interrputed while finding dependencies for " + node, e);
+                    "Interrupted while finding dependencies for " + node, e);
         }
 
         return result;
