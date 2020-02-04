@@ -100,8 +100,7 @@ export class VaadinConnectError extends Error {
    * @param detail the `detail` property value
    */
   constructor(message: string, type?: string, detail?: any) {
-    super(
-      `Message: '${message}', additional details: '${JSON.stringify(detail)}'`);
+    super(message);
     this.type = type;
     this.detail = detail;
   }
