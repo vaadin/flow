@@ -2145,7 +2145,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertTrue(errorMessage.contains(
                 String.format("Could not navigate to '%s'", locationString)));
         Assert.assertTrue(errorMessage.contains(
-                String.format("Couldn't find route for '%s'", locationString)));
+                String.format("No navigation target found for path '%s'", locationString)));
     }
 
     @Test
