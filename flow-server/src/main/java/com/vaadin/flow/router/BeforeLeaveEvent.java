@@ -113,7 +113,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            Navigation layout chain
      */
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
-            Map<String, String> urlParameters,
+            UrlParameters urlParameters,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, urlParameters, layouts);
     }
@@ -163,7 +163,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
                             Location location, Class<?> navigationTarget,
-                            Map<String, String> urlParameters, UI ui,
+                            UrlParameters urlParameters, UI ui,
                             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, urlParameters, ui,
                 layouts);

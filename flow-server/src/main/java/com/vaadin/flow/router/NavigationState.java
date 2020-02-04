@@ -16,10 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -34,7 +31,7 @@ import com.vaadin.flow.component.Component;
 public class NavigationState implements Serializable {
 
     private Class<? extends Component> navigationTarget;
-    private Map<String, String> urlParameters;
+    private UrlParameters urlParameters;
     private String resolvedPath;
     private final Router router;
 
@@ -99,7 +96,7 @@ public class NavigationState implements Serializable {
      * @param urlParameters
      *            url parameters.
      */
-    public void setUrlParametersMap(Map<String, String> urlParameters) {
+    public void setParameters(UrlParameters urlParameters) {
         this.urlParameters = urlParameters;
     }
 
@@ -108,12 +105,8 @@ public class NavigationState implements Serializable {
      * 
      * @return url parameters.
      */
-    public Map<String, String> getUrlParametersMap() {
-        if (urlParameters != null) {
-            return Collections.unmodifiableMap(urlParameters);
-        } else {
-            return Collections.emptyMap();
-        }
+    public UrlParameters getParameters() {
+        return urlParameters != null ? urlParameters : new UrlParameters(null);
     }
 
     /**
@@ -121,7 +114,7 @@ public class NavigationState implements Serializable {
      * parameters.
      *
      * @return the url parameters of this navigation state
-     * @deprecated use {@link #getUrlParametersMap()}
+     * @deprecated use {@link #getParameters()}
      */
     @Deprecated
     public Optional<List<String>> getUrlParameters() {
@@ -139,7 +132,7 @@ public class NavigationState implements Serializable {
      *
      * @param urlParameters
      *            the url parameters to set
-     * @deprecated use {@link #setUrlParametersMap(Map)} instead.
+     * @deprecated use {@link #setParameters(UrlParameters)} instead.
      */
     @Deprecated
     public void setUrlParameters(List<String> urlParameters) {
