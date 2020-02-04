@@ -47,7 +47,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Create an immutable RouteConfiguration.
      */
     public ConfigureRoutes() {
-        routesModel = RouteModel.createRoot();
+        routesModel = RouteModel.create();
         routeMap = new HashMap<>();
         targetRouteMap = new HashMap<>();
         exceptionTargetMap = new HashMap<>();
