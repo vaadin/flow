@@ -16,13 +16,13 @@ interface ConnectExceptionData {
 
 const throwConnectException = (errorJson: ConnectExceptionData) => {
   if (errorJson.validationErrorData) {
-    throw new VaadinConnectValidationError(
+    throw new EndpointValidationError(
       errorJson.message,
       errorJson.validationErrorData,
       errorJson.type
     );
   } else {
-    throw new VaadinConnectError(
+    throw new EndpointError(
       errorJson.message,
       errorJson.type,
       errorJson.detail
@@ -49,9 +49,9 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
     if (errorJson !== null) {
       throwConnectException(errorJson);
     } else if (errorText !== null && errorText.length > 0) {
-      throw new VaadinConnectResponseError(errorText, response);
+      throw new EndpointError(errorText, response);
     } else {
-      throw new VaadinConnectError(
+      throw new EndpointError(
         'expected "200 OK" response, but got ' +
         `${response.status} ${response.statusText}`
       );
@@ -62,7 +62,7 @@ const assertResponseIsOk = async(response: Response): Promise<void> => {
 /**
  * An exception that gets thrown for unexpected HTTP response.
  */
-export class VaadinConnectResponseError extends Error {
+export class EndpointResponseError extends Error {
   /**
    * The optional response object, containing the HTTP response error
    */
@@ -82,7 +82,7 @@ export class VaadinConnectResponseError extends Error {
  * An exception that gets thrown when the Vaadin Connect backend responds
  * with not ok status.
  */
-export class VaadinConnectError extends Error {
+export class EndpointError extends Error {
   /**
    * The optional name of the exception that was thrown on a backend
    */
@@ -111,7 +111,7 @@ export class VaadinConnectError extends Error {
  * with non-ok status and provides additional info
  * on the validation errors occurred.
  */
-export class VaadinConnectValidationError extends VaadinConnectError {
+export class EndpointValidationError extends EndpointError {
   /**
    * An original validation error message.
    */
