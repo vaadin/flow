@@ -446,16 +446,43 @@ class BootstrapUtils {
         if (ui.getRouter() == null) {
             return Optional.empty();
         }
-        return ui.getRouter().resolveNavigationTarget(request.getPathInfo(),
-                request.getParameterMap()).map(navigationState -> {
-                    Class<? extends RouterLayout> parentLayout = getTopParentLayout(
-                            ui.getRouter(), navigationState);
-                    if (parentLayout != null) {
-                        return parentLayout;
+        Optional<Class<?>> navigationTarget = ui.getRouter()
+                .resolveNavigationTarget(request.getPathInfo(),
+                        request.getParameterMap())
+                .map(navigationState -> resolveTopParentLayout(ui,
+                        navigationState));
+        if (navigationTarget.isPresent()) {
+            return navigationTarget;
+        }
+        // If there is no route target available then let's ask for "route not
+        // found" target
+        return ui.getRouter().resolveRouteNotFoundNavigationTarget()
+                .map(state -> {
+                    /*
+                     * {@code resolveTopParentLayout} is theoretically the
+                     * correct way to get the parent layout. But in fact it does
+                     * work for non route targets.
+                     */
+                    List<Class<? extends RouterLayout>> layouts = RouteUtil
+                            .getParentLayoutsForNonRouteTarget(
+                                    state.getNavigationTarget());
+                    if (layouts.isEmpty()) {
+                        return state.getNavigationTarget();
+                    } else {
+                        return layouts.get(layouts.size() - 1);
                     }
-
-                    return navigationState.getNavigationTarget();
                 });
+    }
+
+    private static Class<?> resolveTopParentLayout(UI ui,
+            NavigationState navigationState) {
+        Class<? extends RouterLayout> parentLayout = getTopParentLayout(
+                ui.getRouter(), navigationState);
+        if (parentLayout != null) {
+            return parentLayout;
+        }
+
+        return navigationState.getNavigationTarget();
     }
 
     private static Class<? extends RouterLayout> getTopParentLayout(

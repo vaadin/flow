@@ -47,6 +47,8 @@ public class BootstrapHandlerDependenciesTest {
         @Override
         public Router getRouter() {
             Router router = Mockito.mock(Router.class);
+            Mockito.when(router.resolveRouteNotFoundNavigationTarget())
+                    .thenReturn(Optional.empty());
             RouteRegistry registry = Mockito.mock(RouteRegistry.class);
             Mockito.when(router.resolveNavigationTarget(Mockito.any(),
                     Mockito.any())).thenReturn(Optional.empty());
