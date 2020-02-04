@@ -37,7 +37,7 @@ import com.vaadin.flow.component.Component;
 public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
     // Stores targets accessed by urls with parameters.
-    private final RouteSegment routesModel;
+    private final RouteModel routesModel;
 
     private final Map<String, RouteTarget> routeMap;
     private final Map<Class<? extends Component>, String> targetRouteMap;
@@ -47,7 +47,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Create an immutable RouteConfiguration.
      */
     public ConfigureRoutes() {
-        routesModel = RouteSegment.createRoot();
+        routesModel = RouteModel.createRoot();
         routeMap = new HashMap<>();
         targetRouteMap = new HashMap<>();
         exceptionTargetMap = new HashMap<>();
@@ -91,7 +91,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     @Override
-    RouteSegment getRouteModel() {
+    RouteModel getRouteModel() {
         return routesModel;
     }
 
