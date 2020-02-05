@@ -279,7 +279,6 @@ public class ServerRpcHandler implements Serializable {
             // it would only get an empty response (because the dirty flags have
             // been cleared on the server) and would be out of sync
 
-            String message;
             if (requestId == expectedId - 1 && Arrays.equals(messageHash,
                     ui.getInternals().getLastProcessedMessageHash())) {
                 /*
@@ -287,28 +286,31 @@ public class ServerRpcHandler implements Serializable {
                  * situation is most likely triggered by a timeout or such
                  * causing a message to be resent.
                  */
-                message = "Confirmed duplicate message from the client.";
+                getLogger().info(
+                        "Ignoring old duplicate message from the client. Expected: "
+                                + expectedId + ", got: " + requestId);
             } else {
-                message = "Unexpected message id from the client.";
+                /*
+                 * If the reason for ending up here is intermittent, then we
+                 * should just issue a full resync since we cannot know the
+                 * state of the client engine.
+                 *
+                 * There are reasons to believe that there are deterministic
+                 * issues that trigger this condition, and we'd like to collect
+                 * more data to uncover anything such before actually
+                 * implementing the resync that would thus hide most symptoms of
+                 * the actual root cause bugs.
+                 */
+                String messageStart = changeMessage;
+                if (messageStart.length() > 1000) {
+                    messageStart = messageStart.substring(0, 1000);
+                }
+                throw new UnsupportedOperationException(
+                        "Unexpected message id from the client."
+                                + " Expected sync id: " + expectedId + ", got "
+                                + requestId + ". Message start: "
+                                + messageStart);
             }
-
-            /*
-             * If the reason for ending up here is intermittent, then we should
-             * just issue a full resync since we cannot know the state of the
-             * client engine.
-             *
-             * There are reasons to believe that there are deterministic issues
-             * that trigger this condition, and we'd like to collect more data
-             * to uncover anything such before actually implementing the resync
-             * that would thus hide most symptoms of the actual root cause bugs.
-             */
-            String messageStart = changeMessage;
-            if (messageStart.length() > 1000) {
-                messageStart = messageStart.substring(0, 1000);
-            }
-            throw new UnsupportedOperationException(
-                    message + " Expected sync id: " + expectedId + ", got "
-                            + requestId + ". Message start: " + messageStart);
         } else {
             // Message id ok, process RPCs
             ui.getInternals().setLastProcessedClientToServerId(expectedId,
