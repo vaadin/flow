@@ -154,30 +154,6 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void canHandleRequest_requestWithExtension_ignoreRequest() {
-        Assert.assertFalse(
-                "The handler should not handle request with extension",
-                indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/nested/picture.png")));
-        Assert.assertFalse(
-                "The handler should not handle request with capital extension",
-                indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/nested/CAPITAL.PNG")));
-        Assert.assertFalse(
-                "The handler should not handle request with extension",
-                indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/script.js")));
-        Assert.assertFalse(
-                "The handler should not handle request with extension",
-                indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/music.mp3")));
-        Assert.assertFalse(
-                "The handler should not handle request with only extension",
-                indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("/.htaccess")));
-    }
-
-    @Test
     public void bootstrapListener_addListener_responseIsModified()
             throws IOException {
         service.addIndexHtmlRequestListener(evt -> evt.getDocument().head()

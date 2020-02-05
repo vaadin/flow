@@ -6,6 +6,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.vaadin.flow.internal.UsageStatistics;
+
+import org.easymock.Mock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -184,6 +186,7 @@ public class VaadinServletServiceTest {
         expect(request.getContextPath()).andReturn(contextPath).anyTimes();
         expect(request.getPathInfo()).andReturn(pathInfo).anyTimes();
         expect(request.getServletPath()).andReturn(servletPath).anyTimes();
+        mocks.getSession().getSession();
 
         return request;
     }
