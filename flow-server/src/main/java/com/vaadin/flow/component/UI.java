@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.component;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -969,7 +970,13 @@ public class UI extends Component
      * Add a listener that will be informed when old components are detached.
      * <p>
      * Listeners will be executed before any found observers.
-     *
+     * <p>
+     * If a route target is left for reasons not under the control of the
+     * navigator (for instance using
+     * {@link com.vaadin.flow.component.page.Page#setLocation(URI)}, typing a
+     * URL into the address bar, or closing the browser), listeners are not
+     * called.
+     * 
      * @param listener
      *            the before leave listener
      * @return handler to remove the event listener
