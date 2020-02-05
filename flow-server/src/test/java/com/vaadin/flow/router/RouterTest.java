@@ -1444,6 +1444,54 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
+    @Tag(Tag.DIV)
+    public static class UrlParametersBase extends Component
+            implements BeforeEnterObserver {
+
+        static Map<Class<? extends UrlParametersBase>, UrlParameters> parametersLog = new HashMap<>();
+
+        static void clear() {
+            parametersLog.clear();
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            parametersLog.put(this.getClass(), event.getUrlParameters());
+        }
+    }
+
+    @RoutePrefix(":parentID")
+    public static class ParentWithParameter extends UrlParametersBase
+            implements RouterLayout {
+
+    }
+
+    @Route(value = "", layout = ParentWithParameter.class)
+    @RoutePrefix("link/:chainLinkID")
+    @ParentLayout(ParentWithParameter.class)
+    public static class ChainLinkWithParameter extends UrlParametersBase
+            implements RouterLayout {
+
+    }
+
+    @Route(value = "target/:targetChainLinkID/bar", layout = ChainLinkWithParameter.class)
+    public static class TargetWithParameter extends UrlParametersBase {
+
+    }
+
+    @Route(value = ":targetChainLinkID", layout = ParentWithParameter.class)
+    @RoutePrefix("targetLink/[:chainLinkID]/chainLink")
+    @ParentLayout(ParentWithParameter.class)
+    public static class ChainLinkWithParameterAndTarget
+            extends UrlParametersBase implements RouterLayout {
+
+    }
+
+    @Route(value = ":anotherTargetID/foo/...:varargsFoo", layout = ChainLinkWithParameterAndTarget.class)
+    public static class AnotherTargetWithParameter extends UrlParametersBase {
+
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -3360,7 +3408,46 @@ public class RouterTest extends RoutingTestBase {
                 getProcessEventsBranchChainNames(parameter,
                         "needleChild"),
                 ProcessEventsBase.beforeEnter);
+    }
 
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_from_within_url() {
+        setNavigationTargets(TargetWithParameter.class,
+                AnotherTargetWithParameter.class,
+                ChainLinkWithParameterAndTarget.class,
+                ChainLinkWithParameter.class);
+
+        navigate("123/link/456/target/789/bar");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("qwe/link/123");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+        
+        navigate("123/targetLink/456/chainLink/789/foo/a/b/c/d/e/f");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("abc/targetLink/def/chainLink/ghi/foo");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("012/targetLink/chainLink/345/foo/1/2/3/4");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("012/targetLink/chainLink/345/foo");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("987/targetLink/765/chainLink/543");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("987/targetLink/chainLink/543");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
     }
 
     private List<String> getProcessEventsTrunkChainNames(String... leaf) {
@@ -3477,4 +3564,9 @@ public class RouterTest extends RoutingTestBase {
             return routeNotFoundError.getElement().getText();
         }
     }
+
+    private void navigate(String url) {
+        router.navigate(ui, new Location(url), NavigationTrigger.PROGRAMMATIC);
+    }
+
 }
