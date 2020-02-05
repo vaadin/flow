@@ -455,6 +455,9 @@ public class VaadinConnectController {
                     deserializationError.getValue());
             validationErrorData.add(new ValidationErrorData(message,
                     deserializationError.getKey()));
+            getLogger().error(String.format("Cannot construct instance of '%s$%s': " +
+                            "cannot deserialize from %s value (no delegate- or property-based Creator)",
+                    endpointName, methodName, deserializationError.getValue()));
         }
 
         validationErrorData
