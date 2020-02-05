@@ -1,22 +1,29 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+
+import javax.annotation.concurrent.NotThreadSafe;
 
 import static org.junit.Assert.assertTrue;
 
+@NotThreadSafe
 public class IFrameIT extends ChromeBrowserTest {
-    private IFrameTestView testView = new IFrameTestView();
 
     @Test
     public void testIFrameReload() {
         open();
 
-        assertTrue(testView.frame.getSrcdoc().get().contains("This is page A"));
+        waitForElementPresent(By.id("frame1"));
+        getDriver().switchTo().frame("frame1");
+        Assert.assertEquals("A", findElement(By.id("Friday")).getText());
 
-        testView.handleButtonClick();
+        getDriver().switchTo().parentFrame();
+        findElement(By.id("Reload")).click();
 
-        assertTrue(testView.frame.getSrcdoc().get().contains("This is not page A"));
-
+        getDriver().switchTo().frame("frame1");
+        waitUntil(webDriver -> "B".equals( findElement(By.id("Friday")).getText()));
     }
 }

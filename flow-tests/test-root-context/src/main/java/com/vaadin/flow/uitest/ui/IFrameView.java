@@ -16,10 +16,10 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.IFrame;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-
-import java.awt.Button;
 
 /**
  * View for testing IFrame.reload(), based on
@@ -27,26 +27,43 @@ import java.awt.Button;
  *
  * @since 14.0
  */
-@Route(value = "com.vaadin.flow.uitest.ui.IFrameTestView", layout = ViewTestLayout.class)
-public class IFrameTestView extends AbstractDivView {
+@Route(value = "com.vaadin.flow.uitest.ui.IFrameView", layout = ViewTestLayout.class)
+public class IFrameView extends AbstractDivView {
+
+    private static String content = "A";
+
+    @Route(value = "iframecontent")
+    public static class IFrameContentView extends AbstractDivView {
+        public IFrameContentView() {
+            Span span = new Span(content);
+            span.setId("Friday");
+            add(span);
+        }
+    }
 
     public IFrame frame = new IFrame();
-    private Button button = new Button();
+    public NativeButton button;
 
-    public IFrameTestView() {
+    public IFrameView() {
+        content = "A";
         /*
          * The test consists of creating a view with an IFrame and a button.
-         * The IFrame contains initially a.html. Upon pressing the button,
-         * it loads b. html into the IFrame. The test then verifies that
-         * b.html is loaded in the IFrame.
+         * The IFrame contains a span, which contains text "A". Upon pressing the button,
+         * "B" is loaded into the span. The test then verifies that
+         * "B" is visible in the span.
          */
-        frame.setSrc("a.html");
-        button.setEnabled(true);
+        frame.setSrc("/view/iframecontent");
+        frame.setId("frame1");
+        button = new NativeButton("Reload", event -> handleButtonClick());
+        button.setId("Reload");
+
+        button.addClickListener(event -> handleButtonClick());
+        add(frame, button);
 
     }
 
     public void handleButtonClick() {
-        frame.setSrc("b.html");
+        content = "B";
         frame.reload();
     }
 
