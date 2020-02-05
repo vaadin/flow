@@ -45,15 +45,23 @@ public class VersionsJsonConverterTest {
                 + "\"vaadin-upload\": { "
                     + "\"npmName\": \"@vaadin/vaadin-upload\", "
                     + "\"jsVersion\": \"4.2.2\""
-                  + "},"
+                  + "},"+
+                    "\"iron-list\": {\n" +
+                    "            \"npmName\": \"@polymer/iron-list\",\n" +
+                    "            \"npmVersion\": \"3.0.2\",\n" +
+                    "            \"javaVersion\": \"3.0.0.beta1\",\n" +
+                    "            \"jsVersion\": \"2.0.19\"\n" +
+                    "        },"
                     +"\"platform\": \"foo\""
                 + "}";
         // @formatter:on
 
-        VersionsJsonConverter convert = new VersionsJsonConverter(Json.parse(json));
+        VersionsJsonConverter convert = new VersionsJsonConverter(
+                Json.parse(json));
         JsonObject conertedJson = convert.convert();
         Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertTrue(conertedJson.hasKey("@polymer/iron-list"));
 
         Assert.assertFalse(conertedJson.hasKey("flow"));
         Assert.assertFalse(conertedJson.hasKey("core"));
@@ -63,5 +71,7 @@ public class VersionsJsonConverterTest {
                 conertedJson.getString("@vaadin/vaadin-progress-bar"));
         Assert.assertEquals("4.2.2",
                 conertedJson.getString("@vaadin/vaadin-upload"));
+        Assert.assertEquals("3.0.2",
+                conertedJson.getString("@polymer/iron-list"));
     }
 }
