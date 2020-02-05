@@ -34,6 +34,7 @@ class VersionsJsonConverter {
 
     private static final String JS_VERSION = "jsVersion";
     private static final String NPM_NAME = "npmName";
+    private static final String NPM_VERSION = "npmVersion";
     private final JsonObject convertedObject;
 
     VersionsJsonConverter(JsonObject platformVersions) {
@@ -63,10 +64,16 @@ class VersionsJsonConverter {
 
     private void addDependency(JsonObject obj) {
         assert obj.hasKey(NPM_NAME);
-        assert obj.hasKey(JS_VERSION);
         String npmName = obj.getString(NPM_NAME);
-        String version = obj.getString(JS_VERSION);
-        convertedObject.put(npmName, version);
-
+        if (obj.hasKey(NPM_VERSION)) {
+            convertedObject.put(npmName, obj.getString(NPM_VERSION));
+        } else if (obj.hasKey(JS_VERSION)) {
+            convertedObject.put(npmName, obj.getString(JS_VERSION));
+        } else {
+            throw new IllegalStateException("Vaadin code versions file "
+                    + "contains unexpected data: dependency '" + npmName
+                    + "' has"
+                    + " no 'npmVersion'/'jsVersion' . Please report a bug");
+        }
     }
 }
