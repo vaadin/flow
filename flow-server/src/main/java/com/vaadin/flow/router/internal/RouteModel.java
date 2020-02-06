@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
 
@@ -187,6 +190,16 @@ class RouteModel implements Serializable {
                             || eligiblePrimitiveType.equals("boolean")) {
                         if (value.equalsIgnoreCase("true")
                                 || value.equalsIgnoreCase("false")) {
+                            return Optional.of(Boolean.TRUE);
+                        }
+
+                        // TODO: handle this more elegant since it's not a
+                        // primitive.
+                    } else {
+                        Pattern pattern = Pattern
+                                .compile(eligiblePrimitiveType);
+                        final Matcher matcher = pattern.matcher(value);
+                        if (matcher.matches()) {
                             return Optional.of(Boolean.TRUE);
                         }
                     }
@@ -570,11 +583,7 @@ class RouteModel implements Serializable {
                 target = potentialSegment.target;
 
             } else {
-                // Look for target in an optional child.
-
-                // TODO: or instead of this, set the same target to the parent
-                // of the optional, or maybe not, since we need to handle both
-                // add and remove.
+                // Look for target in optional children.
                 RouteSegment optionalChild = potentialSegment
                         .getAnyOptionalParameterWithTarget();
                 if (optionalChild != null) {
@@ -594,7 +603,8 @@ class RouteModel implements Serializable {
         /**
          * Returns any optional or varargs (since that's optional too) parameter
          * child with a target set so in case there's no target on a potential
-         * targeted segment we use the target from the optional child.
+         * targeted segment we use the target from the optional child. The
+         * search is performed recursively on this segment.
          */
         private RouteSegment getAnyOptionalParameterWithTarget() {
             for (RouteSegment parameter : getParameterSegments().values()) {
@@ -604,6 +614,14 @@ class RouteModel implements Serializable {
                 }
             }
 
+            // Try looking into children.
+            for (RouteSegment parameter : getParameterSegments().values()) {
+                if (parameter.getParameterDetails().isOptional()) {
+                    return parameter.getAnyOptionalParameterWithTarget();
+                }
+            }
+
+            // Move to varargs.
             final Map<String, RouteSegment> varargsSegments = getVarargsSegments();
             if (!varargsSegments.isEmpty()) {
                 return varargsSegments.values().iterator().next();
@@ -638,14 +656,14 @@ class RouteModel implements Serializable {
 
         private Map<String, RouteSegment> getParameterSegments() {
             if (parameterSegments == null) {
-                parameterSegments = new HashMap<>();
+                parameterSegments = new TreeMap<>();
             }
             return parameterSegments;
         }
 
         private Map<String, RouteSegment> getVarargsSegments() {
             if (varargsSegments == null) {
-                varargsSegments = new HashMap<>();
+                varargsSegments = new TreeMap<>();
             }
             return varargsSegments;
         }
