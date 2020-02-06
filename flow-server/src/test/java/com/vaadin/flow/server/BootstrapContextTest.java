@@ -113,7 +113,9 @@ public class BootstrapContextTest {
         Mockito.when(request.getPathInfo()).thenReturn("/bar");
 
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(ui.getSession().getService().getContext());
+                .getInstance(
+                        ((VaadinServletService) ui.getSession().getService())
+                                .getServlet().getServletContext());
         registry.setErrorNavigationTargets(
                 Collections.singleton(CustomRouteNotFound.class));
 
@@ -131,9 +133,10 @@ public class BootstrapContextTest {
     @Test
     public void getPushAnnotation_routeTargetIsAbsent_pushIsDefinedOnParentLayout_pushFromTheErrorNavigationTargetParentLayoutIsUsed() {
         Mockito.when(request.getPathInfo()).thenReturn("/bar");
-
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(ui.getSession().getService().getContext());
+                .getInstance(
+                        ((VaadinServletService) ui.getSession().getService())
+                                .getServlet().getServletContext());
         registry.setErrorNavigationTargets(
                 Collections.singleton(AnotherCustomRouteNotFound.class));
 

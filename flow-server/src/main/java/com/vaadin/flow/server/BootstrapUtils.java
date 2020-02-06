@@ -29,11 +29,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
-
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
@@ -48,16 +44,24 @@ import com.vaadin.flow.router.LocationChangeEvent;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -456,8 +460,8 @@ class BootstrapUtils {
         }
         // If there is no route target available then let's ask for "route not
         // found" target
-        return ui.getRouter().resolveRouteNotFoundNavigationTarget()
-                .map(state -> {
+        return resolveRouteNotFoundNavigationTarget(ui.getRouter())
+                .map(errorNavigationTarget -> {
                     /*
                      * {@code resolveTopParentLayout} is theoretically the
                      * correct way to get the parent layout. But in fact it does
@@ -465,13 +469,32 @@ class BootstrapUtils {
                      */
                     List<Class<? extends RouterLayout>> layouts = RouteUtil
                             .getParentLayoutsForNonRouteTarget(
-                                    state.getNavigationTarget());
+                                    errorNavigationTarget);
                     if (layouts.isEmpty()) {
-                        return state.getNavigationTarget();
+                        return errorNavigationTarget;
                     } else {
                         return layouts.get(layouts.size() - 1);
                     }
                 });
+    }
+
+    /**
+     * Resolve a navigation target with an empty {@link NotFoundException}.
+     * <p>
+     * <em>NOTE:</em> this code doesn't belong in this class, but is just
+     * c/p from Router to avoid adding new API to 2.1.
+     *
+     * @return an instance of {@link NavigationState} for NotFoundException or
+     *         empty if there is none in the application.
+     */
+    private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget(
+            Router router) {
+        RouteRegistry registry = router.getRegistry();
+        Optional<ErrorTargetEntry> errorTargetEntry = registry instanceof ApplicationRouteRegistry
+                ? ((ApplicationRouteRegistry) registry)
+                        .getErrorNavigationTarget(new NotFoundException())
+                : Optional.empty();
+        return errorTargetEntry.map(ErrorTargetEntry::getNavigationTarget);
     }
 
     private static Class<?> resolveTopParentLayout(UI ui,
