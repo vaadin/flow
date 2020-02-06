@@ -115,9 +115,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <configuration>
-                    <useDeprecatedV14Bootstrapping>true</useDeprecatedV14Bootstrapping>
-                </configuration>
             </plugin>
         </plugins>
     </build>
