@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import javax.validation.constraints.AssertFalse;
+
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
@@ -50,6 +52,32 @@ public class DnDIT extends ChromeBrowserTest {
 
         dragBoxToLanes(boxElement, getLaneElement("COPY"), true);
         dragBoxToLanes(boxElement, getLaneElement("deactivated"), false);
+    }
+
+    @Test
+    public void testCopyEffectElement_disableElement_draggedNotPresent() {
+        open();
+
+        TestBenchElement boxElement = getBoxElement("COPY");
+        clickElementWithJs("button-disable-enable-drag-sources");
+        Assert.assertTrue("Invalid enabled state found in drag source",
+                boxElement.hasAttribute("disabled"));
+        clearEvents();
+        drag(boxElement);
+        Assert.assertFalse(boxElement.hasClassName("v-dragged"));
+    }
+
+    @Test
+    public void testCopyEffectElement_disableTarget_dragOverTargetNotPresent() {
+        open();
+
+        TestBenchElement boxElement = getBoxElement("COPY");
+        TestBenchElement targetElement = getLaneElement("COPY");
+        clickElementWithJs("button-disable-enable-drop-targets");
+        Assert.assertTrue("Invalid enabled state found in drop target",
+                targetElement.hasAttribute("disabled"));
+        dragAndHover(boxElement, targetElement);
+        Assert.assertFalse(targetElement.hasClassName("v-drag-over-target"));
     }
 
     private void dragBoxToLanes(TestBenchElement boxElement,

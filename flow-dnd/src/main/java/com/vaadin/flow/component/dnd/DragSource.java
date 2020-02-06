@@ -171,7 +171,8 @@ public interface DragSource<T extends Component> extends HasElement {
      * Sets this component as draggable. By default it is not.
      *
      * @param draggable
-     *            {@code true} for enable dragging, {@code false} to prevent
+     *            {@code true} for enable dragging, {@code f
+     *            alse} to prevent
      */
     default void setDraggable(boolean draggable) {
         if (draggable == isDraggable()) {

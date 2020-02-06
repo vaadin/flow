@@ -88,6 +88,28 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
+     * Simulate only a drag of {@code source}.
+     *
+     * @param source
+     */
+    public void drag(WebElement source) {
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DRAG_SCRIPT,
+                source);
+    }
+
+    /**
+     * Simulate a drag of {@code source} element and hover into the
+     * {@code target} element.
+     *
+     * @param source
+     * @param target
+     */
+    public void dragAndHover(WebElement source, WebElement target) {
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DRAG_AND_HOVER_SCRIPT,
+                source, target);
+    }
+
+    /**
      * Waits the given number of seconds for the given condition to become
      * false. Use e.g. as {@link #waitUntilNot(ExpectedCondition)}.
      *
@@ -396,10 +418,34 @@ public class TestBenchHelpers extends ParallelTest {
 
     private static class LazyDndSimulationLoad {
         private static final String DND_SCRIPT = loadDnDEmulation();
+        private static final String DRAG_SCRIPT = loadDragEmulation();
+        private static final String DRAG_AND_HOVER_SCRIPT = loadDragAndHoverEmulation();
 
         private static String loadDnDEmulation() {
             InputStream stream = TestBenchHelpers.class
                     .getResourceAsStream("/dnd-simulation.js");
+            try {
+                return IOUtils.readLines(stream, StandardCharsets.UTF_8)
+                        .stream().collect(Collectors.joining("\n"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private static String loadDragEmulation() {
+            InputStream stream = TestBenchHelpers.class
+                    .getResourceAsStream("/drag-simulation.js");
+            try {
+                return IOUtils.readLines(stream, StandardCharsets.UTF_8)
+                        .stream().collect(Collectors.joining("\n"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private static String loadDragAndHoverEmulation() {
+            InputStream stream = TestBenchHelpers.class
+                    .getResourceAsStream("/drag-and-hover-simulation.js");
             try {
                 return IOUtils.readLines(stream, StandardCharsets.UTF_8)
                         .stream().collect(Collectors.joining("\n"));
