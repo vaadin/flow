@@ -93,4 +93,9 @@ public class UrlParameters {
         return params.get(parameterName);
     }
 
+    @Override
+    public String toString() {
+        return params.toString();
+    }
+
 }
