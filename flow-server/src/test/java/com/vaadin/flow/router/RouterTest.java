@@ -1495,9 +1495,10 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-    @Route("forum/thread/:threadID:int/:messageID:int")
-    @RouteAlias("forum/thread/:threadID:int/last")
-    @RouteAlias("forum/thread/:threadID:int/[:something]")
+    @Route(":threadID:int/:messageID:int")
+    @RouteAlias(":threadID:int/last")
+    @RouteAlias(":threadID:int/[:something]")
+    @RoutePrefix("forum/thread")
     public static class ParametersForumThreadView extends UrlParametersBase
             implements RouterLayout {
 
