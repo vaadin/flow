@@ -135,7 +135,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return true;
+        return request.getService().getBootstrapUrlPredicate()
+                .isValidUrl(request);
     }
 
     @Override
