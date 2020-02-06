@@ -17,8 +17,10 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -91,7 +93,12 @@ class RouteModel implements Serializable {
         /**
          * Define a route url parameter details.
          */
-        private class ParameterDetails implements Serializable {
+        private static class ParameterDetails implements Serializable {
+
+            // NOTE: string may be omited when defining a parameter. If the
+            // type/regex is missing then string is used by default.
+            private static List<String> PRIMITIVE_TYPES = Arrays.asList("int",
+                    "long", "bool", "boolean", "string");
 
             private boolean optional;
 
@@ -101,10 +108,10 @@ class RouteModel implements Serializable {
             // ParameterDetails constructor and provided to the RouteSegment.
             private String name;
 
-            // In case the eligible type is a primitive this is set to the type
-            // of
-            // the primitive.
-            private String eligiblePrimitiveType;
+            // Regex or a primitive type.
+            private String regex;
+
+            private Pattern pattern;
 
             /**
              * Creates the parameter details using the input segmentPattern
@@ -135,10 +142,10 @@ class RouteModel implements Serializable {
 
                     name = segmentPattern.substring(0, defStartIndex);
 
-                    String typeDefPattern = segmentPattern
-                            .substring(defStartIndex + 1);
-
-                    extractTypeDef(typeDefPattern);
+                    regex = segmentPattern.substring(defStartIndex + 1);
+                    if (!PRIMITIVE_TYPES.contains(regex)) {
+                        pattern = Pattern.compile(regex);
+                    }
 
                 } else {
                     name = segmentPattern;
@@ -155,70 +162,39 @@ class RouteModel implements Serializable {
             }
 
             boolean isEligible(String value) {
-
-                Optional<Boolean> primitiveEligible = isPrimitiveEligible(
-                        value);
-
-                if (primitiveEligible.isPresent()) {
-                    return primitiveEligible.get();
+                if (regex == null) {
+                    return true;
                 }
 
-                return true;
-            }
+                if (pattern != null) {
+                    return pattern.matcher(value).matches();
+                }
 
-            private Optional<Boolean> isPrimitiveEligible(String value) {
-                if (eligiblePrimitiveType != null) {
-
-                    if (eligiblePrimitiveType.equals("int")) {
-
-                        try {
-                            Integer.valueOf(value);
-
-                            return Optional.of(Boolean.TRUE);
-                        } catch (NumberFormatException e) {
-                        }
-                    } else if (eligiblePrimitiveType.equals("long")) {
-
-                        try {
-                            Long.valueOf(value);
-
-                            return Optional.of(Boolean.TRUE);
-                        } catch (NumberFormatException e) {
-                        }
-
-                    } else if (eligiblePrimitiveType.equals("bool")
-                            || eligiblePrimitiveType.equals("boolean")) {
-                        if (value.equalsIgnoreCase("true")
-                                || value.equalsIgnoreCase("false")) {
-                            return Optional.of(Boolean.TRUE);
-                        }
-
-                        // TODO: handle this more elegant since it's not a
-                        // primitive.
-                    } else {
-                        Pattern pattern = Pattern
-                                .compile(eligiblePrimitiveType);
-                        final Matcher matcher = pattern.matcher(value);
-                        if (matcher.matches()) {
-                            return Optional.of(Boolean.TRUE);
-                        }
+                if (regex.equals("int")) {
+                    try {
+                        Integer.valueOf(value);
+                        return true;
+                    } catch (NumberFormatException e) {
                     }
 
-                    return Optional.of(Boolean.FALSE);
+                } else if (regex.equals("long")) {
+                    try {
+                        Long.valueOf(value);
+                        return true;
+                    } catch (NumberFormatException e) {
+                    }
+
+                } else if (regex.equals("bool") || regex.equals("boolean")) {
+                    if (value.equalsIgnoreCase("true")
+                            || value.equalsIgnoreCase("false")) {
+                        return true;
+                    }
+
+                } else if (regex.equals("string")) {
+                    return true;
                 }
 
-                return Optional.empty();
-            }
-
-            private void extractTypeDef(String patternDef) {
-                // This implementation may be updated for more type options,
-                // including regex eventually.
-                extractPrimitiveTypeDef(patternDef);
-            }
-
-            private void extractPrimitiveTypeDef(String patternDef) {
-                // We expect only primitives for now.
-                eligiblePrimitiveType = patternDef;
+                return false;
             }
 
         }
@@ -439,21 +415,33 @@ class RouteModel implements Serializable {
 
             if (routeSegment == null) {
 
+                // We reject any route where varargs is not the last segment.
                 if (isVarargsParameter(segmentPattern)
                         && segmentPatterns.size() > 1) {
                     throw new IllegalArgumentException(
                             "A varargs url parameter may be defined only as the last path segment");
                 }
 
-                if (isParameter(segmentPattern)
-                        && segmentPatterns.size() == 1) {
-
-                    // TODO implement exceptions
-
+                // We reject any route where the last segment is an optional
+                // parameter while there's already a target set for the same
+                // route without the optional parameter.
+                if (isOptionalParameter(segmentPattern)
+                        && segmentPatterns.size() == 1 && hasTarget()) {
+                    throw new IllegalArgumentException(
+                            "Same route without optional is already set. Please make the last optional parameter mandatory.");
                 }
 
                 routeSegment = new RouteSegment(segmentPattern);
                 children.put(routeSegment.segmentPattern, routeSegment);
+
+            } else {
+                // We reject any route where there's already a target set for
+                // the same route with an optional.
+                if (segmentPatterns.size() == 1
+                        && getOptionalParameterWithTarget() != null) {
+                    throw new IllegalArgumentException(
+                            "Same route with optional is set. Please change the optional from the other route to be mandatory.");
+                }
             }
 
             if (segmentPatterns.size() > 1) {
@@ -475,9 +463,8 @@ class RouteModel implements Serializable {
                 Map<String, Serializable> urlParameters) {
 
             // First try with a static segment (non a parameter). An empty
-            // segments
-            // list should happen only on root, so this instance should resemble
-            // only the root.
+            // segments list should happen only on root, so this instance should
+            // resemble only the root.
             RouteSegment routeSegment = segments.isEmpty() ? this
                     : getStaticSegments().get(segments.get(0));
 
@@ -542,8 +529,7 @@ class RouteModel implements Serializable {
                         if (!potentialSegment.getParameterDetails()
                                 .isEligible(value)) {
                             // If any value is not eligible we don't want to go
-                            // any
-                            // further.
+                            // any further.
                             return null;
                         }
                     }
@@ -585,7 +571,7 @@ class RouteModel implements Serializable {
             } else {
                 // Look for target in optional children.
                 RouteSegment optionalChild = potentialSegment
-                        .getAnyOptionalParameterWithTarget();
+                        .getAnyOptionalOrVarargsParameterWithTarget();
                 if (optionalChild != null) {
                     target = optionalChild.target;
                 } else {
@@ -606,18 +592,17 @@ class RouteModel implements Serializable {
          * targeted segment we use the target from the optional child. The
          * search is performed recursively on this segment.
          */
-        private RouteSegment getAnyOptionalParameterWithTarget() {
-            for (RouteSegment parameter : getParameterSegments().values()) {
-                if (parameter.getParameterDetails().isOptional()
-                        && parameter.hasTarget()) {
-                    return parameter;
-                }
+        private RouteSegment getAnyOptionalOrVarargsParameterWithTarget() {
+            RouteSegment optionalParameter = getOptionalParameterWithTarget();
+            if (optionalParameter != null) {
+                return optionalParameter;
             }
 
             // Try looking into children.
             for (RouteSegment parameter : getParameterSegments().values()) {
                 if (parameter.getParameterDetails().isOptional()) {
-                    return parameter.getAnyOptionalParameterWithTarget();
+                    return parameter
+                            .getAnyOptionalOrVarargsParameterWithTarget();
                 }
             }
 
@@ -629,6 +614,19 @@ class RouteModel implements Serializable {
             } else {
                 return null;
             }
+        }
+
+        /**
+         * Returns a child optional parameter with target.
+         */
+        private RouteSegment getOptionalParameterWithTarget() {
+            for (RouteSegment parameter : getParameterSegments().values()) {
+                if (parameter.getParameterDetails().isOptional()
+                        && parameter.hasTarget()) {
+                    return parameter;
+                }
+            }
+            return null;
         }
 
         private boolean isEmpty() {
@@ -656,14 +654,16 @@ class RouteModel implements Serializable {
 
         private Map<String, RouteSegment> getParameterSegments() {
             if (parameterSegments == null) {
-                parameterSegments = new TreeMap<>();
+                // Parameters iteration must be based on insertion.
+                parameterSegments = new LinkedHashMap<>();
             }
             return parameterSegments;
         }
 
         private Map<String, RouteSegment> getVarargsSegments() {
             if (varargsSegments == null) {
-                varargsSegments = new TreeMap<>();
+                // Parameters iteration must be based on insertion.
+                varargsSegments = new LinkedHashMap<>();
             }
             return varargsSegments;
         }
