@@ -115,19 +115,9 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                            <!-- removing build simulates pure jetty:run -->
-<!--                            <goal>build-frontend</goal>-->
-                        </goals>
-                        <configuration>
-                            <useDeprecatedV14Bootstrapping>true</useDeprecatedV14Bootstrapping>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <useDeprecatedV14Bootstrapping>true</useDeprecatedV14Bootstrapping>
+                </configuration>
             </plugin>
         </plugins>
     </build>
