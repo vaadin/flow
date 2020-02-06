@@ -89,11 +89,14 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
 
     private final File generatedDir;
 
+    private final File tokenFile;
+
     AbstractUpdateImports(File frontendDirectory, File npmDirectory,
-            File generatedDirectory) {
+            File generatedDirectory, File tokenFile) {
         frontendDir = frontendDirectory;
         npmDir = npmDirectory;
         generatedDir = generatedDirectory;
+        this.tokenFile = tokenFile;
     }
 
     @Override
@@ -204,11 +207,18 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
             String prefix = String.format(
                     "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
                     frontendDir.getPath());
-            String suffix = String.format(
-                    "Check that they exist or are installed. If you use a custom directory "
-                            + "for your resource files instead of the default `frontend` folder "
-                            + "then make sure it's correctly configured (e.g. set '%s' property)",
-                    FrontendUtils.PARAM_FRONTEND_DIR);
+
+            String suffix;
+            if (tokenFile == null && !frontendDir.exists()) {
+                suffix = "Unable to locate frontend resources and missing token file. "
+                        + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
+            } else {
+                suffix = String.format(
+                        "Check that they exist or are installed. If you use a custom directory "
+                                + "for your resource files instead of the default `frontend` folder "
+                                + "then make sure it's correctly configured (e.g. set '%s' property)",
+                        FrontendUtils.PARAM_FRONTEND_DIR);
+            }
             throw new IllegalStateException(
                     notFoundMessage(cssNotFound, prefix, suffix));
         }
@@ -343,15 +353,21 @@ abstract class AbstractUpdateImports implements Runnable, Serializable {
 
         if (!resourceNotFound.isEmpty()) {
             String prefix = "Failed to find the following files: ";
-            String suffix = String.format("%n  Locations searched were:"
-                    + "%n      - `%s` in this project"
-                    + "%n      - `%s` in included JARs"
-                    + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                    + "for your resource files instead of default "
-                    + "`frontend` folder then make sure you it's correctly configured "
-                    + "(e.g. set '%s' property)", frontendDir.getPath(),
-                    Constants.RESOURCES_FRONTEND_DEFAULT,
-                    FrontendUtils.PARAM_FRONTEND_DIR);
+            String suffix;
+            if (tokenFile == null && !frontendDir.exists()) {
+                suffix = "Unable to locate frontend resources and missing token file. "
+                        + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
+            } else {
+                suffix = String.format("%n  Locations searched were:"
+                        + "%n      - `%s` in this project"
+                        + "%n      - `%s` in included JARs"
+                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                        + "for your resource files instead of default "
+                        + "`frontend` folder then make sure you it's correctly configured "
+                        + "(e.g. set '%s' property)", frontendDir.getPath(),
+                        Constants.RESOURCES_FRONTEND_DEFAULT,
+                        FrontendUtils.PARAM_FRONTEND_DIR);
+            }
             throw new IllegalStateException(
                     notFoundMessage(resourceNotFound, prefix, suffix));
         }
