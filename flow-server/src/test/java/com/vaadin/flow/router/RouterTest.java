@@ -28,8 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1448,7 +1446,7 @@ public class RouterTest extends RoutingTestBase {
     public static class UrlParametersBase extends Component
             implements BeforeEnterObserver {
 
-        static Map<Class<? extends UrlParametersBase>, UrlParameters> parametersLog = new HashMap<>();
+        static Map<String, UrlParameters> parametersLog = new HashMap<>();
 
         static void clear() {
             parametersLog.clear();
@@ -1456,7 +1454,7 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            parametersLog.put(this.getClass(), event.getUrlParameters());
+            parametersLog.put(event.getLocation().getPath(), event.getUrlParameters());
         }
     }
 
@@ -1479,6 +1477,11 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
+    @Route(value = "[:optional]/[:anotherOptional]", layout = ChainLinkWithParameter.class)
+    public static class TargetWithOptionalParameters extends UrlParametersBase {
+
+    }
+
     @Route(value = ":targetChainLinkID", layout = ParentWithParameter.class)
     @RoutePrefix("targetLink/[:chainLinkID]/chainLink")
     @ParentLayout(ParentWithParameter.class)
@@ -1487,8 +1490,33 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-    @Route(value = ":anotherTargetID/foo/...:varargsFoo", layout = ChainLinkWithParameterAndTarget.class)
+    @Route(value = ":anotherTargetID/:yetAnotherID/foo/...:varargsFoo", layout = ChainLinkWithParameterAndTarget.class)
     public static class AnotherTargetWithParameter extends UrlParametersBase {
+
+    }
+
+    @Route("forum/thread/:threadID:int/:messageID:int")
+    @RouteAlias("forum/thread/:threadID:int/last")
+    @RouteAlias("forum/thread/:threadID:int/[:something]")
+    public static class ParametersForumThreadView extends UrlParametersBase
+            implements RouterLayout {
+
+    }
+
+    @Route(":alias:framework|platform|vaadin-spring|vaadin-spring-boot/[:version:v?\\d.*]/...:path")
+    @RouteAlias(":groupId:\\w[\\w\\d]+\\.[\\w\\d\\-\\.]+/:artifactId/[:version:v?\\d.*]/...:path")
+    @RouteAlias("...:path")
+    @RoutePrefix("api")
+    public static class ParametersApiView extends UrlParametersBase
+            implements RouterLayout {
+
+    }
+
+    @Route(":urlIdentifier/[:versionIdentifier:v?\\d.*]/[:tabIdentifier:api]/...:apiPath")
+    @RouteAlias(":urlIdentifier/[:versionIdentifier:v?\\d.*]/[:tabIdentifier:overview|samples|links|reviews|discussions]")
+    @RoutePrefix("directory/component")
+    public static class ParametersDetailsView extends UrlParametersBase
+            implements RouterLayout {
 
     }
 
@@ -3415,7 +3443,8 @@ public class RouterTest extends RoutingTestBase {
         setNavigationTargets(TargetWithParameter.class,
                 AnotherTargetWithParameter.class,
                 ChainLinkWithParameterAndTarget.class,
-                ChainLinkWithParameter.class);
+                ChainLinkWithParameter.class,
+                TargetWithOptionalParameters.class);
 
         navigate("123/link/456/target/789/bar");
         System.out.println(UrlParametersBase.parametersLog);
@@ -3424,20 +3453,28 @@ public class RouterTest extends RoutingTestBase {
         navigate("qwe/link/123");
         System.out.println(UrlParametersBase.parametersLog);
         UrlParametersBase.clear();
-        
-        navigate("123/targetLink/456/chainLink/789/foo/a/b/c/d/e/f");
+
+        navigate("qwe/link/123/456");
         System.out.println(UrlParametersBase.parametersLog);
         UrlParametersBase.clear();
 
-        navigate("abc/targetLink/def/chainLink/ghi/foo");
+        navigate("qwe/link/123/456/789");
         System.out.println(UrlParametersBase.parametersLog);
         UrlParametersBase.clear();
 
-        navigate("012/targetLink/chainLink/345/foo/1/2/3/4");
+        navigate("123/targetLink/456/chainLink/789/987/foo/a/b/c/d/e/f");
         System.out.println(UrlParametersBase.parametersLog);
         UrlParametersBase.clear();
 
-        navigate("012/targetLink/chainLink/345/foo");
+        navigate("abc/targetLink/def/chainLink/ghi/jkl/foo");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("012/targetLink/chainLink/345/678/foo/1/2/3/4");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+
+        navigate("012/targetLink/chainLink/345/678/foo");
         System.out.println(UrlParametersBase.parametersLog);
         UrlParametersBase.clear();
 
@@ -3446,6 +3483,65 @@ public class RouterTest extends RoutingTestBase {
         UrlParametersBase.clear();
 
         navigate("987/targetLink/chainLink/543");
+        System.out.println(UrlParametersBase.parametersLog);
+        UrlParametersBase.clear();
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_from_within_url_forum() {
+        setNavigationTargets(ParametersForumThreadView.class);
+
+        assertUrlParameters("forum/thread/123/456");
+        assertUrlParameters("forum/thread/123/last");
+        assertUrlParameters("forum/thread/123");
+        assertUrlParameters("forum/thread/123/thread-name");
+
+    }
+
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_from_within_url_api() {
+        setNavigationTargets(ParametersApiView.class);
+
+        // path is empty
+        assertUrlParameters("api");
+
+        // with path
+        assertUrlParameters("api/com/vaadin/client/package-summary.html"); // with path
+
+        // alias=framework, version is empty
+        assertUrlParameters("api/framework/com/vaadin/client/package-summary.html");
+
+        // alias=framework, version=8.9.4
+        assertUrlParameters(
+                "api/framework/8.9.4/com/vaadin/client/package-summary.html");
+
+        // groupId=com.vaadin, artifactId=vaadin-all, version is empty
+        assertUrlParameters(
+                "api/com.vaadin/vaadin-all/com/vaadin/client/package-summary.html");
+
+        // groupId=com.vaadin, artifactId=vaadin-all, version=8.9.4
+        assertUrlParameters(
+                "api/com.vaadin/vaadin-all/8.9.4/com/vaadin/client/package-summary.html");
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_from_within_url_details() {
+        setNavigationTargets(ParametersDetailsView.class);
+
+        assertUrlParameters("directory/component/url-parameter-mapping");
+        assertUrlParameters("directory/component/url-parameter-mapping/discussions");
+        assertUrlParameters("directory/component/url-parameter-mapping/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html");
+        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html");
+        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7/discussions");
+        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7");
+
+
+    }
+
+
+    private void assertUrlParameters(String url) {
+        navigate(url);
         System.out.println(UrlParametersBase.parametersLog);
         UrlParametersBase.clear();
     }
