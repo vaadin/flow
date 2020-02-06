@@ -17,9 +17,10 @@ import User from './com/vaadin/flow/server/connect/generator/endpoints/json/Json
  *
  * Return number of user
  */
-export function countUser(): Promise<number> {
+function _countUser(): Promise<number> {
   return client.call('JsonTestEndpoint', 'countUser');
 }
+export {_countUser as countUser};
 
 /**
  * Get instant nano
@@ -27,29 +28,32 @@ export function countUser(): Promise<number> {
  * @param input input parameter
  * Return current time as an Instant
  */
-export function fullFQNMethod(
+function _fullFQNMethod(
   input: number
 ): Promise<string> {
   return client.call('JsonTestEndpoint', 'fullFQNMethod', {input});
 }
+export {_fullFQNMethod as fullFQNMethod};
 
 /**
  * Get the map of user and roles
  *
  * Return map of user and roles
  */
-export function getAllUserRolesMap(): Promise<{ [key: string]: User; }> {
+function _getAllUserRolesMap(): Promise<{ [key: string]: User; }> {
   return client.call('JsonTestEndpoint', 'getAllUserRolesMap');
 }
+export {_getAllUserRolesMap as getAllUserRolesMap};
 
 /**
  * Get all users
  *
  * Return list of users
  */
-export function getAllUsers(): Promise<Array<User>> {
+function _getAllUsers(): Promise<Array<User>> {
   return client.call('JsonTestEndpoint', 'getAllUsers');
 }
+export {_getAllUsers as getAllUsers};
 
 /**
  * Get array int
@@ -57,11 +61,12 @@ export function getAllUsers(): Promise<Array<User>> {
  * @param input input string array
  * Return array of int
  */
-export function getArrayInt(
+function _getArrayInt(
   input: Array<string>
 ): Promise<Array<number>> {
   return client.call('JsonTestEndpoint', 'getArrayInt', {input}, {requireCredentials: false});
 }
+export {_getArrayInt as getArrayInt};
 
 /**
  * Get boolean value
@@ -69,11 +74,12 @@ export function getArrayInt(
  * @param input input map
  * Return boolean value
  */
-export function getBooleanValue(
+function _getBooleanValue(
   input: { [key: string]: User; }
 ): Promise<boolean> {
   return client.call('JsonTestEndpoint', 'getBooleanValue', {input});
 }
+export {_getBooleanValue as getBooleanValue};
 
 /**
  * Two parameters input method
@@ -82,12 +88,13 @@ export function getBooleanValue(
  * @param secondInput second input description
  * Return boolean value
  */
-export function getTwoParameters(
+function _getTwoParameters(
   input: string,
   secondInput: number
 ): Promise<boolean> {
   return client.call('JsonTestEndpoint', 'getTwoParameters', {input, secondInput}, {requireCredentials: false});
 }
+export {_getTwoParameters as getTwoParameters};
 
 /**
  * Get user by id
@@ -95,40 +102,46 @@ export function getTwoParameters(
  * @param id id of user
  * Return user with given id
  */
-export function getUserById(
+function _getUserById(
   id: number
 ): Promise<User> {
   return client.call('JsonTestEndpoint', 'getUserById', {id}, {requireCredentials: false});
 }
+export {_getUserById as getUserById};
 
-export function inputBeanTypeDependency(
+function _inputBeanTypeDependency(
   input: Version
 ): Promise<void> {
   return client.call('JsonTestEndpoint', 'inputBeanTypeDependency', {input});
 }
+export {_inputBeanTypeDependency as inputBeanTypeDependency};
 
-export function inputBeanTypeLocal(
+function _inputBeanTypeLocal(
   input: Status
 ): Promise<void> {
   return client.call('JsonTestEndpoint', 'inputBeanTypeLocal', {input});
 }
+export {_inputBeanTypeLocal as inputBeanTypeLocal};
 
-export function optionalParameter(
+function _optionalParameter(
   parameter?: Array<string>,
   requiredParameter: string
 ): Promise<void> {
   return client.call('JsonTestEndpoint', 'optionalParameter', {parameter, requiredParameter});
 }
+export {_optionalParameter as optionalParameter};
 
-export function optionalReturn(): Promise<User | undefined> {
+function _optionalReturn(): Promise<User | undefined> {
   return client.call('JsonTestEndpoint', 'optionalReturn');
 }
+export {_optionalReturn as optionalReturn};
 
-export function reservedWordInParameter(
+function _reservedWordInParameter(
   _delete: boolean
 ): Promise<void> {
   return client.call('JsonTestEndpoint', 'reservedWordInParameter', {_delete});
 }
+export {_reservedWordInParameter as reservedWordInParameter};
 
 /**
  * Update a user
@@ -136,8 +149,9 @@ export function reservedWordInParameter(
  * @param user User to be updated
  *
  */
-export function updateUser(
+function _updateUser(
   user: User
 ): Promise<void> {
   return client.call('JsonTestEndpoint', 'updateUser', {user});
 }
+export {_updateUser as updateUser};

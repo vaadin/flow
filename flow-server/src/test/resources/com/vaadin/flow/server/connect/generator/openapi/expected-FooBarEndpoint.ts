@@ -9,8 +9,9 @@
 // @ts-ignore
 import client from './connect-client.default';
 
-export function firstMethod(
+function _firstMethod(
   value?: boolean
 ): Promise<void> {
   return client.call('FooBarEndpoint', 'firstMethod', {value}, {requireCredentials: false});
 }
+export {_firstMethod as firstMethod};

@@ -8,6 +8,7 @@
 import client from './connect-client.default';
 import SelfReference from './com/vaadin/flow/server/connect/generator/endpoints/selfreference/SelfReference';
 
-export function getModel(): Promise<SelfReference> {
+function _getModel(): Promise<SelfReference> {
   return client.call('SelfReferenceEndpoint', 'getModel');
 }
+export {_getModel as getModel};

@@ -11,8 +11,9 @@ import client from './connect-client.default';
 import ComplexRequest from './ComplexRequest';
 import ComplexResponse from './ComplexResponse';
 
-export function complexEntitiesTest(
+function _complexEntitiesTest(
   request?: ComplexRequest
 ): Promise<ComplexResponse> {
   return client.call('GeneratorTestClass', 'complexEntitiesTest', {request});
 }
+export {_complexEntitiesTest as complexEntitiesTest};
