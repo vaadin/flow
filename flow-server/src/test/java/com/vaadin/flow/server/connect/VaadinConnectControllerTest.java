@@ -42,8 +42,8 @@ import org.springframework.http.ResponseEntity;
 
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
-import com.vaadin.flow.server.connect.exception.VaadinConnectException;
-import com.vaadin.flow.server.connect.exception.VaadinConnectValidationException;
+import com.vaadin.flow.server.connect.exception.EndpointException;
+import com.vaadin.flow.server.connect.exception.EndpointValidationException;
 import com.vaadin.flow.server.connect.testendpoint.BridgeMethodTestEndpoint;
 
 import static org.junit.Assert.assertEquals;
@@ -502,7 +502,7 @@ public class VaadinConnectControllerTest {
 
         Method endpointMethodMock = createEndpointMethodMockThatThrows(inputValue,
                 new InvocationTargetException(
-                        new VaadinConnectException(expectedMessage)));
+                        new EndpointException(expectedMessage)));
 
         VaadinConnectController controller = createVaadinController(
                 TEST_ENDPOINT);
@@ -517,7 +517,7 @@ public class VaadinConnectControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         String responseBody = response.getBody();
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
-                responseBody.contains(VaadinConnectException.class.getName()));
+                responseBody.contains(EndpointException.class.getName()));
         assertTrue(String.format("Invalid response body: '%s'", responseBody),
                 responseBody.contains(expectedMessage));
 
@@ -532,7 +532,7 @@ public class VaadinConnectControllerTest {
         int inputValue = 222;
         String expectedMessage = "OOPS";
 
-        class MyCustomException extends VaadinConnectException {
+        class MyCustomException extends EndpointException {
             public MyCustomException() {
                 super(expectedMessage);
             }
@@ -840,7 +840,7 @@ public class VaadinConnectControllerTest {
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
                 ObjectNode.class);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(1, jsonNodes.get("validationErrorData").size());
@@ -872,7 +872,7 @@ public class VaadinConnectControllerTest {
                 ObjectNode.class);
         assertNotNull(jsonNodes);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(2, jsonNodes.get("validationErrorData").size());
@@ -900,7 +900,7 @@ public class VaadinConnectControllerTest {
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
                 ObjectNode.class);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(1, jsonNodes.get("validationErrorData").size());
@@ -938,7 +938,7 @@ public class VaadinConnectControllerTest {
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
                 ObjectNode.class);
 
-        assertEquals(VaadinConnectValidationException.class.getName(),
+        assertEquals(EndpointValidationException.class.getName(),
                 jsonNodes.get("type").asText());
         assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
         assertEquals(1, jsonNodes.get("validationErrorData").size());
@@ -1011,7 +1011,7 @@ public class VaadinConnectControllerTest {
         ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
                 ObjectNode.class);
 
-        assertEquals(VaadinConnectException.class.getName(),
+        assertEquals(EndpointException.class.getName(),
                 jsonNodes.get("type").asText());
         final String message = jsonNodes.get("message").asText();
         assertTrue(message.contains("Unexpected return value"));

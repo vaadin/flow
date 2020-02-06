@@ -36,16 +36,16 @@ import com.vaadin.flow.server.connect.VaadinConnectController;
  * failure on the client side, this exception or any of its subclasses can be
  * used.
  *
- * Refer to the {@link VaadinConnectException#getSerializationData()} method to
+ * Refer to the {@link EndpointException#getSerializationData()} method to
  * see the information on the data being sent to the client.
  *
  * Refer to {@code VaadinConnectException} in the client library for more
  * information about the client side of the implementation.
  */
-public class VaadinConnectException extends RuntimeException {
+public class EndpointException extends RuntimeException {
     /**
      * A message field to be used in the exception's serialization data in
-     * {@link VaadinConnectException#getSerializationData()}.
+     * {@link EndpointException#getSerializationData()}.
      */
     public static final String ERROR_MESSAGE_FIELD = "message";
 
@@ -59,7 +59,7 @@ public class VaadinConnectException extends RuntimeException {
      *            the message to put in the client side exception message when
      *            an exception is thrown
      */
-    public VaadinConnectException(String message) {
+    public EndpointException(String message) {
         super(message);
         this.detail = null;
     }
@@ -74,7 +74,7 @@ public class VaadinConnectException extends RuntimeException {
      *            the original exception that had caused the current one to be
      *            thrown
      */
-    public VaadinConnectException(Throwable cause) {
+    public EndpointException(Throwable cause) {
         super(cause);
         this.detail = null;
     }
@@ -90,7 +90,7 @@ public class VaadinConnectException extends RuntimeException {
      *            a detail object that will be serialized into JSON and sent to
      *            the client, when the exception is thrown
      */
-    public VaadinConnectException(String message, Object detail) {
+    public EndpointException(String message, Object detail) {
         super(message);
         this.detail = detail;
     }
@@ -106,7 +106,7 @@ public class VaadinConnectException extends RuntimeException {
      *            the original exception that had caused the current one to be
      *            thrown.
      */
-    public VaadinConnectException(String message, Throwable cause) {
+    public EndpointException(String message, Throwable cause) {
         super(message, cause);
         this.detail = null;
     }
@@ -125,7 +125,7 @@ public class VaadinConnectException extends RuntimeException {
      *            a detail object that will be serialized into JSON and sent to
      *            the client, when the exception is thrown
      */
-    public VaadinConnectException(String message, Throwable cause,
+    public EndpointException(String message, Throwable cause,
             Object detail) {
         super(message, cause);
         this.detail = detail;
@@ -147,7 +147,7 @@ public class VaadinConnectException extends RuntimeException {
      * following data will be sent to the client:
      * <ul>
      * <li>exception type: either the original exception type or
-     * {@link VaadinConnectException}, if no original exception is given</li>
+     * {@link EndpointException}, if no original exception is given</li>
      * <li>message: non-blank message either from the constructor or from the
      * original exception. If both are blank, none provided.</li>
      * <li>detail: detail object serialized to json, if provided in the
