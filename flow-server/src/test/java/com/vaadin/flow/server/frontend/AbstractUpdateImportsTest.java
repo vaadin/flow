@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -61,6 +62,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -93,8 +95,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         private List<String> resultingLines;
 
         UpdateImports(ClassFinder classFinder,
-                FrontendDependenciesScanner scanner, File npmDirectory) {
-            super(frontendDirectory, npmDirectory, generatedPath);
+                FrontendDependenciesScanner scanner, File npmDirectory,
+                File tokenFile) {
+            super(frontendDirectory, npmDirectory, generatedPath, tokenFile);
             this.scanner = scanner;
             finder = classFinder;
         }
@@ -179,10 +182,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
         generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        File tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot);
+                tmpRoot, tokenFile);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(new File(nodeModulesPath,
@@ -259,6 +263,28 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
+        ClassFinder classFinder = getClassFinder();
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                tmpRoot, null);
+
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+
+        Files.move(frontendDirectory.toPath(),
+                new File(tmpRoot, "_frontend").toPath());
+
+        try {
+            updater.run();
+            Assert.fail("Execute should have failed with advice to run `prepare-frontend`");
+        } catch (IllegalStateException e) {
+            assertThat(e.getMessage(), CoreMatchers.containsString(
+                    "Unable to locate frontend resources and missing token file. "
+                            + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application"));
+        }
+    }
+
+    @Test
     public void getModuleLines_multipleFrontendDependencyDoesntExist_throwExceptionAndlogExplanation() {
         useMockLog = true;
         Mockito.when(logger.isInfoEnabled()).thenReturn(true);
@@ -300,7 +326,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
-
+         
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
     }
@@ -435,7 +461,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder(testClasses);
 
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot);
+                tmpRoot, new File(tmpRoot, TOKEN_FILE));
         updater.run();
 
         // Imports are collected as
