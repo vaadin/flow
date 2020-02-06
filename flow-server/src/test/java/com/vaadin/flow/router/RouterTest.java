@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,15 +29,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -56,6 +46,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
+import com.vaadin.flow.router.internal.RouteModelTest;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -66,7 +57,16 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
+import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -1448,13 +1448,17 @@ public class RouterTest extends RoutingTestBase {
 
         static Map<String, UrlParameters> parametersLog = new HashMap<>();
 
+        static UrlParameters parameters;
+
         static void clear() {
             parametersLog.clear();
+            parameters = null;
         }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             parametersLog.put(event.getLocation().getPath(), event.getUrlParameters());
+            parameters = event.getUrlParameters();
         }
     }
 
@@ -1516,7 +1520,7 @@ public class RouterTest extends RoutingTestBase {
     @Route(":urlIdentifier/[:versionIdentifier:v?\\d.*]/[:tabIdentifier:api]/...:apiPath")
     @RouteAlias(":urlIdentifier/[:versionIdentifier:v?\\d.*]/[:tabIdentifier:overview|samples|links|reviews|discussions]")
     @RoutePrefix("directory/component")
-    public static class ParametersDetailsView extends UrlParametersBase
+    public static class DetailsView extends UrlParametersBase
             implements RouterLayout {
 
     }
@@ -3440,112 +3444,174 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_from_within_url() {
+    public void url_parameters_fail_to_be_extracted_from_views() {
         setNavigationTargets(TargetWithParameter.class,
                 AnotherTargetWithParameter.class,
                 ChainLinkWithParameterAndTarget.class,
                 ChainLinkWithParameter.class,
                 TargetWithOptionalParameters.class);
 
-        navigate("123/link/456/target/789/bar");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("qwe/link/123");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("qwe/link/123/456");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("qwe/link/123/456/789");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("123/targetLink/456/chainLink/789/987/foo/a/b/c/d/e/f");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("abc/targetLink/def/chainLink/ghi/jkl/foo");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("012/targetLink/chainLink/345/678/foo/1/2/3/4");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("012/targetLink/chainLink/345/678/foo");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("987/targetLink/765/chainLink/543");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
-
-        navigate("987/targetLink/chainLink/543");
-        System.out.println(UrlParametersBase.parametersLog);
-        UrlParametersBase.clear();
+        // TODO: add failing url test
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_from_within_url_forum() {
+    public void url_parameters_are_extracted_for_view1() {
+        setNavigationTargets(ChainLinkWithParameter.class);
+
+        assertUrlParameters("qwe/link/123",
+                parameters("parentID", "qwe", "chainLinkID", "123"));
+    }
+    
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_view2() {
+        setNavigationTargets(TargetWithOptionalParameters.class);
+
+        assertUrlParameters("qwe/link/123/456", parameters("parentID", "qwe",
+                "chainLinkID", "123", "optional", "456"));
+        assertUrlParameters("qwe/link/123/456/789",
+                parameters("parentID", "qwe", "chainLinkID", "123", "optional",
+                        "456", "anotherOptional", "789"));
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_view3() {
+        setNavigationTargets(TargetWithParameter.class);
+
+        assertUrlParameters("123/link/456/target/789/bar",
+                parameters("parentID", "123", "chainLinkID", "456",
+                        "targetChainLinkID", "789"));
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_view4() {
+        setNavigationTargets(AnotherTargetWithParameter.class);
+
+        assertUrlParameters(
+                "123/targetLink/456/chainLink/789/987/foo/a/b/c/d/e/f",
+                parameters("parentID", "123", "chainLinkID", "456",
+                        "anotherTargetID", "789", "yetAnotherID", "987",
+                        "varargsFoo", varargs("a", "b", "c", "d", "e", "f")));
+        assertUrlParameters("abc/targetLink/def/chainLink/ghi/jkl/foo",
+                parameters("parentID", "abc", "chainLinkID", "def",
+                        "anotherTargetID", "ghi", "yetAnotherID", "jkl"));
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_view5() {
+        setNavigationTargets(ChainLinkWithParameterAndTarget.class);
+
+        assertUrlParameters("012/targetLink/chainLink/345/678/foo/1/2/3/4",
+                parameters("parentID", "012", "anotherTargetID", "345",
+                        "yetAnotherID", "678", "varargsFoo",
+                        varargs("1", "2", "3", "4")));
+        assertUrlParameters("012/targetLink/chainLink/345/678/foo",
+                parameters("parentID", "012", "anotherTargetID", "345",
+                        "yetAnotherID", "678"));
+        assertUrlParameters("987/targetLink/765/chainLink/543",
+                parameters("parentID", "987", "chainLinkID", "765",
+                        "targetChainLinkID", "543"));
+        assertUrlParameters("987/targetLink/chainLink/543",
+                parameters("parentID", "987", "targetChainLinkID", "543"));
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_forum_view() {
         setNavigationTargets(ParametersForumThreadView.class);
 
-        assertUrlParameters("forum/thread/123/456");
-        assertUrlParameters("forum/thread/123/last");
-        assertUrlParameters("forum/thread/123");
-        assertUrlParameters("forum/thread/123/thread-name");
-
+        assertUrlParameters("forum/thread/123/456",
+                parameters("threadID", "123", "messageID", "456"));
+        assertUrlParameters("forum/thread/123/last",
+                parameters("threadID", "123"));
+        assertUrlParameters("forum/thread/123", parameters("threadID", "123"));
+        assertUrlParameters("forum/thread/123/thread-name",
+                parameters("threadID", "123", "something", "thread-name"));
     }
 
-
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_from_within_url_api() {
+    public void url_parameters_are_extracted_for_api_view() {
         setNavigationTargets(ParametersApiView.class);
 
         // path is empty
-        assertUrlParameters("api");
+        assertUrlParameters("api", parameters());
 
         // with path
-        assertUrlParameters("api/com/vaadin/client/package-summary.html"); // with path
+        assertUrlParameters("api/com/vaadin/client/package-summary.html",
+                parameters("path", varargs("com", "vaadin", "client",
+                        "package-summary.html")));
 
         // alias=framework, version is empty
-        assertUrlParameters("api/framework/com/vaadin/client/package-summary.html");
+        assertUrlParameters("api/framework/com/vaadin/client/package-summary.html",
+                parameters("alias", "framework", "path", varargs("com",
+                        "vaadin", "client", "package-summary.html")));
 
         // alias=framework, version=8.9.4
         assertUrlParameters(
-                "api/framework/8.9.4/com/vaadin/client/package-summary.html");
+                "api/framework/8.9.4/com/vaadin/client/package-summary.html",
+                parameters("alias", "framework", "version", "8.9.4", "path",
+                        varargs("com", "vaadin", "client",
+                                "package-summary.html")));
 
         // groupId=com.vaadin, artifactId=vaadin-all, version is empty
         assertUrlParameters(
-                "api/com.vaadin/vaadin-all/com/vaadin/client/package-summary.html");
+                "api/com.vaadin/vaadin-all/com/vaadin/client/package-summary.html",
+                parameters("groupId", "com.vaadin", "artifactId", "vaadin-all",
+                        "path", varargs("com", "vaadin", "client",
+                                "package-summary.html")));
 
         // groupId=com.vaadin, artifactId=vaadin-all, version=8.9.4
         assertUrlParameters(
-                "api/com.vaadin/vaadin-all/8.9.4/com/vaadin/client/package-summary.html");
+                "api/com.vaadin/vaadin-all/8.9.4/com/vaadin/client/package-summary.html",
+                parameters("groupId", "com.vaadin", "version", "8.9.4",
+                        "artifactId", "vaadin-all", "path", varargs("com",
+                                "vaadin", "client", "package-summary.html")));
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_from_within_url_details() {
-        setNavigationTargets(ParametersDetailsView.class);
+    public void url_parameters_are_extracted_for_details_view() {
+        setNavigationTargets(DetailsView.class);
 
-        assertUrlParameters("directory/component/url-parameter-mapping");
-        assertUrlParameters("directory/component/url-parameter-mapping/discussions");
-        assertUrlParameters("directory/component/url-parameter-mapping/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html");
-        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html");
-        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7/discussions");
-        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7");
-
-
+        assertUrlParameters("directory/component/url-parameter-mapping",
+                parameters("urlIdentifier", "url-parameter-mapping"));
+        assertUrlParameters(
+                "directory/component/url-parameter-mapping/discussions",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "tabIdentifier", "discussions"));
+        assertUrlParameters(
+                "directory/component/url-parameter-mapping/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "tabIdentifier", "api", "apiPath",
+                        varargs("org", "vaadin", "flow", "helper",
+                                "HasAbsoluteUrlParameterMapping.html")));
+        assertUrlParameters(
+                "directory/component/url-parameter-mapping/1.0.0-alpha7/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "versionIdentifier", "1.0.0-alpha7", "tabIdentifier",
+                        "api", "apiPath",
+                        varargs("org", "vaadin", "flow", "helper",
+                                "HasAbsoluteUrlParameterMapping.html")));
+        assertUrlParameters(
+                "directory/component/url-parameter-mapping/1.0.0-alpha7/discussions",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "versionIdentifier", "1.0.0-alpha7", "tabIdentifier",
+                        "discussions"));
+        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "versionIdentifier", "1.0.0-alpha7"));
     }
 
-
-    private void assertUrlParameters(String url) {
-        navigate(url);
-        System.out.println(UrlParametersBase.parametersLog);
+    private void assertUrlParameters(String url, UrlParameters parameters) {
         UrlParametersBase.clear();
+
+        navigate(url);
+
+        Assert.assertEquals("Incorrect parameters", parameters,
+                UrlParametersBase.parameters);
     }
+
+    private UrlParameters parameters(Object... keysAndValues) {
+        return new UrlParameters(RouteModelTest.parameters(keysAndValues));
+    }
+
 
     private List<String> getProcessEventsTrunkChainNames(String... leaf) {
         final List<String> chainNames = new ArrayList<>(

@@ -18,10 +18,10 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
@@ -57,6 +57,36 @@ public class RouteModelTest {
 
     @Tag(Tag.DIV)
     public static class FlowerEdit extends Component {
+    }
+
+    /**
+     * Creates a parameters map where any even index argument is a key and must
+     * be a String (starting with 0) and any odd index argument is a value
+     * (starting with 1)
+     * 
+     * @param keysAndValues
+     *            the keys and values of the map.
+     * @return a Map containing the specified arguments.
+     */
+    public static Map<String, Object> parameters(Object... keysAndValues) {
+        Map<String, Object> result = new HashMap<>(keysAndValues.length / 2);
+
+        for (int i = 0; i < keysAndValues.length; i++) {
+            result.put((String) keysAndValues[i], keysAndValues[++i]);
+        }
+
+        return result;
+    }
+
+    /**
+     * Creates a List out of the specified arguments.
+     * 
+     * @param varargs
+     *            an array of strings.
+     * @return a List containing the specified arguments.
+     */
+    public static List<String> varargs(String... varargs) {
+        return Arrays.asList(varargs);
     }
 
     @Test
@@ -145,7 +175,6 @@ public class RouteModelTest {
 
     @Test
     public void varargs_url_parameter_defined_only_as_last_segment() {
-
         RouteModel root = RouteModel.create();
         try {
             root.addPath("trunk/...:vararg/edit", Root.class);
@@ -161,28 +190,11 @@ public class RouteModelTest {
         RouteSearchResult result = root.getRoute(path);
         assertResult(result, path, Root.class,
                 parameters("vararg", varargs("1", "2", "3")));
-
-    }
-
-    private Map<String, Serializable> parameters(
-            Serializable... keysAndValues) {
-        Map<String, Serializable> result = new HashMap<>(
-                keysAndValues.length / 2);
-
-        for (int i = 0; i < keysAndValues.length; i++) {
-            result.put((String) keysAndValues[i], keysAndValues[++i]);
-        }
-
-        return result;
-    }
-
-    private ArrayList<String> varargs(String... varargs) {
-        return new ArrayList(Arrays.asList(varargs));
     }
 
     private void assertResult(RouteSearchResult result, String path,
             Class<? extends Component> target,
-            Map<String, Serializable> urlParameters) {
+            Map<String, Object> urlParameters) {
 
         System.out.println("result: " + result);
 
