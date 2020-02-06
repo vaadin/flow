@@ -103,16 +103,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     StandardCharsets.UTF_8);
             Path versionsPath = versions.toPath();
             if (versions.isAbsolute()) {
-                return getUnixPath(
-                        packageUpdater.npmFolder.toPath().relativize(versionsPath));
+                return FrontendUtils.getUnixRelativePath(
+                        packageUpdater.npmFolder.toPath(), versionsPath);
             } else {
-                return getUnixPath(versionsPath);
+                return FrontendUtils.getUnixPath(versionsPath);
             }
         }
-    }
-
-    private static String getUnixPath(Path source) {
-        return source.toString().replaceAll("\\\\", "/");
     }
 
     private boolean shouldRunNpmInstall() {
