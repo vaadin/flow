@@ -84,8 +84,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateMainImportsFile(ClassFinder classFinder, File frontendDirectory,
                 File npmDirectory, File generatedDirectory,
-                File fallBackImports) {
-            super(frontendDirectory, npmDirectory, generatedDirectory);
+                File fallBackImports, File tokenFile) {
+            super(frontendDirectory, npmDirectory, generatedDirectory,
+                    tokenFile);
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
             finder = classFinder;
             this.fallBackImports = fallBackImports;
@@ -208,8 +209,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateFallBackImportsFile(ClassFinder classFinder,
                 File frontendDirectory, File npmDirectory,
-                File generatedDirectory) {
-            super(frontendDirectory, npmDirectory, generatedDirectory);
+                File generatedDirectory, File tokenFile) {
+            super(frontendDirectory, npmDirectory, generatedDirectory,
+                    tokenFile);
             generatedFallBack = new File(generatedDirectory,
                     FrontendUtils.FALLBACK_IMPORTS_NAME);
             finder = classFinder;
@@ -362,14 +364,15 @@ public class TaskUpdateImports extends NodeUpdater {
         File fallBack = null;
         if (fallbackScanner != null) {
             UpdateFallBackImportsFile fallBackUpdate = new UpdateFallBackImportsFile(
-                    finder, frontendDirectory, npmFolder, generatedFolder);
+                    finder, frontendDirectory, npmFolder, generatedFolder,
+                    tokenFile);
             fallBackUpdate.run();
             fallBack = fallBackUpdate.getGeneratedFallbackFile();
             updateBuildFile(fallBackUpdate);
         }
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
-                frontendDirectory, npmFolder, generatedFolder, fallBack);
+                frontendDirectory, npmFolder, generatedFolder, fallBack, tokenFile);
         mainUpdate.run();
     }
 
