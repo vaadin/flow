@@ -316,7 +316,7 @@ class RouteModel implements Serializable {
          */
         RouteSearchResult getRoute(String path) {
 
-            Map<String, Serializable> urlParameters = new HashMap<>();
+            Map<String, Object> urlParameters = new HashMap<>();
 
             RouteTarget target = findRouteTarget(PathUtil.getSegmentsList(path),
                     urlParameters);
@@ -460,7 +460,7 @@ class RouteModel implements Serializable {
         }
 
         private RouteTarget findRouteTarget(List<String> segments,
-                Map<String, Serializable> urlParameters) {
+                Map<String, Object> urlParameters) {
 
             // First try with a static segment (non a parameter). An empty
             // segments list should happen only on root, so this instance should
@@ -490,7 +490,7 @@ class RouteModel implements Serializable {
                     // Try ignoring the parameter if optional and look into its
                     // children using the same segments.
                     if (parameter.getParameterDetails().isOptional()) {
-                        Map<String, Serializable> outputParameters = new HashMap<>();
+                        Map<String, Object> outputParameters = new HashMap<>();
                         target = parameter.findRouteTarget(segments,
                                 outputParameters);
 
@@ -516,9 +516,9 @@ class RouteModel implements Serializable {
 
         private RouteTarget findRouteTarget(RouteSegment potentialSegment,
                 List<String> segments,
-                Map<String, Serializable> urlParameters) {
+                Map<String, Object> urlParameters) {
 
-            Map<String, Serializable> outputParameters = new HashMap<>();
+            Map<String, Object> outputParameters = new HashMap<>();
 
             if (potentialSegment.isParameter()) {
 
@@ -535,7 +535,7 @@ class RouteModel implements Serializable {
                     }
 
                     outputParameters.put(potentialSegment.getName(),
-                            new ArrayList<>(segments));
+                            Collections.unmodifiableList(segments));
                     segments = Collections.emptyList();
 
                 } else {
