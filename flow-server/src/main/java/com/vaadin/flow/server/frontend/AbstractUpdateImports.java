@@ -222,9 +222,9 @@ abstract class AbstractUpdateImports implements Runnable {
                     frontendDir.getPath());
 
             String suffix;
-            if (tokenFile == null) {
+            if (tokenFile == null && !frontendDir.exists()) {
                 suffix = "Unable to locate frontend resources and missing token file. "
-                        + "Please run the `prepare-frontend` Maven goal before deploying the application";
+                        + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
             } else {
                 suffix = String.format(
                         "Check that they exist or are installed. If you use a custom directory "
@@ -357,9 +357,9 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!resourceNotFound.isEmpty()) {
             String prefix = "Failed to find the following files: ";
             String suffix;
-            if (tokenFile == null) {
+            if (tokenFile == null && !frontendDir.exists()) {
                 suffix = "Unable to locate frontend resources and missing token file. "
-                        + "Please run the `prepare-frontend` Maven goal before deploying the application";
+                        + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
             } else {
                 suffix = String.format("%n  Locations searched were:"
                         + "%n      - `%s` in this project"

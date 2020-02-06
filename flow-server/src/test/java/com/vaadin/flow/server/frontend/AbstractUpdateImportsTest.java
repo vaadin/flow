@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -256,32 +257,30 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             assertThat(e.getMessage(),
                     CoreMatchers
                             .containsString(getFormattedFrontendErrorMessage(
-                                    Sets.newSet(fooFileName), true)));
+                                    Sets.newSet(fooFileName))));
         }
 
     }
 
     @Test
-    public void getModuleLines_oneFrontendDependencyDoesntExistNoTokenFile_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
+    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
         ClassFinder classFinder = getClassFinder();
-
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, null);
 
         useMockLog = true;
         Mockito.when(logger.isInfoEnabled()).thenReturn(true);
 
-        String fooFileName = "./foo.js";
-        assertFileRemoved(fooFileName, frontendDirectory);
+        Files.move(frontendDirectory.toPath(),
+                new File(tmpRoot, "_frontend").toPath());
 
         try {
             updater.run();
             Assert.fail("Execute should have failed with advice to run `prepare-frontend`");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(),
-                    CoreMatchers
-                            .containsString(getFormattedFrontendErrorMessage(
-                                    Sets.newSet(fooFileName), false)));
+            assertThat(e.getMessage(), CoreMatchers.containsString(
+                    "Unable to locate frontend resources and missing token file. "
+                            + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application"));
         }
     }
 
@@ -302,8 +301,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers
                     .containsString(getFormattedFrontendErrorMessage(
-                            Sets.newSet(localTemplateFileName, fooFileName),
-                            true)));
+                            Sets.newSet(localTemplateFileName, fooFileName))));
         }
 
     }
@@ -316,25 +314,19 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private String getFormattedFrontendErrorMessage(
-            Set<String> resourcesNotFound, boolean tokenFileExists) {
+            Set<String> resourcesNotFound) {
         String prefix = "Failed to find the following files: ";
 
-        String suffix;
-        if (tokenFileExists) {
-            suffix = String.format("%n  Locations searched were:"
-                            + "%n      - `%s` in this project"
-                            + "%n      - `%s` in included JARs"
-                            + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                            + "for your resource files instead of default "
-                            + "`frontend` folder then make sure you it's correctly configured "
-                            + "(e.g. set '%s' property)", frontendDirectory.getPath(),
-                    Constants.RESOURCES_FRONTEND_DEFAULT,
-                    FrontendUtils.PARAM_FRONTEND_DIR);
-        } else {
-            suffix = "Unable to locate frontend resources and missing token file. "
-                    + "Please run the `prepare-frontend` Maven goal before deploying the application";
-        }
-
+        String suffix = String.format("%n  Locations searched were:"
+                + "%n      - `%s` in this project"
+                + "%n      - `%s` in included JARs"
+                + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                + "for your resource files instead of default "
+                + "`frontend` folder then make sure you it's correctly configured "
+                + "(e.g. set '%s' property)", frontendDirectory.getPath(),
+                Constants.RESOURCES_FRONTEND_DEFAULT,
+                FrontendUtils.PARAM_FRONTEND_DIR);
+         
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
     }
