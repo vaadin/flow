@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public class UrlParameters {
 
-    private Map<String, Serializable> params;
+    private Map<String, Object> params;
 
     /**
      * Creates a url parameters container using the given map as argument.
@@ -35,11 +35,18 @@ public class UrlParameters {
      * @param params
      *            parameters mapping.
      */
-    public UrlParameters(Map<String, Serializable> params) {
+    public UrlParameters(Map<String, Object> params) {
         this.params = params != null ? Collections.unmodifiableMap(params)
                 : Collections.emptyMap();
     }
 
+    /**
+     * Gets the string representation of a parameter.
+     * 
+     * @param parameterName
+     *            the name of the parameter.
+     * @return the string representation of the parameter.
+     */
     public String get(String parameterName) {
         final Object value = getObject(parameterName);
         if (value == null) {
@@ -49,6 +56,13 @@ public class UrlParameters {
         return value.toString();
     }
 
+    /**
+     * Gets the int representation of a parameter.
+     *
+     * @param parameterName
+     *            the name of the parameter.
+     * @return the int representation of the parameter.
+     */
     public Integer getInt(String parameterName) {
         final String value = get(parameterName);
         if (value == null) {
@@ -58,6 +72,13 @@ public class UrlParameters {
         return new Integer(value);
     }
 
+    /**
+     * Gets the long representation of a parameter.
+     *
+     * @param parameterName
+     *            the name of the parameter.
+     * @return the long representation of the parameter.
+     */
     public Long getLong(String parameterName) {
         final String value = get(parameterName);
         if (value == null) {
@@ -67,6 +88,13 @@ public class UrlParameters {
         return new Long(value);
     }
 
+    /**
+     * Gets the boolean representation of a parameter.
+     *
+     * @param parameterName
+     *            the name of the parameter.
+     * @return the boolean representation of the parameter.
+     */
     public Boolean getBool(String parameterName) {
         final String value = get(parameterName);
         if (value == null) {
@@ -76,6 +104,13 @@ public class UrlParameters {
         return new Boolean(value);
     }
 
+    /**
+     * Gets a list representing the varargs value of a parameter.
+     *
+     * @param parameterName
+     *            the name of the parameter.
+     * @return a list representing the varargs value of a parameter.
+     */
     public List<String> getList(String parameterName) {
         final Object value = getObject(parameterName);
         if (value == null) {
@@ -83,13 +118,23 @@ public class UrlParameters {
         }
 
         if (value instanceof List) {
+            // This should be already unmodifiable but from here we can't really
+            // guarantee.
             return Collections.unmodifiableList((List<String>) value);
         } else {
             return null;
         }
     }
 
-    public Object getObject(String parameterName) {
+    /**
+     * Gets the actual object value of the parameter. Currently this is always a
+     * string.
+     * 
+     * @param parameterName
+     *            the name of the parameter.
+     * @return the actual object value of the parameter.
+     */
+    private Object getObject(String parameterName) {
         return params.get(parameterName);
     }
 
@@ -98,4 +143,17 @@ public class UrlParameters {
         return params.toString();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof UrlParameters) {
+            UrlParameters urlParameters = (UrlParameters) obj;
+            return params.equals(urlParameters.params);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return params.hashCode();
+    }
 }
