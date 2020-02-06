@@ -119,7 +119,7 @@ public class MigrationTest {
     @Test
     public void migrateNpmPassesHappyPath() throws MigrationFailureException,
             MigrationToolsException, IOException {
-        Mockito.when(configuration.isPnpmEnabled()).thenReturn(true);
+        Mockito.when(configuration.isPnpmEnabled()).thenReturn(false);
         // Expected execution calls:
         // 1 - npm --no-update-notifier --no-audit install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S
@@ -134,7 +134,7 @@ public class MigrationTest {
     @Test
     public void migratePnpmPassesHappyPath() throws MigrationFailureException,
             MigrationToolsException, IOException {
-        Mockito.when(configuration.isPnpmEnabled()).thenReturn(false);
+        Mockito.when(configuration.isPnpmEnabled()).thenReturn(true);
         targetFolder = makeTempDirectoryStructure();
         Path pnpmBin = Files
                 .createDirectories(Paths.get(targetFolder.getAbsolutePath(),
