@@ -61,7 +61,7 @@ public class HasUrlParameterUtil {
 
     public static <T> UrlParameters getParameters(List<T> parametersList) {
 
-        Map<String, Serializable> map;
+        Map<String, Object> map;
 
         if (parametersList.isEmpty()) {
             map = null;
@@ -70,7 +70,7 @@ public class HasUrlParameterUtil {
                     parametersList.get(0).toString());
         } else {
             map = Collections.singletonMap(PARAMETER_NAME,
-                    new ArrayList<>(parametersList));
+                    Collections.unmodifiableList(parametersList));
         }
 
         return new UrlParameters(map);
