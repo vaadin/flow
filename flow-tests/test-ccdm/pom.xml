@@ -41,15 +41,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                            <!-- Doesn't include build-frontend to simulate pure "jetty:run" -->
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <productionMode>false</productionMode>
                 </configuration>
