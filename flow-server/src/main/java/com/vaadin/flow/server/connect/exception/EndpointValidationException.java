@@ -26,12 +26,12 @@ import java.util.Objects;
  * A validation exception class that is intended to be thrown when any endpoint
  * method receives invalid parameter(s).
  *
- * Behaves similar to the {@link VaadinConnectException} and contains additional
+ * Behaves similar to the {@link EndpointException} and contains additional
  * information about the validation errors.
  *
- * @see VaadinConnectException
+ * @see EndpointException
  */
-public class VaadinConnectValidationException extends VaadinConnectException {
+public class EndpointValidationException extends EndpointException {
 
     /**
      * A validation error data.
@@ -97,7 +97,7 @@ public class VaadinConnectValidationException extends VaadinConnectException {
      * @param data
      *            validation error data, mandatory (cannot be {@code null})
      */
-    public VaadinConnectValidationException(ValidationErrorData data) {
+    public EndpointValidationException(ValidationErrorData data) {
         this(Collections.singletonList(Objects.requireNonNull(data,
                 "At least one 'validation error' is required")));
     }
@@ -109,7 +109,7 @@ public class VaadinConnectValidationException extends VaadinConnectException {
      *            A list of validation error data, must not be {@code null} or
      *            empty.
      */
-    public VaadinConnectValidationException(
+    public EndpointValidationException(
             List<ValidationErrorData> validationErrorData) {
         this("Validation failed", validationErrorData);
     }
@@ -123,7 +123,7 @@ public class VaadinConnectValidationException extends VaadinConnectException {
      *            A list of validation error data, must not be {@code null} or
      *            empty.
      */
-    public VaadinConnectValidationException(String message,
+    public EndpointValidationException(String message,
             List<ValidationErrorData> validationErrorData) {
         super(message);
         if (validationErrorData == null || validationErrorData.isEmpty()) {
