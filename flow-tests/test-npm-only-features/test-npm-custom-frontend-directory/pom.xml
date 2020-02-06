@@ -78,17 +78,9 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
                 <configuration>
                     <frontendDirectory>${project.basedir}/myfrontend</frontendDirectory>
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
