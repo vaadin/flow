@@ -15,7 +15,6 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -40,6 +39,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
@@ -67,6 +68,7 @@ public class VaadinConnectControllerTest {
     private static final Method TEST_METHOD;
     private static final Method TEST_VALIDATION_METHOD;
     private HttpServletRequest requestMock;
+    private Principal principal;
 
     static {
         TEST_METHOD = Stream.of(TEST_ENDPOINT.getClass().getDeclaredMethods())
@@ -127,6 +129,10 @@ public class VaadinConnectControllerTest {
         public String anonymousOverrides() {
             return "Hello, no user!";
         }
+
+        public String getUserName() {
+            return VaadinService.getCurrentRequest().getUserPrincipal().getName();
+        }
     }
 
     @Endpoint("CustomEndpoint")
@@ -162,7 +168,9 @@ public class VaadinConnectControllerTest {
     @Before
     public void setUp() {
         requestMock = mock(HttpServletRequest.class);
-        when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
+        principal = mock(Principal.class);
+
+        when(requestMock.getUserPrincipal()).thenReturn(principal);
         when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Vaadin CCDM");
 
         HttpSession sessionMock = mock(HttpSession.class);
@@ -377,7 +385,6 @@ public class VaadinConnectControllerTest {
         assertEquals("\"Hello, user in role!\"", response.getBody());
     }
 
-
     @Test
     public void should_CallMethodAnonymously_When_AnonymousOverridesRoles() {
         VaadinConnectController vaadinController = createVaadinController(
@@ -400,6 +407,22 @@ public class VaadinConnectControllerTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertTrue(response.getBody().contains("Anonymous access is not allowed"));
+    }
+
+    @Test
+    public void should_bePossibeToGetPrincipalInEndpoint() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        VaadinService.setCurrent(service);
+        when(principal.getName()).thenReturn("foo");
+
+        VaadinConnectController vaadinController = createVaadinController(
+                TEST_ENDPOINT, new VaadinConnectAccessChecker());
+
+        ResponseEntity<String> response = vaadinController.serveEndpoint(
+                TEST_ENDPOINT_NAME, "getUserName",
+                createRequestParameters("{}"), requestMock);
+
+        assertEquals("\"foo\"", response.getBody());
     }
 
     @Test

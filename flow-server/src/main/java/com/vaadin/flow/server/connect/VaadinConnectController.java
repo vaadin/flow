@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -60,6 +61,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
@@ -247,6 +251,14 @@ public class VaadinConnectController {
         }
 
         try {
+
+            // Put a VaadinRequest in the instances object so as the request is
+            // available in the end-point method
+            VaadinServletService service = (VaadinServletService)VaadinService.getCurrent();
+            if (service != null) {
+                service.setCurrentInstances(new VaadinServletRequest(request, service), null);
+            }
+
             return invokeVaadinEndpointMethod(endpointName, methodName,
                     methodToInvoke, body, vaadinEndpointData, request);
         } catch (JsonProcessingException e) {
