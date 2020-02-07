@@ -427,9 +427,11 @@ public class VaadinConnectController {
                 }
             } catch (IOException e) {
                 String typeName = expectedType.getTypeName();
-                getLogger().debug(
-                        "Unable to deserialize parameter {} with type {}",
-                        parameterNames[i], typeName, e);
+                getLogger().error(
+                        "Unable to deserialize an endpoint '{}' method '{}' "
+                                + "parameter '{}' with type '{}'",
+                        endpointName, methodName, parameterNames[i], typeName,
+                        e);
                 errorParams.put(parameterNames[i], typeName);
             }
         }
@@ -447,7 +449,7 @@ public class VaadinConnectController {
             Set<ConstraintViolation<Object>> constraintViolations) {
         List<ValidationErrorData> validationErrorData = new ArrayList<>(
                 deserializationErrors.size() + constraintViolations.size());
-        List<String> messagesDesrializationError = new ArrayList<>();
+
         for (Map.Entry<String, String> deserializationError : deserializationErrors
                 .entrySet()) {
             String message = String.format(
@@ -455,14 +457,6 @@ public class VaadinConnectController {
                     deserializationError.getValue());
             validationErrorData.add(new ValidationErrorData(message,
                     deserializationError.getKey()));
-
-            messagesDesrializationError.add(String.format("Cannot construct instance of '%s$%s': " +
-                            "cannot deserialize from %s value (no delegate- or property-based Creator)",
-                    endpointName, methodName, deserializationError.getValue()));
-        }
-
-        if (!messagesDesrializationError.isEmpty()) {
-            messagesDesrializationError.forEach(mess -> getLogger().error(mess));
         }
 
         validationErrorData
