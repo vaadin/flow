@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,8 +48,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.RouteData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +58,8 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -82,6 +83,7 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -167,6 +169,7 @@ public abstract class VaadinService implements Serializable {
     private boolean atmosphereAvailable = checkAtmosphereSupport();
 
     private BootstrapInitialPredicate bootstrapInitialPredicate;
+    private BootstrapUrlPredicate bootstrapUrlPredicate;
 
     /**
      * Keeps track of whether a warning about missing push support has already
@@ -2329,6 +2332,33 @@ public abstract class VaadinService implements Serializable {
     public void setBootstrapInitialPredicate(
             BootstrapInitialPredicate bootstrapInitialPredicate) {
         this.bootstrapInitialPredicate = bootstrapInitialPredicate;
+    }
+
+    /**
+     * Get the predicate for testing whether the request has a valid URL for
+     * rendering the bootstrap page.
+     * <p>
+     * By default it returns an instance that returns true for all requests.
+     *
+     * @return a non-null instance.
+     */
+    public BootstrapUrlPredicate getBootstrapUrlPredicate() {
+        if (bootstrapUrlPredicate == null) {
+            bootstrapUrlPredicate = request -> true;
+        }
+        return bootstrapUrlPredicate;
+    }
+
+    /**
+     * Set the predicate that decides whether the request has a valid URL for
+     * rendering the bootstrap page.
+     *
+     * @param bootstrapUrlPredicate
+     *            the predicate.
+     */
+    public void setBootstrapUrlPredicate(
+            BootstrapUrlPredicate bootstrapUrlPredicate) {
+        this.bootstrapUrlPredicate = bootstrapUrlPredicate;
     }
 
     /**

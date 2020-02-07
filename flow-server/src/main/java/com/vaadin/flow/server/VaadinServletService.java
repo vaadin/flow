@@ -83,7 +83,6 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        addBootstrapHandler(handlers);
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
@@ -96,6 +95,7 @@ public class VaadinServletService extends VaadinService {
                         e);
             }
         }
+        addBootstrapHandler(handlers);
         return handlers;
     }
 

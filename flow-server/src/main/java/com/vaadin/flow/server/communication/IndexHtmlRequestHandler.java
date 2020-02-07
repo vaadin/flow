@@ -16,9 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.util.regex.Pattern;
 
-import elemental.json.Json;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -29,14 +27,15 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -51,9 +50,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * inject baseHref as well as the bundle scripts into the template.
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
-
-    private static final Pattern PATH_WITH_EXTENSION = Pattern
-            .compile("\\.[A-z][A-z\\d]+$");
 
     private transient IndexHtmlResponse indexHtmlResponse;
 
@@ -139,9 +135,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        String pathInfo = request.getPathInfo();
-        return pathInfo == null
-                || !PATH_WITH_EXTENSION.matcher(pathInfo).find();
+        return request.getService().getBootstrapUrlPredicate()
+                .isValidUrl(request);
     }
 
     @Override
