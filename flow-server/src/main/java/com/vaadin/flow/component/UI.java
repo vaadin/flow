@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.router.HasUrlParameterUtil;
+import com.vaadin.flow.router.UrlParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -817,11 +819,16 @@ public class UI extends Component
      */
     public <T, C extends Component & HasUrlParameter<T>> void navigate(
             Class<? extends C> navigationTarget, T parameter) {
-        RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
-        navigate(configuration.getUrl(navigationTarget, parameter));
+        navigate(navigationTarget, HasUrlParameterUtil.getParameters(parameter));
     }
 
+    public <T, C extends Component & HasUrlParameter<T>> void navigate(
+            Class<? extends C> navigationTarget, UrlParameters parameters) {
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getRouter().getRegistry());
+        navigate(configuration.getUrl(navigationTarget, parameters));
+    }
+    
     /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.

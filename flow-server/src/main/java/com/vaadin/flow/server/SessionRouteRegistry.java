@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +28,7 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
+import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
 import com.vaadin.flow.router.internal.PathUtil;
@@ -145,12 +145,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public RouteSearchResult getNavigationRoute(String path) {
+    public RouteSearchResult getNavigationTargetResult(String path) {
         final RouteSearchResult routeSearchResult = getConfiguration().getRouteSearchResult(path);
         if (routeSearchResult.hasTarget()) {
             return routeSearchResult;
         }
-        return getParentRegistry().getNavigationRoute(path);
+        return getParentRegistry().getNavigationTargetResult(path);
     }
 
     @Override
@@ -181,6 +181,19 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         }
 
         return getParentRegistry().getTargetUrl(navigationTarget);
+    }
+
+    @Override
+    public Optional<String> getTargetUrl(
+            Class<? extends Component> navigationTarget,
+            UrlParameters parameters) {
+        Optional<String> targetUrl = super.getTargetUrl(navigationTarget,
+                parameters);
+        if (targetUrl.isPresent()) {
+            return targetUrl;
+        }
+
+        return getParentRegistry().getTargetUrl(navigationTarget, parameters);
     }
 
     @Override

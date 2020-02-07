@@ -193,7 +193,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public RouteSearchResult getNavigationRoute(String path) {
+    public RouteSearchResult getNavigationTargetResult(String path) {
         return getConfiguration().getRouteSearchResult(path);
     }
 

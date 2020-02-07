@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.UrlParameters;
 
 /**
  * Route configuration class that is used as a value object.
@@ -59,8 +60,7 @@ public class ConfiguredRoutes implements Serializable {
      * Create a mutable or immutable configuration with original configuration
      * information.
      *
-     * @param original
-     *         original configuration to get data from
+     * @param original original configuration to get data from
      */
     public ConfiguredRoutes(ConfiguredRoutes original) {
         Map<String, RouteTarget> routeMap = new HashMap<>();
@@ -108,8 +108,7 @@ public class ConfiguredRoutes implements Serializable {
      * annotations doesn't specifically return the actual registrations as they
      * can change during runtime.
      *
-     * @param routeTarget
-     *         route target to collect registered paths for
+     * @param routeTarget route target to collect registered paths for
      * @return list of routes this routeTarget is registered for
      */
     protected List<String> getRoutePaths(
@@ -122,8 +121,7 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * See if configuration contains a registered route for given path pattern.
      *
-     * @param pathPattern
-     *         path to check
+     * @param pathPattern path to check
      * @return true if configuration contains route
      */
     public boolean hasRoute(String pathPattern) {
@@ -133,8 +131,7 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * See if configuration matches the given path with any registered route.
      *
-     * @param url
-     *         url to check
+     * @param url url to check
      * @return true if configuration matches the given url.
      */
     public boolean hasUrl(String url) {
@@ -145,10 +142,8 @@ public class ConfiguredRoutes implements Serializable {
      * Check if configuration holds a route for given path with possible path
      * segments.
      *
-     * @param pathString
-     *         path string to check
-     * @param segments
-     *         path segments for route
+     * @param pathString path string to check
+     * @param segments   path segments for route
      * @return true if a route is found, else false
      * @deprecated use {@link #hasUrl(String)} instead.
      */
@@ -160,8 +155,7 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Check it the given route target has been registered to the configuration.
      *
-     * @param targetRoute
-     *         target to check registration status for
+     * @param targetRoute target to check registration status for
      * @return true if target is found in configuration
      */
     public boolean hasRouteTarget(Class<? extends Component> targetRoute) {
@@ -171,12 +165,11 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Search for a route target using given navigation <code>path</code>
      * argument.
-     * 
-     * @param path
-     *            the navigation path used as input for searching a route
-     *            target.
+     *
+     * @param path the navigation path used as input for searching a route
+     *             target.
      * @return the result containing a valid target is found, and the url
-     *         parameter values found in the <code>path</code> argument.
+     * parameter values found in the <code>path</code> argument.
      */
     public RouteSearchResult getRouteSearchResult(String path) {
         return getRouteModel().getRoute(path);
@@ -185,8 +178,7 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Get the route class matching the given path.
      *
-     * @param pathString
-     *         string to get the route for
+     * @param pathString string to get the route for
      * @return {@link Optional} containing the navigationTarget class if found
      */
     public Optional<Class<? extends Component>> getRoute(String pathString) {
@@ -202,17 +194,14 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Get the route class matching the given path and path segments.
      *
-     * @param pathString
-     *         string to get the route for
-     * @param segments
-     *         possible path segments
+     * @param pathString string to get the route for
+     * @param segments   possible path segments
      * @return {@link Optional} containing the navigationTarget class if found
-     *
      * @deprecated use {@link #getRoute(String)} instead.
      */
     @Deprecated
     public Optional<Class<? extends Component>> getRoute(String pathString,
-            List<String> segments) {
+                                                         List<String> segments) {
         return getRoute(pathString);
     }
 
@@ -235,14 +224,57 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route path String for the given navigation target class.
+     * Get the route path simple pattern String for the given navigation target
+     * class.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @return base route string if target class found
+     */
+    public String getTargetRoute(Class<? extends Component> navigationTarget) {
+        return getRouteModel()
+                .getSimplePathPattern(getTargetRoutes().get(navigationTarget));
+    }
+    
+    /**
+     * Get the url path String for the given navigation target class.
      *
      * @param navigationTarget
      *         navigationTarget to get registered route for
      * @return base route string if target class found
      */
-    public String getTargetRoute(Class<? extends Component> navigationTarget) {
-        return getTargetRoutes().get(navigationTarget);
+    public String getTargetUrl(Class<? extends Component> navigationTarget) {
+        final String path = getTargetRoutes().get(navigationTarget);
+
+        if (RouteModel.hasParameters(path)) {
+            String message = String
+                    .format("Navigation target '%s' requires a parameter and can" 
+                            + " not be resolved. Use 'public String getTargetRoute"
+                            + "(Class<? extends Component> navigationTarget"
+                            + ", UrlParameters parameters)' instead",
+                            navigationTarget.getName());
+            throw new IllegalArgumentException(message);
+
+        }
+        return path;
+    }
+
+
+    /**
+     * Get the url path String for the given navigation target class and parameters.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @param parameters
+     *            url parameters
+     * @return base route string if target class found
+     */
+    public String getTargetUrl(Class<? extends Component> navigationTarget,
+            UrlParameters parameters) {
+
+        // TODO: make it so that in case the parameters don't match with the main route, to go for aliases.
+        return getRouteModel().getPath(getTargetRoutes().get(navigationTarget),
+                parameters);
     }
 
     /**
