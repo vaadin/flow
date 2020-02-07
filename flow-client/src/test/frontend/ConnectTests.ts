@@ -288,8 +288,6 @@ describe('ConnectClient', () => {
           expect(context.endpoint).to.equal('FooEndpoint');
           expect(context.method).to.equal('fooMethod');
           expect(context.params).to.deep.equal({fooParam: 'foo'});
-          expect(context.options)
-            .to.deep.equal({requireCredentials: true});
           expect(context.request).to.be.instanceOf(Request);
           return await next(context);
         });
@@ -298,8 +296,7 @@ describe('ConnectClient', () => {
         await client.call(
           'FooEndpoint',
           'fooMethod',
-          {fooParam: 'foo'},
-          {requireCredentials: true}
+          {fooParam: 'foo'}
         );
 
         (expect(spyMiddleware).to.be as any).calledOnce;

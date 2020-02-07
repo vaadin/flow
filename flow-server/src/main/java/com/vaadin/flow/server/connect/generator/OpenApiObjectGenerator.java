@@ -499,8 +499,7 @@ public class OpenApiObjectGenerator {
             }
             String methodName = methodDeclaration.getNameAsString();
 
-            Operation post = createPostOperation(methodDeclaration,
-                    requiresAuthentication(typeDeclaration, methodDeclaration));
+            Operation post = createPostOperation(methodDeclaration);
             if (methodDeclaration.getParameters().isNonEmpty()) {
                 post.setRequestBody(createRequestBody(methodDeclaration));
             }
@@ -530,17 +529,6 @@ public class OpenApiObjectGenerator {
                         : typeDeclaration.isAnnotationPresent(DenyAll.class));
     }
 
-    private boolean requiresAuthentication(
-            ClassOrInterfaceDeclaration typeDeclaration,
-            MethodDeclaration methodDeclaration) {
-        if (hasSecurityAnnotation(methodDeclaration)) {
-            return !methodDeclaration
-                    .isAnnotationPresent(AnonymousAllowed.class);
-        } else {
-            return !typeDeclaration.isAnnotationPresent(AnonymousAllowed.class);
-        }
-    }
-
     private boolean hasSecurityAnnotation(MethodDeclaration method) {
         return method.isAnnotationPresent(AnonymousAllowed.class)
                 || method.isAnnotationPresent(PermitAll.class)
@@ -548,14 +536,11 @@ public class OpenApiObjectGenerator {
                 || method.isAnnotationPresent(RolesAllowed.class);
     }
 
-    private Operation createPostOperation(MethodDeclaration methodDeclaration,
-            boolean requiresAuthentication) {
+    private Operation createPostOperation(MethodDeclaration methodDeclaration) {
         Operation post = new Operation();
-        if (requiresAuthentication) {
-            SecurityRequirement securityItem = new SecurityRequirement();
-            securityItem.addList(VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME);
-            post.addSecurityItem(securityItem);
-        }
+        SecurityRequirement securityItem = new SecurityRequirement();
+        securityItem.addList(VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME);
+        post.addSecurityItem(securityItem);
 
         methodDeclaration.getJavadoc().ifPresent(javadoc -> post
                 .setDescription(javadoc.getDescription().toText()));

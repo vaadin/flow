@@ -18,6 +18,6 @@ function _shouldBeDisplayed2(): Promise<void> {
 export {_shouldBeDisplayed2 as shouldBeDisplayed2};
 
 function _shouldBeDisplayed3(): Promise<void> {
-  return client.call('DenyAllEndpoint', 'shouldBeDisplayed3', undefined, {requireCredentials: false});
+  return client.call('DenyAllEndpoint', 'shouldBeDisplayed3', undefined);
 }
 export {_shouldBeDisplayed3 as shouldBeDisplayed3};

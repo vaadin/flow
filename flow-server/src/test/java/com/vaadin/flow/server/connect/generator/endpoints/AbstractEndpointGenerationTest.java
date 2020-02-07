@@ -178,7 +178,8 @@ public abstract class AbstractEndpointGenerationTest {
                 ? new Properties()
                 : TestUtils
                         .readProperties(customApplicationProperties.getPath());
-        new OpenApiSpecGenerator(applicationProperties).generateOpenApiSpec(
+        new OpenApiSpecGenerator(applicationProperties).
+                generateOpenApiSpec(
                 Collections
                         .singletonList(java.nio.file.Paths.get("src/test/java",
                                 testPackage.getName().replace('.',
@@ -314,16 +315,9 @@ public abstract class AbstractEndpointGenerationTest {
                     expectedEndpointMethod), apiResponse.getContent());
         }
 
-        if (accessChecker.getSecurityTarget(expectedEndpointMethod)
-                .isAnnotationPresent(AnonymousAllowed.class)) {
-            assertNull(
-                    "Expected to have no security data for anonymous endpoint method",
-                    actualOperation.getSecurity());
-        } else {
-            assertNotNull(
-                    "Non-anonymous endpoint method should have a security data defined for it in the schema",
-                    actualOperation.getSecurity());
-        }
+        assertNotNull(
+                "Non-anonymous endpoint method should have a security data defined for it in the schema",
+                actualOperation.getSecurity());
     }
 
     private void assertRequestSchema(Schema requestSchema,

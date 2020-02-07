@@ -12,6 +12,6 @@ import client from './connect-client.default';
 function _firstMethod(
   value?: boolean
 ): Promise<void> {
-  return client.call('FooBarEndpoint', 'firstMethod', {value}, {requireCredentials: false});
+  return client.call('FooBarEndpoint', 'firstMethod', {value});
 }
 export {_firstMethod as firstMethod};
