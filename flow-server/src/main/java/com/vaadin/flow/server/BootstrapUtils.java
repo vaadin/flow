@@ -48,7 +48,6 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -461,7 +460,8 @@ class BootstrapUtils {
         }
         // If there is no route target available then let's ask for "route not
         // found" target
-        return resolveRouteNotFoundNavigationTarget()
+        return resolveRouteNotFoundNavigationTarget(
+                ui.getSession().getService().getContext())
                 .map(errorNavigationTarget -> {
                     /*
                      * {@code resolveTopParentLayout} is theoretically the
@@ -483,11 +483,10 @@ class BootstrapUtils {
      * NOTE: this code doesn't belong in this class, but is just
      * c/p from Router to avoid adding new API to 2.1.
      */
-    private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget() {
-        ApplicationRouteRegistry registry = (ApplicationRouteRegistry) RouteConfiguration
-                .forApplicationScope().getHandledRegistry();
-
-        Optional<ErrorTargetEntry> errorTargetEntry = registry
+    private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget(
+            VaadinContext context) {
+        Optional<ErrorTargetEntry> errorTargetEntry = ApplicationRouteRegistry
+                .getInstance(context)
                 .getErrorNavigationTarget(new NotFoundException());
         return errorTargetEntry.map(ErrorTargetEntry::getNavigationTarget);
     }
