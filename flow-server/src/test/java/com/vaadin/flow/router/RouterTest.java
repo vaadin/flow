@@ -3494,11 +3494,6 @@ public class RouterTest extends RoutingTestBase {
         assertUrlParameters("abc/targetLink/def/chainLink/ghi/jkl/foo",
                 parameters("parentID", "abc", "chainLinkID", "def",
                         "anotherTargetID", "ghi", "yetAnotherID", "jkl"));
-    }
-
-    @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_view5() {
-        setNavigationTargets(ChainLinkWithParameterAndTarget.class);
 
         assertUrlParameters("012/targetLink/chainLink/345/678/foo/1/2/3/4",
                 parameters("parentID", "012", "anotherTargetID", "345",
@@ -3507,6 +3502,12 @@ public class RouterTest extends RoutingTestBase {
         assertUrlParameters("012/targetLink/chainLink/345/678/foo",
                 parameters("parentID", "012", "anotherTargetID", "345",
                         "yetAnotherID", "678"));
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_view5() {
+        setNavigationTargets(ChainLinkWithParameterAndTarget.class);
+
         assertUrlParameters("987/targetLink/765/chainLink/543",
                 parameters("parentID", "987", "chainLinkID", "765",
                         "targetChainLinkID", "543"));
