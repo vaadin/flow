@@ -499,13 +499,6 @@ public class OpenApiObjectGenerator {
             }
             String methodName = methodDeclaration.getNameAsString();
 
-            if (isReservedWord(methodName)) {
-                throw new IllegalStateException("The method name '" + methodName
-                        + "' in the endpoint class '"
-                        + typeDeclaration.getNameAsString()
-                        + "' is a JavaScript reserved word");
-            }
-
             Operation post = createPostOperation(methodDeclaration,
                     requiresAuthentication(typeDeclaration, methodDeclaration));
             if (methodDeclaration.getParameters().isNonEmpty()) {

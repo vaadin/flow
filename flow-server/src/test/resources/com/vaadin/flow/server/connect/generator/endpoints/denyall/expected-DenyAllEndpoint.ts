@@ -7,14 +7,17 @@
 // @ts-ignore
 import client from './connect-client.default';
 
-export function shouldBeDisplayed1(): Promise<void> {
+function _shouldBeDisplayed1(): Promise<void> {
   return client.call('DenyAllEndpoint', 'shouldBeDisplayed1');
 }
+export {_shouldBeDisplayed1 as shouldBeDisplayed1};
 
-export function shouldBeDisplayed2(): Promise<void> {
+function _shouldBeDisplayed2(): Promise<void> {
   return client.call('DenyAllEndpoint', 'shouldBeDisplayed2');
 }
+export {_shouldBeDisplayed2 as shouldBeDisplayed2};
 
-export function shouldBeDisplayed3(): Promise<void> {
+function _shouldBeDisplayed3(): Promise<void> {
   return client.call('DenyAllEndpoint', 'shouldBeDisplayed3', undefined, {requireCredentials: false});
 }
+export {_shouldBeDisplayed3 as shouldBeDisplayed3};

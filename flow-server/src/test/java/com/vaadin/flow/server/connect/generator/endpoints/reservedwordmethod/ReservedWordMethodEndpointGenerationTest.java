@@ -18,25 +18,19 @@ package com.vaadin.flow.server.connect.generator.endpoints.reservedwordmethod;
 
 import java.util.Collections;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGenerationTest;
 
 public class ReservedWordMethodEndpointGenerationTest
         extends AbstractEndpointGenerationTest {
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
 
     public ReservedWordMethodEndpointGenerationTest() {
-        super(Collections.emptyList());
+        super(Collections.singletonList(ReservedWordMethodEndpoint.class));
     }
 
     @Test
-    public void Should_Fail_When_UsingReservedWordInMethod() {
-        expected.expect(IllegalStateException.class);
-        expected.expectMessage("reserved");
+    public void Should_Not_Fail_When_UsingReservedWordInMethod() {
         verifyOpenApiObjectAndGeneratedTs();
     }
 

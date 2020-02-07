@@ -13,9 +13,10 @@ import Account from './com/vaadin/flow/server/connect/generator/endpoints/modelp
  *
  * Return list of user name
  */
-export function getListOfUserName(): Promise<Array<string>> {
+function _getListOfUserName(): Promise<Array<string>> {
   return client.call('ModelPackageEndpoint', 'getListOfUserName');
 }
+export {_getListOfUserName as getListOfUserName};
 
 /**
  * Get a collection by author name. The generator should not mix this type with the Java's Collection type.
@@ -23,8 +24,9 @@ export function getListOfUserName(): Promise<Array<string>> {
  * @param name author name
  * Return a collection
  */
-export function getSameModelPackage(
+function _getSameModelPackage(
   name: string
 ): Promise<Account> {
   return client.call('ModelPackageEndpoint', 'getSameModelPackage', {name});
 }
+export {_getSameModelPackage as getSameModelPackage};

@@ -9,8 +9,9 @@ import client from './connect-client.default';
 import ChildModel from './com/vaadin/flow/server/connect/generator/endpoints/inheritedmodel/InheritedModelEndpoint/ChildModel';
 import ParentModel from './com/vaadin/flow/server/connect/generator/endpoints/inheritedmodel/InheritedModelEndpoint/ParentModel';
 
-export function getParentModel(
+function _getParentModel(
   child: ChildModel
 ): Promise<ParentModel> {
   return client.call('InheritedModelEndpoint', 'getParentModel', {child});
 }
+export {_getParentModel as getParentModel};

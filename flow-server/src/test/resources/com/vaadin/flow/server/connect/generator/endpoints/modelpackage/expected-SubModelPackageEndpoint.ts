@@ -8,8 +8,9 @@
 import client from './connect-client.default';
 import Account from './com/vaadin/flow/server/connect/generator/endpoints/modelpackage/subpackage/Account';
 
-export function getSubAccountPackage(
+function _getSubAccountPackage(
   name: string
 ): Promise<Account> {
   return client.call('SubModelPackageEndpoint', 'getSubAccountPackage', {name});
 }
+export {_getSubAccountPackage as getSubAccountPackage};

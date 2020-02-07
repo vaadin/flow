@@ -8,6 +8,7 @@
 import client from './connect-client.default';
 import Model from './com/vaadin/flow/server/connect/generator/endpoints/complexhierarchymodel/Model';
 
-export function getModel(): Promise<Model> {
+function _getModel(): Promise<Model> {
   return client.call('ComplexHierarchyEndpoint', 'getModel');
 }
+export {_getModel as getModel};

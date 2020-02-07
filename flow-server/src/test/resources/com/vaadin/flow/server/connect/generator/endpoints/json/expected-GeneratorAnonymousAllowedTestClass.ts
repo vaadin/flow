@@ -9,14 +9,17 @@
 // @ts-ignore
 import client from './connect-client.default';
 
-export function anonymousAllowed(): Promise<void> {
+function _anonymousAllowed(): Promise<void> {
   return client.call('customName', 'anonymousAllowed', undefined, {requireCredentials: false});
 }
+export {_anonymousAllowed as anonymousAllowed};
 
-export function permissionAltered1(): Promise<void> {
+function _permissionAltered1(): Promise<void> {
   return client.call('customName', 'permissionAltered1');
 }
+export {_permissionAltered1 as permissionAltered1};
 
-export function permissionAltered2(): Promise<void> {
+function _permissionAltered2(): Promise<void> {
   return client.call('customName', 'permissionAltered2');
 }
+export {_permissionAltered2 as permissionAltered2};

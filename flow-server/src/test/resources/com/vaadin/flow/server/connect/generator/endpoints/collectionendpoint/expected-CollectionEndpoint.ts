@@ -14,17 +14,19 @@ import Collection from './com/vaadin/flow/server/connect/generator/endpoints/col
  * @param name author name
  * Return a collection
  */
-export function getCollectionByAuthor(
+function _getCollectionByAuthor(
   name: string
 ): Promise<Collection> {
   return client.call('CollectionEndpoint', 'getCollectionByAuthor', {name});
 }
+export {_getCollectionByAuthor as getCollectionByAuthor};
 
 /**
  * Get a list of user name.
  *
  * Return list of user name
  */
-export function getListOfUserName(): Promise<Array<string>> {
+function _getListOfUserName(): Promise<Array<string>> {
   return client.call('CollectionEndpoint', 'getListOfUserName');
 }
+export {_getListOfUserName as getListOfUserName};

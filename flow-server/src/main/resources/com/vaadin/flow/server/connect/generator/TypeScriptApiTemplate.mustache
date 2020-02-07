@@ -21,7 +21,7 @@ TODO: Remove `// @ts-ignore` when changing the base starter to TypeScript
 For now we expect that the app is written in JS. Therefore, when a custom
 client import is used in the app, it is generally written in JavaScript and
 lacks TypeScript type definitions. The `vaadin-connect-demo` is an example of
-this case. 
+this case.
 
 Missing definitions makes the TypeScript compiler unable to determine the type
 of the imported `client` below, which results in an error during compilation of
@@ -34,7 +34,7 @@ So `// @ts-ignore` is used for now to mute this error. The consequences are:
 - Does not affect type checking in the user’s code that uses the generated
   TypeScript.
 - We don’t export the `client` from here, only use it in the implementation.
- 
+
 }}// @ts-ignore
 import client from '{{vaadinConnectDefaultClientPath}}';
 {{#each imports}}
@@ -52,7 +52,7 @@ import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/im
  }}{{/each}}
  *{{#responses}}{{#message}} {{message}}{{/message}}{{/responses}}
  */{{/vendorExtensions.x-vaadin-connect-show-tsdoc}}
-export function {{vendorExtensions.x-vaadin-connect-method-name}}({{!
+function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
   }}{{#each bodyParam.vendorExtensions.x-vaadin-connect-parameters}}
   {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports type ../../imports}}}{{#if @last}}{{! Append new line if it's the last param.}}
 {{else}},{{! Used the `~` after if to remove extra empty line by the each loop}}{{/if~}}
@@ -73,7 +73,8 @@ export function {{vendorExtensions.x-vaadin-connect-method-name}}({{!
     %>}<%/bodyParams%><%!
     %><%^authMethods%>, {requireCredentials: false}<%/authMethods%><%!
   %>);
-<%={{ }}=%>
 }
+export {_<%vendorExtensions.x-vaadin-connect-method-name%> as <%vendorExtensions.x-vaadin-connect-method-name%>};
+<%={{ }}=%>
 {{/operation}}
 {{/operations}}
