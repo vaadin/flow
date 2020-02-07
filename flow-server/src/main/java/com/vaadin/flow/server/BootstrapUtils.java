@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletContext;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -461,7 +462,8 @@ class BootstrapUtils {
         // If there is no route target available then let's ask for "route not
         // found" target
         return resolveRouteNotFoundNavigationTarget(
-                ui.getSession().getService().getContext())
+                ((VaadinServletService) ui.getSession().getService())
+                        .getServlet().getServletContext())
                 .map(errorNavigationTarget -> {
                     /*
                      * {@code resolveTopParentLayout} is theoretically the
@@ -484,7 +486,7 @@ class BootstrapUtils {
      * c/p from Router to avoid adding new API to 2.1.
      */
     private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget(
-            VaadinContext context) {
+            ServletContext context) {
         Optional<ErrorTargetEntry> errorTargetEntry = ApplicationRouteRegistry
                 .getInstance(context)
                 .getErrorNavigationTarget(new NotFoundException());
