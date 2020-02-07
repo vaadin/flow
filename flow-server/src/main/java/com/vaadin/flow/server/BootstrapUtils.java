@@ -460,7 +460,8 @@ class BootstrapUtils {
         }
         // If there is no route target available then let's ask for "route not
         // found" target
-        return resolveRouteNotFoundNavigationTarget(ui.getRouter())
+        return resolveRouteNotFoundNavigationTarget(
+                ui.getSession().getService().getContext())
                 .map(errorNavigationTarget -> {
                     /*
                      * {@code resolveTopParentLayout} is theoretically the
@@ -483,12 +484,10 @@ class BootstrapUtils {
      * c/p from Router to avoid adding new API to 2.1.
      */
     private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget(
-            Router router) {
-        RouteRegistry registry = router.getRegistry();
-        Optional<ErrorTargetEntry> errorTargetEntry = registry instanceof ApplicationRouteRegistry
-                ? ((ApplicationRouteRegistry) registry)
-                        .getErrorNavigationTarget(new NotFoundException())
-                : Optional.empty();
+            VaadinContext context) {
+        Optional<ErrorTargetEntry> errorTargetEntry = ApplicationRouteRegistry
+                .getInstance(context)
+                .getErrorNavigationTarget(new NotFoundException());
         return errorTargetEntry.map(ErrorTargetEntry::getNavigationTarget);
     }
 
