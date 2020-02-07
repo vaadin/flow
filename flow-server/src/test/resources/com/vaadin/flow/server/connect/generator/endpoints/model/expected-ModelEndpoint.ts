@@ -10,11 +10,12 @@ import Account from './com/vaadin/flow/server/connect/generator/endpoints/model/
 import Group from './com/vaadin/flow/server/connect/generator/endpoints/model/ModelEndpoint/Group';
 import ModelFromDifferentPackage from './com/vaadin/flow/server/connect/generator/endpoints/model/subpackage/ModelFromDifferentPackage';
 
-export function getAccountByGroups(
+function _getAccountByGroups(
   groups: Array<Group>
 ): Promise<Account> {
   return client.call('ModelEndpoint', 'getAccountByGroups', {groups});
 }
+export {_getAccountByGroups as getAccountByGroups};
 
 /**
  * Get account by username.
@@ -22,25 +23,29 @@ export function getAccountByGroups(
  * @param userName username of the account
  * Return the account with given userName
  */
-export function getAccountByUserName(
+function _getAccountByUserName(
   userName: string
 ): Promise<Account> {
   return client.call('ModelEndpoint', 'getAccountByUserName', {userName});
 }
+export {_getAccountByUserName as getAccountByUserName};
 
-export function getArrayOfAccount(): Promise<Array<Account>> {
+function _getArrayOfAccount(): Promise<Array<Account>> {
   return client.call('ModelEndpoint', 'getArrayOfAccount');
 }
+export {_getArrayOfAccount as getArrayOfAccount};
 
-export function getMapGroups(): Promise<{ [key: string]: Group; }> {
+function _getMapGroups(): Promise<{ [key: string]: Group; }> {
   return client.call('ModelEndpoint', 'getMapGroups');
 }
+export {_getMapGroups as getMapGroups};
 
 /**
  * The import path of this model should be correct.
  *
  *
  */
-export function getModelFromDifferentPackage(): Promise<ModelFromDifferentPackage> {
+function _getModelFromDifferentPackage(): Promise<ModelFromDifferentPackage> {
   return client.call('ModelEndpoint', 'getModelFromDifferentPackage');
 }
+export {_getModelFromDifferentPackage as getModelFromDifferentPackage};

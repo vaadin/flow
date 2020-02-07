@@ -9,6 +9,7 @@
 // @ts-ignore
 import client from './connect-client.default';
 
-export function getAllUsers(): Promise<void> {
+function _getAllUsers(): Promise<void> {
   return client.call('GeneratorTestClass', 'getAllUsers', undefined, {requireCredentials: false});
 }
+export {_getAllUsers as getAllUsers};
