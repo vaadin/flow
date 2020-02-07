@@ -460,7 +460,7 @@ class BootstrapUtils {
         }
         // If there is no route target available then let's ask for "route not
         // found" target
-        return resolveRouteNotFoundNavigationTarget(ui.getRouter())
+        return resolveRouteNotFoundNavigationTarget()
                 .map(errorNavigationTarget -> {
                     /*
                      * {@code resolveTopParentLayout} is theoretically the
@@ -482,13 +482,12 @@ class BootstrapUtils {
      * NOTE: this code doesn't belong in this class, but is just
      * c/p from Router to avoid adding new API to 2.1.
      */
-    private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget(
-            Router router) {
-        RouteRegistry registry = router.getRegistry();
-        Optional<ErrorTargetEntry> errorTargetEntry = registry instanceof ApplicationRouteRegistry
-                ? ((ApplicationRouteRegistry) registry)
-                        .getErrorNavigationTarget(new NotFoundException())
-                : Optional.empty();
+    private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget() {
+        ApplicationRouteRegistry registry = (ApplicationRouteRegistry) RouteConfiguration
+                .forApplicationScope().getHandledRegistry();
+
+        Optional<ErrorTargetEntry> errorTargetEntry = registry
+                .getErrorNavigationTarget(new NotFoundException());
         return errorTargetEntry.map(ErrorTargetEntry::getNavigationTarget);
     }
 
