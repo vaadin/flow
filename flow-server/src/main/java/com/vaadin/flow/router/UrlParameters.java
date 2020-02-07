@@ -15,17 +15,33 @@
  */
 package com.vaadin.flow.router;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Container which stores the url parameters extracted from a navigation url
  * received from the client.
  */
 public class UrlParameters {
+
+    /**
+     * Creates a url parameters container using the given keys and values.
+     *
+     * @param keysAndValues
+     *            parameters mapping.
+     */
+    public static UrlParameters create(String... keysAndValues) {
+        Map<String, Object> params = new HashMap<>(keysAndValues.length / 2);
+
+        for (int i = 0; i < keysAndValues.length; i++) {
+            params.put(keysAndValues[i], keysAndValues[++i]);
+        }
+
+        return new UrlParameters(params);
+    }
 
     private Map<String, Object> params;
 
@@ -38,6 +54,15 @@ public class UrlParameters {
     public UrlParameters(Map<String, Object> params) {
         this.params = params != null ? Collections.unmodifiableMap(params)
                 : Collections.emptyMap();
+    }
+
+    /**
+     * Gets the available parameter names.
+     * 
+     * @return the available parameter names.
+     */
+    public Set<String> getAvailableParameterNames() {
+        return params.keySet();
     }
 
     /**

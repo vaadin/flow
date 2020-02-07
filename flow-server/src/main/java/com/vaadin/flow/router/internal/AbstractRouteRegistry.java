@@ -28,15 +28,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.HasUrlParameterUtil;
-import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
+import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -258,47 +257,23 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Collections.emptyList();
     }
 
-    private List<Class<?>> getRouteParameters(
-            Class<? extends Component> target) {
-        List<Class<?>> parameters = new ArrayList<>();
-        if (HasUrlParameter.class.isAssignableFrom(target)) {
-            Class<?> genericInterfaceType = ReflectTools
-                    .getGenericInterfaceType(target, HasUrlParameter.class);
-            parameters.add(genericInterfaceType);
-        }
-
-        return parameters;
-    }
-
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
-        return Optional.ofNullable(collectRequiredParameters(navigationTarget));
+
+        return Optional.ofNullable(
+                getConfiguration().getTargetUrl(navigationTarget));
     }
 
-    /**
-     * Append any required parameters as /{param_class} to the route.
-     *
-     * @param navigationTarget
-     *            navigation target to generate url for
-     * @return route with required parameters
-     */
-    private String collectRequiredParameters(
-            Class<? extends Component> navigationTarget) {
-        if (!getConfiguration().hasRouteTarget(navigationTarget)) {
-            return null;
-        }
-        StringBuilder route = new StringBuilder(
-                getConfiguration().getTargetRoute(navigationTarget));
+    @Override
+    public Optional<String> getTargetUrl(
+            Class<? extends Component> navigationTarget,
+            UrlParameters parameters) {
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
-        List<Class<?>> routeParameters = getRouteParameters(navigationTarget);
-
-        if (!routeParameters.isEmpty()) {
-            routeParameters.forEach(param -> route.append("/{")
-                    .append(param.getSimpleName()).append("}"));
-        }
-        return route.toString();
+        return Optional.ofNullable(getConfiguration()
+                .getTargetUrl(navigationTarget, parameters));
     }
 
     @Override
@@ -372,9 +347,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         configuration.setRoute(path, navigationTarget);
 
-        if (!configuration.hasRouteTarget(navigationTarget)) {
-            configuration.setTargetRoute(navigationTarget, path);
-        }
         return configuration.getRouteTarget(path);
     }
 

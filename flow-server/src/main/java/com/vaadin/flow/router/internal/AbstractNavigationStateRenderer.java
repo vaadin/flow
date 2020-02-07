@@ -662,19 +662,15 @@ public abstract class AbstractNavigationStateRenderer
                     NavigationTrigger.PROGRAMMATIC, errorParameter);
         }
 
-        Class<? extends Component> targetType;
+        String url;
         if (beforeNavigation.hasForwardTarget()) {
-            targetType = beforeNavigation.getForwardTargetType();
+            url = beforeNavigation.getForwardUrl();
         } else {
-            targetType = beforeNavigation.getRerouteTargetType();
+            url = beforeNavigation.getRerouteUrl();
         }
 
-        Location location = new Location(RouteConfiguration
-                .forRegistry(event.getSource().getRegistry())
-                .getUrlBase(targetType)
-                .orElseThrow(() -> new IllegalStateException(String.format(
-                        "The target component '%s' has no registered route",
-                        targetType))),
+        // TODO: Why are we passing query parameters from previous navigation event?
+        Location location = new Location(url,
                 event.getLocation().getQueryParameters());
 
         if (beforeNavigation.hasForwardTarget()) {

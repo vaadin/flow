@@ -28,6 +28,7 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedListener;
+import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.RouteSearchResult;
 import com.vaadin.flow.shared.Registration;
 
@@ -126,7 +127,7 @@ public interface RouteRegistry extends Serializable {
      *         target and parameter values extracted from the <code>path</code>
      *         argument according with the route configuration.
      */
-    RouteSearchResult getNavigationRoute(String path);
+    RouteSearchResult getNavigationTargetResult(String path);
 
     /**
      * Gets the optional navigation target class for a given path. Returns an
@@ -172,6 +173,21 @@ public interface RouteRegistry extends Serializable {
      * @return optional navigation target url string
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget);
+
+    /**
+     * Get the url string for given navigation target.
+     * <p>
+     * Will return Optional.empty is navigation target was not found.
+     *
+     * @param navigationTarget
+     *            navigation target to get registered route for, not
+     *            {@code null}
+     * @param parameters
+     *            parameters for the target url.
+     * @return optional navigation target url string
+     */
+    Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
+            UrlParameters parameters);
 
     /**
      * Get the layout chain for given navigation target on the targeted path.
