@@ -15,23 +15,15 @@
  */
 package com.vaadin.flow.router.internal;
 
-import java.io.Serializable;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
-import java.util.Optional;
 
-import com.vaadin.flow.router.UrlParameters;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.server.RouteRegistry;
 
@@ -60,7 +52,7 @@ public class DefaultRouteResolver implements RouteResolver {
         try {
 
             builder.withTarget(navigationResult.getTarget().getTarget(),
-                    new UrlParameters(navigationResult.getUrlParameters()));
+                    navigationResult.getUrlParameters());
             builder.withPath(navigationResult.getPath());
         } catch (NotFoundException nfe) {
             String message = "Exception while navigation to path " + path;
@@ -74,7 +66,7 @@ public class DefaultRouteResolver implements RouteResolver {
 
     private RouteSearchResult getNavigationTarget(
             RouteRegistry registry, String path) throws NotFoundException {
-        final RouteSearchResult navigationRoute = registry.getNavigationRoute(path);
+        final RouteSearchResult navigationRoute = registry.getNavigationTargetResult(path);
         if (navigationRoute.hasTarget()) {
             return navigationRoute;
         } else {

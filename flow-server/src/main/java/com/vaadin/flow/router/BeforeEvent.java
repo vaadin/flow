@@ -255,6 +255,22 @@ public abstract class BeforeEvent extends EventObject {
                 .withTarget(forwardTargetComponent).build());
     }
 
+
+    /**
+     * Forward the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
+     *
+     * @param forwardTargetComponent
+     *            the component type to display, not {@code null}
+     * @param parameters
+     *            parameters for the target url.
+     */
+    public void forwardTo(Class<? extends Component> forwardTargetComponent,
+            UrlParameters parameters) {
+        Objects.requireNonNull(forwardTargetComponent,
+                "forwardTargetComponent cannot be null");
+        forwardTo(getNavigationState(forwardTargetComponent, parameters));
+    }
     /**
      * Forward to navigation component registered for given location string
      * instead of the component about to be displayed.
@@ -334,8 +350,26 @@ public abstract class BeforeEvent extends EventObject {
     public void rerouteTo(Class<? extends Component> routeTargetType) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
+
+        // TODO: set the correct resolved path on all create states methods
         rerouteTo(new NavigationStateBuilder(ui.getRouter())
                 .withTarget(routeTargetType).build());
+    }
+
+    /**
+     * Reroutes the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
+     *
+     * @param routeTargetType
+     *            the component type to display, not {@code null}
+     * @param parameters
+     *            parameters for the target url.
+     */
+    public void rerouteTo(Class<? extends Component> routeTargetType,
+            UrlParameters parameters) {
+        Objects.requireNonNull(routeTargetType,
+                "routeTargetType cannot be null");
+        rerouteTo(getNavigationState(routeTargetType, parameters));
     }
 
     /**
@@ -414,9 +448,14 @@ public abstract class BeforeEvent extends EventObject {
             checkUrlParameterType(routeParams.get(0), target);
         }
 
+        return getNavigationState(target,
+                HasUrlParameterUtil.getParameters(segments));
+    }
+
+    private NavigationState getNavigationState(
+            Class<? extends Component> target, UrlParameters parameters) {
         return new NavigationStateBuilder(ui.getRouter())
-                .withTarget(target, HasUrlParameterUtil.getParameters(segments))
-                .build();
+                .withTarget(target, parameters).build();
     }
 
     /**
@@ -436,6 +475,15 @@ public abstract class BeforeEvent extends EventObject {
     public List<String> getForwardTargetParameters() {
         return forwardTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Gets the reroute url.
+     *
+     * @return the reroute url.
+     */
+    public String getForwardUrl() {
+        return forwardTargetState.getResolvedPath();
     }
 
     /**
@@ -467,6 +515,15 @@ public abstract class BeforeEvent extends EventObject {
     public List<String> getRerouteTargetParameters() {
         return rerouteTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Gets the reroute url.
+     * 
+     * @return the reroute url.
+     */
+    public String getRerouteUrl() {
+        return rerouteTargetState.getResolvedPath();
     }
 
     /**
