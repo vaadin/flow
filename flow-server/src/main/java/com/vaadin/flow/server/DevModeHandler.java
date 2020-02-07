@@ -86,6 +86,8 @@ public final class DevModeHandler {
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
     private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
     private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
+    private static final String LOG_START = "Running webpack to compile frontend resources. This may take a moment, please stand by...";
+    private static final String LOG_END = "Started webpack-dev-server. Time: {}ms";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
     // process and continue. It might happen if webpack changes their output
@@ -192,23 +194,21 @@ public final class DevModeHandler {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
-            getLogger()
-                    .info("Running webpack to compile frontend resources. This may take a moment, please stand by...");
+            getLogger().info(LOG_START);
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
                         DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
 
-            long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info("Started webpack-dev-server. Time: {}ms", ms);
 
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
-            getLogger().info(
-                    "Webpack startup and compilation completed in {}ms",
-                    (System.currentTimeMillis() - start));
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().info(LOG_END, ms);
+
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
