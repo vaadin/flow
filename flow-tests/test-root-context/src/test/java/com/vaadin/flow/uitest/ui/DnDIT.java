@@ -76,7 +76,7 @@ public class DnDIT extends ChromeBrowserTest {
         clickElementWithJs("button-disable-enable-drop-targets");
         Assert.assertTrue("Invalid enabled state found in drop target",
                 targetElement.hasAttribute("disabled"));
-        dragAndHover(boxElement, targetElement);
+        dragElementOver(boxElement, targetElement);
         Assert.assertFalse(targetElement.hasClassName("v-drag-over-target"));
     }
 

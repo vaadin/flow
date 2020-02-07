@@ -7,25 +7,25 @@ window.Vaadin.Flow.dndConnector = {
     // TODO prevent dropping on itself (by default)
     const effect = event.currentTarget['__dropEffect'];
     if (!event.currentTarget.hasAttribute('disabled')) {
-        if (effect) {
-              event.dataTransfer.dropEffect = effect;
-            }
+      if (effect) {
+        event.dataTransfer.dropEffect = effect;
+      }
 
-            if (effect && effect !== 'none') {
-              /* #7108: if drag moves on top of drop target's children, first another ondragenter event
-               * is fired and then a ondragleave event. This happens again once the drag
-               * moves on top of another children, or back on top of the drop target element.
-               * Thus need to "cancel" the following ondragleave, to not remove class name.
-               * Drop event will happen even when dropped to a child element. */
-              if (event.currentTarget.classList.contains("v-drag-over-target")) {
-                event.currentTarget['__skip-leave'] = true;
-              } else {
-                event.currentTarget.classList.add("v-drag-over-target");
-              }
-              // enables browser specific pseudo classes (at least FF)
-              event.preventDefault();
-              event.stopPropagation(); // don't let parents know
+      if (effect && effect !== 'none') {
+        /* #7108: if drag moves on top of drop target's children, first another ondragenter event
+         * is fired and then a ondragleave event. This happens again once the drag
+         * moves on top of another children, or back on top of the drop target element.
+         * Thus need to "cancel" the following ondragleave, to not remove class name.
+         * Drop event will happen even when dropped to a child element. */
+        if (event.currentTarget.classList.contains("v-drag-over-target")) {
+          event.currentTarget['__skip-leave'] = true;
+        } else {
+          event.currentTarget.classList.add("v-drag-over-target");
         }
+        // enables browser specific pseudo classes (at least FF)
+        event.preventDefault();
+        event.stopPropagation(); // don't let parents know
+      }
     }
   },
 
