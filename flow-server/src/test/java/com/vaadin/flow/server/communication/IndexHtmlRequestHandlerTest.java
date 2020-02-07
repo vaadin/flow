@@ -135,7 +135,26 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void canHandleRequest_requestWithRoute_handleRequest() {
+    public void canHandleRequest_withoutBootstrapUrlPredicate() {
+        Assert.assertTrue(
+                indexHtmlRequestHandler.canHandleRequest(
+                        createVaadinRequest("/nested/picture.png")));
+        Assert.assertTrue(
+                indexHtmlRequestHandler.canHandleRequest(
+                        createVaadinRequest("/nested/CAPITAL.PNG")));
+        Assert.assertTrue(
+                indexHtmlRequestHandler
+                        .canHandleRequest(createVaadinRequest("com.foo.MyTest")));
+    }
+
+    @Test
+    public void canHandleRequest_withBootstrapUrlPredicate() {
+
+        service.setBootstrapUrlPredicate(req -> {
+            // refuse any request with extension
+            return !req.getPathInfo().matches(".+\\.[A-z][A-z\\d]+$");
+        });
+
         Assert.assertTrue(
                 "The handler should handle a route with " + "parameter",
                 indexHtmlRequestHandler
@@ -151,10 +170,7 @@ public class IndexHtmlRequestHandlerTest {
                         + "extension pattern in the middle of the path",
                 indexHtmlRequestHandler.canHandleRequest(
                         createVaadinRequest("/documentation/10.0.x1/flow")));
-    }
 
-    @Test
-    public void canHandleRequest_requestWithExtension_ignoreRequest() {
         Assert.assertFalse(
                 "The handler should not handle request with extension",
                 indexHtmlRequestHandler.canHandleRequest(
@@ -167,6 +183,7 @@ public class IndexHtmlRequestHandlerTest {
                 "The handler should not handle request with extension",
                 indexHtmlRequestHandler
                         .canHandleRequest(createVaadinRequest("/script.js")));
+
         Assert.assertFalse(
                 "The handler should not handle request with extension",
                 indexHtmlRequestHandler
@@ -176,6 +193,7 @@ public class IndexHtmlRequestHandlerTest {
                 indexHtmlRequestHandler
                         .canHandleRequest(createVaadinRequest("/.htaccess")));
     }
+
 
     @Test
     public void bootstrapListener_addListener_responseIsModified()

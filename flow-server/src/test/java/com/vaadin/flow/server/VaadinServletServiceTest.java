@@ -5,13 +5,13 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.vaadin.flow.internal.UsageStatistics;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 
@@ -184,6 +184,7 @@ public class VaadinServletServiceTest {
         expect(request.getContextPath()).andReturn(contextPath).anyTimes();
         expect(request.getPathInfo()).andReturn(pathInfo).anyTimes();
         expect(request.getServletPath()).andReturn(servletPath).anyTimes();
+        mocks.getSession().getSession();
 
         return request;
     }

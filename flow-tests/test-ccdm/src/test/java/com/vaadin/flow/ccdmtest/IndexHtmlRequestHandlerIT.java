@@ -135,10 +135,10 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void indexHtmlRequestHandler_openURLWithExtension_shouldNotResponseIndexHtml() {
-        openTestUrl("/not_found.png");
-        String content = findElement(By.tagName("body")).getText();
-        Assert.assertTrue(content.contains("404"));
+    public void indexHtmlRequestHandler_should_bootstrapAnyRoute() {
+        openTestUrl("/com.example.foo.Bar");
+        String content = findElement(By.id("div0")).getText();
+        Assert.assertEquals("index.html content", content);
     }
 
     @Test
