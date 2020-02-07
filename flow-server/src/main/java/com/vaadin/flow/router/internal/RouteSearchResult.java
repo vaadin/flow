@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
+import com.vaadin.flow.router.UrlParameters;
+
 /**
  * Contains the information resulted from searching a route target using a
  * navigation url as input.
@@ -36,13 +38,14 @@ public class RouteSearchResult {
     private RouteTarget target;
 
     // Parameters found in the path.
-    private Map<String, Object> urlParameters;
+    private UrlParameters urlParameters;
 
     RouteSearchResult(String path, RouteTarget target,
             Map<String, Object> urlParameters) {
         this.path = path;
         this.target = target;
-        this.urlParameters = Collections.unmodifiableMap(urlParameters);
+        this.urlParameters = new UrlParameters(
+                Collections.unmodifiableMap(urlParameters));
     }
 
     /**
@@ -78,7 +81,7 @@ public class RouteSearchResult {
      * 
      * @return the url parameters for this search response.
      */
-    public Map<String, Object> getUrlParameters() {
+    public UrlParameters getUrlParameters() {
         return urlParameters;
     }
 

@@ -145,10 +145,10 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         getRouteModel().addPath(pathPattern, target);
 
         if (!hasRouteTarget(navigationTarget)) {
-            // This seems inconsistent with the case when adding same
+            // FIXME: This seems inconsistent with the case when adding same
             // navigationTarget with different parent layouts. In that case the
             // new registered route is not an alias.
-            getTargetRoutes().put(navigationTarget, pathPattern);
+            setTargetRouteImpl(navigationTarget, pathPattern);
         }
 
         // We keep this for backwards compatibility code
@@ -172,7 +172,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     @Deprecated
     public void setTargetRoute(Class<? extends Component> navigationTarget,
             String path) {
-        getTargetRoutes().put(navigationTarget, path);
+        setTargetRouteImpl(navigationTarget, path);
     }
 
     /**
@@ -293,9 +293,15 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         // Update Class-to-string map with a new mapping if removed route exists for another path
         for (Map.Entry<String, RouteTarget> entry : getRoutesMap().entrySet()) {
             if (entry.getValue().containsTarget(navigationTarget)) {
-                getTargetRoutes().put(navigationTarget, entry.getKey());
+                setTargetRouteImpl(navigationTarget, entry.getKey());
                 return;
             }
         }
     }
+
+    private void setTargetRouteImpl(Class<? extends Component> navigationTarget,
+            String pathPattern) {
+        getTargetRoutes().put(navigationTarget, pathPattern);
+    }
+
 }
