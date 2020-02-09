@@ -250,7 +250,7 @@ public class ConfiguredRoutes implements Serializable {
      *
      * @param navigationTarget
      *            navigationTarget to get registered route for
-     * @return base route string if target class found
+     * @return route string if target class found
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget) {
         String path = getTargetRoutes().get(navigationTarget);
@@ -266,13 +266,7 @@ public class ConfiguredRoutes implements Serializable {
                 path = getRouteModel().getPath(path, null);
 
             } catch (IllegalArgumentException e) {
-                String message = String.format(
-                        "Navigation target '%s' requires a parameter and can"
-                                + " not be resolved. Use 'public String getTargetRoute"
-                                + "(Class<? extends Component> navigationTarget"
-                                + ", UrlParameters parameters)' instead",
-                        navigationTarget.getName());
-                throw new IllegalArgumentException(message, e);
+                path = null;
             }
         }
 
