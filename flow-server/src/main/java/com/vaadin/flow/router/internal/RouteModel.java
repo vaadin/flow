@@ -495,7 +495,7 @@ class RouteModel implements Serializable {
                     routeSegment.target = null;
                 }
 
-                if (routeSegment.isEmpty()) {
+                if (routeSegment.isEmpty() && routeSegment != this) {
                     removeSegment(segmentPattern, children);
                 }
             }
