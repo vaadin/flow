@@ -2198,7 +2198,7 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText1 = String.format("Could not navigate to '%s'",
                 locationString);
         String exceptionText2 = String.format(
-                "Reason: No navigation target found for path '%s'.",
+                "Reason: Couldn't find route for '%s'",
                 locationString);
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
@@ -2225,7 +2225,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertTrue(errorMessage.contains(
                 String.format("Could not navigate to '%s'", locationString)));
         Assert.assertTrue(errorMessage.contains(
-                String.format("No navigation target found for path '%s'", locationString)));
+                String.format("Couldn't find route for '%s'", locationString)));
     }
 
     @Test
@@ -3247,7 +3247,7 @@ public class RouterTest extends RoutingTestBase {
                 locationString);
 
         String exceptionText2 = String
-                .format("No navigation target found for path '%s'", locationString);
+                .format("Couldn't find route for '%s'", locationString);
 
         String exceptionText3 = "<li><a href=\"optional/[:"
                 + HasUrlParameterUtil.PARAMETER_NAME + "]\">optional/[:"
@@ -3272,9 +3272,8 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText1 = String.format("Could not navigate to '%s'",
                 locationString);
 
-        String exceptionText2 = String.format(
-                "Reason: No navigation target found for path '%s'",
-                locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
         String exceptionText3 = "<li>optional/:"
                 + HasUrlParameterUtil.PARAMETER_NAME
