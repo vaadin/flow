@@ -23,15 +23,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 /**
  * Define a route url segment tree data model which is used to store internally
@@ -451,8 +449,8 @@ class RouteModel implements Serializable {
             return target != null;
         }
 
-        private Optional<RouteTarget> getTarget() {
-            return Optional.ofNullable(target);
+        private RouteTarget getTarget() {
+            return target;
         }
 
         private void collectRoutes(Map<String, RouteTarget> result,
@@ -534,33 +532,40 @@ class RouteModel implements Serializable {
                 // route without the optional parameter.
                 if (isOptionalParameter(segmentPattern)
                         && segmentPatterns.size() == 1 && hasTarget()) {
-                    throw new IllegalArgumentException(
-                            "Same route without optional is already set. Please make the last optional parameter mandatory.");
+                    throw ambigousOptionalTarget(target.getTarget(),
+                            getTarget().getTarget());
                 }
 
                 routeSegment = addSegment(segmentPattern, children);
-
-            } else {
-                // We reject any route where there's already a target set for
-                // the same route with an optional.
-                if (segmentPatterns.size() == 1
-                        && getOptionalParameterWithTarget() != null) {
-                    throw new IllegalArgumentException(
-                            "Same route with optional is set. Please change the optional from the other route to be mandatory.");
-                }
             }
 
+            addPath(routeSegment, segmentPatterns, target);
+        }
+
+        private void addPath(RouteSegment potentialSegment,
+                List<String> segmentPatterns, RouteTarget target) {
             if (segmentPatterns.size() > 1) {
-                routeSegment.addPath(
+                potentialSegment.addPath(
                         segmentPatterns.subList(1, segmentPatterns.size()),
                         target);
 
             } else {
-                if (!routeSegment.hasTarget()) {
-                    routeSegment.target = target;
+                if (!potentialSegment.hasTarget()) {
+
+                    // We reject any route where there's already a target set
+                    // for the same route with an optional.
+                    RouteSegment optional = potentialSegment
+                            .getOptionalParameterWithTarget();
+                    if (optional != null) {
+                        throw optional.ambigousOptionalTarget(
+                                optional.getTarget().getTarget(),
+                                target.getTarget());
+                    }
+
+                    potentialSegment.target = target;
+
                 } else {
-                    throw new IllegalArgumentException(
-                            "Target already configured for specified path");
+                    throw potentialSegment.ambigousTarget(target.getTarget());
                 }
             }
         }
@@ -671,16 +676,16 @@ class RouteModel implements Serializable {
                 target = potentialSegment.findRouteTarget(segments,
                         outputParameters);
 
-            } else if (potentialSegment.target != null) {
+            } else if (potentialSegment.hasTarget()) {
                 // Found target.
-                target = potentialSegment.target;
+                target = potentialSegment.getTarget();
 
             } else {
                 // Look for target in optional children.
                 RouteSegment optionalChild = potentialSegment
                         .getAnyOptionalOrVarargsParameterWithTarget();
                 if (optionalChild != null) {
-                    target = optionalChild.target;
+                    target = optionalChild.getTarget();
                 } else {
                     target = null;
                 }
@@ -758,6 +763,36 @@ class RouteModel implements Serializable {
             return null;
         }
 
+        private RuntimeException ambigousOptionalTarget(
+                Class<? extends Component> optionalTarget,
+                Class<? extends Component> otherTarget) {
+            String message = String.format(
+                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
+                    otherTarget.getName(), optionalTarget.getName(),
+                    optionalTarget.getName());
+            throw ambigousException(message);
+        }
+
+        private RuntimeException ambigousTarget(
+                Class<? extends Component> target) {
+
+            String messageFormat;
+            if (isParameter()) {
+                messageFormat = "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.";
+            } else {
+                messageFormat = "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.";
+            }
+
+            String message = String.format(messageFormat,
+                    getTarget().getTarget().getName(), target.getName());
+            throw ambigousException(message);
+        }
+
+        private RuntimeException ambigousException(String message) {
+            throw new AmbiguousRouteConfigurationException(message,
+                    getTarget().getTarget());
+        }
+
         private boolean isEmpty() {
             return target == null && getStaticSegments().isEmpty()
                     && getParameterSegments().isEmpty()
@@ -815,7 +850,7 @@ class RouteModel implements Serializable {
             if (allSegments == null) {
                 allSegments = new HashMap<>();
             }
-            return varargsSegments;
+            return allSegments;
         }
 
     }
@@ -853,10 +888,16 @@ class RouteModel implements Serializable {
      *            details.
      * @param targetComponentClass
      *            the target component class.
+     * @throws InvalidRouteConfigurationException
+     *             if the combination of pathPattern and target doesn't make
+     *             send within the current state of the model.
+     * @throws IllegalArgumentException
+     *             in case the varargs are specified in the middle of the
+     *             pathPattern. Varargs may be specified only as the last
+     *             segment definition.
      */
-    // TODO: rename to addRoute
-    void addPath(String pathPattern,
-            Class<? extends Component> targetComponentClass) {
+    void addRoute(String pathPattern,
+                  Class<? extends Component> targetComponentClass) {
         root.addPath(pathPattern, targetComponentClass);
     }
 
@@ -869,9 +910,15 @@ class RouteModel implements Serializable {
      *            details.
      * @param target
      *            target to set for the given path pattern.
+     * @throws InvalidRouteConfigurationException
+     *             if the combination of pathPattern and target doesn't make
+     *             send within the current state of the model.
+     * @throws IllegalArgumentException
+     *             in case the varargs are specified in the middle of the
+     *             pathPattern. Varargs may be specified only as the last
+     *             segment definition.
      */
-    // TODO: rename to addRoute
-    void addPath(String pathPattern, RouteTarget target) {
+    void addRoute(String pathPattern, RouteTarget target) {
         root.addPath(pathPattern, target);
     }
 
@@ -899,6 +946,8 @@ class RouteModel implements Serializable {
      * @param pathPattern
      *            the input full path pattern.
      * @return a simplified path pattern representation.
+     * @throws IllegalArgumentException
+     *             if the pathPattern is no registered within the model.
      */
     String getSimplePathPattern(String pathPattern) {
         return root.getSimplePathPattern(pathPattern);
@@ -906,15 +955,23 @@ class RouteModel implements Serializable {
 
     /**
      * Gets a url path by replacing into the path pattern the url parameters.
+     * <p>
+     * In case all parameters defined in the pathPattern are optional or
+     * varargs, parameters argument may be null and the path will be provided
+     * without any parameters.
      * 
      * @param pathPattern
      *            the full path pattern.
      * @param parameters
-     *            the parameters to use.
+     *            the parameters to use or null if no parameters specified.
      * @return the url.
+     * @throws IllegalArgumentException
+     *             in case pathPattern is not registered or the parameters do
+     *             not match with the pattern.
      */
     String getPath(String pathPattern, UrlParameters parameters) {
-        return root.getPath(pathPattern, parameters);
+        return root.getPath(pathPattern,
+                parameters != null ? parameters : new UrlParameters(null));
     }
 
 }

@@ -32,8 +32,8 @@ import com.vaadin.flow.router.UrlParameters;
 /**
  * Route configuration class that is used as a value object.
  * <p>
- * Note! This is always immutable and any changes should be made from {@link
- * ConfigureRoutes}.
+ * Note! This is always immutable and any changes should be made from
+ * {@link ConfigureRoutes}.
  *
  * @since 1.3
  */
@@ -60,7 +60,8 @@ public class ConfiguredRoutes implements Serializable {
      * Create a mutable or immutable configuration with original configuration
      * information.
      *
-     * @param original original configuration to get data from
+     * @param original
+     *            original configuration to get data from
      */
     public ConfiguredRoutes(ConfiguredRoutes original) {
         Map<String, RouteTarget> routeMap = new HashMap<>();
@@ -78,16 +79,14 @@ public class ConfiguredRoutes implements Serializable {
         this.routeModel = original.getRouteModel();
 
         // TODO: investigate this.routes = this.routeModel.getRoutes();
-        this.routes = routeMap.isEmpty() ?
-                Collections.emptyMap() :
-                Collections.unmodifiableMap(routeMap);
+        this.routes = routeMap.isEmpty() ? Collections.emptyMap()
+                : Collections.unmodifiableMap(routeMap);
 
-        this.targetRoutes = targetRouteMap.isEmpty() ?
-                Collections.emptyMap() :
-                Collections.unmodifiableMap(targetRouteMap);
-        this.exceptionTargets = exceptionTargetMap.isEmpty() ?
-                Collections.emptyMap() :
-                Collections.unmodifiableMap(exceptionTargetMap);
+        this.targetRoutes = targetRouteMap.isEmpty() ? Collections.emptyMap()
+                : Collections.unmodifiableMap(targetRouteMap);
+        this.exceptionTargets = exceptionTargetMap.isEmpty()
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(exceptionTargetMap);
     }
 
     protected Map<String, RouteTarget> getRoutesMap() {
@@ -103,12 +102,13 @@ public class ConfiguredRoutes implements Serializable {
     /*---------------------------------*/
 
     /**
-     * Collect all routes for which given routeTarget is registered.
-     * This is mainly for handling route aliases as reading from the class
-     * annotations doesn't specifically return the actual registrations as they
-     * can change during runtime.
+     * Collect all routes for which given routeTarget is registered. This is
+     * mainly for handling route aliases as reading from the class annotations
+     * doesn't specifically return the actual registrations as they can change
+     * during runtime.
      *
-     * @param routeTarget route target to collect registered paths for
+     * @param routeTarget
+     *            route target to collect registered paths for
      * @return list of routes this routeTarget is registered for
      */
     protected List<String> getRoutePaths(
@@ -121,7 +121,8 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * See if configuration contains a registered route for given path pattern.
      *
-     * @param pathPattern path to check
+     * @param pathPattern
+     *            path to check
      * @return true if configuration contains route
      */
     public boolean hasRoute(String pathPattern) {
@@ -131,7 +132,8 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * See if configuration matches the given path with any registered route.
      *
-     * @param url url to check
+     * @param url
+     *            url to check
      * @return true if configuration matches the given url.
      */
     public boolean hasUrl(String url) {
@@ -142,8 +144,10 @@ public class ConfiguredRoutes implements Serializable {
      * Check if configuration holds a route for given path with possible path
      * segments.
      *
-     * @param pathString path string to check
-     * @param segments   path segments for route
+     * @param pathString
+     *            path string to check
+     * @param segments
+     *            path segments for route
      * @return true if a route is found, else false
      * @deprecated use {@link #hasUrl(String)} instead.
      */
@@ -155,7 +159,8 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Check it the given route target has been registered to the configuration.
      *
-     * @param targetRoute target to check registration status for
+     * @param targetRoute
+     *            target to check registration status for
      * @return true if target is found in configuration
      */
     public boolean hasRouteTarget(Class<? extends Component> targetRoute) {
@@ -166,10 +171,11 @@ public class ConfiguredRoutes implements Serializable {
      * Search for a route target using given navigation <code>path</code>
      * argument.
      *
-     * @param path the navigation path used as input for searching a route
-     *             target.
+     * @param path
+     *            the navigation path used as input for searching a route
+     *            target.
      * @return the result containing a valid target is found, and the url
-     * parameter values found in the <code>path</code> argument.
+     *         parameter values found in the <code>path</code> argument.
      */
     public RouteSearchResult getRouteSearchResult(String path) {
         return getRouteModel().getRoute(path);
@@ -178,7 +184,8 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Get the route class matching the given path.
      *
-     * @param pathString string to get the route for
+     * @param pathString
+     *            string to get the route for
      * @return {@link Optional} containing the navigationTarget class if found
      */
     public Optional<Class<? extends Component>> getRoute(String pathString) {
@@ -194,14 +201,16 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Get the route class matching the given path and path segments.
      *
-     * @param pathString string to get the route for
-     * @param segments   possible path segments
+     * @param pathString
+     *            string to get the route for
+     * @param segments
+     *            possible path segments
      * @return {@link Optional} containing the navigationTarget class if found
      * @deprecated use {@link #getRoute(String)} instead.
      */
     @Deprecated
     public Optional<Class<? extends Component>> getRoute(String pathString,
-                                                         List<String> segments) {
+            List<String> segments) {
         return getRoute(pathString);
     }
 
@@ -235,33 +244,44 @@ public class ConfiguredRoutes implements Serializable {
         return getRouteModel()
                 .getSimplePathPattern(getTargetRoutes().get(navigationTarget));
     }
-    
+
     /**
      * Get the url path String for the given navigation target class.
      *
      * @param navigationTarget
-     *         navigationTarget to get registered route for
+     *            navigationTarget to get registered route for
      * @return base route string if target class found
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget) {
-        final String path = getTargetRoutes().get(navigationTarget);
+        String path = getTargetRoutes().get(navigationTarget);
+
+        if (path == null) {
+            return null;
+        }
 
         if (RouteModel.hasParameters(path)) {
-            String message = String
-                    .format("Navigation target '%s' requires a parameter and can" 
-                            + " not be resolved. Use 'public String getTargetRoute"
-                            + "(Class<? extends Component> navigationTarget"
-                            + ", UrlParameters parameters)' instead",
-                            navigationTarget.getName());
-            throw new IllegalArgumentException(message);
+            try {
+                // In case all parameters are optional, this will return
+                // successfully.
+                path = getRouteModel().getPath(path, null);
 
+            } catch (IllegalArgumentException e) {
+                String message = String.format(
+                        "Navigation target '%s' requires a parameter and can"
+                                + " not be resolved. Use 'public String getTargetRoute"
+                                + "(Class<? extends Component> navigationTarget"
+                                + ", UrlParameters parameters)' instead",
+                        navigationTarget.getName());
+                throw new IllegalArgumentException(message, e);
+            }
         }
+
         return path;
     }
 
-
     /**
-     * Get the url path String for the given navigation target class and parameters.
+     * Get the url path String for the given navigation target class and
+     * parameters.
      *
      * @param navigationTarget
      *            navigationTarget to get registered route for
@@ -272,7 +292,9 @@ public class ConfiguredRoutes implements Serializable {
     public String getTargetUrl(Class<? extends Component> navigationTarget,
             UrlParameters parameters) {
 
-        // TODO: make it so that in case the parameters don't match with the main route, to go for aliases.
+        // TODO: Feature Request:
+        // implement so that in case the parameters don't match with the
+        // main route, search within aliases.
         return getRouteModel().getPath(getTargetRoutes().get(navigationTarget),
                 parameters);
     }
@@ -281,7 +303,7 @@ public class ConfiguredRoutes implements Serializable {
      * Get a exception handler by exception class.
      *
      * @param exceptionClass
-     *         exception class to get exception handler for
+     *            exception class to get exception handler for
      * @return exception handler if found
      */
     public Class<? extends Component> getExceptionHandlerByClass(
@@ -303,9 +325,9 @@ public class ConfiguredRoutes implements Serializable {
      * path.
      *
      * @param path
-     *         path to get parent layout chain for
+     *            path to get parent layout chain for
      * @param navigationTarget
-     *         navigation target on path to get parent layout chain for
+     *            navigation target on path to get parent layout chain for
      * @return list of parent layout chain
      */
     public List<Class<? extends RouterLayout>> getParentLayouts(String path,
@@ -316,9 +338,10 @@ public class ConfiguredRoutes implements Serializable {
             final RouteTarget routeTarget = result.getTarget();
 
             if (!Objects.equals(routeTarget.getTarget(), navigationTarget)) {
-                throw new IllegalArgumentException("Invalid navigationTarget argument");
+                throw new IllegalArgumentException(
+                        "Invalid navigationTarget argument");
             }
-            
+
             return routeTarget.getParentLayouts();
         } else {
             return Collections.emptyList();
@@ -329,7 +352,7 @@ public class ConfiguredRoutes implements Serializable {
      * Get the RouteTarget stored for the given path.
      *
      * @param path
-     *         path to get route target for
+     *            path to get route target for
      * @return route target for path, <code>null</code> if nothing registered
      */
     protected RouteTarget getRouteTarget(String path) {

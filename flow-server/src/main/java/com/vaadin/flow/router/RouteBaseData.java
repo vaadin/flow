@@ -56,7 +56,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
             Class<? extends Component> navigationTarget) {
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
         this.url = url;
-        this.parameters = Collections.unmodifiableList(parameters);
+        this.parameters = Collections.emptyList();
         this.navigationTarget = navigationTarget;
     }
 
@@ -91,10 +91,13 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     }
 
     /**
-     * Get {@link Route} url parameters if any.
+     * This method returns an empty list.
      *
-     * @return url parameters (by type and in order)
+     * @return an empty list.
+     * @deprecated currently parameters information may be only retrieved from
+     *             within the route url.
      */
+    @Deprecated
     public List<Class<?>> getParameters() {
         return parameters;
     }

@@ -84,8 +84,11 @@ public class NavigationState implements Serializable {
      */
     public String getResolvedPath() {
         if (resolvedPath == null) {
-            resolvedPath = RouteConfiguration.forRegistry(router.getRegistry())
-                    .getUrl(navigationTarget, urlParameters);
+            try {
+                resolvedPath = RouteConfiguration.forRegistry(router.getRegistry())
+                        .getUrl(navigationTarget, urlParameters);
+            } catch (NotFoundException e) {
+            }
         }
         return resolvedPath;
     }
