@@ -121,13 +121,8 @@ public class NavigationState implements Serializable {
      */
     @Deprecated
     public Optional<List<String>> getUrlParameters() {
-//        if (urlParameters != null) {
-//            for
-//            return Optional.of(new ArrayList<>(urlParameters.values()));
-//        }
-//        return Optional.ofNullable(urlParameters);
-        // TODO: implement backward compatibility
-        return Optional.empty();
+        return Optional.of(HasUrlParameterUtil
+                .getCompatibilityParameters(getParameters()));
     }
 
     /**
@@ -139,8 +134,6 @@ public class NavigationState implements Serializable {
      */
     @Deprecated
     public void setUrlParameters(List<String> urlParameters) {
-//        this.urlParameters = urlParameters;
-        // TODO: implement backward compatibility
-
+        setParameters(HasUrlParameterUtil.getParameters(urlParameters));
     }
 }

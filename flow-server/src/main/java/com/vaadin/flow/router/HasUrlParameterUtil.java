@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -66,14 +67,15 @@ public class HasUrlParameterUtil {
             return new UrlParameters(null);
 
         } else if (parameter instanceof String) {
-            final List<String> segments = PathUtil.getSegmentsList((String) parameter);
+            final List<String> segments = PathUtil
+                    .getSegmentsList((String) parameter);
             if (segments.size() > 1) {
                 return getParameters(segments);
             }
         }
 
-        return new UrlParameters(Collections.singletonMap(PARAMETER_NAME,
-                parameter.toString()));
+        return new UrlParameters(
+                Collections.singletonMap(PARAMETER_NAME, parameter.toString()));
     }
 
     public static <T> UrlParameters getParameters(List<T> parametersList) {
@@ -93,6 +95,28 @@ public class HasUrlParameterUtil {
         }
 
         return new UrlParameters(map);
+    }
+
+    public static List<String> getCompatibilityParameters(
+            UrlParameters urlParameters) {
+
+        List<String> parameters = urlParameters
+                .getList(HasUrlParameterUtil.PARAMETER_NAME);
+
+        if (parameters == null) {
+            final String value = urlParameters
+                    .get(HasUrlParameterUtil.PARAMETER_NAME);
+
+            if (value != null) {
+                parameters = Collections.singletonList(value);
+            }
+        }
+
+        if (parameters == null) {
+            parameters = Collections.emptyList();
+        }
+
+        return parameters;
     }
 
     /**
