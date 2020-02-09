@@ -28,7 +28,7 @@ public class AbstractRouteRegistryTest {
         registry = new AbstractRouteRegistry() {
 
             @Override
-            public RouteSearchResult getNavigationRoute(String path) {
+            public RouteSearchResult getNavigationTargetResult(String path) {
                 return getConfiguration().getRouteSearchResult(path);
             }
 

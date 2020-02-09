@@ -115,7 +115,7 @@ public class RouteTarget implements Serializable {
 //            throws InvalidRouteConfigurationException {
 //        if (parameter != null) {
 //            throw new AmbiguousRouteConfigurationException(String.format(
-//                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
+////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
 //                    parameter.getName(), target.getName()), parameter);
 //        }
 //    }
@@ -124,7 +124,7 @@ public class RouteTarget implements Serializable {
 //            throws InvalidRouteConfigurationException {
 //        if (wildCardParameter != null) {
 //            throw new AmbiguousRouteConfigurationException(String.format(
-//                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
+////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
 //                    wildCardParameter.getName(), target.getName()),
 //                    wildCardParameter);
 //        }
@@ -134,12 +134,12 @@ public class RouteTarget implements Serializable {
 //            throws InvalidRouteConfigurationException {
 //        if (this.target != null) {
 //            throw new AmbiguousRouteConfigurationException(String.format(
-//                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
+////                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
 //                    this.target.getName(), target.getName(), target.getName()),
 //                    this.target);
 //        } else if (optionalParameter != null) {
 //            String message = String.format(
-//                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
+////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
 //                    optionalParameter.getName(), target.getName());
 //            throw new AmbiguousRouteConfigurationException(message,
 //                    optionalParameter);
@@ -150,11 +150,11 @@ public class RouteTarget implements Serializable {
 //            throws InvalidRouteConfigurationException {
 //        if (this.target != null) {
 //            throw new AmbiguousRouteConfigurationException(String.format(
-//                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
+////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
 //                    this.target.getName(), target.getName()), this.target);
 //        } else if (optionalParameter != null) {
 //            throw new AmbiguousRouteConfigurationException(String.format(
-//                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
+////                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
 //                    target.getName(), optionalParameter.getName(),
 //                    optionalParameter.getName()), optionalParameter);
 //        }

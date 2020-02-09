@@ -193,7 +193,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             ConfiguredRoutes configuration) {
         List<RouteData> registeredRoutes = new ArrayList<>();
         configuration.getTargetRoutes().forEach((target, url) -> {
-            List<Class<?>> parameters = getRouteParameters(target);
 
             List<RouteAliasData> routeAliases = new ArrayList<>();
 
@@ -201,10 +200,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                     .filter(route -> !route.equals(url))
                     .forEach(route -> routeAliases.add(new RouteAliasData(
                             getParentLayouts(configuration, target, route),
-                            route, parameters, target)));
+                            route, null, target)));
             List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
                     configuration, target, url);
-            RouteData route = new RouteData(parentLayouts, url, parameters,
+            RouteData route = new RouteData(parentLayouts, url, null,
                     target, routeAliases);
             registeredRoutes.add(route);
         });

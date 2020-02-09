@@ -2198,9 +2198,8 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText1 = String.format("Could not navigate to '%s'",
                 locationString);
         String exceptionText2 = String.format(
-                "Reason: Failed to parse url parameter, exception: %s",
-                new NumberFormatException(
-                        "For input string: \"unsupportedParam\""));
+                "Reason: No navigation target found for path '%s'.",
+                locationString);
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2);
@@ -3019,7 +3018,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(OptionalParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", null,
                 OptionalParameter.param);
-        ui.navigate(OptionalParameter.class, null);
+        ui.navigate(OptionalParameter.class, (String) null);
         Assert.assertEquals(OptionalParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", null,
                 OptionalParameter.param);
@@ -3033,7 +3032,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(WildParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", "",
                 WildParameter.param);
-        ui.navigate(WildParameter.class, null);
+        ui.navigate(WildParameter.class, (String) null);
         Assert.assertEquals(WildParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", "",
                 WildParameter.param);
@@ -3248,9 +3247,12 @@ public class RouterTest extends RoutingTestBase {
                 locationString);
 
         String exceptionText2 = String
-                .format("Reason: Couldn't find route for '%s'", locationString);
+                .format("No navigation target found for path '%s'", locationString);
 
-        String exceptionText3 = "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
+        String exceptionText3 = "<li><a href=\"optional/[:"
+                + HasUrlParameterUtil.PARAMETER_NAME + "]\">optional/[:"
+                + HasUrlParameterUtil.PARAMETER_NAME
+                + "] (supports optional parameter)</a></li>";
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2, exceptionText3);
@@ -3713,8 +3715,10 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(errorClass, routeNotFoundError.getClass());
         String errorText = getErrorText(routeNotFoundError);
         for (String exceptionText : exceptionTexts) {
-            Assert.assertTrue("Expected the error text to contain '"
-                    + exceptionText + "'", errorText.contains(exceptionText));
+            Assert.assertTrue(
+                    "Expected the error text to contain '" + exceptionText
+                            + "', but it is '" + errorText + "'",
+                    errorText.contains(exceptionText));
         }
     }
 
