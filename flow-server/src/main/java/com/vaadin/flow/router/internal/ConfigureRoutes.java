@@ -142,7 +142,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             Class<? extends Component> navigationTarget) {
 
         final RouteTarget target = new RouteTarget(navigationTarget);
-        getRouteModel().addPath(pathPattern, target);
+        getRouteModel().addRoute(pathPattern, target);
 
         if (!hasRouteTarget(navigationTarget)) {
             // FIXME: This seems inconsistent with the case when adding same

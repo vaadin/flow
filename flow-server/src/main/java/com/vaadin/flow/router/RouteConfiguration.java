@@ -437,7 +437,7 @@ public class RouteConfiguration implements Serializable {
         if (parameter == null) {
             return getUrl(navigationTarget);
         }
-        return getUrl(navigationTarget, Collections.singletonList(parameter));
+        return getUrl(navigationTarget, HasUrlParameterUtil.getParameters(parameter));
     }
 
     /**

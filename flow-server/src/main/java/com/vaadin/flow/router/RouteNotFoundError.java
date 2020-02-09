@@ -104,7 +104,7 @@ public class RouteNotFoundError extends Component
             text = "<root>";
         }
 
-        if (route.getParameters().isEmpty()) {
+        if (!route.getUrl().contains(":")) {
             return elementAsLink(route.getUrl(), text);
         } else {
             Class<? extends Component> target = route.getNavigationTarget();
