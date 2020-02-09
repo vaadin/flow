@@ -66,13 +66,7 @@ public class DefaultRouteResolver implements RouteResolver {
 
     private RouteSearchResult getNavigationTarget(
             RouteRegistry registry, String path) throws NotFoundException {
-        final RouteSearchResult navigationRoute = registry.getNavigationTargetResult(path);
-        if (navigationRoute.hasTarget()) {
-            return navigationRoute;
-        } else {
-            throw new NotFoundException(String.format(
-                    "No navigation target found for path '%s'.", path));
-        }
+        return registry.getNavigationTargetResult(path);
     }
 
     private List<String> getPathParameters(String completePath,
