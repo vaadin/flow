@@ -18,8 +18,6 @@ package com.vaadin.flow.router;
 import java.util.Objects;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
@@ -156,7 +154,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
-        validateRouteParameters(router, navigationTarget);
+        validateRouter(router);
         String url = RouteConfiguration.forRegistry(router.getRegistry())
                 .getUrl(navigationTarget);
         updateHref(url);
@@ -178,7 +176,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Router router, Class<? extends C> navigationTarget, T parameter) {
-        validateRouteParameters(router, navigationTarget);
+        validateRouter(router);
         String url = RouteConfiguration.forRegistry(router.getRegistry())
                 .getUrl(navigationTarget, parameter);
         updateHref(url);
@@ -191,7 +189,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *         navigation target
      */
     public void setRoute(Class<? extends Component> navigationTarget) {
-        validateRouteParameters(getRouter(), navigationTarget);
+        validateRouter(getRouter());
         String url = RouteConfiguration.forRegistry(getRouter().getRegistry())
                 .getUrl(navigationTarget);
         updateHref(url);
@@ -211,22 +209,15 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Class<? extends C> navigationTarget, T parameter) {
-        validateRouteParameters(getRouter(), navigationTarget);
+        validateRouter(getRouter());
         String url = RouteConfiguration.forRegistry(getRouter().getRegistry())
                 .getUrl(navigationTarget, parameter);
         updateHref(url);
     }
 
-    private void validateRouteParameters(Router router,
-            Class<? extends Component> navigationTarget) {
+    private void validateRouter(Router router) {
         if (router == null) {
             throw new IllegalArgumentException("Router must not be null");
-        } else if (!router.getRegistry().getTargetUrl(navigationTarget)
-                .isPresent()) {
-            LoggerFactory.getLogger(RouterLink.class)
-                    .warn("Creating link for non registered navigationTarget '"
-                            + navigationTarget.getName()
-                            + "'. If target is not registered when link is used, navigation will fail on a 404 not found.");
         }
     }
 
