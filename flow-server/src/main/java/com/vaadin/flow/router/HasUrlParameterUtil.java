@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.PathUtil;
 
 public class HasUrlParameterUtil {
 
@@ -61,8 +62,18 @@ public class HasUrlParameterUtil {
     }
 
     public static <T> UrlParameters getParameters(T parameter) {
-        return new UrlParameters(
-                Collections.singletonMap(PARAMETER_NAME, parameter.toString()));
+        if (parameter == null) {
+            return new UrlParameters(null);
+
+        } else if (parameter instanceof String) {
+            final List<String> segments = PathUtil.getSegmentsList((String) parameter);
+            if (segments.size() > 1) {
+                return getParameters(segments);
+            }
+        }
+
+        return new UrlParameters(Collections.singletonMap(PARAMETER_NAME,
+                parameter.toString()));
     }
 
     public static <T> UrlParameters getParameters(List<T> parametersList) {
