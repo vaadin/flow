@@ -19,14 +19,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.ParameterFormat;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -144,14 +147,23 @@ class RouteModel implements Serializable {
                     name = segmentPattern.substring(0, defStartIndex);
 
                     regex = segmentPattern.substring(defStartIndex + 1);
-                    if (!PRIMITIVE_TYPES.contains(regex)) {
+                    if (!isPrimitiveType()) {
                         pattern = Pattern.compile(regex);
                     }
 
                 } else {
                     name = segmentPattern;
+                    regex = "string";
                 }
 
+            }
+
+            boolean isPrimitiveType() {
+                return PRIMITIVE_TYPES.contains(regex);
+            }
+
+            public String getType() {
+                return regex;
             }
 
             boolean isOptional() {
@@ -339,15 +351,19 @@ class RouteModel implements Serializable {
          * 
          * @param pathPattern
          *            the full path pattern.
+         * @param parameterFormat
+         *            the parameter format function.
          * @return the simple path pattern.
          */
-        String getSimplePathPattern(String pathPattern) {
+        String getPath(String pathPattern,
+                Function<RouteSegment, String> parameterFormat) {
             final List<String> segments = PathUtil.getSegmentsList(pathPattern);
             final List<String> result = new ArrayList<>(segments.size());
 
             matchSegments(segments, routeSegment -> {
-                result.add((routeSegment.isParameter() ? ":" : "")
-                        + routeSegment.getName());
+                result.add(routeSegment.isParameter()
+                        ? parameterFormat.apply(routeSegment)
+                        : routeSegment.getName());
             });
 
             if (result.isEmpty()) {
@@ -357,7 +373,7 @@ class RouteModel implements Serializable {
             }
         }
 
-        String getPath(String pathPattern, UrlParameters parameters) {
+        String getUrl(String pathPattern, UrlParameters parameters) {
             final List<String> segments = PathUtil.getSegmentsList(pathPattern);
             final List<String> result = new ArrayList<>(segments.size());
 
@@ -897,7 +913,7 @@ class RouteModel implements Serializable {
      *             segment definition.
      */
     void addRoute(String pathPattern,
-                  Class<? extends Component> targetComponentClass) {
+            Class<? extends Component> targetComponentClass) {
         root.addPath(pathPattern, targetComponentClass);
     }
 
@@ -938,22 +954,6 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Transform the full path pattern into a simple representation where the
-     * parameters are represented only by their names, i.e.
-     * <code>path/to/[:parameterName:vaadin|river]/flow</code> translates into
-     * <code>path/to/:parameterName/flow</code>.
-     * 
-     * @param pathPattern
-     *            the input full path pattern.
-     * @return a simplified path pattern representation.
-     * @throws IllegalArgumentException
-     *             if the pathPattern is no registered within the model.
-     */
-    String getSimplePathPattern(String pathPattern) {
-        return root.getSimplePathPattern(pathPattern);
-    }
-
-    /**
      * Gets a url path by replacing into the path pattern the url parameters.
      * <p>
      * In case all parameters defined in the pathPattern are optional or
@@ -969,9 +969,65 @@ class RouteModel implements Serializable {
      *             in case pathPattern is not registered or the parameters do
      *             not match with the pattern.
      */
-    String getPath(String pathPattern, UrlParameters parameters) {
-        return root.getPath(pathPattern,
+    String getUrl(String pathPattern, UrlParameters parameters) {
+        return root.getUrl(pathPattern,
                 parameters != null ? parameters : new UrlParameters(null));
+    }
+
+    String getRoute(String pathPattern, EnumSet<ParameterFormat> format) {
+        return root.getPath(pathPattern, segment -> {
+            StringBuilder result = new StringBuilder();
+
+            if (format.contains(ParameterFormat.CURLY_BRACKETS_FORMAT)) {
+                result.append("{");
+            } else {
+                result.append(":");
+            }
+
+            final boolean containsType = format.containsAll(Arrays
+                    .asList(ParameterFormat.SIMPLE_TYPE, ParameterFormat.TYPE));
+
+            if (format.contains(ParameterFormat.NAME)) {
+                result.append(segment.getName());
+                if (containsType) {
+                    result.append(":");
+                }
+            }
+
+            if (containsType) {
+                String type = segment.getParameterDetails().getType();
+
+                if (format.contains(ParameterFormat.SIMPLE_TYPE)) {
+                    if (!segment.getParameterDetails().isPrimitiveType()) {
+                        type = "regex";
+                    }
+
+                    if (format.contains(ParameterFormat.CAPITALIZED_TYPE)) {
+                        type = capitalize(type);
+                    }
+
+                } else if (segment.getParameterDetails().isPrimitiveType()
+                        && format.contains(ParameterFormat.CAPITALIZED_TYPE)) {
+                    type = capitalize(type);
+                }
+
+                result.append(type);
+            }
+
+            if (result.charAt(0) == '{') {
+                result.append("}");
+            }
+
+            return result.toString();
+        });
+    }
+
+    private static String capitalize(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
 }
