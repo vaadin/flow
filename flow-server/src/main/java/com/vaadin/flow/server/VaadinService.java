@@ -2273,7 +2273,9 @@ public abstract class VaadinService implements Serializable {
      *
      * @return Context. This may never be {@code null}.
      */
-    protected abstract VaadinContext constructVaadinContext();
+    protected VaadinContext constructVaadinContext() {
+        return new VaadinServletContext(getServletContext());
+    }
 
     /**
      * Returns {@link VaadinContext} for this service.
@@ -2286,6 +2288,14 @@ public abstract class VaadinService implements Serializable {
         }
         return vaadinContext;
     }
+
+    /**
+     * Returns a reference to the {@link ServletContext}.
+     *
+     *
+     * @return the ServletContext object
+     */
+    public abstract ServletContext getServletContext();
 
     /**
      *

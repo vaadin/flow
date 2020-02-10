@@ -60,8 +60,7 @@ public class StreamResourceHandler implements Serializable {
         StreamResourceWriter writer;
         session.lock();
         try {
-            ServletContext context = ((VaadinServletRequest) request)
-                    .getServletContext();
+            ServletContext context = request.getService().getServletContext();
             response.setContentType(streamResource.getContentTypeResolver()
                     .apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());
