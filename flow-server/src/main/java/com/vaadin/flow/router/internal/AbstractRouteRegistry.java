@@ -18,6 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameterUtil;
+import com.vaadin.flow.router.ParameterFormat;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
@@ -273,6 +275,25 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         return Optional.ofNullable(getConfiguration()
                 .getTargetUrl(navigationTarget, parameters));
+    }
+
+    @Override
+    public Optional<String> getTargetRoute(
+            Class<? extends Component> navigationTarget) {
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+
+        return Optional.ofNullable(
+                getConfiguration().getTargetRoute(navigationTarget));
+    }
+
+    @Override
+    public Optional<String> getTargetRoute(
+            Class<? extends Component> navigationTarget,
+            EnumSet<ParameterFormat> format) {
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+
+        return Optional.ofNullable(
+                getConfiguration().getTargetRoute(navigationTarget, format));
     }
 
     @Override
