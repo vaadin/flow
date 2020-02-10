@@ -439,9 +439,11 @@ public class VaadinConnectController {
                 }
             } catch (IOException e) {
                 String typeName = expectedType.getTypeName();
-                getLogger().debug(
-                        "Unable to deserialize parameter {} with type {}",
-                        parameterNames[i], typeName, e);
+                getLogger().error(
+                        "Unable to deserialize an endpoint '{}' method '{}' "
+                                + "parameter '{}' with type '{}'",
+                        endpointName, methodName, parameterNames[i], typeName,
+                        e);
                 errorParams.put(parameterNames[i], typeName);
             }
         }
