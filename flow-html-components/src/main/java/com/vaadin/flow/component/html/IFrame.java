@@ -126,7 +126,9 @@ public class IFrame extends HtmlComponent {
 
   /**
    * Sets the source of the iframe.
-   * The value doesn't need to be reset but calling #reload() can be used to trigger reload.
+   * If the contents at the src of the IFrame has changed and
+   * you want to refresh it in the user's browser, the src
+   * does not to be reset. In this case use the #reload() method.
    * @param src Source URL.
    */
   public void setSrc(String src) { set(srcDescriptor, src); }
