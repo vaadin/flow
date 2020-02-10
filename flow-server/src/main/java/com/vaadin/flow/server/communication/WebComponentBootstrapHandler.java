@@ -42,7 +42,6 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -124,7 +123,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @return Request's url.
      */
     protected String getRequestUrl(VaadinRequest request) {
-        return ((VaadinServletRequest) request).getRequestURL().toString();
+        return request.getRequestURL().toString();
     }
 
     @Override
@@ -408,7 +407,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
         if (url == null) {
-            url = ((VaadinServletRequest) request).getRequestURL().toString();
+            url = getRequestUrl(request);
         }
         return url
                 // +1 is to keep the trailing slash

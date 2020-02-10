@@ -119,7 +119,7 @@ public interface VaadinRequest {
      *
      * @return a string with the path relative to the application.
      *
-     * @see javax.servlet.http.HttpServletRequest#getPathInfo()
+     * @see HttpServletRequest#getPathInfo()
      */
     String getPathInfo();
 
@@ -133,6 +133,54 @@ public interface VaadinRequest {
      *         the context of the request
      */
     String getContextPath();
+
+    /**
+     * Returns the part of this request's URL that calls the servlet. This path
+     * starts with a "/" character and includes either the servlet name or a
+     * path to the servlet, but does not include any extra path information or
+     * a query string.
+     *
+     * @see HttpServletRequest#getServletPath()
+     *
+     * @return a String containing the name or path of the servlet being called,
+     *         as specified in the request URL, decoded, or an empty string if
+     *         the servlet used to process the request is matched using the
+     *         "/*" pattern.
+     */
+    String getServletPath();
+
+    /**
+     * Reconstructs the URL the client used to make the request. The returned
+     * URL contains a protocol, server name, port number, and server path, but
+     * it does not include query string parameters.
+     *
+     * @see HttpServletRequest#getRequestURL()
+     *
+     * @return a StringBuffer object containing the reconstructed URL
+     */
+    StringBuffer getRequestURL();
+
+    /**
+     * Returns the part of this request's URL from the protocol name up to
+     * the query string in the first line of the HTTP request.
+     *
+     * @return a String containing the part of the URL from the protocol
+     *         name up to the query string
+     *
+     * @see HttpServletRequest#getRequestURI()
+     */
+    public String getRequestURI();
+
+    /**
+     * Returns the query string that is contained in the request URL after
+     * the path.
+     *
+     * @see HttpServletRequest#getQueryString()
+     *
+     * @return a String containing the query string or <code>null</code>
+     *         if the URL contains no query string.
+     */
+    String getQueryString();
 
     /**
      * Gets the session associated with this request, creating a new if there is

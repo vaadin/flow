@@ -17,15 +17,12 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.ui.Transport;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -96,9 +93,7 @@ public class TrackMessageSizeView extends Div {
 
         VaadinRequest request = VaadinRequest.getCurrent();
 
-        HttpServletRequest httpServletRequest = ((VaadinServletRequest) request).getHttpServletRequest();
-
-        String jsPath = httpServletRequest.getRequestURL().toString().replace(httpServletRequest.getRequestURI(), filename);
+        String jsPath = request.getRequestURL().toString().replace(request.getRequestURI(), filename);
 
 
         String content = getFileContent(jsPath);

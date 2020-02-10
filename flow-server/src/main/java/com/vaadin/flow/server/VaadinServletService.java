@@ -277,14 +277,13 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     public String getContextRootRelativePath(VaadinRequest request) {
-        assert request instanceof VaadinServletRequest;
         // Generate location from the request by finding how many "../" should
         // be added to the servlet path before we get to the context root
 
         // Should not take pathinfo into account because the base URI refers to
         // the servlet path
 
-        String servletPath = ((VaadinServletRequest) request).getServletPath();
+        String servletPath = request.getServletPath();
         assert servletPath != null;
         if (!servletPath.endsWith("/")) {
             servletPath += "/";

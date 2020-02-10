@@ -17,12 +17,12 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -39,10 +39,10 @@ public class FaviconHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        VaadinServletRequest httpRequest = (VaadinServletRequest) request;
-        boolean isFavicon = httpRequest.getContextPath().isEmpty()
-                && httpRequest.getServletPath().isEmpty()
-                && "/favicon.ico".equals(httpRequest.getPathInfo());
+        ServletContext servletContext = request.getService().getServletContext();
+        boolean isFavicon = servletContext.getContextPath().isEmpty()
+                && request.getServletPath().isEmpty()
+                && "/favicon.ico".equals(request.getPathInfo());
         if (isFavicon) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }

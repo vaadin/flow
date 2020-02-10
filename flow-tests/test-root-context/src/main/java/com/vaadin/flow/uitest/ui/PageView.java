@@ -6,10 +6,7 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-
-import javax.servlet.http.HttpServletRequest;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PageView", layout = ViewTestLayout.class)
 public class PageView extends AbstractDivView {
@@ -43,9 +40,8 @@ public class PageView extends AbstractDivView {
             getPage().reload();
         });
 
-        VaadinServletRequest request = (VaadinServletRequest) VaadinRequest.getCurrent();
-        HttpServletRequest httpServletRequest = request.getHttpServletRequest();
-        String url = httpServletRequest.getRequestURI()
+        VaadinRequest request = VaadinRequest.getCurrent();
+        String url = request.getRequestURI()
                 .replace(PageView.class.getName(), BaseHrefView.class.getName());
 
         Div setLocationButton = new Div();
