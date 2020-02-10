@@ -16,11 +16,13 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.ParameterFormat;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -48,8 +50,8 @@ public interface RouteRegistry extends Serializable {
      * chain. Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
      * be ignored in route handling.
      *
-     * @param path
-     *            path to register navigation target to
+     * @param pathPattern
+     *            path pattern to register navigation target to
      * @param navigationTarget
      *            navigation target to register into session scope
      * @param parentChain
@@ -57,7 +59,7 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *             thrown if exact route already defined in this scope
      */
-    void setRoute(String path, Class<? extends Component> navigationTarget,
+    void setRoute(String pathPattern, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain);
 
     /**
@@ -188,6 +190,33 @@ public interface RouteRegistry extends Serializable {
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
             UrlParameters parameters);
+
+    /**
+     * Get a route representation for given navigation target.
+     * <p>
+     * Will return Optional.empty is navigation target was not found.
+     *
+     * @param navigationTarget
+     *            navigation target to get route definition for, not
+     *            {@code null}
+     * @return optional navigation target url string
+     */
+    Optional<String> getTargetRoute(Class<? extends Component> navigationTarget);
+
+    /**
+     * Get a route representation for given navigation target.
+     * <p>
+     * Will return Optional.empty is navigation target was not found.
+     *
+     * @param navigationTarget
+     *            navigation target to get route definition for, not
+     *            {@code null}
+     * @param format
+     *            settings used to format the result parameters.
+     * @return optional navigation target url string
+     */
+    Optional<String> getTargetRoute(Class<? extends Component> navigationTarget,
+            EnumSet<ParameterFormat> format);
 
     /**
      * Get the layout chain for given navigation target on the targeted path.
