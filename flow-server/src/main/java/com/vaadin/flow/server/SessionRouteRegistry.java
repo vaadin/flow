@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.ParameterFormat;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
@@ -160,7 +162,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (getConfiguration().hasUrl(pathString)) {
             return getConfiguration().getRoute(pathString);
         }
-
         return getParentRegistry().getNavigationTarget(pathString);
     }
 
@@ -174,12 +175,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
-
         Optional<String> targetUrl = super.getTargetUrl(navigationTarget);
         if (targetUrl.isPresent()) {
             return targetUrl;
         }
-
         return getParentRegistry().getTargetUrl(navigationTarget);
     }
 
@@ -192,8 +191,30 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (targetUrl.isPresent()) {
             return targetUrl;
         }
-
         return getParentRegistry().getTargetUrl(navigationTarget, parameters);
+    }
+
+    @Override
+    public Optional<String> getTargetRoute(
+            Class<? extends Component> navigationTarget) {
+        final Optional<String> targetRoute = super.getTargetRoute(
+                navigationTarget);
+        if (targetRoute.isPresent()) {
+            return targetRoute;
+        }
+        return getParentRegistry().getTargetRoute(navigationTarget);
+    }
+
+    @Override
+    public Optional<String> getTargetRoute(
+            Class<? extends Component> navigationTarget,
+            EnumSet<ParameterFormat> format) {
+        final Optional<String> targetRoute = super.getTargetRoute(
+                navigationTarget, format);
+        if (targetRoute.isPresent()) {
+            return targetRoute;
+        }
+        return getParentRegistry().getTargetRoute(navigationTarget, format);
     }
 
     @Override

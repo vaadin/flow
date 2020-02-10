@@ -17,6 +17,7 @@ package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.ParameterFormat;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
 
@@ -241,8 +243,24 @@ public class ConfiguredRoutes implements Serializable {
      * @return base route string if target class found
      */
     public String getTargetRoute(Class<? extends Component> navigationTarget) {
-        return getRouteModel()
-                .getSimplePathPattern(getTargetRoutes().get(navigationTarget));
+        return getRouteModel().getRoute(getTargetRoutes().get(navigationTarget),
+                EnumSet.of(ParameterFormat.NAME));
+    }
+
+    /**
+     * Get the route path pattern String for the given navigation target class
+     * and using the specified parameters format.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @param format
+     *            settings used to format the result parameters.
+     * @return base route string if target class found
+     */
+    public String getTargetRoute(Class<? extends Component> navigationTarget,
+            EnumSet<ParameterFormat> format) {
+        return getRouteModel().getRoute(getTargetRoutes().get(navigationTarget),
+                format);
     }
 
     /**
@@ -263,7 +281,7 @@ public class ConfiguredRoutes implements Serializable {
             try {
                 // In case all parameters are optional, this will return
                 // successfully.
-                path = getRouteModel().getPath(path, null);
+                path = getRouteModel().getUrl(path, null);
 
             } catch (IllegalArgumentException e) {
                 path = null;
@@ -289,7 +307,7 @@ public class ConfiguredRoutes implements Serializable {
         // TODO: Feature Request:
         // implement so that in case the parameters don't match with the
         // main route, search within aliases.
-        return getRouteModel().getPath(getTargetRoutes().get(navigationTarget),
+        return getRouteModel().getUrl(getTargetRoutes().get(navigationTarget),
                 parameters);
     }
 

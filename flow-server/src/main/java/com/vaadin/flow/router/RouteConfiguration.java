@@ -137,7 +137,7 @@ public class RouteConfiguration implements Serializable {
      * @return true if class is registered
      */
     public boolean isRouteRegistered(Class<? extends Component> route) {
-        return handledRegistry.getTargetUrl(route).isPresent();
+        return handledRegistry.getTargetRoute(route).isPresent();
     }
 
     /**
