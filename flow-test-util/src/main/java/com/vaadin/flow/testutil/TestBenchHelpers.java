@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -84,7 +85,7 @@ public class TestBenchHelpers extends ParallelTest {
      */
     public void dragAndDrop(WebElement source, WebElement target) {
         getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
-                source, target);
+                source, target, "DND");
     }
 
     /**
@@ -93,20 +94,20 @@ public class TestBenchHelpers extends ParallelTest {
      * @param source
      */
     public void drag(WebElement source) {
-        getCommandExecutor().executeScript(LazyDndSimulationLoad.DRAG_SCRIPT,
-                source);
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
+                source, null, "DRAG");
     }
 
     /**
-     * Simulate a drag of {@code source} element and hover into the
-     * {@code target} element.
+     * Simulate a drag of {@code source} element and over the {@code target}
+     * element.
      *
      * @param source
      * @param target
      */
-    public void dragAndHover(WebElement source, WebElement target) {
-        getCommandExecutor().executeScript(LazyDndSimulationLoad.DRAG_AND_HOVER_SCRIPT,
-                source, target);
+    public void dragElementOver(WebElement source, WebElement target) {
+        getCommandExecutor().executeScript(LazyDndSimulationLoad.DND_SCRIPT,
+                source, target, "DRAG_OVER");
     }
 
     /**
@@ -417,35 +418,11 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     private static class LazyDndSimulationLoad {
-        private static final String DND_SCRIPT = loadDnDEmulation();
-        private static final String DRAG_SCRIPT = loadDragEmulation();
-        private static final String DRAG_AND_HOVER_SCRIPT = loadDragAndHoverEmulation();
+        private static final String DND_SCRIPT = loadDndScript("/dnd-simulation.js");
 
-        private static String loadDnDEmulation() {
+        private static String loadDndScript(String scriptLocation) {
             InputStream stream = TestBenchHelpers.class
-                    .getResourceAsStream("/dnd-simulation.js");
-            try {
-                return IOUtils.readLines(stream, StandardCharsets.UTF_8)
-                        .stream().collect(Collectors.joining("\n"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private static String loadDragEmulation() {
-            InputStream stream = TestBenchHelpers.class
-                    .getResourceAsStream("/drag-simulation.js");
-            try {
-                return IOUtils.readLines(stream, StandardCharsets.UTF_8)
-                        .stream().collect(Collectors.joining("\n"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private static String loadDragAndHoverEmulation() {
-            InputStream stream = TestBenchHelpers.class
-                    .getResourceAsStream("/drag-and-hover-simulation.js");
+                    .getResourceAsStream(scriptLocation);
             try {
                 return IOUtils.readLines(stream, StandardCharsets.UTF_8)
                         .stream().collect(Collectors.joining("\n"));
