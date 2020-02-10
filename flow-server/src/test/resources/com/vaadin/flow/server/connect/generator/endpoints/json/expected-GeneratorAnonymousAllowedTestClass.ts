@@ -10,7 +10,7 @@
 import client from './connect-client.default';
 
 function _anonymousAllowed(): Promise<void> {
-  return client.call('customName', 'anonymousAllowed', undefined, {requireCredentials: false});
+  return client.call('customName', 'anonymousAllowed');
 }
 export {_anonymousAllowed as anonymousAllowed};
 

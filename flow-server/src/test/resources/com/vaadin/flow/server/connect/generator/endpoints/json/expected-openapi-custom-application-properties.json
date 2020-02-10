@@ -167,7 +167,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
       }
     },
     "/JsonTestEndpoint/getBooleanValue" : {
@@ -247,7 +250,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
       }
     },
     "/JsonTestEndpoint/getUserById" : {
@@ -282,7 +288,10 @@
               }
             }
           }
-        }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
       }
     },
     "/JsonTestEndpoint/inputBeanTypeDependency" : {
@@ -472,7 +481,10 @@
           "200" : {
             "description" : ""
           }
-        }
+        },
+        "security" : [ {
+          "vaadin-connect-oauth2" : [ ]
+        } ]
       }
     },
     "/customName/permissionAltered1" : {

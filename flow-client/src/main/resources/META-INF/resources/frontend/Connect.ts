@@ -173,13 +173,6 @@ export interface ConnectClientOptions {
   middlewares?: Middleware[];
 }
 
-export interface CallOptions {
-  /**
-   * Require authentication.
-   */
-  requireCredentials?: boolean;
-}
-
 /**
  * An object with the call arguments and the related Request instance.
  * See also {@link ConnectClient.call | the call() method in ConnectClient}.
@@ -199,11 +192,6 @@ export interface MiddlewareContext {
    * Optional object with method call arguments.
    */
   params?: any;
-
-  /**
-   * Client options related with the call.
-   */
-  options: CallOptions;
 
   /**
    * The Fetch API Request object reflecting the other properties.
@@ -289,7 +277,6 @@ export class ConnectClient {
     endpoint: string,
     method: string,
     params?: any,
-    options: CallOptions = {}
   ): Promise<any> {
     if (arguments.length < 2) {
       throw new TypeError(
@@ -327,7 +314,6 @@ export class ConnectClient {
       endpoint,
       method,
       params,
-      options,
       request
     };
 

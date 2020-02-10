@@ -64,7 +64,7 @@ export {_getAllUsers as getAllUsers};
 function _getArrayInt(
   input: Array<string>
 ): Promise<Array<number>> {
-  return client.call('JsonTestEndpoint', 'getArrayInt', {input}, {requireCredentials: false});
+  return client.call('JsonTestEndpoint', 'getArrayInt', {input});
 }
 export {_getArrayInt as getArrayInt};
 
@@ -92,7 +92,7 @@ function _getTwoParameters(
   input: string,
   secondInput: number
 ): Promise<boolean> {
-  return client.call('JsonTestEndpoint', 'getTwoParameters', {input, secondInput}, {requireCredentials: false});
+  return client.call('JsonTestEndpoint', 'getTwoParameters', {input, secondInput});
 }
 export {_getTwoParameters as getTwoParameters};
 
@@ -105,7 +105,7 @@ export {_getTwoParameters as getTwoParameters};
 function _getUserById(
   id: number
 ): Promise<User> {
-  return client.call('JsonTestEndpoint', 'getUserById', {id}, {requireCredentials: false});
+  return client.call('JsonTestEndpoint', 'getUserById', {id});
 }
 export {_getUserById as getUserById};
 
