@@ -56,8 +56,7 @@ public class WebComponentBootstrapHandlerTest {
         }
 
         @Override
-        protected String getServiceUrl(VaadinRequest request,
-                VaadinResponse response) {
+        protected String getServiceUrl(VaadinRequest request) {
             return "/";
         }
     }

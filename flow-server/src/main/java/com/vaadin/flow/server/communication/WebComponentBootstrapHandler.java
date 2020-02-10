@@ -140,7 +140,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                             + PATH_PATTERN.toString());
         }
 
-        final String serviceUrl = getServiceUrl(request, response);
+        final String serviceUrl = getServiceUrl(request);
 
         BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
                 request, response, session);
@@ -196,7 +196,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
-        String serviceUrl = getServiceUrl(request, response);
+        String serviceUrl = getServiceUrl(request);
 
         Document document = getPageBuilder().getBootstrapPage(context);
         writeBootstrapPage(response, document.head(), serviceUrl);
@@ -398,12 +398,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      *
      * @param request
      *            the request object
-     * @param response
-     *            the response object
      * @return Service url for the given request.
      */
-    protected String getServiceUrl(VaadinRequest request,
-            VaadinResponse response) {
+    protected String getServiceUrl(VaadinRequest request) {
         // get service url from 'url' parameter
         String url = request.getParameter(REQ_PARAM_URL);
         // if 'url' parameter was not available, use request url
