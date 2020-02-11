@@ -137,8 +137,4 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
         return RouteUtil.getParentLayoutsForNonRouteTarget(targetType);
     }
 
-    @Override
-    protected boolean eventActionsSupported() {
-        return true;
-    }
 }
