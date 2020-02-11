@@ -317,7 +317,7 @@ public class Router implements Serializable {
         return registry;
     }
 
-    protected Optional<ErrorTargetEntry> getErrorNavigationTarget(
+    public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (registry instanceof ApplicationRouteRegistry) {
             return ((ApplicationRouteRegistry) registry)
