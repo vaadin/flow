@@ -39,6 +39,7 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
+import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
@@ -169,6 +170,8 @@ public class JavaScriptBootstrapUI extends UI {
                 // thus an error page is shown
                 handleErrorNavigation(location);
             }
+        } catch (Exception exception) {
+            return handleExceptionNavigation(location, exception);
         } finally {
             getInternals().clearLastHandledNavigation();
         }
@@ -206,6 +209,30 @@ public class JavaScriptBootstrapUI extends UI {
 
         adjustPageTitle();
 
+        return getInternals().getContinueNavigationAction() != null;
+    }
+
+    private boolean handleExceptionNavigation(Location location, Exception exception) {
+        Optional<ErrorTargetEntry> maybeLookupResult = this.getRouter().getErrorNavigationTarget(
+                exception);
+        if (maybeLookupResult.isPresent()) {
+            ErrorTargetEntry lookupResult = maybeLookupResult.get();
+
+            ErrorParameter<?> errorParameter = new ErrorParameter<>(
+                    lookupResult.getHandledExceptionType(), exception,
+                    exception.getMessage());
+            ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
+                    new NavigationStateBuilder(this.getRouter())
+                            .withTarget(lookupResult.getNavigationTarget())
+                            .build());
+
+            ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
+                    this.getRouter(), location, this, NavigationTrigger.CLIENT_SIDE, errorParameter);
+
+            errorStateRenderer.handle(errorNavigationEvent);
+        } else {
+            throw new RuntimeException(exception);
+        }
         return getInternals().getContinueNavigationAction() != null;
     }
 

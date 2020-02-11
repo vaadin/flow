@@ -1,8 +1,16 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.Collections;
+import java.util.Optional;
 
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.InternalServerError;
+import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import org.jsoup.nodes.Document;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -85,6 +93,17 @@ public class JavaScriptBootstrapUITest  {
         }
     }
 
+    @Route("exception")
+    @Tag(Tag.DIV)
+    public static class FailOnException extends Component
+            implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            throw new RuntimeException("Failed on an exception");
+        }
+    }
+
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -93,6 +112,8 @@ public class JavaScriptBootstrapUITest  {
         mocks.getService().getRouter().getRegistry().setRoute("dirty", Dirty.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("exception",
+                FailOnException.class, Collections.emptyList());
         ui = new JavaScriptBootstrapUI();
         ui.getInternals().setSession(mocks.getSession());
 
@@ -345,6 +366,49 @@ public class JavaScriptBootstrapUITest  {
         assertNull(ui.getInternals().getTitle());
         ui.navigate("dirty");
         assertEquals("index-html-title", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void should_caught_and_show_exception_during_navigation_in_internalServerError()
+            throws InvalidRouteConfigurationException {
+        String location = "exception";
+        String validationMessage = "Failed on an exception";
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.TRUE);
+
+        ui.navigate(location);
+        String errorMessage = String.format(
+                "There was an exception while trying to navigate to '%s' with the exception message '%s'",
+                location, validationMessage);
+        assertExceptionComponent(InternalServerError.class, errorMessage);
+    }
+
+    private void assertExceptionComponent(Class<?> errorClass,
+                                          String... exceptionTexts) {
+        Optional<Component> visibleComponent = ui.getElement().getChild(0)
+                .getComponent();
+
+        Assert.assertTrue("No navigation component visible",
+                visibleComponent.isPresent());
+
+        Component routeNotFoundError = visibleComponent.get();
+        Assert.assertEquals(errorClass, routeNotFoundError.getClass());
+        String errorText = getErrorText(routeNotFoundError);
+        for (String exceptionText : exceptionTexts) {
+            Assert.assertTrue("Expected the error text to contain '"
+                    + exceptionText + "'", errorText.contains(exceptionText));
+        }
+    }
+
+    private String getErrorText(Component routeNotFoundError) {
+        if (routeNotFoundError.getClass() == RouteNotFoundError.class) {
+            Component errorContent = routeNotFoundError.getChildren()
+                    .findFirst().get();
+            Assert.assertEquals(Html.class, errorContent.getClass());
+            return ((Html) errorContent).getInnerHtml().toString();
+        } else {
+            return routeNotFoundError.getElement().getText();
+        }
     }
 
 }
