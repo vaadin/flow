@@ -18,7 +18,7 @@ public class ExportedJSFunctionView extends AbstractDivView {
         Div version = new Div();
         version.setId("version");
         add(version);
-        String client = "window.Vaadin.Flow.clients[Object.keys(window.Vaadin.Flow.clients)]";
+        String client = "window.Vaadin.Flow.clients[Object.keys(Vaadin.Flow.clients).filter(k => k !== 'TypeScript')]";
         String versionJs = "var msg = '';" + "var versionInfoMethod = " + client
                 + ".getVersionInfo;" + "if (versionInfoMethod) {"
                 + "  msg += 'version: '+versionInfoMethod().flow;" + "} else {" //
