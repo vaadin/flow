@@ -80,7 +80,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
 
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
-            + "Build project in production mode instead, see https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
+            + "Build project in production mode instead, see https://vaadin.com/docs/v15/flow/production/tutorial-production-mode-basic.html";
     private static final Logger logger = LoggerFactory
             .getLogger(DeploymentConfigurationFactory.class);
 
