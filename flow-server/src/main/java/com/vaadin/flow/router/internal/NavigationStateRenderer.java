@@ -92,9 +92,4 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         }
     }
 
-    @Override
-    protected boolean eventActionsSupported() {
-        return true;
-    }
-
 }
