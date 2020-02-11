@@ -389,23 +389,12 @@ public class JavaScriptBootstrapUITest  {
         Assert.assertTrue("No navigation component visible",
                 visibleComponent.isPresent());
 
-        Component routeNotFoundError = visibleComponent.get();
-        Assert.assertEquals(errorClass, routeNotFoundError.getClass());
-        String errorText = getErrorText(routeNotFoundError);
+        Component internalServerError = visibleComponent.get();
+        Assert.assertEquals(errorClass, internalServerError.getClass());
+        String errorText = internalServerError.getElement().getText();
         for (String exceptionText : exceptionTexts) {
             Assert.assertTrue("Expected the error text to contain '"
                     + exceptionText + "'", errorText.contains(exceptionText));
-        }
-    }
-
-    private String getErrorText(Component routeNotFoundError) {
-        if (routeNotFoundError.getClass() == RouteNotFoundError.class) {
-            Component errorContent = routeNotFoundError.getChildren()
-                    .findFirst().get();
-            Assert.assertEquals(Html.class, errorContent.getClass());
-            return ((Html) errorContent).getInnerHtml().toString();
-        } else {
-            return routeNotFoundError.getElement().getText();
         }
     }
 
