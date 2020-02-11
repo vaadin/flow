@@ -136,6 +136,16 @@ public class FrontendUtilsTest {
     }
 
     @Test
+    public void getNpmExecutable_removesPnpmLock() throws IOException {
+        File file = new File(baseDir, "pnpm-lock.yaml");
+        file.createNewFile();
+
+        FrontendUtils.getNpmExecutable(baseDir);
+
+        Assert.assertFalse(file.exists());
+    }
+
+    @Test
     public void parseValidVersions() {
         FrontendVersion sixPointO = new FrontendVersion(6, 0);
 
@@ -270,8 +280,7 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void noStatsFile_assetsByChunkReturnsNull()
-            throws IOException {
+    public void noStatsFile_assetsByChunkReturnsNull() throws IOException {
         VaadinService service = getServiceWithResource(null);
 
         String statsAssetsByChunkName = FrontendUtils
@@ -332,7 +341,8 @@ public class FrontendUtilsTest {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
                 .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
 
-        return getServiceWithResource(new ByteArrayInputStream(stats.getBytes()));
+        return getServiceWithResource(
+                new ByteArrayInputStream(stats.getBytes()));
     }
 
     private VaadinService getServiceWithResource(InputStream stats) {
