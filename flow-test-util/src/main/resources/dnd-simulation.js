@@ -56,6 +56,30 @@ function simulateHTML5DragAndDrop(source, target) {
   }
 }
 
+function simulateHTML5DragAndHover(source, target) {
+  var effectAllowed = source['__effectAllowed'];
+  var dropEffect = target['__dropEffect'];
+
+  var dragStartEvent = createEvent('dragstart', effectAllowed);
+  dispatchEvent(source, dragStartEvent);
+
+  var dragEnterEvent = createEvent("dragenter", effectAllowed);
+  dispatchEvent(target, dragEnterEvent);
+}
+
+function simulateHTML5Drag(source) {
+  var effectAllowed = source['__effectAllowed'];
+  var dragStartEvent = createEvent('dragstart', effectAllowed);
+    dispatchEvent(source, dragStartEvent);
+}
+
 var source = arguments[0];
 var target = arguments[1];
-simulateHTML5DragAndDrop(source, target);
+var runScript = arguments[2];
+if (runScript == "DND") {
+   simulateHTML5DragAndDrop(source, target);
+} else if (runScript == "DRAG_OVER") {
+   simulateHTML5DragAndHover(source, target);
+} else if (runScript == "DRAG") {
+   simulateHTML5Drag(source);
+}
