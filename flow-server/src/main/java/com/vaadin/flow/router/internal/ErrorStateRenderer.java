@@ -15,9 +15,15 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -35,6 +41,26 @@ import com.vaadin.flow.router.RouterLayout;
  */
 public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
+    private static class ExceptionsTrace extends RuntimeException {
+        private Set<Class<? extends Exception>> trace = new HashSet<>();
+
+        void addException(Exception exception) {
+            trace.add(exception.getClass());
+        }
+
+        boolean hasException(Exception exception) {
+            return trace.contains(exception.getClass());
+        }
+
+        @Override
+        public String getMessage() {
+            return "Exceptions handled by "
+                    + HasErrorParameter.class.getSimpleName() + " views are :"
+                    + trace.stream().map(Class::getName)
+                            .collect(Collectors.joining(", "));
+        }
+    }
+
     /**
      * Constructs a new state renderer for the given navigation state.
      *
@@ -48,8 +74,35 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
     @Override
     public int handle(NavigationEvent event) {
         assert event instanceof ErrorNavigationEvent : "Error handling needs ErrorNavigationEvent";
-        return super.handle(event);
 
+        ExceptionsTrace trace = ComponentUtil.getData(event.getUI(),
+                ExceptionsTrace.class);
+        boolean isFirstCall = trace == null;
+        Exception exception = ((ErrorNavigationEvent) event).getErrorParameter()
+                .getException();
+        if (isFirstCall) {
+            trace = new ExceptionsTrace();
+            ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);
+        }
+        if (trace.hasException(exception)) {
+            trace.fillInStackTrace();
+            LoggerFactory.getLogger(ErrorStateRenderer.class)
+                    .error("The same exception {} "
+                            + "has been thrown several times during navigation. "
+                            + "Can't use any {} view for this error.",
+                            exception.getClass().getName(),
+                            HasErrorParameter.class.getSimpleName(), trace);
+            return 500;
+        }
+        trace.addException(exception);
+        try {
+            return super.handle(event);
+        } finally {
+            if (isFirstCall) {
+                ComponentUtil.setData(event.getUI(), ExceptionsTrace.class,
+                        null);
+            }
+        }
     }
 
     @Override
@@ -58,7 +111,6 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
             LocationChangeEvent locationChangeEvent) {
         @SuppressWarnings({ "rawtypes", "unchecked" })
         int statusCode = ((HasErrorParameter) componentInstance)
-
                 .setErrorParameter(beforeEnterEvent,
                         ((ErrorNavigationEvent) navigationEvent)
                                 .getErrorParameter());
@@ -87,6 +139,6 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
     @Override
     protected boolean eventActionsSupported() {
-        return false;
+        return true;
     }
 }
