@@ -12,6 +12,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>
@@ -20,7 +21,6 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>

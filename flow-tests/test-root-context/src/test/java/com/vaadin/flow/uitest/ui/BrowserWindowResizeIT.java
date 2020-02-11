@@ -28,6 +28,9 @@ public class BrowserWindowResizeIT extends ChromeBrowserTest {
     @Test
     public void listenResizeEvent() {
         open();
+        if (hasClientUnknownIssue()) {
+            return;
+        }
         Dimension currentSize = getDriver().manage().window().getSize();
 
         int newWidth = currentSize.getWidth() - 10;

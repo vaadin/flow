@@ -1,9 +1,10 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ForwardToIT extends ChromeBrowserTest {
 
@@ -11,6 +12,10 @@ public class ForwardToIT extends ChromeBrowserTest {
     public void testForwardingToView() {
         String initUrl = getDriver().getCurrentUrl();
         open();
+
+        if (hasClientIssue("7578")) {
+            return;
+        }
 
         Assert.assertTrue("should forward to specified view",
                 findElement(By.id("root")).isDisplayed());

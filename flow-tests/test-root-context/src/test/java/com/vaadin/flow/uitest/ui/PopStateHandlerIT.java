@@ -31,6 +31,9 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         verifyNoServerVisit();
 
         goBack();
+        if (hasClientIssue("7572")) {
+            return;
+        }
 
         verifyPopStateEvent(FORUM);
         verifyInsideServletLocation(FORUM);
@@ -63,6 +66,9 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         verifyNoServerVisit();
 
         goBack();
+        if (hasClientIssue("7572")) {
+            return;
+        }
 
         verifyNoServerVisit();
         verifyInsideServletLocation(FORUM_SUBCATEGORY);
@@ -105,6 +111,9 @@ public class PopStateHandlerIT extends ChromeBrowserTest {
         verifyNoServerVisit();
 
         goBack();
+        if (hasClientIssue("7572")) {
+            return;
+        }
 
         verifyPopStateEvent(FORUM);
         verifyInsideServletLocation(EMPTY_HASH);

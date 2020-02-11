@@ -14,6 +14,8 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.productionMode>true</vaadin.productionMode>
+        <!-- please remove after https://github.com/vaadin/flow/issues/7559 is fixed -->
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>

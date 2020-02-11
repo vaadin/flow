@@ -34,7 +34,10 @@ public class CustomScrollCallbacksIT extends AbstractScrollIT {
         findElement(By.id("navigate")).click();
 
         assertView("navigated");
-        assertLog("[0,0]");
+
+        if (!hasClientIssue("7584")) {
+            assertLog("[0,0]");
+        }
         /*
          * Scroll position should not be reset, but might have changed slightly
          * because of more log rows
@@ -44,7 +47,9 @@ public class CustomScrollCallbacksIT extends AbstractScrollIT {
         findElement(By.id("back")).click();
 
         assertView("null");
-        assertLog("[0,0]\n[42,-" + bottom + "]");
+        if (!hasClientIssue("7584")) {
+            assertLog("[0,0]\n[42,-" + bottom + "]");
+        }
         /*
          * Scroll position should not be reset, but might have changed slightly
          * because of more log rows
