@@ -79,7 +79,7 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
                 ExceptionsTrace.class);
         boolean isFirstCall = trace == null;
         Exception exception = ((ErrorNavigationEvent) event).getErrorParameter()
-                .getException();
+                .getCaughtException();
         if (isFirstCall) {
             trace = new ExceptionsTrace();
             ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);
