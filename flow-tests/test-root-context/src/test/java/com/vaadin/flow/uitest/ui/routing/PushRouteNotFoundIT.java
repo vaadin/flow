@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.uitest.ui.routing;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.uitest.ui.routing.PushRouteNotFoundView;
 import com.vaadin.testbench.TestBenchElement;
 
 public class PushRouteNotFoundIT extends ChromeBrowserTest {
