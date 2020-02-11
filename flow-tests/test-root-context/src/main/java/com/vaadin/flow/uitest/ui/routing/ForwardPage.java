@@ -22,6 +22,7 @@ import com.vaadin.flow.router.Route;
 public class ForwardPage extends Div {
 
     public ForwardPage() {
+        setId("forwarded");
         setText("Forwarded");
     }
 }

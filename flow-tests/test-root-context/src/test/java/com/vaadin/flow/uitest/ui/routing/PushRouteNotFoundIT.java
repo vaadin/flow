@@ -17,9 +17,9 @@ package com.vaadin.flow.uitest.ui.routing;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.flow.uitest.ui.routing.PushRouteNotFoundView;
 import com.vaadin.testbench.TestBenchElement;
 
 public class PushRouteNotFoundIT extends ChromeBrowserTest {
@@ -33,11 +33,27 @@ public class PushRouteNotFoundIT extends ChromeBrowserTest {
         Assert.assertEquals("Push mode: AUTOMATIC", push.getText());
     }
 
+    @Test
+    public void renderRouteNotFoundErrorPage_parentLayoutReroute_reroutingIsDone() {
+        String url = getTestURL(getRootURL(),
+                doGetTestPath(PushLayout.FORWARD_PATH), new String[0]);
+
+        getDriver().get(url);
+
+        waitUntil(driver -> driver.getCurrentUrl()
+                .endsWith(ForwardPage.class.getName()));
+
+        Assert.assertTrue(isElementPresent(By.id("forwarded")));
+    }
+
     @Override
     protected String getTestPath() {
+        return doGetTestPath(PushRouteNotFoundView.PUSH_NON_EXISTENT_PATH);
+    }
+
+    private String doGetTestPath(String uri) {
         String path = super.getTestPath();
         int index = path.lastIndexOf("/");
-        return path.substring(0, index + 1)
-                + PushRouteNotFoundView.PUSH_NON_EXISTENT_PATH;
+        return path.substring(0, index + 1) + uri;
     }
 }
