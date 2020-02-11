@@ -131,11 +131,12 @@ public class FrontendUtils {
      */
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
-
     /**
-     * Default folder for copying front-end resources present in the classpath jars.
+     * Default folder for copying front-end resources present in the classpath
+     * jars.
      */
-    public static final String DEAULT_FLOW_RESOURCES_FOLDER = TARGET + "flow-frontend";
+    public static final String DEAULT_FLOW_RESOURCES_FOLDER = TARGET
+            + "flow-frontend";
 
     /**
      * Default folder name for flow generated stuff relative to the
@@ -151,7 +152,8 @@ public class FrontendUtils {
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
     /**
-     * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME} file.
+     * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME}
+     * file.
      */
     public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
 
@@ -189,7 +191,8 @@ public class FrontendUtils {
     /**
      * Default generated path for generated TS files.
      */
-    public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR + "generated/";
+    public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR
+            + "generated/";
 
     /**
      * Name of the file that contains all application imports, javascript, theme
@@ -387,24 +390,7 @@ public class FrontendUtils {
      *         have npm running
      */
     public static List<String> getNpmExecutable(String baseDir) {
-        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
-        // not work because it's a shell or windows script that looks for node
-        // and will fail. Thus we look for the `npm-cli` node script instead
-        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
-        List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeExecutable(baseDir));
-            returnCommand.add(file.getAbsolutePath());
-        } else {
-            // Otherwise look for regulag `npm`
-            String command = isWindows() ? "npm.cmd" : "npm";
-            returnCommand.add(
-                    getExecutable(baseDir, command, null).getAbsolutePath());
-        }
-        returnCommand.add("--no-update-notifier");
-        returnCommand.add("--no-audit");
-        return returnCommand;
+        return getNpmExecutable(baseDir, true);
     }
 
     /**
@@ -792,11 +778,11 @@ public class FrontendUtils {
      * object string.
      *
      * @param service
-     *         the Vaadin service.
+     *            the Vaadin service.
      * @return json for assetsByChunkName object in stats.json or {@code null}
      *         if stats.json not found or content not found.
      * @throws IOException
-     *         if an I/O error occurs while creating the input stream.
+     *             if an I/O error occurs while creating the input stream.
      */
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
@@ -819,7 +805,7 @@ public class FrontendUtils {
         } else {
             resourceAsStream = getStatsFromClassPath(service);
         }
-        if(resourceAsStream == null) {
+        if (resourceAsStream == null) {
             return null;
         }
         try (Scanner scan = new Scanner(resourceAsStream,
@@ -845,7 +831,8 @@ public class FrontendUtils {
                 }
                 assets.append(line);
             }
-            getLogger().error("Could not parse assetsByChunkName from stats.json");
+            getLogger()
+                    .error("Could not parse assetsByChunkName from stats.json");
         }
         return null;
     }
@@ -951,7 +938,7 @@ public class FrontendUtils {
                     "Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
                     DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
             // install pnpm locally using npm
-            installPnpm(baseDir, getNpmExecutable(baseDir));
+            installPnpm(baseDir, getNpmExecutable(baseDir, false));
 
             // remove package-lock.json which contains pnpm as a dependency.
             new File(baseDir, "package-lock.json").delete();
@@ -1082,8 +1069,8 @@ public class FrontendUtils {
      */
     public static String getProjectFrontendDir(
             DeploymentConfiguration configuration) {
-        return configuration
-                .getStringProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+        return configuration.getStringProperty(PARAM_FRONTEND_DIR,
+                DEFAULT_FRONTEND_DIR);
     }
 
     /**
@@ -1304,6 +1291,34 @@ public class FrontendUtils {
         return Optional.empty();
     }
 
+    private static List<String> getNpmExecutable(String baseDir,
+            boolean removePnpmLock) {
+        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
+        // not work because it's a shell or windows script that looks for node
+        // and will fail. Thus we look for the `npm-cli` node script instead
+        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
+        List<String> returnCommand = new ArrayList<>();
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(file.getAbsolutePath());
+        } else {
+            // Otherwise look for regulag `npm`
+            String command = isWindows() ? "npm.cmd" : "npm";
+            returnCommand.add(
+                    getExecutable(baseDir, command, null).getAbsolutePath());
+        }
+        returnCommand.add("--no-update-notifier");
+        returnCommand.add("--no-audit");
+
+        if (removePnpmLock) {
+            // remove pnpm-lock.yaml which contains pnpm as a dependency.
+            new File(baseDir, "pnpm-lock.yaml").delete();
+        }
+
+        return returnCommand;
+    }
+
     /**
      * Container class for caching the external stats.json contents.
      */
@@ -1351,7 +1366,7 @@ public class FrontendUtils {
     public static String commandToString(String baseDir, List<String> command) {
         return "\n" + WordUtils
                 .wrap(String.join(" ", command).replace(baseDir, "."), 50)
-                .replace("\r",  "").replace("\n", " \\ \n    ") + "\n";
+                .replace("\r", "").replace("\n", " \\ \n    ") + "\n";
     }
 
     /**
@@ -1365,8 +1380,7 @@ public class FrontendUtils {
      *            the string to show
      */
     @SuppressWarnings("squid:S106")
-    public
-    static void console(String format, Object message) {
+    public static void console(String format, Object message) {
         System.out.print(format(format, message));
     }
 }
