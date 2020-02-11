@@ -317,7 +317,14 @@ public class Router implements Serializable {
         return registry;
     }
 
-    protected Optional<ErrorTargetEntry> getErrorNavigationTarget(
+    /**
+     * Get a registered navigation target for given exception.
+     *
+     * @param exception
+     *            exception to search error view for
+     * @return optional error target entry corresponding to the given exception
+     */
+    public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (registry instanceof ApplicationRouteRegistry) {
             return ((ApplicationRouteRegistry) registry)
