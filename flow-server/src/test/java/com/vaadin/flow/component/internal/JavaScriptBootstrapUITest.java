@@ -3,11 +3,9 @@ package com.vaadin.flow.component.internal;
 import java.util.Collections;
 import java.util.Optional;
 
-import com.vaadin.flow.component.Html;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.InternalServerError;
-import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import org.jsoup.nodes.Document;
 import org.junit.Assert;

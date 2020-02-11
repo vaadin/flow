@@ -317,7 +317,6 @@ public class Router implements Serializable {
         return registry;
     }
 
-<<<<<<< HEAD
     /**
      * Get a registered navigation target for given exception.
      *
@@ -325,8 +324,6 @@ public class Router implements Serializable {
      *            exception to search error view for
      * @return optional error target entry corresponding to the given exception
      */
-=======
->>>>>>> e1905f3d46... implementation feature `InternalServerError` component in v15 handlers
     public Optional<ErrorTargetEntry> getErrorNavigationTarget(
             Exception exception) {
         if (registry instanceof ApplicationRouteRegistry) {
