@@ -118,8 +118,6 @@ public final class TestUtils {
 
         vaadinPackages.put("dependencies", Json.createObject());
         JsonObject defaults = vaadinPackages.getObject("dependencies");
-        defaults.put("@polymer/polymer", "3.2.0");
-        defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
 
         vaadinPackages.put("devDependencies", Json.createObject());
         defaults = vaadinPackages.getObject("devDependencies");
