@@ -42,7 +42,7 @@ import com.vaadin.flow.router.RouterLayout;
 public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
     private static class ExceptionsTrace extends RuntimeException {
-        private Set<Class<? extends Exception>> trace = new HashSet<>();
+        private final Set<Class<? extends Exception>> trace = new HashSet<>();
 
         void addException(Exception exception) {
             trace.add(exception.getClass());
@@ -83,8 +83,7 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
         if (isFirstCall) {
             trace = new ExceptionsTrace();
             ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);
-        }
-        if (trace.hasException(exception)) {
+        } else if (trace.hasException(exception)) {
             trace.fillInStackTrace();
             LoggerFactory.getLogger(ErrorStateRenderer.class)
                     .error("The same exception {} "
