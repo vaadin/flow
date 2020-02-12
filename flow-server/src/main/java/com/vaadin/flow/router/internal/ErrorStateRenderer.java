@@ -41,8 +41,12 @@ import com.vaadin.flow.router.RouterLayout;
  */
 public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
 
-    private static class ExceptionsTrace extends RuntimeException {
+    static class ExceptionsTrace extends RuntimeException {
         private final Set<Class<? extends Exception>> trace = new HashSet<>();
+
+        private ExceptionsTrace(Exception cause) {
+            super(cause);
+        }
 
         void addException(Exception exception) {
             trace.add(exception.getClass());
@@ -56,7 +60,9 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
         public String getMessage() {
             return "Exceptions handled by "
                     + HasErrorParameter.class.getSimpleName() + " views are :"
-                    + trace.stream().map(Class::getName)
+                    + trace.stream().filter(
+                            clazz -> !clazz.equals(ExceptionsTrace.class))
+                            .map(Class::getName)
                             .collect(Collectors.joining(", "));
         }
     }
@@ -81,17 +87,16 @@ public class ErrorStateRenderer extends AbstractNavigationStateRenderer {
         Exception exception = ((ErrorNavigationEvent) event).getErrorParameter()
                 .getCaughtException();
         if (isFirstCall) {
-            trace = new ExceptionsTrace();
+            trace = new ExceptionsTrace(exception);
             ComponentUtil.setData(event.getUI(), ExceptionsTrace.class, trace);
         } else if (trace.hasException(exception)) {
-            trace.fillInStackTrace();
             LoggerFactory.getLogger(ErrorStateRenderer.class)
                     .error("The same exception {} "
                             + "has been thrown several times during navigation. "
                             + "Can't use any {} view for this error.",
                             exception.getClass().getName(),
                             HasErrorParameter.class.getSimpleName(), trace);
-            return 500;
+            throw trace;
         }
         trace.addException(exception);
         try {
