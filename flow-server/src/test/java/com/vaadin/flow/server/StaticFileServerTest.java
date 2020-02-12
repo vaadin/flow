@@ -20,6 +20,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -457,28 +458,6 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void serveStaticPolyfillBuildResource() throws IOException {
-        String pathInfo = "/VAADIN/build/webcomponentsjs/webcomponents-loader.js";
-        setupRequestURI("/context", "/servlet", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
-        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
-
-        Mockito.when(mockLoader.getResource("META-INF" + pathInfo)).thenReturn(
-                createFileURLWithDataAndLength("META-INF" + pathInfo,
-                        fileData));
-        mockConfigurationPolyfills();
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
-    }
-
-    @Test
     public void contextAndServletPath_serveStaticBundleBuildResource()
             throws IOException {
         String pathInfo = "/VAADIN/build/vaadin-bundle-1234.cache.js";
@@ -675,14 +654,13 @@ public class StaticFileServerTest implements Serializable {
 
     /**
      * Returns a byte array for a valid stats.json containing only chunks
-     * 
+     *
      * @return
      */
     public byte[] getStatsData() {
         return ("{ " + "\"assetsByChunkName\" :{ "
-                + "\"index\": \"build/vaadin-bundle-1234.cache.js\", "
-                + "\"index.es5\": \"build/vaadin-bundle.es5-1234.cache.js\" "
-                + "} }").getBytes(StandardCharsets.UTF_8);
+                + "\"index\": \"build/vaadin-bundle-1234.cache.js\"} }")
+                        .getBytes(StandardCharsets.UTF_8);
     }
 
     @Test

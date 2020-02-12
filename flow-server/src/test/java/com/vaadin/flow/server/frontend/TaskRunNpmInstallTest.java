@@ -49,7 +49,7 @@ public class TaskRunNpmInstallTest {
         npmFolder = temporaryFolder.newFolder();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File("")) {
+                new File(""), null) {
 
             @Override
             public void execute() {
@@ -61,7 +61,11 @@ public class TaskRunNpmInstallTest {
             }
 
         };
-        task = new TaskRunNpmInstall(nodeUpdater, isPnpm());
+        task = createTask();
+    }
+
+    protected TaskRunNpmInstall createTask() {
+        return new TaskRunNpmInstall(nodeUpdater, false);
     }
 
     @Test
@@ -117,10 +121,6 @@ public class TaskRunNpmInstallTest {
 
     protected NodeUpdater getNodeUpdater() {
         return nodeUpdater;
-    }
-
-    protected boolean isPnpm() {
-        return false;
     }
 
     protected String getToolName() {

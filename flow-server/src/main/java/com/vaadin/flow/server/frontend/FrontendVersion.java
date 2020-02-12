@@ -254,7 +254,7 @@ public class FrontendVersion
      * Where this version is older, equals, newer than given version.
      *
      * @param other
-     *         version to compare agains this version
+     *         version to compare against this version
      * @return -1 this is older, 0 versions equal, 1 this is newer
      */
     @Override

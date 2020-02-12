@@ -18,13 +18,10 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class VaadinServletTest {
@@ -65,31 +62,6 @@ public class VaadinServletTest {
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2"));
         Assert.assertEquals("", VaadinServlet
                 .getLastPathParameter("http://myhost.com/a;hello/;b=1,c=2/"));
-    }
-
-    @Test
-    public void nonexistingFrontendFileReturns404() throws Exception {
-        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
-        TestVaadinServletResponse response = mocks.createResponse();
-        Assert.assertTrue(mocks.getServlet().serveStaticOrWebJarRequest(
-                createRequest(mocks, "/frontend/bower_components/foo/foo.html"),
-                response));
-        Assert.assertEquals(404, response.getErrorCode());
-        mocks.cleanup();
-    }
-
-    @Test
-    public void existingFrontendFileFound() throws Exception {
-        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
-        TestVaadinServletResponse response = mocks.createResponse();
-        mocks.getServlet().addServletContextResource("/webjars/foo/foo.html");
-        Assert.assertTrue(mocks.getServlet().serveStaticOrWebJarRequest(
-                createRequest(mocks, "/frontend/bower_components/foo/foo.html"),
-                response));
-        // A real server would return 200, the mock does not change the status
-        // code
-        Assert.assertEquals(0, response.getErrorCode());
-        mocks.cleanup();
     }
 
     private HttpServletRequest createRequest(

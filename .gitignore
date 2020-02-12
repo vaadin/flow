@@ -36,7 +36,11 @@ node
 node_modules
 /frontend
 */flow-*/frontend
-package.json
 package-lock.json
-webpack.config.js
 **/webpack.generated.js
+
+flow-tests/**/package.json
+flow-tests/**/webpack*.js
+yarn.lock
+
+flow-client/src/main/resources/META-INF/resources/frontend/FlowClient.js

@@ -42,7 +42,7 @@ public final class ClientResourcesUtils {
      *
      * @param path
      *            the resource path
-     * @return the content of the resource as InutStream or null if there is no
+     * @return the content of the resource as InputStream or null if there is no
      *         resource with the {@code path}
      */
     public static InputStream getResource(String path) {

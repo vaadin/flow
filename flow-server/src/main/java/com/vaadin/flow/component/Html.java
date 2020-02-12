@@ -15,19 +15,20 @@
  */
 package com.vaadin.flow.component;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
+import org.jsoup.helper.DataUtil;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A component which encapsulates a given HTML fragment with a single root
@@ -75,7 +76,15 @@ public class Html extends Component {
             throw new IllegalArgumentException("HTML stream cannot be null");
         }
         try {
-            setOuterHtml(Jsoup.parse(stream, UTF_8.name(), ""));
+            /*
+             * Cannot use any of the methods that accept a stream since they all
+             * parse as a document rather than as a body fragment. The logic for
+             * reading a stream into a String is the same that is used
+             * internally by JSoup if you strip away all the logic to guess an
+             * encoding in case one isn't defined.
+             */
+            setOuterHtml(UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
+                    .toString());
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read HTML from stream",
                     e);
@@ -101,10 +110,11 @@ public class Html extends Component {
             throw new IllegalArgumentException("HTML cannot be null or empty");
         }
 
-        setOuterHtml(Jsoup.parse(outerHtml));
+        setOuterHtml(outerHtml);
     }
 
-    private void setOuterHtml(Document doc) {
+    private void setOuterHtml(String outerHtml) {
+        Document doc = Jsoup.parseBodyFragment(outerHtml);
         int nrChildren = doc.body().children().size();
         if (nrChildren != 1) {
             String message = "HTML must contain exactly one top level element (ignoring text nodes). Found "

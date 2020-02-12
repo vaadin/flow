@@ -21,20 +21,24 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
+
 import elemental.json.Json;
 import elemental.json.JsonValue;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class PageTest {
 
@@ -262,5 +266,35 @@ public class PageTest {
                     "Adding a file without starting \"/\" is not to be allowed.");
         } catch (IllegalArgumentException e) {
         }
+    }
+
+    @Test
+    public void executeJavaScript_delegatesToExecJs() {
+        AtomicReference<String> invokedExpression = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... parameters) {
+                String oldExpression = invokedExpression.getAndSet(expression);
+                Assert.assertNull("There should be no old expression",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        ExecutionCanceler executionCanceler = page.executeJavaScript("foo", 1,
+                true);
+
+        Assert.assertNull(executionCanceler);
+
+        Assert.assertEquals("foo", invokedExpression.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 }

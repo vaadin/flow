@@ -17,7 +17,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -29,7 +28,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingView", layout = ViewTestLayout.class)
 @Tag("my-one-way-template")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/OneWayPolymerBinding.html")
 @JsModule("OneWayPolymerBinding.js")
 public class OneWayPolymerBindingView
         extends PolymerTemplate<OneWayPolymerBindingView.MessageModel> {

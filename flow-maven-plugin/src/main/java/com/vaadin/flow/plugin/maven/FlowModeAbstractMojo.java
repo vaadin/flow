@@ -18,11 +18,13 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Parameter;
 
+import com.vaadin.flow.server.Constants;
+
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -30,19 +32,52 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
  * @since 2.0
  */
 public abstract class FlowModeAbstractMojo extends AbstractMojo {
-    static final String VAADIN_COMPATIBILITY_MODE = "vaadin.compatibilityMode";
+    /**
+     * The folder where `package.json` file is located. Default is project root
+     * dir.
+     */
+    @Parameter(defaultValue = "${project.basedir}")
+    public File npmFolder;
 
     /**
-     * Whether or not we are running in compatibility mode.
+     * The folder where flow will put generated files that will be used by
+     * webpack.
      */
-    @Parameter(defaultValue = "${vaadin.bowerMode}", alias = "bowerMode")
-    public String compatibilityMode;
+    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
+    public File generatedFolder;
+
+    /**
+     * A directory with project's frontend source files.
+     */
+    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND)
+    public File frontendDirectory;
+
+    /**
+     * The directory where flow resources from jars will be copied to.
+     */
+    @Parameter(defaultValue = "${project.basedir}/"
+            + DEAULT_FLOW_RESOURCES_FOLDER)
+    public File flowResourcesFolder;
 
     /**
      * Whether or not we are running in productionMode.
      */
     @Parameter(defaultValue = "${vaadin.productionMode}")
     public boolean productionMode;
+
+    /**
+     * Whether or not we are running in legacy V14 bootstrap mode.
+     * True if defined or if it's set to true.
+     */
+    @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
+    private String useDeprecatedV14Bootstrapping;
+
+    /**
+     * Whether or not insert the initial Uidl object in the bootstrap index.html
+     */
+    @Parameter(defaultValue = "${vaadin."
+            + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}")
+    public boolean eagerServerLoad;
 
     /**
      * The folder where webpack should output index.js and other generated
@@ -53,20 +88,42 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File webpackOutputDirectory;
 
     /**
-     * The actual compatibility mode boolean.
+     * Application properties file in Spring project.
      */
-    protected boolean compatibility;
+    @Parameter(defaultValue = "${project.basedir}/src/main/resources/application.properties")
+    protected File applicationProperties;
 
-    @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
-        if (compatibilityMode == null) {
-            compatibilityMode = System.getProperty(VAADIN_COMPATIBILITY_MODE);
+    /**
+     * Default generated path of the OpenAPI json.
+     */
+    @Parameter(defaultValue = "${project.build.directory}/generated-resources/openapi.json")
+    protected File openApiJsonFile;
+
+    /**
+     * Java source folders for connect scanning.
+     */
+    @Parameter(defaultValue = "${project.basedir}/src/main/java")
+    protected File javaSourceFolder;
+
+    /**
+     * The folder where flow will put TS API files for client projects.
+     */
+    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
+    protected File generatedTsFolder;
+
+    /**
+     * Check if the plugin is running in legacy V14 bootstrap mode or not. Default: false.
+     *
+     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
+     */
+    public boolean useDeprecatedV14Bootstrapping() {
+        if (useDeprecatedV14Bootstrapping == null) {
+            return false;
         }
-        // Default mode for V14 is bower true
-        compatibility = compatibilityMode != null
-                ? Boolean.valueOf(compatibilityMode)
-                : isDefaultCompatibility();
+        if (useDeprecatedV14Bootstrapping.isEmpty()) {
+            return true;
+        }
+        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
     }
 
-    abstract boolean isDefaultCompatibility();
 }

@@ -20,16 +20,13 @@ import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.LabelElement;
-import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Category(IgnoreOSGi.class)
 public class AttachExistingElementIT extends ChromeBrowserTest {
 
     @Test

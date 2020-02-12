@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -168,13 +169,6 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
-        configuration.setCompatibilityMode(true);
-        assertNull(DevModeHandler.start(configuration, npmFolder));
-        Thread.sleep(150); // NOSONAR
-    }
-
-    @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         int port = prepareHttpServer(0, HTTP_OK, "bar");
         DevModeHandler.start(port, configuration, npmFolder);
@@ -208,9 +202,45 @@ public class DevModeHandlerTest {
     }
 
     @Test
+    public void should_HandleJavaScriptRequests() {
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
+        assertTrue(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
+    }
+
+    @Test
+    public void shouldNot_HandleNonVaadinRequests() {
+        HttpServletRequest request = prepareRequest("/foo.js");
+        assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
+    }
+
+    @Test
+    public void shouldNot_HandleOtherRequests() {
+        HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
+        assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
+    }
+
+    @Test
+    public void should_HandleAnyAssetInVaadin() {
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
+        assertTrue(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
+    }
+
+    @Test(expected = ConnectException.class)
+    public void should_ThrowAnException_When_WebpackNotListening()
+            throws IOException {
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
+        DevModeHandler.start(0, configuration, npmFolder)
+                .serveDevModeRequest(request, null);
+    }
+
+    @Test
     public void webpack_forDifferentRequests_shouldHaveCorrectResponse()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "bar");
 
@@ -237,7 +267,7 @@ public class DevModeHandlerTest {
     @Test
     public void vaadinServlet_forDifferentRequests_shouldHaveCorrectResponse()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "");
 
@@ -296,14 +326,10 @@ public class DevModeHandlerTest {
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
 
         List<String> paramNames = new ArrayList<>();
-        paramNames.add(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
         paramNames.add(FrontendUtils.PARAM_TOKEN_FILE);
 
         Mockito.doAnswer(invocation -> Collections.enumeration(paramNames))
                 .when(cfg).getInitParameterNames();
-        Mockito.doAnswer(invocation -> Boolean.FALSE.toString()).when(cfg)
-                .getInitParameter(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
 
         File tokenFile = new File(temporaryFolder.getRoot(),
                 "flow-build-info.json");
@@ -348,13 +374,20 @@ public class DevModeHandlerTest {
         if (port == 0) {
             port = DevModeHandler.getFreePort();
         }
-        httpServer = HttpServer.create(new InetSocketAddress(port), 0);
+        httpServer = createStubWebpackTcpListener(port, status, response);
+        return port;
+    }
+
+    public static HttpServer createStubWebpackTcpListener(int port, int status,
+            String response) throws Exception {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(port),
+                0);
         httpServer.createContext("/", exchange -> {
             exchange.sendResponseHeaders(status, response.length());
             exchange.getResponseBody().write(response.getBytes());
             exchange.close();
         });
         httpServer.start();
-        return port;
+        return httpServer;
     }
 }

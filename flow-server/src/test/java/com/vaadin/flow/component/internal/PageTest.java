@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.page.Page.ExecutionCanceler;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockUI;
 
@@ -48,21 +48,11 @@ public class PageTest {
         page.addJavaScript(null);
     }
 
-    public void testSetTitle_nullTitle_clearsPendingJsExecution() {
-        page.setTitle("foobar");
-
-        Assert.assertEquals(1, countPendingInvocations());
-
-        page.setTitle(null);
-
-        Assert.assertEquals(0, countPendingInvocations());
-    }
-
     @Test
     public void testJavasScriptExecutionCancel() {
         Assert.assertEquals(0, countPendingInvocations());
 
-        ExecutionCanceler executeJavaScript = page
+        PendingJavaScriptResult executeJavaScript = page
                 .executeJs("window.alert('$0');", "foobar");
 
         Assert.assertEquals(1, countPendingInvocations());
@@ -76,7 +66,7 @@ public class PageTest {
     public void testJavaScriptExecutionTooLateCancel() {
         Assert.assertEquals(0, countPendingInvocations());
 
-        ExecutionCanceler executeJavaScript = page
+        PendingJavaScriptResult executeJavaScript = page
                 .executeJs("window.alert('$0');", "foobar");
 
         Assert.assertEquals(1, countPendingInvocations());

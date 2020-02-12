@@ -141,8 +141,8 @@ public class AttachListenerView extends AbstractDivView {
         Input input = new Input();
         input.getElement().setAttribute("type", "radio")
                 .setAttribute("name", group).setAttribute("value", text)
-                .addSynchronizedProperty("checked")
-                .addSynchronizedPropertyEvent("change");
+                .addPropertyChangeListener("checked", "change", event -> {
+                });
         input.setId(id);
         radioButtons.put(id, input);
 

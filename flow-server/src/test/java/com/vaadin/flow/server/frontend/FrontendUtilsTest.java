@@ -19,9 +19,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -132,6 +134,16 @@ public class FrontendUtilsTest {
                 containsString("--no-update-notifier"));
         assertThat(FrontendUtils.getNpmExecutable(baseDir).get(2),
                 containsString("--no-audit"));
+    }
+
+    @Test
+    public void getNpmExecutable_removesPnpmLock() throws IOException {
+        File file = new File(baseDir, "pnpm-lock.yaml");
+        file.createNewFile();
+
+        FrontendUtils.getNpmExecutable(baseDir);
+
+        Assert.assertFalse(file.exists());
     }
 
     @Test
@@ -250,8 +262,7 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\","
-                + "\"index.es5\": \"build/index.es5-2222.cache.js\"" + "}",
+        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
                 statsAssetsByChunkName);
     }
 
@@ -263,9 +274,41 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\","
-                + "\"index.es5\": \"build/index.es5-2222.cache.js\"" + "}",
+        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
                 statsAssetsByChunkName);
+    }
+
+    @Test
+    public void noStatsFile_assetsByChunkReturnsNull() throws IOException {
+        VaadinService service = getServiceWithResource(null);
+
+        String statsAssetsByChunkName = FrontendUtils
+                .getStatsAssetsByChunkName(service);
+
+        Assert.assertNull(statsAssetsByChunkName);
+    }
+
+    @Test
+    public void should_getUnixRelativePath_when_givenTwoPaths() {
+        Path sourcePath = Mockito.mock(Path.class);
+        Path relativePath = Mockito.mock(Path.class);
+        Mockito.when(sourcePath.relativize(Mockito.any()))
+                .thenReturn(relativePath);
+        Mockito.when(relativePath.toString())
+                .thenReturn("this\\is\\windows\\path");
+
+        String relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should replace windows path separator with unix path separator",
+                "this/is/windows/path", relativeUnixPath);
+        Mockito.when(relativePath.toString()).thenReturn("this/is/unix/path");
+
+        relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should keep the same path when it uses unix path separator",
+                "this/is/unix/path", relativeUnixPath);
     }
 
     @Test
@@ -320,6 +363,11 @@ public class FrontendUtilsTest {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
                 .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
 
+        return getServiceWithResource(
+                new ByteArrayInputStream(stats.getBytes()));
+    }
+
+    private VaadinService getServiceWithResource(InputStream stats) {
         VaadinService service = Mockito.mock(VaadinService.class);
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         DeploymentConfiguration deploymentConfiguration = Mockito
@@ -334,7 +382,7 @@ public class FrontendUtilsTest {
                 .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
         Mockito.when(classLoader.getResourceAsStream(
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(new ByteArrayInputStream(stats.getBytes()));
+                .thenReturn(stats);
         return service;
     }
 }

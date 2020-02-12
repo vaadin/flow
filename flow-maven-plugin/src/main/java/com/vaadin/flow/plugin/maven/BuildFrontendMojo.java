@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,9 +52,7 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -79,26 +79,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
-     */
-    @Parameter(defaultValue = "${project.basedir}")
-    private File npmFolder;
-
-    /**
-     * The JavaScript file used as entry point of the application, and which is
-     * automatically updated by flow by reading java annotations.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
-    private File generatedFolder;
-
-    /**
-     * A directory with project's frontend source files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    private File frontendDirectory;
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -134,20 +114,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "true")
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
     private boolean pnpmEnable;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
-        // Do nothing when compatibility mode
-        if (compatibility) {
-            getLog().info(
-                    "Skipped 'build-frontend' goal because compatibility mode is set to true.");
-            return;
-        }
-
         updateBuildFile();
 
         long start = System.nanoTime();
@@ -177,17 +148,27 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
-        new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
+        // @formatter:off
+        new NodeTasks.Builder(getClassFinder(project),
+                npmFolder, generatedFolder, frontendDirectory)
+                        .runNpmInstall(runNpmInstall)
+                        .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
+                        .withFlowResourcesFolder(flowResourcesFolder)
                         .copyResources(jarFiles)
                         .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
                         .withTokenFile(getTokenFile()).enablePnpm(pnpmEnable)
-                        .build().execute();
+                        .withConnectApplicationProperties(
+                                applicationProperties)
+                        .withConnectJavaSourceFolder(javaSourceFolder)
+                        .withConnectGeneratedOpenApiJson(openApiJsonFile)
+                        .withConnectClientTsApiFolder(generatedTsFolder)
+                        .build()
+                        .execute();
     }
 
     private void runWebpack() {
@@ -204,14 +185,15 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         String nodePath = FrontendUtils
                 .getNodeExecutable(npmFolder.getAbsolutePath());
 
+        List<String> command = Arrays.asList(nodePath,
+                webpackExecutable.getAbsolutePath(), "--progress");
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
+                .directory(project.getBasedir()).inheritIO();
+        getLog().info("Running webpack ...");
+
         Process webpackLaunch = null;
         try {
-            getLog().info("Running webpack ...");
-            webpackLaunch = new ProcessBuilder(nodePath,
-                    webpackExecutable.getAbsolutePath())
-                            .directory(project.getBasedir())
-                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                            .start();
+            webpackLaunch = builder.start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);
@@ -271,27 +253,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             getLog().warn("Unable to read token file", e);
-        }
-    }
-
-    @Override
-    boolean isDefaultCompatibility() {
-        File tokenFile = getTokenFile();
-        if (!tokenFile.exists()) {
-            getLog().warn("'build-frontend' goal was called without previously "
-                    + "calling 'prepare-frontend'");
-            return true;
-        }
-        try {
-            String json = FileUtils.readFileToString(tokenFile,
-                    StandardCharsets.UTF_8.name());
-            JsonObject buildInfo = JsonUtil.parse(json);
-            return buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    ? buildInfo.getBoolean(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    : true;
-        } catch (IOException e) {
-            getLog().warn("Unable to read token file", e);
-            return true;
         }
     }
 

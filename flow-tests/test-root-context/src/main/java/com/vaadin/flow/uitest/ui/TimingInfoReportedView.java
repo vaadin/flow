@@ -43,7 +43,7 @@ public class TimingInfoReportedView extends Div {
             + "}"
             + "div.appendChild(document.createTextNode('Timings ok'));"
             + "}; "
-            + "report(window.Vaadin.Flow.clients[Object.keys(window.Vaadin.Flow.clients)].getProfilingData());"
+            + "report(window.Vaadin.Flow.clients[Object.keys(window.Vaadin.Flow.clients).filter(k => k !== 'TypeScript')].getProfilingData());"
             + "},0);";
   //@formatter:on
 

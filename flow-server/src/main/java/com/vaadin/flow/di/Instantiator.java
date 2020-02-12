@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.polymertemplate.NpmTemplateParser;
+import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.BootstrapListener;
@@ -30,6 +32,7 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
 
 /**
@@ -94,10 +97,39 @@ public interface Instantiator extends Serializable {
      *            listeners, not <code>null</code>
      *
      * @return a stream of all bootstrap listeners to use, not <code>null</code>
+     *
+     * @deprecated Since 3.0, this API is deprecated in favor of
+     *             {@link Instantiator#getIndexHtmlRequestListeners(Stream)}
+     *             when using client-side bootstrapping
      */
+    @Deprecated
     default Stream<BootstrapListener> getBootstrapListeners(
             Stream<BootstrapListener> serviceInitListeners) {
         return serviceInitListeners;
+    }
+
+    /**
+     * Processes the available Index HTML request listeners. This method can
+     * supplement the set of Index HTML request listeners provided by
+     * {@link VaadinServiceInitListener} implementations.
+     * <p>
+     * The default implementation returns the original listeners without
+     * changes.
+     * <p>
+     * The order of the listeners inside the stream defines the order of the
+     * execution of those listeners by the
+     * {@link VaadinService#modifyBootstrapPage(BootstrapPageResponse)} method.
+     *
+     * @param indexHtmlRequestListeners
+     *            a stream of Index HTML request listeners provided by service
+     *            init listeners, not <code>null</code>
+     *
+     * @return a stream of all Index HTML request listeners to use, not
+     *         <code>null</code>
+     */
+    default Stream<IndexHtmlRequestListener> getIndexHtmlRequestListeners(
+            Stream<IndexHtmlRequestListener> indexHtmlRequestListeners) {
+        return indexHtmlRequestListeners;
     }
 
     /**
@@ -194,5 +226,14 @@ public interface Instantiator extends Serializable {
      */
     default I18NProvider getI18NProvider() {
         return getOrCreate(I18NProvider.class);
+    }
+
+    /**
+     * Returns {@link TemplateParser} for this service.
+     *
+     * @return A non-null template parser.
+     */
+    default TemplateParser getTemplateParser() {
+        return NpmTemplateParser.getInstance();
     }
 }

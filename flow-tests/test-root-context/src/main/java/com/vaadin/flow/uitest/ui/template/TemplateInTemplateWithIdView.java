@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.html.Div;
@@ -31,7 +30,6 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class TemplateInTemplateWithIdView extends AbstractDivView {
 
     @Tag("parent-id-template")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ParentIdTemplate.html")
     @JsModule("ParentIdTemplate.js")
     @Uses(ChildTemplate.class)
     public static class ParentTemplate extends PolymerTemplate<TemplateModel> {
@@ -39,7 +37,6 @@ public class TemplateInTemplateWithIdView extends AbstractDivView {
     }
 
     @Tag("child-id-template")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ChildIdTemplate.html")
     @JsModule("ChildIdTemplate.js")
     public static class ChildTemplate extends PolymerTemplate<TemplateModel> {
         @Id("text")

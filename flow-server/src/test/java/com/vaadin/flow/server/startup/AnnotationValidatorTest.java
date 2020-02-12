@@ -95,15 +95,15 @@ public class AnnotationValidatorTest {
             Assert.assertTrue("Exception was missing Inline exception",
                     errorMessage.contains(String.format(NON_PARENT,
                             InlineViewportWithParent.class.getName(),
-                            Inline.class.getSimpleName())));
+                            "@" + Inline.class.getSimpleName())));
             Assert.assertTrue("Exception was missing Viewport exception",
                     errorMessage.contains(String.format(NON_PARENT,
                             ViewPortViewportWithParent.class.getName(),
-                            Viewport.class.getSimpleName())));
+                            "@" + Viewport.class.getSimpleName())));
             Assert.assertTrue("Exception was missing BodySize exception",
                     errorMessage.contains(String.format(NON_PARENT,
                             BodySizeViewportWithParent.class.getName(),
-                            BodySize.class.getSimpleName())));
+                            "@" + BodySize.class.getSimpleName())));
         }
     }
 
@@ -113,8 +113,8 @@ public class AnnotationValidatorTest {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
                 NON_PARENT, FailingMultiAnnotation.class.getName(),
-                BodySize.class.getSimpleName() + ", "
-                        + Inline.class.getSimpleName()));
+                "@" + BodySize.class.getSimpleName() + ", "
+                        + "@" + Inline.class.getSimpleName()));
 
         annotationValidator.onStartup(Stream.of(FailingMultiAnnotation.class)
                 .collect(Collectors.toSet()), servletContext);
