@@ -30,6 +30,7 @@ import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
@@ -119,7 +120,7 @@ public class ErrorStateRendererTest {
     }
 
     @Test
-    public void handle_infiniteReroute_noStackOverflow_500CodeIsReturned() {
+    public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_500CodeIsReturned() {
         UI ui = configureMocks();
 
         NavigationState state = new NavigationStateBuilder(ui.getRouter())
@@ -134,6 +135,24 @@ public class ErrorStateRendererTest {
         ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getRouter(),
                 new Location("error"), ui, NavigationTrigger.CLIENT_SIDE,
                 parameter);
+        // event should route to ErrorTarget whose layout forwards to NPEView
+        // which reroute to ErrorTarget and this is an infinite loop
+        Assert.assertEquals(500, renderer.handle(event));
+    }
+
+    @Test
+    public void handle_openNPEView_infiniteReroute_noStackOverflow_500CodeIsReturned() {
+        UI ui = configureMocks();
+
+        NavigationState state = new NavigationStateBuilder(ui.getRouter())
+                .withTarget(InfiniteLoopNPEView.class).build();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(state);
+
+        RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
+                .setAnnotatedRoute(InfiniteLoopNPEView.class);
+
+        NavigationEvent event = new NavigationEvent(ui.getRouter(),
+                new Location("npe"), ui, NavigationTrigger.CLIENT_SIDE);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
         Assert.assertEquals(500, renderer.handle(event));
