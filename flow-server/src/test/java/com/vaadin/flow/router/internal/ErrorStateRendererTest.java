@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -38,8 +39,10 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.ErrorStateRenderer.ExceptionsTrace;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
@@ -119,8 +122,8 @@ public class ErrorStateRendererTest {
 
     }
 
-    @Test
-    public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_500CodeIsReturned() {
+    @Test(expected = ExceptionsTrace.class)
+    public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
         NavigationState state = new NavigationStateBuilder(ui.getRouter())
@@ -137,11 +140,11 @@ public class ErrorStateRendererTest {
                 parameter);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
-        Assert.assertEquals(500, renderer.handle(event));
+        renderer.handle(event);
     }
 
-    @Test
-    public void handle_openNPEView_infiniteReroute_noStackOverflow_500CodeIsReturned() {
+    @Test(expected = ExceptionsTrace.class)
+    public void handle_openNPEView_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
         NavigationState state = new NavigationStateBuilder(ui.getRouter())
@@ -150,16 +153,19 @@ public class ErrorStateRendererTest {
 
         RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
                 .setAnnotatedRoute(InfiniteLoopNPEView.class);
+        ((ApplicationRouteRegistry) ui.getRouter().getRegistry())
+                .setErrorNavigationTargets(
+                        Collections.singleton(InfiniteLoopErrorTarget.class));
 
         NavigationEvent event = new NavigationEvent(ui.getRouter(),
                 new Location("npe"), ui, NavigationTrigger.CLIENT_SIDE);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
-        Assert.assertEquals(500, renderer.handle(event));
+        renderer.handle(event);
     }
 
     @Test
-    public void handle_errorViewLayoutForwardsToAView_() {
+    public void handle_errorViewLayoutForwardsToAView_viewIsNavigated() {
         UI ui = configureMocks();
 
         NavigationState state = new NavigationStateBuilder(ui.getRouter())
