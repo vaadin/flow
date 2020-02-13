@@ -57,6 +57,8 @@ import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
 
+    private static final String USER_HOME = "user.home";
+
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
             : "node/node";
@@ -356,6 +358,47 @@ public class FrontendUtilsTest {
         Assert.assertTrue(executable.contains("--shamefully-hoist=true"));
         Assert.assertTrue(
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
+    }
+
+    @Test
+    public synchronized void getVaadinHomeDirectory_noVaadinFolder_folderIsCreated()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            File vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertTrue(vaadinHomeDirectory.exists());
+            Assert.assertTrue(vaadinHomeDirectory.isDirectory());
+
+            // access it one more time
+            vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertEquals(".vaadin", vaadinDir.getName());
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            vaadinDir.createNewFile();
+            FrontendUtils.getVaadinHomeDirectory();
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
     }
 
     private VaadinService setupStatsAssetMocks(String statsFile)
