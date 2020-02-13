@@ -273,6 +273,9 @@ public class AbstractRouteRegistryTest {
             Assert.assertTrue("MyRoute2 must be added", event.isRouteAdded(MyRoute.class));
             Assert.assertTrue("Alias2 must be added", event.isRouteAdded(Secondary.class));
             Assert.assertTrue("MyRoute1 must be deleted", event.isRouteRemoved(MyRoute.class));
+            Assert.assertTrue("MyRoute2 must be added", event.getAddedNavigationTargets().contains(MyRoute.class));
+            Assert.assertTrue("Alias2 must be added", event.getAddedNavigationTargets().contains(Secondary.class));
+            Assert.assertTrue("MyRoute1 must be deleted", event.getRemovedNavigationTargets().contains(MyRoute.class));
         });
 
         registry.update(() -> {
@@ -293,6 +296,9 @@ public class AbstractRouteRegistryTest {
             Assert.assertTrue("MyRoute2 must be added", event.isPathAdded("MyRoute2"));
             Assert.assertTrue("Alias2 must be added", event.isPathAdded("Alias2"));
             Assert.assertTrue("MyRoute1 must be deleted", event.isPathRemoved("MyRoute1"));
+            Assert.assertTrue("MyRoute2 must be added", event.getAddedURLs().contains("MyRoute2"));
+            Assert.assertTrue("Alias2 must be added", event.getAddedURLs().contains("Alias2"));
+            Assert.assertTrue("MyRoute1 must be deleted", event.getRemovedURLs().contains("MyRoute1"));
         });
 
         registry.update(() -> {

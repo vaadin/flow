@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import java.util.Collections;
 import java.util.EventObject;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
@@ -121,6 +122,54 @@ public class RoutesChangedEvent extends EventObject {
         return routes.stream()
                 .map(RouteBaseData::getUrl)
                 .anyMatch(url -> url.equals(path));
+    }
+
+    /**
+     * Get every single navigation targets of all added routes in this change.
+     *
+     * @return immutable list of all added navigation targets
+     */
+    public List<Class<? extends Component>> getAddedNavigationTargets() {
+        List<Class<? extends Component>> list = new LinkedList<>();
+        added.iterator().forEachRemaining(routeBaseData ->
+            list.add(routeBaseData.getNavigationTarget()));
+        return Collections.unmodifiableList(list);
+    }
+
+    /**
+     * Get every single navigation targets of all removed routes in this change.
+     *
+     * @return immutable list of all removed navigation targets
+     */
+    public List<Class<? extends Component>> getRemovedNavigationTargets() {
+        List<Class<? extends Component>> list = new LinkedList<>();
+        removed.iterator().forEachRemaining(routeBaseData ->
+            list.add(routeBaseData.getNavigationTarget()));
+        return Collections.unmodifiableList(list);
+    }
+
+    /**
+     * Get every single URL of all added routes in this change.
+     *
+     * @return immutable list of all added URLs
+     */
+    public List<String> getAddedURLs() {
+        List<String> list = new LinkedList<>();
+        added.iterator().forEachRemaining(routeBaseData ->
+            list.add(routeBaseData.getUrl()));
+        return Collections.unmodifiableList(list);
+    }
+
+    /**
+     * Get every single URL of all removed routes in this change.
+     *
+     * @return immutable list of all removed URLs
+     */
+    public List<String> getRemovedURLs() {
+        List<String> list = new LinkedList<>();
+        removed.iterator().forEachRemaining(routeBaseData ->
+            list.add(routeBaseData.getUrl()));
+        return Collections.unmodifiableList(list);
     }
 
 }
