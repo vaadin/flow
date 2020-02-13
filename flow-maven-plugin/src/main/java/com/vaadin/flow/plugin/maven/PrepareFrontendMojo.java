@@ -174,15 +174,14 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         if (log.isDebugEnabled()) {
             log.debug(String.format(
                     "%n>>> Running prepare-frontend in %s project%nSystem"
-                            + ".properties:%n productionMode: %s%n bowerMode:"
-                            + " %s%n compatibilityMode: %s%n webpackPort: %s%n "
+                            + ".properties:%n productionMode: %s%n"
+                            + " webpackPort: %s%n "
                             + "project.basedir: %s%nGoal parameters:%n "
                             + "productionMode: %s%n "
                             + "npmFolder: %s%nToken file: " + "%s%n"
                             + "Token content: %s%n",
                     project.getName(),
                     System.getProperty("vaadin.productionMode"),
-                    System.getProperty("vaadin.bowerMode"),
                     System.getProperty("vaadin.devmode.webpack.running-port"),
                     System.getProperty("project.basedir"), productionMode,
                     npmFolder, token.getAbsolutePath(), buildInfo.toJson()));
