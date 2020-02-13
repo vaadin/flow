@@ -53,11 +53,13 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.server.frontend.installer.InstallationException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -378,7 +380,46 @@ public class FrontendUtils {
         String command = isWindows() ? "node.exe" : "node";
         String defaultNode = FrontendUtils.isWindows() ? "node/node.exe"
                 : "node/node";
-        return getExecutable(baseDir, command, defaultNode).getAbsolutePath();
+        try {
+            return getExecutable(baseDir, command, defaultNode).getAbsolutePath();
+        }catch (IllegalStateException ise) {
+            return installNode(getVaadinHomeDirectory(), "v12.16.0", Optional.empty());
+        }
+    }
+
+    /**
+     * Install node and npm into target directory.
+     *
+     * @param installDirectory
+     *         installation directory
+     * @param nodeVersion
+     *         node version to install
+     * @param downloadRootUrl
+     *         optional different url to download node from. Could also be from
+     *         the filesystem.
+     * @return node installation path
+     */
+    protected static String installNode(File installDirectory,
+            String nodeVersion, Optional<String> downloadRootUrl) {
+        NodeInstaller nodeInstaller = new NodeInstaller(installDirectory,
+                getProxies()).setNodeVersion(nodeVersion);
+        if (downloadRootUrl.isPresent()) {
+            nodeInstaller.setNodeDownloadRoot(downloadRootUrl.get());
+        }
+
+        try {
+            nodeInstaller.install();
+        } catch (InstallationException e) {
+            throw new RuntimeException(e);
+        }
+
+        String command = isWindows() ? "node.exe" : "node";
+        return new File(nodeInstaller.getInstallDirectory(), command).toString();
+    }
+
+    private static List<ProxyConfig.Proxy> getProxies() {
+        // TODO: Implement proxy collection
+        return Collections.emptyList();
     }
 
     /**
@@ -1210,7 +1251,7 @@ public class FrontendUtils {
          * @param extraInfo
          *            extra information which might be helpful to the end user
          */
-        public UnknownVersionException(String tool, String extraInfo) {
+        public  UnknownVersionException(String tool, String extraInfo) {
             super("Unable to detect version of " + tool + ". " + extraInfo);
         }
 
@@ -1232,7 +1273,7 @@ public class FrontendUtils {
         }
     }
 
-    private static FrontendVersion getVersion(String tool,
+    protected static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
@@ -1248,6 +1289,21 @@ public class FrontendUtils {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
+    }
+
+    /**
+     * Parse the version number of node/npm from version output string.
+     *
+     * @param versionString
+     *         string containing version output, typically produced by
+     *         <code>tool --version</code>
+     * @return FrontendVersion of versionString
+     * @throws IOException
+     *         if parsing fails
+     */
+    public static FrontendVersion parseFrontenVersion(String versionString)
+            throws IOException {
+        return new FrontendVersion((parseVersionString(versionString)));
     }
 
     /**

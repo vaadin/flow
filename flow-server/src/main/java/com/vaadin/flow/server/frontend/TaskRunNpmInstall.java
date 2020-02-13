@@ -162,6 +162,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
         builder.environment().put("NO_UPDATE_NOTIFIER", "1");
+//        System.out.println(builder.environment().get("CLASSPATH"));
+//        System.out.println(System.getProperty("java.library.path"));
+        String value = System.getProperty("java.class.path") + System.getProperty("path.separator") +
+                System.getProperty("java.class.path") +System.getProperty("path.separator") +
+                System.getProperty("java.class.path");
+        System.out.println(value.length());
+        builder.environment().put("CLASSPATH",
+                value);
         builder.directory(packageUpdater.npmFolder);
 
         builder.redirectInput(ProcessBuilder.Redirect.INHERIT);

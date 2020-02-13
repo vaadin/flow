@@ -23,16 +23,22 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,6 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.installer.Platform;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -118,6 +125,68 @@ public class FrontendUtilsTest {
                 containsString("node"));
         assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
                 containsString(NPM_CLI_STRING));
+    }
+
+    @Test
+    @Ignore("Ignored to lessen PRs hitting the server too often")
+    public void installNode_NodeIsInstalledToTargetDirectory()
+            throws FrontendUtils.UnknownVersionException {
+        File targetDir = new File(baseDir + "/.vaadin");
+
+        Assert.assertFalse("Clean test should not contain a .vaadin folder", targetDir.exists());
+
+        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
+                Optional.empty());
+        Assert.assertNotNull(nodeExecutable);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        FrontendVersion node = FrontendUtils
+                .getVersion("node", nodeVersionCommand);
+        Assert.assertEquals("12.16.0", node.getFullVersion());
+
+        List<String> npmVersionCommand = new ArrayList<>(
+                FrontendUtils.getNpmExecutable(targetDir.getPath()));
+        npmVersionCommand.add("--version");
+        FrontendVersion npm = FrontendUtils
+                .getVersion("npm", npmVersionCommand);
+        Assert.assertEquals("6.13.4", npm.getFullVersion());
+
+    }
+
+    @Test
+    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
+            throws FrontendUtils.UnknownVersionException, IOException {
+        Platform platform = Platform.guess();
+        String nodeExec = platform.isWindows() ? "node.exe" : "node";
+        String prefix = "node-v12.16.0-" + platform.getNodeClassifier();
+
+        File targetDir = new File(baseDir + "/.vaadin");
+
+        Assert.assertFalse("Clean test should not contain a .vaadin folder", targetDir.exists());
+        File downloadDir = tmpDir.newFolder("v12.16.0");
+        File zipFile = new File(downloadDir,
+                prefix + "." + platform.getArchiveExtension());
+        zipFile.createNewFile();
+        Path tempZip = zipFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempZip))) {
+            zipOutputStream.putNextEntry(new ZipEntry(prefix+"/"+nodeExec));
+                zipOutputStream.closeEntry();
+            zipOutputStream.putNextEntry(new ZipEntry(prefix+"/node_modules/npm/bin/npm"));
+                zipOutputStream.closeEntry();
+            zipOutputStream.putNextEntry(new ZipEntry(prefix+"/node_modules/npm/bin/npm.cmd"));
+                zipOutputStream.closeEntry();
+        }
+
+
+        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
+                Optional.of(new File(baseDir).toPath().toUri().toString()));
+        Assert.assertNotNull(nodeExecutable);
+
+        Assert.assertTrue(new File(targetDir, "node/node_modules/npm/bin/npm").exists());
     }
 
     @Test
