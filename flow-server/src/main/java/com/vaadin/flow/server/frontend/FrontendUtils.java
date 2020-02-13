@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -1198,6 +1199,39 @@ public class FrontendUtils {
         }
 
         return returnCommand;
+    }
+
+    static File getVaadinHomeDirectory() {
+        File home = FileUtils.getUserDirectory();
+        if (!home.exists()) {
+            throw new IllegalStateException("The user directory '"
+                    + home.getAbsolutePath() + "' doesn't exist");
+        }
+        if (!home.isDirectory()) {
+            throw new IllegalStateException("The path '"
+                    + home.getAbsolutePath() + "' is not a directory");
+        }
+        File vaadinFolder = new File(home, ".vaadin");
+        if (vaadinFolder.exists()) {
+            if (vaadinFolder.isDirectory()) {
+                return vaadinFolder;
+            } else {
+                throw new IllegalStateException("The path '"
+                        + vaadinFolder.getAbsolutePath()
+                        + "' is not a directory. "
+                        + "This path is used to store vaadin related data. "
+                        + "Please either remove the file or create a directory");
+            }
+        }
+        try {
+            FileUtils.forceMkdir(vaadinFolder);
+            return vaadinFolder;
+        } catch (IOException exception) {
+            throw new UncheckedIOException(
+                    "Couldn't create '.vaadin' folder inside home directory '"
+                            + home.getAbsolutePath() + "'",
+                    exception);
+        }
     }
 
     /**
