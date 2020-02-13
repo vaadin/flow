@@ -510,7 +510,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             head, initialPageSettings));
 
             if (!config.isProductionMode()) {
-                UsageStatisticsExporter.exportUsageStatisticsToDocument(document);
+                UsageStatisticsExporter
+                        .exportUsageStatisticsToDocument(document);
             }
 
             setupPwa(document, context);
@@ -749,19 +750,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 BootstrapContext context) throws IOException {
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
-                StringBuilder message = new StringBuilder("The stats file from webpack (stats.json) was not found.\n");
-                if(service.getDeploymentConfiguration().isProductionMode()) {
+                StringBuilder message = new StringBuilder(
+                        "The stats file from webpack (stats.json) was not found.\n");
+                if (service.getDeploymentConfiguration().isProductionMode()) {
                     message.append(
                             "The application is running in production mode.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                    message.append("Or switch application to development mode.");
-                } else if(!service.getDeploymentConfiguration().enableDevServer()) {
-                    message.append("Dev server is disabled for the application.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Or switch application to development mode.");
+                } else if (!service.getDeploymentConfiguration()
+                        .enableDevServer()) {
+                    message.append(
+                            "Dev server is disabled for the application.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
                 } else {
-                    message.append("This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
-                            message.append("If you are using Spring Boot and are launching the Application class directly, ");
-                                    message.append("you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+                    message.append(
+                            "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
+                    message.append(
+                            "If you are using Spring Boot and are launching the Application class directly, ");
+                    message.append(
+                            "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
                 }
                 throw new IOException(message.toString());
             }
