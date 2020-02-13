@@ -162,6 +162,10 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
+    // Weblogic uses zip protocol
+    private static final Pattern ZIP_PROTOCOL_JAR_FILE_REGEX = Pattern
+            .compile("(.+\\.jar).*");
+
     private static final Pattern VFS_FILE_REGEX = Pattern
             .compile("(vfs:/.+\\.jar).*");
 
@@ -394,12 +398,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 String path = URLDecoder.decode(url.getPath(),
                         StandardCharsets.UTF_8.name());
                 Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
+                Matcher zipProtocolJarMatcher = ZIP_PROTOCOL_JAR_FILE_REGEX
+                        .matcher(path);
                 Matcher dirMatcher = DIR_REGEX_FRONTEND_DEFAULT.matcher(path);
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
                 if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
+                } else if ("zip".equalsIgnoreCase(url.getProtocol())
+                        && zipProtocolJarMatcher.find()) {
+                    frontendFiles.add(new File(zipProtocolJarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
                     frontendFiles.add(new File(dirMatcher.group(1)));
                 } else if (dirCompatibilityMatcher.find()) {
