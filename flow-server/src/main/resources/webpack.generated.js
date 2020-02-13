@@ -9,6 +9,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+const {TypedCssModulesPlugin} = require('typed-css-modules-webpack-plugin');
 
 const path = require('path');
 const baseDir = path.resolve(__dirname);
@@ -175,6 +176,11 @@ module.exports = {
         }
       });
     },
+
+    // generate ".css.d.ts" files
+    new TypedCssModulesPlugin({
+      globPattern: frontendFolder + '/**/*.css',
+    }),
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({

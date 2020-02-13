@@ -199,7 +199,8 @@ public class PrepareFrontendMojoTest {
 
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
                 "webpack", "webpack-cli", "webpack-dev-server",
-                "copy-webpack-plugin", "html-webpack-plugin");
+                "copy-webpack-plugin", "html-webpack-plugin",
+                "typed-css-modules-webpack-plugin");
     }
 
     @Endpoint
