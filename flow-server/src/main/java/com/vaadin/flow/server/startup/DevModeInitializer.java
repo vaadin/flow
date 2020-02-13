@@ -43,6 +43,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -354,25 +356,34 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .withHomeNodeExecRequired(useHomeNodeExec).build()
                     .execute();
 
-            FallbackChunk chunk = FrontendUtils
-                    .readFallbackChunk(tokenFileData);
-            if (chunk != null) {
-                vaadinContext.setAttribute(chunk);
-            }
-        } catch (ExecutionFailedException exception) {
-            log().debug(
-                    "Could not initialize dev mode handler. One of the node tasks failed",
-                    exception);
-            throw new ServletException(exception);
-        }
+        NodeTasks tasks = builder.enablePackagesUpdate(true)
+                .useByteCodeScanner(useByteCodeScanner)
+                .withFlowResourcesFolder(flowResourcesFolder)
+                .copyResources(frontendLocations)
+                .copyLocalResources(new File(baseDir,
+                        Constants.LOCAL_FRONTEND_RESOURCES_PATH))
+                .enableImportsUpdate(true).runNpmInstall(true)
+                .populateTokenFileData(tokenFileData)
+                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .build();
 
-        try {
-            DevModeHandler.start(config, builder.npmFolder);
-        } catch (IllegalStateException exception) {
-            // wrap an ISE which can be caused by inability to find tools like
-            // node, npm into a servlet exception
-            throw new ServletException(exception);
-        }
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            try {
+                tasks.execute();
+
+                FallbackChunk chunk = FrontendUtils
+                        .readFallbackChunk(tokenFileData);
+                if (chunk != null) {
+                    vaadinContext.setAttribute(chunk);
+                }
+            } catch (ExecutionFailedException exception) {
+                log().debug(
+                        "Could not initialize dev mode handler. One of the node tasks failed",
+                        exception);
+                throw new CompletionException(exception);
+            }
+        });
+        DevModeHandler.start(config, builder.npmFolder, future);
     }
 
     private static Logger log() {
