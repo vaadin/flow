@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -279,6 +280,11 @@ public class FrontendUtils {
 
     private static String operatingSystem = null;
 
+    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+
+    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+
+    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
     /**
      * Only static stuff here.
      */
@@ -897,6 +903,8 @@ public class FrontendUtils {
         command.add("install");
         command.add("pnpm@" + DEFAULT_PNPM_VERSION);
 
+        console(YELLOW, commandToString(baseDir, command));
+
         ProcessBuilder builder = createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
         builder.directory(new File(baseDir));
@@ -1204,5 +1212,39 @@ public class FrontendUtils {
                     .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
                     .toLocalDateTime();
         }
+
+    }
+
+    /**
+     * Intentionally send to console instead to log, useful when executing
+     * external processes.
+     *
+     * @param format
+     *            Format of the line to send to console, it must contain a
+     *            `%s` outlet for the message
+     * @param message
+     *            the string to show
+     */
+    @SuppressWarnings("squid:S106")
+    public static void console(String format, Object message) {
+        System.out.print(String.format(format, message));
+    }
+
+    /**
+     * Pretty prints a command line order. It split in lines adapting to 80
+     * columns, and allowing copy and paste in console. It also removes the
+     * current directory to avoid security issues in log files.
+     *
+     * @param baseDir
+     *            the current directory
+     * @param command
+     *            the command and it's arguments
+     * @return the string for printing in logs
+     */
+    public static String commandToString(String baseDir,
+                                         List<String> command) {
+        return "\n" + WordUtils
+                .wrap(String.join(" ", command).replace(baseDir, "."), 50)
+                .replace("\r", "").replace("\n", " \\ \n    ") + "\n";
     }
 }

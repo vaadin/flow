@@ -52,7 +52,12 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -81,9 +86,10 @@ public final class DevModeHandler {
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. -----------------";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------";
-    private static final String YELLOW = "\u001b[38;5;111m{}\u001b[0m";
-    private static final String RED = "\u001b[38;5;196m{}\u001b[0m";
-    private static final String GREEN = "\u001b[38;5;35m{}\u001b[0m";
+    private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
+    private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
+    private static final String LOG_START = "Running webpack to compile frontend resources. This may take a moment, please stand by...";
+    private static final String LOG_END = "Started webpack-dev-server. Time: {}ms";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
     // process and continue. It might happen if webpack changes their output
@@ -157,14 +163,9 @@ public final class DevModeHandler {
                         "-d --inline=false")
                 .split(" +")));
 
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(
-                    "Starting webpack-dev-server, port: {} dir: {}\n   {}",
-                    port, npmFolder, String.join(" ", command));
-        } else {
-            getLogger().info("Starting webpack-dev-server, port: {} dir: {}",
-                    port, npmFolder);
-        }
+        console(GREEN, START);
+        console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
+
         long start = System.currentTimeMillis();
         processBuilder.command(command);
         try {
@@ -195,8 +196,7 @@ public final class DevModeHandler {
 
             logStream(webpackProcess.getInputStream(), succeed, failure);
 
-            getLogger()
-                    .info("Running webpack to compile frontend resources. This may take a moment, please stand by...");
+            getLogger().info(LOG_START);
             synchronized (this) {
                 this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
                         SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -206,9 +206,10 @@ public final class DevModeHandler {
             if (!webpackProcess.isAlive()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
-            getLogger().info(
-                    "Webpack startup and compilation completed in {}ms",
-                    (System.currentTimeMillis() - start));
+
+            long ms = (System.nanoTime() - start) / 1000000;
+            getLogger().info(LOG_END, ms);
+
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
@@ -440,7 +441,14 @@ public final class DevModeHandler {
             try {
                 readLinesLoop(success, failure, reader);
             } catch (IOException e) {
-                getLogger().error("Exception when reading webpack output.", e);
+                if ("Stream closed".equals(e.getMessage())) {
+                    console(GREEN, END);
+                    getLogger().debug("Exception when reading webpack output.",
+                            e);
+                } else {
+                    getLogger().error("Exception when reading webpack output.",
+                            e);
+                }
             }
 
             // Process closed stream, means that it exited, notify
@@ -456,9 +464,9 @@ public final class DevModeHandler {
             BufferedReader reader) throws IOException {
         StringBuilder output = getOutputBuilder();
 
-        Consumer<String> info = s -> getLogger().debug(GREEN, s);
-        Consumer<String> error = s -> getLogger().error(RED, s);
-        Consumer<String> warn = s -> getLogger().debug(YELLOW, s);
+        Consumer<String> info = s -> console(GREEN, s);
+        Consumer<String> error = s -> console(RED, s);
+        Consumer<String> warn = s -> console(YELLOW, s);
         Consumer<String> log = info;
         for (String line; ((line = reader.readLine()) != null);) {
             String cleanLine = line
