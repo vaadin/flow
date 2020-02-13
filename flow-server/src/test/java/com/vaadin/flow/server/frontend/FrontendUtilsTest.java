@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +34,9 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -166,21 +170,41 @@ public class FrontendUtilsTest {
 
         Assert.assertFalse("Clean test should not contain a .vaadin folder", targetDir.exists());
         File downloadDir = tmpDir.newFolder("v12.16.0");
-        File zipFile = new File(downloadDir,
+        File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
-        zipFile.createNewFile();
-        Path tempZip = zipFile.toPath();
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
 
-        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-                Files.newOutputStream(tempZip))) {
-            zipOutputStream.putNextEntry(new ZipEntry(prefix+"/"+nodeExec));
+        if(platform.getArchiveExtension().equals("zip")) {
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempArchive))) {
+                zipOutputStream
+                        .putNextEntry(new ZipEntry(prefix + "/" + nodeExec));
                 zipOutputStream.closeEntry();
-            zipOutputStream.putNextEntry(new ZipEntry(prefix+"/node_modules/npm/bin/npm"));
+                zipOutputStream.putNextEntry(
+                        new ZipEntry(prefix + "/node_modules/npm/bin/npm"));
                 zipOutputStream.closeEntry();
-            zipOutputStream.putNextEntry(new ZipEntry(prefix+"/node_modules/npm/bin/npm.cmd"));
+                zipOutputStream.putNextEntry(
+                        new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
                 zipOutputStream.closeEntry();
+            }
+        } else {
+            try (OutputStream fo = Files.newOutputStream(tempArchive);
+                 OutputStream gzo = new GzipCompressorOutputStream(fo);
+                 ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+                o.putArchiveEntry(
+                        o.createArchiveEntry(new File(prefix + "/" + nodeExec),
+                                prefix + "/" + nodeExec));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/node_modules/npm/bin/npm"),
+                        prefix + "/node_modules/npm/bin/npm"));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/node_modules/npm/bin/npm.cmd"),
+                        prefix + "/node_modules/npm/bin/npm.cmd"));
+                o.closeArchiveEntry();
+            }
         }
-
 
         String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
                 Optional.of(new File(baseDir).toPath().toUri().toString()));
