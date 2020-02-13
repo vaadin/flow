@@ -484,12 +484,17 @@ public class FrontendUtils {
             String defaultLocation) {
         File file = null;
         try {
-            file = defaultLocation == null
-                    ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
-                    : Optional.of(new File(baseDir, defaultLocation))
-                            .filter(frontendToolsLocator::verifyTool)
-                            .orElseGet(() -> frontendToolsLocator
-                                    .tryLocateTool(cmd).orElse(null));
+            if (defaultLocation == null) {
+                file = frontendToolsLocator.tryLocateTool(cmd).orElse(null);
+            } else {
+                file = Arrays
+                        .asList(baseDir,
+                                getVaadinHomeDirectory().getAbsolutePath())
+                        .stream().map(dir -> new File(dir, defaultLocation))
+                        .filter(frontendToolsLocator::verifyTool).findFirst()
+                        .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
+                                .orElse(null));
+            }
         } catch (Exception e) { // NOSONAR
             // There are IOException coming from process fork
         }
@@ -1297,13 +1302,12 @@ public class FrontendUtils {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `npm-cli` node script instead
-        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
-        List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeExecutable(baseDir));
-            returnCommand.add(file.getAbsolutePath());
-        } else {
+        List<String> returnCommand = getNpmScriptCommand(baseDir);
+        if (returnCommand.isEmpty()) {
+            returnCommand = getNpmScriptCommand(
+                    getVaadinHomeDirectory().getAbsolutePath());
+        }
+        if (returnCommand.isEmpty()) {
             // Otherwise look for regulag `npm`
             String command = isWindows() ? "npm.cmd" : "npm";
             returnCommand.add(
@@ -1317,6 +1321,17 @@ public class FrontendUtils {
             new File(baseDir, "pnpm-lock.yaml").delete();
         }
 
+        return returnCommand;
+    }
+
+    private static List<String> getNpmScriptCommand(String dir) {
+        File file = new File(dir, "node/node_modules/npm/bin/npm-cli.js");
+        List<String> returnCommand = new ArrayList<>();
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            returnCommand.add(getNodeExecutable(dir));
+            returnCommand.add(file.getAbsolutePath());
+        }
         return returnCommand;
     }
 
