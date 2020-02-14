@@ -464,9 +464,12 @@ public final class DevModeHandler {
             BufferedReader reader) throws IOException {
         StringBuilder output = getOutputBuilder();
 
-        Consumer<String> info = s -> console(GREEN, s);
-        Consumer<String> error = s -> console(RED, s);
-        Consumer<String> warn = s -> console(YELLOW, s);
+        Consumer<String> info = s -> getLogger()
+                .debug(String.format(GREEN, "{}"), s);
+        Consumer<String> error = s -> getLogger()
+                .error(String.format(RED, "{}"), s);
+        Consumer<String> warn = s -> getLogger()
+                .debug(String.format(YELLOW, "{}"), s);
         Consumer<String> log = info;
         for (String line; ((line = reader.readLine()) != null);) {
             String cleanLine = line
