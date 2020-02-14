@@ -29,7 +29,7 @@ import com.vaadin.flow.router.UrlParameters;
  * parameter values extracted from the input path according with the route
  * configuration.
  */
-public class RouteSearchResult {
+public class RouteSearchResult implements Serializable {
 
     // Processed path.
     private String path;
@@ -44,8 +44,7 @@ public class RouteSearchResult {
             Map<String, Object> urlParameters) {
         this.path = path;
         this.target = target;
-        this.urlParameters = new UrlParameters(
-                Collections.unmodifiableMap(urlParameters));
+        this.urlParameters = new UrlParameters(urlParameters);
     }
 
     /**

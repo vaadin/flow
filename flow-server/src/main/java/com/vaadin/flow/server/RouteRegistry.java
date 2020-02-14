@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.ParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -216,7 +216,7 @@ public interface RouteRegistry extends Serializable {
      * @return optional navigation target url string
      */
     Optional<String> getTargetRoute(Class<? extends Component> navigationTarget,
-            EnumSet<ParameterFormat> format);
+            EnumSet<RouteParameterFormat> format);
 
     /**
      * Get the layout chain for given navigation target on the targeted path.

@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -45,6 +46,24 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
+            Class<? extends Component> navigationTarget) {
+        super(parentLayouts, url, parameters, navigationTarget);
+    }
+
+    /**
+     * AliasData constructor.
+     *
+     * @param parentLayouts
+     *            route parent layout class chain
+     * @param url
+     *            full route url
+     * @param parameters
+     *            navigation target path parameters
+     * @param navigationTarget
+     *            route navigation target
+     */
+    public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
+            String url, Map<String, String> parameters,
             Class<? extends Component> navigationTarget) {
         super(parentLayouts, url, parameters, navigationTarget);
     }
