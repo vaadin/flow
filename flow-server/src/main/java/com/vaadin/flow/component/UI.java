@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,18 +16,19 @@
 
 package com.vaadin.flow.component;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
@@ -63,10 +64,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
-import com.vaadin.flow.theme.ThemeUtil;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -113,23 +110,28 @@ public class UI extends Component
 
     private Locale locale = Locale.getDefault();
 
-    private final UIInternals internals = new UIInternals(this);
+    private final UIInternals internals;
 
     private final Page page = new Page(this);
-
-    /*
-     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
-     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
-     * and UUID.randomUUID() is defined to use a cryptographically secure random
-     * generator.
-     */
-    private final String csrfToken = UUID.randomUUID().toString();
 
     /**
      * Creates a new empty UI.
      */
     public UI() {
+        this(new UIInternalUpdater() {
+        });
+    }
+
+    /**
+     * Create a new empty UI with a custom {@link UIInternalUpdater}
+     * implementation.
+     *
+     * @param internalsHandler
+     *            an implementation of UIInternalsHandler.
+     */
+    protected UI(UIInternalUpdater internalsHandler) {
         super(null);
+        internals = new UIInternals(this, internalsHandler);
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
@@ -732,6 +734,7 @@ public class UI extends Component
         assert locale != null : "Null locale is not supported!";
         if (!this.locale.equals(locale)) {
             this.locale = locale;
+            Direction.set(this, locale);
             EventUtil.informLocaleChangeObservers(this);
         }
     }
@@ -773,31 +776,6 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
-    }
-
-    /**
-     * Gets the {@link ThemeDefinition} associated with the given navigation
-     * target, if any. The theme is defined by using the {@link Theme}
-     * annotation on the navigation target class.
-     * <p>
-     * If no {@link Theme} and {@link NoTheme} annotation are used, by default
-     * the {@code com.vaadin.flow.theme.lumo.Lumo} class is used (if present on
-     * the classpath).
-     *
-     * @param navigationTarget
-     *            the navigation target class
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
-     * @return the associated ThemeDefinition, or empty if none is defined and
-     *         the Lumo class is not in the classpath, or if the NoTheme
-     *         annotation is being used.
-     * @see ThemeUtil#findThemeForNavigationTarget(UI, Class, String)
-     */
-    public Optional<ThemeDefinition> getThemeFor(Class<?> navigationTarget,
-            String path) {
-        return Optional.ofNullable(ThemeUtil.findThemeForNavigationTarget(this,
-                navigationTarget, path));
     }
 
     /**
@@ -992,7 +970,13 @@ public class UI extends Component
      * Add a listener that will be informed when old components are detached.
      * <p>
      * Listeners will be executed before any found observers.
-     *
+     * <p>
+     * If a route target is left for reasons not under the control of the
+     * navigator (for instance using
+     * {@link com.vaadin.flow.component.page.Page#setLocation(URI)}, typing a
+     * URL into the address bar, or closing the browser), listeners are not
+     * called.
+     * 
      * @param listener
      *            the before leave listener
      * @return handler to remove the event listener
@@ -1063,7 +1047,7 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> this,
+        return new ShortcutRegistration(this, () -> new Component[] {this},
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -1098,7 +1082,7 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> this, listener, key)
+        return new ShortcutRegistration(this, () -> new Component[] { this }, listener, key)
                 .withModifiers(keyModifiers);
     }
 
@@ -1124,7 +1108,7 @@ public class UI extends Component
      * @since 2.0
      */
     public String getCsrfToken() {
-        return csrfToken;
+        return getSession().getCsrfToken();
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,10 +35,9 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.FakeBrowser;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 import elemental.json.JsonObject;
 
@@ -49,8 +48,9 @@ import elemental.json.JsonObject;
  * class and tries to find the one that contains template definition using the
  * tag name.
  * <p>
- * The class is Singleton. Use {@link DefaultTemplateParser#getInstance()} to
- * get its instance.
+ * The class is Singleton. Use {@link NpmTemplateParser#getInstance()} to get
+ * its instance.
+ *
  *
  * @author Vaadin Ltd
  * @since 2.0
@@ -65,8 +65,11 @@ public class NpmTemplateParser implements TemplateParser {
     private final ReentrantLock lock = new ReentrantLock();
     private JsonObject jsonStats;
 
-    private NpmTemplateParser() {
-        // Doesn't allow external instantiation
+    /**
+     * The default constructor. Protected in order to prevent direct instantiation,
+     * but not private in order to allow mocking/overrides for testing purposes.
+     */
+    protected NpmTemplateParser() {
     }
 
     public static TemplateParser getInstance() {
@@ -78,19 +81,16 @@ public class NpmTemplateParser implements TemplateParser {
             Class<? extends PolymerTemplate<?>> clazz, String tag,
             VaadinService service) {
 
-        WebBrowser browser = FakeBrowser.getEs6();
-
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, JsModule.class).stream()
-                .map(htmlImport -> new Dependency(Dependency.Type.JS_MODULE,
-                        htmlImport.value(), htmlImport.loadMode()))
+                .map(jsModule -> new Dependency(Dependency.Type.JS_MODULE,
+                        jsModule.value(),
+                        LoadMode.EAGER)) // load mode doesn't matter here
                 .collect(Collectors.toList());
 
-        DependencyFilter.FilterContext filterContext = new DependencyFilter.FilterContext(
-                service, browser);
         for (DependencyFilter filter : service.getDependencyFilters()) {
             dependencies = filter.filter(new ArrayList<>(dependencies),
-                    filterContext);
+                    service);
         }
 
         Pair<Dependency, String> chosenDep = null;
@@ -122,14 +122,16 @@ public class NpmTemplateParser implements TemplateParser {
         }
 
         if (chosenDep != null) {
-            // Template needs to be wrapped in an element with id, to look
-            // like a P2 template
-            Element parent = new Element(tag);
-            parent.attr("id", tag);
 
             Element templateElement = BundleParser.parseTemplateElement(
                     chosenDep.getFirst().getUrl(), chosenDep.getSecond());
-            templateElement.appendTo(parent);
+            if (!JsoupUtils.getDomModule(templateElement, null).isPresent()) {
+                // Template needs to be wrapped in an element with id, to look
+                // like a P2 template
+                Element parent = new Element(tag);
+                parent.attr("id", tag);
+                templateElement.appendTo(parent);
+            }
 
             return new TemplateData(chosenDep.getFirst().getUrl(),
                     templateElement);
@@ -154,7 +156,17 @@ public class NpmTemplateParser implements TemplateParser {
         return url.endsWith("/" + tag + ".js");
     }
 
-    private String getSourcesFromTemplate(String tag, String url) {
+    /**
+     * Finds the JavaScript sources for given tag.
+     *
+     * @param tag the value of the {@link com.vaadin.flow.component.Tag} annotation,
+     *            e.g. `my-component`
+     * @param url the URL resolved according to the {@link com.vaadin.flow.component.dependency.JsModule}
+     *            spec, for example {@code ./view/my-view.js} or {@code @vaadin/vaadin-button.js}.
+     * @return the .js source which declares given custom element, or null if no
+     *         such source can be found.
+     */
+    protected String getSourcesFromTemplate(String tag, String url) {
         InputStream content = getClass().getClassLoader()
                 .getResourceAsStream(url);
         if (content != null) {

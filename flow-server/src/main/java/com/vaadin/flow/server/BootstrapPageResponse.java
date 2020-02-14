@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ package com.vaadin.flow.server;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
@@ -26,9 +27,13 @@ import com.vaadin.flow.shared.VaadinUriResolver;
  * page contains of the full DOM of the HTML document as well as the HTTP
  * headers that will be included in the corresponding HTTP response.
  *
+ * @deprecated Since 3.0, this API is deprecated in favor of
+ *             {@link IndexHtmlResponse} when using client-side bootstrapping
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@Deprecated
 public class BootstrapPageResponse {
 
     private final VaadinRequest request;

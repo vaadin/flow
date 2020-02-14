@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,7 +27,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class OrderedDependencyIT extends ChromeBrowserTest {
 
-    private static final String RED = "rgba(255, 0, 0, 1)";
     private static final String BLUE = "rgba(0, 0, 255, 1)";
 
     @Test
@@ -40,35 +39,28 @@ public class OrderedDependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void inheritedHtmlInjection() {
+    public void inheritedModuleInjection() {
         open();
 
-        // Initial HTML import logs a message on the page
         List<String> messages = getMessages();
 
-        Assert.assertEquals(2, messages.size());
-        Assert.assertEquals(messages.get(0),
-                "Messagehandler initialized in HTML import 1");
-        Assert.assertEquals(messages.get(1),
-                "Messagehandler initialized in HTML import 2");
+        int index = messages.indexOf("Messagehandler initialized in module 1");
+        Assert.assertTrue("Js Module is not found on the page", index >= 0);
+
+        Assert.assertEquals("Messagehandler initialized in module 2",
+                messages.get(index + 1));
     }
 
     @Test
     public void inheritedScriptInjection() {
         open();
 
-        findElementById("addJs").click();
-        // Initial HTML import logs a message on the page
         List<String> messages = getMessages();
 
-        Assert.assertEquals(4, messages.size());
-        Assert.assertEquals(messages.get(0),
-                "Messagehandler initialized in HTML import 1");
-        Assert.assertEquals(messages.get(1),
-                "Messagehandler initialized in HTML import 2");
-        Assert.assertEquals(messages.get(2), "script1 is loaded");
-        Assert.assertEquals(messages.get(3), "script2 is loaded");
+        int index = messages.indexOf("script1 is loaded");
+        Assert.assertTrue("Js Module is not found on the page", index >= 0);
 
+        Assert.assertEquals("script2 is loaded", messages.get(index + 1));
     }
 
     private List<String> getMessages() {

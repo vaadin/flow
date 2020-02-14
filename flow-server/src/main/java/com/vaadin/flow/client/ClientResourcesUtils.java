@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,7 +42,7 @@ public final class ClientResourcesUtils {
      *
      * @param path
      *            the resource path
-     * @return the content of the resource as InutStream or null if there is no
+     * @return the content of the resource as InputStream or null if there is no
      *         resource with the {@code path}
      */
     public static InputStream getResource(String path) {

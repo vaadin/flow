@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,13 +25,15 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 
 public class ViewTestLayout extends Div
-        implements RouterLayout, BeforeEnterObserver {
+        implements RouterLayout, AfterNavigationObserver {
 
     private Element element = ElementFactory.createDiv();
     private Element viewContainer = ElementFactory.createDiv();
@@ -75,11 +77,10 @@ public class ViewTestLayout extends Div
             optionGroup.appendChild(option);
         }
 
-        viewSelect.synchronizeProperty("value", "change");
         viewSelect.addEventListener("change", e -> {
             UI ui = UI.getCurrent();
             ui.navigate(viewSelect.getProperty("value"));
-        });
+        }).synchronizeProperty("value");
 
         element.appendChild(viewSelect, ElementFactory.createHr(),
                 viewContainer);
@@ -88,10 +89,11 @@ public class ViewTestLayout extends Div
     }
 
     @Override
-    public void beforeEnter(BeforeEnterEvent event) {
+    public void afterNavigation(AfterNavigationEvent event) {
         // Defer value setting until all option elements have been attached
         UI.getCurrent().getPage().executeJs(
                 "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
                 event.getLocation().getPath());
     }
+
 }

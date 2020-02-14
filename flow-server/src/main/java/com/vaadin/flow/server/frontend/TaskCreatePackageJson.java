@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,7 +22,8 @@ import java.io.UncheckedIOException;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Creates the <code>package.json</code> if missing.
@@ -31,8 +32,6 @@ import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HAS
  */
 public class TaskCreatePackageJson extends NodeUpdater {
 
-    protected static final String FORCE_INSTALL_HASH = "Main dependencies updated, force install";
-
     /**
      * Create an instance of the updater given all configurable parameters.
      *
@@ -40,36 +39,28 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder with the `package.json` file.
      * @param generatedPath
      *            folder where flow generated files will be placed.
+     * @param flowResourcesPath
+     *            folder where flow resources taken from jars will be placed.
+     *            default)
      */
-    TaskCreatePackageJson(File npmFolder, File generatedPath) {
-        super(null, null, npmFolder, generatedPath);
+    TaskCreatePackageJson(File npmFolder, File generatedPath, File flowResourcesPath) {
+        super(null, null, npmFolder, generatedPath, flowResourcesPath);
     }
 
     @Override
     public void execute() {
         try {
             modified = false;
-            JsonObject mainContent = getMainPackageJson();
-            if (mainContent == null) {
-                mainContent = Json.createObject();
-            }
-            modified = updateMainDefaultDependencies(mainContent);
+            JsonObject mainContent = getPackageJson();
+            modified = updateDefaultDependencies(mainContent);
             if (modified) {
-                if (mainContent.hasKey(APP_PACKAGE_HASH)) {
-                    log().debug(
-                            "Main dependencies updated. Forcing npm install.");
-                    mainContent.put(APP_PACKAGE_HASH, FORCE_INSTALL_HASH);
-                } else {
-                    mainContent.put(APP_PACKAGE_HASH, "");
-                }
-                writeMainPackageFile(mainContent);
+                writePackageFile(mainContent);
             }
-            JsonObject customContent = getAppPackageJson();
-            if (customContent == null) {
-                customContent = Json.createObject();
-                updateAppDefaultDependencies(customContent);
-                writeAppPackageFile(customContent);
-                modified = true;
+
+            if (flowResourcesFolder != null && !new File(npmFolder,
+                    NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
+                            .equals(flowResourcesFolder)) {
+                writeResourcesPackageFile(getResourcesPackageJson());
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

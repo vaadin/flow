@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,12 +18,11 @@ package com.vaadin.flow.webcomponent;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class WebComponentIT extends ChromeBrowserTest {
+public class WebComponentIT extends ChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {
@@ -36,8 +35,8 @@ public class WebComponentIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("show-message"));
 
-        WebElement showMessage = findElement(By.id("show-message"));
-        WebElement select = showMessage.findElement(By.cssSelector("select"));
+        TestBenchElement showMessage = byId("show-message");
+        TestBenchElement select = showMessage.$("select").first();
 
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
@@ -47,18 +46,19 @@ public class WebComponentIT extends ChromeBrowserTest {
                 select);
 
         Assert.assertEquals("Selected: Peter, Parker",
-                showMessage.findElement(By.cssSelector("span")).getText());
+                showMessage.$("span").first().getText());
 
-        WebElement noMessage = findElement(By.id("no-message"));
+        TestBenchElement noMessage = byId("no-message");
 
-        select = noMessage.findElement(By.cssSelector("select"));
+        select = noMessage.$("select").first();
         getCommandExecutor().executeScript(
                 "arguments[0].value='Peter';"
                         + "arguments[0].dispatchEvent(new Event('change'));",
                 select);
 
         Assert.assertFalse("Message should not be visible",
-                noMessage.findElement(By.cssSelector("span")).isDisplayed());
+                noMessage.$("span").first()
+                        .isDisplayed());
     }
 
     @Test
@@ -68,15 +68,13 @@ public class WebComponentIT extends ChromeBrowserTest {
         waitForElementVisible(By.tagName("themed-web-component"));
 
         TestBenchElement webComponent = $("themed-web-component").first();
-        TestBenchElement themedComponent = webComponent.$("themed-component")
-                .first();
-        Assert.assertTrue(
-                "The component which should use theme doesn't "
-                        + "contain elements",
-                themedComponent.$("div").exists());
-        TestBenchElement contentElement = themedComponent.$("div").first();
+        TestBenchElement themedComponent = webComponent.$("themed-component").first();
+
+        TestBenchElement content = themedComponent.$("div").first();
+        Assert.assertNotNull("The component which should use theme doesn't "
+                + "contain elements", content);
 
         Assert.assertEquals("rgba(255, 0, 0, 1)",
-                contentElement.getCssValue("color"));
+                content.getCssValue("color"));
     }
 }

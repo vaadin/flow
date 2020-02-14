@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -93,7 +93,8 @@ public interface ClickNotifier<T extends Component> extends Serializable {
         }
 
         final Component thisComponent = (Component) this;
-        return new ShortcutRegistration(thisComponent, UI::getCurrent,
+
+        return new ShortcutRegistration(thisComponent, () -> new Component[] { thisComponent.getUI().get() },
                 event -> ComponentUtil.fireEvent(thisComponent,
                         new ClickEvent<>(thisComponent)),
                 key).withModifiers(keyModifiers)

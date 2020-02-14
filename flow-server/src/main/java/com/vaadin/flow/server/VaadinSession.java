@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -118,6 +119,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * thread has the lock.
      */
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
+
+    /*
+     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
+     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
+     * and UUID.randomUUID() is defined to use a cryptographically secure random
+     * generator.
+     */
+    private final String csrfToken = UUID.randomUUID().toString();
 
     private final String pushId = UUID.randomUUID().toString();
 
@@ -378,9 +387,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Sets the session error handler.
      *
      * @param errorHandler
-     *            the new error handler
+     *            the new error handler, not <code>null</code>
      */
     public void setErrorHandler(ErrorHandler errorHandler) {
+        Objects.requireNonNull(errorHandler, "errorHandler can not be null!");
+
         checkHasLock();
         this.errorHandler = errorHandler;
     }
@@ -1018,4 +1029,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return resourceRegistry;
     }
 
+    /**
+     * Gets the CSRF token (aka double submit cookie) that is used to protect
+     * against Cross Site Request Forgery attacks.
+     *
+     * @return the csrf token string
+     * @since 2.0
+     */
+    public String getCsrfToken() {
+        return csrfToken;
+    }
 }

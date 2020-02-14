@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,6 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +27,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.internal.ExportsWebComponent;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
@@ -61,7 +59,7 @@ import elemental.json.JsonValue;
  * {@code WebComponentExporter} when extending it, e.g.
  * {@code extends WebComponentExporter<MyComponent>}.
  * <p>
- * If you want to custome the {@link Component} instance after it has been
+ * If you want to customize the {@link Component} instance after it has been
  * created, you should override
  * {@link #configureInstance(WebComponent, Component)} which is called for each
  * created instance.
@@ -85,9 +83,11 @@ import elemental.json.JsonValue;
  *            type of the component to export
  * @author Vaadin Ltd.
  * @since 2.0
+ *
+ * @see WebComponentExporterFactory
  */
 public abstract class WebComponentExporter<C extends Component>
-        implements ExportsWebComponent<C> {
+        implements Serializable {
 
     private static final List<Class> SUPPORTED_TYPES = Collections
             .unmodifiableList(Arrays.asList(Boolean.class, String.class,
@@ -118,8 +118,8 @@ public abstract class WebComponentExporter<C extends Component>
         this.tag = tag;
         if (getComponentClass() == null) {
             throw new IllegalStateException(String.format("Failed to "
-                            + "determine component type for '%s'. Please "
-                            + "provide a valid type for %s as a type parameter.",
+                    + "determine component type for '%s'. Please "
+                    + "provide a valid type for %s as a type parameter.",
                     getClass().getName(),
                     WebComponentExporter.class.getSimpleName()));
         }
@@ -268,24 +268,27 @@ public abstract class WebComponentExporter<C extends Component>
      *            instance of the exported web component
      */
     protected abstract void configureInstance(WebComponent<C> webComponent,
-                                              C component);
+            C component);
 
-    @Override
+    /**
+     * Always called before {@link #configureInstance(WebComponent, Component)}.
+     */
     public final void preConfigure() {
         isConfigureInstanceCall = true;
     }
 
-    @Override
-    public final void configure(WebComponent<C> webComponent, C component) {
-        configureInstance(webComponent,component);
-    }
-
-    @Override
+    /**
+     * Always called after {@link #configureInstance(WebComponent, Component)}.
+     */
     public final void postConfigure() {
         isConfigureInstanceCall = false;
     }
 
-    @Override
+    /**
+     * The tag associated with the exported component.
+     *
+     * @return the tag
+     */
     public final String getTag() {
         return tag;
     }
@@ -294,22 +297,18 @@ public abstract class WebComponentExporter<C extends Component>
         return SUPPORTED_TYPES.contains(clazz);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static final class WebComponentConfigurationImpl<C extends Component>
             implements WebComponentConfiguration<C> {
-        private ExportsWebComponent<C> exporter;
+        private WebComponentExporter<C> exporter;
         private final Map<String, PropertyConfigurationImpl<C, ? extends Serializable>> immutablePropertyMap;
 
         private WebComponentConfigurationImpl(
-                ExportsWebComponent<C> exporter) {
+                WebComponentExporter<C> exporter) {
             this.exporter = exporter;
-            if (exporter instanceof WebComponentExporter) {
-                WebComponentExporter wcExporter =
-                        (WebComponentExporter)exporter;
-                immutablePropertyMap = Collections
-                        .unmodifiableMap(wcExporter.propertyConfigurationMap);
-            } else {
-                immutablePropertyMap = Collections.emptyMap();
-            }
+            WebComponentExporter wcExporter = exporter;
+            immutablePropertyMap = Collections
+                    .unmodifiableMap(wcExporter.propertyConfigurationMap);
         }
 
         @Override
@@ -342,7 +341,8 @@ public abstract class WebComponentExporter<C extends Component>
 
         @Override
         public WebComponentBinding<C> createWebComponentBinding(
-                Instantiator instantiator, Element element, JsonObject newAttributeDefaults) {
+                Instantiator instantiator, Element element,
+                JsonObject newAttributeDefaults) {
             assert (instantiator != null);
 
             final C componentReference = instantiator
@@ -374,10 +374,9 @@ public abstract class WebComponentExporter<C extends Component>
                     componentReference);
 
             // collect possible new defaults from attributes as JsonValues
-            final Map<String, JsonValue> newDefaultValues =
-                    Stream.of(newAttributeDefaults.keys()).collect(Collectors.toMap(
-                            key -> key,
-                            key -> (JsonValue) newAttributeDefaults.get(key)));
+            final Map<String, JsonValue> newDefaultValues = Stream
+                    .of(newAttributeDefaults.keys()).collect(Collectors
+                            .toMap(key -> key, newAttributeDefaults::get));
 
             // bind properties onto the WebComponentBinding. Since
             // PropertyConfigurations are Exporter level constructs, we need
@@ -393,7 +392,7 @@ public abstract class WebComponentExporter<C extends Component>
 
             exporter.preConfigure();
             try {
-                this.exporter.configure(
+                this.exporter.configureInstance(
                         new WebComponent<>(binding, element),
                         binding.getComponent());
             } finally {
@@ -461,6 +460,17 @@ public abstract class WebComponentExporter<C extends Component>
     }
 
     /**
+     * The concrete component class object. By default creates an instance of
+     * the actual type parameter.
+     *
+     * @return component class
+     */
+    protected Class<C> getComponentClass() {
+        return (Class<C>) ReflectTools.getGenericInterfaceType(this.getClass(),
+                WebComponentExporter.class);
+    }
+
+    /**
      * Produces {@link WebComponentConfiguration} instances from either
      * {@link WebComponentExporter} classes or instances.
      *
@@ -468,43 +478,6 @@ public abstract class WebComponentExporter<C extends Component>
      */
     public static final class WebComponentConfigurationFactory
             implements Serializable {
-
-        /**
-         * Creates a {@link WebComponentConfiguration} from the provided
-         * {@link WebComponentExporter} class.
-         *
-         * @param clazz
-         *            exporter class, not {@code null}
-         * @return a web component configuration matching the instance of
-         *         received {@code clazz}
-         * @throws NullPointerException
-         *             when {@code clazz} is {@code null}
-         */
-        public WebComponentConfiguration<? extends Component> create(
-                Class<? extends ExportsWebComponent<? extends Component>> clazz) {
-            Objects.requireNonNull(clazz, "Parameter 'clazz' cannot be null!");
-            ExportsWebComponent<? extends Component> exporter;
-            try {
-                exporter = ReflectTools.createInstance(clazz);
-            } catch (IllegalArgumentException e) {
-                if (e.getCause() != null && e.getCause().getClass()
-                        .equals(InvocationTargetException.class)) {
-                    Throwable cause2 = e.getCause().getCause();
-                    if (cause2 != null && cause2.getClass()
-                            .equals(NullTagException.class)) {
-                        throw new IllegalArgumentException(String.format(
-                                "Unable to construct %s! Did "
-                                        + "'%s' give null value to "
-                                        + "super(String) constructor?",
-                                WebComponentConfiguration.class.getSimpleName(),
-                                clazz.getCanonicalName()), e);
-                    }
-                }
-                // unknown reason, cannot add information
-                throw e;
-            }
-            return create(exporter);
-        }
 
         /**
          * Creates a {@link WebComponentConfiguration} for the provided
@@ -516,33 +489,21 @@ public abstract class WebComponentExporter<C extends Component>
          *         received {@code exporter}
          * @throws NullPointerException
          *             when {@code exporter} is {@code null}
+         *
+         * @param <T>
+         *            type of the component to export
          */
-        public WebComponentConfiguration<? extends Component> create(
-                ExportsWebComponent<? extends Component> exporter) {
+        public <T extends Component> WebComponentConfiguration<T> create(
+                WebComponentExporter<T> exporter) {
             Objects.requireNonNull(exporter,
                     "Parameter 'exporter' cannot be " + "null!");
 
             return new WebComponentConfigurationImpl<>(exporter);
         }
 
-        /**
-         * Use {@link #create(ExportsWebComponent)} instead.
-         *
-         * @param exporter
-         *            exporter instance, not {@code null}
-         * @return a web component configuration matching the instance of
-         *         received {@code exporter}
-         * @throws NullPointerException
-         *             when {@code exporter} is {@code null}
-         */
-        @Deprecated
-        public WebComponentConfiguration<? extends Component> create(
-                WebComponentExporter<? extends Component> exporter) {
-            return create((ExportsWebComponent<? extends Component>) exporter);
-        }
     }
 
-    private static class NullTagException extends NullPointerException {
+    static class NullTagException extends NullPointerException {
         NullTagException(String msg) {
             super(msg);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -92,27 +91,12 @@ public class AnnotationReader {
      * class, its super classes and implenented interfaces.
      *
      * @param componentClass
-     *         the component class to search for the annotation
+     *            the component class to search for the annotation
      * @return a list the JavaScript annotations found
      */
     public static List<JsModule> getJsModuleAnnotations(
             Class<? extends Component> componentClass) {
         return getAnnotationsFor(componentClass, JsModule.class);
-    }
-
-    /**
-     * Finds all {@link HtmlImport} annotations on the given {@link Component}
-     * class, its super classes and implemented interfaces.
-     *
-     * @param componentClass
-     *            the component class to search for the annotation
-     * @return a list the html import annotations found
-     * @see #getAnnotationFor(Class, Class) for what order the annotations are
-     *      in the list
-     */
-    public static List<HtmlImport> getHtmlImportAnnotations(
-            Class<? extends Component> componentClass) {
-        return getAnnotationsFor(componentClass, HtmlImport.class);
     }
 
     /**

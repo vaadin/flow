@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,11 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.shared.ApplicationConstants;
-
 /**
  * Constants used by the server side framework.
+ * <p>
+ * Not available on the client side, for that use
+ * {@link com.vaadin.flow.shared.ApplicationConstants}.
  *
  * @since 1.0
  */
@@ -40,19 +41,18 @@ public final class Constants implements Serializable {
     public static final String NPM_TOKEN = "npmFolder";
     public static final String FRONTEND_TOKEN = "frontendFolder";
     public static final String GENERATED_TOKEN = "generatedFolder";
+    public static final String CONNECT_JAVA_SOURCE_FOLDER_TOKEN = "connect.javaSourceFolder";
+    public static final String CONNECT_APPLICATION_PROPERTIES_TOKEN = "connect.applicationProperties";
+    public static final String CONNECT_OPEN_API_FILE_TOKEN = "connect.openApiFile";
+    public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
+    public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
+    public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
     /**
-     * enable it if your project is a Polymer 2.0 one, should be removed in V15
-     *
-     * @deprecated the parameter is renamed to
-     *             {@link #SERVLET_PARAMETER_COMPATIBILITY_MODE}
+     * Enable it if your project is using client-side bootstrapping (CCDM).
      */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_BOWER_MODE = "bowerMode";
-    /**
-     * enable it if your project is a Polymer 2.0 one, should be removed in V15
-     */
-    public static final String SERVLET_PARAMETER_COMPATIBILITY_MODE = "compatibilityMode";
+    public static final String SERVLET_PARAMETER_USE_V14_BOOTSTRAP = "useDeprecatedV14Bootstrapping";
+    public static final String SERVLET_PARAMETER_INITIAL_UIDL = "eagerServerLoad";
     public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
 
@@ -70,7 +70,7 @@ public final class Constants implements Serializable {
 
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
-    public static final String POLYFILLS_DEFAULT_VALUE = "build/webcomponentsjs/webcomponents-loader.js";
+    public static final String POLYFILLS_DEFAULT_VALUE = "";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -78,51 +78,6 @@ public final class Constants implements Serializable {
      * precompressed file is available.
      */
     public static final String SERVLET_PARAMETER_BROTLI = "brotli";
-
-    /**
-     * Configuration name for loading the ES5 adapters.
-     */
-    public static final String LOAD_ES5_ADAPTERS = "load.es5.adapters";
-
-    /**
-     * Configuration name for the frontend URL prefix for ES6.
-     */
-    public static final String FRONTEND_URL_ES6 = "frontend.url.es6";
-
-    /**
-     * Configuration name for the frontend URL prefix for ES5.
-     */
-    public static final String FRONTEND_URL_ES5 = "frontend.url.es5";
-
-    /**
-     * Default frontend URL prefix for ES6.
-     */
-    public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + "frontend-es6/";
-
-    /**
-     * Default frontend URL prefix for ES.
-     */
-    public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + "frontend-es5/";
-
-    /**
-     * Default frontend URL prefix for development.
-     */
-    public static final String FRONTEND_URL_DEV_DEFAULT = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-            + "frontend/";
-
-    /**
-     * Configuration name for the parameter that determines if Flow should use
-     * webJars or not.
-     */
-    public static final String DISABLE_WEBJARS = "disable.webjars";
-
-    /**
-     * Configuration name for the parameter that determines if Flow should use
-     * bundled fragments or not.
-     */
-    public static final String USE_ORIGINAL_FRONTEND_RESOURCES = "original.frontend.resources";
 
     /**
      * I18N provider property.
@@ -208,11 +163,17 @@ public final class Constants implements Serializable {
 
     /**
      * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
-     * If enabled, entry points are scanned for reachable frontend resources.
-     * If disabled, all classes on the classpath are scanned.
+     * If enabled, entry points are scanned for reachable frontend resources. If
+     * disabled, all classes on the classpath are scanned.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
 
+    /**
+     * Configuration parameter name for enabling pnpm.
+     *
+     * @since 2.2
+     */
+    public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
      * The path used in the vaadin servlet for handling static resources.
@@ -260,6 +221,63 @@ public final class Constants implements Serializable {
     public static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
     public static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
     public static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
+
+    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
+    public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
+
+    /**
+     * Property boolean for marking stats.json to be fetched from external
+     * location.
+     */
+    public static final String EXTERNAL_STATS_FILE = "external.stats.file";
+    /**
+     * Property String for external stats.json location url.
+     */
+    public static final String EXTERNAL_STATS_URL = "external.stats.url";
+    /**
+     * Default location to look for the external stats.json.
+     */
+    public static final String DEFAULT_EXTERNAL_STATS_URL = "/vaadin-static/VAADIN/config/stats.json";
+
+    /**
+     * A request parameter that can be given in browser to force the Vaadin
+     * application to create a new UI and session instance, thus overriding
+     * {@code @PreserveOnRefresh} annotation.
+     */
+    public static final String URL_PARAMETER_RESTART_APPLICATION = "restartApplication";
+
+    /**
+     * A request parameter that can be given in browser to force the Vaadin
+     * application to close an existing UI and session. Unlike
+     * {@link #URL_PARAMETER_RESTART_APPLICATION}, this will not create a new
+     * session.
+     */
+    public static final String URL_PARAMETER_CLOSE_APPLICATION = "closeApplication";
+
+    /**
+     * UsageEntry name for UsageStatistics BootstrapHandler.
+     */
+    public static final String STATISTIC_FLOW_BOOTSTRAPHANDLER = "flow/BootstrapHandler";
+
+    /**
+     * UsageEntry name for UsageStatistics Routing Server.
+     */
+    public static final String STATISTIC_ROUTING_SERVER = "routing/server";
+
+    /**
+     * UsageEntry name for UsageStatistics Routing Client.
+     */
+    public static final String STATISTIC_ROUTING_CLIENT = "routing/client";
+
+    /**
+     * UsageEntry name for UsageStatistics Hybrid.
+     */
+    public static final String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
+
+    /**
+     * The name of platform versions file.
+     */
+    public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
     private Constants() {
         // prevent instantiation constants class only

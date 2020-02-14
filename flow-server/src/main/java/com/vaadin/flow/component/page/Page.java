@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
@@ -107,7 +108,7 @@ public class Page implements Serializable {
         private final ResizeEventReceiver receiver;
 
         private ResizeRegistration(ResizeEventReceiver receiver,
-                Registration origin) {
+                                   Registration origin) {
             this.origin = origin;
             this.receiver = receiver;
         }
@@ -269,90 +270,19 @@ public class Page implements Serializable {
      * Adds the given external JavaScript module to the page and ensures that it
      * is loaded successfully.
      * <p>
-     * If the JavaScript modules are local or do not need to be added
-     * dynamically, you should use the {@link JsModule @JsModule} annotation
-     * instead.
+     * If the JavaScript modules do not need to be added dynamically, you should
+     * use the {@link JsModule @JsModule} annotation instead.
      *
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
      */
     public void addJsModule(String url) {
-        addJsModule(url, LoadMode.EAGER);
-    }
-
-    /**
-     * Adds the given external JavaScript module to the page and ensures that it
-     * is loaded successfully.
-     * <p>
-     * If the JavaScript modules are local or do not need to be added
-     * dynamically, you should use the {@link JsModule @JsModule} annotation
-     * instead.
-     *
-     * @param url
-     *            the URL to load the JavaScript module from, not
-     *            <code>null</code>
-     * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
-     * @deprecated {@code LoadMode} is not functional with external JavaScript
-     *             modules, as those are loaded as deferred due to
-     *             {@code type=module} in {@code scrip} tag. Use
-     *             {@link #addJsModule(String)} instead.
-     */
-    @Deprecated
-    public void addJsModule(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JS_MODULE, url, loadMode));
-    }
-
-    /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
-     * with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     * <p>
-     * Is is guaranteed that html import will be loaded before the first page
-     * load. For more options, refer to {@link #addHtmlImport(String, LoadMode)}
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url) {
-        addHtmlImport(url, LoadMode.EAGER);
-    }
-
-    /**
-     * In compatibility mode (or Flow 1.x), adds the given HTML import to the
-     * page and ensures that it is loaded successfully. In normal mode (Flow 2.x
-     * with npm support), throws an {@code UnsupportedOperationException}.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     *
-     * @param url
-     *            the URL to load the HTML import from, not <code>null</code>
-     * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
-     * @throws java.lang.UnsupportedOperationException
-     *             if called outside of compatibility mode.
-     */
-    public void addHtmlImport(String url, LoadMode loadMode) {
-        if (ui.getSession().getConfiguration().isCompatibilityMode()) {
-            addDependency(new Dependency(Type.HTML_IMPORT, url, loadMode));
+        if (UrlUtil.isExternal(url) || url.startsWith("/")) {
+            addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
         } else {
-            throw new UnsupportedOperationException("Adding html imports is "
-                    + "only supported in compatibility mode. Either run the "
-                    + "application in compatibility mode or add the "
-                    + "dependency via annotation (@NpmPackage and @JsModule).");
+            throw new IllegalArgumentException(
+                    "url argument must contains either a protocol (eg. starts with \"http://\" or \"//\"), or starts with \"/\".");
         }
     }
 
@@ -366,7 +296,6 @@ public class Page implements Serializable {
      * {@link #addJsModule(String)}, etc.)
      *
      *
-     * @see #addHtmlImport(String)
      * @param expression
      *            the JavaScript expression which return a Promise
      */
@@ -414,9 +343,9 @@ public class Page implements Serializable {
     /**
      * Asynchronously runs the given JavaScript expression in the browser.
      * <p>
-     * It is possible to get access to the return value of the execution by
-     * registering a handler with the returned pending result. If no handler is
-     * registered, the return value will be ignored.
+     * The returned <code>PendingJavaScriptResult</code> can be used to retrieve
+     * any <code>return</code> value from the JavaScript expression. If no
+     * return value handler is registered, the return value will be ignored.
      * <p>
      * The given parameters will be available to the expression as variables
      * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
@@ -445,7 +374,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+                                             Serializable... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -550,8 +479,8 @@ public class Page implements Serializable {
      * @param windowName
      *            the name of the window.
      */
-    private void open(String url, String windowName) {
-        executeJavaScript("window.open($0, $1)", url, windowName);
+    public void open(String url, String windowName) {
+        executeJs("window.open($0, $1)", url, windowName);
     }
 
     /**
@@ -590,9 +519,9 @@ public class Page implements Serializable {
         private static String readJS() {
             try (InputStream stream = Page.class
                     .getResourceAsStream(JS_FILE_NAME);
-                    BufferedReader bf = new BufferedReader(
-                            new InputStreamReader(stream,
-                                    StandardCharsets.UTF_8))) {
+                 BufferedReader bf = new BufferedReader(
+                         new InputStreamReader(stream,
+                                 StandardCharsets.UTF_8))) {
                 StringBuilder builder = new StringBuilder();
                 bf.lines().forEach(builder::append);
                 return builder.toString();
@@ -682,7 +611,8 @@ public class Page implements Serializable {
                         getStringElseNull.apply("v-curdate"),
                         getStringElseNull.apply("v-td"),
                         getStringElseNull.apply("v-pr"),
-                        getStringElseNull.apply("v-wn")));
+                        getStringElseNull.apply("v-wn"),
+                        getStringElseNull.apply("v-np")));
     }
 
 }

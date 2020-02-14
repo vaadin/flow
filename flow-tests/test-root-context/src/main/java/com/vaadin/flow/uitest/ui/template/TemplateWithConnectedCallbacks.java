@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,16 +17,14 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 
 @Tag("template-with-connected-callbacks")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/TemplateWithConnectedCallbacks.html")
 @JsModule("TemplateWithConnectedCallbacks.js")
 public class TemplateWithConnectedCallbacks extends Component {
 
     public TemplateWithConnectedCallbacks() {
-        getElement().synchronizeProperty("connected", "connected-changed");
+        getElement().addPropertyChangeListener("connected", "connected-changed", event -> {});
 
         getElement().addPropertyChangeListener("connected", evt -> {
             if (evt.isUserOriginated()) {

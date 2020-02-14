@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,7 +42,7 @@ public class NpmThemedComponentIT extends ChromeBrowserTest {
                 .$("client-side-component").first();
         List<TestBenchElement> divsInClientSideComponent = nestedClientSideComponent
                 .$("div").all();
-        // Fist of all: the client side component is correctly rsolved so it has
+        // Fist of all: the client side component is correctly resolved so it has
         // something inside its shadow root
         Assert.assertTrue(
                 "The client side component inside themed component is not resolved",

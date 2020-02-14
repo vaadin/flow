@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,14 +18,13 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.List;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.shared.ui.Dependency;
 
 /**
- * Filter for dependencies loaded using {@link StyleSheet @StyleSheet},
- * {@link JavaScript @JavaScript} and {@link HtmlImport @HtmlImport}.
+ * Filter for dependencies loaded using {@link StyleSheet @StyleSheet}, and *
+ * {@link JavaScript @JavaScript}.
  *
  * @see ServiceInitEvent#addDependencyFilter(DependencyFilter)
  * @since 1.0
@@ -43,51 +42,11 @@ public interface DependencyFilter extends Serializable {
      * @param dependencies
      *            the collected dependencies, possibly already modified by other
      *            filters
-     * @param filterContext
-     *            context information, e.g about the target UI
+     * @param service
+     *            a Vaadin service
      * @return a list of dependencies to load
      */
     List<Dependency> filter(List<Dependency> dependencies,
-            FilterContext filterContext);
-
-    /**
-     * Provides context information for the dependency filter operation.
-     */
-    public static class FilterContext implements Serializable {
-
-        private final VaadinService service;
-        private final WebBrowser browser;
-
-        /**
-         * Creates a new context for the given session.
-         *
-         * @param service
-         *            the service which is loading dependencies
-         * @param browser
-         *            the browser
-         */
-        public FilterContext(VaadinService service, WebBrowser browser) {
-            this.service = service;
-            this.browser = browser;
-        }
-
-        /**
-         * Gets the related Vaadin service.
-         *
-         * @return the Vaadin service
-         */
-        public VaadinService getService() {
-            return service;
-        }
-
-        /**
-         * Gets the browser info needed for filtering.
-         *
-         * @return the WebBrowser used
-         */
-        public WebBrowser getBrowser() {
-            return browser;
-        }
-    }
+            VaadinService service);
 
 }

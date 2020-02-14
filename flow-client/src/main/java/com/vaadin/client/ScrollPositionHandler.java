@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,10 @@ package com.vaadin.client;
 
 import java.util.Objects;
 
-import com.google.gwt.core.client.JsDate;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import com.google.gwt.core.client.JavaScriptException;
+import com.google.gwt.core.client.JsDate;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 
@@ -117,6 +119,14 @@ public class ScrollPositionHandler {
         readAndRestoreScrollPositionsFromHistoryAndSessionStorage(true);
     }
 
+    /**
+     * Default constructor to use in subclasses to override all functionality
+     * from this class.
+     */
+    protected ScrollPositionHandler() {
+        this.registry = null;
+    }
+
     private void readAndRestoreScrollPositionsFromHistoryAndSessionStorage(
             boolean delayAfterResponse) {
         // restore history index & token from state if applicable
@@ -128,8 +138,13 @@ public class ScrollPositionHandler {
             currentHistoryIndex = (int) state.getNumber(HISTORY_INDEX);
             historyResetToken = state.getNumber(HISTORY_TOKEN);
 
-            String jsonString = Browser.getWindow().getSessionStorage()
-                    .getItem(createSessionStorageKey(historyResetToken));
+            String jsonString = null;
+            try {
+                jsonString = Browser.getWindow().getSessionStorage()
+                        .getItem(createSessionStorageKey(historyResetToken));
+            } catch (JavaScriptException e) {
+                Console.error("Failed to get session storage: " + e.getMessage());
+            }
             if (jsonString != null) {
                 JsonObject jsonObject = Json.parse(jsonString);
 
@@ -171,9 +186,13 @@ public class ScrollPositionHandler {
 
         Browser.getWindow().getHistory().replaceState(stateObject, "",
                 Browser.getWindow().getLocation().getHref());
-        Browser.getWindow().getSessionStorage().setItem(
-                createSessionStorageKey(historyResetToken),
-                sessionStorageObject.toJson());
+        try {
+            Browser.getWindow().getSessionStorage()
+                    .setItem(createSessionStorageKey(historyResetToken),
+                            sessionStorageObject.toJson());
+        } catch (JavaScriptException e) {
+            Console.error("Failed to get session storage: " + e.getMessage());
+        }
     }
 
     private static String createSessionStorageKey(Number historyToken) {

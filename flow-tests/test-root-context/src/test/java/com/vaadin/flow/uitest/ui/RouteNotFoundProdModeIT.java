@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("disabled, because production mode can't be enabled via init servlet parameter, see https://github.com/vaadin/flow/issues/7281")
 public class RouteNotFoundProdModeIT extends RouteNotFoundIT {
 
     @Test

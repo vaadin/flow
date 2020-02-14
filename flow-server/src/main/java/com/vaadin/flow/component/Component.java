@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,11 +22,12 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
-import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -69,6 +70,10 @@ public abstract class Component
 
     private static final PropertyDescriptor<String, Optional<String>> idDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("id", "");
+
+    private static final PropertyChangeListener NOOP_PROPERTY_LISTENER = event -> {
+        // NOOP
+    };
 
     /**
      * Contains information about the element which should be used the next time
@@ -149,11 +154,25 @@ public abstract class Component
      * Configures synchronized properties based on given annotations.
      */
     private void configureSynchronizedProperties() {
-        ComponentUtil.getSynchronizedProperties(getClass()).forEach(
-                info -> getElement().addSynchronizedProperty(info.getProperty(),
-                        info.getUpdateMode()));
-        ComponentUtil.getSynchronizedPropertyEvents(getClass())
-                .forEach(getElement()::addSynchronizedPropertyEvent);
+        ComponentUtil.getSynchronizedProperties(getClass())
+                .forEach(this::addSynchronizedProperty);
+    }
+
+    private void addSynchronizedProperty(
+            ComponentMetaData.SynchronizedPropertyInfo info) {
+        if (info.getUpdateMode() == null) {
+            throw new IllegalArgumentException(getClass().getName()
+                    + ": property update control mode for disabled element in @Synchronize annotation must not be null.");
+        }
+        info.getEventNames().forEach(eventType -> {
+            if (eventType == null) {
+                throw new IllegalArgumentException(getClass().getName()
+                        + ": event type must not be null for @Synchronize annotation");
+            }
+            element.addPropertyChangeListener(info.getProperty(), eventType,
+                    NOOP_PROPERTY_LISTENER)
+                    .setDisabledUpdateMode(info.getUpdateMode());
+        });
     }
 
     private void mapToElement(String tagName) {

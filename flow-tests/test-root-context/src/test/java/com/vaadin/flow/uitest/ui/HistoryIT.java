@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -85,9 +85,18 @@ public class HistoryIT extends ChromeBrowserTest {
 
         // Navigate to empty string should go to the context path root
         stateField.clear();
+        locationField.setValue("qwerty/x");
+        pushButton.click();
         locationField.clear();
         pushButton.click();
 
+        Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
+
+        // Replacing with empty string should go to the context path root
+        locationField.setValue("qwerty/x");
+        replaceButton.click();
+        locationField.clear();
+        replaceButton.click();
         Assert.assertEquals(baseUrl.resolve("."), getCurrentUrl());
     }
 

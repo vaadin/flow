@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -180,8 +180,7 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
-                DisabledUpdateMode.ONLY_WHEN_ENABLED);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ONLY_WHEN_ENABLED);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -197,8 +196,7 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
-                DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -230,8 +228,7 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         ui.setEnabled(false);
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT,
-                DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY,DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 

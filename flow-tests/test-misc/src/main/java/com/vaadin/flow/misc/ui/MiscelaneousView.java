@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.misc.ui;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.misc.ui.MiscelaneousView.MyTheme;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -27,12 +27,14 @@ import com.vaadin.flow.theme.Theme;
 
 // Import a test component that sets CSS properties.
 @JsModule("./src/my-component-themed.js")
-@HtmlImport("frontend://src/my-component-themed.html")
 
-//`src/` in component above should be replaced by `theme/my-theme`
+// `src/` in component above should be replaced by `theme/my-theme`
 @Theme(MyTheme.class)
+@PWA(name = "Project Base for Vaadin", shortName = "Project Base")
 public class MiscelaneousView extends Div {
-    
+
+    public static final String TEST_VIEW_ID = "MiscellaneousView";
+
     public static class MyTheme implements AbstractTheme {
         @Override
         public String getBaseUrl() {
@@ -46,5 +48,6 @@ public class MiscelaneousView extends Div {
     }
 
     public MiscelaneousView() {
+        setId(TEST_VIEW_ID);
     }
 }

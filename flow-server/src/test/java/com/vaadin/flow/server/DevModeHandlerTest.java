@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -139,23 +139,14 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void should_CreateInstance_After_TimeoutWaitingForPattern()
-            throws Exception {
-        configuration.setApplicationOrSystemProperty(
-                SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
-        createStubWebpackServer("Foo", 300, baseDir);
-        assertNotNull(DevModeHandler.start(configuration, npmFolder));
-        int port = DevModeHandler.getDevModeHandler().getPort();
-        assertTrue(port > 0);
-        Thread.sleep(350); // NOSONAR
-    }
-
-    @Test
     public void should_CaptureWebpackOutput_When_Failed() throws Exception {
         configuration.setApplicationOrSystemProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300, baseDir);
         assertNotNull(DevModeHandler.start(configuration, npmFolder));
+        int port = DevModeHandler.getDevModeHandler().getPort();
+        assertTrue(port > 0);
+
         // Wait for server to stop running before checking the output stream
         Thread.sleep(350); // NOSONAR
         assertNotNull(
@@ -175,22 +166,6 @@ public class DevModeHandlerTest {
             throws Exception {
         configuration.setEnableDevServer(false);
         assertNull(DevModeHandler.start(configuration, npmFolder));
-    }
-
-    @Test
-    public void shouldNot_CreateInstance_When_BowerMode() throws Exception {
-        configuration.setProductionMode(true);
-        assertNull(DevModeHandler.start(configuration, npmFolder));
-        Thread.sleep(150); // NOSONAR
-    }
-
-    @Test
-    public void should_RunWebpack_When_WebpackNotListening() throws Exception {
-        DevModeHandler.start(configuration, npmFolder);
-        assertTrue(new File(baseDir,
-                FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
-                        .canRead());
-        Thread.sleep(150); // NOSONAR
     }
 
     @Test
@@ -228,90 +203,86 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_HandleJavaScriptRequests() {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         assertTrue(DevModeHandler.start(configuration, npmFolder)
                 .isDevModeRequest(request));
     }
 
     @Test
-    public void shouldNot_HandleOtherRequests() {
-        HttpServletRequest request = prepareRequest("/foo.bar");
+    public void shouldNot_HandleNonVaadinRequests() {
+        HttpServletRequest request = prepareRequest("/foo.js");
         assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
+    }
+
+    @Test
+    public void shouldNot_HandleOtherRequests() {
+        HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
+        assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
+    }
+
+    @Test
+    public void should_HandleAnyAssetInVaadin() {
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
+        assertTrue(DevModeHandler.start(configuration, npmFolder)
                 .isDevModeRequest(request));
     }
 
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         DevModeHandler.start(0, configuration, npmFolder)
                 .serveDevModeRequest(request, null);
     }
 
     @Test
-    public void should_ReturnTrue_When_WebpackResponseOK() throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+    public void webpack_forDifferentRequests_shouldHaveCorrectResponse()
+            throws Exception {
+        HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "bar");
 
-        assertTrue(DevModeHandler.start(port, configuration, npmFolder)
-                .serveDevModeRequest(request, response));
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder);
+        assertTrue(devModeHandler.serveDevModeRequest(request, response));
         assertEquals(HTTP_OK, responseStatus);
-    }
 
-    @Test
-    public void should_ReturnFalse_When_WebpackResponseNotFound()
-            throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_NOT_FOUND, "");
-
-        assertFalse(DevModeHandler.start(port, configuration, npmFolder)
-                .serveDevModeRequest(request, response));
+        httpServer.stop(0);
+        prepareHttpServer(port, HTTP_NOT_FOUND, "");
+        assertFalse(devModeHandler.serveDevModeRequest(request, response));
         assertEquals(200, responseStatus);
-    }
 
-    @Test
-    public void should_ReturnTrue_When_OtherResponseCodes() throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_UNAUTHORIZED, "");
-
-        assertTrue(DevModeHandler.start(port, configuration, npmFolder)
-                .serveDevModeRequest(request, response));
+        httpServer.stop(0);
+        prepareHttpServer(port, HTTP_UNAUTHORIZED, "");
+        assertTrue(devModeHandler.serveDevModeRequest(request, response));
         assertEquals(HTTP_UNAUTHORIZED, responseError);
-    }
 
-    @Test(expected = ConnectException.class)
-    public void servlet_should_ThrowAnException_When_WebpackNotListening()
-            throws Exception {
-        VaadinServlet servlet = prepareServlet(0);
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        servlet.service(request, response);
-        Thread.sleep(150); // NOSONAR
+        httpServer.stop(0);
+        exception.expect(ConnectException.class);
+        devModeHandler.serveDevModeRequest(request, null);
     }
 
     @Test
-    public void servlet_should_GetValidResponse_When_WebpackListening()
+    public void vaadinServlet_forDifferentRequests_shouldHaveCorrectResponse()
             throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
+        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         HttpServletResponse response = prepareResponse();
         int port = prepareHttpServer(0, HTTP_OK, "");
 
-        prepareServlet(port).service(request, response);
+        VaadinServlet servlet = prepareServlet(port);
+        servlet.service(request, response);
         assertEquals(HTTP_OK, responseStatus);
-    }
 
-    @Test
-    public void servlet_getValidRedirectResponse_When_WebpackListening()
-            throws Exception {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_NOT_MODIFIED, "");
-
-        prepareServlet(port).service(request, response);
+        httpServer.stop(0);
+        prepareHttpServer(port, HTTP_NOT_MODIFIED, "");
+        servlet.service(request, response);
         assertEquals(HTTP_NOT_MODIFIED, responseStatus);
+
+        httpServer.stop(0);
+        exception.expect(ConnectException.class);
+        servlet.service(request, response);
     }
 
     @Test
@@ -355,14 +326,10 @@ public class DevModeHandlerTest {
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
 
         List<String> paramNames = new ArrayList<>();
-        paramNames.add(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
         paramNames.add(FrontendUtils.PARAM_TOKEN_FILE);
 
         Mockito.doAnswer(invocation -> Collections.enumeration(paramNames))
                 .when(cfg).getInitParameterNames();
-        Mockito.doAnswer(invocation -> Boolean.FALSE.toString()).when(cfg)
-                .getInitParameter(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
 
         File tokenFile = new File(temporaryFolder.getRoot(),
                 "flow-build-info.json");
@@ -407,13 +374,20 @@ public class DevModeHandlerTest {
         if (port == 0) {
             port = DevModeHandler.getFreePort();
         }
-        httpServer = HttpServer.create(new InetSocketAddress(port), 0);
+        httpServer = createStubWebpackTcpListener(port, status, response);
+        return port;
+    }
+
+    public static HttpServer createStubWebpackTcpListener(int port, int status,
+            String response) throws Exception {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(port),
+                0);
         httpServer.createContext("/", exchange -> {
             exchange.sendResponseHeaders(status, response.length());
             exchange.getResponseBody().write(response.getBytes());
             exchange.close();
         });
         httpServer.start();
-        return port;
+        return httpServer;
     }
 }

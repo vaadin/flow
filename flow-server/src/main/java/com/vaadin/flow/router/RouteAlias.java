@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,9 +32,9 @@ import com.vaadin.flow.component.UI;
  * The route alias allows declaring several route paths in addition to the path
  * declared by the {@link Route} annotation. The component has to have at least
  * one {@literal @Route} annotation which is considered as a primary route and
- * its route path will be used if {@link Router#getUrl(Class)} is called. Thus
- * {@code @RouteAlias} route path is used only to resolve the component during
- * navigation.
+ * its route path will be used if {@link RouteConfiguration#getUrl(Class)} is
+ * called. Thus {@code @RouteAlias} route path is used only to resolve the
+ * component during navigation.
  * <p>
  * This annotation can be used multiple times on the same class.
  *
@@ -63,13 +63,13 @@ public @interface RouteAlias {
      * <p>
      * When navigating between components that use the same layout, the same
      * component instance is reused. Default layout target is the {@link UI},
-     * but the layout should not be a custom {@code UI} as {@code UI} is a special
-     * class used to know where the route stack ends and no parent layouts should
-     * be involved.
+     * but the layout should not be a custom {@code UI} as {@code UI} is a
+     * special class used to know where the route stack ends and no parent
+     * layouts should be involved.
      *
      * <p>
-     * All layout stacks will be appended to the {@code UI} as it represents
-     * the Body element.
+     * All layout stacks will be appended to the {@code UI} as it represents the
+     * Body element.
      *
      * @return the layout component class used by the route target component.
      * @see RouterLayout

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -154,8 +154,17 @@ public class VirtualChildrenList extends StateNodeNodeList {
     }
 
     @Override
-    protected StateNode remove(int index) {
-        throw new UnsupportedOperationException();
+    public int indexOf(StateNode node) {
+        return super.indexOf(node);
+    }
+
+    @Override
+    public StateNode remove(int index) {
+        // removing the payload in case the element is reused
+        get(index).getFeature(ElementData.class).remove(NodeProperties.PAYLOAD);
+
+        // this should not omit a node change to client side.
+        return super.remove(index);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,7 +34,7 @@ public class RpcDecodeException extends Exception {
      * Creates a new instance with the given {@code message}.
      *
      * @param message
-     *            the exception messsage
+     *            the exception message
      */
     public RpcDecodeException(String message) {
         super(message);
@@ -44,7 +44,7 @@ public class RpcDecodeException extends Exception {
      * Creates a new instance with the given {@code cause}.
      *
      * @param cause
-     *            the cause of the failed convertion
+     *            the cause of the failed conversion
      */
     public RpcDecodeException(Throwable cause) {
         super(cause);

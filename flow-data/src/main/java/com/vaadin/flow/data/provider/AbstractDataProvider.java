@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,7 +45,16 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     @Override
     public Registration addDataProviderListener(
             DataProviderListener<T> listener) {
-        return addListener(DataChangeEvent.class, listener::onDataChange);
+        // Using an anonymous class instead of lambda or method reference to prevent potential
+        // self reference serialization issues when clients holds a reference
+        // to the Registration instance returned by this method
+        SerializableConsumer<DataChangeEvent> consumer = new SerializableConsumer<DataChangeEvent>() {
+            @Override
+            public void accept(DataChangeEvent dataChangeEvent) {
+                listener.onDataChange(dataChangeEvent);
+            }
+        };
+        return addListener(DataChangeEvent.class, consumer);
     }
 
     @Override

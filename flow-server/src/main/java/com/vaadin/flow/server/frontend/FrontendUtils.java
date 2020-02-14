@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,10 +15,21 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,24 +37,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static java.lang.String.format;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -52,6 +71,13 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
  * @since 2.0
  */
 public class FrontendUtils {
+
+    protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
+
+    private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
+
+    private static final String PNMP_INSTALLED_BY_NPM = PNMP_INSTALLED_BY_NPM_FOLDER
+            + "bin/pnpm.js";
 
     public static final String PROJECT_BASEDIR = "project.basedir";
 
@@ -95,6 +121,11 @@ public class FrontendUtils {
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
 
     /**
+     * Default target folder for the java project.
+     */
+    public static final String TARGET = "target/";
+
+    /**
      * The NPM package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
@@ -102,9 +133,11 @@ public class FrontendUtils {
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
     /**
-     * Default target folder for the java project.
+     * Default folder for copying front-end resources present in the classpath
+     * jars.
      */
-    public static final String TARGET = "target/";
+    public static final String DEAULT_FLOW_RESOURCES_FOLDER = TARGET
+            + "flow-frontend";
 
     /**
      * Default folder name for flow generated stuff relative to the
@@ -118,6 +151,49 @@ public class FrontendUtils {
      * generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
+
+    /**
+     * The TypeScript definitions for the {@link FrontendUtils#IMPORTS_NAME}
+     * file.
+     */
+    public static final String IMPORTS_D_TS_NAME = "generated-flow-imports.d.ts";
+
+    /**
+     * File name of the index.html in client side.
+     */
+    public static final String INDEX_HTML = "index.html";
+
+    /**
+     * File name of the index.ts in client side.
+     */
+    public static final String INDEX_TS = "index.ts";
+
+    /**
+     * File name of the index.js in client side.
+     */
+    public static final String INDEX_JS = "index.js";
+
+    /**
+     * Default Java source folder for OpenAPI generator.
+     */
+    public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main/java";
+
+    /**
+     * Default application properties file path in Connect project.
+     */
+    public static final String DEFAULT_CONNECT_APPLICATION_PROPERTIES = "src/main/resources/application.properties";
+
+    /**
+     * Default generated path for OpenAPI spec file.
+     */
+    public static final String DEFAULT_CONNECT_OPENAPI_JSON_FILE = TARGET
+            + "generated-resources/openapi.json";
+
+    /**
+     * Default generated path for generated TS files.
+     */
+    public static final String DEFAULT_CONNECT_GENERATED_TS_DIR = DEFAULT_FRONTEND_DIR
+            + "generated/";
 
     /**
      * Name of the file that contains all application imports, javascript, theme
@@ -186,14 +262,20 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.13.0\" ";
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
-    private static final String NOT_FOUND = "%n%n======================================================================================================"
-            + "%nFailed to determine '%s' tool." + "%nPlease install it either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
+    private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
+            + "Check the startup logs for exceptions in running webpack-dev-server.%n"
+            + "If server should be running in production mode check that production mode flag is set correctly.";
+
+    private static final String NODE_NOT_FOUND = "%n%n======================================================================================================"
+            + "%nVaadin requires node.js & npm to be installed. Please install the latest LTS version of node.js (with npm) either by:"
+            + "%n  1) following the https://nodejs.org/en/download/ guide to install it globally. This is the recommended way."
+            + "%n  2) running the following Maven plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY
+            + "%n%nNote that in case you don't install it globally, you'll need to install it again for another Vaadin project."
+            + "%nIn case you have just installed node.js globally, it was not discovered, so you need to restart your system to get the path variables updated."
             + "%n======================================================================================================%n";
 
     private static final String SHOULD_WORK = "%n%n======================================================================================================"
@@ -201,8 +283,7 @@ public class FrontendUtils {
             + "%nYou can install a new one:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY
-            + "%n" //
+            + INSTALL_NODE_LOCALLY + "%n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -211,8 +292,7 @@ public class FrontendUtils {
             + "%nPlease install a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY
-            + "%n" //
+            + INSTALL_NODE_LOCALLY + "%n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -222,8 +302,7 @@ public class FrontendUtils {
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%s"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY
-            + "%n" //
+            + INSTALL_NODE_LOCALLY + "%n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -246,9 +325,19 @@ public class FrontendUtils {
             Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
             Constants.SHOULD_WORK_NPM_MINOR_VERSION);
 
+    private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
+            Constants.SUPPORTED_PNPM_MAJOR_VERSION,
+            Constants.SUPPORTED_PNPM_MINOR_VERSION);
+
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private static String operatingSystem = null;
+
+    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
+
+    public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
+
+    public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     /**
      * Only static stuff here.
@@ -302,19 +391,68 @@ public class FrontendUtils {
      *         have npm running
      */
     public static List<String> getNpmExecutable(String baseDir) {
-        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
-        // not work because it's a shell or windows script that looks for node
-        // and will fail. Thus we look for the `mpn-cli` node script instead
-        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
+        return getNpmExecutable(baseDir, true);
+    }
+
+    /**
+     * Locate <code>pnpm</code> executable.
+     * <p>
+     * In case pnpm is not available it will be installed.
+     *
+     * @param baseDir
+     *            project root folder.
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have pnpm running
+     * @see #getPnpmExecutable(String, boolean)
+     */
+    public static List<String> getPnpmExecutable(String baseDir) {
+        ensurePnpm(baseDir);
+        List<String> pnpmCommand = getPnpmExecutable(baseDir, true);
+        if (!pnpmCommand.isEmpty()) {
+            pnpmCommand.add("--shamefully-hoist=true");
         }
-        // Otherwise look for regulan `npm`
-        String command = isWindows() ? "npm.cmd" : "npm";
-        return Arrays.asList(
-                getExecutable(baseDir, command, null).getAbsolutePath());
+        return pnpmCommand;
+    }
+
+    /**
+     * Locate <code>pnpm</code> executable if it's possible.
+     * <p>
+     * In case the tool is not found either {@link IllegalStateException} is
+     * thrown or an empty list is returned depending on {@code failOnAbsence}
+     * value.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param failOnAbsence
+     *            if {@code true} throws IllegalStateException if tool is not
+     *            found, if {@code false} return an empty list if tool is not
+     *            found
+     *
+     * @return the list of all commands in sequence that need to be executed to
+     *         have pnpm running
+     */
+    public static List<String> getPnpmExecutable(String baseDir,
+            boolean failOnAbsence) {
+        // First try local pnpm JS script if it exists
+        List<String> returnCommand = new ArrayList<>();
+        Optional<File> localPnpmScript = getLocalPnpmScript(baseDir);
+        if (localPnpmScript.isPresent()) {
+            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(localPnpmScript.get().getAbsolutePath());
+        } else {
+            // Otherwise look for regular `pnpm`
+            String command = isWindows() ? "pnpm.cmd" : "pnpm";
+            if (failOnAbsence) {
+                returnCommand.add(getExecutable(baseDir, command, null)
+                        .getAbsolutePath());
+            } else {
+                returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
+                        .map(File::getPath).map(Collections::singletonList)
+                        .orElse(Collections.emptyList()));
+            }
+        }
+        return returnCommand;
     }
 
     /**
@@ -346,17 +484,26 @@ public class FrontendUtils {
             String defaultLocation) {
         File file = null;
         try {
-            file = defaultLocation == null
-                    ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
-                    : Optional.of(new File(baseDir, defaultLocation))
-                            .filter(frontendToolsLocator::verifyTool)
-                            .orElseGet(() -> frontendToolsLocator
-                                    .tryLocateTool(cmd).orElse(null));
+            if (defaultLocation == null) {
+                file = frontendToolsLocator.tryLocateTool(cmd).orElse(null);
+            } else {
+                file = Arrays
+                        .asList(baseDir,
+                                getVaadinHomeDirectory().getAbsolutePath())
+                        .stream().map(dir -> new File(dir, defaultLocation))
+                        .filter(frontendToolsLocator::verifyTool).findFirst()
+                        .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
+                                .orElse(null));
+            }
+        } catch (FileNotFoundException exception) {
+            Throwable cause = exception.getCause();
+            assert cause != null;
+            throw new IllegalStateException(cause);
         } catch (Exception e) { // NOSONAR
             // There are IOException coming from process fork
         }
         if (file == null) {
-            throw new IllegalStateException(String.format(NOT_FOUND, cmd));
+            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
         }
         return file;
     }
@@ -401,15 +548,29 @@ public class FrontendUtils {
         File commandFile = new File(command.get(0));
         if (commandFile.isAbsolute()) {
             String commandPath = commandFile.getParent();
-
             Map<String, String> environment = processBuilder.environment();
-            String path = environment.get("PATH");
+
+            String pathEnvVar;
+            if (isWindows()) {
+                /*
+                 * Determine the name of the PATH environment variable on
+                 * Windows, as variables names are not case-sensitive (the
+                 * common name is "Path").
+                 */
+                pathEnvVar = environment.keySet().stream()
+                        .filter("PATH"::equalsIgnoreCase).findFirst()
+                        .orElse("Path");
+            } else {
+                pathEnvVar = "PATH";
+            }
+
+            String path = environment.get(pathEnvVar);
             if (path == null || path.isEmpty()) {
                 path = commandPath;
             } else if (!path.contains(commandPath)) {
                 path += File.pathSeparatorChar + commandPath;
             }
-            environment.put("PATH", path);
+            environment.put(pathEnvVar, path);
         }
 
         return processBuilder;
@@ -433,11 +594,69 @@ public class FrontendUtils {
             content = getStatsFromWebpack();
         }
 
+        if (config.isStatsExternal()) {
+            content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
+                    service.getContext());
+        }
+
         if (content == null) {
             content = getStatsFromClassPath(service);
         }
-        return content != null ?
-                IOUtils.toString(content, StandardCharsets.UTF_8) : null;
+        return content != null
+                ? IOUtils.toString(content, StandardCharsets.UTF_8)
+                : null;
+    }
+
+    /**
+     * Gets the content of the <code>frontend/index.html</code> file which is
+     * served by webpack-dev-server in dev-mode and read from classpath in
+     * production mode. NOTE: In dev mode, the file content file is fetched via
+     * webpack http request. So that we don't need to have a separate
+     * index.html's content watcher, auto-reloading will work automatically,
+     * like other files managed by webpack in `frontend/` folder.
+     *
+     * @param service
+     *            the vaadin service
+     * @return the content of the index html file as a string, null if not
+     *         found.
+     * @throws IOException
+     *             on error when reading file
+     *
+     */
+    public static String getIndexHtmlContent(VaadinService service)
+            throws IOException {
+        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + INDEX_HTML;
+        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
+                + INDEX_HTML;
+        return getFileContent(service, indexHtmlPathInDevMode,
+                indexHtmlPathInProductionMode);
+    }
+
+    private static String getFileContent(VaadinService service,
+            String pathInDevMode, String pathInProductionMode)
+            throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        InputStream content = null;
+
+        if (!config.isProductionMode() && config.enableDevServer()) {
+            content = getFileFromWebpack(pathInDevMode);
+        }
+
+        if (content == null) {
+            content = getFileFromClassPath(service, pathInProductionMode);
+        }
+        return content != null ? streamToString(content) : null;
+    }
+
+    private static InputStream getFileFromClassPath(VaadinService service,
+            String filePath) {
+        InputStream stream = service.getClassLoader()
+                .getResourceAsStream(filePath);
+        if (stream == null) {
+            getLogger().error("Cannot get the '{}' from the classpath",
+                    filePath);
+        }
+        return stream;
     }
 
     /**
@@ -458,9 +677,15 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            return streamToString(handler
-                    .prepareConnection("/stats.hash", "GET").getInputStream())
-                            .replaceAll("\"", "");
+            HttpURLConnection statsConnection = handler
+                    .prepareConnection("/stats.hash", "GET");
+            if (statsConnection
+                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new WebpackConnectionException(String.format(
+                        NO_CONNECTION, "getting the stats content hash."));
+            }
+            return streamToString(statsConnection.getInputStream())
+                    .replaceAll("\"", "");
         }
 
         return "";
@@ -468,7 +693,71 @@ public class FrontendUtils {
 
     private static InputStream getStatsFromWebpack() throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection("/stats.json", "GET").getInputStream();
+        HttpURLConnection statsConnection = handler
+                .prepareConnection("/stats.json", "GET");
+        if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new WebpackConnectionException(
+                    String.format(NO_CONNECTION, "downloading stats.json"));
+        }
+        return statsConnection.getInputStream();
+    }
+
+    private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
+            VaadinContext context) {
+        String url;
+        // If url is relative try to get host from request
+        // else fallback on 127.0.0.1:8080
+        if (externalStatsUrl.startsWith("/")) {
+            VaadinRequest request = VaadinRequest.getCurrent();
+            url = getHostString(request) + externalStatsUrl;
+        } else {
+            url = externalStatsUrl;
+        }
+        try {
+            URL uri = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) uri
+                    .openConnection();
+            connection.setRequestMethod("GET");
+            // one minute timeout should be enough
+            connection.setReadTimeout(60000);
+            connection.setConnectTimeout(60000);
+            String lastModified = connection.getHeaderField("last-modified");
+            if (lastModified != null) {
+                LocalDateTime modified = ZonedDateTime
+                        .parse(lastModified,
+                                DateTimeFormatter.RFC_1123_DATE_TIME)
+                        .toLocalDateTime();
+                Stats statistics = context.getAttribute(Stats.class);
+                if (statistics == null
+                        || modified.isAfter(statistics.getLastModified())) {
+                    statistics = new Stats(
+                            streamToString(connection.getInputStream()),
+                            lastModified);
+                    context.setAttribute(statistics);
+                }
+                return new ByteArrayInputStream(
+                        statistics.statsJson.getBytes(StandardCharsets.UTF_8));
+            }
+            return connection.getInputStream();
+        } catch (IOException e) {
+            getLogger().error("Failed to retrieve stats.json from the url {}.",
+                    url, e);
+        }
+        return null;
+    }
+
+    private static String getHostString(VaadinRequest request) {
+        String host = request.getHeader("host");
+        if (host == null) {
+            host = "http://127.0.0.1:8080";
+        } else if (!host.contains("://")) {
+            String scheme = request.getHeader("scheme");
+            if (scheme == null) {
+                scheme = "http";
+            }
+            host = scheme + "://" + host;
+        }
+        return host;
     }
 
     private static InputStream getStatsFromClassPath(VaadinService service) {
@@ -487,6 +776,12 @@ public class FrontendUtils {
         return stream;
     }
 
+    private static InputStream getFileFromWebpack(String filePath)
+            throws IOException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        return handler.prepareConnection(filePath, "GET").getInputStream();
+    }
+
     /**
      * Load the asset chunks from stats.json. We will only read the file until
      * we have reached the assetsByChunkName json and return that as a json
@@ -494,7 +789,8 @@ public class FrontendUtils {
      *
      * @param service
      *            the Vaadin service.
-     * @return json for assetsByChunkName object in stats.json
+     * @return json for assetsByChunkName object in stats.json or {@code null}
+     *         if stats.json not found or content not found.
      * @throws IOException
      *             if an I/O error occurs while creating the input stream.
      */
@@ -503,18 +799,25 @@ public class FrontendUtils {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
             DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            return streamToString(
-                    handler.prepareConnection("/assetsByChunkName", "GET")
-                            .getInputStream());
+            HttpURLConnection assetsConnection = handler
+                    .prepareConnection("/assetsByChunkName", "GET");
+            if (assetsConnection
+                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new WebpackConnectionException(String.format(
+                        NO_CONNECTION, "getting assets by chunk name."));
+            }
+            return streamToString(assetsConnection.getInputStream());
         }
-
-        String stats = config
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-        InputStream resourceAsStream = service.getClassLoader()
-                .getResourceAsStream(stats);
+        InputStream resourceAsStream;
+        if (config.isStatsExternal()) {
+            resourceAsStream = getStatsFromExternalUrl(
+                    config.getExternalStatsUrl(), service.getContext());
+        } else {
+            resourceAsStream = getStatsFromClassPath(service);
+        }
+        if (resourceAsStream == null) {
+            return null;
+        }
         try (Scanner scan = new Scanner(resourceAsStream,
                 StandardCharsets.UTF_8.name())) {
             StringBuilder assets = new StringBuilder();
@@ -538,28 +841,29 @@ public class FrontendUtils {
                 }
                 assets.append(line);
             }
+            getLogger()
+                    .error("Could not parse assetsByChunkName from stats.json");
         }
         return null;
     }
 
     /**
-     * Scan until we reach the assetsByChunkName json object start.
-     * If faulty format add first jsonObject to assets builder.
+     * Scan until we reach the assetsByChunkName json object start. If faulty
+     * format add first jsonObject to assets builder.
      *
      * @param scan
-     *         Scanner used to scan data
+     *            Scanner used to scan data
      * @param assets
-     *         assets builder
+     *            assets builder
      */
     private static void scanToAssetChunkStart(Scanner scan,
-                                              StringBuilder assets) {
+            StringBuilder assets) {
         do {
             String line = scan.nextLine().trim();
             // Walk file until we get to the assetsByChunkName object.
             if (line.startsWith("\"assetsByChunkName\"")) {
                 if (!line.endsWith("{")) {
-                    assets.append(
-                            line.substring(line.indexOf('{') + 1).trim());
+                    assets.append(line.substring(line.indexOf('{') + 1).trim());
                 }
                 break;
             }
@@ -577,8 +881,9 @@ public class FrontendUtils {
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(FrontendUtils.getNodeExecutable(baseDir));
-            nodeVersionCommand.add("--version");
-            FrontendVersion nodeVersion = getVersion("node", nodeVersionCommand);
+            nodeVersionCommand.add("--version"); // NOSONAR
+            FrontendVersion nodeVersion = getVersion("node",
+                    nodeVersionCommand);
             validateToolVersion("node", nodeVersion, SUPPORTED_NODE_VERSION,
                     SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
@@ -586,9 +891,9 @@ public class FrontendUtils {
         }
 
         try {
-            List<String> npmVersionCommand = new ArrayList<>();
-            npmVersionCommand.addAll(FrontendUtils.getNpmExecutable(baseDir));
-            npmVersionCommand.add("--version");
+            List<String> npmVersionCommand = new ArrayList<>(
+                    FrontendUtils.getNpmExecutable(baseDir));
+            npmVersionCommand.add("--version"); // NOSONAR
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
                     SHOULD_WORK_NPM_VERSION);
@@ -599,19 +904,152 @@ public class FrontendUtils {
 
     }
 
+    /**
+     * Ensure that pnpm tool is available and install it if it's not.
+     *
+     * @param baseDir
+     *            project root folder.
+     */
+    public static void ensurePnpm(String baseDir) {
+        if (isPnpmTooOldOrAbsent(baseDir)) {
+            // copy the current content of package.json file to a temporary
+            // location
+            File packageJson = new File(baseDir, "package.json");
+            File tempFile = null;
+            boolean packageJsonExists = packageJson.canRead();
+            if (packageJsonExists) {
+                try {
+                    tempFile = File.createTempFile("package", "json");
+                    FileUtils.copyFile(packageJson, tempFile);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't make a copy of package.json file",
+                            exception);
+                }
+                packageJson.delete();
+            }
+            try {
+                JsonObject pkgJson = Json.createObject();
+                pkgJson.put("name", "temp");
+                pkgJson.put("license", "UNLICENSED");
+                pkgJson.put("repository", "npm/npm");
+                pkgJson.put("description",
+                        "Temporary package for pnpm installation");
+                FileUtils.writeLines(packageJson,
+                        Collections.singletonList(pkgJson.toJson()));
+                JsonObject lockJson = Json.createObject();
+                lockJson.put("lockfileVersion", 1);
+                FileUtils.writeLines(new File(baseDir, "package-lock.json"),
+                        Collections.singletonList(lockJson.toJson()));
+            } catch (IOException e) {
+                getLogger().warn("Couldn't create temporary package.json");
+            }
+            LoggerFactory.getLogger("dev-updater").info(
+                    "Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
+                    DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
+            // install pnpm locally using npm
+            installPnpm(baseDir, getNpmExecutable(baseDir, false));
+
+            // remove package-lock.json which contains pnpm as a dependency.
+            new File(baseDir, "package-lock.json").delete();
+
+            if (packageJsonExists && tempFile != null) {
+                // return back the original package.json
+                try {
+                    FileUtils.copyFile(tempFile, packageJson);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't restore package.json file back",
+                            exception);
+                }
+                tempFile.delete();
+            }
+        }
+    }
+
+    private static boolean isPnpmTooOldOrAbsent(String baseDir) {
+        final List<String> pnpmCommand = getPnpmExecutable(baseDir, false);
+        if (!pnpmCommand.isEmpty()) {
+            // check whether globally or locally installed pnpm is new enough
+            try {
+                List<String> versionCmd = new ArrayList<>(pnpmCommand);
+                versionCmd.add("--version"); // NOSONAR
+                FrontendVersion pnpmVersion = getVersion("pnpm", versionCmd);
+                if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
+                    return false;
+                } else {
+                    getLogger().warn(String.format(
+                            "installed pnpm ('%s', version %s) is too old, installing supported version locally",
+                            String.join(" ", pnpmCommand),
+                            pnpmVersion.getFullVersion()));
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().warn(
+                        "Error checking pnpm version, installing pnpm locally",
+                        e);
+            }
+        }
+        return true;
+    }
+
     static void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
         if (NPM_BLACKLISTED_VERSIONS.contains(npmVersion)) {
-            String badNpmVersion = buildBadVersionString("npm", npmVersion.getFullVersion(),
+            String badNpmVersion = buildBadVersionString("npm",
+                    npmVersion.getFullVersion(),
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
         }
     }
 
+    private static void installPnpm(String baseDir,
+            List<String> installCommand) {
+        List<String> command = new ArrayList<>();
+        command.addAll(installCommand);
+        command.add("install");
+        command.add("pnpm@" + DEFAULT_PNPM_VERSION);
+
+        console(YELLOW, commandToString(baseDir, command));
+
+        ProcessBuilder builder = createProcessBuilder(command);
+        builder.environment().put("ADBLOCK", "1");
+        builder.directory(new File(baseDir));
+
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+        Process process = null;
+        try {
+            process = builder.start();
+            getLogger().debug("Output of `{}`:",
+                    command.stream().collect(Collectors.joining(" ")));
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(),
+                            StandardCharsets.UTF_8))) {
+                String stdoutLine;
+                while ((stdoutLine = reader.readLine()) != null) {
+                    getLogger().debug(stdoutLine);
+                }
+            }
+
+            int errorCode = process.waitFor();
+            if (errorCode != 0) {
+                getLogger().error("Couldn't install 'pnpm'");
+            } else {
+                getLogger().debug("Pnpm is successfully installed");
+            }
+        } catch (InterruptedException | IOException e) {
+            getLogger().error("Error when running `npm install`", e);
+        } finally {
+            if (process != null) {
+                process.destroyForcibly();
+            }
+        }
+    }
+
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return String
-                .format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
-                        PARAM_IGNORE_VERSION_CHECKS);
+        return String.format(TOO_OLD, tool, version, supportedMajor,
+                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private static String buildShouldWorkString(String tool, String version,
@@ -631,6 +1069,21 @@ public class FrontendUtils {
     }
 
     /**
+     * Get directory where project's frontend files are located.
+     *
+     * @param configuration
+     *            the current deployment configuration
+     *
+     * @return {@link #DEFAULT_FRONTEND_DIR} or value of
+     *         {@link #PARAM_FRONTEND_DIR} if it is set.
+     */
+    public static String getProjectFrontendDir(
+            DeploymentConfiguration configuration) {
+        return configuration.getStringProperty(PARAM_FRONTEND_DIR,
+                DEFAULT_FRONTEND_DIR);
+    }
+
+    /**
      * Checks whether the {@code file} is a webpack configuration file with the
      * expected content (includes a configuration generated by Flow).
      *
@@ -645,6 +1098,31 @@ public class FrontendUtils {
         return file.exists()
                 && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
                         .contains("./webpack.generated.js");
+    }
+
+    /**
+     * Get relative path from a source path to a target path in Unix form. All
+     * the Windows' path separator will be replaced.
+     *
+     * @param source
+     *            the source path
+     * @param target
+     *            the target path
+     * @return unix relative path from source to target
+     */
+    public static String getUnixRelativePath(Path source, Path target) {
+        return getUnixPath(source.relativize(target));
+    }
+
+    /**
+     * Get path as a String in Unix form.
+     *
+     * @param source
+     *            path to get
+     * @return path as a String in Unix form.
+     */
+    public static String getUnixPath(Path source) {
+        return source.toString().replaceAll("\\\\", "/");
     }
 
     /**
@@ -713,18 +1191,18 @@ public class FrontendUtils {
             return;
         }
 
-        throw new IllegalStateException(
-                buildTooOldString(tool, toolVersion.getFullVersion(),
-                        supported.getMajorVersion(),
-                        supported.getMinorVersion()));
+        throw new IllegalStateException(buildTooOldString(tool,
+                toolVersion.getFullVersion(), supported.getMajorVersion(),
+                supported.getMinorVersion()));
     }
 
     static boolean isVersionAtLeast(FrontendVersion toolVersion,
             FrontendVersion required) {
-            int major = toolVersion.getMajorVersion();
-            int minor = toolVersion.getMinorVersion();
-            return (major > required.getMajorVersion()
-                    || (major == required.getMajorVersion() && minor >= required.getMinorVersion()));
+        int major = toolVersion.getMajorVersion();
+        int minor = toolVersion.getMinorVersion();
+        return (major > required.getMajorVersion()
+                || (major == required.getMajorVersion()
+                        && minor >= required.getMinorVersion()));
     }
 
     /**
@@ -763,8 +1241,8 @@ public class FrontendUtils {
         }
     }
 
-    private static FrontendVersion getVersion(String tool, List<String> versionCommand)
-            throws UnknownVersionException {
+    private static FrontendVersion getVersion(String tool,
+            List<String> versionCommand) throws UnknownVersionException {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
                     .start();
@@ -785,21 +1263,183 @@ public class FrontendUtils {
      * Parse the version number of node/npm from the given output.
      *
      * @param output
-     *         The output, typically produced by <code>tool --version</code>
+     *            The output, typically produced by <code>tool --version</code>
      * @return the parsed version as an array with 3-4 elements
      * @throws IOException
-     *         if parsing fails
+     *             if parsing fails
      */
     static String parseVersionString(String output) throws IOException {
         Optional<String> lastOuput = Stream.of(output.split("\n"))
                 .filter(line -> !line.matches("^[ ]*$"))
                 .reduce((first, second) -> second);
-        return lastOuput
-                .map(line -> line.replaceFirst("^v", ""))
+        return lastOuput.map(line -> line.replaceFirst("^v", ""))
                 .orElseThrow(() -> new IOException("No output"));
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
+    }
+
+    private static Optional<File> getLocalPnpmScript(String baseDir) {
+        File npmInstalled = new File(baseDir, PNMP_INSTALLED_BY_NPM);
+        if (npmInstalled.canRead()) {
+            return Optional.of(npmInstalled);
+        }
+
+        // For version 4.3.3 check ".ignored" folders
+        File movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored_pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
+        }
+
+        movedPnpmScript = new File(baseDir,
+                "node_modules/.ignored/pnpm/bin/pnpm.js");
+        if (movedPnpmScript.canRead()) {
+            return Optional.of(movedPnpmScript);
+        }
+        return Optional.empty();
+    }
+
+    private static List<String> getNpmExecutable(String baseDir,
+            boolean removePnpmLock) {
+        try {
+            List<String> returnCommand = getNpmScriptCommand(baseDir);
+            if (returnCommand.isEmpty()) {
+                returnCommand = getNpmScriptCommand(
+                        getVaadinHomeDirectory().getAbsolutePath());
+            }
+            if (returnCommand.isEmpty()) {
+                // Otherwise look for regulag `npm`
+                String command = isWindows() ? "npm.cmd" : "npm";
+                returnCommand.add(getExecutable(baseDir, command, null)
+                        .getAbsolutePath());
+            }
+            returnCommand.add("--no-update-notifier");
+            returnCommand.add("--no-audit");
+
+            if (removePnpmLock) {
+                // remove pnpm-lock.yaml which contains pnpm as a dependency.
+                new File(baseDir, "pnpm-lock.yaml").delete();
+            }
+
+            return returnCommand;
+        } catch (FileNotFoundException exception) {
+            assert exception.getCause() != null;
+            throw new IllegalStateException(exception.getCause());
+        }
+    }
+
+    private static List<String> getNpmScriptCommand(String dir) {
+        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
+        // not work because it's a shell or windows script that looks for node
+        // and will fail. Thus we look for the `npm-cli` node script instead
+        File file = new File(dir, "node/node_modules/npm/bin/npm-cli.js");
+        List<String> returnCommand = new ArrayList<>();
+        if (file.canRead()) {
+            // We return a two element list with node binary and npm-cli script
+            returnCommand.add(getNodeExecutable(dir));
+            returnCommand.add(file.getAbsolutePath());
+        }
+        return returnCommand;
+    }
+
+    static File getVaadinHomeDirectory() throws FileNotFoundException {
+        File home = FileUtils.getUserDirectory();
+        if (!home.exists()) {
+            throw new IllegalStateException("The user directory '"
+                    + home.getAbsolutePath() + "' doesn't exist");
+        }
+        if (!home.isDirectory()) {
+            throw new IllegalStateException("The path '"
+                    + home.getAbsolutePath() + "' is not a directory");
+        }
+        File vaadinFolder = new File(home, ".vaadin");
+        if (vaadinFolder.exists()) {
+            if (vaadinFolder.isDirectory()) {
+                return vaadinFolder;
+            } else {
+                throw new FileNotFoundException("The path '"
+                        + vaadinFolder.getAbsolutePath()
+                        + "' is not a directory. "
+                        + "This path is used to store vaadin related data. "
+                        + "Please either remove the file or create a directory");
+            }
+        }
+        try {
+            FileUtils.forceMkdir(vaadinFolder);
+            return vaadinFolder;
+        } catch (IOException exception) {
+            FileNotFoundException exc = new FileNotFoundException(
+                    "Couldn't create '.vaadin' folder inside home directory '"
+                            + home.getAbsolutePath() + "'");
+            exc.initCause(exception);
+            throw exc;
+        }
+    }
+
+    /**
+     * Container class for caching the external stats.json contents.
+     */
+    private static class Stats implements Serializable {
+        private final String lastModified;
+        protected final String statsJson;
+
+        /**
+         * Create a new container for stats.json caching.
+         *
+         * @param statsJson
+         *            the gotten stats.json as a string
+         * @param lastModified
+         *            last modification timestamp for stats.json in RFC-1123
+         *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
+         */
+        public Stats(String statsJson, String lastModified) {
+            this.statsJson = statsJson;
+            this.lastModified = lastModified;
+        }
+
+        /**
+         * Return last modified timestamp for contained stats.json.
+         *
+         * @return timestamp as LocalDateTime
+         */
+        public LocalDateTime getLastModified() {
+            return ZonedDateTime
+                    .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
+                    .toLocalDateTime();
+        }
+    }
+
+    /**
+     * Pretty prints a command line order. It split in lines adapting to 80
+     * columns, and allowing copy and paste in console. It also removes the
+     * current directory to avoid security issues in log files.
+     *
+     * @param baseDir
+     *            the current directory
+     * @param command
+     *            the command and it's arguments
+     * @return the string for printing in logs
+     */
+    public static String commandToString(String baseDir, List<String> command) {
+        return "\n" + WordUtils
+                .wrap(String.join(" ", command).replace(baseDir, "."), 50)
+                .replace("\r", "").replace("\n", " \\ \n    ") + "\n";
+    }
+
+    /**
+     * Intentionally send to console instead to log, useful when executing
+     * external processes.
+     *
+     * @param format
+     *            Format of the line to send to console, it must contain a `%s`
+     *            outlet for the message
+     * @param message
+     *            the string to show
+     */
+    @SuppressWarnings("squid:S106")
+    public static void console(String format, Object message) {
+        System.out.print(format(format, message));
     }
 }

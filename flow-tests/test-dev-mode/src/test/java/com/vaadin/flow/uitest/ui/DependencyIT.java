@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.By;
+
+import static org.junit.Assert.assertTrue;
 
 public class DependencyIT extends ChromeBrowserTest {
 
@@ -66,51 +66,13 @@ public class DependencyIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void htmlInjection() {
-        open();
-
-        // Initial HTML import logs a message on the page
-        List<String> messages = getMessages();
-
-        Assert.assertEquals(3, messages.size());
-        assertTrue(messages.contains("HTML import 4 companion JS loaded"));
-        assertTrue(messages.contains("Messagehandler initialized in HTML import 1"));
-        assertTrue(messages.contains("Messagehandler initialized in HTML import 4"));
-
-        // Inject html
-        findElementById("loadHtml").click();
-        messages = getMessages();
-
-        Assert.assertEquals(5, messages.size());
-        assertTrue(messages.contains("HTML import 2 loaded"));
-        assertTrue(messages.contains("HTML import 3 loaded"));
-    }
-
-    @Test
-    public void mixedHtmlAndJsInjection() {
-        open();
-        findElement(By.id("loadMixed")).click();
-
-        List<String> messages = getMessages();
-
-        Assert.assertEquals("script1 is loaded",
-                messages.get(messages.size() - 4));
-        Assert.assertEquals("Mixed HTML import 1 loaded",
-                messages.get(messages.size() - 3));
-        Assert.assertEquals("script2 is loaded",
-                messages.get(messages.size() - 2));
-        Assert.assertEquals("Mixed HTML import 2 loaded",
-                messages.get(messages.size() - 1));
-    }
-
-    @Test
     public void loadingUnavailableResources() {
         open();
         findElement(By.id("loadUnavailableResources")).click();
 
         List<String> errors = findElements(By.className("v-system-error"))
                 .stream().map(WebElement::getText).collect(Collectors.toList());
-        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals(2, errors.size());
         // The order for these can be random
         assertTrue("Couldn't find error for not-found.css",
                 errors.stream()
@@ -122,14 +84,11 @@ public class DependencyIT extends ChromeBrowserTest {
                         .filter(s -> s.startsWith("Error loading http://")
                                 && s.endsWith("/not-found.js"))
                         .findFirst().isPresent());
-        assertTrue("Couldn't find error for not-found.html",
-                errors.stream()
-                        .filter(s -> s.startsWith("Error loading http://")
-                                && s.endsWith("/not-found.html"))
-                        .findFirst().isPresent());
     }
 
     @Test
+    @Ignore("Ignored because production mode is not activated by the servlet mapping , "
+            + "see https://github.com/vaadin/flow/issues/7281")
     public void loadingUnavailableResourcesProduction() {
         openProduction();
         findElement(By.id("loadUnavailableResources")).click();
@@ -137,16 +96,6 @@ public class DependencyIT extends ChromeBrowserTest {
         List<WebElement> errors = findElements(By.className("v-system-error"));
         // Should not be shown in production
         Assert.assertEquals(0, errors.size());
-    }
-
-    private List<String> getMessages() {
-        List<WebElement> elements = findElements(
-                By.xpath("html/body/*[@class='message']"));
-        List<String> messages = new ArrayList<>();
-        for (WebElement element : elements) {
-            messages.add(element.getText());
-        }
-        return messages;
     }
 
     protected WebElement findElementById(String id) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,15 +18,19 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
@@ -43,6 +47,10 @@ import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 import org.slf4j.impl.SimpleLogger;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
@@ -54,6 +62,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -66,6 +75,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
+    private File tmpRoot;
     private File generatedPath;
     private File frontendDirectory;
     private File nodeModulesPath;
@@ -76,6 +86,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private Logger logger = Mockito.mock(Logger.class);
 
+    private static final String ERROR_MSG = "foo-bar-baz";
+
     private class UpdateImports extends AbstractUpdateImports {
 
         private final ClassFinder finder;
@@ -83,8 +95,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         private List<String> resultingLines;
 
         UpdateImports(ClassFinder classFinder,
-                FrontendDependenciesScanner scanner, File npmDirectory) {
-            super(frontendDirectory, npmDirectory, generatedPath);
+                FrontendDependenciesScanner scanner, File npmDirectory,
+                File tokenFile) {
+            super(frontendDirectory, npmDirectory, generatedPath, tokenFile);
             this.scanner = scanner;
             finder = classFinder;
         }
@@ -145,11 +158,16 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 return updater.log();
             }
         }
+
+        @Override
+        protected String getImportsNotFoundMessage() {
+            return ERROR_MSG;
+        }
     }
 
     @Before
     public void setup() throws Exception {
-        File tmpRoot = temporaryFolder.getRoot();
+        tmpRoot = temporaryFolder.getRoot();
 
         // Use a file for logs so as tests can assert the warnings shown to the
         // user.
@@ -164,10 +182,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
         nodeModulesPath = new File(tmpRoot, NODE_MODULES);
         generatedPath = new File(tmpRoot, DEFAULT_GENERATED_DIR);
+        File tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot);
+                tmpRoot, tokenFile);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(new File(nodeModulesPath,
@@ -216,15 +235,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(logger).info(captor.capture());
 
-        Assert.assertThat(captor.getValue(), CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "@vaadin/vaadin-lumo-styles/spacing.js"),
-                CoreMatchers.containsString(
-                        "If the build fails, check that npm packages are installed."),
-                CoreMatchers.containsString(
-                        "To fix the build remove `node_modules` directory to reset modules."),
-                CoreMatchers.containsString(
-                        "In addition you may run `npm install` to fix `node_modules` tree structure.")));
+        Assert.assertThat(captor.getValue(),
+                CoreMatchers.allOf(
+                        CoreMatchers.containsString(
+                                "@vaadin/vaadin-lumo-styles/spacing.js"),
+                        CoreMatchers.containsString(ERROR_MSG)));
     }
 
     @Test
@@ -245,6 +260,28 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                                     Sets.newSet(fooFileName))));
         }
 
+    }
+
+    @Test
+    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
+        ClassFinder classFinder = getClassFinder();
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                tmpRoot, null);
+
+        useMockLog = true;
+        Mockito.when(logger.isInfoEnabled()).thenReturn(true);
+
+        Files.move(frontendDirectory.toPath(),
+                new File(tmpRoot, "_frontend").toPath());
+
+        try {
+            updater.run();
+            Assert.fail("Execute should have failed with advice to run `prepare-frontend`");
+        } catch (IllegalStateException e) {
+            assertThat(e.getMessage(), CoreMatchers.containsString(
+                    "Unable to locate frontend resources and missing token file. "
+                            + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application"));
+        }
     }
 
     @Test
@@ -289,7 +326,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 + "(e.g. set '%s' property)", frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
-
+         
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
     }
@@ -352,8 +389,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .replace("\r", "");
 
         Assert.assertThat(output, CoreMatchers.containsString(
-                "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'"));
-        Assert.assertThat(output, CoreMatchers.containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
         Assert.assertThat(output, CoreMatchers
                 .containsString("Use the './' prefix for files in the '"
@@ -377,7 +412,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void generate_containsLumoThemeFiles() throws Exception {
+    public void generate_containsLumoThemeFiles() {
         updater.run();
 
         assertContainsImports(true, "@vaadin/vaadin-lumo-styles/color.js",
@@ -390,8 +425,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     // flow #6408
     @Test
-    public void jsModuleOnRouterLayout_shouldBe_addedAfterLumoStyles()
-            throws Exception {
+    public void jsModuleOnRouterLayout_shouldBe_addedAfterLumoStyles() {
         updater.run();
 
         assertContainsImports(true, "Frontend/common-js-file.js");
@@ -404,15 +438,81 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void jsModulesOrderIsPreservedAnsAfterJsModules() throws Exception {
+    public void jsModulesOrderIsPreservedAnsAfterJsModules() {
         updater.run();
 
         assertImportOrder("jsmodule/g.js", "javascript/a.js", "javascript/b.js",
                 "javascript/c.js");
     }
 
-    private void assertContainsImports(boolean contains, String... imports)
-            throws IOException {
+    @Route(value = "")
+    private static class MainView extends Component {
+        NodeTestComponents.TranslatedImports translatedImports;
+        NodeTestComponents.LocalP3Template localP3Template;
+        NodeTestComponents.JavaScriptOrder javaScriptOrder;
+    }
+
+    @Test
+    public void assertFullSortOrder() throws MalformedURLException {
+        Class[] testClasses = { MainView.class,
+                NodeTestComponents.TranslatedImports.class,
+                NodeTestComponents.LocalP3Template.class,
+                NodeTestComponents.JavaScriptOrder.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                tmpRoot, new File(tmpRoot, TOKEN_FILE));
+        updater.run();
+
+        // Imports are collected as
+        // - theme and css
+        // - JsModules (external e.g. in node_modules/)
+        // - JavaScript
+        // - Generated webcompoents
+        // - JsModules (internal e.g. in frontend/)
+        List<String> expectedImports = new ArrayList<>();
+        expectedImports.addAll(updater.getExportLines());
+        expectedImports.addAll(updater.getThemeLines());
+
+        getAnntotationsAsStream(JsModule.class, testClasses)
+                .map(JsModule::value).map(this::updateToImport).sorted()
+                .forEach(expectedImports::add);
+        getAnntotationsAsStream(JavaScript.class, testClasses)
+                .map(JavaScript::value).map(this::updateToImport).sorted()
+                .forEach(expectedImports::add);
+
+        List<String> internals = expectedImports.stream()
+                .filter(importValue -> importValue
+                        .contains(FrontendUtils.WEBPACK_PREFIX_ALIAS))
+                .sorted().collect(Collectors.toList());
+        updater.getGeneratedModules().stream().map(this::updateToImport)
+                .forEach(expectedImports::add);
+        // Remove internals from the full list
+        expectedImports.removeAll(internals);
+        // Add internals to end of list
+        expectedImports.addAll(internals);
+
+        Assert.assertEquals(expectedImports, updater.resultingLines);
+    }
+
+    private <T extends Annotation> Stream<T> getAnntotationsAsStream(
+            Class<T> annotation, Class<?>... classes) {
+        Stream<T> stream = Stream.empty();
+        for (Class<?> clazz : classes) {
+            stream = Stream.concat(stream,
+                    Stream.of(clazz.getAnnotationsByType(annotation)));
+        }
+        return stream;
+    }
+
+    private String updateToImport(String value) {
+        if (value.startsWith("./")) {
+            value = value.replace("./", FrontendUtils.WEBPACK_PREFIX_ALIAS);
+        }
+        return String.format("import '%s';", value);
+    }
+
+    private void assertContainsImports(boolean contains, String... imports) {
         for (String line : imports) {
             boolean result = updater.resultingLines
                     .contains("import '" + addWebpackPrefix(line) + "';");
@@ -426,7 +526,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
     }
 
-    private void assertImportOrder(String... imports) throws IOException {
+    private void assertImportOrder(String... imports) {
         int curIndex = -1;
         for (String line : imports) {
             String prefixed = addWebpackPrefix(line);

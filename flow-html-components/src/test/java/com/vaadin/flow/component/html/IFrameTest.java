@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,16 @@
  */
 package com.vaadin.flow.component.html;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.Element;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.lang.reflect.Field;
+
 public class IFrameTest extends ComponentTest {
 
-    // Actual test methods in super class
+    // Actual test methods mostly in super class
 
     @Override
     protected void addProperties() {
@@ -32,5 +39,19 @@ public class IFrameTest extends ComponentTest {
         addProperty("sandbox", IFrame.SandboxType[].class,
                 null, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS },
                 true, true);
+    }
+
+    @Test
+    public void reload() throws Exception {
+        Element element = Mockito.mock(Element.class);
+        IFrame iframe = new IFrame();
+        Field f = Component.class.getDeclaredField("element");
+
+        f.setAccessible(true);
+        f.set(iframe, element);
+
+        iframe.reload();
+
+        Mockito.verify(element).executeJs("this.src = this.src");
     }
 }

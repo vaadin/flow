@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.server;
 
+import com.vaadin.flow.server.frontend.FallibleCommand;
+
 /**
  * Thrown by {@link FallibleCommand} if it's unable to complete its execution.
  *
  * @author Vaadin Ltd
  * @since 2.0
  *
- * @see FallibleCommand
  */
 public class ExecutionFailedException extends Exception {
 

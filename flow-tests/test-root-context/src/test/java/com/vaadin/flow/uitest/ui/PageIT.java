@@ -6,6 +6,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
@@ -84,10 +85,27 @@ public class PageIT extends ChromeBrowserTest {
         open();
 
         findElement(By.id("open")).click();
-        ArrayList<String> tabs = new ArrayList<>(getDriver().getWindowHandles());
+        ArrayList<String> tabs = new ArrayList<>(
+                getDriver().getWindowHandles());
         Assert.assertThat(
                 getDriver().switchTo().window(tabs.get(1)).getCurrentUrl(),
-                Matchers.endsWith(BaseHrefView.class.getName())
-        );
+                Matchers.endsWith(BaseHrefView.class.getName()));
+    }
+
+    @Test
+    public void testOpenUrlInIFrame() throws InterruptedException {
+        open();
+
+        findElement(By.id("openInIFrame")).click();
+
+        waitUntil(driver -> !getIframeUrl().equals("about:blank"));
+
+        Assert.assertThat(getIframeUrl(),
+                Matchers.endsWith(BaseHrefView.class.getName()));
+    }
+
+    private String getIframeUrl() {
+        return (String) ((JavascriptExecutor) driver).executeScript(
+                "return document.getElementById('newWindow').contentWindow.location.href;");
     }
 }

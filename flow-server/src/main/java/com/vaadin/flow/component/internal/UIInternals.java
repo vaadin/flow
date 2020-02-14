@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,34 +22,23 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
-import com.vaadin.flow.component.internal.ComponentMetaData.HtmlImportDependency;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
@@ -73,15 +62,13 @@ import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.NoTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -170,6 +157,8 @@ public class UIInternals implements Serializable {
      */
     private final UI ui;
 
+    private final UIInternalUpdater internalsHandler;
+
     private String title;
 
     private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
@@ -192,11 +181,6 @@ public class UIInternals implements Serializable {
 
     private final ConstantPool constantPool = new ConstantPool();
 
-    private AbstractTheme theme = null;
-
-    private static final Pattern componentSource = Pattern
-            .compile(".*/src/vaadin-([\\w\\-]*).html");
-
     private byte[] lastProcessedMessageHash = null;
 
     private String contextRootRelativePath;
@@ -216,6 +200,20 @@ public class UIInternals implements Serializable {
      *            the UI to use
      */
     public UIInternals(UI ui) {
+        this(ui, new UIInternalUpdater() {
+        });
+    }
+
+    /**
+     * Creates a new instance for the given UI.
+     *
+     * @param ui
+     *            the UI to use
+     * @param internalsHandler
+     *            an implementation of {@link UIInternalUpdater}
+     */
+    public UIInternals(UI ui, UIInternalUpdater internalsHandler) {
+        this.internalsHandler = internalsHandler;
         this.ui = ui;
         stateTree = new StateTree(this, getRootNodeFeatures());
     }
@@ -533,7 +531,8 @@ public class UIInternals implements Serializable {
         List<E> registeredListeners = (List<E>) listeners
                 .computeIfAbsent(handler, key -> new ArrayList<>());
 
-        return Collections.unmodifiableList(registeredListeners);
+        return Collections
+                .unmodifiableList(new ArrayList<>(registeredListeners));
     }
 
     /**
@@ -654,18 +653,12 @@ public class UIInternals implements Serializable {
         assert target != null;
         assert viewLocation != null;
 
-        if (getSession().getConfiguration().isCompatibilityMode()) {
-            updateTheme(target, path);
-        }
-
         HasElement oldRoot = null;
         if (!routerTargetChain.isEmpty()) {
             oldRoot = routerTargetChain.get(routerTargetChain.size() - 1);
         }
 
         this.viewLocation = viewLocation;
-
-        Element uiElement = ui.getElement();
 
         // Assemble previous parent-child relationships to enable detecting
         // changes
@@ -720,75 +713,17 @@ public class UIInternals implements Serializable {
                     "Root can't be null here since we know there's at least one item in the chain");
         }
 
-        Element rootElement = root.getElement();
-
-        if (!uiElement.equals(rootElement.getParent())) {
-            if (oldRoot != null) {
-                oldRoot.getElement().removeFromParent();
-            }
-            rootElement.removeFromParent();
-            uiElement.appendChild(rootElement);
-        }
-    }
-
-    private void updateTheme(Component target, String path) {
-        Optional<ThemeDefinition> themeDefinition = ui
-                .getThemeFor(target.getClass(), path);
-
-        if (themeDefinition.isPresent()) {
-            setTheme(themeDefinition.get().getTheme());
-        } else {
-            setTheme((Class<? extends AbstractTheme>) null);
-            if (!AnnotationReader
-                    .getAnnotationFor(target.getClass(), NoTheme.class)
-                    .isPresent()) {
-                getLogger().warn(
-                        "No @Theme defined for {}. See 'trace' level logs for the exact components missing theming.",
-                        target.getClass().getName());
-            }
-        }
+        internalsHandler.updateRoot(ui, oldRoot, root);
     }
 
     /**
-     * Set the Theme to use for HTML import theme translations.
-     * <p>
-     * Note! The set theme will be overridden for each call to
-     * {@link #showRouteTarget(Location, String, Component, List)} if the new
-     * theme is not the same as the set theme.
-     * <p>
-     * This method is intended for managed internal use only.
+     * Move all the children of the other UI to this current UI.
      *
-     * @param theme
-     *            theme implementation to set
-     * @deprecated use {@link #setTheme(Class)} instead
+     * @param otherUI
+     *            the other UI to transfer content from.
      */
-    @Deprecated
-    public void setTheme(AbstractTheme theme) {
-        this.theme = theme;
-    }
-
-    /**
-     * Sets the theme using its {@code themeClass}.
-     * <p>
-     * Note! The set theme will be overridden for each call to
-     * {@link #showRouteTarget(Location, String, Component, List)} if the new
-     * theme is not the same as the set theme.
-     * <p>
-     * This method is intended for managed internal use only.
-     *
-     * @see #setTheme(AbstractTheme)
-     *
-     * @param themeClass
-     *            theme class to set, may be {@code null}
-     */
-    public void setTheme(Class<? extends AbstractTheme> themeClass) {
-        if (themeClass == null) {
-            setTheme((AbstractTheme) null);
-        } else {
-            if (theme == null || !theme.getClass().equals(themeClass)) {
-                setTheme(Instantiator.get(getUI()).getOrCreate(themeClass));
-            }
-        }
+    public void moveElementsFrom(UI otherUI) {
+        internalsHandler.moveToNewUI(otherUI, ui);
     }
 
     /**
@@ -839,8 +774,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Adds the dependencies defined using {@link StyleSheet},
-     * {@link JavaScript} or {@link HtmlImport} on the given Component class.
+     * Adds the dependencies defined using {@link StyleSheet} or
+     * {@link JavaScript} on the given Component class.
      *
      * @param componentClass
      *            the component class to read annotations from
@@ -850,17 +785,10 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
-        if (getSession().getConfiguration().isCompatibilityMode()) {
-            dependencies.getHtmlImports()
-                    .forEach(html -> addHtmlImport(html, page));
-            dependencies.getJavaScripts().forEach(
-                    js -> page.addJavaScript(js.value(), js.loadMode()));
-        } else {
-            // In npm mode, add external JavaScripts directly to the page.
-            addExternalDependencies(dependencies);
-            addFallbackDependencies(dependencies);
+        // In npm mode, add external JavaScripts directly to the page.
+        addExternalDependencies(dependencies);
+        addFallbackDependencies(dependencies);
 
-        }
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
     }
@@ -935,37 +863,7 @@ public class UIInternals implements Serializable {
                 .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value(), js.loadMode()));
-    }
-
-    private void addHtmlImport(HtmlImportDependency dependency, Page page) {
-        // The HTML dependency parser does not consider themes so it can
-        // cache raw information (e.g. vaadin-button/src/vaadin-button.html
-        // import) and not take into consideration which themes might
-        // contain versions for which files. They must be translated before
-        // added to page though, as whatever is added there is sent without
-        // modifications to the client
-        dependency.getUris().forEach(uri -> page
-                .addHtmlImport(translateTheme(uri), dependency.getLoadMode()));
-    }
-
-    private String translateTheme(String importValue) {
-        if (theme != null) {
-            VaadinService service = session.getService();
-            WebBrowser browser = session.getBrowser();
-            Optional<String> themedUrl = service.getThemedUrl(importValue,
-                    browser, theme);
-            return themedUrl.orElse(importValue);
-        } else {
-            Matcher componentMatcher = componentSource.matcher(importValue);
-            if (componentMatcher.matches()) {
-                String componentName = componentMatcher.group(1);
-                getLogger().trace(
-                        "Vaadin component '{}' is used and missing theme definition.",
-                        componentName);
-            }
-        }
-        return importValue;
+                .forEach(js -> page.addJsModule(js.value()));
     }
 
     /**
@@ -1028,7 +926,7 @@ public class UIInternals implements Serializable {
      * Set a {@link ContinueNavigationAction} or null to clear existing action.
      *
      * @param continueNavigationAction
-     *            continue navigatio action to store or null
+     *            continue navigation action to store or null
      */
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {

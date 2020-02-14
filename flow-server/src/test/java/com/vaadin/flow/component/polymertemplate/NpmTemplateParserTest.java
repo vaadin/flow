@@ -15,9 +15,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -74,28 +74,38 @@ public class NpmTemplateParserTest {
     }
 
     @Test
-    public void should_FindCorrectDataInBeverageStats() {
+    public void getTemplateContent_polymer2TemplateStyleInsertion_contentParsedCorrectly() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenReturn(VAADIN_SERVLET_RESOURCES
-                        + "config/stats-beverage.json");
+                        + "config/no-html-template.json");
 
-        TemplateParser instance = NpmTemplateParser.getInstance();
-        TemplateParser.TemplateData templateContent = instance
-                .getTemplateContent(ReviewList.class, "likeable-element",
-                        service);
+        TemplateParser parser = NpmTemplateParser.getInstance();
+        TemplateData data = parser.getTemplateContent(
+                NoHtmlTemplateContent.class, "no-html-template", service);
+        Element templateElement = data.getTemplateElement();
+        Assert.assertNotNull(templateElement);
+        Elements divs = templateElement.getElementsByTag("div");
+        Assert.assertEquals(1, divs.size());
+        Assert.assertEquals("No Template", divs.get(0).text());
+    }
 
-        Assert.assertEquals("Parent element ID not the expected one.",
-                "likeable-element",
-                templateContent.getTemplateElement().parent().id());
+    @Test
+    public void getTemplateContent_polymer2TemplateStyleInsertion_severalDomModules_correctTemplateContentIsChosen() {
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString()))
+                .thenReturn(VAADIN_SERVLET_RESOURCES
+                        + "config/no-html-template.json");
 
-        Assert.assertEquals("Expected template element to have 2 children", 2,
-                templateContent.getTemplateElement().childNodeSize());
-
-        Assert.assertEquals(
-                "Template element should have contained a div element with the id 'search'",
-                "vaadin-text-field", templateContent.getTemplateElement()
-                        .getElementById("search").tag().toString());
+        TemplateParser parser = NpmTemplateParser.getInstance();
+        TemplateData data = parser.getTemplateContent(
+                SeveralDomModulesTemplateContent.class,
+                "several-dom-modules-template", service);
+        Element templateElement = data.getTemplateElement();
+        Assert.assertNotNull(templateElement);
+        Elements divs = templateElement.getElementsByTag("div");
+        Assert.assertEquals(1, divs.size());
+        Assert.assertEquals("Several Dom-Modules", divs.get(0).text());
     }
 
     @Test
@@ -171,17 +181,19 @@ public class NpmTemplateParserTest {
                 .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         TemplateParser.TemplateData templateContent = NpmTemplateParser
                 .getInstance().getTemplateContent(HelloWorld.class,
-                        HelloWorld.class.getAnnotation(Tag.class).value(), service);
+                        HelloWorld.class.getAnnotation(Tag.class).value(),
+                        service);
 
         Assert.assertEquals("Template should contain one child", 1,
                 templateContent.getTemplateElement().childNodeSize());
 
-        Assert.assertEquals("Template should have 2 divs", 2,
-                templateContent.getTemplateElement().getElementsByTag("div").size());
+        Assert.assertEquals("Template should have 2 divs", 2, templateContent
+                .getTemplateElement().getElementsByTag("div").size());
         Assert.assertEquals("Template should have a paper-input", 1,
-                templateContent.getTemplateElement().getElementsByTag("paper-input").size());
-        Assert.assertEquals("Template should have a button", 1,
-                templateContent.getTemplateElement().getElementsByTag("button").size());
+                templateContent.getTemplateElement()
+                        .getElementsByTag("paper-input").size());
+        Assert.assertEquals("Template should have a button", 1, templateContent
+                .getTemplateElement().getElementsByTag("button").size());
     }
 
     @Test
@@ -344,7 +356,6 @@ public class NpmTemplateParserTest {
     }
 
     @Tag("review-list")
-    @HtmlImport("frontend://src/views/reviewslist/reviews-list.html")
     @JsModule("./src/views/reviewslist/reviews-list")
     public class ReviewList extends PolymerTemplate<TemplateModel> {
     }
@@ -371,4 +382,18 @@ public class NpmTemplateParserTest {
     public class ChildTemplate extends PolymerTemplate<TemplateModel> {
 
     }
+
+    @JsModule("./no-html-template.js")
+    @Tag("no-template")
+    public class NoHtmlTemplateContent extends PolymerTemplate<TemplateModel> {
+
+    }
+
+    @JsModule("./several-dom-modules-template.js")
+    @Tag("several-dom-modules-template")
+    public class SeveralDomModulesTemplateContent
+            extends PolymerTemplate<TemplateModel> {
+
+    }
+
 }

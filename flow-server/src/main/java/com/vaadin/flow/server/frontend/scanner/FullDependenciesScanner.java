@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -184,14 +184,20 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
             Map<String, String> result = new HashMap<>();
+            Set<String> logs = new HashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
                 List<? extends Annotation> packageAnnotations = annotationFinder
                         .apply(clazz, loadedAnnotation);
-                packageAnnotations.forEach(pckg -> result.put(
-                        invokeAnnotationMethodAsString(pckg, VALUE),
-                        invokeAnnotationMethodAsString(pckg, "version")));
+                packageAnnotations.forEach(pckg -> {
+                    String value = invokeAnnotationMethodAsString(pckg, VALUE);
+                    String vers = invokeAnnotationMethodAsString(pckg,
+                            "version");
+                    logs.add(value + " " + vers + " " + clazz.getName());
+                    result.put(value, vers);
+                });
             }
+            debug("npm dependencies", logs);
             return result;
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
@@ -225,17 +231,32 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             BiConsumer<Class<?>, String> valueHandler, Class<T> annotationType,
             Function<Annotation, String> valueExtractor) {
         try {
+            Set<String> logs = new HashSet<>();
             Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(annotationType.getName());
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
+
             annotatedClasses.stream().forEach(clazz -> annotationFinder
-                    .apply(clazz, loadedAnnotation).forEach(ann -> valueHandler
-                            .accept(clazz, valueExtractor.apply(ann))));
+                    .apply(clazz, loadedAnnotation).forEach(ann -> {
+                        String value = valueExtractor.apply(ann);
+                        valueHandler.accept(clazz, value);
+                        logs.add(value + " " + clazz);
+                    }));
+
+            debug("@" + annotationType.getSimpleName(), logs);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     COULD_NOT_LOAD_ERROR_MSG + annotationType.getName(),
                     exception);
+        }
+    }
+
+    private void debug(String label, Set<String> log) {
+        if (getLogger().isDebugEnabled()) {
+            log.add("\n List of " + label + " found in the project:");
+            getLogger().debug(log.stream().sorted()
+                    .collect(Collectors.joining("\n  - ")));
         }
     }
 
@@ -387,8 +408,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private Logger getLogger() {
-        // Using short prefix so as npm output is more readable
-        return LoggerFactory.getLogger("dev-updater");
+        return LoggerFactory.getLogger(this.getClass());
     }
 
 }

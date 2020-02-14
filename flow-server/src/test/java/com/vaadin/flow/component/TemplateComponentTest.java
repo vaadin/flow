@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,31 +15,26 @@
  */
 package com.vaadin.flow.component;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-import net.jcip.annotations.NotThreadSafe;
-
-@NotThreadSafe
 public class TemplateComponentTest {
 
-    UI ui;
+    private UI ui;
 
-    private static final String template_file = "<dom-module id='registration-form'>"
-            + " <template>" + "  <div id='name'>{{name}}</div>" + " </template>"
-            + " <script>" + "  class RegistrationForm extends Polymer.Element {"
-            + "   static get is() {return 'registration-form'}" + "  }"
-            + "  customElements.define(RegistrationForm.is, RegistrationForm);"
-            + " </script>" + "</dom-module>";
+    private static final String TEMPLATE = " <template>  <div id='name'>{{name}}</div> </template>";
 
     private MockServletServiceSessionSetup mocks;
 
@@ -50,10 +45,6 @@ public class TemplateComponentTest {
     @Before
     public void init() throws Exception {
         mocks = new MockServletServiceSessionSetup();
-        mocks.getDeploymentConfiguration().setCompatibilityMode(true);
-
-        mocks.getServlet().addServletContextResource("/registration-form.html",
-                template_file);
 
         ui = new UI();
         ui.getInternals().setSession(mocks.getSession());
@@ -182,10 +173,27 @@ public class TemplateComponentTest {
 
     }
 
+    static class TestTemplateParser implements TemplateParser {
+
+        @Override
+        public TemplateData getTemplateContent(
+                Class<? extends PolymerTemplate<?>> clazz, String tag,
+                VaadinService service) {
+            Document doc = Jsoup.parse(TEMPLATE);
+            return new TemplateData("",
+                    doc.getElementsByTag("template").get(0));
+        }
+
+    }
+
     @Tag("registration-form")
-    @HtmlImport("/registration-form.html")
     private static class Template extends PolymerTemplate<TemplateModel>
             implements HasEnabled {
+
+        public Template() {
+            super(new TestTemplateParser());
+        }
+
         @Id
         private EnabledDiv name;
 

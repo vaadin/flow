@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -388,10 +388,6 @@ public class StateTree {
             nodeFeatureDebugName.set(NodeFeatures.CLASS_LIST, "classList");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
-            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTIES,
-                    "synchronizedProperties");
-            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS,
-                    "synchronizedPropertyEvents");
             nodeFeatureDebugName.set(NodeFeatures.COMPONENT_MAPPING,
                     "componentMapping");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_MODELLIST,

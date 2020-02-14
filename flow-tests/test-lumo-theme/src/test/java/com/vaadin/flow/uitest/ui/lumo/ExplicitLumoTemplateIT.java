@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,7 @@ public class ExplicitLumoTemplateIT extends AbstractThemedTemplateIT {
 
     @Override
     protected String getThemedTemplate() {
-        return "theme/lumo/LumoThemedTemplate.html";
+        return "theme/lumo/LumoThemedTemplate.js";
     }
 
 }

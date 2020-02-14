@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,12 +39,12 @@ import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.server.frontend.NodeTestComponents;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExtraImport;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlatImport;
-import com.vaadin.flow.server.frontend.NodeTestComponents.FrontendP3Template;
 import com.vaadin.flow.server.frontend.NodeTestComponents.JavaScriptOrder;
 import com.vaadin.flow.server.frontend.NodeTestComponents.LocalP3Template;
 import com.vaadin.flow.server.frontend.NodeTestComponents.LocalTemplate;
 import com.vaadin.flow.server.frontend.NodeTestComponents.LumoTest;
 import com.vaadin.flow.server.frontend.NodeTestComponents.MainLayout;
+import com.vaadin.flow.server.frontend.NodeTestComponents.UnresolvedComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinBowerComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinElementMixin;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinMixedComponent;
@@ -178,7 +178,7 @@ public class FullDependenciesScannerTest {
                 "1.1.2");
         Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
         Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
-                "2.2.9");
+                "2.2.10");
         Assert.assertEquals(packages.get("@vaadin/vaadin-shrinkwrap"), "1.2.3");
 
         Assert.assertEquals(5, packages.size());
@@ -207,10 +207,8 @@ public class FullDependenciesScannerTest {
         Assert.assertTrue(scripts.contains("javascript/c.js"));
 
         Assert.assertTrue(scripts.contains("ExampleConnector.js"));
-        Assert.assertTrue(
-                scripts.contains("frontend://foo-dir/javascript-lib.js"));
 
-        Assert.assertEquals(5, scripts.size());
+        Assert.assertEquals(4, scripts.size());
 
         List<String> orderedJs = scripts.stream()
                 .filter(script -> script.startsWith("javascript"))
@@ -222,8 +220,6 @@ public class FullDependenciesScannerTest {
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertTrue(
                 visitedClasses.contains(VaadinBowerComponent.class.getName()));
-        Assert.assertTrue(
-                visitedClasses.contains(VaadinNpmComponent.class.getName()));
         Assert.assertTrue(
                 visitedClasses.contains(JavaScriptOrder.class.getName()));
     }
@@ -267,7 +263,7 @@ public class FullDependenciesScannerTest {
                 JsModule.class);
         List<String> modules = scanner.getModules();
 
-        Assert.assertEquals(18, modules.size());
+        Assert.assertEquals(17, modules.size());
 
         assertJsModules(modules);
 
@@ -320,7 +316,7 @@ public class FullDependenciesScannerTest {
                 });
 
         List<String> modules = scanner.getModules();
-        Assert.assertEquals(24, modules.size());
+        Assert.assertEquals(23, modules.size());
         assertJsModules(modules);
 
         // Theme modules should be included now
@@ -433,8 +429,6 @@ public class FullDependenciesScannerTest {
         Assert.assertTrue(modules.contains("./local-template.js"));
         Assert.assertTrue(modules.contains("3rdparty/component.js"));
         Assert.assertTrue(modules.contains("./local-p3-template.js"));
-        Assert.assertTrue(
-                modules.contains("frontend://frontend-p3-template.js"));
         Assert.assertTrue(modules.contains("unresolved/component"));
         Assert.assertTrue(modules.contains("./foo.js"));
         Assert.assertTrue(modules.contains(
@@ -488,7 +482,8 @@ public class FullDependenciesScannerTest {
                 classes.contains(VaadinMixedComponent.class.getName()));
         Assert.assertTrue(classes.contains(LocalTemplate.class.getName()));
         Assert.assertTrue(classes.contains(LocalP3Template.class.getName()));
-        Assert.assertTrue(classes.contains(FrontendP3Template.class.getName()));
+        Assert.assertTrue(
+                classes.contains(UnresolvedComponent.class.getName()));
         Assert.assertTrue(classes.contains(FlatImport.class.getName()));
         Assert.assertTrue(classes.contains(MainLayout.class.getName()));
         Assert.assertTrue(classes.contains(JavaScriptOrder.class.getName()));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,12 +17,10 @@ package com.vaadin.flow.dom.impl;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.ClassList;
-import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -153,16 +151,6 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public Set<String> getSynchronizedProperties(StateNode node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void setAttribute(StateNode node, String attribute,
             AbstractStreamResource resource) {
         throw new UnsupportedOperationException();
@@ -211,9 +199,4 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void addSynchronizedProperty(StateNode node, String property,
-            DisabledUpdateMode mode) {
-        throw new UnsupportedOperationException();
-    }
 }

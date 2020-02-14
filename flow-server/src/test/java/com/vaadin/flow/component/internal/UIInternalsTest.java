@@ -1,9 +1,10 @@
 package com.vaadin.flow.component.internal;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,7 +18,6 @@ import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 public class UIInternalsTest {
@@ -66,49 +66,25 @@ public class UIInternalsTest {
                 1, heartbeats.size());
     }
 
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return "base";
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return "theme";
-        }
-
-    }
-
     @Test
-    public void setThemeNull() throws Exception {
-        Assert.assertNull(getTheme(internals));
-        internals.setTheme(MyTheme.class);
-        internals.setTheme((Class) null);
-        Assert.assertNull(getTheme(internals));
+    public void heartbeatListenerRemovedFromHeartbeatEvent_noExplosion() {
+        AtomicReference<Registration> reference = new AtomicReference<>();
+        AtomicInteger runCount = new AtomicInteger();
 
+        Registration registration = internals.addHeartbeatListener(event -> {
+            runCount.incrementAndGet();
+            reference.get().remove();
+        });
+        reference.set(registration);
+
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
+        Assert.assertEquals("Listener should have been run once", 1,
+                runCount.get());
+
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis());
+        Assert.assertEquals(
+                "Listener should not have been run again since it was removed",
+                1, runCount.get());
     }
 
-    @Test
-    public void setTheme() throws Exception {
-        Assert.assertNull(getTheme(internals));
-        internals.setTheme(MyTheme.class);
-        Assert.assertTrue(getTheme(internals) instanceof MyTheme);
-    }
-
-    @Test
-    public void setThemeAgain() throws Exception {
-        Assert.assertNull(getTheme(internals));
-        internals.setTheme(MyTheme.class);
-        internals.setTheme(MyTheme.class);
-        Assert.assertTrue(getTheme(internals) instanceof MyTheme);
-    }
-
-    private AbstractTheme getTheme(UIInternals internals)
-            throws NoSuchFieldException, SecurityException,
-            IllegalArgumentException, IllegalAccessException {
-        Field t = UIInternals.class.getDeclaredField("theme");
-        t.setAccessible(true);
-        return (AbstractTheme) t.get(internals);
-    }
 }

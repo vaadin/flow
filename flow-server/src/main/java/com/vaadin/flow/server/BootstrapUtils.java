@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,23 +25,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationChangeEvent;
@@ -53,14 +44,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.BootstrapHandler.BootstrapUriResolver;
-import com.vaadin.flow.shared.ui.Dependency;
-import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Utility methods used by the BootstrapHandler.
@@ -68,36 +52,6 @@ import elemental.json.JsonObject;
  * @since 1.0
  */
 class BootstrapUtils {
-
-    static class ThemeSettings {
-        private List<JsonObject> headContents;
-        private JsonObject headInjectedContent;
-        private Map<String, String> htmlAttributes;
-
-        public List<JsonObject> getHeadContents() {
-            return headContents;
-        }
-
-        public void setHeadContents(List<JsonObject> headContents) {
-            this.headContents = headContents;
-        }
-
-        public JsonObject getHeadInjectedContent() {
-            return headInjectedContent;
-        }
-
-        public void setHeadInjectedContent(JsonObject headInjectedContent) {
-            this.headInjectedContent = headInjectedContent;
-        }
-
-        public Map<String, String> getHtmlAttributes() {
-            return htmlAttributes;
-        }
-
-        public void setHtmlAttributes(Map<String, String> htmlAttributes) {
-            this.htmlAttributes = htmlAttributes;
-        }
-    }
 
     private BootstrapUtils() {
     }
@@ -309,125 +263,6 @@ class BootstrapUtils {
         return stream;
     }
 
-    static ThemeSettings getThemeSettings(
-            BootstrapHandler.BootstrapContext context) {
-        Optional<ThemeDefinition> themeDefinition = context.getTheme();
-        if (themeDefinition.isPresent()) {
-            return getThemeSettings(context, themeDefinition.get());
-        }
-        return null;
-    }
-
-    private static ThemeSettings getThemeSettings(
-            BootstrapHandler.BootstrapContext context,
-            ThemeDefinition themeDefinition) {
-
-        ThemeSettings settings = new ThemeSettings();
-        Class<? extends AbstractTheme> themeClass = themeDefinition.getTheme();
-        AbstractTheme theme = ReflectTools.createInstance(themeClass);
-
-        if (!context.isProductionMode()) {
-            List<JsonObject> head = Stream
-                    .of(themeClass.getAnnotationsByType(HtmlImport.class))
-                    .map(HtmlImport::value)
-                    .map(url -> createImportLink(context.getUriResolver(), url))
-                    .map(BootstrapUtils::createInlineDependencyObject)
-                    .collect(Collectors.toList());
-            settings.setHeadContents(head);
-        }
-
-        settings.setHeadInjectedContent(createHeaderInlineScript(theme));
-
-        settings.setHtmlAttributes(
-                theme.getHtmlAttributes(themeDefinition.getVariant()));
-
-        return settings;
-    }
-
-    private static JsonObject createHeaderInlineScript(AbstractTheme theme) {
-        StringBuilder builder = new StringBuilder();
-
-        for (String content : theme.getHeaderInlineContents()) {
-            StringBuilder inlineContent = createHeaderInjectionCall(content);
-            builder.insert(0, inlineContent.toString());
-        }
-
-        builder.insert(0, "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n");
-        builder.insert(0, "<script id='_theme-header-injection'>\n");
-        builder.append(
-                "var script = document.getElementById('_theme-header-injection');"
-                        + "if ( script ) { document.head.removeChild(script);}\n");
-        builder.append("</script>");
-        return createInlineDependencyObject(builder.toString());
-    }
-
-    private static StringBuilder createHeaderInjectionCall(String content) {
-        StringBuilder inlineContent = new StringBuilder();
-        Document document = Jsoup.parse(content, "", Parser.xmlParser());
-        for (Element element : document.children()) {
-            String tagName = element.tagName();
-            inlineContent.append("_inlineHeader('");
-            inlineContent.append(tagName).append("',");
-            inlineContent.append(makeJsString(element.html()));
-            inlineContent.append(");\n");
-        }
-        return inlineContent;
-    }
-
-    /**
-     * Makes a JS string from the {@code value}.
-     *
-     * @param value
-     *            a string
-     * @return a JS literal representing the {@code value}
-     */
-    private static String makeJsString(String value) {
-        // We are using single quote for the string
-        StringBuilder builder = new StringBuilder("'");
-        if (value.indexOf('\'') == -1) {
-            // if there are not quotes in the string just wrap it
-            builder.append(value);
-        } else if (!value.contains("\\'")) {
-            // if ther are no escaped single quotes then just replace quotes
-            // inside string to \x27
-            builder.append(value.replace("'", "\\x27"));
-        } else {
-            // Now there are escaped quotes, they should be preserved as is,
-            // don't want to parse it. Let's just replace escaped quotes to some
-            // unique token, replace un-escaped quotes and return escaped quotes
-            // back via replacing the token.
-            String unique;
-            do {
-                unique = UUID.randomUUID().toString();
-            } while (value.contains(unique));
-            String modified = value.replace("\\'", unique);
-            modified = modified.replace("'", "\\x27");
-            builder.append(modified.replace(unique, "\\'"));
-        }
-        builder.append("'");
-        return builder.toString();
-    }
-
-    private static String createImportLink(
-            BootstrapUriResolver bootstrapUriResolver, String href) {
-        String resolvedLink = bootstrapUriResolver.resolveVaadinUri(href);
-        return "<link rel=\"import\" href=\"" + resolvedLink + "\">";
-
-    }
-
-    private static JsonObject createInlineDependencyObject(String content) {
-        JsonObject dependency = Json.createObject();
-        dependency.put(Dependency.KEY_TYPE, "none");
-        dependency.put("LoadMode", LoadMode.INLINE.toString());
-        dependency.put(Dependency.KEY_CONTENTS, content);
-        return dependency;
-    }
-
     /**
      * Finds the class on on which page configuration annotation should be
      * defined.
@@ -446,16 +281,43 @@ class BootstrapUtils {
         if (ui.getRouter() == null) {
             return Optional.empty();
         }
-        return ui.getRouter().resolveNavigationTarget(request.getPathInfo(),
-                request.getParameterMap()).map(navigationState -> {
-                    Class<? extends RouterLayout> parentLayout = getTopParentLayout(
-                            ui.getRouter(), navigationState);
-                    if (parentLayout != null) {
-                        return parentLayout;
+        Optional<Class<?>> navigationTarget = ui.getRouter()
+                .resolveNavigationTarget(request.getPathInfo(),
+                        request.getParameterMap())
+                .map(navigationState -> resolveTopParentLayout(ui,
+                        navigationState));
+        if (navigationTarget.isPresent()) {
+            return navigationTarget;
+        }
+        // If there is no route target available then let's ask for "route not
+        // found" target
+        return ui.getRouter().resolveRouteNotFoundNavigationTarget()
+                .map(state -> {
+                    /*
+                     * {@code resolveTopParentLayout} is theoretically the
+                     * correct way to get the parent layout. But in fact it does
+                     * work for non route targets.
+                     */
+                    List<Class<? extends RouterLayout>> layouts = RouteUtil
+                            .getParentLayoutsForNonRouteTarget(
+                                    state.getNavigationTarget());
+                    if (layouts.isEmpty()) {
+                        return state.getNavigationTarget();
+                    } else {
+                        return layouts.get(layouts.size() - 1);
                     }
-
-                    return navigationState.getNavigationTarget();
                 });
+    }
+
+    private static Class<?> resolveTopParentLayout(UI ui,
+            NavigationState navigationState) {
+        Class<? extends RouterLayout> parentLayout = getTopParentLayout(
+                ui.getRouter(), navigationState);
+        if (parentLayout != null) {
+            return parentLayout;
+        }
+
+        return navigationState.getNavigationTarget();
     }
 
     private static Class<? extends RouterLayout> getTopParentLayout(

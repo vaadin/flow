@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,14 +23,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.ServletHelper.RequestType;
-import com.vaadin.flow.server.webjar.WebJarServer;
+import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -50,8 +48,6 @@ import com.vaadin.flow.shared.JsonConstants;
 public class VaadinServlet extends HttpServlet {
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
-    private DevModeHandler devmodeHandler;
-    private WebJarServer webJarServer;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -74,14 +70,7 @@ public class VaadinServlet extends HttpServlet {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
 
-        DeploymentConfiguration deploymentConfiguration = servletService
-                .getDeploymentConfiguration();
-
         staticFileHandler = createStaticFileHandler(servletService);
-        if (deploymentConfiguration.areWebJarsEnabled()) {
-            webJarServer = new WebJarServer(deploymentConfiguration);
-        }
-        devmodeHandler = DevModeHandler.getDevModeHandler();
 
         // Sets current service even though there are no request and response
         servletService.setCurrentInstances(null, null);
@@ -140,16 +129,17 @@ public class VaadinServlet extends HttpServlet {
      * frameworks.
      *
      * @return the created deployment configuration
-     *
-     * @throws ServletException
-     *             if construction of the {@link Properties} for
-     *             {@link DeploymentConfigurationFactory#createInitParameters(Class, ServletConfig)}
-     *             fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {
-        return createDeploymentConfiguration(DeploymentConfigurationFactory
-                .createInitParameters(getClass(), getServletConfig()));
+        try {
+            return createDeploymentConfiguration(DeploymentConfigurationFactory
+                    .createInitParameters(getClass(),
+                            new VaadinServletConfig(getServletConfig())));
+        } catch (VaadinConfigurationException e) {
+            throw new ServletException(
+                    "Failed to construct DeploymentConfiguration.", e);
+        }
     }
 
     /**
@@ -225,7 +215,8 @@ public class VaadinServlet extends HttpServlet {
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
 
-        // Handle context root request without trailing slash, see #9921
+        // Handle context root request without trailing slash, see
+        // https://github.com/vaadin/framework/issues/2991
         if (handleContextOrServletRootWithoutSlash(request, response)) {
             return;
         }
@@ -266,7 +257,7 @@ public class VaadinServlet extends HttpServlet {
      *            the HTTP servlet response object that contains the response
      *            the servlet returns to the client
      * @return <code>true</code> if the request was handled a response written;
-     *         oterwise <code>false</code>
+     *         otherwise <code>false</code>
      *
      * @exception IOException
      *                if an input or output error occurs while the servlet is
@@ -274,9 +265,10 @@ public class VaadinServlet extends HttpServlet {
      */
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
 
-        if (devmodeHandler != null && devmodeHandler.isDevModeRequest(request)
-                && devmodeHandler.serveDevModeRequest(request, response)) {
+        if (handler != null && handler.isDevModeRequest(request)
+                && handler.serveDevModeRequest(request, response)) {
             return true;
         }
 
@@ -285,8 +277,7 @@ public class VaadinServlet extends HttpServlet {
             return true;
         }
 
-        return webJarServer != null
-                && webJarServer.tryServeWebJarResource(request, response);
+        return false;
     }
 
     /**
@@ -408,14 +399,14 @@ public class VaadinServlet extends HttpServlet {
      */
     private boolean ensureCookiesEnabled(VaadinServletRequest request,
             VaadinServletResponse response) throws IOException {
-        if (ServletHelper.isRequestType(request, RequestType.UIDL)) {
+        if (HandlerHelper.isRequestType(request, RequestType.UIDL)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
             if (request.getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
-                        ServletHelper.findLocale(null, request), request);
+                        HandlerHelper.findLocale(null, request), request);
                 getService().writeUncachedStringResponse(response,
                         JsonConstants.JSON_CONTENT_TYPE,
                         VaadinService.createCriticalNotificationJSON(
@@ -437,13 +428,9 @@ public class VaadinServlet extends HttpServlet {
      *             if the application is denied access to the persistent data
      *             store represented by the given URL.
      *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     *
      * @return current application URL
      */
-    @Deprecated
-    protected URL getApplicationUrl(HttpServletRequest request)
+    static URL getApplicationUrl(HttpServletRequest request)
             throws MalformedURLException {
         final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
                 + request.getServerName()
@@ -484,53 +471,5 @@ public class VaadinServlet extends HttpServlet {
         super.destroy();
         getService().destroy();
     }
-
-    /**
-     * Escapes characters to html entities. An exception is made for some "safe
-     * characters" to keep the text somewhat readable.
-     *
-     * @param unsafe
-     *            non-escaped string
-     * @return a safe string to be added inside an html tag
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public static String safeEscapeForHtml(String unsafe) {
-        if (null == unsafe) {
-            return null;
-        }
-        StringBuilder safe = new StringBuilder();
-        char[] charArray = unsafe.toCharArray();
-        for (char c : charArray) {
-            if (isSafe(c)) {
-                safe.append(c);
-            } else {
-                safe.append("&#");
-                safe.append((int) c);
-                safe.append(";");
-            }
-        }
-
-        return safe.toString();
-    }
-
-    private static boolean isSafe(char c) {
-        return //
-        c > 47 && c < 58 || // alphanum
-                c > 64 && c < 91 || // A-Z
-                c > 96 && c < 123 // a-z
-        ;
-    }
-
-    /**
-     * Gets the web jar server.
-     *
-     * @return the web jar server or an empty optional if no web jar server is
-     *         used
-     */
-    protected Optional<WebJarServer> getWebJarServer() {
-        return Optional.ofNullable(webJarServer);
-    }
 }
+

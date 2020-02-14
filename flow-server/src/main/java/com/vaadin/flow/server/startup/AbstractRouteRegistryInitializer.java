@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -295,6 +295,7 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             validatePwa(route);
 
             Route routeAnnotation = route.getAnnotation(Route.class);
+
             if (!UI.class.equals(routeAnnotation.layout())) {
                 Class<? extends RouterLayout> topParentLayout = RouteUtil
                         .getTopParentLayout(route,

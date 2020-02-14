@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,18 +16,18 @@
 
 package com.vaadin.flow.internal;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,35 +47,6 @@ public class ResponseWriter implements Serializable {
 
     private final int bufferSize;
     private final boolean brotliEnabled;
-    private final boolean compatibilityMode;
-
-    /**
-     * Create a response writer with buffer size equal to
-     * {@link ResponseWriter#DEFAULT_BUFFER_SIZE}.
-     *
-     * @deprecated Use {@link #ResponseWriter(DeploymentConfiguration)} instead.
-     */
-    @Deprecated
-    public ResponseWriter() {
-        this(DEFAULT_BUFFER_SIZE);
-    }
-
-    /**
-     * Creates a response writer with custom buffer size.
-     * <p>
-     * This will always mark us as compatibility mode and not accept loading
-     * resources from the classpath. To enable compressed resources use {@link
-     * #ResponseWriter(DeploymentConfiguration)}.
-     *
-     * @param bufferSize
-     *            custom buffer size
-     * @deprecated This constructor is never used internally and might be
-     *             removed.
-     */
-    @Deprecated
-    public ResponseWriter(int bufferSize) {
-        this(bufferSize, false, true);
-    }
 
     /**
      * Create a response writer with the given deployment configuration.
@@ -84,13 +55,12 @@ public class ResponseWriter implements Serializable {
      *            the deployment configuration to use, not <code>null</code>
      */
     public ResponseWriter(DeploymentConfiguration deploymentConfiguration) {
-        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli(), deploymentConfiguration.isCompatibilityMode());
+        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli());
     }
 
-    private ResponseWriter(int bufferSize, boolean brotliEnabled, boolean compatibilityMode) {
+    private ResponseWriter(int bufferSize, boolean brotliEnabled) {
         this.brotliEnabled = brotliEnabled;
         this.bufferSize = bufferSize;
-        this.compatibilityMode = compatibilityMode;
     }
 
     /**
@@ -180,10 +150,9 @@ public class ResponseWriter implements Serializable {
         }
     }
 
-    private URL getResource(HttpServletRequest request, String resource )
+    private URL getResource(HttpServletRequest request, String resource)
             throws MalformedURLException {
-        URL url = request.getServletContext()
-                .getResource(resource);
+        URL url = request.getServletContext().getResource(resource);
         if (url != null) {
             return url;
         } else if (resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
@@ -193,23 +162,18 @@ public class ResponseWriter implements Serializable {
         }
         return url;
     }
+
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
-     * ClassLoader is applicable for use when we are in NPM mode and
-     * are serving from the VAADIN/build folder with no folder changes in path.
+     * ClassLoader is applicable for use when we are in NPM mode and are serving
+     * from the VAADIN/build folder with no folder changes in path.
      *
-     * @param filenameWithPath requested filename containing path
+     * @param filenameWithPath
+     *            requested filename containing path
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
-        if (compatibilityMode) {
-            getLogger().trace("Serving from the classpath in legacy "
-                            + "mode is not accepted. "
-                            + "Letting request for '{}' go to servlet context.",
-                    filenameWithPath);
-            return false;
-        }
         // Check that we target VAADIN/build and do not have '/../'
         if (!filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
                 || filenameWithPath.contains("/../")) {
@@ -295,17 +259,19 @@ public class ResponseWriter implements Serializable {
             response.setContentType(mimetype);
         }
     }
+
     /**
      * Check the quality value of the encoding. If the value is zero the
      * encoding is disabled and not accepted.
      *
      * @param acceptEncoding
-     *         Accept-Encoding header from request
+     *            Accept-Encoding header from request
      * @param encoding
-     *         encoding to check
+     *            encoding to check
      * @return true if quality value is Zero
      */
-    private static boolean isQualityValueZero(String acceptEncoding, String encoding) {
+    private static boolean isQualityValueZero(String acceptEncoding,
+            String encoding) {
         String qPrefix = encoding + ";q=";
         int qValueIndex = acceptEncoding.indexOf(qPrefix);
         if (qValueIndex == -1) {

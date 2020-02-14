@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Extracts import statements from the JS Polymer 3 source code.
@@ -30,9 +31,6 @@ class ImportExtractor implements Serializable {
 
     private static final String IMPORT = "import";
     private static final String FROM = "from";
-
-    private static final Pattern COMMENTS_PATTERN = Pattern
-            .compile("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)");
 
     private final String content;
 
@@ -82,16 +80,11 @@ class ImportExtractor implements Serializable {
 
     /**
      * Removes comments (block comments and line comments) from the JS code.
-     * <p>
-     * Note that this is not really a correct way to do this: this will remove
-     * comments also if they are inside strings. But this is not important here
-     * in this class since we care only about import statements where this is
-     * fine.
      *
      * @return the code with removed comments
      */
     String removeComments() {
-        return COMMENTS_PATTERN.matcher(content).replaceAll("");
+        return StringUtil.removeComments(content);
     }
 
     /**

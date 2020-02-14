@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,12 +21,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
 
 /**
@@ -46,26 +48,12 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isProductionMode();
 
     /**
-     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
+     * Returns whether Vaadin is running in useDeprecatedV14Bootstrapping.
      *
-     * NOTE: compatibility mode will be unsupported in future versions.
-     *
-     * @deprecated use {@link #isCompatibilityMode()}
-     *
-     * @return true if in compatibility mode, false otherwise.
+     * @return true if in useDeprecatedV14Bootstrapping, false otherwise.
      */
-    @Deprecated
-    boolean isBowerMode();
-
-    /**
-     * Returns whether Vaadin is running in Vaadin 13 compatibility mode.
-     *
-     * NOTE: compatibility mode will be unsupported in future versions.
-     *
-     * @return true if in compatibility mode, false otherwise.
-     */
-    default boolean isCompatibilityMode() {
-        return isBowerMode();
+    default boolean useV14Bootstrap() {
+        return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
     }
 
     /**
@@ -118,8 +106,8 @@ public interface DeploymentConfiguration extends Serializable {
     boolean isSendUrlsAsParameters();
 
     /**
-     * Returns whether a session should be closed when all its open UIs have
-     * been idle for longer than its configured maximum inactivity time.
+     * Returns whether a Vaadin session should be closed when all its open UIs
+     * have been idle for longer than its configured maximum inactivity time.
      * <p>
      * A UI is idle if it is open on the client side but has no activity other
      * than heartbeat requests. If {@code isCloseIdleSessions() == false},
@@ -130,8 +118,8 @@ public interface DeploymentConfiguration extends Serializable {
      * @see WrappedSession#getMaxInactiveInterval()
      *
      *
-     * @return True if UIs and sessions receiving only heartbeat requests are
-     *         eventually closed; false if heartbeat requests extend UI and
+     * @return True if UIs and Vaadin sessions receiving only heartbeat requests
+     *         are eventually closed; false if heartbeat requests extend UI and
      *         session lifetime indefinitely.
      */
     boolean isCloseIdleSessions();
@@ -259,79 +247,6 @@ public interface DeploymentConfiguration extends Serializable {
     String getClassLoaderName();
 
     /**
-     * Gets the URL from which frontend resources should be loaded during
-     * development, unless explicitly configured to use the production es6 and
-     * es5 URLs.
-     *
-     * @return the development resource URL
-     */
-    default String getDevelopmentFrontendPrefix() {
-        return Constants.FRONTEND_URL_DEV_DEFAULT;
-    }
-
-    /**
-     * Gets the URL from which frontend resources should be loaded in ES6
-     * compatible browsers.
-     *
-     * @return the ES6 resource URL
-     */
-    default String getEs6FrontendPrefix() {
-        return useCompiledFrontendResources()
-                ? getStringProperty(Constants.FRONTEND_URL_ES6,
-                        Constants.FRONTEND_URL_ES6_DEFAULT_VALUE)
-                : getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Gets the URL from which frontend resources should be loaded in ES5
-     * compatible browsers.
-     *
-     * @return the ES5 resource URL
-     */
-    default String getEs5FrontendPrefix() {
-        return useCompiledFrontendResources()
-                ? getStringProperty(Constants.FRONTEND_URL_ES5,
-                        Constants.FRONTEND_URL_ES5_DEFAULT_VALUE)
-                : getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Gets the URL from which frontend resources should be loaded in NPM mode.
-     *
-     * @return the NPM resource URL
-     */
-    default String getNpmFrontendPrefix() {
-        return getDevelopmentFrontendPrefix();
-    }
-
-    /**
-     * Determines if webJars mechanism is enabled. It is disabled if the user
-     * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to
-     * {@code true}, or the user have not set the property at all and the
-     * {@link #useCompiledFrontendResources()} returns false.
-     *
-     * @return {@code true} if webJars are enabled, {@code false} otherwise
-     */
-    default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS,
-                useCompiledFrontendResources());
-    }
-
-    /**
-     * Determines if Flow should use compiled or original frontend resources.
-     *
-     * User can explicitly disable bundled resources usage by setting the
-     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to
-     * {@code true}.
-     *
-     * @return {@code true} if Flow should use compiled frontend resources.
-     */
-    default boolean useCompiledFrontendResources() {
-        return isProductionMode() && !getBooleanProperty(
-                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
-    }
-
-    /**
      * Determines if Flow should automatically register servlets. For more
      * information on the servlets registered, refer to
      * {@link com.vaadin.flow.server.startup.ServletDeployer} javadoc.
@@ -366,16 +281,17 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Returns an array with polyfills to be loaded when the app is loaded.
      *
-     * The default value is
-     * <code>build/webcomponentsjs/webcomponents-loader.js</code> but it can be
-     * changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS} as a
-     * comma separated list of JS files to load.
+     * The default value is empty, but it can be changed by setting the
+     * {@link Constants#SERVLET_PARAMETER_POLYFILLS} as a comma separated list
+     * of JS files to load.
      *
      * @return polyfills to load
      */
     default List<String> getPolyfills() {
         return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
-                POLYFILLS_DEFAULT_VALUE).split("[, ]+"));
+                POLYFILLS_DEFAULT_VALUE).split("[, ]+")).stream()
+                .filter(polyfill -> !polyfill.isEmpty())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -384,19 +300,63 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if dev server should be used
      */
     default boolean enableDevServer() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                true);
     }
 
     /**
-     * Get if the dev server should be reused on each reload.
-     * True by default, set it to false in tests so as dev server
-     * is not kept as a daemon after the test.
+     * Get if the dev server should be reused on each reload. True by default,
+     * set it to false in tests so as dev server is not kept as a daemon after
+     * the test.
      *
      * @return true if dev server should be reused
      */
     default boolean reuseDevServer() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                true);
+    }
+
+    /**
+     * Get if the stats.json file should be retrieved from an external service
+     * or through the classpath.
+     *
+     * @return true if stats.json is served from an external location
+     */
+    default boolean isStatsExternal() {
+        return getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false);
+    }
+
+    /**
+     * Get the url from where stats.json should be retrieved from. If not given
+     * this will default to '/vaadin-static/VAADIN/config/stats.json'
+     *
+     * @return external stats.json location
+     */
+    default String getExternalStatsUrl() {
+        return getStringProperty(Constants.EXTERNAL_STATS_URL,
+                Constants.DEFAULT_EXTERNAL_STATS_URL);
+    }
+
+    /**
+     * Get if the bootstrap page should include the initial UIDL fragment. This
+     * only makes sense for the client-side bootstrapping.
+     * <p>
+     * By default it is <code>false</code>.
+     * <p>
+     * Enabling this flag, it will make the initial application load a couple of
+     * seconds faster in very slow networks because of the extra round-trip to
+     * request the UIDL after the index.html is loaded.
+     * <p>
+     * Otherwise, keeping the flag as false is beneficial, specially in
+     * application that mix client and server side views, since the `index.html`
+     * can be cached and served by service workers in PWAs, as well as in the
+     * server side session and UI initialization is deferred until a server view
+     * is actually requested by the user, saving some server resources.
+     *
+     * @return true if initial UIDL should be included in page
+     */
+    default boolean isEagerServerLoad() {
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_INITIAL_UIDL,
+                false);
     }
 }

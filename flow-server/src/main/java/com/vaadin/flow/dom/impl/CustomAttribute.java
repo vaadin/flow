@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,7 +49,7 @@ public abstract class CustomAttribute implements Serializable {
      *
      * @param name
      *            the name of the attribute
-     * @return and optional custom attribute, or an emtpy optional if there is
+     * @return and optional custom attribute, or an empty optional if there is
      *         no attribute with the given name
      */
     public static Optional<CustomAttribute> get(String name) {

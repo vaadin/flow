@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 
@@ -46,8 +47,7 @@ import com.vaadin.flow.dom.Element;
  * </ul>
  *
  * @see EventData
- * @see Element#addEventListener(String, com.vaadin.flow.dom.DomEventListener,
- *      String...)
+ * @see Element#addEventListener(String, DomEventListener)
  * @author Vaadin Ltd
  * @since 1.0
  */

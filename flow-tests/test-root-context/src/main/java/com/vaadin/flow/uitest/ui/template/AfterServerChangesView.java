@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.UUID;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
@@ -29,7 +28,6 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class AfterServerChangesView extends AbstractDivView {
 
     @Tag("after-server-changes")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/AfterServerChanges.html")
     @JsModule("AfterServerChanges.js")
     public static class AfterServerChanges extends PolymerTemplate<Message> {
 

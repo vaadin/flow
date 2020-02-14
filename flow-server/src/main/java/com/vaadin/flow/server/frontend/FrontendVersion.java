@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,13 +16,15 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Version object for frontend versions comparison and handling.
  *
  * @since
  */
-public class FrontendVersion implements Serializable {
+public class FrontendVersion
+        implements Serializable, Comparable<FrontendVersion> {
 
     /**
      * The version number of this release. For example "6.2.0". Always in the
@@ -91,7 +93,11 @@ public class FrontendVersion implements Serializable {
      *         build identifier
      */
     public FrontendVersion(int major, int minor, int revision, String build) {
-        this.version = major + "." + minor + "." + revision;
+        if(build.isEmpty()) {
+            this.version = major + "." + minor + "." + revision;
+        } else {
+            this.version = major + "." + minor + "." + revision + "." + build;
+        }
         majorVersion = major;
         minorVersion = minor;
         this.revision = revision;
@@ -101,20 +107,33 @@ public class FrontendVersion implements Serializable {
     /**
      * Parse version numbers from version string with the format
      * "major.minor.revision[.build]". The build part is optional.
+     * <p>
+     * Versions are normalized and any caret or tildes will not be considered.
      *
      * @param version
      *         version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String version) {
-        this.version = version;
+        Objects.requireNonNull(version);
+        if (!Character.isDigit(version.charAt(0))) {
+            this.version = version.substring(1);
+        } else {
+            this.version = version;
+        }
 
-        final String[] digits = version.split("[-.]", 4);
-        majorVersion = Integer.parseInt(digits[0]);
-        minorVersion = Integer.parseInt(digits[1]);
+        final String[] digits = this.version.split("[-.]", 4);
+        try {
+            majorVersion = Integer.parseInt(digits[0]);
+            minorVersion = Integer.parseInt(digits[1]);
+        } catch (NumberFormatException nfe) {
+            throw new NumberFormatException(
+                    String.format("'%s' is not a valid version!", version));
+        }
         int revisionNumber;
         String build = "";
         try {
-            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
+            revisionNumber =
+                    digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
             if (digits.length == 4) {
                 build = digits[3];
             }
@@ -176,6 +195,41 @@ public class FrontendVersion implements Serializable {
         return buildIdentifier;
     }
 
+    /**
+     * Check if this version is older than given version.
+     * Will return false if equals or is newer.
+     *
+     * @param otherVersion
+     *         version to check against
+     * @return true if this is older than otherVersion
+     */
+    public boolean isOlderThan(FrontendVersion otherVersion) {
+        return compareTo(otherVersion) < 0;
+    }
+
+    /**
+     * Check if this version is newer than given version.
+     * Will return false if equals or is older.
+     *
+     * @param otherVersion
+     *         version to check against
+     * @return true if this is newer than otherVersion
+     */
+    public boolean isNewerThan(FrontendVersion otherVersion) {
+        return compareTo(otherVersion) > 0;
+    }
+
+    /**
+     * Check if this and the given version are equal to each other.
+     *
+     * @param otherVersion
+     *         version to test equals with
+     * @return true if parsed version parts are exactly the same
+     */
+    public boolean isEqualTo(FrontendVersion otherVersion) {
+        return compareTo(otherVersion) == 0;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof FrontendVersion) {
@@ -184,12 +238,45 @@ public class FrontendVersion implements Serializable {
                     && minorVersion == other.getMinorVersion()
                     && revision == other.getRevision() && buildIdentifier
                     .equals(other.getBuildIdentifier());
+
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return version.hashCode();
+        return (majorVersion + "." + minorVersion + "." + revision + "."
+                + buildIdentifier).hashCode();
+    }
+
+    /**
+     * Compare version numbers and return order as -1, 0 and 1.
+     * Where this version is older, equals, newer than given version.
+     *
+     * @param other
+     *         version to compare against this version
+     * @return -1 this is older, 0 versions equal, 1 this is newer
+     */
+    @Override
+    public int compareTo(FrontendVersion other) {
+        if (majorVersion != other.majorVersion) {
+            return Integer.compare(majorVersion, other.majorVersion);
+        }
+        if (minorVersion != other.minorVersion) {
+            return Integer.compare(minorVersion, other.minorVersion);
+        }
+        if (revision != other.revision) {
+            return Integer.compare(revision, other.revision);
+        }
+        if (this.buildIdentifier != other.buildIdentifier) {
+            if (buildIdentifier.isEmpty() && !other.buildIdentifier.isEmpty()) {
+                return 1;
+            } else if (!buildIdentifier.isEmpty() && other.buildIdentifier
+                    .isEmpty()) {
+                return -1;
+            }
+            return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
+        }
+        return 0;
     }
 }

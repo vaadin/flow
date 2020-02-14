@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -61,7 +61,7 @@ public abstract class DependencyLayout extends Div {
 
     }
 
-    @JavaScript("context://test-files/js/body-click-listener.js")
+    @JavaScript("./test-files/js/body-click-listener.js")
     public static class JsResourceComponent extends Div {
 
         public JsResourceComponent() {

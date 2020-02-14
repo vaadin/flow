@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -26,15 +25,18 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Tag("multiple-props-mutation")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/MultiplePropsMutation.html")
 @JsModule("MultiplePropsMutation.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.MutationSeveralSyncedPropsView", layout = ViewTestLayout.class)
 public class MutationSeveralSyncedPropsView
         extends PolymerTemplate<TemplateModel> {
 
     public MutationSeveralSyncedPropsView() {
-        getElement().synchronizeProperty("name", "name-changed");
-        getElement().synchronizeProperty("message", "message-changed");
+        getElement().addPropertyChangeListener("name", "name-changed",
+                event -> {
+                });
+        getElement().addPropertyChangeListener("message", "message-changed",
+                event -> {
+                });
 
         getElement().setProperty("name", "foo");
         getElement().setProperty("message", "msg");

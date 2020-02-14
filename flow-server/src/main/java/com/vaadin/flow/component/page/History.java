@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -220,8 +220,8 @@ public class History implements Serializable {
     public void replaceState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        ui.getPage().executeJs("history.replaceState($0, '', $1)",
-                state, location.getPathWithQueryParameters());
+        ui.getPage().executeJs("history.replaceState($0, '', $1)", state,
+                location.getPathWithQueryParameters());
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -77,7 +77,6 @@ public class DomEvent extends EventObject {
      * @return The element on which the listener has been attached.
      *
      * @see Element#addEventListener(String, DomEventListener)
-     * @see Element#addEventListener(String, DomEventListener, String...)
      */
     @Override
     public Element getSource() {

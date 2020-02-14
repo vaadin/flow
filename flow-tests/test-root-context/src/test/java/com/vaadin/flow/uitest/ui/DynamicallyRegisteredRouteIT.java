@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,15 +18,13 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
-import com.vaadin.flow.testcategory.IgnoreOSGi;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-@Category(IgnoreOSGi.class)
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
 public class DynamicallyRegisteredRouteIT extends ChromeBrowserTest {
 
     @Test

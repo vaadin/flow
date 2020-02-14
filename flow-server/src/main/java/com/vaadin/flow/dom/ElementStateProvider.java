@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,6 @@ package com.vaadin.flow.dom;
 
 import java.io.Serializable;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -314,29 +313,6 @@ public interface ElementStateProvider extends Serializable {
     Style getStyle(StateNode node);
 
     /**
-     * Gets the names of the properties to synchronize from the client side to
-     * the server.
-     * <p>
-     * The events which trigger synchronization are defined using
-     * {@link #getSynchronizedPropertyEvents(StateNode)}.
-     *
-     * @param node
-     *            the node containing the data
-     * @return the names of the properties to synchronize
-     */
-    Set<String> getSynchronizedProperties(StateNode node);
-
-    /**
-     * Gets the event types which should trigger synchronization of properties
-     * from the client side to the server.
-     *
-     * @param node
-     *            the node containing the data
-     * @return the event types which should trigger synchronization
-     */
-    Set<String> getSynchronizedPropertyEvents(StateNode node);
-
-    /**
      * Defines a mapping between the element and the given component.
      *
      * @param node
@@ -461,22 +437,4 @@ public interface ElementStateProvider extends Serializable {
      */
     boolean isVisible(StateNode node);
 
-    /**
-     * Makes the property synchronized from the client side to the server.
-     * <p>
-     * The events which trigger synchronization are defined using
-     * {@link #getSynchronizedPropertyEvents(StateNode)}.
-     *
-     * @see #getSynchronizedPropertyEvents(StateNode)
-     * @see #getSynchronizedProperties(StateNode)
-     * @param node
-     *            the node containing the data
-     * @param property
-     *            the property to synchronize
-     * @param mode
-     *            controls RPC from the client side to the server side when the
-     *            element is disabled, not {@code null}
-     */
-    void addSynchronizedProperty(StateNode node, String property,
-            DisabledUpdateMode mode);
 }

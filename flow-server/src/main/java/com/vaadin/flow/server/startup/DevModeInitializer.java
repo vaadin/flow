@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,6 +37,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -55,12 +56,14 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.internal.ExportsWebComponent;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
@@ -82,8 +85,17 @@ import com.vaadin.flow.theme.Theme;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -97,11 +109,12 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
  * @since 2.0
  */
 @HandlesTypes({ Route.class, UIInitListener.class,
-        VaadinServiceInitListener.class, ExportsWebComponent.class,
-        NpmPackage.class, NpmPackage.Container.class, JsModule.class,
-        JsModule.Container.class, CssImport.class, CssImport.Container.class,
-        JavaScript.class, JavaScript.Container.class, Theme.class,
-        NoTheme.class })
+        VaadinServiceInitListener.class, WebComponentExporter.class,
+        WebComponentExporterFactory.class, NpmPackage.class,
+        NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
+        CssImport.class, CssImport.Container.class, JavaScript.class,
+        JavaScript.Container.class, Theme.class, NoTheme.class,
+        HasErrorParameter.class })
 @WebListener
 public class DevModeInitializer implements ServletContainerInitializer,
         Serializable, ServletContextListener {
@@ -203,10 +216,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
-        if (config.isCompatibilityMode()) {
-            log().debug("Skipping DEV MODE because BOWER MODE is set.");
-            return;
-        }
         if (!config.enableDevServer()) {
             log().debug(
                     "Skipping DEV MODE because dev server shouldn't be enabled.");
@@ -215,10 +224,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
+
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 DEFAULT_GENERATED_DIR);
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+
+        File flowResourcesFolder = new File(baseDir,
+                DEAULT_FLOW_RESOURCES_FOLDER);
 
         Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
@@ -248,6 +261,36 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     FrontendUtils.WEBPACK_GENERATED);
         }
 
+        builder.useV14Bootstrap(config.useV14Bootstrap());
+
+        if (!config.useV14Bootstrap()) {
+            String connectJavaSourceFolder = config.getStringProperty(
+                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
+                            .toString());
+            String connectApplicationProperties = config.getStringProperty(
+                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
+                            .toString());
+            String connectOpenApiJsonFile = config.getStringProperty(
+                    CONNECT_OPEN_API_FILE_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                            .toString());
+
+            String connectTsFolder = config.getStringProperty(
+                    CONNECT_GENERATED_TS_DIR_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR)
+                            .toString());
+
+            builder.withConnectJavaSourceFolder(
+                    new File(connectJavaSourceFolder))
+                    .withConnectApplicationProperties(
+                            new File(connectApplicationProperties))
+                    .withConnectGeneratedOpenApiJson(
+                            new File(connectOpenApiJsonFile))
+                    .withConnectClientTsApiFolder(new File(connectTsFolder));
+        }
+
         // If we are missing either the base or generated package json files
         // generate those
         if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
@@ -264,17 +307,22 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
+        boolean enablePnpm = config.getBooleanProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)
+                    .withFlowResourcesFolder(flowResourcesFolder)
                     .copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
-                    .withEmbeddableWebComponents(true)
-                    .populateTokenFileData(tokenFileData).build().execute();
+                    .populateTokenFileData(tokenFileData)
+                    .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                    .build().execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);

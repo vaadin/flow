@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,22 +18,28 @@ package com.vaadin.flow.server.frontend;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.base.Supplier;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
@@ -52,13 +58,20 @@ import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
 
-    public static final String DEFAULT_NODE = FrontendUtils.isWindows() ?
-            "node\\node.exe" :
-            "node/node";
+    private static final String USER_HOME = "user.home";
+
+    public static final String DEFAULT_NODE = FrontendUtils.isWindows()
+            ? "node\\node.exe"
+            : "node/node";
 
     public static final String NPM_CLI_STRING = Stream
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
             .collect(Collectors.joining(File.separator));
+
+    public static final String PNPM_INSTALL_LOCATION = Stream
+            .of("node_modules", "pnpm", "bin", "pnpm.js")
+            .collect(Collectors.joining(File.separator));
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -73,37 +86,39 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void should_useProjectNodeFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info("Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+    public synchronized void should_useProjectNodeFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(true, true, baseDir);
 
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir)
-                .get(0), containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir)
-                .get(1), containsString(NPM_CLI_STRING));
+        assertNodeCommand(() -> baseDir);
     }
 
     @Test
-    public void should_useProjectNpmFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info("Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+    public synchronized void should_useHomeFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNodeCommand(() -> getVaadinHomeDir());
+    }
+
+    @Test
+    public synchronized void should_useProjectNpmFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(false, true, baseDir);
 
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                containsString("node"));
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                not(containsString(DEFAULT_NODE)));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir)
-                .get(0), containsString("node"));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir)
-                .get(1), containsString(NPM_CLI_STRING));
+        assertNpmCommand(() -> baseDir);
+    }
+
+    @Test
+    public synchronized void should_useHomeNpmFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNpmCommand(() -> getVaadinHomeDir());
     }
 
     @Test
@@ -112,12 +127,26 @@ public class FrontendUtilsTest {
                 containsString("node"));
         assertThat(FrontendUtils.getNodeExecutable(baseDir),
                 not(containsString(DEFAULT_NODE)));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir)
-                .get(0), containsString("npm"));
         assertThat(FrontendUtils.getNodeExecutable(baseDir),
                 not(containsString(NPM_CLI_STRING)));
-        assertEquals(1, FrontendUtils
-                .getNpmExecutable(baseDir).size());
+
+        assertEquals(3, FrontendUtils.getNpmExecutable(baseDir).size());
+        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(0),
+                containsString("npm"));
+        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
+                containsString("--no-update-notifier"));
+        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(2),
+                containsString("--no-audit"));
+    }
+
+    @Test
+    public void getNpmExecutable_removesPnpmLock() throws IOException {
+        File file = new File(baseDir, "pnpm-lock.yaml");
+        file.createNewFile();
+
+        FrontendUtils.getNpmExecutable(baseDir);
+
+        Assert.assertFalse(file.exists());
     }
 
     @Test
@@ -127,8 +156,8 @@ public class FrontendUtilsTest {
         FrontendVersion requiredVersionTen = new FrontendVersion(10, 0);
         assertFalse(
                 FrontendUtils.isVersionAtLeast(sixPointO, requiredVersionTen));
-        assertFalse(FrontendUtils
-                .isVersionAtLeast(sixPointO, new FrontendVersion(6, 1)));
+        assertFalse(FrontendUtils.isVersionAtLeast(sixPointO,
+                new FrontendVersion(6, 1)));
         assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.0.0"),
                 requiredVersionTen));
         assertTrue(FrontendUtils.isVersionAtLeast(new FrontendVersion("10.0.2"),
@@ -155,7 +184,8 @@ public class FrontendUtilsTest {
         System.setErr(new PrintStream(out));
         try {
             FrontendUtils.validateToolVersion("test",
-                    new FrontendVersion(9,0, 0), new FrontendVersion(10, 0),new FrontendVersion( 8, 0));
+                    new FrontendVersion(9, 0, 0), new FrontendVersion(10, 0),
+                    new FrontendVersion(8, 0));
             String logged = out.toString("utf-8")
                     // fix for windows
                     .replace("\r", "");
@@ -170,7 +200,8 @@ public class FrontendUtilsTest {
     public void validateLargerThan_throwsForOldVersion() {
         try {
             FrontendUtils.validateToolVersion("test",
-                    new FrontendVersion(7,5,0), new FrontendVersion(10, 0),new FrontendVersion(8, 0));
+                    new FrontendVersion(7, 5, 0), new FrontendVersion(10, 0),
+                    new FrontendVersion(8, 0));
             Assert.fail("No exception was thrown for old version");
         } catch (IllegalStateException e) {
             Assert.assertTrue(e.getMessage().contains(
@@ -195,10 +226,9 @@ public class FrontendUtilsTest {
                 FrontendUtils.parseVersionString("v10.11.12"));
         Assert.assertEquals("8.0.0",
                 FrontendUtils.parseVersionString("v8.0.0"));
-        Assert.assertEquals("8.0.0",
-                FrontendUtils.parseVersionString("8.0.0"));
-        Assert.assertEquals("6.9.0", FrontendUtils
-                .parseVersionString("Aktive Codepage: 1252\n" + "6.9.0\n" + ""));
+        Assert.assertEquals("8.0.0", FrontendUtils.parseVersionString("8.0.0"));
+        Assert.assertEquals("6.9.0", FrontendUtils.parseVersionString(
+                "Aktive Codepage: 1252\n" + "6.9.0\n" + ""));
     }
 
     @Test(expected = IOException.class)
@@ -208,9 +238,9 @@ public class FrontendUtilsTest {
 
     @Test
     public void knownFaultyNpmVersionThrowsException() {
-        assertFaultyNpmVersion(new FrontendVersion(6,11,0));
-        assertFaultyNpmVersion(new FrontendVersion(6,11,1));
-        assertFaultyNpmVersion(new FrontendVersion(6,11,2));
+        assertFaultyNpmVersion(new FrontendVersion(6, 11, 0));
+        assertFaultyNpmVersion(new FrontendVersion(6, 11, 1));
+        assertFaultyNpmVersion(new FrontendVersion(6, 11, 2));
     }
 
     private void assertFaultyNpmVersion(FrontendVersion version) {
@@ -218,8 +248,13 @@ public class FrontendUtilsTest {
             checkForFaultyNpmVersion(version);
             Assert.fail("No exception was thrown for bad npm version");
         } catch (IllegalStateException e) {
-            Assert.assertTrue("Faulty version "+version.getFullVersion()+" returned wrong exception message", e.getMessage().contains(
-                    "Your installed 'npm' version ("+version.getFullVersion()+") is known to have problems."));
+            Assert.assertTrue(
+                    "Faulty version " + version.getFullVersion()
+                            + " returned wrong exception message",
+                    e.getMessage()
+                            .contains("Your installed 'npm' version ("
+                                    + version.getFullVersion()
+                                    + ") is known to have problems."));
         }
     }
 
@@ -230,23 +265,53 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" +
-                "\"index\": \"build/index-1111.cache.js\"," +
-                "\"index.es5\": \"build/index.es5-2222.cache.js\"" +
-                "}", statsAssetsByChunkName);
+        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
+                statsAssetsByChunkName);
     }
 
     @Test
-    public void formattingError_assetsByChunkIsCorrectlyParsedFromStats() throws IOException {
+    public void formattingError_assetsByChunkIsCorrectlyParsedFromStats()
+            throws IOException {
         VaadinService service = setupStatsAssetMocks("MissFormatStats.json");
 
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" +
-                "\"index\": \"build/index-1111.cache.js\"," +
-                "\"index.es5\": \"build/index.es5-2222.cache.js\"" +
-                "}", statsAssetsByChunkName);
+        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
+                statsAssetsByChunkName);
+    }
+
+    @Test
+    public void noStatsFile_assetsByChunkReturnsNull() throws IOException {
+        VaadinService service = getServiceWithResource(null);
+
+        String statsAssetsByChunkName = FrontendUtils
+                .getStatsAssetsByChunkName(service);
+
+        Assert.assertNull(statsAssetsByChunkName);
+    }
+
+    @Test
+    public void should_getUnixRelativePath_when_givenTwoPaths() {
+        Path sourcePath = Mockito.mock(Path.class);
+        Path relativePath = Mockito.mock(Path.class);
+        Mockito.when(sourcePath.relativize(Mockito.any()))
+                .thenReturn(relativePath);
+        Mockito.when(relativePath.toString())
+                .thenReturn("this\\is\\windows\\path");
+
+        String relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should replace windows path separator with unix path separator",
+                "this/is/windows/path", relativeUnixPath);
+        Mockito.when(relativePath.toString()).thenReturn("this/is/unix/path");
+
+        relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should keep the same path when it uses unix path separator",
+                "this/is/unix/path", relativeUnixPath);
     }
 
     @Test
@@ -259,11 +324,146 @@ public class FrontendUtilsTest {
         Assert.assertNull(statsAssetsByChunkName);
     }
 
-    private VaadinService setupStatsAssetMocks(String statsFile) throws IOException {
-        String stats = IOUtils.toString(
-                FrontendUtilsTest.class.getClassLoader().getResourceAsStream(statsFile),
+    /**
+     * This test doesn't do anything if pnpm is already installed (globally)
+     * which is true e.g. for or CI servers (TC/bender).
+     */
+    @Test
+    public void ensurePnpm_requestInstall_keepPackageJson_removePackageLock_ignoredPnpmExists_localPnpmIsRemoved()
+            throws IOException {
+        Assume.assumeTrue(
+                FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
+        File packageJson = new File(baseDir, "package.json");
+        FileUtils.writeStringToFile(packageJson, "{}", StandardCharsets.UTF_8);
+
+        File packageLockJson = new File(baseDir, "package-lock.json");
+        FileUtils.writeStringToFile(packageLockJson, "{}",
                 StandardCharsets.UTF_8);
 
+        FrontendUtils.ensurePnpm(baseDir);
+        Assert.assertFalse(
+                FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
+
+        // locally installed pnpm (via npm/pnpm) is removed
+        Assert.assertFalse(new File("node_modules/pnpm").exists());
+
+        Assert.assertEquals("{}", FileUtils.readFileToString(packageJson,
+                StandardCharsets.UTF_8));
+        Assert.assertFalse(packageLockJson.exists());
+    }
+
+    @Test
+    public void getPnpmExecutable_executableIsAvailable() {
+        List<String> executable = FrontendUtils.getPnpmExecutable(baseDir);
+        // command line should contain --shamefully-hoist=true option
+        Assert.assertTrue(executable.contains("--shamefully-hoist=true"));
+        Assert.assertTrue(
+                executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
+    }
+
+    @Test
+    public synchronized void getVaadinHomeDirectory_noVaadinFolder_folderIsCreated()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            File vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertTrue(vaadinHomeDirectory.exists());
+            Assert.assertTrue(vaadinHomeDirectory.isDirectory());
+
+            // access it one more time
+            vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertEquals(".vaadin", vaadinDir.getName());
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    @Test(expected = FileNotFoundException.class)
+    public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            vaadinDir.createNewFile();
+            FrontendUtils.getVaadinHomeDirectory();
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private VaadinService setupStatsAssetMocks(String statsFile)
+            throws IOException {
+        String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
+                .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
+
+        return getServiceWithResource(
+                new ByteArrayInputStream(stats.getBytes()));
+    }
+
+    private void assertNodeCommand(Supplier<String> path) throws IOException {
+        String home = tmpDir.newFolder().getAbsolutePath();
+        String originalHome = System.getProperty(USER_HOME);
+        System.setProperty(USER_HOME, home);
+        try {
+            createStubNode(true, true,
+                    FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString(DEFAULT_NODE));
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString(path.get()));
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            assertThat(npmExecutable.get(0), containsString(path.get()));
+            assertThat(npmExecutable.get(0), containsString(DEFAULT_NODE));
+            assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private void assertNpmCommand(Supplier<String> path) throws IOException {
+        String home = tmpDir.newFolder().getAbsolutePath();
+        String originalHome = System.getProperty(USER_HOME);
+        System.setProperty(USER_HOME, home);
+        try {
+            createStubNode(false, true,
+                    FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString("node"));
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    not(containsString(DEFAULT_NODE)));
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            assertThat(npmExecutable.get(0), containsString("node"));
+            assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+            assertThat(npmExecutable.get(1), containsString(path.get()));
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private String getVaadinHomeDir() {
+        try {
+            return FrontendUtils.getVaadinHomeDirectory().getAbsolutePath();
+        } catch (FileNotFoundException exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
+
+    private VaadinService getServiceWithResource(InputStream stats) {
         VaadinService service = Mockito.mock(VaadinService.class);
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         DeploymentConfiguration deploymentConfiguration = Mockito
@@ -272,13 +472,13 @@ public class FrontendUtilsTest {
         Mockito.when(service.getClassLoader()).thenReturn(classLoader);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
-        Mockito.when(deploymentConfiguration
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+        Mockito.when(deploymentConfiguration.getStringProperty(
+                SERVLET_PARAMETER_STATISTICS_JSON,
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
         Mockito.when(classLoader.getResourceAsStream(
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(new ByteArrayInputStream(stats.getBytes()));
+                .thenReturn(stats);
         return service;
     }
 }

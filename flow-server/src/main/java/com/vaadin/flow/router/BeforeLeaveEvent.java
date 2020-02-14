@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -90,51 +90,12 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
-     * @deprecated Use {@link #BeforeLeaveEvent(NavigationEvent, Class, List)}
-     *             instead.
-     */
-    @Deprecated
-    public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget) {
-        super(event, navigationTarget);
-    }
-
-    /**
-     * Construct event from a NavigationEvent.
-     *
-     * @param event
-     *            NavigationEvent that is on-going
-     * @param navigationTarget
-     *            Navigation target
      * @param layouts
      *            Navigation layout chain
      */
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, layouts);
-    }
-
-    /**
-     * Constructs a new BeforeNavigation Event.
-     *
-     * @param router
-     *            the router that triggered the change, not {@code null}
-     * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
-     * @param location
-     *            the new location, not {@code null}
-     * @param navigationTarget
-     *            navigation target class
-     * @param ui
-     *            the UI related to the navigation
-     * @deprecated Use
-     *             {@link #BeforeLeaveEvent(Router, NavigationTrigger, Location, Class, UI, List)}
-     *             instead.
-     */
-    @Deprecated
-    public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui) {
-        super(router, trigger, location, navigationTarget, ui);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,7 +58,25 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
      *            the bean type to use, not <code>null</code>
      */
     public BeanValidationBinder(Class<BEAN> beanType) {
-        super(beanType);
+        this(beanType,false);
+    }
+
+    /**
+     * Creates a new binder that uses reflection based on the provided bean type
+     * to resolve bean properties. It assumes that JSR-303 bean validation
+     * implementation is present on the classpath. If there is no such
+     * implementation available then {@link Binder} class should be used instead
+     * (this constructor will throw an exception). Otherwise
+     * {@link BeanValidator} is added to each binding that is defined using a
+     * property name.
+     *
+     * @param beanType
+     *            the bean type to use, not {@code null}
+     * @param scanNestedDefinitions
+     *            if {@code true}, scan for nested property definitions as well
+     */
+    public BeanValidationBinder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
+        super(beanType, scanNestedDefinitions);
         if (!BeanUtil.checkBeanValidationAvailable()) {
             throw new IllegalStateException(
                     BeanValidationBinder.class.getSimpleName()

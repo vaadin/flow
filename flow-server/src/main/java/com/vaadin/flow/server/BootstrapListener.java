@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,8 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.EventListener;
 
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
+
 /**
  * This event listener is notified when the bootstrap HTML is about to be
  * generated and sent to the client. The bootstrap HTML is first constructed as
@@ -30,10 +32,15 @@ import java.util.EventListener;
  * 
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
+ * @deprecated Since 3.0, this API is deprecated in favor of
+ *             {@link IndexHtmlRequestListener} when using client-side
+ *             bootstrapping
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */
 @FunctionalInterface
+@Deprecated
 public interface BootstrapListener extends EventListener, Serializable {
 
     /**

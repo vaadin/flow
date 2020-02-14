@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -61,7 +61,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME));
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true);
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
         webpackGenerated = new File(baseDir, WEBPACK_GENERATED);
@@ -103,7 +103,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME));
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false);
 
         webpackUpdater.execute();
 
@@ -137,7 +137,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         String customString = "custom element;";
         List<String> lines = FileUtils.readLines(webpackConfig, "UTF-8");
         for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).equals("module.exports = merge(flowDefaults, {")) {
+            if (lines.get(i).equals("module.exports = merge(flowDefaults,")) {
                 lines.add(i + 1, customString);
                 break;
             }
@@ -147,7 +147,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED, new File(baseDir, "bar"));
+                WEBPACK_GENERATED, new File(baseDir, "bar"), false);
         newUpdater.execute();
 
         assertWebpackGeneratedConfigContent("bar", "foo");
@@ -156,6 +156,40 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue("Custom string has disappeared",
                 webpackContents.contains(customString));
+
+    }
+
+    @Test
+    public void should_notSetClientSideBootstrapMode_when_runningV14Bootstrapping()
+            throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue(
+                "useClientSideIndexFileForBootstrapping should be false by "
+                        + "default",
+                webpackGeneratedContents
+                        .contains(
+                                "const useClientSideIndexFileForBootstrapping = false;"));
+
+    }
+
+    @Test
+    public void should_setClientSideBootstrapMode_when_runningV15Bootsrapping()
+            throws IOException {
+        webpackUpdater = new TaskUpdateWebpack(
+                frontendFolder, baseDir,
+                new File(baseDir, TARGET + "classes"),
+                WEBPACK_CONFIG, WEBPACK_GENERATED,
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false);
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue(
+                "useClientSideIndexFileForBootstrapping should be true",
+                webpackGeneratedContents
+                        .contains(
+                                "const useClientSideIndexFileForBootstrapping = true;"));
 
     }
 
@@ -186,7 +220,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue("No module.exports for flowDefaults available.",
                 webpackContents
-                        .contains("module.exports = merge(flowDefaults, {"));
+                        .contains("module.exports = merge(flowDefaults,"));
     }
 
     private void verifyUpdate(List<String> webpackContents, String entryPoint,

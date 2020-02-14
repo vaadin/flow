@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,6 @@ import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Checks that specific annotations are not configured wrong.
@@ -38,7 +38,7 @@ import com.vaadin.flow.theme.Theme;
  * @author Vaadin Ltd.
  * @since 2.0
  */
-@HandlesTypes({Theme.class, Push.class})
+@HandlesTypes(Push.class)
 public class WebComponentExporterAwareValidator extends
         AbstractAnnotationValidator implements ServletContainerInitializer {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -184,17 +184,18 @@ public class XhrConnection {
      * @return The URI to use for server messages.
      */
     protected String getUri() {
-        String uri = registry.getApplicationConfiguration().getServiceUrl();
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                ApplicationConstants.REQUEST_TYPE_UIDL);
-
-        uri = SharedUtil.addGetParameter(uri,
-                ApplicationConstants.UI_ID_PARAMETER,
-                registry.getApplicationConfiguration().getUIId());
-
-        return uri;
-
+        // This code is in one line because an odd bug in GWT
+        // compiler inlining this piece of code and not declaring
+        // the variable in JS scope, breaking strict mode which is
+        // needed for ES6 imports.
+        // See https://github.com/vaadin/flow/pull/6227
+        return SharedUtil.addGetParameter(
+                    SharedUtil.addGetParameter(
+                        registry.getApplicationConfiguration().getServiceUrl(),
+                        ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                        ApplicationConstants.REQUEST_TYPE_UIDL),
+                    ApplicationConstants.UI_ID_PARAMETER,
+                    registry.getApplicationConfiguration().getUIId());
     }
 
     private static native boolean resendRequest(XMLHttpRequest xhr)

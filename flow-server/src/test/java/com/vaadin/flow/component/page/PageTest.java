@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,8 +16,12 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -25,9 +29,12 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page.ExecutionCanceler;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
@@ -44,15 +51,15 @@ public class PageTest {
 
     private class TestPage extends Page {
 
-        public TestPage() {
-            super(new TestUI());
-        }
-
         private int count = 0;
 
         private String expression;
 
         private Serializable firstParam;
+
+        public TestPage(UI ui) {
+            super(ui);
+        }
 
         @Override
         public PendingJavaScriptResult executeJs(String expression,
@@ -64,7 +71,9 @@ public class PageTest {
         }
     }
 
-    private TestPage page = new TestPage();
+    private UI ui = new TestUI();
+
+    private TestPage page = new TestPage(ui);
 
     private BrowserWindowResizeListener listener = event -> {
     };
@@ -210,5 +219,82 @@ public class PageTest {
                 mockUI.getInternals().dumpPendingJavaScriptInvocations().size();
         Assert.assertEquals(1, jsInvocations);
         Assert.assertEquals(2, callbackInvocations.get());
+    }
+
+    @Test
+    public void addJsModule_accepts_onlyExternalAndStartingSlash() {
+        List<String> urls = new LinkedList<>();
+        urls.add("http://sample.com/mod.js");
+        urls.add("https://sample.com/mod.js");
+        urls.add("//sample.com/mod.js");
+        urls.add("/mod.js");
+
+        for (String url: urls) {
+            page.addJsModule(url);
+        }
+
+        Collection<Dependency> pendingSendToClient = ui.getInternals()
+                .getDependencyList().getPendingSendToClient();
+
+        Assert.assertEquals("There should be 4 dependencies added.", 4,
+                pendingSendToClient.size());
+
+        for (Dependency dependency : pendingSendToClient) {
+            Assert.assertEquals("Dependency should be a JSModule",
+                    Dependency.Type.JS_MODULE, dependency.getType());
+            Assert.assertEquals("JS module dependency should be EAGER",
+                    LoadMode.EAGER, dependency.getLoadMode());
+
+            Assert.assertTrue(
+                    "Dependency " + dependency.getUrl()
+                            + " is not found in the source list.",
+                    urls.contains(dependency.getUrl()));
+
+            urls.remove(dependency.getUrl());
+        }
+
+        Assert.assertEquals("Not all urls were added as dependencies", 0,
+                urls.size());
+    }
+
+    @Test
+    public void addJsModule_rejects_files() {
+        try {
+            page.addJsModule("mod.js");
+
+            Assert.fail(
+                    "Adding a file without starting \"/\" is not to be allowed.");
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
+    @Test
+    public void executeJavaScript_delegatesToExecJs() {
+        AtomicReference<String> invokedExpression = new AtomicReference<>();
+        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+
+        Page page = new Page(new MockUI()) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... parameters) {
+                String oldExpression = invokedExpression.getAndSet(expression);
+                Assert.assertNull("There should be no old expression",
+                        oldExpression);
+
+                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Assert.assertNull("There should be no old params", oldParams);
+
+                return null;
+            }
+        };
+
+        ExecutionCanceler executionCanceler = page.executeJavaScript("foo", 1,
+                true);
+
+        Assert.assertNull(executionCanceler);
+
+        Assert.assertEquals("foo", invokedExpression.get());
+        Assert.assertEquals(Integer.valueOf(1), invokedParams.get()[0]);
+        Assert.assertEquals(Boolean.TRUE, invokedParams.get()[1]);
     }
 }

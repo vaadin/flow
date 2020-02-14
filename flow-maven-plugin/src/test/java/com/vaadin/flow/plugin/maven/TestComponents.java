@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -39,10 +38,10 @@ public class TestComponents {
 
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-date-picker.js")
     @JsModule("@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js")
-    @JavaScript("frontend://ExampleConnector.js")
+    @JavaScript("./ExampleConnector.js")
     @JavaScript("https://foo.com/bar.js")
     @JavaScript("//foo.com/bar.js")
-    public static class VaadinBowerComponent extends Component {
+    public static class VaadinComponent extends Component {
     }
 
     @NpmPackage(value = "@vaadin/vaadin-element-mixin", version = "0.0.0")
@@ -54,7 +53,6 @@ public class TestComponents {
     public static class VaadinNpmComponent extends Component {
     }
 
-    @HtmlImport("frontend://bower_components/vaadin-date-picker/vaadin-date-picker-light.html")
     @JsModule("vaadin-mixed-component/src/vaadin-mixed-component.js")
     public static class VaadinMixedComponent extends Component {
     }
@@ -65,10 +63,6 @@ public class TestComponents {
 
     @JsModule("./local-p3-template.js")
     public static class LocalP3Template extends Component {
-    }
-
-    @JsModule("frontend://frontend-p3-template.js")
-    public static class FrontendP3Template extends Component {
     }
 
     @JsModule("./foo.js")
@@ -86,13 +80,12 @@ public class TestComponents {
     public static class MainView extends Component {
         ButtonComponent buttonComponent;
         IconComponent iconComponent;
-        VaadinBowerComponent vaadinBowerComponent;
+        VaadinComponent vaadinBowerComponent;
         VaadinElementMixin vaadinElementMixin;
         VaadinNpmComponent vaadinNpmComponent;
         VaadinMixedComponent vaadinMixedComponent;
         LocalTemplate localP2Template;
         LocalP3Template localP3Template;
-        FrontendP3Template frontendP3Template;
         FlatImport flatImport;
         TranslatedImports translatedImports;
     }

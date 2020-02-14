@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,14 +21,17 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.FallibleCommand;
-
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
@@ -44,10 +47,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
-    private final transient Path webpackOutputPath;
-    private final transient Path flowImportsFilePath;
-    private final transient Path webpackConfigPath;
-    private final transient Path frontendDirectory;
+    private final Path webpackOutputPath;
+    private final Path flowImportsFilePath;
+    private final Path webpackConfigPath;
+    private final Path frontendDirectory;
+    private final boolean useV14Bootstrapping;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -66,16 +70,20 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            creating the <code>webpack.generated.js</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
+     * @param useV14Bootstrapping
+     *            whether the application running with deprecated V14 bootstrapping
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
-            String webpackGeneratedTemplate, File generatedFlowImports) {
+            String webpackGeneratedTemplate, File generatedFlowImports,
+            boolean useV14Bootstrapping) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
+        this.useV14Bootstrapping = useV14Bootstrapping;
     }
 
     @Override
@@ -109,7 +117,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             URL resource = this.getClass().getClassLoader()
                     .getResource(webpackTemplate);
             FileUtils.copyURLToFile(resource, configFile);
-            log().info("Created webpack configuration file: " + configFile);
+            log().info("Created webpack configuration file: '{}'", configFile);
         }
 
         // Generated file is always re-written
@@ -119,6 +127,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
         URL resource = this.getClass().getClassLoader()
                 .getResource(webpackGeneratedTemplate);
         FileUtils.copyURLToFile(resource, generatedFile);
+        List<String> lines = modifyWebpackConfig(generatedFile);
+
+        FileUtils.writeLines(generatedFile, lines);
+    }
+
+    private List<String> modifyWebpackConfig(File generatedFile)
+            throws IOException {
         List<String> lines = FileUtils.readLines(generatedFile, "UTF-8");
 
         String frontendLine = "const frontendFolder = require('path').resolve(__dirname, '"
@@ -128,36 +143,78 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(webpackOutputPath) + "');";
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
-
+        String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
+                + !useV14Bootstrapping + ";";
         for (int i = 0; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
-                    "const fileNameOfTheFlowGeneratedMainEntryPoint")
-                    && !line.equals(mainLine)) {
+                    "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
                 lines.set(i, mainLine);
             }
             if (lines.get(i)
-                    .startsWith("const mavenOutputFolderForFlowBundledFiles")
-                    && !line.equals(outputLine)) {
+                    .startsWith("const mavenOutputFolderForFlowBundledFiles")) {
                 lines.set(i, outputLine);
             }
             if (lines.get(i).startsWith("const frontendFolder")) {
                 lines.set(i, frontendLine);
             }
-        }
+            if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
+                lines.set(i, isClientSideBootstrapModeLine);
+            }
+            if (lines.get(i).startsWith("const clientSideIndexHTML")) {
+                lines.set(i, getIndexHtmlPath());
+            }
 
-        FileUtils.writeLines(generatedFile, lines);
+            if (lines.get(i).startsWith("const clientSideIndexEntryPoint")) {
+                lines.set(i, getClientEntryPoint());
+            }
+        }
+        return lines;
+    }
+
+    private String getIndexHtmlPath() {
+        boolean exists = new File(frontendDirectory.toFile(), INDEX_HTML)
+                .exists();
+        String declaration = "const clientSideIndexHTML = %s;";
+        if (!exists) {
+            Path path = Paths.get(
+                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
+                    INDEX_HTML);
+            String relativePath = String.format(
+                    "require('path').resolve(__dirname, '%s')",
+                    getEscapedRelativeWebpackPath(path));
+            return String.format(declaration, relativePath);
+        } else {
+            return String.format(declaration, "'./" + INDEX_HTML +"'");
+        }
+    }
+
+    private String getClientEntryPoint() {
+        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS)
+                .exists()
+                || new File(frontendDirectory.toFile(), INDEX_JS).exists();
+        String declaration = "const clientSideIndexEntryPoint = %s;";
+        if (!exists) {
+            Path path = Paths.get(
+                    getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
+                    INDEX_TS);
+            String relativePath = String.format(
+                    "require('path').resolve(__dirname, '%s')",
+                    getEscapedRelativeWebpackPath(path).replaceFirst("\\.[tj]s$", ""));
+            return String.format(declaration, relativePath);
+        } else {
+            return String.format(declaration, "'./index'");
+        }
     }
 
     private String getEscapedRelativeWebpackPath(Path path) {
-        Path relativePath = path.isAbsolute()
-                ? webpackConfigPath.relativize(path)
-                : path;
-        return relativePath.toString().replaceAll("\\\\", "/");
+        if (path.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(webpackConfigPath, path);
+        } else {
+            return FrontendUtils.getUnixPath(path);
+        }
     }
 
     private Logger log() {
-        // Using short prefix so as npm output is more readable
-        return LoggerFactory.getLogger("dev-updater");
+        return LoggerFactory.getLogger(this.getClass());
     }
 }

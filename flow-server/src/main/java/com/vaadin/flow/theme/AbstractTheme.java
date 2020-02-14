@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,7 +56,7 @@ public interface AbstractTheme extends Serializable {
      * "https://www.polymer-project.org/2.0/docs/api/elements/Polymer.CustomStyle">CustomStyle</a>
      * <p>
      * For importing theme files, use
-     * {@link com.vaadin.flow.component.dependency.HtmlImport} on the
+     * {@link com.vaadin.flow.component.dependency.JsModule} on the
      * corresponding theme subclass.
      *
      * @return list of string content to inline or empty list if nothing to
@@ -64,23 +64,6 @@ public interface AbstractTheme extends Serializable {
      */
     default List<String> getHeaderInlineContents() {
         return Collections.emptyList();
-    }
-
-    /**
-     * Gets the attributes that should be set on the {@code <body>} element when
-     * the Theme variant is applied.
-     *
-     * @param variant
-     *            the variant defined in the {@link Theme} annotation, not
-     *            <code>null</code>
-     * @return a Map with the attributes (keys and values) that should be set in
-     *         the body, or an empty Map if nothing should be set for the given
-     *         variant.
-     * @deprecated use {@link #getHtmlAttributes(String)} instead
-     */
-    @Deprecated
-    default Map<String, String> getBodyAttributes(String variant) {
-        return Collections.emptyMap();
     }
 
     /**
@@ -95,7 +78,7 @@ public interface AbstractTheme extends Serializable {
      *         variant.
      */
     default Map<String, String> getHtmlAttributes(String variant) {
-        return getBodyAttributes(variant);
+        return Collections.emptyMap();
     }
 
     /**

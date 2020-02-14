@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -175,6 +175,50 @@ public abstract class Node<N extends Node<N>> implements Serializable {
             getStateProvider().appendVirtualChild(getNode(), child,
                     NodeProperties.IN_MEMORY_CHILD, null);
             ensureChildHasParent(child, true);
+        }
+
+        return getSelf();
+    }
+
+    /**
+     * Removes the given children that have been attached as the virtual
+     * children of this element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory but it's not attached to
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual. *
+     * 
+     * @param children
+     *            the element(s) to remove
+     * @return this element
+     */
+    /*
+     * The use case for removing virtual children is when exported Flow web
+     * components are detached from their parent due to missing heart beats +
+     * timeout.
+     */
+    public N removeVirtualChild(Element... children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        if (getNode().hasFeature(VirtualChildrenList.class)) {
+            VirtualChildrenList childrenList = getNode()
+                    .getFeature(VirtualChildrenList.class);
+            for (Element child : children) {
+                if (child == null) {
+                    throw new IllegalArgumentException(
+                            "Element to remove must not be null");
+                }
+                int index = childrenList.indexOf(child.getNode());
+                if (index == -1) {
+                    throw new IllegalArgumentException(
+                            "Trying to detach a virtual child element from parent that does not have it.");
+                }
+                childrenList.remove(index);
+            }
         }
 
         return getSelf();

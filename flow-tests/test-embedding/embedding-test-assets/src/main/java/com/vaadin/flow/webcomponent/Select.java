@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,7 +39,7 @@ public class Select extends AbstractSinglePropertyField<Select, String> {
      */
     public Select() {
         super(VALUE_PROPERTY, "", false);
-        getElement().synchronizeProperty(VALUE_PROPERTY, "change");
+        getElement().addPropertyChangeListener(VALUE_PROPERTY, "change", event -> {});
     }
 
     public void addItem(Object item, String name) {

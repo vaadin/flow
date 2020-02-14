@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -75,11 +75,8 @@ public class CompositeDataGenerator<T>
      * @param generator
      *            the data generator to remove
      */
-    @Override
-    public void removeDataGenerator(DataGenerator<T> generator) {
-        assert generator != null : "generator should not be null";
+    private void removeDataGenerator(DataGenerator<T> generator) {
         generator.destroyAllData();
         dataGenerators.remove(generator);
     }
-
 }

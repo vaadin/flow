@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
@@ -23,7 +22,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DomListenerOnAttachView", layout = ViewTestLayout.class)
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/DomListenerOnAttach.html")
 @JsModule("DomListenerOnAttach.js")
 public class DomListenerOnAttachView extends AbstractDivView {
     public DomListenerOnAttachView() {

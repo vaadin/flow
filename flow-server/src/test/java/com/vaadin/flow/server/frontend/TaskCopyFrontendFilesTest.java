@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,16 +25,32 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
+
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
 public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    private File npmFolder;
+    private File generatedFolder;
+    private File frontendDepsFolder;
+
+    @Before
+    public void setup() throws IOException {
+        // creating non-existing folder to make sure the execute() creates
+        // the folder if missing
+        npmFolder = new File(temporaryFolder.newFolder(), "child/");
+        generatedFolder = new File(npmFolder, "target/frontend");
+        frontendDepsFolder = new File(npmFolder, "target/frontend-deps");
+    }
 
     @Test
     public void should_collectJsAndCssFilesFromJars_obsoleteResourceFolder()
@@ -50,13 +66,19 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
                 "dir-with-modern-frontend");
     }
 
+    @Test
+    public void should_createPackageJson() throws IOException {
+        TaskCreatePackageJson task = new TaskCreatePackageJson(npmFolder, generatedFolder, frontendDepsFolder);
+        task.execute();
+        Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
+        Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
+        Assert.assertTrue(new File(frontendDepsFolder, PACKAGE_JSON).exists());
+        JsonObject deps = task.getPackageJson().getObject("dependencies");
+        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
+    }
+
     private void should_collectJsAndCssFilesFromJars(String jarFile,
             String fsDir) throws IOException {
-        // creating non-existing folder to make sure the execute() creates
-        // the folder if missing
-        File npmFolder = new File(temporaryFolder.newFolder(), "child/");
-        File targetFolder = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
 
         // contains:
         // - ExampleConnector.js
@@ -66,12 +88,12 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - resourceInFolder.js
         File dir = TestUtils.getTestFolder(fsDir);
 
-        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(npmFolder,
+        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(frontendDepsFolder,
                 jars(jar, dir));
 
         task.execute();
 
-        List<String> files = TestUtils.listFilesRecursively(targetFolder);
+        List<String> files = TestUtils.listFilesRecursively(frontendDepsFolder);
         Assert.assertEquals(3, files.size());
 
         Assert.assertTrue("Js resource should have been copied from jar file",
@@ -79,6 +101,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
         Assert.assertTrue("Css resource should have been copied from jar file",
                 files.contains("inline.css"));
+
 
         Assert.assertTrue(
                 "Js resource should have been copied from resource folder",

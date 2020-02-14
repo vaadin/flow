@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,10 @@ package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,11 +35,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import org.slf4j.LoggerFactory;
 
 /**
  * Registry for PWA data.
@@ -69,7 +74,17 @@ public class PwaRegistry implements Serializable {
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
-    private PwaRegistry(PWA pwa, ServletContext servletContext)
+    /**
+     * Creates a new PwaRegistry instance.
+     *
+     * @param pwa
+     *            the pwa annotation
+     * @param servletContext
+     *            the context
+     * @throws IOException
+     *             when icon or offline resources are not found.
+     */
+    public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
@@ -90,11 +105,15 @@ public class PwaRegistry implements Serializable {
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
 
-            // Pick top-left pixel as fill color if needed for image resizing
-            int bgColor = baseImage.getRGB(0, 0);
+            if (baseImage == null) {
+                LoggerFactory.getLogger(PwaRegistry.class).error("Image is not found or can't be loaded: " + logo);
+            } else {
+                // Pick top-left pixel as fill color if needed for image resizing
+                int bgColor = baseImage.getRGB(0, 0);
 
-            // initialize icons
-            icons = initializeIcons(baseImage, bgColor);
+                // initialize icons
+                icons = initializeIcons(baseImage, bgColor);
+            }
 
             // Load offline page as string, from servlet context if
             // available, fall back to default page
@@ -263,13 +282,22 @@ public class PwaRegistry implements Serializable {
                     .getAttribute(PwaRegistry.class.getName());
 
             if (attribute == null) {
-                ApplicationRouteRegistry reg = ApplicationRouteRegistry
-                        .getInstance(new VaadinServletContext(servletContext));
+                VaadinServletContext context = new VaadinServletContext(
+                        servletContext);
+
+                // Try first if there is an AppShell for the project
+                Class<?> clazz = AppShellRegistry.getInstance(context)
+                        .getShell();
+
+                // Otherwise use the class reported by router
+                if (clazz == null) {
+                    clazz = ApplicationRouteRegistry.getInstance(context)
+                            .getPwaConfigurationClass();
+                }
 
                 // Initialize PwaRegistry with found PWA settings
-                PWA pwa = reg.getPwaConfigurationClass() != null ? reg
-                        .getPwaConfigurationClass().getAnnotation(PWA.class)
-                        : null;
+                PWA pwa = clazz != null ? clazz.getAnnotation(PWA.class) : null;
+
                 // will fall back to defaults, if no PWA annotation available
                 try {
                     attribute = new PwaRegistry(pwa, servletContext);
@@ -279,7 +307,6 @@ public class PwaRegistry implements Serializable {
                     throw new UncheckedIOException(
                             "Failed to initialize the PWA registry", ioe);
                 }
-
             }
         }
 

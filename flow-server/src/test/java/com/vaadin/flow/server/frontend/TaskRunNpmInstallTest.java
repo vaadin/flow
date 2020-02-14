@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,7 +49,7 @@ public class TaskRunNpmInstallTest {
         npmFolder = temporaryFolder.newFolder();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File("")) {
+                new File(""), null) {
 
             @Override
             public void execute() {
@@ -61,8 +61,11 @@ public class TaskRunNpmInstallTest {
             }
 
         };
-        task = new TaskRunNpmInstall(nodeUpdater);
+        task = createTask();
+    }
 
+    protected TaskRunNpmInstall createTask() {
+        return new TaskRunNpmInstall(nodeUpdater, false);
     }
 
     @Test
@@ -73,7 +76,7 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -85,19 +88,20 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.SKIPPING_NPM_INSTALL);
+        Mockito.verify(logger)
+                .info("Skipping `" + getToolName() + " install`.");
     }
 
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
-            throws IOException, ExecutionFailedException {
+            throws ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -106,6 +110,20 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = true;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.RUNNING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    private String getRunningMsg() {
+        return "Running `" + getToolName() + " install` to "
+                + "resolve and optionally download frontend dependencies. "
+                + "This may take a moment, please stand by...";
+    }
+
+    protected NodeUpdater getNodeUpdater() {
+        return nodeUpdater;
+    }
+
+    protected String getToolName() {
+        return "npm";
     }
 }

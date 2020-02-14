@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,15 +17,13 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
 
 /**
  * A generic interface for components and other user interface objects that may
  * be enabled or disabled. The server will ignore incoming events for a disabled
  * element unless the listener has been explicitly configured to allow events in
  * a disabled state using e.g.
- * {@link DomListenerRegistration#setDisabledUpdateMode(DisabledUpdateMode)} or
- * {@link Element#addSynchronizedProperty(String, DisabledUpdateMode)}.
+ * {@link DomListenerRegistration#setDisabledUpdateMode(DisabledUpdateMode)}.
  * <p>
  * Implementing classes should <b>not</b> define their own implementations of
  * the methods defined in this interface since the framework's overall security

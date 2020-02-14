@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -59,7 +59,7 @@ class DevServerWatchDog {
                     accept.setSoTimeout(0);
                 } catch (IOException e) {
                     getLogger().debug(
-                            "Error occured during accept a connection", e);
+                            "Error occurred during accept a connection", e);
                 }
             }
         }
@@ -70,7 +70,7 @@ class DevServerWatchDog {
                     server.close();
                 } catch (IOException e) {
                     getLogger().debug(
-                            "Error occured during close the server socket", e);
+                            "Error occurred during close the server socket", e);
                 }
             }
         }

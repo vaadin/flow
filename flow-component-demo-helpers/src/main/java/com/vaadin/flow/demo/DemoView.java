@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,6 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
@@ -49,9 +48,8 @@ import com.vaadin.flow.theme.lumo.Lumo;
  */
 @Tag(Tag.DIV)
 @Theme(Lumo.class)
-@StyleSheet("src/css/demo.css")
-@StyleSheet("src/css/prism.css")
-@JavaScript("src/script/prism.js")
+@StyleSheet("frontend/src/css/demo.css")
+@StyleSheet("frontend/src/css/prism.css")
 public abstract class DemoView extends Component
         implements HasComponents, HasUrlParameter<String>, HasStyle {
     static final String VARIANT_TOGGLE_BUTTONS_DIV_ID = "variantToggleButtonsDiv";
@@ -164,14 +162,19 @@ public abstract class DemoView extends Component
         }
 
         Card card = new Card();
-        if (components != null && components.length > 0) {
-            card.add(components);
-        }
+        card.getElement().getNode().runWhenAttached(ui -> {
+            WhenDefinedManager.get(ui).whenDefined(components, () -> {
+                if (components != null && components.length > 0) {
+                    card.add(components);
+                }
 
-        List<SourceCodeExample> list = sourceCodeExamples.get(heading);
-        if (list != null) {
-            list.stream().map(this::createSourceContent).forEach(card::add);
-        }
+                List<SourceCodeExample> list = sourceCodeExamples.get(heading);
+                if (list != null) {
+                    list.stream().map(this::createSourceContent)
+                            .forEach(card::add);
+                }
+            });
+        });
 
         tab.add(card);
         return card;
@@ -211,8 +214,6 @@ public abstract class DemoView extends Component
             container.removeAll();
             container.add(tab);
             navBar.setActive(getTabUrl(tabUrl));
-            tab.getElement().getNode().runWhenAttached(ui -> ui.getPage()
-                    .executeJavaScript("Prism.highlightAll();"));
         }
     }
 

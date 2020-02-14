@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,14 +42,6 @@ public enum KeyLocation {
      * Right key location.
      */
     RIGHT(2),
-
-    /**
-     * This value contains a typo. Please use RIGHT instead.
-     *
-     * @see RIGHT
-     */
-    @Deprecated
-    RIGTH(2),
 
     /**
      * Numeric pad key location.

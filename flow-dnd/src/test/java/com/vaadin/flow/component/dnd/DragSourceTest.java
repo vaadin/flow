@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,14 +18,15 @@ package com.vaadin.flow.component.dnd;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.router.RouterLink;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class DragSourceTest extends AbstractDnDUnitTest {
 
@@ -70,7 +71,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertEquals(endEvent, endEvent2);
         Assert.assertNull(UI.getCurrent().getActiveDragSourceComponent());
         Assert.assertEquals(DropEffect.MOVE, endEvent2.getDropEffect());
-        Assert.assertTrue(endEvent2.isSuccesful());
+        Assert.assertTrue(endEvent2.isSuccessful());
         Assert.assertFalse(endEvent2.isFromClient());
     }
 
@@ -164,7 +165,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertEquals(endEvent, endEvent2);
         Assert.assertNull(UI.getCurrent().getActiveDragSourceComponent());
         Assert.assertEquals(DropEffect.MOVE, endEvent2.getDropEffect());
-        Assert.assertTrue(endEvent2.isSuccesful());
+        Assert.assertTrue(endEvent2.isSuccessful());
         Assert.assertFalse(endEvent2.isFromClient());
 
         endEvent = new DragEndEvent<RouterLink>(component, true, "None");
@@ -174,7 +175,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertEquals(endEvent, endEvent2);
         Assert.assertNull(UI.getCurrent().getActiveDragSourceComponent());
         Assert.assertEquals(DropEffect.NONE, endEvent2.getDropEffect());
-        Assert.assertFalse(endEvent2.isSuccesful());
+        Assert.assertFalse(endEvent2.isSuccessful());
         Assert.assertTrue(endEvent2.isFromClient());
     }
 

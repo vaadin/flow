@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -160,4 +160,21 @@ public class ReactiveTest {
                 order);
     }
 
+    @Test
+    public void flushRunning_newFlushIsIgnored() {
+        List<String> order = new ArrayList<>();
+
+        Reactive.addPostFlushListener(() -> order.add("postFlush"));
+        Reactive.addFlushListener(() -> order.add("flush"));
+        Reactive.addFlushListener(() -> {
+            Reactive.flush();
+            order.add("flush2");
+        });
+
+        Assert.assertEquals(Collections.emptyList(), order);
+
+        Reactive.flush();
+
+        Assert.assertEquals(Arrays.asList("flush", "flush2", "postFlush"), order);
+    }
 }

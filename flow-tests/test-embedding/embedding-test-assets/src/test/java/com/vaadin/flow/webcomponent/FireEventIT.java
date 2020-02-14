@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,12 +22,13 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble_Cancel;
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble_NoCancel;
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.NoBubble_NoCancel;
 
-public class FireEventIT extends ChromeBrowserTest {
+public class FireEventIT extends ChromeBrowserTest implements HasById {
     private static final String N1 = "number1";
     private static final String N2 = "number2";
     private static final String SUM = "sum";
@@ -47,11 +48,11 @@ public class FireEventIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("calc"));
 
-        WebElement calc = findElement(By.id("calc"));
+        TestBenchElement calc = byId("calc");
 
-        WebElement button = calc.findElement(By.id("button"));
-        WebElement number1 = calc.findElement(By.id(N1));
-        WebElement number2 = calc.findElement(By.id(N2));
+        TestBenchElement button = byId("calc", "button");
+        TestBenchElement number1 = byId("calc", N1);
+        TestBenchElement number2 = byId("calc", N2);
 
         Assert.assertEquals("Sum should be 0", "0", value(SUM));
         Assert.assertEquals("Error should be empty", "", value(ERR));
@@ -67,8 +68,8 @@ public class FireEventIT extends ChromeBrowserTest {
         number1.clear();
         number2.clear();
 
-        Assert.assertEquals("", value(N1));
-        Assert.assertEquals("", value(N2));
+        Assert.assertEquals("", value(number1));
+        Assert.assertEquals("", value(number2));
 
         button.click();
 
@@ -93,13 +94,12 @@ public class FireEventIT extends ChromeBrowserTest {
         /*
             Inner-div listener attempts to cancel all button-events
          */
-        WebElement contained = findElement(By.id("contained"));
         // non-bubbling
-        WebElement button1 = contained.findElement(By.id("b1"));
+        WebElement button1 = byId("contained", "b1");
         // bubbling, non-cancelable
-        WebElement button2 = contained.findElement(By.id("b2"));
+        WebElement button2 = byId("contained", "b2");
         // bubbling, cancellable
-        WebElement button3 = contained.findElement(By.id("b3"));
+        WebElement button3 = byId("contained", "b3");
 
         button1.click();
 
@@ -137,6 +137,10 @@ public class FireEventIT extends ChromeBrowserTest {
     }
 
     private String value(String id) {
-        return findElement(By.id(id)).getText();
+        return byId(id).getText();
+    }
+
+    private String value(TestBenchElement webElement) {
+        return webElement.getText();
     }
 }

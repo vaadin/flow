@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,8 @@ import java.io.Serializable;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.SystemMessages;
+import com.vaadin.flow.server.VaadinSessionState;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -59,7 +61,12 @@ public class MetadataWriter implements Serializable {
         }
 
         if (async) {
-            meta.put("async", true);
+            meta.put(JsonConstants.META_ASYNC, true);
+        }
+
+        VaadinSessionState state = ui.getSession().getState();
+        if (state != null && state.compareTo(VaadinSessionState.CLOSING) >= 0) {
+            meta.put(JsonConstants.META_SESSION_EXPIRED, true);
         }
 
         // meta instruction for client to enable auto-forward to

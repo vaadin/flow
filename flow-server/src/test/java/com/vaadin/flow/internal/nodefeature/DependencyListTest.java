@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,6 +36,7 @@ import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -48,7 +49,7 @@ public class DependencyListTest {
 
     @Before
     public void before() {
-        ui = MockUI.createCompatibilityModeUI();
+        ui = MockUI.createUI();
         deps = ui.getInternals().getDependencyList();
 
         assertEquals(0, deps.getPendingSendToClient().size());
@@ -107,41 +108,6 @@ public class DependencyListTest {
         validateDependency(URL, Type.JAVASCRIPT, LoadMode.INLINE);
     }
 
-    @Test
-    public void addHtmlDependency_eager1() {
-        ui.getPage().addHtmlImport(URL);
-        validateDependency(URL, Type.HTML_IMPORT, LoadMode.EAGER);
-    }
-
-    @Test
-    public void addHtmlDependency_eager2() {
-        ui.getPage().addHtmlImport(URL, LoadMode.EAGER);
-        validateDependency(URL, Type.HTML_IMPORT, LoadMode.EAGER);
-    }
-
-    @Test
-    public void addHtmlDependency_lazy() {
-        ui.getPage().addHtmlImport(URL, LoadMode.LAZY);
-        validateDependency(URL, Type.HTML_IMPORT, LoadMode.LAZY);
-    }
-
-    @Test
-    public void addHtmlDependency_inline() {
-        ui.getPage().addHtmlImport(URL, LoadMode.INLINE);
-        validateDependency(URL, Type.HTML_IMPORT, LoadMode.INLINE);
-    }
-
-    @Test (expected = UnsupportedOperationException.class)
-    public void addHtmlDependency_throwsInNpmMode() {
-        // given
-        UI ui = MockUI.createNpmModeUI();
-
-        // when
-        ui.getPage().addHtmlImport("//url.does.not.matter");
-
-        // then... throws
-    }
-
     private void validateDependency(String url, Type dependencyType,
             LoadMode loadMode) {
         JsonObject expectedJson = Json.createObject();
@@ -171,15 +137,7 @@ public class DependencyListTest {
         assertUrlUnchanged("ftp://some.host/some/where");
         assertUrlUnchanged("https://some.host/some/where");
         assertUrlUnchanged("//same.protocol.some.host/some/where");
-        assertFrontendPrefixed("foo?bar");
-        assertFrontendPrefixed("foo?bar=http://yah");
-        assertFrontendPrefixed("foo/baz?bar=http://some.thing");
-        assertFrontendPrefixed("foo/baz?bar=http://some.thing&ftp://bar");
         assertUrlUnchanged("context://foo?bar=frontend://baz");
-    }
-
-    private void assertFrontendPrefixed(String url) {
-        assertDependencyUrl("frontend://" + url, url);
     }
 
     private void assertUrlUnchanged(String url) {
@@ -197,20 +155,11 @@ public class DependencyListTest {
     public void urlAddedOnlyOnce() {
         addSimpleDependency("foo/bar.js");
         addSimpleDependency("foo/bar.js");
-        addSimpleDependency("frontend://foo/bar.js");
         assertEquals(1, deps.getPendingSendToClient().size());
         deps.clearPendingSendToClient();
 
         addSimpleDependency("foo/bar.js");
         assertEquals(0, deps.getPendingSendToClient().size());
-    }
-
-    @Test
-    public void relativeUrlBecomesFrontend() {
-        addSimpleDependency("foo.js");
-
-        Dependency dependency = deps.getPendingSendToClient().iterator().next();
-        assertEquals("frontend://foo.js", dependency.getUrl());
     }
 
     private void addSimpleDependency(String foo) {
@@ -257,8 +206,8 @@ public class DependencyListTest {
                 .getPendingSendToClient();
         assertEquals("Expected to have only one dependency", 1,
                 pendingSendToClient.size());
-        assertEquals("Wrong load mode resolved", pendingSendToClient.iterator().next().getLoadMode(),
-                expected);
+        assertEquals("Wrong load mode resolved",
+                pendingSendToClient.iterator().next().getLoadMode(), expected);
     }
 
     @Test
@@ -275,34 +224,26 @@ public class DependencyListTest {
 
     @Test
     public void ensureDependenciesSentToClientHaveTheSameOrderAsAdded() {
-        Dependency eagerHtml = new Dependency(Type.HTML_IMPORT, "eager.html",
-                LoadMode.EAGER);
         Dependency eagerJs = new Dependency(Type.JAVASCRIPT, "eager.js",
                 LoadMode.EAGER);
         Dependency eagerCss = new Dependency(Type.STYLESHEET, "eager.css",
                 LoadMode.EAGER);
-        Dependency lazyHtml = new Dependency(Type.HTML_IMPORT, "lazy.html",
-                LoadMode.LAZY);
         Dependency lazyJs = new Dependency(Type.JAVASCRIPT, "lazy.js",
                 LoadMode.LAZY);
         Dependency lazyCss = new Dependency(Type.STYLESHEET, "lazy.css",
                 LoadMode.LAZY);
         assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
-                eagerHtml.getLoadMode());
-        assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
                 eagerJs.getLoadMode());
         assertEquals("Expected the dependency to be eager", LoadMode.EAGER,
                 eagerCss.getLoadMode());
-        assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
-                lazyHtml.getLoadMode());
         assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
                 lazyJs.getLoadMode());
         assertEquals("Expected the dependency to be lazy", LoadMode.LAZY,
                 lazyCss.getLoadMode());
 
-        List<Dependency> dependencies = new ArrayList<>(Arrays.asList(eagerHtml,
-                eagerJs, eagerCss, lazyHtml, lazyJs, lazyCss));
-        assertEquals("Expected to have 6 dependencies", 6, dependencies.size());
+        List<Dependency> dependencies = new ArrayList<>(
+                Arrays.asList(eagerJs, eagerCss, lazyJs, lazyCss));
+        assertEquals("Expected to have 4 dependencies", 4, dependencies.size());
 
         Collections.shuffle(dependencies);
         dependencies.forEach(deps::add);

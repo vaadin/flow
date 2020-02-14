@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,6 @@ package com.vaadin.client.flow.binding;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import jsinterop.annotations.JsFunction;
-
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.Scheduler;
 
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -53,6 +48,10 @@ import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.shared.JsonConstants;
+import jsinterop.annotations.JsFunction;
+
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -135,9 +134,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         private final JsMap<String, EventRemover> listenerRemovers = JsCollections
                 .map();
 
-        private final JsSet<EventRemover> synchronizedPropertyEventListeners = JsCollections
-                .set();
-
         private BindingContext(StateNode node, Node htmlNode,
                 BinderContext binderContext) {
             this.node = node;
@@ -217,7 +213,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             // Flow's own event listeners
             listeners.push(bindDomEventListeners(context));
-            listeners.push(bindSynchronizedPropertyEvents(context));
 
             // Dom structure, shouldn't trigger observers synchronously
             listeners.push(bindVirtualChildren(context));
@@ -343,6 +338,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
                         var props = Object.getOwnPropertyNames(changedProps);
                         var items = "items.";
+                        var i;
                         for(i=0; i<props.length; i++){
                             // There should be a property which starts with "items."
                             // and the next token is the index of changed item
@@ -732,61 +728,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         WidgetUtil.updateAttribute(element, name, mapProperty.getValue());
     }
 
-    private EventRemover bindSynchronizedPropertyEvents(
-            BindingContext context) {
-        synchronizeEventTypesChanged(context);
-
-        NodeList propertyEvents = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-        return propertyEvents
-                .addSpliceListener(e -> synchronizeEventTypesChanged(context));
-    }
-
-    private void synchronizeEventTypesChanged(BindingContext context) {
-        NodeList propertyEvents = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-
-        // Remove all old listeners and add new ones
-        context.synchronizedPropertyEventListeners
-                .forEach(EventRemover::remove);
-        context.synchronizedPropertyEventListeners.clear();
-
-        for (int i = 0; i < propertyEvents.length(); i++) {
-            String eventType = propertyEvents.get(i).toString();
-            EventRemover remover = context.htmlNode.addEventListener(eventType,
-                    event -> handlePropertySyncDomEvent(context), false);
-            context.synchronizedPropertyEventListeners.add(remover);
-        }
-    }
-
-    private void handlePropertySyncDomEvent(BindingContext context) {
-        NodeList propertiesList = context.node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        for (int i = 0; i < propertiesList.length(); i++) {
-            syncPropertyIfNeeded(propertiesList.get(i).toString(), context);
-        }
-    }
-
-    /**
-     * Synchronizes the given property if the value in the DOM does not match
-     * the value in the StateTree.
-     * <p>
-     * Updates the StateTree with the new property value as a side effect.
-     *
-     * @param propertyName
-     *            the name of the property
-     * @param context
-     *            operation context
-     */
-    private void syncPropertyIfNeeded(String propertyName,
-            BindingContext context) {
-        Object currentValue = WidgetUtil.getJsProperty(context.htmlNode,
-                propertyName);
-
-        context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty(propertyName).syncToServer(currentValue);
-    }
-
     private EventRemover bindChildren(BindingContext context) {
         NodeList children = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
         if (children.hasBeenCleared()) {
@@ -1152,8 +1093,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         context.listenerRemovers.forEach((remover, name) -> remover.remove());
         listeners.forEach(EventRemover::remove);
-        context.synchronizedPropertyEventListeners
-                .forEach(EventRemover::remove);
 
         assert boundNodes != null;
         boundNodes.delete(context.node);
@@ -1266,9 +1205,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
         }
 
+        JsArray<Runnable> commands = JsCollections.array();
+        synchronizeProperties.forEach(
+                name -> commands.push(getSyncPropertyCommand(name, context)));
+
         Consumer<String> sendCommand = debouncePhase -> {
-            synchronizeProperties
-                    .forEach(name -> syncPropertyIfNeeded(name, context));
+            commands.forEach(Runnable::run);
 
             sendEventToServer(node, type, eventData, debouncePhase);
         };
@@ -1280,6 +1222,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // Send if there were not filters or at least one matched
             sendCommand.accept(null);
         }
+    }
+
+    private Runnable getSyncPropertyCommand(String propertyName,
+            BindingContext context) {
+        return context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName).getSyncToServerCommand(WidgetUtil
+                        .getJsProperty(context.htmlNode, propertyName));
     }
 
     private static void sendEventToServer(StateNode node, String type,

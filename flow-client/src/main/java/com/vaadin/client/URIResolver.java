@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,10 +45,6 @@ public class URIResolver extends VaadinUriResolver {
      * <ul>
      * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
      * resolves to the application context root</li>
-     * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code> -
-     * resolves to the build path where web components were compiled. Browsers
-     * supporting ES6 can receive different, more optimized files than browsers
-     * that only support ES5.</li>
      * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
      * resolves to the base URI of the page</li>
      * </ul>
@@ -60,20 +56,12 @@ public class URIResolver extends VaadinUriResolver {
      * @return the resolved URI
      */
     public String resolveVaadinUri(String uri) {
-        return super.resolveVaadinUri(uri, getFrontendRootUrl(),
-                getContextRootUrl());
+        return super.resolveVaadinUri(uri, getContextRootUrl());
     }
 
     protected String getContextRootUrl() {
         String root = registry.getApplicationConfiguration()
                 .getContextRootUrl();
-        assert root.endsWith("/");
-        return root;
-    }
-
-    protected String getFrontendRootUrl() {
-        String root = registry.getApplicationConfiguration()
-                .getFrontendRootUrl();
         assert root.endsWith("/");
         return root;
     }

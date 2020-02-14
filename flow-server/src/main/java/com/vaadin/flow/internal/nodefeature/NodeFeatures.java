@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -81,14 +81,6 @@ public final class NodeFeatures {
      * Id for {@link ElementStylePropertyMap}.
      */
     public static final int ELEMENT_STYLE_PROPERTIES = 12;
-    /**
-     * Id for {@link SynchronizedPropertiesList}.
-     */
-    public static final int SYNCHRONIZED_PROPERTIES = 13;
-    /**
-     * Id for {@link SynchronizedPropertyEventsList}.
-     */
-    public static final int SYNCHRONIZED_PROPERTY_EVENTS = 14;
     /**
      * Id for {@link ComponentMapping}.
      */

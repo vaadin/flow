@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.ClassList;
-import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Node;
@@ -178,22 +177,6 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public Set<String> getSynchronizedProperties(StateNode node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void addSynchronizedProperty(StateNode node, String property,
-            DisabledUpdateMode mode) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Registration addPropertyChangeListener(StateNode node, String name,
             PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
@@ -239,4 +222,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         throw new UnsupportedOperationException();
     }
+    
+    protected Object readResolve() throws ObjectStreamException {
+        return INSTANCE;
+    }    
 }

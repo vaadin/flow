@@ -2,9 +2,6 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -19,6 +16,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.connect.Endpoint;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -27,7 +27,7 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsP
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -46,31 +46,36 @@ public class PrepareFrontendMojoTest {
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
     private File nodeModulesPath;
-    private File flowPackagePath;
+    private File flowResourcesFolder;
     private String webpackConfig;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
     private File tokenFile;
+    private File defaultJavaSource;
+    private File generatedTsFolder;
+    private MavenProject project;
 
     @Before
     public void setup() throws Exception {
+
         projectBase = temporaryFolder.getRoot();
 
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        MavenProject project = Mockito.mock(MavenProject.class);
+        project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         nodeModulesPath = new File(projectBase, NODE_MODULES);
-        flowPackagePath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        flowResourcesFolder = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
+        defaultJavaSource = new File(".", "src/test/java");
+        generatedTsFolder = new File(projectBase, "frontend/generated");
 
-        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
@@ -84,7 +89,20 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 new File(projectBase, "frontend"));
 
-        Assert.assertTrue(flowPackagePath.mkdirs());
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                new File(projectBase,
+                        "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+                new File(projectBase,
+                        "src/main/resources/application.properties"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+                defaultJavaSource);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+                generatedTsFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
+                flowResourcesFolder);
+
+        Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
     }
 
@@ -99,10 +117,10 @@ public class PrepareFrontendMojoTest {
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNull("No devMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-        Assert.assertNotNull("compatibilityMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+        Assert.assertNotNull("useDeprecatedV14Bootstrapping token should be available",
+                buildInfo.get(SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
     }
 
     @Test
@@ -110,8 +128,8 @@ public class PrepareFrontendMojoTest {
             throws IOException, MojoExecutionException, MojoFailureException {
 
         JsonObject initialBuildInfo = Json.createObject();
-        initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
+        initialBuildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
         initialBuildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
@@ -124,10 +142,10 @@ public class PrepareFrontendMojoTest {
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNull("No devMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-        Assert.assertNotNull("compatibilityMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
+        Assert.assertNotNull("useDeprecatedV14Bootstrapping token should be available",
+                buildInfo.get(SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
     }
 
     @Test
@@ -148,8 +166,10 @@ public class PrepareFrontendMojoTest {
     @Test
     public void should_keepDependencies_when_packageJsonExists()
             throws Exception {
-        FileUtils.fileWrite(packageJson,
-                "{\"dependencies\":{\"foo\":\"bar\"}}");
+        JsonObject json = TestUtils.getInitalPackageJson();
+        json.put("dependencies", Json.createObject());
+        json.getObject("dependencies").put("foo", "bar");
+        FileUtils.fileWrite(packageJson, json.toJson());
         mojo.execute();
         assertPackageJsonContent();
 
@@ -158,30 +178,37 @@ public class PrepareFrontendMojoTest {
                 "foo");
     }
 
+    @Test
+    public void jarPackaging_copyProjectFrontendResources()
+            throws MojoExecutionException, MojoFailureException,
+            IllegalAccessException {
+        Mockito.when(project.getPackaging()).thenReturn("jar");
+
+        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+
+        mojo.execute();
+
+        Mockito.verify(project, Mockito.atLeastOnce()).getArtifacts();
+    }
+
     private void assertPackageJsonContent() throws IOException {
         JsonObject packageJsonObject = getPackageJson(packageJson);
 
         assertContainsPackage(packageJsonObject.getObject("dependencies"),
-                "@webcomponents/webcomponentsjs", "@polymer/polymer");
+                "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
                 "webpack", "webpack-cli", "webpack-dev-server",
-                "webpack-babel-multi-target-plugin", "copy-webpack-plugin");
+                "copy-webpack-plugin", "html-webpack-plugin");
     }
 
-    private List<File> gatherFiles(File root) {
-        if (root.isFile()) {
-            return Collections.singletonList(root);
-        } else {
-            File[] subdirectoryFiles = root.listFiles();
-            if (subdirectoryFiles != null) {
-                List<File> files = new ArrayList<>();
-                for (File subdirectoryFile : subdirectoryFiles) {
-                    files.addAll(gatherFiles(subdirectoryFile));
-                }
-                return files;
-            }
-            return Collections.emptyList();
+    @Endpoint
+    public class MyEndpoint {
+        public void foo(String bar) {
+        }
+
+        public String bar(String baz) {
+            return baz;
         }
     }
 }

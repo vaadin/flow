@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,10 +55,10 @@ public interface HasComponents extends HasElement, HasEnabled {
     }
 
     /**
-     * Add the given text as children of this component.
+     * Add the given text as a child of this component.
      *
      * @param text
-     *            the text to add
+     *            the text to add, not <code>null</code>
      */
     default void add(String text) {
         add(new Text(text));

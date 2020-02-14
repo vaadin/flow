@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,9 +18,6 @@ package com.vaadin.flow.shared.ui;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -42,7 +39,7 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, JS_MODULE, HTML_IMPORT, DYNAMIC_IMPORT;
+        STYLESHEET, JAVASCRIPT, JS_MODULE, DYNAMIC_IMPORT;
 
         /**
          * Check if the given value is contained as a enum value.
@@ -65,10 +62,6 @@ public class Dependency implements Serializable {
      * Creates a new dependency of the given type, to be loaded from the given
      * URL.
      * <p>
-     * A relative URL is expanded to use the {@code frontend://} prefix. URLs
-     * with a defined protocol and absolute URLs without a protocol are used
-     * as-is.
-     * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols, specified at
      * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
@@ -87,12 +80,7 @@ public class Dependency implements Serializable {
         }
         this.type = Objects.requireNonNull(type);
 
-        if (type.equals(Type.JS_MODULE) || type.equals(Type.DYNAMIC_IMPORT)) {
-            this.url = url;
-        } else {
-            this.url = SharedUtil.prefixIfRelative(url,
-                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
-        }
+        this.url = url;
         this.loadMode = loadMode;
     }
 

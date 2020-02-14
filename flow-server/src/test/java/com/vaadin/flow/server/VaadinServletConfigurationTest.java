@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,12 +45,6 @@ public class VaadinServletConfigurationTest {
     @Test
     public void testValuesFromAnnotation() throws ServletException {
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
-                Boolean.TRUE.toString());
-        servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
-
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));
 
@@ -80,11 +74,6 @@ public class VaadinServletConfigurationTest {
         servletInitParams.setProperty(
                 Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(expectedInt));
-        servletInitParams.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
-                Boolean.TRUE.toString());
-        servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();
         servlet.init(new MockServletConfig(servletInitParams));

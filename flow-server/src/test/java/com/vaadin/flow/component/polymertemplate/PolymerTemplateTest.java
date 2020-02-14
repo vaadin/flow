@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+import com.vaadin.flow.di.Instantiator;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -469,6 +470,12 @@ public class PolymerTemplateTest extends HasCurrentService {
         VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(instantiator.getTemplateParser())
+                .thenReturn(NpmTemplateParser.getInstance());
+        Mockito.when(service.getInstantiator())
+                .thenReturn(instantiator);
         return service;
     }
 

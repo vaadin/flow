@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,18 +15,22 @@
  */
 package com.vaadin.flow.uitest.ui.material;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.material.Material;
 
 @Tag("material-themed-template")
-@HtmlImport("frontend://bower_components/themed-template/src/MaterialThemedTemplate.html")
+@JsModule("./src/MaterialThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.material.MaterialThemedTemplateView")
 @Theme(Material.class)
-public class MaterialThemedTemplateView extends PolymerTemplate<TemplateModel> {
+/*
+ * Note that this is using component instead of polymer template, because
+ * otherwise the themed module would have to import the original /src module, and
+ * that would make testing the actual feature here (theme rewrite) more complex.
+ */
+public class MaterialThemedTemplateView extends Component {
 
 }

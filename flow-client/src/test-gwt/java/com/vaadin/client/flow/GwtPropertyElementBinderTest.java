@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -138,7 +138,6 @@ public abstract class GwtPropertyElementBinderTest
 
     protected NodeMap properties;
     private NodeList synchronizedPropertyList;
-    private NodeList synchronizedPropertyEventsList;
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -149,112 +148,9 @@ public abstract class GwtPropertyElementBinderTest
 
         node = createNode();
         properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        synchronizedPropertyList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        synchronizedPropertyEventsList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+        synchronizedPropertyList = new NodeList(0, node);
 
         element = Browser.getDocument().createElement("div");
-    }
-
-    public void testSynchronizePropertySendsToServer() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event1");
-        setSyncProperties("offsetWidth", "tagName");
-        Reactive.flush();
-
-        assertSynchronized();
-        dispatchEvent("event1");
-        assertSynchronized("offsetWidth", "tagName");
-    }
-
-    public void testSynchronizePropertyOnlyOnChange() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event");
-        setSyncProperties("offsetWidth", "offsetHeight");
-        Reactive.flush();
-
-        dispatchEvent("event");
-        assertSynchronized("offsetWidth", "offsetHeight");
-        tree.clearSynchronizedProperties();
-
-        dispatchEvent("event");
-        assertSynchronized();
-        tree.clearSynchronizedProperties();
-
-        element.getStyle().setWidth("123px");
-        dispatchEvent("event");
-        assertSynchronized("offsetWidth");
-        tree.clearSynchronizedProperties();
-
-        element.getStyle().setHeight("123px");
-        dispatchEvent("event");
-        assertSynchronized("offsetHeight");
-    }
-
-    public void testSynchronizePropertyAddRemoveEvent() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event1", "event2");
-        setSyncProperties("offsetWidth");
-        Reactive.flush();
-
-        setSyncEvents("event2");
-        Reactive.flush();
-
-        dispatchEvent("event1");
-        assertSynchronized();
-        tree.clearSynchronizedProperties();
-        dispatchEvent("event2");
-        assertSynchronized("offsetWidth");
-        tree.clearSynchronizedProperties();
-
-        synchronizedPropertyEventsList.splice(0,
-                synchronizedPropertyEventsList.length());
-        dispatchEvent("event2");
-        assertSynchronized();
-
-    }
-
-    public void testSynchronizePropertyAddRemoveProperties() {
-        // Must append for events to work in HTMLUnit
-        Browser.getDocument().getBody().appendChild(element);
-        Binder.bind(node, element);
-
-        setSyncEvents("event1");
-        setSyncProperties("offsetWidth");
-        Reactive.flush();
-
-        element.getStyle().setHeight("1px");
-        element.getStyle().setWidth("1px");
-        dispatchEvent("event1");
-        assertSynchronized("offsetWidth");
-        tree.clearSynchronizedProperties();
-
-        setSyncProperties("offsetWidth", "offsetHeight");
-        Reactive.flush();
-
-        element.getStyle().setHeight("2px");
-        element.getStyle().setWidth("2px");
-        dispatchEvent("event1");
-        assertSynchronized("offsetWidth", "offsetHeight");
-        tree.clearSynchronizedProperties();
-
-        setSyncProperties();
-        Reactive.flush();
-        element.getStyle().setHeight("3px");
-        element.getStyle().setWidth("3px");
-        dispatchEvent("event1");
-        assertSynchronized();
-        tree.clearSynchronizedProperties();
     }
 
     public void testDomListenerSynchronization() {
@@ -292,14 +188,6 @@ public abstract class GwtPropertyElementBinderTest
 
     protected StateNode createNode() {
         return new StateNode(0, tree);
-    }
-
-    private void setSyncEvents(String... eventTypes) {
-        synchronizedPropertyEventsList.splice(0,
-                synchronizedPropertyEventsList.length());
-        for (int i = 0; i < eventTypes.length; i++) {
-            synchronizedPropertyEventsList.add(i, eventTypes[i]);
-        }
     }
 
     private void setSyncProperties(String... properties) {

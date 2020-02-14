@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -152,10 +152,11 @@ public class ElementPropertyMapTest {
         map.setUpdateFromClientFilter(name -> false);
         Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
-        Element.get(map.getNode()).synchronizeProperty("foo", "event");
+        DomListenerRegistration domListenerRegistration = Element.get(map.getNode()).addPropertyChangeListener("foo", "event", event -> {
+        });
         Assert.assertTrue(map.mayUpdateFromClient("foo", "bar"));
 
-        Element.get(map.getNode()).removeSynchronizedProperty("foo");
+        domListenerRegistration.remove();
         Assert.assertFalse(map.mayUpdateFromClient("foo", "bar"));
 
         DomListenerRegistration registration = Element.get(map.getNode())
@@ -337,17 +338,6 @@ public class ElementPropertyMapTest {
         ElementPropertyMap map = createSimplePropertyMap();
 
         map.deferredUpdateFromClient("foo", "value");
-    }
-
-    @Test
-    public void deferredUpdateFromClient_filterDisallowUpdate_propertyIsSynchronized() {
-        ElementPropertyMap map = createSimplePropertyMap();
-        map.getNode().getFeature(SynchronizedPropertiesList.class).add("foo");
-
-        map.setUpdateFromClientFilter(key -> false);
-
-        map.deferredUpdateFromClient("foo", "value");
-        assertDeferredUpdate_putResult(map, "foo");
     }
 
     @Test

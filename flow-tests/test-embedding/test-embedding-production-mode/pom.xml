@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-embedding</artifactId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-embedding-production</artifactId>
     <name>Flow Embedding, production tests</name>
@@ -32,11 +32,6 @@
             <type>test-jar</type>
         </dependency>
 
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-compatibility-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -46,10 +41,6 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>com.vaadin:flow-embedding-test-assets</dependenciesToScan>
-                    <excludes>
-                        <!-- Remove once #5732 is fixed -->
-                        <exclude>**/UpdateServerSideWebComponentIT.java</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
 
@@ -88,7 +79,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>

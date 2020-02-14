@@ -35,6 +35,9 @@ public class IdTestIT extends ChromeBrowserTest {
     @Test
     public void testIds() {
         open();
+
+        checkLogsForErrors(
+                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
         waitUntilWithMessage(
                 ExpectedConditions
                         .presenceOfElementLocated(By.tagName("my-component")),

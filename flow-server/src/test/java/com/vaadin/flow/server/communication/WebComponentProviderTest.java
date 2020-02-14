@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,26 +16,16 @@
 
 package com.vaadin.flow.server.communication;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
-import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.ServletHelper;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -46,13 +36,25 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.WebComponentExporterFactory.DefaultWebComponentExporterFactory;
+import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
@@ -82,20 +84,34 @@ public class WebComponentProviderTest {
     @Before
     public void init() {
         MockitoAnnotations.initMocks(this);
-        registry = setUpRegistry(); // same code as used for local variables in some tests
+        registry = setUpRegistry(); // same code as used for local variables in
+                                    // some tests
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
         Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).then(invocationOnMock -> registry);
-        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).then(invocationOnMock -> registry);
-        Mockito.doAnswer(invocationOnMock -> registry = (WebComponentConfigurationRegistry)invocationOnMock.getArguments()[0])
-            .when(context).setAttribute(any(WebComponentConfigurationRegistry.class));
+        Mockito.when(
+                context.getAttribute(WebComponentConfigurationRegistry.class))
+                .then(invocationOnMock -> registry);
+        Mockito.when(context.getAttribute(
+                eq(WebComponentConfigurationRegistry.class), anyObject()))
+                .then(invocationOnMock -> registry);
+        Mockito.doAnswer(
+                invocationOnMock -> registry = (WebComponentConfigurationRegistry) invocationOnMock
+                        .getArguments()[0])
+                .when(context)
+                .setAttribute(any(WebComponentConfigurationRegistry.class));
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(configuration);
-        Mockito.when(service.getContextRootRelativePath(anyObject())).then(invocationOnMock -> ServletHelper.getContextRootRelativePath(((VaadinServletRequest)invocationOnMock.getArguments()[0]))+"/");
-        Mockito.when(configuration.isCompatibilityMode()).thenReturn(false);
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+
+        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        Mockito.doCallRealMethod().when(service)
+                .getContextRootRelativePath(Mockito.any());
+
+        Mockito.doCallRealMethod().when(service)
+                .getContextRootRelativePath(Mockito.any());
 
         provider = new WebComponentProvider();
     }
@@ -122,8 +138,8 @@ public class WebComponentProviderTest {
 
     @Test
     public void faultyTag_handlerInformsNotHandled() throws IOException {
-        Mockito.when(request.getPathInfo()).thenReturn("/web-component" +
-                "/extensionless-component");
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component" + "/extensionless-component");
 
         Assert.assertFalse("Provider shouldn't handle path without extension",
                 provider.handleRequest(session, request, response));
@@ -184,8 +200,8 @@ public class WebComponentProviderTest {
             throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
-        registry = setupConfigurations(
-                MyComponentExporter.class, OtherComponentExporter.class);
+        registry = setupConfigurations(MyComponentExporter.class,
+                OtherComponentExporter.class);
 
         ByteArrayOutputStream out = Mockito.mock(ByteArrayOutputStream.class);
 
@@ -214,42 +230,11 @@ public class WebComponentProviderTest {
         Assert.assertNotEquals("Stream output should not match", first, second);
     }
 
-    @Test
-    public void setExporters_exportersHasNoTheme_themeIsNull() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                MyComponentExporter.class, OtherComponentExporter.class);
-
-        Assert.assertFalse(registry
-                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
-    }
-
-    @Test
-    public void notInitializedRegistry_themeIsEmpty() {
-        WebComponentConfigurationRegistry registry = setUpRegistry();
-        Assert.assertFalse(registry
-                .getEmbeddedApplicationAnnotation(Theme.class).isPresent());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setExporters_exportersHasVariousThemes_throws() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class,
-                AnotherThemedComponentExporter.class);
-    }
-
     @Test(expected = IllegalStateException.class)
     public void setExporters_exportersHasVariousPushes_throws() {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
                 AnotherPushComponentExporter.class);
-    }
-
-    @Test
-    public void setExporters_exportersHasOneThemes_themeIsSet() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class, MyComponentExporter.class);
-        Assert.assertEquals(MyTheme.class, registry
-                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
     }
 
     @Test
@@ -261,15 +246,6 @@ public class WebComponentProviderTest {
     }
 
     @Test
-    public void setExporters_exportersHasSameThemeDeclarations_themeIsSet() {
-        WebComponentConfigurationRegistry registry = setupConfigurations(
-                ThemedComponentExporter.class,
-                SameThemedComponentExporter.class);
-        Assert.assertEquals(MyTheme.class, registry
-                .getEmbeddedApplicationAnnotation(Theme.class).get().value());
-    }
-
-    @Test
     public void setExporters_exportersHasSamePushDeclarations_pushIsSet() {
         WebComponentConfigurationRegistry registry = setupConfigurations(
                 ThemedComponentExporter.class,
@@ -278,27 +254,29 @@ public class WebComponentProviderTest {
                 .getEmbeddedApplicationAnnotation(Push.class).get().value());
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @SafeVarargs
     private final WebComponentConfigurationRegistry setupConfigurations(
             Class<? extends WebComponentExporter<? extends Component>>... exporters) {
         WebComponentConfigurationRegistry registry = setUpRegistry();
 
-        final Set<Class<? extends WebComponentExporter<?
-                                extends Component>>> set =
-                Stream.of(exporters).collect(Collectors.toSet());
+        final Set<Class<? extends WebComponentExporter<? extends Component>>> set = Stream
+                .of(exporters).collect(Collectors.toSet());
 
-        WebComponentExporter.WebComponentConfigurationFactory factory =
-                new WebComponentExporter.WebComponentConfigurationFactory();
+        WebComponentExporter.WebComponentConfigurationFactory factory = new WebComponentExporter.WebComponentConfigurationFactory();
 
-        registry.setConfigurations(set.stream().map(factory::create)
-                .collect(Collectors.toSet()));
+        Set<WebComponentConfiguration<? extends Component>> configurations = new HashSet<>();
+        for (Class<? extends WebComponentExporter<? extends Component>> exporter : exporters)
+            configurations.add(factory.create(
+                    new DefaultWebComponentExporterFactory(exporter).create()));
+        registry.setConfigurations(configurations);
 
         return registry;
     }
 
     private WebComponentConfigurationRegistry setUpRegistry() {
-        // this hack is needed, because the OSGiAccess fake servlet context is now not needed
-        return new WebComponentConfigurationRegistry(){};
+        return new WebComponentConfigurationRegistry() {
+        };
     }
 
     @Tag("my-component")
@@ -309,11 +287,12 @@ public class WebComponentProviderTest {
             extends WebComponentExporter<MyComponent> {
 
         public MyComponentExporter() {
-            super ("my-component");
+            super("my-component");
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
 
         }
     }
@@ -326,39 +305,40 @@ public class WebComponentProviderTest {
             extends WebComponentExporter<OtherComponent> {
 
         public OtherComponentExporter() {
-            super ("other-component");
+            super("other-component");
         }
 
         @Override
-        public void configureInstance(WebComponent<OtherComponent> webComponent, OtherComponent component) {
+        public void configureInstance(WebComponent<OtherComponent> webComponent,
+                OtherComponent component) {
 
         }
     }
 
     @Push
-    @Theme(MyTheme.class)
     public static class ThemedComponentExporter
             extends WebComponentExporter<Component> {
         public ThemedComponentExporter() {
-            super ("foo");
+            super("foo");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
 
         }
     }
 
-    @Theme(MyTheme.class)
     @Push(value = PushMode.AUTOMATIC)
     public static class SameThemedComponentExporter
             extends WebComponentExporter<Component> {
         public SameThemedComponentExporter() {
-            super ("foo");
+            super("foo");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
 
         }
     }
@@ -367,53 +347,14 @@ public class WebComponentProviderTest {
     public static class AnotherPushComponentExporter
             extends WebComponentExporter<Component> {
         public AnotherPushComponentExporter() {
-            super ("foo-bar");
+            super("foo-bar");
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
 
         }
     }
 
-    @Theme(AnotherTheme.class)
-    public static class AnotherThemedComponentExporter
-            extends WebComponentExporter<Component> {
-        public AnotherThemedComponentExporter() {
-            super ("foo-bar");
-        }
-
-        @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
-
-        }
-    }
-
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-
-    }
-
-    public static class AnotherTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return null;
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return null;
-        }
-
-    }
 }

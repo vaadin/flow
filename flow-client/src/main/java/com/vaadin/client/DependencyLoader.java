@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -234,12 +234,6 @@ public class DependencyLoader {
                 return resourceLoader::inlineStyleSheet;
             }
             return resourceLoader::loadStylesheet;
-        case HTML_IMPORT:
-            if (inline) {
-                return resourceLoader::inlineHtml;
-            }
-            return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadHtml(scriptUrl, resourceLoadListener, false);
         case JAVASCRIPT:
             if (inline) {
                 return resourceLoader::inlineScript;

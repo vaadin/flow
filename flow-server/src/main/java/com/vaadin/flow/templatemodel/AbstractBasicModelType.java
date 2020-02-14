@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,7 +78,7 @@ public abstract class AbstractBasicModelType<T> implements ModelType {
     /**
      * Converts the given model value to the application type of this model
      * type. The conversion automatically handles default values for primitive
-     * types and conversion of client-originiated numbers to the expected Java
+     * types and conversion of client-originated numbers to the expected Java
      * number type.
      *
      * @param modelValue

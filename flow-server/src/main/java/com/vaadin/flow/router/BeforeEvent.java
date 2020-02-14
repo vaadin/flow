@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -57,23 +57,6 @@ public abstract class BeforeEvent extends EventObject {
      *            NavigationEvent that is on-going
      * @param navigationTarget
      *            Navigation target
-     * @deprecated Use {@link #BeforeEvent(NavigationEvent, Class, List)}
-     *             instead.
-     */
-    @Deprecated
-    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget) {
-        this(event.getSource(), event.getTrigger(), event.getLocation(),
-                navigationTarget, event.getUI());
-
-    }
-
-    /**
-     * Construct event from a NavigationEvent.
-     *
-     * @param event
-     *            NavigationEvent that is on-going
-     * @param navigationTarget
-     *            Navigation target
      * @param layouts
      *            Navigation layout chain
      */
@@ -82,31 +65,6 @@ public abstract class BeforeEvent extends EventObject {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, event.getUI(), layouts);
 
-    }
-
-    /**
-     * Constructs a new BeforeNavigation Event.
-     *
-     * @param router
-     *            the router that triggered the change, not {@code null}
-     * @param trigger
-     *            the type of user action that triggered this location change,
-     *            not <code>null</code>
-     * @param location
-     *            the new location, not {@code null}
-     * @param navigationTarget
-     *            navigation target class
-     * @param ui
-     *            the UI related to the navigation
-     * @deprecated Use
-     *             {@link #BeforeEvent(Router, NavigationTrigger, Location, Class, UI, List)}
-     *             instead.
-     */
-    @Deprecated
-    public BeforeEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui) {
-        this(router, trigger, location, navigationTarget, ui,
-                Collections.emptyList());
     }
 
     /**
@@ -187,8 +145,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the forward target to use if the user should be forwarded to some
-     * other view.
+     * Gets the forward target handler to use if the user should be forwarded to
+     * some other view.
      *
      * @return navigation handler
      */
@@ -197,8 +155,8 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the reroute target to use if the user should be rerouted to some
-     * other view.
+     * Gets the reroute target handler to use if the user should be rerouted to
+     * some other view.
      *
      * @return an navigation handler
      */
@@ -411,9 +369,9 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Get the forward target for forwarding.
+     * Get the forward target type for forwarding.
      *
-     * @return forward target
+     * @return forward target type
      */
     public Class<? extends Component> getForwardTargetType() {
         return forwardTargetState.getNavigationTarget();
@@ -430,12 +388,34 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Get the route target for rerouting.
+     * Get the route target type for rerouting.
      *
-     * @return route target
+     * @return route target type
+     *
+     * @deprecated use {@link #getRerouteTargetType()} instead.
      */
+    @Deprecated
     public Class<? extends Component> getRouteTargetType() {
+        return getRerouteTargetType();
+    }
+
+    /**
+     * Get the route target type for rerouting.
+     *
+     * @return route target type
+     */
+    public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
+    }
+
+    /**
+     * Get the URL parameters of the reroute target.
+     *
+     * @return URL parameters of reroute target
+     */
+    public List<String> getRerouteTargetParameters() {
+        return rerouteTargetState.getUrlParameters()
+                .orElse(Collections.emptyList());
     }
 
     /**

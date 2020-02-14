@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,14 +16,15 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
-import static org.junit.Assert.assertThat;
-
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Vaadin Ltd
@@ -32,6 +33,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class BrowserLoggingIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore
     public void productionModeHasNoLogEntries() {
         openProduction();
         waitForElementPresent(By.id("elementId"));

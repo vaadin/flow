@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -190,8 +191,15 @@ public class MessageHandler {
                     "The json to handle cannot be null");
         }
         if (getServerId(json) == -1) {
-            Console.error("Response didn't contain a server id. "
-                    + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
+
+            ValueMap meta = json.getValueMap("meta");
+
+            // Log the error only if session didn't expire.
+            if (meta == null
+                    || !meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
+                Console.error("Response didn't contain a server id. "
+                        + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
+            }
         }
 
         UIState state = registry.getUILifecycle().getState();
@@ -410,7 +418,9 @@ public class MessageHandler {
                     registry.getSystemErrorHandler().handleUnrecoverableError(
                             error.getString("caption"),
                             error.getString("message"),
-                            error.getString("details"), error.getString("url"));
+                            error.getString("details"),
+                            error.getString("url"),
+                            error.getString("querySelector"));
 
                     registry.getUILifecycle().setState(UIState.TERMINATED);
                 }
@@ -502,7 +512,7 @@ public class MessageHandler {
 
     private boolean isResponse(ValueMap json) {
         ValueMap meta = json.getValueMap("meta");
-        if (meta == null || !meta.containsKey("async")) {
+        if (meta == null || !meta.containsKey(JsonConstants.META_ASYNC)) {
             return true;
         }
         return false;
@@ -539,6 +549,11 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
+        // Clear previous request if it exists. Otherwise resyncrhonize can trigger
+        // "Trying to start a new request while another is active" exception and fail.
+        if (registry.getRequestResponseTracker().hasActiveRequest()) {
+            registry.getRequestResponseTracker().endRequest();
+        }
         if (!responseHandlingLocks.isEmpty()) {
             // Lock which was never release -> bug in locker or things just
             // too slow

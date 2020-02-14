@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,11 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.FallibleCommand;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-
 /**
  * Copies JavaScript files from the given local frontend folder.
  *
@@ -36,8 +31,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  */
 public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
-    private final File targetDirectory;
-    private final File frontendResourcesDirectory;
+    private final File flowResourcesFolder;
+    private final File localResourcesFolder;
 
     /**
      * Copy project local frontend files from defined frontendResourcesDirectory
@@ -47,21 +42,20 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
      * @param npmFolder
      *            target directory for the discovered files
      */
-    TaskCopyLocalFrontendFiles(File npmFolder,
-            File frontendResourcesDirectory) {
-        this.targetDirectory = new File(npmFolder,
-                NODE_MODULES + FLOW_NPM_PACKAGE_NAME);
-        this.frontendResourcesDirectory = frontendResourcesDirectory;
+    TaskCopyLocalFrontendFiles(File flowResourcesFolder,
+            File localResourcesFolder) {
+        this.flowResourcesFolder = flowResourcesFolder;
+        this.localResourcesFolder = localResourcesFolder;
     }
 
     @Override
     public void execute() {
-        createTargetFolder(targetDirectory);
+        createTargetFolder(flowResourcesFolder);
 
-        if (frontendResourcesDirectory != null
-                && frontendResourcesDirectory.isDirectory()) {
+        if (localResourcesFolder != null
+                && localResourcesFolder.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            copyLocalResources(frontendResourcesDirectory, targetDirectory);
+            copyLocalResources(localResourcesFolder, flowResourcesFolder);
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");
@@ -85,8 +79,9 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         try {
             FileUtils.forceMkdir(Objects.requireNonNull(target));
         } catch (IOException e) {
-            throw new UncheckedIOException(String.format(
-                    "Failed to create directory '%s'", target), e);
+            throw new UncheckedIOException(
+                    String.format("Failed to create directory '%s'", target),
+                    e);
         }
     }
 

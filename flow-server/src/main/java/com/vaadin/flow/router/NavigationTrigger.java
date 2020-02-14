@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,5 +52,11 @@ public enum NavigationTrigger {
      *
      * @see UI#navigate(String, QueryParameters)
      */
-    PROGRAMMATIC
+    PROGRAMMATIC,
+
+    /**
+     * Navigation was triggered by client-side.
+     * @see com.vaadin.flow.component.internal.JavaScriptBootstrapUI
+     */
+    CLIENT_SIDE
 }

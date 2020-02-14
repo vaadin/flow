@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,12 +23,11 @@ import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Internal class for drag and drop related utility methods. This class is not
  * meant for external usage and can be removed at any point.
- * 
+ *
  * @author Vaadin Ltd
  * @since 2.0
  */
@@ -83,56 +82,59 @@ public class DndUtil {
      */
     private static final String DETACH_LISTENER_FOR_DROP_TARGET = "_detachListenerForDropTarget";
 
+    // package protected for unit test
+    //@formatter:off
+    static final String MOBILE_POLYFILL_INJECT_SCRIPT =
+            "if ((/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream)"
+            + "|| (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {"
+            + "var script1 = document.createElement('script');"
+            + "var script2 = document.createElement('script');"
+            + "script1.async = false;"
+            + "script2.async = false;"
+            + "script1.src = \"%1$s\";"
+            + "script2.src = \"%2$s\";"
+            + "window.Vaadin.__forceApplyMobileDragDrop = true;"
+            + "document.head.appendChild(script1);"
+            + "document.head.appendChild(script2);}";
+    //@formatter:on
+
+    private static final String DND_POLYFILL_SCRIPT_KEY = "DND-POLYFILL-SCRIPT";
+    private static final String MOBILE_DND_POLYFILL_URL = "context://webjars/mobile-drag-drop/2.3.0-rc.1/index.min.js";
+    private static final String VAADIN_MOBILE_DND_POLYFILL_URL = "context://webjars/vaadin__vaadin-mobile-drag-drop/1.0.0/index.min.js";
+
     private DndUtil() {
         // no instances from this class
     }
 
     /**
-     * Includes the dnd connector when the component is attached to a UI.
-     * <p>
-     * This is only for the case when the project is in compatibility mode and
-     * the static methods in {@link com.vaadin.flow.component.dnd.DragSource
-     * DragSource} and {@link com.vaadin.flow.component.dnd.DropTarget
-     * DropTarget} are used, because otherwise the connector is not loaded.
-     * 
-     * @param component
-     *            the component that should be attached and uses dnd connector
-     */
-    public static void addDndConnectorWhenComponentAttached(
-            Component component) {
-        component.getElement().getNode().runWhenAttached(ui -> {
-            if (ComponentUtil.getData(ui, DND_CONNECTOR_COMPATIBILITY) == null
-                    && ui.getSession().getConfiguration()
-                            .isCompatibilityMode()) {
-                ui.getPage().addJavaScript(DND_CONNECTOR_COMPATIBILITY,
-                        LoadMode.EAGER);
-                ComponentUtil.setData(ui, DND_CONNECTOR_COMPATIBILITY, true);
-            }
-        });
-    }
-
-    /**
      * Adds the mobile dnd polyfills when a iOS device is used. Calling this is
      * NOOP for non-iOS devices. The polyfills are only loaded once per page.
-     * 
+     *
      * @param component
      *            the component using dnd
      */
     public static void addMobileDndPolyfillIfNeeded(Component component) {
         component.getElement().getNode().runWhenAttached(ui -> {
-            if (ui.getSession().getBrowser().isIOS()) {
-                ui.getPage().addJavaScript(
-                        "context://webjars/mobile-drag-drop/2.3.0-rc.1/index.min.js");
-                ui.getPage().addJavaScript(
-                        "context://webjars/vaadin__vaadin-mobile-drag-drop/1.0.0/index.min.js");
+            if (ComponentUtil.getData(ui, DND_POLYFILL_SCRIPT_KEY) != null) {
+                return;
             }
+            // #7123 need to delegate iOS checking to client side due to iPads
+            // with iOS 13
+            String url1 = ui.getSession().getService()
+                    .resolveResource(MOBILE_DND_POLYFILL_URL);
+            String url2 = ui.getSession().getService()
+                    .resolveResource(VAADIN_MOBILE_DND_POLYFILL_URL);
+
+            ui.getPage().executeJs(
+                    String.format(MOBILE_POLYFILL_INJECT_SCRIPT, url1, url2));
+            ComponentUtil.setData(ui, DND_POLYFILL_SCRIPT_KEY, true);
         });
     }
 
     /**
      * Triggers drag source activation method in JS connector once when the
      * component has been attached.
-     * 
+     *
      * @param dragSource
      *            the drag source to update active status on
      * @param <T>
@@ -151,7 +153,7 @@ public class DndUtil {
      * component has been attached. Will make sure the activation in JS is done
      * again when the component is detached and attached again, because
      * otherwise the element will not be a drop target again.
-     * 
+     *
      * @param dropTarget
      *            the drop target to update active status on
      * @param <T>

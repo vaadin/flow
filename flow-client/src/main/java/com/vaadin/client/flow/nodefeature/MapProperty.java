@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,6 +42,9 @@ public class MapProperty implements ReactiveValue {
      * don't accept any changes via {@link #syncToServer(Object)} method.
      */
     private boolean isServerUpdate;
+
+    private static final Runnable NO_OP = () -> {
+    };
 
     private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
             this) {
@@ -262,8 +265,20 @@ public class MapProperty implements ReactiveValue {
      *
      * @param newValue
      *            the new value to set.
+     * @see #getSyncToServerCommand(Object)
      */
     public void syncToServer(Object newValue) {
+        getSyncToServerCommand(newValue).run();
+    }
+
+    /**
+     * Sets the value of this property and returns a synch to server command.
+     *
+     * @param newValue
+     *            the new value to set.
+     * @see #syncToServer(Object)
+     */
+    public Runnable getSyncToServerCommand(Object newValue) {
         Object currentValue = hasValue() ? getValue() : null;
 
         if (Objects.equals(newValue, currentValue)) {
@@ -282,7 +297,7 @@ public class MapProperty implements ReactiveValue {
             if (tree.isActive(node)) {
                 doSetValue(newValue);
 
-                tree.sendNodePropertySyncToServer(this);
+                return () -> tree.sendNodePropertySyncToServer(this);
             } else {
                 /*
                  * Fire an fake event to reset the property value back in the
@@ -297,5 +312,6 @@ public class MapProperty implements ReactiveValue {
                 Reactive.flush();
             }
         }
+        return NO_OP;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -89,12 +89,6 @@ public class NodeFeatureRegistry {
                 NodeFeatures.ELEMENT_ATTRIBUTES);
         registerFeature(ElementListenerMap.class, ElementListenerMap::new,
                 NodeFeatures.ELEMENT_LISTENERS);
-        registerFeature(SynchronizedPropertiesList.class,
-                SynchronizedPropertiesList::new,
-                NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        registerFeature(SynchronizedPropertyEventsList.class,
-                SynchronizedPropertyEventsList::new,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         registerFeature(VirtualChildrenList.class, VirtualChildrenList::new,
                 NodeFeatures.VIRTUAL_CHILDREN);
 

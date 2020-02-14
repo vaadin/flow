@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,11 @@ package com.vaadin.flow.webcomponent;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
-public class UpdatePropertyIT extends ChromeBrowserTest {
+public class UpdatePropertyIT extends ChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {
@@ -35,9 +35,7 @@ public class UpdatePropertyIT extends ChromeBrowserTest {
 
         waitForElementVisible(By.id("counter"));
 
-        WebElement clickCounter = findElement(By.id("counter"));
-
-        WebElement button = clickCounter.findElement(By.tagName("button"));
+        TestBenchElement button = byId("counter").$("button").first();
 
         Assert.assertEquals("Count (id:count) should start from 0", 0,
                 getInt("count"));
@@ -60,7 +58,6 @@ public class UpdatePropertyIT extends ChromeBrowserTest {
     }
 
     private int getInt(String id) {
-        WebElement count = findElement(By.id(id));
-        return Integer.parseInt(count.getText());
+        return Integer.parseInt(byId(id).getText());
     }
 }

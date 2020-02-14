@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,7 +53,6 @@ import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.server.DependencyFilter;
-import com.vaadin.flow.server.DependencyFilter.FilterContext;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -62,7 +61,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-import com.vaadin.flow.theme.AbstractTheme;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -86,7 +84,6 @@ public class UidlWriter implements Serializable {
     public static class ResolveContext implements Serializable {
         private VaadinService service;
         private WebBrowser browser;
-        private AbstractTheme theme;
 
         /**
          * Creates a new context.
@@ -95,14 +92,10 @@ public class UidlWriter implements Serializable {
          *            the service which is resolving
          * @param browser
          *            the browser
-         * @param theme
-         *            the theme, or <code>null</code> for no theme
          */
-        public ResolveContext(VaadinService service, WebBrowser browser,
-                AbstractTheme theme) {
+        public ResolveContext(VaadinService service, WebBrowser browser) {
             this.service = Objects.requireNonNull(service);
             this.browser = Objects.requireNonNull(browser);
-            this.theme = theme;
         }
 
         /**
@@ -123,15 +116,6 @@ public class UidlWriter implements Serializable {
             return browser;
         }
 
-        /**
-         * Gets the theme used for resolving.
-         *
-         * @return the theme or <code>null</code> for no theme
-         */
-        public AbstractTheme getTheme() {
-            return theme;
-        }
-
     }
 
     /**
@@ -141,10 +125,12 @@ public class UidlWriter implements Serializable {
      *            The {@link UI} whose changes to write
      * @param async
      *            True if this message is sent by the server asynchronously,
-     *            false if it is a response to a client message.
+     *            false if it is a response to a client message
+     * @param resync
+     *            True iff the client should be asked to resynchronize
      * @return JSON object containing the UIDL response
      */
-    public JsonObject createUidl(UI ui, boolean async) {
+    public JsonObject createUidl(UI ui, boolean async, boolean resync) {
         JsonObject response = Json.createObject();
 
         UIInternals uiInternals = ui.getInternals();
@@ -160,9 +146,13 @@ public class UidlWriter implements Serializable {
         getLogger().debug("* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? uiInternals.getServerSyncId() : -1;
+                ? uiInternals.getServerSyncId()
+                : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
+        if (resync) {
+            response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
+        }
         int nextClientToServerMessageId = uiInternals
                 .getLastProcessedClientToServerId() + 1;
         response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
@@ -182,7 +172,7 @@ public class UidlWriter implements Serializable {
         encodeChanges(ui, stateChanges);
 
         populateDependencies(response, uiInternals.getDependencyList(),
-                new ResolveContext(service, session.getBrowser(), null));
+                new ResolveContext(service, session.getBrowser()));
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.put("constants",
@@ -206,18 +196,29 @@ public class UidlWriter implements Serializable {
         return response;
     }
 
+    /**
+     * Creates a JSON object containing all pending changes to the given UI.
+     *
+     * @param ui
+     *            The {@link UI} whose changes to write
+     * @param async
+     *            True if this message is sent by the server asynchronously,
+     *            false if it is a response to a client message.
+     * @return JSON object containing the UIDL response
+     */
+    public JsonObject createUidl(UI ui, boolean async) {
+        return createUidl(ui, async, false);
+    }
+
     private static void populateDependencies(JsonObject response,
             DependencyList dependencyList, ResolveContext context) {
         Collection<Dependency> pendingSendToClient = dependencyList
                 .getPendingSendToClient();
 
-        FilterContext filterContext = new FilterContext(context.getService(),
-                context.getBrowser());
-
         for (DependencyFilter filter : context.getService()
                 .getDependencyFilters()) {
             pendingSendToClient = filter.filter(
-                    new ArrayList<>(pendingSendToClient), filterContext);
+                    new ArrayList<>(pendingSendToClient), context.getService());
         }
 
         if (!pendingSendToClient.isEmpty()) {
@@ -265,18 +266,14 @@ public class UidlWriter implements Serializable {
     private static InputStream getInlineResourceStream(String url,
             ResolveContext context) {
         VaadinService service = context.getService();
-        WebBrowser browser = context.getBrowser();
-        InputStream stream = service.getResourceAsStream(url, browser,
-                context.getTheme());
+        InputStream stream = service.getResourceAsStream(url);
 
         if (stream == null) {
-            String resolvedPath = service.resolveResource(url, browser);
-            getLogger().warn(
-                    "The path '{}' for inline resource "
-                            + "has been resolved to '{}'. "
-                            + "But resource is not available via the servlet context. "
-                            + "Trying to load '{}' as a URL",
-                    url, resolvedPath, url);
+            String resolvedPath = service.resolveResource(url);
+            getLogger().warn("The path '{}' for inline resource "
+                    + "has been resolved to '{}'. "
+                    + "But resource is not available via the servlet context. "
+                    + "Trying to load '{}' as a URL", url, resolvedPath, url);
             try {
                 stream = new URL(url).openConnection().getInputStream();
             } catch (MalformedURLException exception) {
@@ -289,7 +286,7 @@ public class UidlWriter implements Serializable {
                         COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
             }
         } else if (getLogger().isDebugEnabled()) {
-            String resolvedPath = service.resolveResource(url, browser);
+            String resolvedPath = service.resolveResource(url);
             getLogger().debug(
                     "The path '{}' for inline resource has been successfully "
                             + "resolved to resource URL '{}'",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -40,6 +41,8 @@ public class ClientSideExceptionHandlingIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Ignored because production mode is not activated by the servlet mapping , "
+            + "see https://github.com/vaadin/flow/issues/7281")
     public void productionModeExceptions() {
         openProduction();
         causeException();

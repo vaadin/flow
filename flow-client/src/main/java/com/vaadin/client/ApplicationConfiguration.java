@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,6 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 public class ApplicationConfiguration {
     private String applicationId;
     private String contextRootUrl;
-    private String frontendRootUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage sessionExpiredError;
@@ -292,27 +291,6 @@ public class ApplicationConfiguration {
      */
     public void setRequestTiming(boolean requestTiming) {
         this.requestTiming = requestTiming;
-    }
-
-    /**
-     * Gets the base URL of the frontend components on the server.
-     *
-     * @return the base URL on the server for the {@literal frontend://}
-     *         protocol.
-     */
-    public String getFrontendRootUrl() {
-        return frontendRootUrl;
-    }
-
-    /**
-     * Sets the base URL of the frontend components on the server.
-     *
-     * @param frontendRootUrl
-     *            the base URL on the server for the {@literal frontend://}
-     *            protocol.
-     */
-    public void setFrontendRootUrl(String frontendRootUrl) {
-        this.frontendRootUrl = frontendRootUrl;
     }
 
     /**

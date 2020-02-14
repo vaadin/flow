@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -96,7 +96,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null) {
+                null, false) {
             @Override
             Logger log() {
                 if (useMockLog) {
@@ -134,9 +134,12 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     public void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
             throws Exception {
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "const div = document.createElement('div');",
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
+                "export const addCssBlock = function(block, before = false) {",
+                " const tpl = document.createElement('template');",
+                " tpl.innerHTML = block;",
+                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
+                "};",
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
                 "document.body.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
@@ -183,7 +186,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 // fix for windows
                 .replace("\r", "");
         assertContains(output, true,
-                "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
                 "Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
@@ -192,9 +194,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Using regex match because of the ➜ character in TC
         assertContains(output, true,
                 "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
-
-        assertContains(output, false,
-                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }
 
     @Test

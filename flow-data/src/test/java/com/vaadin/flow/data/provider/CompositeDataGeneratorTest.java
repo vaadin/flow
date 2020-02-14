@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.CompositeDataGenerator;
-import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -176,24 +174,24 @@ public class CompositeDataGeneratorTest {
     }
 
     @Test
-    public void removeDataGenerator_dataIsDestroyed() {
+    public void dataGeneratorRegistration_remove_dataIsDestroyed() {
         CompositeDataGenerator<String> composite = new CompositeDataGenerator<>();
 
         MockDataGenerator mock1 = new MockDataGenerator("mock", "value1");
         MockDataGenerator mock2 = new MockDataGenerator("mock", "value1");
-        Registration registration = composite.addDataGenerator(mock1);
-        composite.addDataGenerator(mock2);
+        Registration registration1 = composite.addDataGenerator(mock1);
+        Registration registration2 = composite.addDataGenerator(mock2);
 
         composite.generateData("item1", Json.createObject());
         Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
-        registration.remove();
+        registration1.remove();
         Assert.assertThat(mock1.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
-        composite.removeDataGenerator(mock2);
+        registration2.remove();
         Assert.assertThat(mock2.getProcessed(),
                 CoreMatchers.not(CoreMatchers.hasItem("item1")));
     }

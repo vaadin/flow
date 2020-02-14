@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
@@ -30,7 +29,6 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 public class BasicTypeInListView extends AbstractDivView {
 
     @Tag("basic-type-list")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/BasicTypeList.html")
     @JsModule("BasicTypeList.js")
     public static class BasicTypeList extends PolymerTemplate<ItemsModel> {
 

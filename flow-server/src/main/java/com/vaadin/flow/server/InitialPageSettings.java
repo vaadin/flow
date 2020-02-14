@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
+
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.component.UI;
@@ -29,16 +32,17 @@ import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
 
 /**
  * Initial page settings class for modifying the bootstrap page.
  *
  * @since 1.0
+ * @deprecated since 3.0 use {@link AppShellSettings}
  */
+@Deprecated
 public class InitialPageSettings implements Serializable {
 
     /**
@@ -180,9 +184,9 @@ public class InitialPageSettings implements Serializable {
      * Add content to append to head of initial page.
      *
      * @param contents
-     *         dependency content
+     *         inline content to be added to the page
      * @param type
-     *         dependency type
+     *         type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(String contents, WrapMode type) {
         addInlineWithContents(Position.APPEND, contents, type);
@@ -194,9 +198,9 @@ public class InitialPageSettings implements Serializable {
      * @param position
      *         prepend or append
      * @param contents
-     *         dependency content
+     *         inline content to be added to the page
      * @param type
-     *         dependency type
+     *         type of content which can be JavaScript or Stylesheet (CSS)
      */
     public void addInlineWithContents(Position position, String contents,
                                       WrapMode type) {

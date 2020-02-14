@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,16 +28,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.vaadin.flow.internal.UsageStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.communication.FaviconHandler;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.AbstractTheme;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -82,7 +83,6 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        handlers.add(0, new BootstrapHandler());
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
@@ -95,7 +95,21 @@ public class VaadinServletService extends VaadinService {
                         e);
             }
         }
+        addBootstrapHandler(handlers);
         return handlers;
+    }
+
+    private void addBootstrapHandler(List<RequestHandler> handlers) {
+        if (getDeploymentConfiguration().useV14Bootstrap()) {
+            handlers.add(0, new BootstrapHandler());
+            getLogger().debug("Using '{}' in deprecated V14 bootstrapping",
+                    BootstrapHandler.class.getName());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
+        } else {
+            handlers.add(0, new IndexHtmlRequestHandler());
+            getLogger().debug("Using '{}' in client mode bootstrapping",
+                    IndexHtmlRequestHandler.class.getName());
+        }
     }
 
     /**
@@ -140,8 +154,10 @@ public class VaadinServletService extends VaadinService {
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
-        return request.getParameter(
-                ApplicationConstants.REQUEST_TYPE_PARAMETER) == null;
+        String type = request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
+        return type == null
+                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {
@@ -161,8 +177,7 @@ public class VaadinServletService extends VaadinService {
     public String getMainDivId(VaadinSession session, VaadinRequest request) {
         String appId = null;
         try {
-            @SuppressWarnings("deprecation")
-            URL appUrl = getServlet()
+            URL appUrl = VaadinServlet
                     .getApplicationUrl((VaadinServletRequest) request);
             appId = appUrl.getPath();
         } catch (MalformedURLException e) {
@@ -190,8 +205,7 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected RouteRegistry getRouteRegistry() {
-        return ApplicationRouteRegistry
-                .getInstance(getContext());
+        return ApplicationRouteRegistry.getInstance(getContext());
     }
 
     @Override
@@ -202,23 +216,10 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String resolveResource(String url, WebBrowser browser) {
+    public String resolveResource(String url) {
         Objects.requireNonNull(url, "Url cannot be null");
-        Objects.requireNonNull(browser, "Browser cannot be null");
 
-        String frontendRootUrl;
-        DeploymentConfiguration config = getDeploymentConfiguration();
-        if (config.isCompatibilityMode()) {
-            if (browser.isEs6Supported()) {
-                frontendRootUrl = config.getEs6FrontendPrefix();
-            } else {
-                frontendRootUrl = config.getEs5FrontendPrefix();
-            }
-        } else {
-            frontendRootUrl = config.getNpmFrontendPrefix();
-        }
-
-        return contextResolver.resolveVaadinUri(url, frontendRootUrl);
+        return contextResolver.resolveVaadinUri(url);
     }
 
     @Override
@@ -232,106 +233,27 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public URL getResource(String path, WebBrowser browser,
-            AbstractTheme theme) {
-        return getResourceInServletContextOrWebJar(
-                getThemedOrRawPath(path, browser, theme));
+    public URL getResource(String path) {
+        return getResourceInServletContext(resolveResource(path));
     }
 
     @Override
-    public InputStream getResourceAsStream(String path, WebBrowser browser,
-            AbstractTheme theme) {
-        return getResourceInServletContextOrWebJarAsStream(
-                getThemedOrRawPath(path, browser, theme));
-    }
-
-    @Override
-    public Optional<String> getThemedUrl(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        if (theme != null && !resolveResource(url, browser)
-                .equals(getThemedOrRawPath(url, browser, theme))) {
-            return Optional.of(theme.translateUrl(url));
-        }
-        return Optional.empty();
+    public InputStream getResourceAsStream(String path) {
+        return getResourceInServletContextAsStream(resolveResource(path));
     }
 
     /**
-     * Resolves the given {@code url} resource and tries to find a themed or raw
-     * version.
-     * <p>
-     * The themed version is always tried first, with the raw version used as a
-     * fallback.
-     *
-     * @param url
-     *            the untranslated URL to the resource to find
-     * @param browser
-     *            the web browser to resolve for, relevant for es5 vs es6
-     *            resolving
-     * @param theme
-     *            the theme to use for resolving, or <code>null</code> to not
-     *            use a theme
-     * @return the path to the themed resource if such exists, otherwise the
-     *         resolved raw path
-     */
-    private String getThemedOrRawPath(String url, WebBrowser browser,
-            AbstractTheme theme) {
-        String resourcePath = resolveResource(url, browser);
-
-        Optional<String> themeResourcePath = getThemeResourcePath(resourcePath,
-                theme);
-        if (themeResourcePath.isPresent()) {
-            URL themeResource = getResourceInServletContextOrWebJar(
-                    themeResourcePath.get());
-            if (themeResource != null) {
-                return themeResourcePath.get();
-            }
-        }
-        return resourcePath;
-    }
-
-    /**
-     * Gets the theme specific path for the given resource.
+     * Finds the given resource in the servlet context.
      *
      * @param path
-     *            the raw path
-     * @param theme
-     *            the theme to use for resolving, possibly <code>null</code>
-     * @return the path to the themed version or an empty optional if no themed
-     *         version could be determined
-     */
-    private Optional<String> getThemeResourcePath(String path,
-            AbstractTheme theme) {
-        if (theme == null) {
-            return Optional.empty();
-        }
-        String themeUrl = theme.translateUrl(path);
-        if (path.equals(themeUrl)) {
-            return Optional.empty();
-        }
-
-        return Optional.of(themeUrl);
-    }
-
-    /**
-     * Finds the given resource in the servlet context or in a webjar.
-     *
-     * @param path
-     *            the path inside servlet context, automatically translated as
-     *            needed for webjars
+     *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    public URL getResourceInServletContextOrWebJar(String path) {
+    public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();
         try {
-            URL url = servletContext.getResource(path);
-            if (url != null) {
-                return url;
-            }
-            Optional<String> webJarPath = getWebJarPath(path);
-            if (webJarPath.isPresent()) {
-                return servletContext.getResource(webJarPath.get());
-            }
+            return servletContext.getResource(path);
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }
@@ -348,38 +270,26 @@ public class VaadinServletService extends VaadinService {
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
      */
-    private InputStream getResourceInServletContextOrWebJarAsStream(
-            String path) {
+    private InputStream getResourceInServletContextAsStream(String path) {
         ServletContext servletContext = getServlet().getServletContext();
-        InputStream stream = servletContext.getResourceAsStream(path);
-        if (stream != null) {
-            return stream;
-        }
-        Optional<String> webJarPath = getWebJarPath(path);
-        if (webJarPath.isPresent()) {
-            return servletContext.getResourceAsStream(webJarPath.get());
-        }
-        return null;
-    }
-
-    /**
-     * Finds a resource for the given path inside a webjar.
-     *
-     * @param path
-     *            the resource path
-     * @return the path to the resource inside a webjar or <code>null</code> if
-     *         the resource was not found in a webjar
-     */
-    private Optional<String> getWebJarPath(String path) {
-        return getServlet().getWebJarServer()
-                .flatMap(server -> server.getWebJarResourcePath(path));
+        return servletContext.getResourceAsStream(path);
     }
 
     @Override
     public String getContextRootRelativePath(VaadinRequest request) {
         assert request instanceof VaadinServletRequest;
-        return ServletHelper.getContextRootRelativePath(
-                (VaadinServletRequest) request) + "/";
+        // Generate location from the request by finding how many "../" should
+        // be added to the servlet path before we get to the context root
+
+        // Should not take pathinfo into account because the base URI refers to
+        // the servlet path
+
+        String servletPath = ((VaadinServletRequest) request).getServletPath();
+        assert servletPath != null;
+        if (!servletPath.endsWith("/")) {
+            servletPath += "/";
+        }
+        return HandlerHelper.getCancelingRelativePath(servletPath) + "/";
     }
 
     @Override

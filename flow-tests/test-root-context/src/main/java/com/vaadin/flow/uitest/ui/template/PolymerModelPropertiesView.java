@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,7 +19,6 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
@@ -29,7 +28,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerModelPropertiesView", layout = ViewTestLayout.class)
 @Tag("model-properties")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/PolymerModelProperties.html")
 @JsModule("PolymerModelProperties.js")
 public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
 
@@ -46,7 +44,7 @@ public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
         setId("template");
         getModel().setText("foo");
 
-        getElement().synchronizeProperty("text", "text-changed");
+        getElement().addPropertyChangeListener("text", "text-changed",event -> {});
 
         addListener(ValueChangeEvent.class, event -> {
             getUI().get().add(addUpdateElement("property-update-event"));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -131,22 +131,6 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
 
         node.setBound();
 
-        Binder.bind(node, element);
-    }
-
-    public void testSynchronizedPropertyDoubleBind() {
-        NodeList synchronizedPropertyList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
-        NodeList synchronizedPropertyEventsList = node
-                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
-
-        Binder.bind(node, element);
-
-        synchronizedPropertyEventsList.add(0, "event");
-        synchronizedPropertyList.add(0, "tagName");
-        Reactive.flush();
-
-        node.setBound();
         Binder.bind(node, element);
     }
 

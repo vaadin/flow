@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
@@ -46,7 +45,6 @@ public class ClientUpdateModeView extends AbstractDivView {
     }
 
     @Tag("client-update-mode")
-    @HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ClientUpdateMode.html")
     @JsModule("ClientUpdateMode.js")
     public static class ClientUpdateModeTemplate
             extends PolymerTemplate<ClientUpdateModeModel> {

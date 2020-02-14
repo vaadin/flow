@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -40,17 +40,4 @@ public interface HasDataGenerators<T> extends Serializable {
      * @return a registration that can be used to remove the data generator
      */
     Registration addDataGenerator(DataGenerator<T> generator);
-
-    /**
-     * Removes the given data generator.
-     *
-     * @deprecated Use the registration returned from
-     *             {@link #addDataGenerator(DataGenerator)} instead.
-     *
-     * @param generator
-     *            the data generator to remove
-     */
-    @Deprecated
-    void removeDataGenerator(DataGenerator<T> generator);
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1246,8 +1246,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
                 "Child node should not have any features from list "
@@ -1298,8 +1297,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         expectedAfterBindingFeatures.forEach(notExpectedFeature -> assertFalse(
                 "Child node should not have any features from list "
@@ -1349,8 +1347,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         Binder.bind(node, element);
 
@@ -1424,8 +1421,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                NodeFeatures.ELEMENT_CHILDREN,
-                NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+                NodeFeatures.ELEMENT_CHILDREN);
 
         Reactive.flush();
 

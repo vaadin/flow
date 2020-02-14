@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,8 +32,12 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 
 public class NodeUpdaterTest {
 
@@ -56,7 +59,7 @@ public class NodeUpdaterTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File("")) {
+                new File(""), null) {
 
             @Override
             public void execute() {
@@ -67,8 +70,8 @@ public class NodeUpdaterTest {
 
     @Test
     public void resolveResource_startsWithAt_returnsPassedArg() {
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo", true));
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo", false));
+        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
+        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
     }
 
     @Test
@@ -92,7 +95,8 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getGeneratedModules_should_excludeByFileName() throws IOException {
+    public void getGeneratedModules_should_excludeByFileName()
+            throws IOException {
         File generated = temporaryFolder.newFolder();
         File fileA = new File(generated, "a.js");
         File fileB = new File(generated, "b.js");
@@ -100,28 +104,88 @@ public class NodeUpdaterTest {
         fileA.createNewFile();
         fileB.createNewFile();
         fileC.createNewFile();
-        
-        Set<String> modules = NodeUpdater.getGeneratedModules(generated, Stream
-                .of("a.js", "/b.js").collect(Collectors.toSet()));
+
+        Set<String> modules = NodeUpdater.getGeneratedModules(generated,
+                Stream.of("a.js", "/b.js").collect(Collectors.toSet()));
 
         Assert.assertEquals(1, modules.size());
         // GENERATED/ is an added prefix for files from this method
         Assert.assertTrue(modules.contains("GENERATED/c.js"));
     }
 
+    @Test
+    public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
+        JsonObject object = Json.createObject();
+        object.put(nodeUpdater.VAADIN_DEP_KEY,
+                nodeUpdater.createVaadinPackagesJson());
+        nodeUpdater.updateDefaultDependencies(object);
+
+        String version = getPolymerVersion(object);
+        Assert.assertEquals("3.2.0", version);
+    }
+
+    @Test
+    public void updateMainDefaultDependencies_polymerVersionIsProvidedByUser_useProvided() {
+        JsonObject object = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        dependencies.put("@polymer/polymer", "4.0.0");
+        object.put(NodeUpdater.DEPENDENCIES, dependencies);
+        object.put(NodeUpdater.VAADIN_DEP_KEY,
+                nodeUpdater.createVaadinPackagesJson());
+
+        nodeUpdater.updateDefaultDependencies(object);
+
+        String version = getPolymerVersion(object);
+        Assert.assertEquals("4.0.0", version);
+    }
+
+    @Test
+    public void updateDefaultDependencies_olderVersionsAreUpdated()
+            throws IOException {
+        JsonObject packageJson = nodeUpdater.getPackageJson();
+        packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
+                "3.3.10");
+        nodeUpdater.updateDefaultDependencies(packageJson);
+
+        Assert.assertEquals("4.30.0", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+    }
+
+    @Test // #6907 test when user has set newer versions
+    public void updateDefaultDependencies_newerVersionsAreNotChanged()
+            throws IOException {
+        JsonObject packageJson = nodeUpdater.getPackageJson();
+        packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
+                "5.0.1");
+        nodeUpdater.updateDefaultDependencies(packageJson);
+
+        Assert.assertEquals("5.0.1", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+    }
+
+    private String getPolymerVersion(JsonObject object) {
+        JsonObject deps = object.get("dependencies");
+        String version = deps.getString("@polymer/polymer");
+        return version;
+    }
+
     private void resolveResource_happyPath(String resourceFolder) {
         Mockito.when(finder.getResource(resourceFolder + "/foo"))
                 .thenReturn(url);
-        Assert.assertEquals(FrontendUtils.FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo", true));
-        Assert.assertEquals(FrontendUtils.FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo", false));
+        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
+                nodeUpdater.resolveResource("foo"));
+        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
+                nodeUpdater.resolveResource("foo"));
     }
 
     private void resolveResource_unhappyPath(String resourceFolder) {
         Mockito.when(finder.getResource(resourceFolder + "/foo"))
                 .thenReturn(null);
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo", true));
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo", false));
+        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
+        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -141,8 +141,8 @@ public class AttachListenerView extends AbstractDivView {
         Input input = new Input();
         input.getElement().setAttribute("type", "radio")
                 .setAttribute("name", group).setAttribute("value", text)
-                .addSynchronizedProperty("checked")
-                .addSynchronizedPropertyEvent("change");
+                .addPropertyChangeListener("checked", "change", event -> {
+                });
         input.setId(id);
         radioButtons.put(id, input);
 

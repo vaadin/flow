@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -93,7 +93,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    protected List<JsonObject> getInlineHead(Inline.Position position) {
+    public List<JsonObject> getInlineHead(Inline.Position position) {
         return inlineHead.computeIfAbsent(position, key -> new ArrayList<>());
     }
 
@@ -104,7 +104,7 @@ public class InlineTargets {
      *            prepend or append
      * @return current list of inline objects
      */
-    protected List<JsonObject> getInlineBody(Inline.Position position) {
+    public List<JsonObject> getInlineBody(Inline.Position position) {
         return inlineBody.computeIfAbsent(position, key -> new ArrayList<>());
     }
 }
