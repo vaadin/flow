@@ -122,7 +122,7 @@ public class NavigationState implements Serializable {
     @Deprecated
     public Optional<List<String>> getUrlParameters() {
         return Optional.of(HasUrlParameterUtil
-                .getCompatibilityParameters(getParameters()));
+                .getParameterValues(getParameters()));
     }
 
     /**

@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.ParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
 
@@ -78,7 +78,7 @@ public class ConfiguredRoutes implements Serializable {
         exceptionTargetMap.putAll(original.getExceptionHandlers());
 
         // TODO: maybe copy
-        this.routeModel = original.getRouteModel();
+        this.routeModel = original.getRouteModel().clone();
 
         // TODO: investigate this.routes = this.routeModel.getRoutes();
         this.routes = routeMap.isEmpty() ? Collections.emptyMap()
@@ -116,7 +116,8 @@ public class ConfiguredRoutes implements Serializable {
     protected List<String> getRoutePaths(
             Class<? extends Component> routeTarget) {
         return getRoutesMap().entrySet().stream()
-                .filter(entry -> entry.getValue().containsTarget(routeTarget))
+                .filter(entry -> Objects.equals(routeTarget,
+                        entry.getValue().getTarget()))
                 .map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
@@ -129,17 +130,6 @@ public class ConfiguredRoutes implements Serializable {
      */
     public boolean hasRoute(String pathPattern) {
         return getRoutesMap().containsKey(pathPattern);
-    }
-
-    /**
-     * See if configuration matches the given path with any registered route.
-     *
-     * @param url
-     *            url to check
-     * @return true if configuration matches the given url.
-     */
-    public boolean hasUrl(String url) {
-        return getRouteModel().getRoute(url).hasTarget();
     }
 
     /**
@@ -156,6 +146,17 @@ public class ConfiguredRoutes implements Serializable {
     @Deprecated
     public boolean hasRoute(String pathString, List<String> segments) {
         return hasUrl(PathUtil.getPath(pathString, segments));
+    }
+
+    /**
+     * See if configuration matches the given path with any registered route.
+     *
+     * @param url
+     *            url to check
+     * @return true if configuration matches the given url.
+     */
+    public boolean hasUrl(String url) {
+        return getRouteModel().getRoute(url).hasTarget();
     }
 
     /**
@@ -213,7 +214,7 @@ public class ConfiguredRoutes implements Serializable {
     @Deprecated
     public Optional<Class<? extends Component>> getRoute(String pathString,
             List<String> segments) {
-        return getRoute(pathString);
+        return getRoute(PathUtil.getPath(pathString, segments));
     }
 
     /**
@@ -244,7 +245,7 @@ public class ConfiguredRoutes implements Serializable {
      */
     public String getTargetRoute(Class<? extends Component> navigationTarget) {
         return getRouteModel().getRoute(getTargetRoutes().get(navigationTarget),
-                EnumSet.of(ParameterFormat.NAME));
+                EnumSet.of(RouteParameterFormat.NAME));
     }
 
     /**
@@ -258,7 +259,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return base route string if target class found
      */
     public String getTargetRoute(Class<? extends Component> navigationTarget,
-            EnumSet<ParameterFormat> format) {
+            EnumSet<RouteParameterFormat> format) {
         return getRouteModel().getRoute(getTargetRoutes().get(navigationTarget),
                 format);
     }
@@ -361,14 +362,19 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the RouteTarget stored for the given path.
+     * Get the RouteTarget stored for the given pathTemplate.
      *
-     * @param path
-     *            path to get route target for
-     * @return route target for path, <code>null</code> if nothing registered
+     * @param pathTemplate
+     *            pathTemplate to get route target for
+     * @return route target for pathTemplate, <code>null</code> if nothing registered
      */
-    protected RouteTarget getRouteTarget(String path) {
-        return getRoutesMap().get(path);
+    protected RouteTarget getRouteTarget(String pathTemplate) {
+        return getRoutesMap().get(pathTemplate);
+    }
+
+
+    public Map<String, String> getParameters(String pathTemplate) {
+        return getRouteModel().getParameters(pathTemplate);
     }
 
 }

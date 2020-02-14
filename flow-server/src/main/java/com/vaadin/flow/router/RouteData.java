@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -47,6 +48,30 @@ public class RouteData extends RouteBaseData<RouteData> {
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
+            Class<? extends Component> navigationTarget,
+            List<RouteAliasData> routeAliases) {
+        super(parentLayouts, url, parameters, navigationTarget);
+
+        Collections.sort(routeAliases);
+        this.routeAliases = Collections.unmodifiableList(routeAliases);
+    }
+    
+    /**
+     * RouteData constructor.
+     *
+     * @param parentLayouts
+     *            route parent layout class chain
+     * @param url
+     *            full route url
+     * @param parameters
+     *            navigation target path parameters
+     * @param navigationTarget
+     *            route navigation target
+     * @param routeAliases
+     *            list of aliases for this route
+     */
+    public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
+            String url, Map<String, String> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
         super(parentLayouts, url, parameters, navigationTarget);

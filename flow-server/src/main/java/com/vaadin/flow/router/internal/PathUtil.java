@@ -71,8 +71,9 @@ public class PathUtil {
     public static String getPath(String path, List<String> segments) {
         path = trimPath(path);
 
-        return (path.isEmpty() ? "" : (path + "/"))
-                + String.join("/", segments);
+        return (path.isEmpty() ? "" : path)
+                + ((segments == null || segments.isEmpty()) ? ""
+                        : ("/" + String.join("/", segments)));
     }
 
     private static String trimPath(String path) {
