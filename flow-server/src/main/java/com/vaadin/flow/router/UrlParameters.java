@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.Set;
  * Container which stores the url parameters extracted from a navigation url
  * received from the client.
  */
-public class UrlParameters {
+public class UrlParameters implements Serializable {
 
     /**
      * Creates a url parameters container using the given keys and values.
@@ -63,6 +64,10 @@ public class UrlParameters {
      */
     public Set<String> getAvailableParameterNames() {
         return params.keySet();
+    }
+
+    public Map<String, Object> getParameters() {
+        return params;
     }
 
     /**

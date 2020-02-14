@@ -20,7 +20,7 @@ package com.vaadin.flow.router;
  * information, so that the result may contain the parameters definition
  * represented according with the specified flags.
  */
-public enum ParameterFormat {
+public enum RouteParameterFormat {
 
     /**
      * Whether the format should be the `:`, which is default.
@@ -45,14 +45,14 @@ public enum ParameterFormat {
     SIMPLE_TYPE,
 
     /**
+     * Whether the primitive types should be capitalized.
+     */
+    CAPITALIZED_TYPE,
+
+    /**
      * The type of the parameter which is either one of the primitive types or
      * the full regex expression.
      */
-    TYPE,
-
-    /**
-     * Whether the primitive types should be represented as camel case .
-     */
-    CAPITALIZED_TYPE
+    TYPE
 
 }

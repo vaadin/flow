@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.ParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
@@ -169,7 +169,11 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Deprecated
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
-        return getNavigationTarget(PathUtil.getPath(pathString, segments));
+        Objects.requireNonNull(pathString, "pathString must not be null.");
+        if (getConfiguration().hasRoute(pathString, segments)) {
+            return getConfiguration().getRoute(pathString, segments);
+        }
+        return getParentRegistry().getNavigationTarget(pathString, segments);
     }
 
     @Override
@@ -191,6 +195,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         if (targetUrl.isPresent()) {
             return targetUrl;
         }
+
         return getParentRegistry().getTargetUrl(navigationTarget, parameters);
     }
 
@@ -208,7 +213,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Override
     public Optional<String> getTargetRoute(
             Class<? extends Component> navigationTarget,
-            EnumSet<ParameterFormat> format) {
+            EnumSet<RouteParameterFormat> format) {
         final Optional<String> targetRoute = super.getTargetRoute(
                 navigationTarget, format);
         if (targetRoute.isPresent()) {

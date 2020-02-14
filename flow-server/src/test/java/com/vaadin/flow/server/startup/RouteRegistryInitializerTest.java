@@ -17,22 +17,15 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -45,6 +38,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.HasUrlParameterUtil;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -53,6 +47,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
@@ -63,6 +58,12 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServletContext;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -311,10 +312,14 @@ public class RouteRegistryInitializerTest {
                         .collect(Collectors.toSet()),
                 servletContext);
 
+        final EnumSet<RouteParameterFormat> format = EnumSet.of(
+                RouteParameterFormat.CURLY_BRACKETS_FORMAT,
+                RouteParameterFormat.CAPITALIZED_TYPE);
+
         Assert.assertEquals("parameter/{Boolean}",
-                registry.getTargetUrl(ParameterRoute.class).get());
-        Assert.assertEquals("string/{String}",
-                registry.getTargetUrl(StringParameterRoute.class).get());
+                registry.getTargetRoute(ParameterRoute.class, format).get());
+        Assert.assertEquals("string/{String}", registry
+                .getTargetRoute(StringParameterRoute.class, format).get());
     }
 
     @Test
@@ -1101,13 +1106,15 @@ public class RouteRegistryInitializerTest {
                 registeredRoutes.get(1).getUrl());
         Assert.assertEquals("Sort order was not the one expected",
                 "absolute/levels", registeredRoutes.get(2).getUrl());
-        Assert.assertEquals("Sort order was not the one expected", "parameter",
+        Assert.assertEquals("Sort order was not the one expected",
+                "parameter/:" + HasUrlParameterUtil.PARAMETER_NAME + ":boolean",
                 registeredRoutes.get(3).getUrl());
         Assert.assertEquals("Sort order was not the one expected", "parent",
                 registeredRoutes.get(4).getUrl());
         Assert.assertEquals("Sort order was not the one expected",
                 "parent/prefix", registeredRoutes.get(5).getUrl());
-        Assert.assertEquals("Sort order was not the one expected", "string",
+        Assert.assertEquals("Sort order was not the one expected",
+                "string/:" + HasUrlParameterUtil.PARAMETER_NAME,
                 registeredRoutes.get(6).getUrl());
     }
 

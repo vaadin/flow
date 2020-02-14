@@ -37,7 +37,7 @@ import com.vaadin.flow.component.Component;
 public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
     // Stores targets accessed by urls with parameters.
-    private final RouteModel routesModel;
+    private final RouteModel routeModel;
 
     private final Map<String, RouteTarget> routeMap;
     private final Map<Class<? extends Component>, String> targetRouteMap;
@@ -47,7 +47,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Create an immutable RouteConfiguration.
      */
     public ConfigureRoutes() {
-        routesModel = RouteModel.create();
+        routeModel = RouteModel.create();
         routeMap = new HashMap<>();
         targetRouteMap = new HashMap<>();
         exceptionTargetMap = new HashMap<>();
@@ -73,7 +73,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         exceptionTargetsMap.putAll(original.getExceptionHandlers());
 
         // TODO: copy
-        this.routesModel = original.getRouteModel();
+        this.routeModel = original.getRouteModel().clone();
 
         this.routeMap = routesMap;
         this.targetRouteMap = targetRoutesMap;
@@ -92,7 +92,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
     @Override
     RouteModel getRouteModel() {
-        return routesModel;
+        return routeModel;
     }
 
     /**
@@ -239,10 +239,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
         getRouteModel().removePath(path);
         RouteTarget removedRoute = getRoutesMap().remove(path);
-        for (Class<? extends Component> targetRoute : removedRoute
-                .getRoutes()) {
-            updateMainRouteTarget(targetRoute);
-        }
+        removeMainRouteTarget(removedRoute.getTarget());
     }
 
     /**
@@ -275,7 +272,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
         if (getTargetRoutes().containsKey(targetRoute) && getTargetRoutes()
                 .get(targetRoute).equals(path)) {
-            updateMainRouteTarget(targetRoute);
+            removeMainRouteTarget(targetRoute);
         }
     }
 
@@ -286,7 +283,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * @param navigationTarget
      *         navigation target to update the main route for
      */
-    private void updateMainRouteTarget(
+    private void removeMainRouteTarget(
             Class<? extends Component> navigationTarget) {
         getTargetRoutes().remove(navigationTarget);
 
