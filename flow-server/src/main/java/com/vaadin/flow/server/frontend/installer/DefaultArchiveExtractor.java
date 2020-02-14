@@ -41,103 +41,117 @@ import org.apache.commons.io.IOUtils;
 public final class DefaultArchiveExtractor implements ArchiveExtractor {
 
     @Override
-    public void extract(String archive, String destinationDirectory)
+    public void extract(File archiveFile, File destinationDirectory)
             throws ArchiveExtractionException {
-        final File archiveFile = new File(archive);
 
-        try (FileInputStream fis = new FileInputStream(archiveFile)) {
+        try {
             if (archiveFile.getAbsolutePath().endsWith("msi")) {
-                String command = "msiexec /a " + archiveFile.getAbsolutePath()
-                        + " /qn TARGETDIR=\"" + destinationDirectory + "\"";
-                Process child = Runtime.getRuntime().exec(command);
-                try {
-                    int result = child.waitFor();
-                    if (result != 0) {
-                        throw new ArchiveExtractionException(
-                                "Could not extract " + archiveFile
-                                        .getAbsolutePath() + "; return code "
-                                        + result);
-                    }
-                } catch (InterruptedException e) {
-                    throw new ArchiveExtractionException(
-                            "Unexpected interruption of while waiting for extraction process",
-                            e);
-                }
+                extractMSIArchive(archiveFile, destinationDirectory);
             } else if (archiveFile.getAbsolutePath().endsWith("zip")) {
-                ZipFile zipFile = new ZipFile(archiveFile);
-                try {
-                    Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                    while (entries.hasMoreElements()) {
-                        ZipEntry entry = entries.nextElement();
-                        final File destPath = new File(
-                                destinationDirectory + File.separator + entry
-                                        .getName());
-                        prepDestination(destPath, entry.isDirectory());
-                        if (!entry.isDirectory()) {
-                            InputStream in = null;
-                            OutputStream out = null;
-                            try {
-                                in = zipFile.getInputStream(entry);
-                                out = new FileOutputStream(destPath);
-                                IOUtils.copy(in, out);
-                            } finally {
-                                IOUtils.closeQuietly(in);
-                                IOUtils.closeQuietly(out);
-                            }
-                        }
-                    }
-                } finally {
-                    zipFile.close();
-                }
+                extractZipArchive(archiveFile, destinationDirectory);
             } else {
-                // TarArchiveInputStream can be constructed with a normal FileInputStream if
-                // we ever need to extract regular '.tar' files.
-                TarArchiveInputStream tarIn = null;
-                try {
-                    tarIn = new TarArchiveInputStream(
-                            new GzipCompressorInputStream(fis));
-
-                    TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
-                    String canonicalDestinationDirectory = new File(
-                            destinationDirectory).getCanonicalPath();
-                    while (tarEntry != null) {
-                        // Create a file for this tarEntry
-                        final File destPath = new File(
-                                destinationDirectory + File.separator + tarEntry
-                                        .getName());
-                        prepDestination(destPath, tarEntry.isDirectory());
-
-                        if (!startsWithPath(destPath.getCanonicalPath(),
-                                canonicalDestinationDirectory)) {
-                            throw new IOException(
-                                    "Expanding " + tarEntry.getName()
-                                            + " would create file outside of "
-                                            + canonicalDestinationDirectory);
-                        }
-
-                        if (!tarEntry.isDirectory()) {
-                            destPath.createNewFile();
-                            boolean isExecutable =
-                                    (tarEntry.getMode() & 0100) > 0;
-                            destPath.setExecutable(isExecutable);
-
-                            OutputStream out = null;
-                            try {
-                                out = new FileOutputStream(destPath);
-                                IOUtils.copy(tarIn, out);
-                            } finally {
-                                IOUtils.closeQuietly(out);
-                            }
-                        }
-                        tarEntry = tarIn.getNextTarEntry();
-                    }
-                } finally {
-                    IOUtils.closeQuietly(tarIn);
-                }
+                extractGzipTarArchive(archiveFile, destinationDirectory);
             }
         } catch (IOException e) {
             throw new ArchiveExtractionException(
-                    "Could not extract archive: '" + archive + "'", e);
+                    "Could not extract archive: '" + archiveFile + "'", e);
+        }
+    }
+
+    private void extractMSIArchive(File archiveFile, File destinationDirectory)
+            throws IOException, ArchiveExtractionException {
+        String command = "msiexec /a " + archiveFile.getAbsolutePath()
+                + " /qn TARGETDIR=\"" + destinationDirectory + "\"";
+        Process child = Runtime.getRuntime().exec(command);
+        try {
+            int result = child.waitFor();
+            if (result != 0) {
+                throw new ArchiveExtractionException(
+                        "Could not extract " + archiveFile
+                                .getAbsolutePath() + "; return code "
+                                + result);
+            }
+        } catch (InterruptedException e) {
+            throw new ArchiveExtractionException(
+                    "Unexpected interruption of while waiting for extraction process",
+                    e);
+        }
+    }
+
+    private void extractZipArchive(File archiveFile, File destinationDirectory)
+            throws IOException {
+        ZipFile zipFile = new ZipFile(archiveFile);
+        try {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                final File destPath = new File(
+                        destinationDirectory + File.separator + entry
+                                .getName());
+                prepDestination(destPath, entry.isDirectory());
+                if (!entry.isDirectory()) {
+                    InputStream in = null;
+                    OutputStream out = null;
+                    try {
+                        in = zipFile.getInputStream(entry);
+                        out = new FileOutputStream(destPath);
+                        IOUtils.copy(in, out);
+                    } finally {
+                        IOUtils.closeQuietly(in);
+                        IOUtils.closeQuietly(out);
+                    }
+                }
+            }
+        } finally {
+            zipFile.close();
+        }
+    }
+
+    private void extractGzipTarArchive(File archiveFile, File destinationDirectory)
+            throws IOException {
+        // TarArchiveInputStream can be constructed with a normal FileInputStream if
+        // we ever need to extract regular '.tar' files.
+        TarArchiveInputStream tarIn = null;
+        try (FileInputStream fis = new FileInputStream(archiveFile)) {
+            tarIn = new TarArchiveInputStream(
+                    new GzipCompressorInputStream(fis));
+
+            TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
+            String canonicalDestinationDirectory =
+                    destinationDirectory.getCanonicalPath();
+            while (tarEntry != null) {
+                // Create a file for this tarEntry
+                final File destPath = new File(
+                        destinationDirectory + File.separator + tarEntry
+                                .getName());
+                prepDestination(destPath, tarEntry.isDirectory());
+
+                if (!startsWithPath(destPath.getCanonicalPath(),
+                        canonicalDestinationDirectory)) {
+                    throw new IOException(
+                            "Expanding " + tarEntry.getName()
+                                    + " would create file outside of "
+                                    + canonicalDestinationDirectory);
+                }
+
+                if (!tarEntry.isDirectory()) {
+                    destPath.createNewFile();
+                    boolean isExecutable =
+                            (tarEntry.getMode() & 0100) > 0;
+                    destPath.setExecutable(isExecutable);
+
+                    OutputStream out = null;
+                    try {
+                        out = new FileOutputStream(destPath);
+                        IOUtils.copy(tarIn, out);
+                    } finally {
+                        IOUtils.closeQuietly(out);
+                    }
+                }
+                tarEntry = tarIn.getNextTarEntry();
+            }
+        } finally {
+            IOUtils.closeQuietly(tarIn);
         }
     }
 

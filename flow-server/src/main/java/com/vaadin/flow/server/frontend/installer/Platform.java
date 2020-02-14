@@ -25,52 +25,81 @@ package com.vaadin.flow.server.frontend.installer;
 public class Platform {
 
     enum Architecture {
-        x86, x64, ppc64le, s390x, arm64, armv7l;
+        X86, X64, PPC64LE, S390X, ARM64, ARMV7L;
 
+        /**
+         * Try to get the system architecture by system properties.
+         *
+         * @return system architecture
+         */
         public static Architecture guess() {
             String arch = System.getProperty("os.arch");
             String version = System.getProperty("os.version");
 
-            if (arch.equals("ppc64le")) {
-                return ppc64le;
-            } else if (arch.equals("aarch64")) {
-                return arm64;
-            } else if (arch.equals("s390x")) {
-                return s390x;
-            } else if (arch.equals("arm") && version.contains("v7")) {
-                return armv7l;
+            if ("ppc64le".equals(arch)) {
+                return PPC64LE;
+            } else if ("aarch64".equals(arch)) {
+                return ARM64;
+            } else if ("s390x".equals(arch)) {
+                return S390X;
+            } else if ("arm".equals(arch) && version.contains("v7")) {
+                return ARMV7L;
             } else {
-                return arch.contains("64") ? x64 : x86;
+                return arch.contains("64") ? X64 : X86;
             }
+        }
+
+        /**
+         * Get the architecture name.
+         *
+         * @return formatted architecture name
+         */
+        public String getName() {
+            return this.name().toLowerCase();
         }
     }
 
     enum OS {
-        Windows, Mac, Linux, SunOS;
+        WINDOWS, MAC, LINUX, SUN_OS;
 
+        /**
+         * Use system property to figure out the operating system.
+         *
+         * @return current operating system
+         */
         public static OS guess() {
             final String osName = System.getProperty("os.name");
             return osName.contains("Windows") ?
-                    OS.Windows :
+                    OS.WINDOWS :
                     osName.contains("Mac") ?
-                            OS.Mac :
-                            osName.contains("SunOS") ? OS.SunOS : OS.Linux;
+                            OS.MAC :
+                            osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
         }
 
+        /**
+         * Get the compressed archive extension for this OS.
+         *
+         * @return archive extension used for OS
+         */
         public String getArchiveExtension() {
-            if (this == OS.Windows) {
+            if (this == OS.WINDOWS) {
                 return "zip";
             } else {
                 return "tar.gz";
             }
         }
 
+        /**
+         * Get the codename for this OS.
+         *
+         * @return codename for os
+         */
         public String getCodename() {
-            if (this == OS.Mac) {
+            if (this == OS.MAC) {
                 return "darwin";
-            } else if (this == OS.Windows) {
+            } else if (this == OS.WINDOWS) {
                 return "win";
-            } else if (this == OS.SunOS) {
+            } else if (this == OS.SUN_OS) {
                 return "sunos";
             } else {
                 return "linux";
@@ -81,42 +110,90 @@ public class Platform {
     private final OS os;
     private final Architecture architecture;
 
+    /**
+     * Construct a new Platform.
+     *
+     * @param os
+     *         platform OS
+     * @param architecture
+     *         platform Architecture
+     */
     public Platform(OS os, Architecture architecture) {
         this.os = os;
         this.architecture = architecture;
     }
 
+    /**
+     * Create a Platform and figure out OS and Architecture.
+     *
+     * @return platform instance
+     */
     public static Platform guess() {
         OS os = OS.guess();
         Architecture architecture = Architecture.guess();
         return new Platform(os, architecture);
     }
 
+    /**
+     * Get the archive extension used with this platform.
+     *
+     * @return archive extension
+     */
     public String getArchiveExtension() {
         return os.getArchiveExtension();
     }
 
+    /**
+     * Get the codename used with this Platform.
+     *
+     * @return codename
+     */
     public String getCodename() {
         return os.getCodename();
     }
 
+    /**
+     * Check if platform is windows.
+     *
+     * @return true if windows
+     */
     public boolean isWindows() {
-        return os == OS.Windows;
+        return os == OS.WINDOWS;
     }
 
+    /**
+     * Check if platform is mac.
+     *
+     * @return true is mac
+     */
     public boolean isMac() {
-        return os == OS.Mac;
+        return os == OS.MAC;
     }
 
+    /**
+     * Get platform architecture.
+     *
+     * @return architecture
+     */
     public Architecture getArchitecture() {
         return architecture;
     }
 
+    /**
+     * Get platform OS.
+     *
+     * @return os
+     */
     public OS getOs() {
         return os;
     }
 
+    /**
+     * Get the node classifier for current platform.
+     *
+     * @return platform node classifier
+     */
     public String getNodeClassifier() {
-        return this.getCodename() + "-" + this.architecture.name();
+        return getCodename() + "-" + getArchitecture().getName();
     }
 }

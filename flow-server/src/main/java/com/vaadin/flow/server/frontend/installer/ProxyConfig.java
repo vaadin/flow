@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend.installer;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -32,13 +33,15 @@ import org.slf4j.LoggerFactory;
  */
 public class ProxyConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfig.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(ProxyConfig.class);
 
     private final List<Proxy> proxies;
 
     /**
      * Create a new proxy configuration with given proxies.
-     * @param proxies list of available proxies
+     *
+     * @param proxies
+     *         list of available proxies
      */
     public ProxyConfig(List<Proxy> proxies) {
         this.proxies = proxies;
@@ -46,6 +49,7 @@ public class ProxyConfig {
 
     /**
      * Check if no proxies have been defined.
+     *
      * @return true if we have no proxies
      */
     public boolean isEmpty() {
@@ -54,7 +58,9 @@ public class ProxyConfig {
 
     /**
      * Get a proxy for url.
-     * @param requestUrl url to get proxy for
+     *
+     * @param requestUrl
+     *         url to get proxy for
      * @return Proxy if one found, else null.
      */
     public Proxy getProxyForUrl(String requestUrl) {
@@ -68,12 +74,14 @@ public class ProxyConfig {
                 return proxy;
             }
         }
-        LOGGER.info("Could not find matching proxy for host: {}", uri.getHost());
+        LOGGER.info("Could not find matching proxy for host: {}",
+                uri.getHost());
         return null;
     }
 
     /**
      * Get a defined secure proxy.
+     *
      * @return first secure proxy from the proxy list, or null if no secure proxies.
      */
     public Proxy getSecureProxy() {
@@ -87,7 +95,9 @@ public class ProxyConfig {
 
     /**
      * Get first proxy that is not secure.
-     * @return first proxy that is not secure from the proxy list, or null if no secure proxies.
+     *
+     * @return first proxy that is not secure from the proxy list, or null if no
+     * secure proxies.
      */
     public Proxy getInsecureProxy() {
         for (Proxy proxy : proxies) {
@@ -101,17 +111,41 @@ public class ProxyConfig {
     /**
      * Class for holding proxy information.
      */
-    public static class Proxy {
+    public static class Proxy implements Serializable {
+        /**
+         * Id of proxy.
+         */
         public final String id;
+        /**
+         * Protocol used for proxy.
+         */
         public final String protocol;
+        /**
+         * Proxy host.
+         */
         public final String host;
+        /**
+         * Proxy port.
+         */
         public final int port;
+        /**
+         * User name for proxy.
+         */
         public final String username;
+        /**
+         * Password for proxy.
+         */
         public final String password;
+        /**
+         * Excluded hosts string.
+         */
         public final String nonProxyHosts;
 
-        public Proxy(
-                String id, String protocol, String host, int port, String username, String password, String nonProxyHosts) {
+        /**
+         * Proxy constructor.
+         */
+        public Proxy(String id, String protocol, String host, int port,
+                String username, String password, String nonProxyHosts) {
             this.host = host;
             this.id = id;
             this.protocol = protocol;
@@ -121,27 +155,54 @@ public class ProxyConfig {
             this.nonProxyHosts = nonProxyHosts;
         }
 
-        public boolean useAuthentication(){
+        /**
+         * Check if proxy uses authentication.
+         *
+         * @return true if we have a non empty username
+         */
+        public boolean useAuthentication() {
             return username != null && !username.isEmpty();
         }
 
+        /**
+         * Get the proxy uri.
+         *
+         * @return URI for this proxy
+         */
         public URI getUri() {
-            String authentication = useAuthentication() ? username + ":" + password : null;
+            String authentication = useAuthentication() ?
+                    username + ":" + password :
+                    null;
             try {
                 // Proxies should be schemed with http, even if the protocol is https
-                return new URI("http", authentication, host, port, null, null, null);
+                return new URI("http", authentication, host, port, null, null,
+                        null);
             } catch (URISyntaxException e) {
                 throw new ProxyConfigException("Invalid proxy settings", e);
             }
         }
 
-        public boolean isSecure(){
+        /**
+         * Check if the proxy is secure.
+         *
+         * @return true is protocol is https
+         */
+        public boolean isSecure() {
             return "https".equals(protocol);
         }
 
+        /**
+         * Check if given host is excluded for proxy.
+         *
+         * @param host
+         *         host to check
+         * @return true if host matches a nonProxyHosts pattern
+         */
         public boolean isNonProxyHost(String host) {
-            if (host != null && nonProxyHosts != null && nonProxyHosts.length() > 0) {
-                for (StringTokenizer tokenizer = new StringTokenizer(nonProxyHosts, "|"); tokenizer.hasMoreTokens(); ) {
+            if (host != null && nonProxyHosts != null
+                    && nonProxyHosts.length() > 0) {
+                for (StringTokenizer tokenizer = new StringTokenizer(
+                        nonProxyHosts, "|"); tokenizer.hasMoreTokens(); ) {
                     String pattern = tokenizer.nextToken();
                     pattern = pattern.replace(".", "\\.").replace("*", ".*");
                     if (host.matches(pattern)) {
@@ -155,20 +216,28 @@ public class ProxyConfig {
 
         @Override
         public String toString() {
-            return id + "{" +
-                    "protocol='" + protocol + '\'' +
-                    ", host='" + host + '\'' +
-                    ", port=" + port +
-                    (useAuthentication()? ", with username/passport authentication" : "") +
-                    '}';
+            return id + "{" + "protocol='" + protocol + '\'' + ", host='" + host
+                    + '\'' + ", port=" + port + (useAuthentication() ?
+                    ", with username/passport authentication" :
+                    "") + '}';
         }
     }
 
-    static class ProxyConfigException extends RuntimeException {
+    /**
+     * Exception thrown fora proxy  configuration exception.
+     */
+    private static class ProxyConfigException extends RuntimeException {
 
+        /**
+         * Create exception with message and cause.
+         *
+         * @param message
+         *         exception message
+         * @param cause
+         *         exception cause
+         */
         private ProxyConfigException(String message, Exception cause) {
             super(message, cause);
         }
-
     }
 }

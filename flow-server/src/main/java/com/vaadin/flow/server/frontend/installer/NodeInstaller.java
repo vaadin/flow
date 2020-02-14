@@ -422,7 +422,7 @@ public class NodeInstaller {
             throws ArchiveExtractionException {
         this.logger.info("Unpacking {} into {}", archive, destinationDirectory);
         this.archiveExtractor
-                .extract(archive.getPath(), destinationDirectory.getPath());
+                .extract(archive, destinationDirectory);
     }
 
     private void downloadFileIfMissing(String downloadUrl, File destination,
@@ -481,7 +481,7 @@ public class NodeInstaller {
     private String getNodeDownloadFilename(String nodeVersion,
             boolean archiveOnWindows) {
         if (platform.isWindows() && !archiveOnWindows) {
-            if (platform.getArchitecture() == Platform.Architecture.x64) {
+            if (platform.getArchitecture() == Platform.Architecture.X64) {
                 if (nodeVersion.startsWith("v0.")) {
                     return nodeVersion + "/x64/node.exe";
                 } else {

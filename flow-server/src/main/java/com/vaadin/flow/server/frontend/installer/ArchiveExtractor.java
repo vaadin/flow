@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend.installer;
 
+import java.io.File;
+
 /**
  * Handle extracting file archives.
  * <p>
@@ -28,13 +30,13 @@ interface ArchiveExtractor {
      * Extract archive contents to given destination.
      *
      * @param archive
-     *         archive to extract
+     *         archive file to extract
      * @param destinationDirectory
-     *         extraction destination
+     *         destination directory to extract files to
      * @throws ArchiveExtractionException
      *         exception thrown for failure during extraction
      */
-    void extract(String archive, String destinationDirectory)
+    void extract(File archive, File destinationDirectory)
             throws ArchiveExtractionException;
 }
 
