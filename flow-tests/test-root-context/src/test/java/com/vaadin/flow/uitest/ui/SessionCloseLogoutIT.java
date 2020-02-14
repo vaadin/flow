@@ -29,6 +29,9 @@ public class SessionCloseLogoutIT extends ChromeBrowserTest {
     @Test
     public void changeOnClient() throws InterruptedException {
         open();
+        if (hasClientIssue("7600")) {
+            return;
+        }
 
         $(NativeButtonElement.class).first().click();
 

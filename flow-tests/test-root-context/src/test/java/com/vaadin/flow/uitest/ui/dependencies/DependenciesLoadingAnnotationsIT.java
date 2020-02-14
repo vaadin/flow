@@ -11,7 +11,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.parallel.setup.SetupDriver;
 
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.DOM_CHANGE_TEXT;
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.PRELOADED_DIV_ID;
