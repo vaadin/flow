@@ -162,7 +162,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
-    // Weblogic uses zip protocol
+    // Path of jar files in a URL with zip protocol doesn't start with "zip:"
+    // nor "file:". It contains only the path of the file.
+    // Weblogic uses zip protocol.
     private static final Pattern ZIP_PROTOCOL_JAR_FILE_REGEX = Pattern
             .compile("(.+\\.jar).*");
 
