@@ -29,7 +29,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.ParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -42,7 +42,7 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  * {@link RouteTarget} in case this segment is also the last which defines a
  * route.
  */
-class RouteModel implements Serializable {
+class RouteModel implements Serializable, Cloneable {
 
     /**
      * Create a new root segment instance. This is an empty segment defining the
@@ -53,15 +53,141 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Returns whether the specified pathPattern contains url parameters.
+     * Returns whether the specified pathTemplate contains url parameters.
      *
-     * @param pathPattern
-     *            a path pattern.
-     * @return true if the specified pathPattern contains url parameters,
+     * @param pathTemplate
+     *            a path template.
+     * @return true if the specified pathTemplate contains url parameters,
      *         otherwise false.
      */
-    static boolean hasParameters(String pathPattern) {
-        return pathPattern.contains(":");
+    static boolean hasParameters(String pathTemplate) {
+        return pathTemplate.contains(":");
+    }
+
+    /**
+     * Define a route url parameter details.
+     */
+    private static class ParameterDetails implements Serializable, Cloneable {
+
+        // NOTE: string may be omited when defining a parameter. If the
+        // type/regex is missing then string is used by default.
+        private static List<String> PRIMITIVE_TYPES = Arrays.asList("int",
+                "long", "bool", "boolean", "string");
+
+        private boolean optional;
+
+        private boolean varargs;
+
+        // Same name as with the segment's name which is extracted by
+        // ParameterDetails constructor and provided to the RouteSegment.
+        private String name;
+
+        // Regex or a primitive type.
+        private String regex;
+
+        private Pattern template;
+
+        /**
+         * Creates the parameter details using the input segmentPattern
+         * template.
+         *
+         * @param segmentPattern
+         *            segment template.
+         */
+        private ParameterDetails(String segmentPattern) {
+            optional = segmentPattern.startsWith("[")
+                    && segmentPattern.endsWith("]");
+            if (optional) {
+                segmentPattern = segmentPattern.substring(1,
+                        segmentPattern.length() - 1);
+            }
+
+            varargs = segmentPattern.startsWith("...");
+            if (varargs) {
+                segmentPattern = segmentPattern.substring(3);
+            }
+
+            // Remove :
+            segmentPattern = segmentPattern.substring(1);
+
+            // Extract the template defining the value of the parameter.
+            final int defStartIndex = segmentPattern.indexOf(":");
+            if (defStartIndex != -1) {
+
+                name = segmentPattern.substring(0, defStartIndex);
+
+                regex = segmentPattern.substring(defStartIndex + 1);
+                if (!isPrimitiveType()) {
+                    template = Pattern.compile(regex);
+                }
+
+            } else {
+                name = segmentPattern;
+                regex = "string";
+            }
+
+        }
+
+        boolean isPrimitiveType() {
+            return PRIMITIVE_TYPES.contains(regex);
+        }
+
+        public String getType() {
+            return regex;
+        }
+
+        public String getTypeAsPrimitive() {
+            return isPrimitiveType() ? regex : "string";
+        }
+
+        boolean isOptional() {
+            return optional;
+        }
+
+        boolean isVarargs() {
+            return varargs;
+        }
+
+        boolean isMandatory() {
+            return !isOptional() && !isVarargs();
+        }
+
+        boolean isEligible(String value) {
+            if (regex == null) {
+                return true;
+            }
+
+            if (template != null) {
+                return template.matcher(value).matches();
+            }
+
+            if (regex.equals("int")) {
+                try {
+                    Integer.valueOf(value);
+                    return true;
+                } catch (NumberFormatException e) {
+                }
+
+            } else if (regex.equals("long")) {
+                try {
+                    Long.valueOf(value);
+                    return true;
+                } catch (NumberFormatException e) {
+                }
+
+            } else if (regex.equals("bool") || regex.equals("boolean")) {
+                if (value.equalsIgnoreCase("true")
+                        || value.equalsIgnoreCase("false")) {
+                    return true;
+                }
+
+            } else if (regex.equals("string")) {
+                return true;
+            }
+
+            return false;
+        }
+
     }
 
     /**
@@ -72,7 +198,7 @@ class RouteModel implements Serializable {
      * {@link RouteTarget} in case this segment is also the last which defines a
      * route.
      */
-    private static class RouteSegment implements Serializable {
+    private static class RouteSegment implements Serializable, Cloneable {
 
         /**
          * Create a new root segment instance. This is an empty segment defining
@@ -95,166 +221,45 @@ class RouteModel implements Serializable {
         }
 
         /**
-         * Define a route url parameter details.
-         */
-        private static class ParameterDetails implements Serializable {
-
-            // NOTE: string may be omited when defining a parameter. If the
-            // type/regex is missing then string is used by default.
-            private static List<String> PRIMITIVE_TYPES = Arrays.asList("int",
-                    "long", "bool", "boolean", "string");
-
-            private boolean optional;
-
-            private boolean varargs;
-
-            // Same name as with the segment's name which is extracted by
-            // ParameterDetails constructor and provided to the RouteSegment.
-            private String name;
-
-            // Regex or a primitive type.
-            private String regex;
-
-            private Pattern pattern;
-
-            /**
-             * Creates the parameter details using the input segmentPattern
-             * pattern.
-             *
-             * @param segmentPattern
-             *            segment pattern.
-             */
-            private ParameterDetails(String segmentPattern) {
-                optional = segmentPattern.startsWith("[")
-                        && segmentPattern.endsWith("]");
-                if (optional) {
-                    segmentPattern = segmentPattern.substring(1,
-                            segmentPattern.length() - 1);
-                }
-
-                varargs = segmentPattern.startsWith("...");
-                if (varargs) {
-                    segmentPattern = segmentPattern.substring(3);
-                }
-
-                // Remove :
-                segmentPattern = segmentPattern.substring(1);
-
-                // Extract the pattern defining the value of the parameter.
-                final int defStartIndex = segmentPattern.indexOf(":");
-                if (defStartIndex != -1) {
-
-                    name = segmentPattern.substring(0, defStartIndex);
-
-                    regex = segmentPattern.substring(defStartIndex + 1);
-                    if (!isPrimitiveType()) {
-                        pattern = Pattern.compile(regex);
-                    }
-
-                } else {
-                    name = segmentPattern;
-                    regex = "string";
-                }
-
-            }
-
-            boolean isPrimitiveType() {
-                return PRIMITIVE_TYPES.contains(regex);
-            }
-
-            public String getType() {
-                return regex;
-            }
-
-            boolean isOptional() {
-                return optional;
-            }
-
-            boolean isVarargs() {
-                return varargs;
-            }
-
-            boolean isMandatory() {
-                return !isOptional() && !isVarargs();
-            }
-
-            boolean isEligible(String value) {
-                if (regex == null) {
-                    return true;
-                }
-
-                if (pattern != null) {
-                    return pattern.matcher(value).matches();
-                }
-
-                if (regex.equals("int")) {
-                    try {
-                        Integer.valueOf(value);
-                        return true;
-                    } catch (NumberFormatException e) {
-                    }
-
-                } else if (regex.equals("long")) {
-                    try {
-                        Long.valueOf(value);
-                        return true;
-                    } catch (NumberFormatException e) {
-                    }
-
-                } else if (regex.equals("bool") || regex.equals("boolean")) {
-                    if (value.equalsIgnoreCase("true")
-                            || value.equalsIgnoreCase("false")) {
-                        return true;
-                    }
-
-                } else if (regex.equals("string")) {
-                    return true;
-                }
-
-                return false;
-            }
-
-        }
-
-        /**
          * Name of the segment.
          */
         private String name;
 
         /**
-         * Segment pattern string as provided in constructor. This is used
+         * Segment template string as provided in constructor. This is used
          * internally as a key in the parent's mapping, to make clear
          * distinction between static segment values and parameters which are
-         * defined as a pattern used to extract the value from a url path.
+         * defined as a template used to extract the value from a url path.
          */
         private String segmentPattern;
-
-        /**
-         * Mapping next segments in the routes by the segment pattern.
-         */
-        private Map<String, RouteSegment> staticSegments;
-
-        /**
-         * Mapping next parameter segments in the routes by the segment pattern.
-         */
-        private Map<String, RouteSegment> parameterSegments;
-
-        /**
-         * Mapping varargs parameter segments in the routes by the segment
-         * pattern.
-         */
-        private Map<String, RouteSegment> varargsSegments;
-
-        /**
-         * Track the mapping of all segment types in the routes by the segment
-         * pattern.
-         */
-        private Map<String, RouteSegment> allSegments;
 
         /**
          * This is valid only if the segment represents a url parameter.
          */
         private ParameterDetails parameterDetails;
+
+        /**
+         * Mapping next segments in the routes by the segment template.
+         */
+        private Map<String, RouteSegment> staticSegments;
+
+        /**
+         * Mapping next parameter segments in the routes by the segment
+         * template.
+         */
+        private Map<String, RouteSegment> parameterSegments;
+
+        /**
+         * Mapping varargs parameter segments in the routes by the segment
+         * template.
+         */
+        private Map<String, RouteSegment> varargsSegments;
+
+        /**
+         * Track the mapping of all segment types in the routes by the segment
+         * template.
+         */
+        private Map<String, RouteSegment> allSegments;
 
         /**
          * Target.
@@ -275,6 +280,28 @@ class RouteModel implements Serializable {
             } else {
                 name = segment;
             }
+        }
+
+        @Override
+        protected RouteSegment clone() {
+            final RouteSegment clone = new RouteSegment();
+
+            clone.name = name;
+            clone.segmentPattern = segmentPattern;
+            clone.parameterDetails = parameterDetails;
+
+            getStaticSegments().entrySet().forEach(e -> clone
+                    .getStaticSegments().put(e.getKey(), e.getValue().clone()));
+
+            getParameterSegments().entrySet()
+                    .forEach(e -> clone.getParameterSegments().put(e.getKey(),
+                            e.getValue().clone()));
+
+            getVarargsSegments().entrySet()
+                    .forEach(e -> clone.getVarargsSegments().put(e.getKey(),
+                            e.getValue().clone()));
+
+            return clone;
         }
 
         /**
@@ -302,27 +329,27 @@ class RouteModel implements Serializable {
             }
         }
 
-        void removePath(String pathPattern) {
-            removePath(PathUtil.getSegmentsList(pathPattern));
+        void removePath(String pathTemplate) {
+            removePath(PathUtil.getSegmentsList(pathTemplate));
         }
 
-        void addPath(String pathPattern,
+        void addPath(String pathTemplate,
                 Class<? extends Component> targetComponentClass) {
-            addPath(pathPattern, new RouteTarget(targetComponentClass));
+            addPath(pathTemplate, new RouteTarget(targetComponentClass));
         }
 
         /**
-         * Add a pathPattern pattern following this route segment. If the
-         * pattern already exists and exception is thrown.
+         * Add a pathTemplate template following this route segment. If the
+         * template already exists and exception is thrown.
          *
-         * @param pathPattern
-         *            a path pattern where parameters are defined by their ids
+         * @param pathTemplate
+         *            a path template where parameters are defined by their ids
          *            and details.
          * @param target
-         *            target to set for the given path pattern
+         *            target to set for the given path template
          */
-        void addPath(String pathPattern, RouteTarget target) {
-            addPath(PathUtil.getSegmentsList(pathPattern), target);
+        void addPath(String pathTemplate, RouteTarget target) {
+            addPath(PathUtil.getSegmentsList(pathTemplate), target);
         }
 
         /**
@@ -332,7 +359,7 @@ class RouteModel implements Serializable {
          *            real navigation path where the parameters are provided
          *            with their real value. The method is looking to map the
          *            value provided in the path with the ids found in the
-         *            stored patterns.
+         *            stored templates.
          * @return a route result containing the target and parameter values
          *         mapped by their ids.
          */
@@ -340,8 +367,9 @@ class RouteModel implements Serializable {
 
             Map<String, Object> urlParameters = new HashMap<>();
 
-            RouteTarget target = findRouteTarget(PathUtil.getSegmentsList(path),
-                    urlParameters);
+            RouteTarget target = path == null ? null
+                    : findRouteTarget(PathUtil.getSegmentsList(path),
+                            urlParameters);
 
             return new RouteSearchResult(path, target, urlParameters);
         }
@@ -349,15 +377,16 @@ class RouteModel implements Serializable {
         /**
          * Gets a simple representation of the path patter.
          * 
-         * @param pathPattern
-         *            the full path pattern.
+         * @param pathTemplate
+         *            the full path template.
          * @param parameterFormat
          *            the parameter format function.
-         * @return the simple path pattern.
+         * @return the simple path template.
          */
-        String getPath(String pathPattern,
+        String getPath(String pathTemplate,
                 Function<RouteSegment, String> parameterFormat) {
-            final List<String> segments = PathUtil.getSegmentsList(pathPattern);
+            final List<String> segments = PathUtil
+                    .getSegmentsList(pathTemplate);
             final List<String> result = new ArrayList<>(segments.size());
 
             matchSegments(segments, routeSegment -> {
@@ -373,8 +402,9 @@ class RouteModel implements Serializable {
             }
         }
 
-        String getUrl(String pathPattern, UrlParameters parameters) {
-            final List<String> segments = PathUtil.getSegmentsList(pathPattern);
+        String getUrl(String pathTemplate, UrlParameters parameters) {
+            final List<String> segments = PathUtil
+                    .getSegmentsList(pathTemplate);
             final List<String> result = new ArrayList<>(segments.size());
 
             matchSegments(segments, routeSegment -> {
@@ -714,7 +744,7 @@ class RouteModel implements Serializable {
             return target;
         }
 
-        private void matchSegments(List<String> segments,
+        void matchSegments(List<String> segments,
                 Consumer<RouteSegment> segmentProcessor) {
             if (segments.isEmpty()) {
                 return;
@@ -724,7 +754,7 @@ class RouteModel implements Serializable {
 
             if (routeSegment == null) {
                 throw new IllegalArgumentException(
-                        "Unregistered path pattern specified `"
+                        "Unregistered path template specified `"
                                 + PathUtil.getPath(segments) + "`");
             }
 
@@ -815,18 +845,23 @@ class RouteModel implements Serializable {
                     && getVarargsSegments().isEmpty();
         }
 
-        private RouteSegment addSegment(String segmentPattern,
+        private RouteSegment addSegment(String segmentTemplate,
                 Map<String, RouteSegment> children) {
-            RouteSegment routeSegment = new RouteSegment(segmentPattern);
-            children.put(segmentPattern, routeSegment);
-            getAllSegments().put(segmentPattern, routeSegment);
+            RouteSegment routeSegment = new RouteSegment(segmentTemplate);
+            addSegment(segmentTemplate, routeSegment, children);
             return routeSegment;
         }
 
-        private void removeSegment(String segmentPattern,
+        private void addSegment(String segmentTemplate,
+                RouteSegment routeSegment, Map<String, RouteSegment> children) {
+            children.put(segmentTemplate, routeSegment);
+            getAllSegments().put(segmentTemplate, routeSegment);
+        }
+
+        private void removeSegment(String segmentTemplate,
                 Map<String, RouteSegment> children) {
-            children.remove(segmentPattern);
-            getAllSegments().remove(segmentPattern);
+            children.remove(segmentTemplate);
+            getAllSegments().remove(segmentTemplate);
         }
 
         /**
@@ -873,8 +908,21 @@ class RouteModel implements Serializable {
 
     private RouteSegment root;
 
+    private Map<String, UriTemplate> templates = new HashMap<>();
+
+    private Map<String, RouteTarget> targets = new HashMap<>();
+
     private RouteModel() {
-        root = RouteSegment.createRoot();
+        this(RouteSegment.createRoot());
+    }
+
+    private RouteModel(RouteSegment root) {
+        this.root = root;
+    }
+
+    @Override
+    public RouteModel clone() {
+        return new RouteModel(root.clone());
     }
 
     /**
@@ -887,55 +935,64 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Remove a path by it's path pattern.
+     * Remove a path by it's path template.
      * 
-     * @param pathPattern
-     *            the full path pattern.
+     * @param pathTemplate
+     *            the full path template.
      */
-    void removePath(String pathPattern) {
-        root.removePath(pathPattern);
+    void removePath(String pathTemplate) {
+        root.removePath(pathTemplate);
     }
 
     /**
-     * Add a path pattern which maps a target component class.
+     * Add a path template which maps a target component class.
      * 
-     * @param pathPattern
-     *            a path pattern where parameters are defined by their ids and
+     * @param pathTemplate
+     *            a path template where parameters are defined by their ids and
      *            details.
      * @param targetComponentClass
      *            the target component class.
      * @throws InvalidRouteConfigurationException
-     *             if the combination of pathPattern and target doesn't make
+     *             if the combination of pathTemplate and target doesn't make
      *             send within the current state of the model.
      * @throws IllegalArgumentException
      *             in case the varargs are specified in the middle of the
-     *             pathPattern. Varargs may be specified only as the last
+     *             pathTemplate. Varargs may be specified only as the last
      *             segment definition.
      */
-    void addRoute(String pathPattern,
+    void addRoute(String pathTemplate,
             Class<? extends Component> targetComponentClass) {
-        root.addPath(pathPattern, targetComponentClass);
+        root.addPath(pathTemplate, targetComponentClass);
     }
 
     /**
-     * Add a pathPattern pattern following this route segment. If the pattern
+     * Add a pathTemplate template following this route segment. If the template
      * already exists and exception is thrown.
      *
-     * @param pathPattern
-     *            a path pattern where parameters are defined by their ids and
+     * @param pathTemplate
+     *            a path template where parameters are defined by their ids and
      *            details.
      * @param target
-     *            target to set for the given path pattern.
+     *            target to set for the given path template.
      * @throws InvalidRouteConfigurationException
-     *             if the combination of pathPattern and target doesn't make
+     *             if the combination of pathTemplate and target doesn't make
      *             send within the current state of the model.
      * @throws IllegalArgumentException
      *             in case the varargs are specified in the middle of the
-     *             pathPattern. Varargs may be specified only as the last
+     *             pathTemplate. Varargs may be specified only as the last
      *             segment definition.
      */
-    void addRoute(String pathPattern, RouteTarget target) {
-        root.addPath(pathPattern, target);
+    void addRoute(String pathTemplate, RouteTarget target) {
+        root.addPath(pathTemplate, target);
+
+        // UriTemplate template = templates.get(pathTemplate);
+        // if (template != null) {
+        // throw new IllegalArgumentException("Route already registered");
+        // }
+        //
+        // template = new UriTemplate(pathTemplate);
+        // templates.put(pathTemplate, template);
+        // targets.put(pathTemplate, target);
     }
 
     /**
@@ -945,49 +1002,77 @@ class RouteModel implements Serializable {
      *            real navigation path where the parameters are provided with
      *            their real value. The method is looking to map the value
      *            provided in the path with the ids found in the stored
-     *            patterns.
+     *            templates.
      * @return a route result containing the target and parameter values mapped
      *         by their ids.
      */
     RouteSearchResult getRoute(String path) {
         return root.getRoute(path);
+
+        // RouteTarget target = null;
+        // Map<String, Object> parameters = null;
+        //
+        // for (UriTemplate template : templates.values()) {
+        // Map<String, String> templateVariableToValue = new HashMap<>();
+        //
+        // if (template.match(path, templateVariableToValue)) {
+        // target = targets.get(template.getTemplate());
+        // parameters = new HashMap<>(templateVariableToValue);
+        // break;
+        // }
+        // }
+        //
+        // return new RouteSearchResult(path, target, parameters);
     }
 
     /**
-     * Gets a url path by replacing into the path pattern the url parameters.
+     * Gets a url path by replacing into the path template the url parameters.
      * <p>
-     * In case all parameters defined in the pathPattern are optional or
+     * In case all parameters defined in the pathTemplate are optional or
      * varargs, parameters argument may be null and the path will be provided
      * without any parameters.
      * 
-     * @param pathPattern
-     *            the full path pattern.
+     * @param pathTemplate
+     *            the full path template.
      * @param parameters
      *            the parameters to use or null if no parameters specified.
      * @return the url.
      * @throws IllegalArgumentException
-     *             in case pathPattern is not registered or the parameters do
-     *             not match with the pattern.
+     *             in case pathTemplate is not registered or the parameters do
+     *             not match with the template.
      */
-    String getUrl(String pathPattern, UrlParameters parameters) {
-        return root.getUrl(pathPattern,
+    String getUrl(String pathTemplate, UrlParameters parameters) {
+        return root.getUrl(pathTemplate,
                 parameters != null ? parameters : new UrlParameters(null));
+
+        // final UriTemplate template = templates.get(pathTemplate);
+        // if (template == null) {
+        // throw new IllegalArgumentException("Missing route");
+        // }
+        //
+        // Map<String, String> values = new HashMap<>();
+        // parameters.getParameters().entrySet().forEach(entry -> values
+        // .put(entry.getKey(), entry.getValue().toString()));
+        //
+        // return template.createURI(values);
     }
 
-    String getRoute(String pathPattern, EnumSet<ParameterFormat> format) {
-        return root.getPath(pathPattern, segment -> {
+    String getRoute(String pathTemplate, EnumSet<RouteParameterFormat> format) {
+        return root.getPath(pathTemplate, segment -> {
             StringBuilder result = new StringBuilder();
 
-            if (format.contains(ParameterFormat.CURLY_BRACKETS_FORMAT)) {
+            if (format.contains(RouteParameterFormat.CURLY_BRACKETS_FORMAT)) {
                 result.append("{");
             } else {
                 result.append(":");
             }
 
-            final boolean containsType = format.containsAll(Arrays
-                    .asList(ParameterFormat.SIMPLE_TYPE, ParameterFormat.TYPE));
+            final boolean containsType = format
+                    .contains(RouteParameterFormat.SIMPLE_TYPE)
+                    || format.contains(RouteParameterFormat.TYPE)
+                    || format.contains(RouteParameterFormat.CAPITALIZED_TYPE);
 
-            if (format.contains(ParameterFormat.NAME)) {
+            if (format.contains(RouteParameterFormat.NAME)) {
                 result.append(segment.getName());
                 if (containsType) {
                     result.append(":");
@@ -997,18 +1082,17 @@ class RouteModel implements Serializable {
             if (containsType) {
                 String type = segment.getParameterDetails().getType();
 
-                if (format.contains(ParameterFormat.SIMPLE_TYPE)) {
+                if (format.contains(RouteParameterFormat.SIMPLE_TYPE)
+                        || segment.getParameterDetails().isPrimitiveType()) {
+
                     if (!segment.getParameterDetails().isPrimitiveType()) {
-                        type = "regex";
+                        type = "string";
                     }
 
-                    if (format.contains(ParameterFormat.CAPITALIZED_TYPE)) {
+                    if (format
+                            .contains(RouteParameterFormat.CAPITALIZED_TYPE)) {
                         type = capitalize(type);
                     }
-
-                } else if (segment.getParameterDetails().isPrimitiveType()
-                        && format.contains(ParameterFormat.CAPITALIZED_TYPE)) {
-                    type = capitalize(type);
                 }
 
                 result.append(type);
@@ -1020,6 +1104,19 @@ class RouteModel implements Serializable {
 
             return result.toString();
         });
+    }
+
+    Map<String, String> getParameters(String pathTemplate) {
+        Map<String, String> result = new HashMap<>();
+
+        this.root.matchSegments(PathUtil.getSegmentsList(pathTemplate),
+                segment -> {
+                    if (segment.isParameter()) {
+                        result.put(segment.getName(), segment
+                                .getParameterDetails().getTypeAsPrimitive());
+                    }
+                });
+        return result;
     }
 
     private static String capitalize(String str) {

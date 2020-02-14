@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +52,10 @@ public class HasUrlParameterUtil {
             final Class<?> parameterType = ParameterDeserializer
                     .getClassType(navigationTarget);
 
-            if (parameterType.isAssignableFrom(Integer.class)) {
-                path += ":int";
-            } else if (parameterType.isAssignableFrom(Long.class)) {
-                path += ":long";
-            } else if (parameterType.isAssignableFrom(Boolean.class)) {
-                path += ":bool";
+            String type = getParameterType(parameterType);
+
+            if (!"string".equals(type)) {
+                path += ":" + type;
             }
         }
         return path;
@@ -97,8 +96,7 @@ public class HasUrlParameterUtil {
         return new UrlParameters(map);
     }
 
-    public static List<String> getCompatibilityParameters(
-            UrlParameters urlParameters) {
+    public static List<String> getParameterValues(UrlParameters urlParameters) {
 
         List<String> parameters = urlParameters
                 .getList(HasUrlParameterUtil.PARAMETER_NAME);
@@ -117,6 +115,11 @@ public class HasUrlParameterUtil {
         }
 
         return parameters;
+    }
+
+    public static List<Class<?>> getParameterTypes(Collection<String> types) {
+        return types.stream().map(HasUrlParameterUtil::getType)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -166,6 +169,33 @@ public class HasUrlParameterUtil {
     private static boolean isAnnotatedParameter(
             Class<? extends Component> target) {
         return hasOptionalParameter(target) || hasWildcardParameter(target);
+    }
+
+    private static String getParameterType(Class<?> parameterType) {
+        String type = null;
+        if (parameterType.isAssignableFrom(Integer.class)) {
+            type = "int";
+        } else if (parameterType.isAssignableFrom(Long.class)) {
+            type = "long";
+        } else if (parameterType.isAssignableFrom(Boolean.class)) {
+            type = "boolean";
+        } else {
+            type = "string";
+        }
+        return type;
+    }
+
+    private static Class<?> getType(String s) {
+        if (s.equalsIgnoreCase("int")) {
+            return Integer.class;
+        } else if (s.equalsIgnoreCase("long")) {
+            return Long.class;
+        } else if (s.equalsIgnoreCase("boolean")
+                || s.equalsIgnoreCase("bool")) {
+            return Boolean.class;
+        } else {
+            return String.class;
+        }
     }
 
     private HasUrlParameterUtil() {
