@@ -79,7 +79,8 @@ public class RoutesChangedEvent extends EventObject {
     /**
      * Determines if a given route navigation target was added for this change.
      *
-     * @param clazz a route navigation target
+     * @param clazz
+     *            a route navigation target
      * @return true if the route was added for this change and false otherwise
      */
     public boolean isRouteAdded(Class<? extends Component> clazz) {
@@ -89,7 +90,8 @@ public class RoutesChangedEvent extends EventObject {
     /**
      * Determines if a given route navigation target was removed for this change.
      *
-     * @param clazz a route navigation target
+     * @param clazz
+     *            a route navigation target
      * @return true if the route was removed for this change and false otherwise
      */
     public boolean isRouteRemoved(Class<? extends Component> clazz) {
@@ -106,7 +108,8 @@ public class RoutesChangedEvent extends EventObject {
     /**
      * Determines if a route url was added for this change.
      *
-     * @param path The URL of a route
+     * @param path
+     *            the URL of a route
      * @return true if the route was added for this change and false otherwise
      */
     public boolean isPathAdded(String path) {
@@ -116,7 +119,8 @@ public class RoutesChangedEvent extends EventObject {
     /**
      * Determines if a route url was removed for this change.
      *
-     * @param path The URL of a route
+     * @param path
+     *            the URL of a route
      * @return true if the route was removed for this change and false otherwise
      */
     public boolean isPathRemoved(String path) {
