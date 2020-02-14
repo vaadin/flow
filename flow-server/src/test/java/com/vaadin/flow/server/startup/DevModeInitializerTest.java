@@ -4,16 +4,17 @@ import javax.servlet.ServletException;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -75,6 +76,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void loadingJars_useModernResourcesFolder_allFilesExist()
             throws IOException, ServletException {
         loadingJars_allFilesExist(Constants.RESOURCES_FRONTEND_DEFAULT);
+    }
+
+    @Test
+    public void loadingZipProtocolJars_useModernResourcesFolder_allFilesExist()
+            throws IOException, ServletException {
+        loadingZipProtocolJars_allFilesExist(Constants.RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
@@ -207,11 +214,43 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
-        // Create jar urls for test
-        URL jar = new URL("jar:"
-                + this.getClass().getResource("/").toString()
-                        .replace("target/test-classes/", "")
-                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend");
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder, s -> {
+            try {
+                return new URL("jar:" + s);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void loadingZipProtocolJars_allFilesExist(String resourcesFolder)
+            throws IOException, ServletException {
+        final URLStreamHandler dummyZipHandler = new URLStreamHandler() {
+
+            @Override
+            protected URLConnection openConnection(URL u) throws IOException {
+                return null;
+            }
+        };
+
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder, s -> {
+            try {
+                return new URL("zip", "", -1, s.replaceFirst("file:", ""),
+                        dummyZipHandler);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder,
+            Function<String, URL> urlBuilder)
+            throws IOException, ServletException {
+        // Create jar urls with the given urlBuilder for test
+        String urlPath = this.getClass().getResource("/").toString()
+                .replace("target/test-classes/", "")
+                + "src/test/resources/with%20space/jar-with-frontend-resources.jar!/META-INF/resources/frontend";
+        URL jar = urlBuilder.apply(urlPath);
         List<URL> urls = new ArrayList<>();
         urls.add(jar);
 
