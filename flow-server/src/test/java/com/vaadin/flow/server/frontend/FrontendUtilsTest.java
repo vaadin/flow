@@ -25,6 +25,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -400,6 +401,21 @@ public class FrontendUtilsTest {
         } finally {
             System.setProperty(USER_HOME, originalHome);
         }
+    }
+
+    @Test
+    public void commandToString_longCommand_resultIsWrapped() {
+        List<String> command = Arrays.asList("./node/node",
+                "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
+                "--config", "./webpack.config.js", "--port 57799",
+                "--watchDogPort=57798", "-d", "--inline=false",
+                "--progress", "--colors");
+        String wrappedCommand = FrontendUtils.commandToString(".", command);
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
+                + "    --config ./webpack.config.js --port 57799 \\ \n"
+                + "    --watchDogPort=57798 -d --inline=false --progress \\ \n"
+                + "    --colors \n", wrappedCommand);
     }
 
     private VaadinService setupStatsAssetMocks(String statsFile)

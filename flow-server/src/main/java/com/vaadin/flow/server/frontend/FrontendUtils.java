@@ -42,7 +42,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1423,9 +1422,20 @@ public class FrontendUtils {
      * @return the string for printing in logs
      */
     public static String commandToString(String baseDir, List<String> command) {
-        return "\n" + WordUtils
-                .wrap(String.join(" ", command).replace(baseDir, "."), 50)
-                .replace("\r", "").replace("\n", " \\ \n    ") + "\n";
+        StringBuilder retval = new StringBuilder("\n");
+        StringBuilder curLine = new StringBuilder();
+        for (String fragment : command) {
+            if (curLine.length() + fragment.length() > 55) {
+                retval.append(curLine.toString());
+                retval.append("\\ \n");
+                curLine = new StringBuilder("    ");
+            }
+            curLine.append(fragment);
+            curLine.append(" ");
+        }
+        retval.append(curLine.toString());
+        retval.append("\n");
+        return retval.toString();
     }
 
     /**
