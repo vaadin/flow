@@ -17,8 +17,8 @@ package com.vaadin.flow.router;
 
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.RouteRegistry;
@@ -77,51 +77,50 @@ public class RoutesChangedEvent extends EventObject {
     }
 
     /**
-     * To determine if a route represented by a route navigation target was added for this change.
-     * @param clazz a route navigation target.
-     * @return true if the route was added for this change and false otherwise.
+     * Determines if a given route navigation target was added for this change.
+     *
+     * @param clazz a route navigation target
+     * @return true if the route was added for this change and false otherwise
      */
     public boolean isRouteAdded(Class<? extends Component> clazz) {
         return checkIfRouteIsPresent(added, clazz);
     }
 
     /**
-     * To determine if a route represented by a route navigation target was removed for this change.
-     * @param clazz a route navigation target.
-     * @return true if the route was removed for this change and false otherwise.
+     * Determines if a given route navigation target was removed for this change.
+     *
+     * @param clazz a route navigation target
+     * @return true if the route was removed for this change and false otherwise
      */
     public boolean isRouteRemoved(Class<? extends Component> clazz) {
         return checkIfRouteIsPresent(removed, clazz);
     }
 
-    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes, Class<? extends Component> clazz) {
+    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
+                                          Class<? extends Component> clazz) {
         return routes.stream()
                 .map(RouteBaseData::getNavigationTarget)
                 .anyMatch(navigationTarget -> navigationTarget.equals(clazz));
     }
 
     /**
-     * To determine if a route represented by a url was added for this change.
-     * @param path The URL of a route.
-     * @return true if the route was added for this change and false otherwise.
+     * Determines if a route url was added for this change.
+     *
+     * @param path The URL of a route
+     * @return true if the route was added for this change and false otherwise
      */
     public boolean isPathAdded(String path) {
         return checkIfRouteIsPresent(added, path);
     }
 
     /**
-     * To determine if a route represented by a url was removed for this change.
-     * @param path The URL of a route.
-     * @return true if the route was removed for this change and false otherwise.
+     * Determines if a route url was removed for this change.
+     *
+     * @param path The URL of a route
+     * @return true if the route was removed for this change and false otherwise
      */
     public boolean isPathRemoved(String path) {
         return checkIfRouteIsPresent(removed, path);
-    }
-
-    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes, String path) {
-        return routes.stream()
-                .map(RouteBaseData::getUrl)
-                .anyMatch(url -> url.equals(path));
     }
 
     /**
@@ -130,10 +129,9 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all added navigation targets
      */
     public List<Class<? extends Component>> getAddedNavigationTargets() {
-        List<Class<? extends Component>> list = new LinkedList<>();
-        added.iterator().forEachRemaining(routeBaseData ->
-            list.add(routeBaseData.getNavigationTarget()));
-        return Collections.unmodifiableList(list);
+        return Collections.unmodifiableList(added.stream()
+                .map(RouteBaseData::getNavigationTarget)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -142,10 +140,9 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all removed navigation targets
      */
     public List<Class<? extends Component>> getRemovedNavigationTargets() {
-        List<Class<? extends Component>> list = new LinkedList<>();
-        removed.iterator().forEachRemaining(routeBaseData ->
-            list.add(routeBaseData.getNavigationTarget()));
-        return Collections.unmodifiableList(list);
+        return Collections.unmodifiableList(removed.stream()
+                .map(RouteBaseData::getNavigationTarget)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -154,10 +151,8 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all added URLs
      */
     public List<String> getAddedURLs() {
-        List<String> list = new LinkedList<>();
-        added.iterator().forEachRemaining(routeBaseData ->
-            list.add(routeBaseData.getUrl()));
-        return Collections.unmodifiableList(list);
+        return Collections.unmodifiableList(added.stream()
+                .map(RouteBaseData::getUrl).collect(Collectors.toList()));
     }
 
     /**
@@ -166,10 +161,15 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all removed URLs
      */
     public List<String> getRemovedURLs() {
-        List<String> list = new LinkedList<>();
-        removed.iterator().forEachRemaining(routeBaseData ->
-            list.add(routeBaseData.getUrl()));
-        return Collections.unmodifiableList(list);
+        return Collections.unmodifiableList(removed.stream()
+                .map(RouteBaseData::getUrl).collect(Collectors.toList()));
+    }
+
+    private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
+                                          String path) {
+        return routes.stream()
+                .map(RouteBaseData::getUrl)
+                .anyMatch(url -> url.equals(path));
     }
 
 }
