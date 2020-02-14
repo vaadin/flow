@@ -262,6 +262,53 @@ public class AbstractRouteRegistryTest {
         Assert.assertEquals("No new event should have fired", 1, events.size());
     }
 
+    @Test
+    public void routeChangedEvent_testRouteAddedAndRemoved() {
+        registry.setRoute("MyRoute1", MyRoute.class, Collections.emptyList());
+
+        registry.addRoutesChangeListener(event -> {
+            Assert.assertEquals("MyRoute2 and Alias2 must be added", 2, event.getAddedRoutes().size());
+            Assert.assertEquals("MyRoute1 must be deleted", 1, event.getRemovedRoutes().size());
+
+            Assert.assertTrue("MyRoute2 must be added", event.isRouteAdded(MyRoute.class));
+            Assert.assertTrue("Alias2 must be added", event.isRouteAdded(Secondary.class));
+            Assert.assertTrue("MyRoute1 must be deleted", event.isRouteRemoved(MyRoute.class));
+            Assert.assertTrue("MyRoute2 must be added", event.getAddedNavigationTargets().contains(MyRoute.class));
+            Assert.assertTrue("Alias2 must be added", event.getAddedNavigationTargets().contains(Secondary.class));
+            Assert.assertTrue("MyRoute1 must be deleted", event.getRemovedNavigationTargets().contains(MyRoute.class));
+        });
+
+        registry.update(() -> {
+            registry.setRoute("MyRoute2", MyRoute.class, Collections.emptyList());
+            registry.setRoute("Alias2", Secondary.class, Collections.emptyList());
+            registry.removeRoute("MyRoute1");
+        });
+    }
+
+    @Test
+    public void routeChangedEvent_testPathAddedAndRemoved() {
+        registry.setRoute("MyRoute1", MyRoute.class, Collections.emptyList());
+
+        registry.addRoutesChangeListener(event -> {
+            Assert.assertEquals("MyRoute2 and Alias2 must be added", 2, event.getAddedRoutes().size());
+            Assert.assertEquals("MyRoute1 must be deleted", 1, event.getRemovedRoutes().size());
+
+            Assert.assertTrue("MyRoute2 must be added", event.isPathAdded("MyRoute2"));
+            Assert.assertTrue("Alias2 must be added", event.isPathAdded("Alias2"));
+            Assert.assertTrue("MyRoute1 must be deleted", event.isPathRemoved("MyRoute1"));
+            Assert.assertTrue("MyRoute2 must be added", event.getAddedURLs().contains("MyRoute2"));
+            Assert.assertTrue("Alias2 must be added", event.getAddedURLs().contains("Alias2"));
+            Assert.assertTrue("MyRoute1 must be deleted", event.getRemovedURLs().contains("MyRoute1"));
+        });
+
+        registry.update(() -> {
+            registry.setRoute("MyRoute2", MyRoute.class, Collections.emptyList());
+            registry.setRoute("Alias2", Secondary.class, Collections.emptyList());
+            registry.removeRoute("MyRoute1");
+        });
+    }
+
+
     private void awaitCountDown(CountDownLatch countDownLatch) {
         try {
             countDownLatch.await();
