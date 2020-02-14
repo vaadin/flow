@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -39,7 +40,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
@@ -87,11 +87,9 @@ public class FrontendUtilsTest {
 
     @Test
     public synchronized void should_useProjectNodeFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(true, true, baseDir);
 
         assertNodeCommand(() -> baseDir);
@@ -99,22 +97,17 @@ public class FrontendUtilsTest {
 
     @Test
     public synchronized void should_useHomeFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
-        assertNodeCommand(
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNodeCommand(() -> getVaadinHomeDir());
     }
 
     @Test
     public synchronized void should_useProjectNpmFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(false, true, baseDir);
 
         assertNpmCommand(() -> baseDir);
@@ -122,13 +115,10 @@ public class FrontendUtilsTest {
 
     @Test
     public synchronized void should_useHomeNpmFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
-        assertNpmCommand(
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNpmCommand(() -> getVaadinHomeDir());
     }
 
     @Test
@@ -394,7 +384,7 @@ public class FrontendUtilsTest {
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = FileNotFoundException.class)
     public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
             throws IOException {
         String originalHome = System.getProperty(USER_HOME);
@@ -462,6 +452,14 @@ public class FrontendUtilsTest {
             assertThat(npmExecutable.get(1), containsString(path.get()));
         } finally {
             System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private String getVaadinHomeDir() {
+        try {
+            return FrontendUtils.getVaadinHomeDirectory().getAbsolutePath();
+        } catch (FileNotFoundException exception) {
+            throw new IllegalStateException(exception);
         }
     }
 
