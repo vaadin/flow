@@ -136,9 +136,9 @@ public class FrontendUtilsTest {
     @Ignore("Ignored to lessen PRs hitting the server too often")
     public void installNode_NodeIsInstalledToTargetDirectory()
             throws FrontendUtils.UnknownVersionException {
-        File targetDir = new File(baseDir + "/.vaadin");
+        File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse("Clean test should not contain a .vaadin folder", targetDir.exists());
+        Assert.assertFalse("Clean test should not contain a installation folder", targetDir.exists());
 
         String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
                 Optional.empty());
@@ -167,9 +167,9 @@ public class FrontendUtilsTest {
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
         String prefix = "node-v12.16.0-" + platform.getNodeClassifier();
 
-        File targetDir = new File(baseDir + "/.vaadin");
+        File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse("Clean test should not contain a .vaadin folder",
+        Assert.assertFalse("Clean test should not contain a installation folder",
                 targetDir.exists());
         File downloadDir = tmpDir.newFolder("v12.16.0");
         File archiveFile = new File(downloadDir,
@@ -218,7 +218,7 @@ public class FrontendUtilsTest {
                 Optional.of(new File(baseDir).toPath().toUri().toString()));
         Assert.assertNotNull(nodeExecutable);
 
-        Assert.assertTrue(
+        Assert.assertTrue("npm should have been copied to node_modules",
                 new File(targetDir, "node/node_modules/npm/bin/npm").exists());
     }
 

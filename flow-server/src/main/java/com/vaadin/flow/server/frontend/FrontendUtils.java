@@ -380,11 +380,8 @@ public class FrontendUtils {
         String command = isWindows() ? "node.exe" : "node";
         String defaultNode = FrontendUtils.isWindows() ? "node/node.exe"
                 : "node/node";
-        try {
-            return getExecutable(baseDir, command, defaultNode).getAbsolutePath();
-        }catch (IllegalStateException ise) {
-            return installNode(getVaadinHomeDirectory(), "v12.16.0", Optional.empty());
-        }
+        return getExecutable(baseDir, command, defaultNode, true)
+                .getAbsolutePath();
     }
 
     /**
@@ -394,17 +391,18 @@ public class FrontendUtils {
      *         installation directory
      * @param nodeVersion
      *         node version to install
-     * @param downloadRootUrl
-     *         optional different url to download node from. Could also be from
-     *         the filesystem.
+     * @param downloadRoot
+     *         optional download root for downloading node. May be a filesystem
+     *         file or a URL see {@link NodeInstaller#setNodeDownloadRoot(String)}.
+     *         Must be a valid URI format.
      * @return node installation path
      */
     protected static String installNode(File installDirectory,
-            String nodeVersion, Optional<String> downloadRootUrl) {
+            String nodeVersion, Optional<String> downloadRoot) {
         NodeInstaller nodeInstaller = new NodeInstaller(installDirectory,
                 getProxies()).setNodeVersion(nodeVersion);
-        if (downloadRootUrl.isPresent()) {
-            nodeInstaller.setNodeDownloadRoot(downloadRootUrl.get());
+        if (downloadRoot.isPresent()) {
+            nodeInstaller.setNodeDownloadRoot(downloadRoot.get());
         }
 
         try {
@@ -418,7 +416,7 @@ public class FrontendUtils {
     }
 
     private static List<ProxyConfig.Proxy> getProxies() {
-        // TODO: Implement proxy collection
+        // TODO: Implement proxy collection #7567
         return Collections.emptyList();
     }
 
@@ -485,7 +483,7 @@ public class FrontendUtils {
             // Otherwise look for regular `pnpm`
             String command = isWindows() ? "pnpm.cmd" : "pnpm";
             if (failOnAbsence) {
-                returnCommand.add(getExecutable(baseDir, command, null)
+                returnCommand.add(getExecutable(baseDir, command, null, false)
                         .getAbsolutePath());
             } else {
                 returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
@@ -522,7 +520,7 @@ public class FrontendUtils {
     }
 
     private static File getExecutable(String baseDir, String cmd,
-            String defaultLocation) {
+            String defaultLocation, boolean installNode) {
         File file = null;
         try {
             if (defaultLocation == null) {
@@ -535,6 +533,9 @@ public class FrontendUtils {
                         .filter(frontendToolsLocator::verifyTool).findFirst()
                         .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
                                 .orElse(null));
+            }
+            if (file == null && installNode) {
+                return new File(installNode(getVaadinHomeDirectory(), "v12.16.0", Optional.empty()));
             }
         } catch (FileNotFoundException exception) {
             Throwable cause = exception.getCause();
@@ -1310,7 +1311,7 @@ public class FrontendUtils {
      * @throws IOException
      *         if parsing fails
      */
-    public static FrontendVersion parseFrontenVersion(String versionString)
+    public static FrontendVersion parseFrontendVersion(String versionString)
             throws IOException {
         return new FrontendVersion((parseVersionString(versionString)));
     }
@@ -1366,9 +1367,9 @@ public class FrontendUtils {
                         getVaadinHomeDirectory().getAbsolutePath());
             }
             if (returnCommand.isEmpty()) {
-                // Otherwise look for regulag `npm`
+                // Otherwise look for regular `npm`
                 String command = isWindows() ? "npm.cmd" : "npm";
-                returnCommand.add(getExecutable(baseDir, command, null)
+                returnCommand.add(getExecutable(baseDir, command, null, true)
                         .getAbsolutePath());
             }
             returnCommand.add("--no-update-notifier");

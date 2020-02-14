@@ -116,11 +116,34 @@ public class NodeInstaller {
         this.fileDownloader = fileDownloader;
     }
 
+    /**
+     * Set the node version to install. (given as "v12.16.0")
+     *
+     * @param nodeVersion
+     *         version string
+     * @return this
+     */
     public NodeInstaller setNodeVersion(String nodeVersion) {
         this.nodeVersion = nodeVersion;
         return this;
     }
 
+    /**
+     * Set a custom download root.
+     * <p>
+     * This should be a url or directory under which we can find a directory
+     * {@link #nodeVersion} and there should then exist the archived node
+     * packages.
+     * For instance for v12.16.0 we should have under nodeDownloadRoot:
+     * ./v12.6.0/node-v12.16.0-linux-x64.tar.xz
+     * ./v12.6.0/node-v12.16.0-darwin-x64.tar.gz
+     * ./v12.6.0/node-v12.16.0-win-x64.zip
+     * ./v12.6.0/node-v12.16.0-win-x86.zip
+     *
+     * @param nodeDownloadRoot
+     *         custom download root
+     * @return this
+     */
     public NodeInstaller setNodeDownloadRoot(String nodeDownloadRoot) {
         this.nodeDownloadRoot = nodeDownloadRoot;
         return this;
@@ -489,7 +512,7 @@ public class NodeInstaller {
                 throw new FrontendUtils.UnknownVersionException(tool,
                         "Using command " + String.join(" ", versionCommand));
             }
-            return FrontendUtils.parseFrontenVersion(
+            return FrontendUtils.parseFrontendVersion(
                     FrontendUtils.streamToString(process.getInputStream()));
         } catch (InterruptedException | IOException e) {
             throw new FrontendUtils.UnknownVersionException(tool,
