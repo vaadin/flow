@@ -43,7 +43,6 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
     @Override
     public void extract(File archiveFile, File destinationDirectory)
             throws ArchiveExtractionException {
-
         try {
             if (archiveFile.getAbsolutePath().endsWith("msi")) {
                 extractMSIArchive(archiveFile, destinationDirectory);
@@ -67,9 +66,8 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
             int result = child.waitFor();
             if (result != 0) {
                 throw new ArchiveExtractionException(
-                        "Could not extract " + archiveFile
-                                .getAbsolutePath() + "; return code "
-                                + result);
+                        "Could not extract " + archiveFile.getAbsolutePath()
+                                + "; return code " + result);
             }
         } catch (InterruptedException e) {
             throw new ArchiveExtractionException(
@@ -89,36 +87,50 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                         destinationDirectory + File.separator + entry
                                 .getName());
                 prepDestination(destPath, entry.isDirectory());
-                if (!entry.isDirectory()) {
-                    InputStream in = null;
-                    OutputStream out = null;
-                    try {
-                        in = zipFile.getInputStream(entry);
-                        out = new FileOutputStream(destPath);
-                        IOUtils.copy(in, out);
-                    } finally {
-                        IOUtils.closeQuietly(in);
-                        IOUtils.closeQuietly(out);
-                    }
-                }
+
+                copyZipFileContents(zipFile, entry, destPath);
             }
         } finally {
             zipFile.close();
         }
     }
 
-    private void extractGzipTarArchive(File archiveFile, File destinationDirectory)
+    /**
+     * Copy ZipEntry file contents to target path.
+     *
+     * @param zipFile
+     *         zip file
+     * @param entry
+     *         zip entry
+     * @param destinationFile
+     *         destination
+     * @throws IOException
+     *         thrown if copying fails
+     */
+    private void copyZipFileContents(ZipFile zipFile, ZipEntry entry,
+            File destinationFile) throws IOException {
+        if (entry.isDirectory()) {
+            return;
+        }
+        try (InputStream in = zipFile
+                .getInputStream(entry); OutputStream out = new FileOutputStream(
+                destinationFile)) {
+            IOUtils.copy(in, out);
+        }
+    }
+
+    private void extractGzipTarArchive(File archive, File destinationDirectory)
             throws IOException {
         // TarArchiveInputStream can be constructed with a normal FileInputStream if
         // we ever need to extract regular '.tar' files.
-        TarArchiveInputStream tarIn = null;
-        try (FileInputStream fis = new FileInputStream(archiveFile)) {
-            tarIn = new TarArchiveInputStream(
-                    new GzipCompressorInputStream(fis));
+
+        try (FileInputStream fis = new FileInputStream(archive);
+             GzipCompressorInputStream gis = new GzipCompressorInputStream(fis);
+             TarArchiveInputStream tarIn = new TarArchiveInputStream(gis)) {
 
             TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
-            String canonicalDestinationDirectory =
-                    destinationDirectory.getCanonicalPath();
+            String canonicalDestinationDirectory = destinationDirectory
+                    .getCanonicalPath();
             while (tarEntry != null) {
                 // Create a file for this tarEntry
                 final File destPath = new File(
@@ -128,30 +140,41 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
 
                 if (!startsWithPath(destPath.getCanonicalPath(),
                         canonicalDestinationDirectory)) {
-                    throw new IOException(
-                            "Expanding " + tarEntry.getName()
-                                    + " would create file outside of "
-                                    + canonicalDestinationDirectory);
+                    throw new IOException("Expanding " + tarEntry.getName()
+                            + " would create file outside of "
+                            + canonicalDestinationDirectory);
                 }
 
-                if (!tarEntry.isDirectory()) {
-                    destPath.createNewFile();
-                    boolean isExecutable =
-                            (tarEntry.getMode() & 0100) > 0;
-                    destPath.setExecutable(isExecutable);
-
-                    OutputStream out = null;
-                    try {
-                        out = new FileOutputStream(destPath);
-                        IOUtils.copy(tarIn, out);
-                    } finally {
-                        IOUtils.closeQuietly(out);
-                    }
-                }
+                copyTarFileContents(tarIn, tarEntry, destPath);
                 tarEntry = tarIn.getNextTarEntry();
             }
-        } finally {
-            IOUtils.closeQuietly(tarIn);
+        }
+    }
+
+    /**
+     * Copy TarArchiveEntry file contents to target path.
+     * Set file to executable if marked so in the entry.
+     *
+     * @param tarIn
+     *         tar archive input stream
+     * @param tarEntry
+     *         tar archive entry
+     * @param destinationFile
+     *         destination
+     * @throws IOException
+     *         thrown if copying fails
+     */
+    private void copyTarFileContents(TarArchiveInputStream tarIn,
+            TarArchiveEntry tarEntry, File destinationFile) throws IOException {
+        if (tarEntry.isDirectory()) {
+            return;
+        }
+        destinationFile.createNewFile();
+        boolean isExecutable = (tarEntry.getMode() & 0100) > 0;
+        destinationFile.setExecutable(isExecutable);
+
+        try (FileOutputStream out = new FileOutputStream(destinationFile)) {
+            IOUtils.copy(tarIn, out);
         }
     }
 

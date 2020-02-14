@@ -52,8 +52,6 @@ import org.slf4j.LoggerFactory;
  * @since
  */
 public final class DefaultFileDownloader implements FileDownloader {
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(FileDownloader.class);
     public static final String HTTPS_PROTOCOLS = "https.protocols";
 
     private final ProxyConfig proxyConfig;
@@ -63,83 +61,92 @@ public final class DefaultFileDownloader implements FileDownloader {
 
     /**
      * Construct file downloader with given proxy configuration.
-     * @param proxyConfig proxy configuration to use for file download
+     *
+     * @param proxyConfig
+     *         proxy configuration to use for file download
      */
     public DefaultFileDownloader(ProxyConfig proxyConfig) {
         this.proxyConfig = proxyConfig;
     }
 
     @Override
-    public void download(String downloadUrl, File destination, String userName,
-            String password) throws DownloadException {
+    public void download(String downloadTarget, File destination,
+            String userName, String password) throws DownloadException {
         this.userName = userName;
         this.password = password;
 
-        String fixedDownloadUrl = downloadUrl;
-        String httpsProtocols = System.setProperty(HTTPS_PROTOCOLS, "TLSv1.2");
+        String fixedDownloadUri = FilenameUtils
+                .separatorsToUnix(downloadTarget);
+        String oldProtocols = System.setProperty(HTTPS_PROTOCOLS, "TLSv1.2");
         try {
             // force tls to 1.2 since github removed weak cryptographic standards
             // https://blog.github.com/2018-02-02-weak-cryptographic-standards-removal-notice/
-            fixedDownloadUrl = FilenameUtils.separatorsToUnix(fixedDownloadUrl);
-            URI downloadURI = new URI(fixedDownloadUrl);
+            URI downloadURI = new URI(fixedDownloadUri);
             if ("file".equalsIgnoreCase(downloadURI.getScheme())) {
                 FileUtils.copyFile(new File(downloadURI), destination);
             } else {
-                CloseableHttpResponse response = execute(fixedDownloadUrl);
-                int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode != 200) {
-                    throw new DownloadException("Got error code " + statusCode
-                            + " from the server.");
-                }
-                new File(FilenameUtils.getFullPathNoEndSeparator(destination.toString())).mkdirs();
-                ReadableByteChannel rbc = Channels
-                        .newChannel(response.getEntity().getContent());
-                FileOutputStream fos = new FileOutputStream(destination);
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                fos.close();
+                downloadFile(destination, downloadURI);
             }
         } catch (IOException | URISyntaxException e) {
             throw new DownloadException(
-                    "Could not download " + fixedDownloadUrl, e);
-        }finally {
-            if(httpsProtocols == null)  {
+                    "Could not download " + fixedDownloadUri, e);
+        } finally {
+            // Return original protocol property
+            if (oldProtocols == null) {
                 System.clearProperty(HTTPS_PROTOCOLS);
             } else {
-                System.setProperty(HTTPS_PROTOCOLS, httpsProtocols);
+                System.setProperty(HTTPS_PROTOCOLS, oldProtocols);
             }
         }
     }
 
-    private CloseableHttpResponse execute(String requestUrl)
-            throws IOException {
+    public void downloadFile(File destination, URI downloadUri)
+            throws IOException, DownloadException {
+        CloseableHttpResponse response = execute(downloadUri);
+        int statusCode = response.getStatusLine().getStatusCode();
+        if (statusCode != 200) {
+            throw new DownloadException(
+                    "Got error code " + statusCode + " from the server.");
+        }
+        new File(
+                FilenameUtils.getFullPathNoEndSeparator(destination.toString()))
+                .mkdirs();
+        ReadableByteChannel rbc = Channels
+                .newChannel(response.getEntity().getContent());
+        try (FileOutputStream fos = new FileOutputStream(destination)) {
+            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        }
+    }
+
+    private CloseableHttpResponse execute(URI requestUri) throws IOException {
         CloseableHttpResponse response;
-        ProxyConfig.Proxy proxy = proxyConfig.getProxyForUrl(requestUrl);
+        ProxyConfig.Proxy proxy = proxyConfig
+                .getProxyForUrl(requestUri.toString());
         if (proxy != null) {
-            LOGGER.info("Downloading via proxy " + proxy.toString());
-            return executeViaProxy(proxy, requestUrl);
+            getLogger().info("Downloading via proxy {}", proxy.toString());
+            return executeViaProxy(proxy, requestUri);
         } else {
-            LOGGER.info("No proxy was configured, downloading directly");
+            getLogger().info("No proxy was configured, downloading directly");
             if (StringUtils.isNotEmpty(userName) && StringUtils
                     .isNotEmpty(password)) {
-                LOGGER.info("Using credentials (" + userName
-                        + ") from settings.xml");
+                getLogger().info("Using credentials ({}) from settings.xml", userName);
                 // Auth target host
-                URL aURL = new URL(requestUrl);
+                URL aURL = requestUri.toURL();
                 HttpClientContext localContext = makeLocalContext(aURL);
                 CredentialsProvider credentialsProvider = makeCredentialsProvider(
                         aURL.getHost(), aURL.getPort(), userName, password);
                 response = buildHttpClient(credentialsProvider)
-                        .execute(new HttpGet(requestUrl), localContext);
+                        .execute(new HttpGet(requestUri), localContext);
             } else {
                 response = buildHttpClient(null)
-                        .execute(new HttpGet(requestUrl));
+                        .execute(new HttpGet(requestUri));
             }
         }
         return response;
     }
 
     private CloseableHttpResponse executeViaProxy(ProxyConfig.Proxy proxy,
-            String requestUrl) throws IOException {
+            URI requestUri) throws IOException {
         final CloseableHttpClient proxyClient;
         if (proxy.useAuthentication()) {
             proxyClient = buildHttpClient(
@@ -154,7 +161,7 @@ public final class DefaultFileDownloader implements FileDownloader {
         final RequestConfig requestConfig = RequestConfig.custom()
                 .setProxy(proxyHttpHost).build();
 
-        final HttpGet request = new HttpGet(requestUrl);
+        final HttpGet request = new HttpGet(requestUri);
         request.setConfig(requestConfig);
 
         return proxyClient.execute(request);
@@ -188,5 +195,9 @@ public final class DefaultFileDownloader implements FileDownloader {
         HttpClientContext localContext = HttpClientContext.create();
         localContext.setAuthCache(authCache);
         return localContext;
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(FileDownloader.class);
     }
 }

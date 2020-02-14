@@ -46,18 +46,18 @@ public class NodeInstaller {
     public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
 
     private static final String NODE_WINDOWS =
-            NodeInstaller.INSTALL_PATH.replaceAll("/", "\\\\") + "\\node.exe";
-    private static final String NODE_DEFAULT =
-            NodeInstaller.INSTALL_PATH + "/node";
-    private static final String NPM =
-            NodeInstaller.INSTALL_PATH + "/node_modules/npm/bin/npm-cli.js";
+            INSTALL_PATH.replaceAll("/", "\\\\") + "\\node.exe";
+    private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
 
-    private static final Object LOCK = new Object();
+    private final Object LOCK = new Object();
 
-    private String npmVersion = "provided";
-    private String nodeVersion, nodeDownloadRoot, userName, password;
+    public static final String PROVIDED_VERSION = "provided";
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private String npmVersion = PROVIDED_VERSION;
+    private String nodeVersion;
+    private String nodeDownloadRoot;
+    private String userName;
+    private String password;
 
     private final File installDirectory;
     private final Platform platform;
@@ -149,18 +149,32 @@ public class NodeInstaller {
         return this;
     }
 
+    /**
+     * Set user name to use.
+     *
+     * @param userName
+     *         user name
+     * @return this
+     */
     public NodeInstaller setUserName(String userName) {
         this.userName = userName;
         return this;
     }
 
+    /**
+     * Set password to use.
+     *
+     * @param password
+     *         password
+     * @return this
+     */
     public NodeInstaller setPassword(String password) {
         this.password = password;
         return this;
     }
 
     private boolean npmProvided() throws InstallationException {
-        if ("provided".equals(npmVersion)) {
+        if (PROVIDED_VERSION.equals(npmVersion)) {
             if (Integer.parseInt(nodeVersion.replace("v", "").split("[.]")[0])
                     < 4) {
                 throw new InstallationException("NPM version is '" + npmVersion
@@ -171,23 +185,32 @@ public class NodeInstaller {
         return false;
     }
 
+    /**
+     * Install node and NPM
+     *
+     * @throws InstallationException
+     */
     public void install() throws InstallationException {
         // use static lock object for a synchronized block
         synchronized (LOCK) {
+            // If no download root defined use default root
             if (nodeDownloadRoot == null || nodeDownloadRoot.isEmpty()) {
                 nodeDownloadRoot = DEFAULT_NODEJS_DOWNLOAD_ROOT;
             }
-            if (!nodeIsAlreadyInstalled()) {
-                logger.info("Installing node version {}", nodeVersion);
-                if (!nodeVersion.startsWith("v")) {
-                    logger.warn(
-                            "Node version does not start with naming convention 'v'.");
-                }
-                if (platform.isWindows()) {
-                    installNodeWithNpmForWindows();
-                } else {
-                    installNodeDefault();
-                }
+
+            if (nodeIsAlreadyInstalled()) {
+                return;
+            }
+
+            getLogger().info("Installing node version {}", nodeVersion);
+            if (!nodeVersion.startsWith("v")) {
+                getLogger()
+                        .warn("Node version does not start with naming convention 'v'. If download fails please add 'v' to the version string.");
+            }
+            if (platform.isWindows()) {
+                installNodeWithNpmForWindows();
+            } else {
+                installNodeDefault();
             }
         }
     }
@@ -203,13 +226,13 @@ public class NodeInstaller {
                 String version = getVersion("Node", nodeVersionCommand)
                         .getFullVersion();
 
-                if (version.equals(this.nodeVersion)) {
-                    this.logger.info("Node {} is already installed.", version);
+                if (version.equals(nodeVersion)) {
+                    getLogger().info("Node {} is already installed.", version);
                     return true;
                 } else {
-                    this.logger
+                    getLogger()
                             .info("Node {} was installed, but we need version {}",
-                                    version, this.nodeVersion);
+                                    version, nodeVersion);
                     return false;
                 }
             } else {
@@ -222,20 +245,19 @@ public class NodeInstaller {
 
     private void installNodeDefault() throws InstallationException {
         try {
-            final String longNodeFilename = getLongNodeFilename(
-                    this.nodeVersion, false);
+            final String longNodeFilename = getLongNodeFilename(nodeVersion,
+                    false);
             String downloadUrl =
-                    this.nodeDownloadRoot + getNodeDownloadFilename(
-                            this.nodeVersion, false);
+                    nodeDownloadRoot + getNodeDownloadFilename(nodeVersion,
+                            false);
             String classifier = platform.getNodeClassifier();
 
             File tmpDirectory = getTempDirectory();
 
-            File archive = resolveArchive("node", this.nodeVersion, classifier,
+            File archive = resolveArchive("node", nodeVersion, classifier,
                     platform.getArchiveExtension());
 
-            downloadFileIfMissing(downloadUrl, archive, this.userName,
-                    this.password);
+            downloadFileIfMissing(downloadUrl, archive, userName, password);
 
             try {
                 extractFile(archive, tmpDirectory);
@@ -244,7 +266,7 @@ public class NodeInstaller {
                     // https://github.com/eirslett/frontend-maven-plugin/issues/794
                     // The downloading was probably interrupted and archive file is incomplete:
                     // delete it to retry from scratch
-                    this.logger
+                    getLogger()
                             .error("The archive file {} is corrupted and will be deleted. "
                                             + "Please try the build again.",
                                     archive.getPath());
@@ -267,7 +289,7 @@ public class NodeInstaller {
                 File destinationDirectory = getNodeInstallDirectory();
 
                 File destination = new File(destinationDirectory, "node");
-                this.logger
+                getLogger()
                         .info("Copying node binary from {} to {}", nodeBinary,
                                 destination);
                 if (destination.exists() && !destination.delete()) {
@@ -299,7 +321,7 @@ public class NodeInstaller {
                     File npmDirectory = new File(nodeModulesDirectory, "npm");
                     FileUtils.copyDirectory(tmpNodeModulesDir,
                             nodeModulesDirectory);
-                    this.logger.info("Extracting NPM");
+                    getLogger().info("Extracting NPM");
                     // create a copy of the npm scripts next to the node executable
                     for (String script : Arrays.asList("npm", "npm.cmd")) {
                         File scriptFile = new File(npmDirectory,
@@ -312,7 +334,7 @@ public class NodeInstaller {
 
                 deleteTempDirectory(tmpDirectory);
 
-                this.logger.info("Installed node locally.");
+                getLogger().info("Installed node locally.");
             }
         } catch (IOException e) {
             throw new InstallationException("Could not install Node", e);
@@ -326,20 +348,19 @@ public class NodeInstaller {
 
     private void installNodeWithNpmForWindows() throws InstallationException {
         try {
-            final String longNodeFilename = getLongNodeFilename(
-                    this.nodeVersion, true);
+            final String longNodeFilename = getLongNodeFilename(nodeVersion,
+                    true);
             String downloadUrl =
-                    this.nodeDownloadRoot + getNodeDownloadFilename(
-                            this.nodeVersion, true);
+                    nodeDownloadRoot + getNodeDownloadFilename(nodeVersion,
+                            true);
             String classifier = platform.getNodeClassifier();
 
             File tmpDirectory = getTempDirectory();
 
-            File archive = resolveArchive("node", this.nodeVersion, classifier,
+            File archive = resolveArchive("node", nodeVersion, classifier,
                     platform.getArchiveExtension());
 
-            downloadFileIfMissing(downloadUrl, archive, this.userName,
-                    this.password);
+            downloadFileIfMissing(downloadUrl, archive, userName, password);
 
             extractFile(archive, tmpDirectory);
 
@@ -354,7 +375,7 @@ public class NodeInstaller {
                 File destinationDirectory = getNodeInstallDirectory();
 
                 File destination = new File(destinationDirectory, "node.exe");
-                this.logger
+                getLogger()
                         .info("Copying node binary from {} to {}", nodeBinary,
                                 destination);
                 try {
@@ -366,7 +387,7 @@ public class NodeInstaller {
                                     + nodeBinary + " to " + destination);
                 }
 
-                if ("provided".equals(this.npmVersion)) {
+                if (PROVIDED_VERSION.equals(npmVersion)) {
                     File tmpNodeModulesDir = new File(tmpDirectory,
                             longNodeFilename + File.separator + "node_modules");
                     File nodeModulesDirectory = new File(destinationDirectory,
@@ -376,7 +397,7 @@ public class NodeInstaller {
                 }
                 deleteTempDirectory(tmpDirectory);
 
-                this.logger.info("Installed node locally.");
+                getLogger().info("Installed node locally.");
             }
         } catch (IOException e) {
             throw new InstallationException("Could not install Node", e);
@@ -392,7 +413,7 @@ public class NodeInstaller {
     private File getTempDirectory() {
         File tmpDirectory = new File(getNodeInstallDirectory(), "tmp");
         if (!tmpDirectory.exists()) {
-            logger.debug("Creating temporary directory {}", tmpDirectory);
+            getLogger().debug("Creating temporary directory {}", tmpDirectory);
             tmpDirectory.mkdirs();
         }
         return tmpDirectory;
@@ -405,7 +426,8 @@ public class NodeInstaller {
     private File getNodeInstallDirectory() {
         File nodeInstallDirectory = new File(installDirectory, INSTALL_PATH);
         if (!nodeInstallDirectory.exists()) {
-            logger.debug("Creating install directory {}", nodeInstallDirectory);
+            getLogger().debug("Creating install directory {}",
+                    nodeInstallDirectory);
             nodeInstallDirectory.mkdirs();
         }
         return nodeInstallDirectory;
@@ -413,23 +435,22 @@ public class NodeInstaller {
 
     private void deleteTempDirectory(File tmpDirectory) throws IOException {
         if (tmpDirectory != null && tmpDirectory.exists()) {
-            logger.debug("Deleting temporary directory {}", tmpDirectory);
+            getLogger().debug("Deleting temporary directory {}", tmpDirectory);
             FileUtils.deleteDirectory(tmpDirectory);
         }
     }
 
     private void extractFile(File archive, File destinationDirectory)
             throws ArchiveExtractionException {
-        this.logger.info("Unpacking {} into {}", archive, destinationDirectory);
-        this.archiveExtractor
-                .extract(archive, destinationDirectory);
+        getLogger().info("Unpacking {} into {}", archive, destinationDirectory);
+        archiveExtractor.extract(archive, destinationDirectory);
     }
 
     private void downloadFileIfMissing(String downloadUrl, File destination,
             String userName, String password) throws DownloadException {
         if (!destination.exists()) {
-            this.logger.info("Downloading {} to {}", downloadUrl, destination);
-            this.fileDownloader
+            getLogger().info("Downloading {} to {}", downloadUrl, destination);
+            fileDownloader
                     .download(downloadUrl, destination, userName, password);
         }
     }
@@ -518,5 +539,9 @@ public class NodeInstaller {
             throw new FrontendUtils.UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger("NodeInstaller");
     }
 }
