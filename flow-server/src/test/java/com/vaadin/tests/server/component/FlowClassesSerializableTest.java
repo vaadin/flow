@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.OutputStream;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,6 +21,19 @@ import com.vaadin.flow.server.StreamVariable;
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
 public class FlowClassesSerializableTest extends ClassesSerializableTest {
+
+
+    protected Stream<String> getExcludedPatterns() {
+        return Stream.concat(super.getExcludedPatterns(), Stream.of(
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ArchiveExtractor",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.Platform",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig\\$Proxy",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig"));
+    }
 
     /**
      * {@link HtmlComponent} and {@link HtmlContainer} are not covered by

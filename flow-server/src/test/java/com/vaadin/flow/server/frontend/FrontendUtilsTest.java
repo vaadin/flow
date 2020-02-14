@@ -161,22 +161,24 @@ public class FrontendUtilsTest {
 
     @Test
     public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
-            throws FrontendUtils.UnknownVersionException, IOException {
+            throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
         String prefix = "node-v12.16.0-" + platform.getNodeClassifier();
 
         File targetDir = new File(baseDir + "/.vaadin");
 
-        Assert.assertFalse("Clean test should not contain a .vaadin folder", targetDir.exists());
+        Assert.assertFalse("Clean test should not contain a .vaadin folder",
+                targetDir.exists());
         File downloadDir = tmpDir.newFolder("v12.16.0");
         File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
         archiveFile.createNewFile();
         Path tempArchive = archiveFile.toPath();
 
-        if(platform.getArchiveExtension().equals("zip")) {
-            try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(tempArchive))) {
+        if (platform.getArchiveExtension().equals("zip")) {
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                    Files.newOutputStream(tempArchive))) {
                 zipOutputStream
                         .putNextEntry(new ZipEntry(prefix + "/" + nodeExec));
                 zipOutputStream.closeEntry();
@@ -188,20 +190,25 @@ public class FrontendUtilsTest {
                 zipOutputStream.closeEntry();
             }
         } else {
-            try (OutputStream fo = Files.newOutputStream(tempArchive);
-                 OutputStream gzo = new GzipCompressorOutputStream(fo);
-                 ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+            try (OutputStream fo = Files.newOutputStream(
+                    tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
+                    fo); ArchiveOutputStream o = new TarArchiveOutputStream(
+                    gzo)) {
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/" + nodeExec),
+                        prefix + "/bin/" + nodeExec));
+                o.closeArchiveEntry();
                 o.putArchiveEntry(
-                        o.createArchiveEntry(new File(prefix + "/" + nodeExec),
-                                prefix + "/" + nodeExec));
+                        o.createArchiveEntry(new File(prefix + "/bin/npm"),
+                                prefix + "/bin/npm"));
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/node_modules/npm/bin/npm"),
-                        prefix + "/node_modules/npm/bin/npm"));
+                        new File(prefix + "/lib/node_modules/npm/bin/npm"),
+                        prefix + "/lib/node_modules/npm/bin/npm"));
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/node_modules/npm/bin/npm.cmd"),
-                        prefix + "/node_modules/npm/bin/npm.cmd"));
+                        new File(prefix + "/lib/node_modules/npm/bin/npm.cmd"),
+                        prefix + "/lib/node_modules/npm/bin/npm.cmd"));
                 o.closeArchiveEntry();
             }
         }
@@ -210,7 +217,8 @@ public class FrontendUtilsTest {
                 Optional.of(new File(baseDir).toPath().toUri().toString()));
         Assert.assertNotNull(nodeExecutable);
 
-        Assert.assertTrue(new File(targetDir, "node/node_modules/npm/bin/npm").exists());
+        Assert.assertTrue(
+                new File(targetDir, "node/node_modules/npm/bin/npm").exists());
     }
 
     @Test
