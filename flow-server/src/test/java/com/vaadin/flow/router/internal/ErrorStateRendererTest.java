@@ -136,7 +136,7 @@ public class ErrorStateRendererTest {
         ErrorParameter<Exception> parameter = new ErrorParameter<>(
                 Exception.class, new NullPointerException());
         ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getRouter(),
-                new Location("error"), ui, NavigationTrigger.CLIENT_SIDE,
+                new Location("error"), ui, NavigationTrigger.ROUTER_LINK,
                 parameter);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
@@ -158,7 +158,7 @@ public class ErrorStateRendererTest {
                         Collections.singleton(InfiniteLoopErrorTarget.class));
 
         NavigationEvent event = new NavigationEvent(ui.getRouter(),
-                new Location("npe"), ui, NavigationTrigger.CLIENT_SIDE);
+                new Location("npe"), ui, NavigationTrigger.ROUTER_LINK);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
         renderer.handle(event);
@@ -178,7 +178,7 @@ public class ErrorStateRendererTest {
         ErrorParameter<Exception> parameter = new ErrorParameter<>(
                 Exception.class, new NullPointerException());
         ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getRouter(),
-                new Location("error"), ui, NavigationTrigger.CLIENT_SIDE,
+                new Location("error"), ui, NavigationTrigger.ROUTER_LINK,
                 parameter);
         Assert.assertEquals(200, renderer.handle(event));
 
