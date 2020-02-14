@@ -30,7 +30,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameterUtil;
-import com.vaadin.flow.router.ParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
@@ -194,21 +194,32 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private List<RouteData> getRegisteredRoutes(
             ConfiguredRoutes configuration) {
         List<RouteData> registeredRoutes = new ArrayList<>();
-        configuration.getTargetRoutes().forEach((target, url) -> {
+        configuration.getTargetRoutes()
+                .forEach((target, targetRoutePathTemplate) -> {
 
-            List<RouteAliasData> routeAliases = new ArrayList<>();
+                    List<RouteAliasData> routeAliases = new ArrayList<>();
 
-            configuration.getRoutePaths(target).stream()
-                    .filter(route -> !route.equals(url))
-                    .forEach(route -> routeAliases.add(new RouteAliasData(
-                            getParentLayouts(configuration, target, route),
-                            route, null, target)));
-            List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
-                    configuration, target, url);
-            RouteData route = new RouteData(parentLayouts, url, null,
-                    target, routeAliases);
-            registeredRoutes.add(route);
-        });
+                    configuration.getRoutePaths(target).stream()
+                            .filter(routePathTemplate -> !routePathTemplate
+                                    .equals(targetRoutePathTemplate))
+                            .forEach(aliasRoutePathTemplate -> routeAliases
+                                    .add(new RouteAliasData(
+                                            getParentLayouts(configuration,
+                                                    target,
+                                                    aliasRoutePathTemplate),
+                                            aliasRoutePathTemplate,
+                                            configuration.getParameters(
+                                                    aliasRoutePathTemplate),
+                                            target)));
+                    List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
+                            configuration, target, targetRoutePathTemplate);
+                    RouteData route = new RouteData(parentLayouts,
+                            targetRoutePathTemplate,
+                            configuration
+                                    .getParameters(targetRoutePathTemplate),
+                            target, routeAliases);
+                    registeredRoutes.add(route);
+                });
 
         Collections.sort(registeredRoutes);
 
@@ -229,7 +240,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         for (RouteData route : routeData) {
             RouteData nonAliasCollection = new RouteData(
                     route.getParentLayouts(), route.getUrl(),
-                    route.getParameters(), route.getNavigationTarget(),
+                    route.getDefinedParameters(), route.getNavigationTarget(),
                     Collections.emptyList());
 
             flatRoutes.add(nonAliasCollection);
@@ -244,7 +255,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             String url) {
         RouteTarget routeTarget = configuration.getRouteTarget(url);
         if (routeTarget != null) {
-            return routeTarget.getParentLayouts(target);
+            return routeTarget.getParentLayouts();
         }
         return Collections.emptyList();
     }
@@ -289,7 +300,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getTargetRoute(
             Class<? extends Component> navigationTarget,
-            EnumSet<ParameterFormat> format) {
+            EnumSet<RouteParameterFormat> format) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
         return Optional.ofNullable(

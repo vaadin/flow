@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
@@ -36,8 +37,31 @@ public abstract class RouteBaseData<T extends RouteBaseData>
 
     private final List<Class<? extends RouterLayout>> parentLayouts;
     private final String url;
-    private final List<Class<?>> parameters;
+    private final Map<String, String> parameters;
     private final Class<? extends Component> navigationTarget;
+
+    /**
+     * RouteBaseData constructor.
+     *
+     * @param parentLayouts
+     *         route parent layout class chain
+     * @param url
+     *         full route url
+     * @param parameters
+     *         navigation target path parameters
+     * @param navigationTarget
+     *         route navigation target
+     * @deprecated use {@link #RouteBaseData(List, String, Map, Class)} instead.
+     */
+    @Deprecated
+    public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
+            String url, List<Class<?>> parameters,
+            Class<? extends Component> navigationTarget) {
+        this.parentLayouts = Collections.unmodifiableList(parentLayouts);
+        this.url = url;
+        this.parameters = Collections.emptyMap();
+        this.navigationTarget = navigationTarget;
+    }
 
     /**
      * RouteBaseData constructor.
@@ -52,11 +76,11 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *         route navigation target
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
-            String url, List<Class<?>> parameters,
+            String url, Map<String, String> parameters,
             Class<? extends Component> navigationTarget) {
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
         this.url = url;
-        this.parameters = Collections.emptyList();
+        this.parameters = Collections.unmodifiableMap(parameters);
         this.navigationTarget = navigationTarget;
     }
 
@@ -91,14 +115,22 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     }
 
     /**
-     * This method returns an empty list.
+     * Get {@link Route} url parameters if any.
      *
-     * @return an empty list.
-     * @deprecated currently parameters information may be only retrieved from
-     *             within the route url.
+     * @return url parameters (by type and in order)
+     * @deprecated use {@link #getDefinedParameters()} instead.
      */
     @Deprecated
     public List<Class<?>> getParameters() {
+        return HasUrlParameterUtil.getParameterTypes(parameters.values());
+    }
+
+    /**
+     * Get {@link Route} url parameters if any.
+     *
+     * @return url parameters names mapped with their types.
+     */
+    public Map<String, String> getDefinedParameters() {
         return parameters;
     }
 
