@@ -18,11 +18,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -438,12 +438,21 @@ public class FrontendUtils {
             String defaultLocation) {
         File file = null;
         try {
-            file = defaultLocation == null
-                    ? frontendToolsLocator.tryLocateTool(cmd).orElse(null)
-                    : Optional.of(new File(baseDir, defaultLocation))
-                            .filter(frontendToolsLocator::verifyTool)
-                            .orElseGet(() -> frontendToolsLocator
-                                    .tryLocateTool(cmd).orElse(null));
+            if (defaultLocation == null) {
+                file = frontendToolsLocator.tryLocateTool(cmd).orElse(null);
+            } else {
+                file = Arrays
+                        .asList(baseDir,
+                                getVaadinHomeDirectory().getAbsolutePath())
+                        .stream().map(dir -> new File(dir, defaultLocation))
+                        .filter(frontendToolsLocator::verifyTool).findFirst()
+                        .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
+                                .orElse(null));
+            }
+        } catch (FileNotFoundException exception) {
+            Throwable cause = exception.getCause();
+            assert cause != null;
+            throw new IllegalStateException(cause);
         } catch (Exception e) { // NOSONAR
             // There are IOException coming from process fork
         }
@@ -1175,33 +1184,48 @@ public class FrontendUtils {
 
     private static List<String> getNpmExecutable(String baseDir,
             boolean removePnpmLock) {
+        try {
+            List<String> returnCommand = getNpmScriptCommand(baseDir);
+            if (returnCommand.isEmpty()) {
+                returnCommand = getNpmScriptCommand(
+                        getVaadinHomeDirectory().getAbsolutePath());
+            }
+            if (returnCommand.isEmpty()) {
+                // Otherwise look for regulag `npm`
+                String command = isWindows() ? "npm.cmd" : "npm";
+                returnCommand.add(getExecutable(baseDir, command, null)
+                        .getAbsolutePath());
+            }
+            returnCommand.add("--no-update-notifier");
+            returnCommand.add("--no-audit");
+
+            if (removePnpmLock) {
+                // remove pnpm-lock.yaml which contains pnpm as a dependency.
+                new File(baseDir, "pnpm-lock.yaml").delete();
+            }
+
+            return returnCommand;
+        } catch (FileNotFoundException exception) {
+            assert exception.getCause() != null;
+            throw new IllegalStateException(exception.getCause());
+        }
+    }
+
+    private static List<String> getNpmScriptCommand(String dir) {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `npm-cli` node script instead
-        File file = new File(baseDir, "node/node_modules/npm/bin/npm-cli.js");
+        File file = new File(dir, "node/node_modules/npm/bin/npm-cli.js");
         List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeExecutable(baseDir));
+            returnCommand.add(getNodeExecutable(dir));
             returnCommand.add(file.getAbsolutePath());
-        } else {
-            // Otherwise look for regulag `npm`
-            String command = isWindows() ? "npm.cmd" : "npm";
-            returnCommand.add(
-                    getExecutable(baseDir, command, null).getAbsolutePath());
         }
-        returnCommand.add("--no-update-notifier");
-        returnCommand.add("--no-audit");
-
-        if (removePnpmLock) {
-            // remove pnpm-lock.yaml which contains pnpm as a dependency.
-            new File(baseDir, "pnpm-lock.yaml").delete();
-        }
-
         return returnCommand;
     }
 
-    static File getVaadinHomeDirectory() {
+    static File getVaadinHomeDirectory() throws FileNotFoundException {
         File home = FileUtils.getUserDirectory();
         if (!home.exists()) {
             throw new IllegalStateException("The user directory '"
@@ -1216,7 +1240,7 @@ public class FrontendUtils {
             if (vaadinFolder.isDirectory()) {
                 return vaadinFolder;
             } else {
-                throw new IllegalStateException("The path '"
+                throw new FileNotFoundException("The path '"
                         + vaadinFolder.getAbsolutePath()
                         + "' is not a directory. "
                         + "This path is used to store vaadin related data. "
@@ -1227,10 +1251,11 @@ public class FrontendUtils {
             FileUtils.forceMkdir(vaadinFolder);
             return vaadinFolder;
         } catch (IOException exception) {
-            throw new UncheckedIOException(
+            FileNotFoundException exc = new FileNotFoundException(
                     "Couldn't create '.vaadin' folder inside home directory '"
-                            + home.getAbsolutePath() + "'",
-                    exception);
+                            + home.getAbsolutePath() + "'");
+            exc.initCause(exception);
+            throw exc;
         }
     }
 
