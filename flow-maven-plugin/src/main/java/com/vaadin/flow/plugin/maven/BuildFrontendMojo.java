@@ -117,6 +117,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
     private boolean pnpmEnable;
 
+    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = "false")
+    private boolean requireHomeNodeExec;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         updateBuildFile();
@@ -167,6 +170,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withConnectJavaSourceFolder(javaSourceFolder)
                         .withConnectGeneratedOpenApiJson(openApiJsonFile)
                         .withConnectClientTsApiFolder(generatedTsFolder)
+                        .withHomeNodeExecRequired(requireHomeNodeExec)
                         .build()
                         .execute();
     }
@@ -182,8 +186,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        String nodePath = FrontendUtils
+        String nodePath;
+        if (requireHomeNodeExec) {
+            nodePath = FrontendUtils.ensureNodeExecutableInHome();
+        }
+        else {
+            nodePath = FrontendUtils
                 .getNodeExecutable(npmFolder.getAbsolutePath());
+        }
 
         List<String> command = Arrays.asList(nodePath,
                 webpackExecutable.getAbsolutePath(), "--progress");

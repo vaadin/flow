@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -48,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
@@ -281,6 +283,12 @@ public class FrontendUtils {
             + "%nIn case you have just installed node.js globally, it was not discovered, so you need to restart your system to get the path variables updated."
             + "%n======================================================================================================%n";
 
+    private static final String LOCAL_NODE_NOT_FOUND = "%n%n======================================================================================================"
+            + "%nVaadin requires node.js & npm to be installed. The {} directory already contains 'node' but it's either not a file "
+            + "or not a 'node' executable. Please check {} directory and clean up it: remove '{}'."
+            + "%n then please run the app or maven goal again."
+            + "%n======================================================================================================%n";
+
     private static final String SHOULD_WORK = "%n%n======================================================================================================"
             + "%nYour installed '%s' version (%s) is not supported but should still work. Supported versions are %d.%d+" //
             + "%nYou can install a new one:"
@@ -378,6 +386,7 @@ public class FrontendUtils {
      * @return the full path to the executable
      */
     public static String getNodeExecutable(String baseDir) {
+<<<<<<< Upstream, based on master
         String command = isWindows() ? "node.exe" : "node";
         String defaultNode = FrontendUtils.isWindows() ? "node/node.exe"
                 : "node/node";
@@ -389,12 +398,13 @@ public class FrontendUtils {
      * Install node and npm into target directory.
      *
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param nodeVersion
-     *         node version to install
+     *            node version to install
      * @param downloadRoot
-     *         optional download root for downloading node. May be a filesystem
-     *         file or a URL see {@link NodeInstaller#setNodeDownloadRoot(URI)}.
+     *            optional download root for downloading node. May be a
+     *            filesystem file or a URL see
+     *            {@link NodeInstaller#setNodeDownloadRoot(URI)}.
      * @return node installation path
      */
     protected static String installNode(File installDirectory,
@@ -412,12 +422,54 @@ public class FrontendUtils {
         }
 
         String command = isWindows() ? "node.exe" : "node";
-        return new File(nodeInstaller.getInstallDirectory(), command).toString();
+        return new File(nodeInstaller.getInstallDirectory(), command)
+                .toString();
     }
 
     private static List<ProxyConfig.Proxy> getProxies() {
         // TODO: Implement proxy collection #7567
         return Collections.emptyList();
+=======
+        Pair<String, String> nodeCommands = getNodeCommands();
+        return getExecutable(baseDir, nodeCommands.getFirst(),
+                nodeCommands.getSecond()).getAbsolutePath();
+    }
+
+    /**
+     * Locate <code>node</code> executable in the provided
+     * {@link #getVaadinHomeDirectory()} and install it if it's not available
+     * there.
+     * <p>
+     * The difference between {@link #getNodeExecutable(String)} and this method
+     * in a search algorithm: {@link #getNodeExecutable(String)} first searches
+     * executable in the provided directory and fallback to the globally
+     * installed if it's not found there. The
+     * {@link #ensureNodeExecutableInDirectory()} doesn't search for globally
+     * installed executable. It tries to find it in the vaadin home directory
+     * and if it's not found it downloads and installs it there.
+     *
+     * @see #getNodeExecutable(String)
+     *
+     * @return the full path to the executable
+     */
+    public static String ensureNodeExecutableInHome() {
+        Pair<String, String> nodeCommands = getNodeCommands();
+        try {
+            File home = getVaadinHomeDirectory();
+            File file = new File(home, nodeCommands.getSecond());
+            if (file.exists()) {
+                if (frontendToolsLocator.verifyTool(file)) {
+                    throw new IllegalStateException(String.format(
+                            LOCAL_NODE_NOT_FOUND, home.getAbsolutePath(),
+                            home.getAbsolutePath(), file.getAbsolutePath()));
+                }
+            } else {
+                // TODO : install
+            }
+            return file.getAbsolutePath();
+        } catch (FileNotFoundException exception) {
+            throw new UncheckedIOException(exception);
+        }
     }
 
     /**
@@ -471,7 +523,7 @@ public class FrontendUtils {
      * @return the list of all commands in sequence that need to be executed to
      *         have pnpm running
      */
-    public static List<String> getPnpmExecutable(String baseDir,
+    static List<String> getPnpmExecutable(String baseDir,
             boolean failOnAbsence) {
         // First try local pnpm JS script if it exists
         List<String> returnCommand = new ArrayList<>();
@@ -494,31 +546,6 @@ public class FrontendUtils {
         return returnCommand;
     }
 
-    /**
-     * Locate <code>bower</code> executable.
-     * <p>
-     * An empty list is returned if bower is not found
-     *
-     * @param baseDir
-     *            project root folder.
-     *
-     * @return the list of all commands in sequence that need to be executed to
-     *         have bower running, an empty list if bower is not found
-     */
-    public static List<String> getBowerExecutable(String baseDir) {
-        File file = new File(baseDir, "node_modules/bower/bin/bower");
-        if (file.canRead()) {
-            // We return a two element list with node binary and bower script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
-        }
-        // Otherwise look for a regular `bower`
-        String command = isWindows() ? "bower.cmd" : "bower";
-        return frontendToolsLocator.tryLocateTool(command).map(File::getPath)
-                .map(Collections::singletonList)
-                .orElse(Collections.emptyList());
-    }
-
     private static File getExecutable(String baseDir, String cmd,
             String defaultLocation, boolean installNode) {
         File file = null;
@@ -535,7 +562,8 @@ public class FrontendUtils {
                                 .orElse(null));
             }
             if (file == null && installNode) {
-                return new File(installNode(getVaadinHomeDirectory(), "v12.16.0", null));
+                return new File(installNode(getVaadinHomeDirectory(),
+                        "v12.16.0", null));
             }
         } catch (FileNotFoundException exception) {
             Throwable cause = exception.getCause();
@@ -1261,7 +1289,7 @@ public class FrontendUtils {
          * @param extraInfo
          *            extra information which might be helpful to the end user
          */
-        public  UnknownVersionException(String tool, String extraInfo) {
+        public UnknownVersionException(String tool, String extraInfo) {
             super("Unable to detect version of " + tool + ". " + extraInfo);
         }
 
@@ -1305,11 +1333,11 @@ public class FrontendUtils {
      * Parse the version number of node/npm from version output string.
      *
      * @param versionString
-     *         string containing version output, typically produced by
-     *         <code>tool --version</code>
+     *            string containing version output, typically produced by
+     *            <code>tool --version</code>
      * @return FrontendVersion of versionString
      * @throws IOException
-     *         if parsing fails
+     *             if parsing fails
      */
     public static FrontendVersion parseFrontendVersion(String versionString)
             throws IOException {
@@ -1498,5 +1526,13 @@ public class FrontendUtils {
     @SuppressWarnings("squid:S106")
     public static void console(String format, Object message) {
         System.out.print(format(format, message));
+    }
+
+    private static Pair<String, String> getNodeCommands() {
+        if (isWindows()) {
+            return new Pair<>("node.exe", "node/node.exe");
+        } else {
+            return new Pair<>("node", "node/node");
+        }
     }
 }
