@@ -44,7 +44,7 @@ public class SessionCloseLogoutIT extends ChromeBrowserTest {
     }
 
     private void asserNoErrors() {
-        checkLogsForErrors(msg -> msg.matches(".*(VAADIN/static/client|FlowClient.js).*"));
+        checkLogsForErrors(msg -> msg.matches("^.*((VAADIN/static/client|FlowClient.js).*|\"\")$"));
     }
 
 }

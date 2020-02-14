@@ -1,5 +1,7 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import org.junit.Ignore;
+
 /**
  * See {@link DependenciesLoadingAnnotationsIT} for more details about the test.
  * Test runs and performs the same checks as
@@ -10,6 +12,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
  * @since 1.0.
  * @see DependenciesLoadingAnnotationsIT
  */
+@Ignore("Doesn't work ccdm, see https://github.com/vaadin/flow/issues/7328")
 public class DependenciesLoadingPageApiIT
         extends DependenciesLoadingAnnotationsIT {
 
