@@ -33,7 +33,6 @@ import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
-import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteSearchResult;
 import com.vaadin.flow.shared.Registration;
 
@@ -160,7 +159,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
         if (getConfiguration().hasUrl(pathString)) {
-            return getConfiguration().getRoute(pathString);
+            return getConfiguration().getTarget(pathString);
         }
         return getParentRegistry().getNavigationTarget(pathString);
     }

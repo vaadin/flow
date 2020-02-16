@@ -30,10 +30,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameterUtil;
-import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
@@ -323,7 +323,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasRouteTarget(routeTarget)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(routeTarget));
+        configure(configuration -> configuration.removeTarget(routeTarget));
     }
 
     @Override
@@ -335,12 +335,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void removeRoute(String path,
+    @Deprecated
+    public void removeRoute(String pathTemplate,
             Class<? extends Component> navigationTarget) {
-        if (!getConfiguration().hasRoute(path)) {
+        if (!getConfiguration().hasRoute(pathTemplate)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(path,
+        configure(configuration -> configuration.removeRoute(pathTemplate,
                 navigationTarget));
     }
 
@@ -372,9 +373,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         // Backward compatibility with HasUrlParameter for which the parameters
         // were stored in RouteTarget.
-        path = HasUrlParameterUtil.getPathWithHasUrlParameter(path, navigationTarget);
-
-        // TODO: throw backward compatible exceptions if path doesn't make sense in current configuration.
+        path = HasUrlParameterUtil.getPathWithHasUrlParameter(path,
+                navigationTarget);
 
         configuration.setRoute(path, navigationTarget);
 

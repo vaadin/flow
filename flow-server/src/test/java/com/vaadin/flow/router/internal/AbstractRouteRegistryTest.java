@@ -25,32 +25,7 @@ public class AbstractRouteRegistryTest {
 
     @Before
     public void init() {
-        registry = new AbstractRouteRegistry() {
-
-            @Override
-            public RouteSearchResult getNavigationTargetResult(String path) {
-                return getConfiguration().getRouteSearchResult(path);
-            }
-
-            @Override
-            public Optional<Class<? extends Component>> getNavigationTarget(
-                    String pathString) {
-                Objects.requireNonNull(pathString,
-                        "pathString must not be null.");
-                if (getConfiguration().hasRoute(pathString)) {
-                    return getConfiguration().getRoute(pathString);
-                }
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<Class<? extends Component>> getNavigationTarget(
-                    String pathString, List<String> segments) {
-
-                return getNavigationTarget(
-                        PathUtil.getPath(pathString, segments));
-            }
-        };
+        registry = new TestAbstractRouteRegistry();
     }
 
     @Test

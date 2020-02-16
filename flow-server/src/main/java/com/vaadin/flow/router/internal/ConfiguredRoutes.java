@@ -77,7 +77,6 @@ public class ConfiguredRoutes implements Serializable {
         targetRouteMap.putAll(original.getTargetRoutes());
         exceptionTargetMap.putAll(original.getExceptionHandlers());
 
-        // TODO: maybe copy
         this.routeModel = original.getRouteModel().clone();
 
         // TODO: investigate this.routes = this.routeModel.getRoutes();
@@ -122,14 +121,14 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * See if configuration contains a registered route for given path pattern.
+     * See if configuration contains a registered route for given path template.
      *
-     * @param pathPattern
-     *            path to check
+     * @param pathTemplate
+     *            path template to check
      * @return true if configuration contains route
      */
-    public boolean hasRoute(String pathPattern) {
-        return getRoutesMap().containsKey(pathPattern);
+    public boolean hasRoute(String pathTemplate) {
+        return getRoutesMap().containsKey(pathTemplate);
     }
 
     /**
@@ -162,12 +161,12 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Check it the given route target has been registered to the configuration.
      *
-     * @param targetRoute
+     * @param target
      *            target to check registration status for
      * @return true if target is found in configuration
      */
-    public boolean hasRouteTarget(Class<? extends Component> targetRoute) {
-        return getTargetRoutes().containsKey(targetRoute);
+    public boolean hasRouteTarget(Class<? extends Component> target) {
+        return getTargetRoutes().containsKey(target);
     }
 
     /**
@@ -185,14 +184,14 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route class matching the given path.
+     * Get the target class matching the given url.
      *
-     * @param pathString
+     * @param url
      *            string to get the route for
      * @return {@link Optional} containing the navigationTarget class if found
      */
-    public Optional<Class<? extends Component>> getRoute(String pathString) {
-        final RouteSearchResult result = getRouteModel().getRoute(pathString);
+    public Optional<Class<? extends Component>> getTarget(String url) {
+        final RouteSearchResult result = getRouteModel().getRoute(url);
         if (result.hasTarget()) {
             final RouteTarget routeTarget = result.getTarget();
             return Optional.ofNullable(routeTarget.getTarget());
@@ -209,12 +208,12 @@ public class ConfiguredRoutes implements Serializable {
      * @param segments
      *            possible path segments
      * @return {@link Optional} containing the navigationTarget class if found
-     * @deprecated use {@link #getRoute(String)} instead.
+     * @deprecated use {@link #getTarget(String)} instead.
      */
     @Deprecated
     public Optional<Class<? extends Component>> getRoute(String pathString,
             List<String> segments) {
-        return getRoute(PathUtil.getPath(pathString, segments));
+        return getTarget(PathUtil.getPath(pathString, segments));
     }
 
     /**
@@ -236,7 +235,7 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route path simple pattern String for the given navigation target
+     * Get the route path simple template String for the given navigation target
      * class.
      *
      * @param navigationTarget
@@ -249,7 +248,7 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route path pattern String for the given navigation target class
+     * Get the route path template String for the given navigation target class
      * and using the specified parameters format.
      *
      * @param navigationTarget
@@ -260,7 +259,12 @@ public class ConfiguredRoutes implements Serializable {
      */
     public String getTargetRoute(Class<? extends Component> navigationTarget,
             EnumSet<RouteParameterFormat> format) {
-        return getRouteModel().getRoute(getTargetRoutes().get(navigationTarget),
+        final String pathTemplate = getTargetRoutes().get(navigationTarget);
+        if (pathTemplate == null) {
+            return null;
+        }
+
+        return getRouteModel().getRoute(pathTemplate,
                 format);
     }
 
@@ -335,17 +339,17 @@ public class ConfiguredRoutes implements Serializable {
 
     /**
      * Return the parent layout chain for given navigation target on the target
-     * path.
+     * url.
      *
-     * @param path
-     *            path to get parent layout chain for
+     * @param url
+     *            url to get parent layout chain for.
      * @param navigationTarget
-     *            navigation target on path to get parent layout chain for
-     * @return list of parent layout chain
+     *            navigation target on url to get parent layout chain for.
+     * @return list of parent layout chain.
      */
-    public List<Class<? extends RouterLayout>> getParentLayouts(String path,
+    public List<Class<? extends RouterLayout>> getParentLayouts(String url,
             Class<? extends Component> navigationTarget) {
-        final RouteSearchResult result = getRouteModel().getRoute(path);
+        final RouteSearchResult result = getRouteModel().getRoute(url);
 
         if (result.hasTarget()) {
             final RouteTarget routeTarget = result.getTarget();
@@ -356,6 +360,29 @@ public class ConfiguredRoutes implements Serializable {
             }
 
             return routeTarget.getParentLayouts();
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Return the parent layout chain for given navigation target.
+     *
+     * @param navigationTarget
+     *            navigation target to get parent layout chain for.
+     * @return list of parent layout chain.
+     */
+    public List<Class<? extends RouterLayout>> getParentLayouts(
+            Class<? extends Component> navigationTarget) {
+
+        final String pathTemplate = getTargetRoutes().get(navigationTarget);
+        RouteTarget target = null;
+        if (pathTemplate != null) {
+            target = getRoutesMap().get(pathTemplate);
+        }
+
+        if (target != null) {
+            return target.getParentLayouts();
         } else {
             return Collections.emptyList();
         }
