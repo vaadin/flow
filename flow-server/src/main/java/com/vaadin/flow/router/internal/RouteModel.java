@@ -940,10 +940,6 @@ class RouteModel implements Serializable, Cloneable {
 
     private RouteSegment root;
 
-    private Map<String, UriTemplate> templates = new HashMap<>();
-
-    private Map<String, RouteTarget> targets = new HashMap<>();
-
     private RouteModel() {
         this(RouteSegment.createRoot());
     }
@@ -1016,15 +1012,6 @@ class RouteModel implements Serializable, Cloneable {
      */
     void addRoute(String pathTemplate, RouteTarget target) {
         root.addPath(pathTemplate, target);
-
-        // UriTemplate template = templates.get(pathTemplate);
-        // if (template != null) {
-        // throw new IllegalArgumentException("Route already registered");
-        // }
-        //
-        // template = new UriTemplate(pathTemplate);
-        // templates.put(pathTemplate, template);
-        // targets.put(pathTemplate, target);
     }
 
     /**
@@ -1040,21 +1027,6 @@ class RouteModel implements Serializable, Cloneable {
      */
     RouteSearchResult getRoute(String path) {
         return root.getRoute(path);
-
-        // RouteTarget target = null;
-        // Map<String, Object> parameters = null;
-        //
-        // for (UriTemplate template : templates.values()) {
-        // Map<String, String> templateVariableToValue = new HashMap<>();
-        //
-        // if (template.match(path, templateVariableToValue)) {
-        // target = targets.get(template.getTemplate());
-        // parameters = new HashMap<>(templateVariableToValue);
-        // break;
-        // }
-        // }
-        //
-        // return new RouteSearchResult(path, target, parameters);
     }
 
     /**
@@ -1076,17 +1048,6 @@ class RouteModel implements Serializable, Cloneable {
     String getUrl(String pathTemplate, UrlParameters parameters) {
         return root.getUrl(pathTemplate,
                 parameters != null ? parameters : new UrlParameters(null));
-
-        // final UriTemplate template = templates.get(pathTemplate);
-        // if (template == null) {
-        // throw new IllegalArgumentException("Missing route");
-        // }
-        //
-        // Map<String, String> values = new HashMap<>();
-        // parameters.getParameters().entrySet().forEach(entry -> values
-        // .put(entry.getKey(), entry.getValue().toString()));
-        //
-        // return template.createURI(values);
     }
 
     String getRoute(String pathTemplate, EnumSet<RouteParameterFormat> format) {
