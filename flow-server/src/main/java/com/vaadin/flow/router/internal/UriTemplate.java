@@ -16,6 +16,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Paul.Sandoz@Sun.Com
  */
-public class UriTemplate {
+public class UriTemplate implements Serializable {
     /**
      * Order the templates according according to JAX-RS.
      * <p>

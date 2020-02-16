@@ -18,6 +18,7 @@
 package com.vaadin.flow.router.internal;
 //package org.atmosphere.util.uri;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +35,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Paul.Sandoz@Sun.Com
  */
-public class UriTemplateParser {
+public class UriTemplateParser implements Serializable {
     /* package */ static final int[] EMPTY_INT_ARRAY = new int[0];
 
     private static Set<Character> RESERVED_REGEX_CHARACTERS = createReserved();
@@ -54,7 +55,7 @@ public class UriTemplateParser {
 
     private static final Pattern TEMPLATE_VALUE_PATTERN = Pattern.compile("[^/]+?");
 
-    private interface CharacterIterator {
+    private interface CharacterIterator extends Serializable {
         boolean hasNext();
         char next();
         char peek();
