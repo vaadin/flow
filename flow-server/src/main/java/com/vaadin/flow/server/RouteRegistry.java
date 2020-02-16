@@ -94,23 +94,17 @@ public interface RouteRegistry extends Serializable {
     void removeRoute(String path);
 
     /**
-     * Remove only the specified navigationTarget from the path and not the
-     * whole path if other targets exist for path. If no other targets exist
-     * whole route will be cleared.
-     * <p>
-     * This will leave any other targets for path e.g. removing the wildcard
-     * path will still leave the optional target.
-     * <p>
-     * Note! If another path exists for the removed navigation target it will
-     * get a new main path so it can still get a resolved url. The restored path
-     * will be the first found match for all paths that are registered.
+     * Remove navigationTarget from the pathTemplate.
      *
-     * @param path
-     *            path to remove from registry
+     * @param pathTemplate
+     *            pathTemplate to remove from registry
      * @param navigationTarget
-     *            path navigation target to remove
+     *            pathTemplate navigation target to remove
+     * @deprecated use {@link #removeRoute(String)} or
+     *             {@link #removeRoute(Class)} instead.
      */
-    void removeRoute(String path, Class<? extends Component> navigationTarget);
+    @Deprecated
+    void removeRoute(String pathTemplate, Class<? extends Component> navigationTarget);
 
     /**
      * Get the {@link RouteData} for all registered navigation targets.

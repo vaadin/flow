@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +42,6 @@ import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Registry for holding navigation target components found on servlet
@@ -202,7 +198,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
         if (getConfiguration().hasUrl(pathString)) {
-            return getConfiguration().getRoute(pathString);
+            return getConfiguration().getTarget(pathString);
         }
         return Optional.empty();
     }

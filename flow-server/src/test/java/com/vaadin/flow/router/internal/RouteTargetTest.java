@@ -20,11 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.BeforeEvent;
@@ -34,6 +29,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class RouteTargetTest {
 
@@ -118,310 +117,304 @@ public class RouteTargetTest {
 
     /* Test cases that should work as expected */
 
+    private AbstractRouteRegistry registry = new TestAbstractRouteRegistry();
+
     @Test
-    public void only_normal_target_works_as_expected()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
+    public void only_normal_target_works_as_expected() {
+        addTarget(NormalRoute.class);
 
         Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, target.getTarget(new ArrayList<>()));
+                NormalRoute.class, getTarget());
     }
 
     @Test
-    public void only_has_url_target_works_as_expected()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
+    public void only_has_url_target_works_as_expected() {
+        addTarget(HasUrlRoute.class);
 
         Assert.assertNull(
                 "No has url should have been returned without parameter",
-                target.getTarget(new ArrayList<>()));
+                getTarget(new ArrayList<>()));
 
         Assert.assertEquals("HasUrlRoute should have been returned",
                 HasUrlRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
-    public void only_optional_target_works_as_expected()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(OptionalRoute.class);
+    public void only_optional_target_works_as_expected() {
+        addTarget(OptionalRoute.class);
 
         Assert.assertEquals(
                 "OptionalRoute should have been returned with no parameter",
-                OptionalRoute.class, target.getTarget(new ArrayList<>()));
+                OptionalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("OptionalRoute should have been returned",
                 OptionalRoute.class,
-                target.getTarget(Arrays.asList("optional")));
+                getTarget(Arrays.asList("optional")));
     }
 
     @Test
-    public void only_wildcard_target_works_as_expected()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(WildcardRoute.class);
+    public void only_wildcard_target_works_as_expected() {
+        addTarget(WildcardRoute.class);
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned with no parameter",
-                WildcardRoute.class, target.getTarget(new ArrayList<>()));
+                WildcardRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned for one parameter",
-                WildcardRoute.class, target.getTarget(Arrays.asList("wild")));
+                WildcardRoute.class, getTarget(Arrays.asList("wild")));
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned for multiple parameters",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("wild", "card", "target")));
+                getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
-    public void normal_and_has_url_work_together()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(HasUrlRoute.class);
+    public void normal_and_has_url_work_together() {
+        addTarget(NormalRoute.class);
+        addTarget(HasUrlRoute.class);
 
         Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, target.getTarget(new ArrayList<>()));
+                NormalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("HasUrlRoute should have been returned",
                 HasUrlRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
-    public void has_url_and_normal_work_together()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(NormalRoute.class);
+    public void has_url_and_normal_work_together() {
+        addTarget(HasUrlRoute.class);
+        addTarget(NormalRoute.class);
 
         Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, target.getTarget(new ArrayList<>()));
+                NormalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("HasUrlRoute should have been returned",
                 HasUrlRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
-    public void normal_and_wildcard_work_together()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(WildcardRoute.class);
+    public void normal_and_wildcard_work_together() {
+        addTarget(NormalRoute.class);
+        addTarget(WildcardRoute.class);
 
         Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, target.getTarget(new ArrayList<>()));
+                NormalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("WildcardRoute should have been returned",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned for multiple parameters",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("wild", "card", "target")));
+                getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
-    public void wildcard_and_normal_work_together()
-            throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(WildcardRoute.class);
-        target.addRoute(NormalRoute.class);
+    public void wildcard_and_normal_work_together() {
+        addTarget(WildcardRoute.class);
+        addTarget(NormalRoute.class);
 
         Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, target.getTarget(new ArrayList<>()));
+                NormalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("WildcardRoute should have been returned",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned for multiple parameters",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("wild", "card", "target")));
+                getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
     public void normal_and_has_url_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
+        addTarget(NormalRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
 
-        assertNormalHasUrlAndWildcard(target);
+        assertNormalHasUrlAndWildcard();
     }
 
     @Test
     public void normal_and_wildcard_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(WildcardRoute.class);
-        target.addRoute(HasUrlRoute.class);
+        addTarget(NormalRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
 
-        assertNormalHasUrlAndWildcard(target);
+        assertNormalHasUrlAndWildcard();
     }
 
     @Test
     public void wildcard_and_normal_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(WildcardRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(NormalRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(NormalRoute.class);
 
-        assertNormalHasUrlAndWildcard(target);
+        assertNormalHasUrlAndWildcard();
     }
 
     @Test
     public void has_url_and_wildcard_and_normal_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
-        target.addRoute(NormalRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(NormalRoute.class);
 
-        assertNormalHasUrlAndWildcard(target);
+        assertNormalHasUrlAndWildcard();
     }
 
     @Test
     public void has_url_and_normal_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(NormalRoute.class);
-        target.addRoute(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(NormalRoute.class);
+        addTarget(WildcardRoute.class);
 
-        assertNormalHasUrlAndWildcard(target);
+        assertNormalHasUrlAndWildcard();
     }
 
-    private void assertNormalHasUrlAndWildcard(RouteTarget target) {
+    private void assertNormalHasUrlAndWildcard() {
         Assert.assertEquals("NormalRoute should have been returned",
-                NormalRoute.class, target.getTarget(new ArrayList<>()));
+                NormalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("HasUrlRoute should have been returned",
                 HasUrlRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned for multiple parameters",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("wild", "card", "target")));
+                getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
     public void has_url_and_optional_parameter_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(OptionalRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(OptionalRoute.class);
 
         Assert.assertEquals("OptionalRoute should have been returned",
-                OptionalRoute.class, target.getTarget(new ArrayList<>()));
+                OptionalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("HasUrlRoute should have been returned",
                 HasUrlRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
     }
 
     @Test
     public void has_url_and_wildcard_and_optional_parameter_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
-        target.addRoute(OptionalRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(OptionalRoute.class);
 
-        assertHasUrlOptionalAndWildcard(target);
+        assertHasUrlOptionalAndWildcard();
     }
 
     @Test
     public void optional_parameter_and_has_url_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(OptionalRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
+        addTarget(OptionalRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
 
-        assertHasUrlOptionalAndWildcard(target);
+        assertHasUrlOptionalAndWildcard();
     }
 
     @Test
     public void optional_parameter_and_wildcard_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(OptionalRoute.class);
-        target.addRoute(WildcardRoute.class);
-        target.addRoute(HasUrlRoute.class);
+        addTarget(OptionalRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
 
-        assertHasUrlOptionalAndWildcard(target);
+        assertHasUrlOptionalAndWildcard();
     }
 
     @Test
     public void wildcard_and_has_url_and_optional_parameter_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(WildcardRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(OptionalRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(OptionalRoute.class);
 
-        assertHasUrlOptionalAndWildcard(target);
+        assertHasUrlOptionalAndWildcard();
     }
 
     @Test
     public void wildcard_and_optional_parameter_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(WildcardRoute.class);
-        target.addRoute(OptionalRoute.class);
-        target.addRoute(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(OptionalRoute.class);
+        addTarget(HasUrlRoute.class);
 
-        assertHasUrlOptionalAndWildcard(target);
+        assertHasUrlOptionalAndWildcard();
     }
 
     @Test
     public void has_url_and_optional_parameter_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(OptionalRoute.class);
-        target.addRoute(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(OptionalRoute.class);
+        addTarget(WildcardRoute.class);
 
-        assertHasUrlOptionalAndWildcard(target);
+        assertHasUrlOptionalAndWildcard();
     }
 
-    private void assertHasUrlOptionalAndWildcard(RouteTarget target) {
+    private void assertHasUrlOptionalAndWildcard() {
         Assert.assertEquals("OptionalRoute should have been returned",
-                OptionalRoute.class, target.getTarget(new ArrayList<>()));
+                OptionalRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("HasUrlRoute should have been returned",
                 HasUrlRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned for multiple parameters",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("wild", "card", "target")));
+                getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     @Test
     public void has_url_and_wildcard_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
 
-        assertHasUrlAndWildcard(target);
+        assertHasUrlAndWildcard();
     }
 
     @Test
     public void wildcard_and_has_url_work_together()
             throws InvalidRouteConfigurationException {
-        RouteTarget target = new RouteTarget(WildcardRoute.class);
-        target.addRoute(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
+        addTarget(HasUrlRoute.class);
 
-        assertHasUrlAndWildcard(target);
+        assertHasUrlAndWildcard();
     }
 
-    private void assertHasUrlAndWildcard(RouteTarget target) {
+    private void assertHasUrlAndWildcard() {
         Assert.assertEquals("WildcardRoute should have been returned",
-                WildcardRoute.class, target.getTarget(new ArrayList<>()));
+                WildcardRoute.class, getTarget(new ArrayList<>()));
 
         Assert.assertEquals("HasUrlRoute should have been returned",
                 HasUrlRoute.class,
-                target.getTarget(Arrays.asList("parameter")));
+                getTarget(Arrays.asList("parameter")));
 
         Assert.assertEquals(
                 "WildcardRoute should have been returned for multiple parameters",
                 WildcardRoute.class,
-                target.getTarget(Arrays.asList("wild", "card", "target")));
+                getTarget(Arrays.asList("wild", "card", "target")));
     }
 
     /* Test exception cases */
@@ -436,8 +429,8 @@ public class RouteTargetTest {
                 NormalRoute.class.getName(),
                 SecondNormalRoute.class.getName()));
 
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(SecondNormalRoute.class);
+        addTarget(NormalRoute.class);
+        addTarget(SecondNormalRoute.class);
     }
 
     @Test
@@ -449,8 +442,8 @@ public class RouteTargetTest {
                 NormalRoute.class.getName(), OptionalRoute.class.getName(),
                 OptionalRoute.class.getName()));
 
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(OptionalRoute.class);
+        addTarget(NormalRoute.class);
+        addTarget(OptionalRoute.class);
     }
 
     /* Optional target registered first */
@@ -464,8 +457,8 @@ public class RouteTargetTest {
                 OptionalRoute.class.getName(),
                 SecondOptionalRoute.class.getName()));
 
-        RouteTarget target = new RouteTarget(OptionalRoute.class);
-        target.addRoute(SecondOptionalRoute.class);
+        addTarget(OptionalRoute.class);
+        addTarget(SecondOptionalRoute.class);
     }
 
     @Test
@@ -477,8 +470,8 @@ public class RouteTargetTest {
                 NormalRoute.class.getName(), OptionalRoute.class.getName(),
                 OptionalRoute.class.getName()));
 
-        RouteTarget target = new RouteTarget(OptionalRoute.class);
-        target.addRoute(NormalRoute.class);
+        addTarget(OptionalRoute.class);
+        addTarget(NormalRoute.class);
     }
 
     /* HasUrl parameter */
@@ -491,8 +484,8 @@ public class RouteTargetTest {
                 HasUrlRoute.class.getName(),
                 SecondHasUrlRoute.class.getName()));
 
-        RouteTarget target = new RouteTarget(HasUrlRoute.class);
-        target.addRoute(SecondHasUrlRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(SecondHasUrlRoute.class);
     }
 
     /* Wildcard parameters */
@@ -501,29 +494,12 @@ public class RouteTargetTest {
             throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(
-                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
+                "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
                 WildcardRoute.class.getName(),
                 SecondWildcardRoute.class.getName()));
 
-        RouteTarget target = new RouteTarget(WildcardRoute.class);
-        target.addRoute(SecondWildcardRoute.class);
-    }
-
-    /* Get routes */
-    @Test
-    public void get_routes_return_all_registered() {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
-
-        List<Class<? extends Component>> routes = target.getRoutes();
-
-        for (Class<? extends Component> component : Arrays
-                .asList(NormalRoute.class, HasUrlRoute.class,
-                        WildcardRoute.class)) {
-            Assert.assertTrue("Returned routes was missing " + component,
-                    routes.contains(component));
-        }
+        addTarget(WildcardRoute.class);
+        addTarget(SecondWildcardRoute.class);
     }
 
     /* Mutable tests */
@@ -534,39 +510,6 @@ public class RouteTargetTest {
 
         RouteTarget target = new RouteTarget(OptionalRoute.class, false);
         target.addRoute(NormalRoute.class);
-    }
-
-    @Test
-    public void copy_of_immutable_contains_all_classes() {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
-
-        RouteTarget immutable = target.copy(false);
-
-        List<Class<? extends Component>> routes = immutable.getRoutes();
-        Assert.assertEquals("All three routes should have been copied.", 3,
-                routes.size());
-
-        for (Class<? extends Component> component : Arrays
-                .asList(NormalRoute.class, HasUrlRoute.class,
-                        WildcardRoute.class)) {
-            Assert.assertTrue("Immutable routes didn't contain " + component,
-                    routes.contains(component));
-        }
-
-        RouteTarget immutableCopy = immutable.copy(false);
-
-        routes = immutableCopy.getRoutes();
-        Assert.assertEquals("All three routes should have been copied.", 3,
-                routes.size());
-
-        for (Class<? extends Component> component : Arrays
-                .asList(NormalRoute.class, HasUrlRoute.class,
-                        WildcardRoute.class)) {
-            Assert.assertTrue("Immutable routes didn't contain " + component,
-                    routes.contains(component));
-        }
     }
 
     /* Remove target */
@@ -581,40 +524,40 @@ public class RouteTargetTest {
 
     @Test
     public void removing_target_leaves_others() {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
+        addTarget(NormalRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
 
         Assert.assertEquals("Expected three routes to be registered", 3,
-                target.getRoutes().size());
+                config().getTargetRoutes().size());
 
-        target.remove(HasUrlRoute.class);
+        registry.removeRoute(HasUrlRoute.class);
 
         Assert.assertEquals("Only 2 routes should remain after removing one.",
-                2, target.getRoutes().size());
+                2, config().getTargetRoutes().size());
 
         Assert.assertTrue("NormalRoute should still be available",
-                target.containsTarget(NormalRoute.class));
+                config().hasRouteTarget(NormalRoute.class));
         Assert.assertTrue("WildcardRoute should still be available",
-                target.containsTarget(WildcardRoute.class));
+                config().hasRouteTarget(WildcardRoute.class));
     }
 
     @Test
     public void removing_all_targets_is_possible_and_returns_empty() {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.addRoute(WildcardRoute.class);
+        addTarget(NormalRoute.class);
+        addTarget(HasUrlRoute.class);
+        addTarget(WildcardRoute.class);
 
         Assert.assertEquals("Expected three routes to be registered", 3,
-                target.getRoutes().size());
+                config().getTargetRoutes().size());
 
-        target.remove(HasUrlRoute.class);
-        target.remove(NormalRoute.class);
-        target.remove(WildcardRoute.class);
+        registry.removeRoute(HasUrlRoute.class);
+        registry.removeRoute(NormalRoute.class);
+        registry.removeRoute(WildcardRoute.class);
 
         Assert.assertTrue(
                 "All routes should have been removed from the target.",
-                target.isEmpty());
+                config().getTargetRoutes().isEmpty());
     }
 
     /* Parent layouts */
@@ -640,37 +583,60 @@ public class RouteTargetTest {
 
     @Test
     public void parent_layouts_are_given_for_correct_route() {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.addRoute(HasUrlRoute.class);
-        target.setParentLayouts(NormalRoute.class,
-                Collections.singletonList(Parent.class));
+        addTarget(NormalRoute.class, Collections.singletonList(Parent.class));
+        addTarget(HasUrlRoute.class);
 
         Assert.assertTrue("HasUrlRoute should not get parent layouts.",
-                target.getParentLayouts(HasUrlRoute.class).isEmpty());
+                config().getParentLayouts(HasUrlRoute.class).isEmpty());
 
         Assert.assertEquals("NormaRoute should have exactly one parent layout.",
-                1, target.getParentLayouts(NormalRoute.class).size());
+                1, config().getParentLayouts(NormalRoute.class).size());
         Assert.assertEquals("Received parent layout did not match expected.",
                 Parent.class,
-                target.getParentLayouts(NormalRoute.class).get(0));
+                config().getParentLayouts(NormalRoute.class).get(0));
     }
 
     @Test
     public void removing_route_removes_parent_layouts() {
-        RouteTarget target = new RouteTarget(NormalRoute.class);
-        target.setParentLayouts(NormalRoute.class,
+        addTarget(NormalRoute.class,
                 Collections.singletonList(Parent.class));
 
         Assert.assertEquals("NormaRoute should have exactly one parent layout.",
-                1, target.getParentLayouts(NormalRoute.class).size());
+                1, config().getParentLayouts(NormalRoute.class).size());
         Assert.assertEquals("Received parent layout did not match expected.",
                 Parent.class,
-                target.getParentLayouts(NormalRoute.class).get(0));
+                config().getParentLayouts(NormalRoute.class).get(0));
 
-        target.remove(NormalRoute.class);
+        registry.removeRoute(NormalRoute.class);
         Assert.assertTrue("No targets should remain in RouteTarget",
-                target.isEmpty());
+                config().getTargetRoutes().isEmpty());
         Assert.assertTrue("No parents should be returned from NormalRoute",
-                target.getParentLayouts(NormalRoute.class).isEmpty());
+                config().getParentLayouts(NormalRoute.class).isEmpty());
     }
+
+    private ConfiguredRoutes config() {
+        return registry.getConfiguration();
+    }
+    
+    private void addTarget(Class<? extends Component> navigationTarget) {
+        registry.setRoute("", navigationTarget, Collections.emptyList());
+    }
+
+    private void addTarget(Class<? extends Component> navigationTarget,
+            List<Class<? extends RouterLayout>> parentChain) {
+        registry.setRoute("", navigationTarget, parentChain);
+    }
+
+    private Class<? extends Component> getTarget() {
+        return registry.getNavigationTarget("").orElse(null);
+    }
+
+    private Class<? extends Component> getTarget(String segment) {
+        return registry.getNavigationTarget(segment).orElse(null);
+    }
+
+    public Class<? extends Component> getTarget(List<String> segments) {
+        return registry.getNavigationTarget(PathUtil.getPath(segments)).orElse(null);
+    }
+
 }

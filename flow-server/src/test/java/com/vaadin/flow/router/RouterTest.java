@@ -3614,9 +3614,9 @@ public class RouterTest extends RoutingTestBase {
 
         navigate(url);
 
-        System.out.println(url + ": " + UrlParametersBase.parameters);
-//        Assert.assertEquals("Incorrect parameters", parameters,
-//                UrlParametersBase.parameters);
+//        System.out.println(url + ": " + UrlParametersBase.parameters);
+        Assert.assertEquals("Incorrect parameters", parameters,
+                UrlParametersBase.parameters);
     }
 
     private UrlParameters parameters(Object... keysAndValues) {
