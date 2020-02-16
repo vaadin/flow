@@ -56,7 +56,7 @@ public class PathUtil {
      * @return path form from input segments.
      */
     public static String getPath(List<String> segments) {
-        return String.join("/", segments);
+        return getPath("", segments);
     }
 
     /**
@@ -77,6 +77,10 @@ public class PathUtil {
     }
 
     private static String trimPath(String path) {
+        if (path == null) {
+            return "";
+        }
+
         path = path.trim();
 
         if (path.startsWith("/")) {

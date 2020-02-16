@@ -19,6 +19,7 @@ package com.vaadin.flow.router.internal;
 
 //package org.atmosphere.util.uri;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.MatchResult;
@@ -32,7 +33,7 @@ import java.util.regex.Pattern;
  *
  * @author Paul.Sandoz@Sun.Com
  */
-public class UriPattern {
+public class UriPattern implements Serializable {
     /**
      * The empty URI pattern that matches the null or empty URI path
      */
@@ -135,7 +136,7 @@ public class UriPattern {
         return groupIndexes;
     }
 
-    private static final class EmptyStringMatchResult implements MatchResult {
+    private static final class EmptyStringMatchResult implements MatchResult, Serializable {
         public int start() {
             return 0;
         }
@@ -173,7 +174,7 @@ public class UriPattern {
 
     private static final EmptyStringMatchResult EMPTY_STRING_MATCH_RESULT = new EmptyStringMatchResult();
 
-    private final class GroupIndexMatchResult implements MatchResult {
+    private final class GroupIndexMatchResult implements MatchResult, Serializable {
         private final MatchResult r;
 
         GroupIndexMatchResult(MatchResult r) {

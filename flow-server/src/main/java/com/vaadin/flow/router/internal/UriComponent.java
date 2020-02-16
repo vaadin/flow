@@ -19,6 +19,7 @@ package com.vaadin.flow.router.internal;
 
 //package org.atmosphere.util.uri;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -39,7 +40,7 @@ import java.util.Map;
  *
  * @author Paul.Sandoz@Sun.Com
  */
-public class UriComponent {
+public class UriComponent implements Serializable {
 
     // TODO rewrite to use masks and not lookup tables
     /**
@@ -512,7 +513,7 @@ public class UriComponent {
         }
     }
 
-    private static final class PathSegmentImpl  {
+    private static final class PathSegmentImpl implements Serializable {
 
         private static final PathSegmentImpl EMPTY_PATH_SEGMENT = new PathSegmentImpl("", false);
         private final String path;
