@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.HasUrlParameterUtil;
 
 /**
  * Configuration class for editing routes. After editing the class should
@@ -72,7 +73,6 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         targetRoutesMap.putAll(original.getTargetRoutes());
         exceptionTargetsMap.putAll(original.getExceptionHandlers());
 
-        // TODO: copy
         this.routeModel = original.getRouteModel().clone();
 
         this.routeMap = routesMap;
@@ -129,30 +129,29 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Set a new {@link RouteTarget} for the given pathPattern.
+     * Set a new {@link RouteTarget} for the given pathTemplate.
      * <p>
      * Note! this will override any previous value.
      *
-     * @param pathPattern
-     *         path pattern for which to set route target for
+     * @param pathTemplate
+     *         path template for which to set route target for
      * @param navigationTarget
      *         navigation target to add
      */
-    public void setRoute(String pathPattern,
+    public void setRoute(String pathTemplate,
             Class<? extends Component> navigationTarget) {
 
         final RouteTarget target = new RouteTarget(navigationTarget);
-        getRouteModel().addRoute(pathPattern, target);
+        getRouteModel().addRoute(pathTemplate, target);
 
         if (!hasRouteTarget(navigationTarget)) {
             // FIXME: This seems inconsistent with the case when adding same
             // navigationTarget with different parent layouts. In that case the
             // new registered route is not an alias.
-            setTargetRouteImpl(navigationTarget, pathPattern);
+            setTargetRouteImpl(navigationTarget, pathTemplate);
         }
 
-        // We keep this for backwards compatibility code
-        getRoutesMap().put(pathPattern, target);
+        getRoutesMap().put(pathTemplate, target);
     }
 
     /**
@@ -196,20 +195,32 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      *
      * @param targetRoute
      *         target registered route to remove
+     * @deprecated use {@link #removeTarget(Class)} instead.
      */
+    @Deprecated
     public void removeRoute(Class<? extends Component> targetRoute) {
-        if (!hasRouteTarget(targetRoute)) {
+        removeTarget(targetRoute);
+    }
+
+    /**
+     * Remove the target completely from the configuration.
+     *
+     * @param target
+     *            target registered route to remove
+     */
+    public void removeTarget(Class<? extends Component> target) {
+        if (!hasRouteTarget(target)) {
             return;
         }
 
         // Remove target route from class-to-string map
-        getTargetRoutes().remove(targetRoute);
+        getTargetRoutes().remove(target);
 
         List<String> emptyRoutes = new ArrayList<>();
         // Remove all instances of the route class for any path
         // that it may be registered to
         getRoutesMap().forEach((route, routeTarget) -> {
-            routeTarget.remove(targetRoute);
+            routeTarget.remove(target);
 
             if (routeTarget.isEmpty()) {
                 emptyRoutes.add(route);
@@ -243,35 +254,32 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Remove specific navigation target for given route. The path will still
-     * exist if there is another target with different parameters registered to
-     * it. If no targets remain the path will be removed completely.
-     * <p>
-     * In case there exists another path mapping for the removed route
-     * target the main class-to-string mapping will be updated to the first
-     * found.
+     * Remove navigation target for given pathTemplate.
      *
-     * @param path
-     *         path to remove target from
+     * @param pathTemplate
+     *            pathTemplate to remove target from.
      * @param targetRoute
-     *         target route to remove from path
+     *            target route to remove from pathTemplate.
+     * @deprecated use {@link #removeRoute(String)} or
+     *             {@link #removeRoute(Class)} instead.
      */
-    public void removeRoute(String path,
+    @Deprecated
+    public void removeRoute(String pathTemplate,
             Class<? extends Component> targetRoute) {
-        if (!hasRoute(path) || !getRoutesMap().get(path)
+        if (!hasRoute(pathTemplate) || !getRoutesMap().get(pathTemplate)
                 .containsTarget(targetRoute)) {
             return;
         }
 
-        RouteTarget routeTarget = getRoutesMap().get(path);
+        RouteTarget routeTarget = getRoutesMap().get(pathTemplate);
         routeTarget.remove(targetRoute);
 
         if (routeTarget.isEmpty()) {
-            getRoutesMap().remove(path);
+            getRoutesMap().remove(pathTemplate);
         }
 
         if (getTargetRoutes().containsKey(targetRoute) && getTargetRoutes()
-                .get(targetRoute).equals(path)) {
+                .get(targetRoute).equals(pathTemplate)) {
             removeMainRouteTarget(targetRoute);
         }
     }
