@@ -149,9 +149,8 @@ public class SessionRouteRegistryTest {
                 registry.getTargetUrl(MyRoute.class).isPresent());
         Assert.assertTrue(
                 "Parameter class should have been available from the registry",
-                registry.getTargetUrl(Parameter.class, UrlParameters
-                        .create(HasUrlParameterUtil.PARAMETER_NAME, "foo"))
-                        .isPresent());
+                registry.getTargetUrl(Parameter.class,
+                        HasUrlParameterUtil.getParameters("foo")).isPresent());
         Assert.assertTrue(
                 "Parameter class should have been available from the registry",
                 registry.getTargetRoute(Parameter.class).isPresent());

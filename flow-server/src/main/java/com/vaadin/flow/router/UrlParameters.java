@@ -52,6 +52,7 @@ public class UrlParameters implements Serializable {
      * @param params
      *            parameters mapping.
      */
+    // TODO: change this to <String, String> and provide wildcard as path
     public UrlParameters(Map<String, Object> params) {
         this.params = params != null ? Collections.unmodifiableMap(params)
                 : Collections.emptyMap();
