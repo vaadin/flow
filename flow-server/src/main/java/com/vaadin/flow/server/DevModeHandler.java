@@ -627,7 +627,7 @@ public final class DevModeHandler {
 
         private static final File DEV_SERVER_PORT_FILE = createDevServerPortFile();
 
-        private static final File createDevServerPortFile() {
+        private static File createDevServerPortFile() {
             try {
                 return File.createTempFile("flow-dev-server", "port");
             } catch (IOException exception) {
