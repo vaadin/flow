@@ -355,26 +355,22 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     return FrontendUtils.streamToString(resource.openStream());
                 }
             }
-        } else {
-            URL firstResource = resources.get(0);
-            if (resources.size() > 1) {
-                String warningMessage = String.format(
-                        "Unable to fully determine correct flow-build-info.%n"
-                                + "Accepting file '%s' first match of '%s' possible.%n"
-                                + "Please verify flow-build-info file content.",
-                        firstResource.getPath(), resources.size());
-                logger.warn(warningMessage);
-            } else {
-                String debugMessage = String.format(
-                        "Unable to fully determine correct flow-build-info.%n"
-                                + "Accepting file '%s'",
-                        firstResource.getPath());
-                logger.debug(debugMessage);
-            }
-            return FrontendUtils.streamToString(firstResource.openStream());
         }
-        // No applicable resources found.
-        return null;
+        URL firstResource = resources.get(0);
+        if (resources.size() > 1) {
+            String warningMessage = String
+                    .format("Unable to fully determine correct flow-build-info.%n"
+                                    + "Accepting file '%s' first match of '%s' possible.%n"
+                                    + "Please verify flow-build-info file content.",
+                            firstResource.getPath(), resources.size());
+            logger.warn(warningMessage);
+        } else {
+            String debugMessage = String
+                    .format("Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s'", firstResource.getPath());
+            logger.debug(debugMessage);
+        }
+        return FrontendUtils.streamToString(firstResource.openStream());
     }
 
     private static int countInstances(String input, String value) {
