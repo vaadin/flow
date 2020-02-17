@@ -16,7 +16,6 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.useDeprecatedV14Bootstrapping>false</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>
@@ -38,10 +37,6 @@
                             <!-- make sure we do not leave webpack-dev-server running after IT -->
                             <name>vaadin.reuseDevServer</name>
                             <value>false</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>vaadin.useDeprecatedV14Bootstrapping</name>
-                            <value>true</value>
                         </systemProperty>
                     </systemProperties>
                     <webApp>

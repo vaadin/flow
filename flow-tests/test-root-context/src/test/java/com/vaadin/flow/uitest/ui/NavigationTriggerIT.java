@@ -30,23 +30,27 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
     public void testNavigationTriggers() {
         open();
         assertMessageCount(1);
-        assertLastMessage("/", NavigationTrigger.PAGE_LOAD);
+        assertLastMessage("/", isClientRouter() ? NavigationTrigger.CLIENT_SIDE: NavigationTrigger.PAGE_LOAD);
 
         findElement(By.id("routerlink")).click();
         assertMessageCount(2);
-        assertLastMessage("/routerlink", NavigationTrigger.ROUTER_LINK);
+        assertLastMessage("/routerlink", isClientRouter() ? NavigationTrigger.CLIENT_SIDE: NavigationTrigger.ROUTER_LINK);
 
         findElement(By.id("navigate")).click();
         assertMessageCount(3);
-        assertLastMessage("/navigate", NavigationTrigger.PROGRAMMATIC);
+        assertLastMessage("/navigate", isClientRouter() ? NavigationTrigger.CLIENT_SIDE: NavigationTrigger.PROGRAMMATIC);
+
+        if (hasClientIssue("7572")) {
+            return;
+        }
 
         getDriver().navigate().back();
         assertMessageCount(4);
-        assertLastMessage("/routerlink", NavigationTrigger.HISTORY);
+        assertLastMessage("/routerlink", isClientRouter() ? NavigationTrigger.CLIENT_SIDE: NavigationTrigger.HISTORY);
 
         getDriver().navigate().forward();
         assertMessageCount(5);
-        assertLastMessage("/navigate", NavigationTrigger.HISTORY);
+        assertLastMessage("/navigate",isClientRouter() ? NavigationTrigger.CLIENT_SIDE:  NavigationTrigger.HISTORY);
     }
 
     private void assertLastMessage(String path, NavigationTrigger trigger) {
