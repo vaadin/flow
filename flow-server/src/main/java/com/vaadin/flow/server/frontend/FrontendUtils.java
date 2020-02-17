@@ -63,6 +63,7 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -76,6 +77,11 @@ import static java.lang.String.format;
  * @since 2.0
  */
 public class FrontendUtils {
+
+    /**
+     * 
+     */
+    private static final String DEFAULT_NODE_VERSION = "v12.16.0";
 
     protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
@@ -284,8 +290,8 @@ public class FrontendUtils {
             + "%n======================================================================================================%n";
 
     private static final String LOCAL_NODE_NOT_FOUND = "%n%n======================================================================================================"
-            + "%nVaadin requires node.js & npm to be installed. The {} directory already contains 'node' but it's either not a file "
-            + "or not a 'node' executable. Please check {} directory and clean up it: remove '{}'."
+            + "%nVaadin requires node.js & npm to be installed. The %s directory already contains 'node' but it's either not a file "
+            + "or not a 'node' executable. Please check %s directory and clean up it: remove '%s'."
             + "%n then please run the app or maven goal again."
             + "%n======================================================================================================%n";
 
@@ -386,12 +392,9 @@ public class FrontendUtils {
      * @return the full path to the executable
      */
     public static String getNodeExecutable(String baseDir) {
-<<<<<<< Upstream, based on master
-        String command = isWindows() ? "node.exe" : "node";
-        String defaultNode = FrontendUtils.isWindows() ? "node/node.exe"
-                : "node/node";
-        return getExecutable(baseDir, command, defaultNode, true)
-                .getAbsolutePath();
+        Pair<String, String> nodeCommands = getNodeCommands();
+        return getExecutable(baseDir, nodeCommands.getFirst(),
+                nodeCommands.getSecond(), true).getAbsolutePath();
     }
 
     /**
@@ -429,10 +432,6 @@ public class FrontendUtils {
     private static List<ProxyConfig.Proxy> getProxies() {
         // TODO: Implement proxy collection #7567
         return Collections.emptyList();
-=======
-        Pair<String, String> nodeCommands = getNodeCommands();
-        return getExecutable(baseDir, nodeCommands.getFirst(),
-                nodeCommands.getSecond()).getAbsolutePath();
     }
 
     /**
@@ -464,7 +463,7 @@ public class FrontendUtils {
                             home.getAbsolutePath(), file.getAbsolutePath()));
                 }
             } else {
-                // TODO : install
+                installNode(getVaadinHomeDirectory(), DEFAULT_NODE_VERSION, null);
             }
             return file.getAbsolutePath();
         } catch (FileNotFoundException exception) {
@@ -563,7 +562,7 @@ public class FrontendUtils {
             }
             if (file == null && installNode) {
                 return new File(installNode(getVaadinHomeDirectory(),
-                        "v12.16.0", null));
+                        DEFAULT_NODE_VERSION, null));
             }
         } catch (FileNotFoundException exception) {
             Throwable cause = exception.getCause();
