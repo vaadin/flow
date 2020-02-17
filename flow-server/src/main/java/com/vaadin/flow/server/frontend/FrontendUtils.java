@@ -1430,7 +1430,7 @@ public class FrontendUtils {
                 retval.append("\\ \n");
                 curLine = new StringBuilder("    ");
             }
-            curLine.append(fragment);
+            curLine.append(fragment.replace(baseDir, "."));
             curLine.append(" ");
         }
         retval.append(curLine.toString());

@@ -418,6 +418,15 @@ public class FrontendUtilsTest {
                 + "    --colors \n", wrappedCommand);
     }
 
+    @Test
+    public void commandToString_commandContainsBaseDir_baseDirIsReplaced() {
+        List<String> command = Arrays.asList("./node/node",
+                "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
+        String wrappedCommand = FrontendUtils.commandToString("/somewhere/not/disclosable", command);
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n", wrappedCommand);
+    }
+
     private VaadinService setupStatsAssetMocks(String statsFile)
             throws IOException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
