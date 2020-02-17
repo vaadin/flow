@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend.installer;
 
 import java.io.File;
+import java.net.URI;
 
 /**
  * Handle file download from given url to target destination.
@@ -40,7 +41,7 @@ interface FileDownloader {
      * @throws DownloadException
      *         exception thrown when download fails
      */
-    void download(String downloadTarget, File destination, String userName,
+    void download(URI downloadTarget, File destination, String userName,
             String password) throws DownloadException;
 }
 

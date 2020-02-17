@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -393,16 +394,15 @@ public class FrontendUtils {
      *         node version to install
      * @param downloadRoot
      *         optional download root for downloading node. May be a filesystem
-     *         file or a URL see {@link NodeInstaller#setNodeDownloadRoot(String)}.
-     *         Must be a valid URI format.
+     *         file or a URL see {@link NodeInstaller#setNodeDownloadRoot(URI)}.
      * @return node installation path
      */
     protected static String installNode(File installDirectory,
-            String nodeVersion, Optional<String> downloadRoot) {
+            String nodeVersion, URI downloadRoot) {
         NodeInstaller nodeInstaller = new NodeInstaller(installDirectory,
                 getProxies()).setNodeVersion(nodeVersion);
-        if (downloadRoot.isPresent()) {
-            nodeInstaller.setNodeDownloadRoot(downloadRoot.get());
+        if (downloadRoot != null) {
+            nodeInstaller.setNodeDownloadRoot(downloadRoot);
         }
 
         try {
@@ -535,7 +535,7 @@ public class FrontendUtils {
                                 .orElse(null));
             }
             if (file == null && installNode) {
-                return new File(installNode(getVaadinHomeDirectory(), "v12.16.0", Optional.empty()));
+                return new File(installNode(getVaadinHomeDirectory(), "v12.16.0", null));
             }
         } catch (FileNotFoundException exception) {
             Throwable cause = exception.getCause();

@@ -141,7 +141,7 @@ public class FrontendUtilsTest {
         Assert.assertFalse("Clean test should not contain a installation folder", targetDir.exists());
 
         String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
-                Optional.empty());
+                null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -215,7 +215,7 @@ public class FrontendUtilsTest {
         }
 
         String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
-                Optional.of(new File(baseDir).toPath().toUri().toString()));
+                new File(baseDir).toPath().toUri());
         Assert.assertNotNull(nodeExecutable);
 
         Assert.assertTrue("npm should have been copied to node_modules",

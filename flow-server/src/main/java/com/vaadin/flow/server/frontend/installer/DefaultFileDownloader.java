@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -70,26 +69,22 @@ public final class DefaultFileDownloader implements FileDownloader {
     }
 
     @Override
-    public void download(String downloadTarget, File destination,
-            String userName, String password) throws DownloadException {
+    public void download(URI downloadURI, File destination, String userName,
+            String password) throws DownloadException {
         this.userName = userName;
         this.password = password;
 
-        String fixedDownloadUri = FilenameUtils
-                .separatorsToUnix(downloadTarget);
+        // force tls to 1.2 since github removed weak cryptographic standards
+        // https://blog.github.com/2018-02-02-weak-cryptographic-standards-removal-notice/
         String oldProtocols = System.setProperty(HTTPS_PROTOCOLS, "TLSv1.2");
         try {
-            // force tls to 1.2 since github removed weak cryptographic standards
-            // https://blog.github.com/2018-02-02-weak-cryptographic-standards-removal-notice/
-            URI downloadURI = new URI(fixedDownloadUri);
             if ("file".equalsIgnoreCase(downloadURI.getScheme())) {
                 FileUtils.copyFile(new File(downloadURI), destination);
             } else {
                 downloadFile(destination, downloadURI);
             }
-        } catch (IOException | URISyntaxException e) {
-            throw new DownloadException(
-                    "Could not download " + fixedDownloadUri, e);
+        } catch (IOException e) {
+            throw new DownloadException("Could not download " + downloadURI, e);
         } finally {
             // Return original protocol property
             if (oldProtocols == null) {
@@ -129,7 +124,7 @@ public final class DefaultFileDownloader implements FileDownloader {
             getLogger().info("No proxy was configured, downloading directly");
             if (StringUtils.isNotEmpty(userName) && StringUtils
                     .isNotEmpty(password)) {
-                getLogger().info("Using credentials ({}) from settings.xml", userName);
+                getLogger().info("Using credentials ({})", userName);
                 // Auth target host
                 URL aURL = requestUri.toURL();
                 HttpClientContext localContext = makeLocalContext(aURL);

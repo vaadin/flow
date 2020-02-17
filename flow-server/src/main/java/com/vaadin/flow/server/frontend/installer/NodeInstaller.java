@@ -19,6 +19,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class NodeInstaller {
 
     private String npmVersion = PROVIDED_VERSION;
     private String nodeVersion;
-    private String nodeDownloadRoot;
+    private URI nodeDownloadRoot;
     private String userName;
     private String password;
 
@@ -145,7 +146,7 @@ public class NodeInstaller {
      *         custom download root
      * @return this
      */
-    public NodeInstaller setNodeDownloadRoot(String nodeDownloadRoot) {
+    public NodeInstaller setNodeDownloadRoot(URI nodeDownloadRoot) {
         this.nodeDownloadRoot = nodeDownloadRoot;
         return this;
     }
@@ -196,8 +197,8 @@ public class NodeInstaller {
         // use lock object for a synchronized block
         synchronized (LOCK) {
             // If no download root defined use default root
-            if (nodeDownloadRoot == null || nodeDownloadRoot.isEmpty()) {
-                nodeDownloadRoot = DEFAULT_NODEJS_DOWNLOAD_ROOT;
+            if (nodeDownloadRoot == null) {
+                nodeDownloadRoot = URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT);
             }
 
             if (nodeIsAlreadyInstalled()) {
@@ -431,7 +432,7 @@ public class NodeInstaller {
         }
     }
 
-    private void downloadFileIfMissing(String downloadUrl, File destination,
+    private void downloadFileIfMissing(URI downloadUrl, File destination,
             String userName, String password) throws DownloadException {
         if (!destination.exists()) {
             getLogger().info("Downloading {} to {}", downloadUrl, destination);
@@ -514,16 +515,16 @@ public class NodeInstaller {
 
     private class InstallData {
         String nodeFilename;
-        String downloadUrl;
+        URI downloadUrl;
         File tmpDirectory;
         File archive;
         String nodeExecutable;
 
-        InstallData(String nodeVersion, String nodeDownloadRoot,
+        InstallData(String nodeVersion, URI nodeDownloadRoot,
                 Platform platform) {
             nodeFilename = getLongNodeFilename(nodeVersion);
-            downloadUrl =
-                    nodeDownloadRoot + getNodeDownloadFilename(nodeVersion);
+            downloadUrl = nodeDownloadRoot
+                    .resolve(getNodeDownloadFilename(nodeVersion));
             tmpDirectory = getTempDirectory();
             archive = resolveArchive("node", nodeVersion,
                     platform.getNodeClassifier(),
@@ -535,7 +536,7 @@ public class NodeInstaller {
             return nodeFilename;
         }
 
-        public String getDownloadUrl() {
+        public URI getDownloadUrl() {
             return downloadUrl;
         }
 
