@@ -26,7 +26,6 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +70,7 @@ public class VaadinConnectClientGenerator {
         this.endpointPrefix = relativizeEndpointPrefixWithUrlMapping(prefix, urlMapping);
     }
 
-    String relativizeEndpointPrefixWithUrlMapping(String endpointPrefix, String urlMapping){
+    final String relativizeEndpointPrefixWithUrlMapping(String endpointPrefix, String urlMapping){
         urlMapping = removeTrailingStar(urlMapping);
         endpointPrefix = removeTrailingStar(endpointPrefix);
 
