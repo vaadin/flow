@@ -416,6 +416,7 @@ public class FrontendUtils {
             }
         } else {
             // TODO : install
+            // new NodeInstaller(home, Collections.emptyList()).install();
         }
         return file.getAbsolutePath();
     }
