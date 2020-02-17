@@ -15,7 +15,8 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <server.port>9999</server.port>
         <server.stop.port>9998</server.stop.port>
-
+        <!-- please remove after https://github.com/vaadin/flow/issues/7575 is fixed -->
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
         <jetty.skip>${maven.test.skip}</jetty.skip>
     </properties>
 

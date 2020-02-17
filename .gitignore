@@ -41,6 +41,8 @@ package-lock.json
 
 flow-tests/**/package.json
 flow-tests/**/webpack*.js
+flow-tests/**/tsconfig.json
+flow-tests/**/pnpm-lock.yaml
 yarn.lock
 
 flow-client/src/main/resources/META-INF/resources/frontend/FlowClient.js

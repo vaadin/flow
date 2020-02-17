@@ -75,6 +75,10 @@ public class PageIT extends ChromeBrowserTest {
     public void testSetLocation() {
         open();
 
+        if (hasClientIssue("7575")) {
+            return;
+        }
+
         findElement(By.id("setLocation")).click();
         Assert.assertThat(getDriver().getCurrentUrl(),
                 Matchers.endsWith(BaseHrefView.class.getName()));
@@ -83,6 +87,9 @@ public class PageIT extends ChromeBrowserTest {
     @Test
     public void testOpenUrlInNewTab() {
         open();
+        if (hasClientIssue("7575")) {
+            return;
+        }
 
         findElement(By.id("open")).click();
         ArrayList<String> tabs = new ArrayList<>(
@@ -95,6 +102,9 @@ public class PageIT extends ChromeBrowserTest {
     @Test
     public void testOpenUrlInIFrame() throws InterruptedException {
         open();
+        if (hasClientIssue("7575")) {
+            return;
+        }
 
         findElement(By.id("openInIFrame")).click();
 

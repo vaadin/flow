@@ -16,7 +16,6 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.useDeprecatedV14Bootstrapping>false</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <build>
