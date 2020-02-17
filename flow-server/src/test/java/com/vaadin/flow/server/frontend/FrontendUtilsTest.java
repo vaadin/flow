@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -25,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +40,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
@@ -56,6 +57,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class FrontendUtilsTest {
+
+    private static final String USER_HOME = "user.home";
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
@@ -83,39 +86,39 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void should_useProjectNodeFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+    public synchronized void should_useProjectNodeFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(true, true, baseDir);
 
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(0),
-                containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
-                containsString(NPM_CLI_STRING));
+        assertNodeCommand(() -> baseDir);
     }
 
     @Test
-    public void should_useProjectNpmFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+    public synchronized void should_useHomeFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNodeCommand(() -> getVaadinHomeDir());
+    }
+
+    @Test
+    public synchronized void should_useProjectNpmFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(false, true, baseDir);
 
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                containsString("node"));
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                not(containsString(DEFAULT_NODE)));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(0),
-                containsString("node"));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
-                containsString(NPM_CLI_STRING));
+        assertNpmCommand(() -> baseDir);
+    }
+
+    @Test
+    public synchronized void should_useHomeNpmFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNpmCommand(() -> getVaadinHomeDir());
     }
 
     @Test
@@ -358,6 +361,47 @@ public class FrontendUtilsTest {
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }
 
+    @Test
+    public synchronized void getVaadinHomeDirectory_noVaadinFolder_folderIsCreated()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            File vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertTrue(vaadinHomeDirectory.exists());
+            Assert.assertTrue(vaadinHomeDirectory.isDirectory());
+
+            // access it one more time
+            vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertEquals(".vaadin", vaadinDir.getName());
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    @Test(expected = FileNotFoundException.class)
+    public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            vaadinDir.createNewFile();
+            FrontendUtils.getVaadinHomeDirectory();
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
     private VaadinService setupStatsAssetMocks(String statsFile)
             throws IOException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
@@ -365,6 +409,58 @@ public class FrontendUtilsTest {
 
         return getServiceWithResource(
                 new ByteArrayInputStream(stats.getBytes()));
+    }
+
+    private void assertNodeCommand(Supplier<String> path) throws IOException {
+        String home = tmpDir.newFolder().getAbsolutePath();
+        String originalHome = System.getProperty(USER_HOME);
+        System.setProperty(USER_HOME, home);
+        try {
+            createStubNode(true, true,
+                    FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString(DEFAULT_NODE));
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString(path.get()));
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            assertThat(npmExecutable.get(0), containsString(path.get()));
+            assertThat(npmExecutable.get(0), containsString(DEFAULT_NODE));
+            assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private void assertNpmCommand(Supplier<String> path) throws IOException {
+        String home = tmpDir.newFolder().getAbsolutePath();
+        String originalHome = System.getProperty(USER_HOME);
+        System.setProperty(USER_HOME, home);
+        try {
+            createStubNode(false, true,
+                    FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString("node"));
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    not(containsString(DEFAULT_NODE)));
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            assertThat(npmExecutable.get(0), containsString("node"));
+            assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+            assertThat(npmExecutable.get(1), containsString(path.get()));
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private String getVaadinHomeDir() {
+        try {
+            return FrontendUtils.getVaadinHomeDirectory().getAbsolutePath();
+        } catch (FileNotFoundException exception) {
+            throw new IllegalStateException(exception);
+        }
     }
 
     private VaadinService getServiceWithResource(InputStream stats) {
