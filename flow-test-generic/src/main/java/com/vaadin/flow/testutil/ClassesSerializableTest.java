@@ -169,7 +169,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.webcomponent\\.WebComponentGenerator",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
 
-                "com\\.vaadin\\.flow\\.server\\.DevModeHandler",
+                "com\\.vaadin\\.flow\\.server\\.DevModeHandler(\\$.*)?",
                 // Frontend tasks classes which are not stored anywhere but used
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
