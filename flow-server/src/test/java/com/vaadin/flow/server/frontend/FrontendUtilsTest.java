@@ -481,6 +481,17 @@ public class FrontendUtilsTest {
         }
     }
 
+    @Test
+    public void validateNodeAndNpmVersion_pnpmLockIsNotRemoved()
+            throws IOException {
+        File file = new File(baseDir, "pnpm-lock.yaml");
+        file.createNewFile();
+
+        FrontendUtils.validateNodeAndNpmVersion(baseDir);
+
+        Assert.assertTrue(file.exists());
+    }
+
     private VaadinService setupStatsAssetMocks(String statsFile)
             throws IOException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
