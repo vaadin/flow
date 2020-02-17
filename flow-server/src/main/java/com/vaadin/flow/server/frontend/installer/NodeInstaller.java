@@ -51,7 +51,6 @@ public class NodeInstaller {
     private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
 
     public static final String PROVIDED_VERSION = "provided";
-    public static final String NODE_MODULES = "node_modules";
 
     private final Object lock = new Object();
 
@@ -307,9 +306,9 @@ public class NodeInstaller {
         getLogger().info("Extracting NPM");
         File tmpNodeModulesDir = new File(data.getTmpDirectory(),
                 data.getNodeFilename() + File.separator + "lib" + File.separator
-                        + NODE_MODULES);
+                        + FrontendUtils.NODE_MODULES);
         File nodeModulesDirectory = new File(destinationDirectory,
-                NODE_MODULES);
+                FrontendUtils.NODE_MODULES);
         File npmDirectory = new File(nodeModulesDirectory, "npm");
         FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
         // create a copy of the npm scripts next to the node executable
@@ -348,9 +347,9 @@ public class NodeInstaller {
         if (npmProvided()) {
             getLogger().info("Extracting NPM");
             File tmpNodeModulesDir = new File(data.getTmpDirectory(),
-                    data.getNodeFilename() + File.separator + NODE_MODULES);
+                    data.getNodeFilename() + File.separator + FrontendUtils.NODE_MODULES);
             File nodeModulesDirectory = new File(destinationDirectory,
-                    NODE_MODULES);
+                    FrontendUtils.NODE_MODULES);
             FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
         }
         deleteTempDirectory(data.getTmpDirectory());
