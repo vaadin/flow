@@ -189,8 +189,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         String nodePath;
         if (requireHomeNodeExec) {
             nodePath = FrontendUtils.ensureNodeExecutableInHome();
-        }
-        else {
+        } else {
             nodePath = FrontendUtils
                 .getNodeExecutable(npmFolder.getAbsolutePath());
         }
@@ -201,7 +200,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .directory(project.getBasedir()).inheritIO();
         getLog().info("Running webpack ...");
         FrontendUtils.console(FrontendUtils.YELLOW,
-                FrontendUtils.commandToString(npmFolder.getAbsolutePath(), 
+                FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
                         command));
 
         Process webpackLaunch = null;

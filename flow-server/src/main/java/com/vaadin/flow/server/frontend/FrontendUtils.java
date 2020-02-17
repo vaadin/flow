@@ -78,9 +78,6 @@ import static java.lang.String.format;
  */
 public class FrontendUtils {
 
-    /**
-     * 
-     */
     private static final String DEFAULT_NODE_VERSION = "v12.16.0";
 
     protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
@@ -463,7 +460,8 @@ public class FrontendUtils {
                             home.getAbsolutePath(), file.getAbsolutePath()));
                 }
             } else {
-                installNode(getVaadinHomeDirectory(), DEFAULT_NODE_VERSION, null);
+                installNode(getVaadinHomeDirectory(), DEFAULT_NODE_VERSION,
+                        null);
             }
             return file.getAbsolutePath();
         } catch (FileNotFoundException exception) {
