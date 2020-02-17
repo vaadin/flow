@@ -36,7 +36,7 @@ import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.
  * properties, if provided.
  */
 public class VaadinConnectClientGenerator {
-    static final String PREFIX = "vaadin.connect.prefix";
+    static final String PREFIX = "vaadin.endpoint.prefix";
     static final String DEFAULT_PREFIX = "/connect";
 
     static final String URL_MAPPING = "vaadin.urlMapping";
