@@ -30,6 +30,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
 import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.TS;
 /**
  * Generates the Vaadin Connect Client file, based on the application
@@ -76,8 +78,7 @@ public class VaadinConnectClientGenerator {
         Path urlMappingPath = Paths.get(urlMapping).normalize();
         Path endpointPrefixPath = Paths.get(endpointPrefix).normalize();
 
-        String relativePath = urlMappingPath.relativize(endpointPrefixPath).toString();
-        return FilenameUtils.separatorsToUnix(relativePath);
+        return FrontendUtils.getUnixRelativePath(urlMappingPath, endpointPrefixPath);
     }
 
     private String removeTrailingStar(String original){
