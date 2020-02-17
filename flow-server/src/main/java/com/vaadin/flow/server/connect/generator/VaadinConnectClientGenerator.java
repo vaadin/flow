@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,10 @@ import static com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator.
  */
 public class VaadinConnectClientGenerator {
     static final String PREFIX = "vaadin.connect.prefix";
-    static final String DEFAULT_PREFIX = "connect";
+    static final String DEFAULT_PREFIX = "/connect";
+
+    static final String URL_MAPPING = "vaadin.urlMapping";
+    static final String DEFAULT_URL_MAPPING = "/*";
 
     private static final String CLIENT_FILE_NAME = "connect-client.default";
     public static final String CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + TS;
@@ -55,9 +59,30 @@ public class VaadinConnectClientGenerator {
      */
     public VaadinConnectClientGenerator(
             Properties applicationProperties) {
-        this.endpointPrefix =
+        final String prefix =
                 (String)applicationProperties.getOrDefault(PREFIX,
-                DEFAULT_PREFIX);
+                        DEFAULT_PREFIX);
+        final String urlMapping = (String) applicationProperties
+                .getOrDefault(URL_MAPPING, DEFAULT_URL_MAPPING);
+
+        this.endpointPrefix = relativizeEndpointPrefixWithUrlMapping(prefix, urlMapping);
+    }
+
+    String relativizeEndpointPrefixWithUrlMapping(String endpointPrefix, String urlMapping){
+        urlMapping = removeTrailingStar(urlMapping);
+        endpointPrefix = removeTrailingStar(endpointPrefix);
+
+        Path urlMappingPath = Paths.get(urlMapping).normalize();
+        Path endpointPrefixPath = Paths.get(endpointPrefix).normalize();
+
+        return urlMappingPath.relativize(endpointPrefixPath).toString();
+    }
+
+    private String removeTrailingStar(String original){
+        if(original!=null && original.endsWith("/*")){
+            return original.substring(0, original.length() - 1);
+        }
+        return original;
     }
 
     /**
