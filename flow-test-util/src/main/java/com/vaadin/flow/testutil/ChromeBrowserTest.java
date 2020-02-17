@@ -53,7 +53,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
      */
     @BeforeClass
     public static void setChromeDriverPath() {
-        ChromeDriverLocator.fillEnvironmentProperty();
+        WebDriverManager.chromedriver().setup();
     }
 
     @Before
