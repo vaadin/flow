@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 public class HasUrlParameterUtil {
 
@@ -37,7 +38,7 @@ public class HasUrlParameterUtil {
      */
     public static String PARAMETER_NAME = "___url_parameter";
 
-    public static String getPathWithHasUrlParameter(String path,
+    public static String getPathTemplate(String path,
             Class<? extends Component> navigationTarget) {
         if (hasUrlParameter(navigationTarget)) {
 
@@ -122,6 +123,22 @@ public class HasUrlParameterUtil {
                 .collect(Collectors.toList());
     }
 
+    public static void checkMandatoryParameter(
+            Class<? extends Component> navigationTarget,
+            UrlParameters parameters) {
+        if (hasUrlParameter(navigationTarget)
+                && hasMandatoryParameter(navigationTarget)
+                && (parameters == null || parameters
+                        .get(HasUrlParameterUtil.PARAMETER_NAME) == null)) {
+            throw new IllegalArgumentException(String.format(
+                    "Navigation target '%s' requires a parameter and can not be resolved. "
+                            + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
+                            + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
+                            + "instead",
+                    navigationTarget.getName()));
+        }
+    }
+
     /**
      * Returns whether the target argument implements {@link HasUrlParameter}
      *
@@ -132,6 +149,22 @@ public class HasUrlParameterUtil {
      */
     static boolean hasUrlParameter(Class<? extends Component> target) {
         return HasUrlParameter.class.isAssignableFrom(target);
+    }
+
+    /**
+     * Returns whether the target class doesn't annotate the
+     * {@link HasUrlParameter#setParameter(BeforeEvent, Object)} with neither
+     * {@link OptionalParameter} nor {@link WildcardParameter}
+     *
+     * @param target
+     *            target component class.
+     * @return true if the target class doesn't annotate the
+     *         {@link HasUrlParameter#setParameter(BeforeEvent, Object)} with
+     *         neither {@link OptionalParameter} nor {@link WildcardParameter},
+     *         otherwise false.
+     */
+    static boolean hasMandatoryParameter(Class<? extends Component> target) {
+        return !(hasOptionalParameter(target) || hasWildcardParameter(target));
     }
 
     /**
@@ -200,4 +233,5 @@ public class HasUrlParameterUtil {
 
     private HasUrlParameterUtil() {
     }
+
 }

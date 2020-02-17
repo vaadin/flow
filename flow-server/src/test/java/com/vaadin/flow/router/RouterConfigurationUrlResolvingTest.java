@@ -230,8 +230,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // 3519
-    public void getUrl_throws_for_required_parameter()
-            throws InvalidRouteConfigurationException {
+    public void getUrl_throws_for_required_parameter() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage(String.format(
                 "Navigation target '%s' requires a parameter and can not be resolved. "
@@ -265,28 +264,27 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // 3519
-    public void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
+    public void getUrlTemplate_returns_url_template()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithParameter.class,
                 RouteWithMultipleParameters.class, OptionalParameter.class,
                 FooNavigationTarget.class);
 
         Assert.assertEquals("Required parameter didn't match url base.",
-                RouteWithParameter.class.getAnnotation(Route.class).value(),
-                routeConfiguration.getUrlBase(RouteWithParameter.class)
+                getUrlTemplate(RouteWithParameter.class),
+                routeConfiguration.getUrlTemplate(RouteWithParameter.class)
                         .orElse(null));
         Assert.assertEquals("Wildcard parameter didn't match url base.",
-                RouteWithMultipleParameters.class.getAnnotation(Route.class)
-                        .value(),
-                routeConfiguration.getUrlBase(RouteWithMultipleParameters.class)
+                getUrlTemplate(RouteWithMultipleParameters.class),
+                routeConfiguration.getUrlTemplate(RouteWithMultipleParameters.class)
                         .orElse(null));
         Assert.assertEquals("Optional parameter didn't match url base.",
-                OptionalParameter.class.getAnnotation(Route.class).value(),
-                routeConfiguration.getUrlBase(OptionalParameter.class)
+                getUrlTemplate(OptionalParameter.class),
+                routeConfiguration.getUrlTemplate(OptionalParameter.class)
                         .orElse(null));
         Assert.assertEquals("Non parameterized url didn't match url base.",
-                FooNavigationTarget.class.getAnnotation(Route.class).value(),
-                routeConfiguration.getUrlBase(FooNavigationTarget.class)
+                getUrlTemplate(FooNavigationTarget.class),
+                routeConfiguration.getUrlTemplate(FooNavigationTarget.class)
                         .orElse(null));
 
     }
@@ -539,4 +537,12 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         }
 
     }
+
+    private String getUrlTemplate(
+            Class<? extends Component> routeWithHasUrlParameterClass) {
+        return HasUrlParameterUtil.getPathTemplate(routeWithHasUrlParameterClass
+                        .getAnnotation(Route.class).value(),
+                routeWithHasUrlParameterClass);
+    }
+
 }

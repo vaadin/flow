@@ -274,6 +274,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
+        HasUrlParameterUtil.checkMandatoryParameter(navigationTarget, null);
+
         return Optional.ofNullable(
                 getConfiguration().getTargetUrl(navigationTarget));
     }
@@ -283,6 +285,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             Class<? extends Component> navigationTarget,
             UrlParameters parameters) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
+
+        HasUrlParameterUtil.checkMandatoryParameter(navigationTarget,
+                parameters);
 
         return Optional.ofNullable(getConfiguration()
                 .getTargetUrl(navigationTarget, parameters));
@@ -373,7 +378,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         // Backward compatibility with HasUrlParameter for which the parameters
         // were stored in RouteTarget.
-        path = HasUrlParameterUtil.getPathWithHasUrlParameter(path,
+        path = HasUrlParameterUtil.getPathTemplate(path,
                 navigationTarget);
 
         configuration.setRoute(path, navigationTarget);

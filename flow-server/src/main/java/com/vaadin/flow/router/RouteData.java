@@ -37,8 +37,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      *
      * @param parentLayouts
      *         route parent layout class chain
-     * @param url
-     *         full route url
+     * @param pathTemplate
+     *         full route pathTemplate
      * @param parameters
      *         navigation target path parameters
      * @param navigationTarget
@@ -47,10 +47,10 @@ public class RouteData extends RouteBaseData<RouteData> {
      *         list of aliases for this route
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String url, List<Class<?>> parameters,
+            String pathTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
-        super(parentLayouts, url, parameters, navigationTarget);
+        super(parentLayouts, pathTemplate, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
@@ -61,8 +61,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      *
      * @param parentLayouts
      *            route parent layout class chain
-     * @param url
-     *            full route url
+     * @param pathTemplate
+     *            full route pathTemplate
      * @param parameters
      *            navigation target path parameters
      * @param navigationTarget
@@ -71,10 +71,10 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            list of aliases for this route
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String url, Map<String, String> parameters,
+            String pathTemplate, Map<String, String> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
-        super(parentLayouts, url, parameters, navigationTarget);
+        super(parentLayouts, pathTemplate, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);

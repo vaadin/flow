@@ -126,8 +126,21 @@ public class ConfiguredRoutes implements Serializable {
      * @param pathTemplate
      *            path template to check
      * @return true if configuration contains route
+     * @deprecated use {@link #hasPathTemplate(String)} instead.
      */
+    @Deprecated
     public boolean hasRoute(String pathTemplate) {
+        return getRoutesMap().containsKey(pathTemplate);
+    }
+
+    /**
+     * See if configuration contains a registered route for given path template.
+     *
+     * @param pathTemplate
+     *            path template to check
+     * @return true if configuration contains route
+     */
+    public boolean hasPathTemplate(String pathTemplate) {
         return getRoutesMap().containsKey(pathTemplate);
     }
 
