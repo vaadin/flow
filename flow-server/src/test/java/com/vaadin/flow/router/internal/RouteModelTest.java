@@ -26,6 +26,7 @@ import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.UrlParameters;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -68,14 +69,14 @@ public class RouteModelTest {
      *            the keys and values of the map.
      * @return a Map containing the specified arguments.
      */
-    public static Map<String, Object> parameters(Object... keysAndValues) {
+    public static UrlParameters parameters(Object... keysAndValues) {
         Map<String, Object> result = new HashMap<>(keysAndValues.length / 2);
 
         for (int i = 0; i < keysAndValues.length; i++) {
             result.put((String) keysAndValues[i], keysAndValues[++i]);
         }
 
-        return result;
+        return new UrlParameters(result);
     }
 
     /**
@@ -90,12 +91,13 @@ public class RouteModelTest {
     }
 
     @Test
-    public void test() {
+    public void route_model_with_various_urls() {
 
         RouteModel root = RouteModel.create();
         root.addRoute("", Root.class);
         root.addRoute("trunk", Trunk.class);
-        root.addRoute("trunk/branch/[:id:int]", Branch.class);
+        root.addRoute("trunk/branch", Branch.class);
+        root.addRoute("trunk/branch/:id:int", Branch.class);
         root.addRoute("trunk/branch/:id:int/...:list:long",
                 BranchChildren.class);
         root.addRoute("trunk/[:name]/[:type]/branch/[:id:int]/edit",
@@ -104,8 +106,6 @@ public class RouteModelTest {
                 "trunk/:name/[:type]/branch/:id:int/flower/:open:bool/edit",
                 FlowerEdit.class);
         root.addRoute("trunk/twig/...:leafs", Twig.class);
-
-        System.out.println(root.getRoutes());
 
         RouteSearchResult result;
         String path;
@@ -194,12 +194,10 @@ public class RouteModelTest {
 
     private void assertResult(RouteSearchResult result, String path,
             Class<? extends Component> target,
-            Map<String, Object> urlParameters) {
-
-        System.out.println("result: " + result);
+            UrlParameters urlParameters) {
 
         if (urlParameters == null) {
-            urlParameters = Collections.emptyMap();
+            urlParameters = new UrlParameters(null);
         }
 
         Assert.assertEquals("Invalid path", path, result.getPath());

@@ -36,7 +36,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
         implements Comparable<T>, Serializable {
 
     private final List<Class<? extends RouterLayout>> parentLayouts;
-    private final String url;
+    private final String pathTemplate;
     private final Map<String, String> parameters;
     private final Class<? extends Component> navigationTarget;
 
@@ -45,7 +45,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *
      * @param parentLayouts
      *         route parent layout class chain
-     * @param url
+     * @param pathTemplate
      *         full route url
      * @param parameters
      *         navigation target path parameters
@@ -55,10 +55,10 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      */
     @Deprecated
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
-            String url, List<Class<?>> parameters,
+            String pathTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
-        this.url = url;
+        this.pathTemplate = pathTemplate;
         this.parameters = Collections.emptyMap();
         this.navigationTarget = navigationTarget;
     }
@@ -68,7 +68,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *
      * @param parentLayouts
      *         route parent layout class chain
-     * @param url
+     * @param pathTemplate
      *         full route url
      * @param parameters
      *         navigation target path parameters
@@ -76,10 +76,10 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *         route navigation target
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
-            String url, Map<String, String> parameters,
+            String pathTemplate, Map<String, String> parameters,
             Class<? extends Component> navigationTarget) {
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
-        this.url = url;
+        this.pathTemplate = pathTemplate;
         this.parameters = Collections.unmodifiableMap(parameters);
         this.navigationTarget = navigationTarget;
     }
@@ -109,9 +109,20 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * Get the full route url of {@link Route}.
      *
      * @return route url
+     * @deprecated use {@link #getPathTemplate()} instead.
      */
+    @Deprecated
     public String getUrl() {
-        return url;
+        return pathTemplate;
+    }
+
+    /**
+     * Get the full route url of {@link Route}.
+     *
+     * @return route url
+     */
+    public String getPathTemplate() {
+        return pathTemplate;
     }
 
     /**
@@ -152,8 +163,8 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     public boolean equals(Object obj) {
         if (obj instanceof RouteBaseData<?>) {
             RouteBaseData<?> other = (RouteBaseData<?>) obj;
-            return other.parentLayouts.equals(this.parentLayouts) && other.url
-                    .equals(this.url) && other.navigationTarget
+            return other.parentLayouts.equals(this.parentLayouts) && other.pathTemplate
+                    .equals(this.pathTemplate) && other.navigationTarget
                     .equals(navigationTarget);
         }
         return false;
@@ -161,6 +172,6 @@ public abstract class RouteBaseData<T extends RouteBaseData>
 
     @Override
     public int hashCode() {
-        return Objects.hash(parentLayouts, url, navigationTarget);
+        return Objects.hash(parentLayouts, pathTemplate, navigationTarget);
     }
 }

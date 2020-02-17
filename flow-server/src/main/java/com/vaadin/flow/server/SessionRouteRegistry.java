@@ -123,7 +123,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                     List<RouteBaseData<?>> addedVisible = event.getAddedRoutes()
                             .stream()
                             .filter(routeData -> !configuration
-                                    .hasRoute(routeData.getUrl()))
+                                    .hasPathTemplate(routeData.getUrl()))
                             .collect(Collectors.toList());
                     List<RouteBaseData<?>> removedVisible = event
                             .getRemovedRoutes().stream()

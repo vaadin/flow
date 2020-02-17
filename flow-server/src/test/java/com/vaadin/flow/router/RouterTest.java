@@ -3256,10 +3256,11 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 = String
                 .format("Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 = "<li><a href=\"optional/[:"
-                + HasUrlParameterUtil.PARAMETER_NAME + "]\">optional/[:"
-                + HasUrlParameterUtil.PARAMETER_NAME
-                + "] (supports optional parameter)</a></li>";
+        String optionalTemplate = HasUrlParameterUtil
+                .getPathTemplate("optional", OptionalParameter.class);
+
+        String exceptionText3 = "<li><a href=\"" + optionalTemplate + "\">"
+                + optionalTemplate + " (supports optional parameter)</a></li>";
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2, exceptionText3);
@@ -3282,8 +3283,10 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 = String
                 .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 = "<li>optional/:"
-                + HasUrlParameterUtil.PARAMETER_NAME
+        String pathTemplate = HasUrlParameterUtil
+                .getPathTemplate("optional", WithoutOptionalParameter.class);
+
+        String exceptionText3 = "<li>" + pathTemplate
                 + " (requires parameter)</li>";
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
@@ -3620,7 +3623,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     private UrlParameters parameters(Object... keysAndValues) {
-        return new UrlParameters(RouteModelTest.parameters(keysAndValues));
+        return RouteModelTest.parameters(keysAndValues);
     }
 
 
