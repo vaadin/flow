@@ -254,6 +254,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private void cleanUp() throws IOException {
+        if (!packageUpdater.nodeModulesFolder.exists()) {
+            return;
+        }
         File modulesYaml = new File(packageUpdater.nodeModulesFolder,
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
