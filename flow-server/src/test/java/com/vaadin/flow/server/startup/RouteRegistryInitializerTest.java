@@ -1107,7 +1107,8 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Sort order was not the one expected",
                 "absolute/levels", registeredRoutes.get(2).getPathTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                "parameter/:" + HasUrlParameterUtil.PARAMETER_NAME + ":boolean",
+                HasUrlParameterUtil.getPathTemplate("parameter",
+                        ParameterRoute.class),
                 registeredRoutes.get(3).getPathTemplate());
         Assert.assertEquals("Sort order was not the one expected", "parent",
                 registeredRoutes.get(4).getPathTemplate());
