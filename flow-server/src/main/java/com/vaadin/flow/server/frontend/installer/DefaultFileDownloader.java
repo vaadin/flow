@@ -198,6 +198,6 @@ public final class DefaultFileDownloader implements FileDownloader {
     }
 
     private Logger getLogger() {
-        return LoggerFactory.getLogger(FileDownloader.class);
+        return LoggerFactory.getLogger("FileDownloader");
     }
 }

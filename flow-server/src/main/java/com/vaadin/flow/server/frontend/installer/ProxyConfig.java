@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ProxyConfig {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ProxyConfig.class);
-
     private final List<Proxy> proxies;
 
     /**
@@ -65,7 +63,7 @@ public class ProxyConfig {
      */
     public Proxy getProxyForUrl(String requestUrl) {
         if (proxies.isEmpty()) {
-            LOGGER.info("No proxies configured");
+            getLogger().info("No proxies configured");
             return null;
         }
         final URI uri = URI.create(requestUrl);
@@ -74,7 +72,7 @@ public class ProxyConfig {
                 return proxy;
             }
         }
-        LOGGER.info("Could not find matching proxy for host: {}",
+        getLogger().info("Could not find matching proxy for host: {}",
                 uri.getHost());
         return null;
     }
@@ -142,7 +140,22 @@ public class ProxyConfig {
         public final String nonProxyHosts;
 
         /**
-         * Proxy constructor.
+         * Construct a Proxy object.
+         *
+         * @param id
+         *         proxy id
+         * @param protocol
+         *         proxy protocol
+         * @param host
+         *         proxy host
+         * @param port
+         *         proxy port
+         * @param username
+         *         user name for proxy
+         * @param password
+         *         password for proxy
+         * @param nonProxyHosts
+         *         excluded hosts string
          */
         public Proxy(String id, String protocol, String host, int port,
                 String username, String password, String nonProxyHosts) {
@@ -239,5 +252,9 @@ public class ProxyConfig {
         private ProxyConfigException(String message, Exception cause) {
             super(message, cause);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger("ProxyConfig");
     }
 }

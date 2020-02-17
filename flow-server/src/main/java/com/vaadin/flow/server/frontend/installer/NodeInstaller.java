@@ -49,9 +49,10 @@ public class NodeInstaller {
             INSTALL_PATH.replaceAll("/", "\\\\") + "\\node.exe";
     private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
 
-    private final Object LOCK = new Object();
-
     public static final String PROVIDED_VERSION = "provided";
+    public static final String NODE_MODULES = "node_modules";
+
+    private final Object LOCK = new Object();
 
     private String npmVersion = PROVIDED_VERSION;
     private String nodeVersion;
@@ -189,9 +190,10 @@ public class NodeInstaller {
      * Install node and NPM
      *
      * @throws InstallationException
+     *         exception thrown when installation fails
      */
     public void install() throws InstallationException {
-        // use static lock object for a synchronized block
+        // use lock object for a synchronized block
         synchronized (LOCK) {
             // If no download root defined use default root
             if (nodeDownloadRoot == null || nodeDownloadRoot.isEmpty()) {
@@ -205,19 +207,19 @@ public class NodeInstaller {
             getLogger().info("Installing node version {}", nodeVersion);
             if (!nodeVersion.startsWith("v")) {
                 getLogger()
-                        .warn("Node version does not start with naming convention 'v'. If download fails please add 'v' to the version string.");
+                        .warn("Node version does not start with naming convention 'v'. "
+                                + "If download fails please add 'v' to the version string.");
             }
-            if (platform.isWindows()) {
-                installNodeWithNpmForWindows();
-            } else {
-                installNodeDefault();
-            }
+            InstallData data = new InstallData(nodeVersion, nodeDownloadRoot,
+                    platform);
+            installNode(data);
+
         }
     }
 
     private boolean nodeIsAlreadyInstalled() {
         try {
-            File nodeFile = getNodePath();
+            File nodeFile = getNodeExecutable();
             if (nodeFile.exists()) {
 
                 List<String> nodeVersionCommand = new ArrayList<>();
@@ -239,175 +241,136 @@ public class NodeInstaller {
                 return false;
             }
         } catch (FrontendUtils.UnknownVersionException e) {
+            getLogger().error("Couldn't get node version due to '{}'",
+                    e.getMessage());
             return false;
         }
     }
 
-    private void installNodeDefault() throws InstallationException {
+    private void installNode(InstallData data) throws InstallationException {
         try {
-            final String longNodeFilename = getLongNodeFilename(nodeVersion,
-                    false);
-            String downloadUrl =
-                    nodeDownloadRoot + getNodeDownloadFilename(nodeVersion,
-                            false);
-            String classifier = platform.getNodeClassifier();
 
-            File tmpDirectory = getTempDirectory();
+            downloadFileIfMissing(data.getDownloadUrl(), data.getArchive(),
+                    userName, password);
 
-            File archive = resolveArchive("node", nodeVersion, classifier,
-                    platform.getArchiveExtension());
-
-            downloadFileIfMissing(downloadUrl, archive, userName, password);
-
-            try {
-                extractFile(archive, tmpDirectory);
-            } catch (ArchiveExtractionException e) {
-                if (e.getCause() instanceof EOFException) {
-                    // https://github.com/eirslett/frontend-maven-plugin/issues/794
-                    // The downloading was probably interrupted and archive file is incomplete:
-                    // delete it to retry from scratch
-                    getLogger()
-                            .error("The archive file {} is corrupted and will be deleted. "
-                                            + "Please try the build again.",
-                                    archive.getPath());
-                    archive.delete();
-                    FileUtils.deleteDirectory(tmpDirectory);
-                }
-
-                throw e;
-            }
-
-            // Search for the node binary
-            File nodeBinary = new File(tmpDirectory,
-                    longNodeFilename + File.separator + "bin" + File.separator
-                            + "node");
-            if (!nodeBinary.exists()) {
-                throw new FileNotFoundException(
-                        "Could not find the downloaded Node.js binary in "
-                                + nodeBinary);
-            } else {
-                File destinationDirectory = getNodeInstallDirectory();
-
-                File destination = new File(destinationDirectory, "node");
-                getLogger()
-                        .info("Copying node binary from {} to {}", nodeBinary,
-                                destination);
-                if (destination.exists() && !destination.delete()) {
-                    throw new InstallationException(
-                            "Could not install Node: Was not allowed to delete "
-                                    + destination);
-                }
-                try {
-                    Files.move(nodeBinary.toPath(), destination.toPath(),
-                            StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    throw new InstallationException(
-                            "Could not install Node: Was not allowed to rename "
-                                    + nodeBinary + " to " + destination);
-                }
-
-                if (!destination.setExecutable(true, false)) {
-                    throw new InstallationException(
-                            "Could not install Node: Was not allowed to make "
-                                    + destination + " executable.");
-                }
-
-                if (npmProvided()) {
-                    File tmpNodeModulesDir = new File(tmpDirectory,
-                            longNodeFilename + File.separator + "lib"
-                                    + File.separator + "node_modules");
-                    File nodeModulesDirectory = new File(destinationDirectory,
-                            "node_modules");
-                    File npmDirectory = new File(nodeModulesDirectory, "npm");
-                    FileUtils.copyDirectory(tmpNodeModulesDir,
-                            nodeModulesDirectory);
-                    getLogger().info("Extracting NPM");
-                    // create a copy of the npm scripts next to the node executable
-                    for (String script : Arrays.asList("npm", "npm.cmd")) {
-                        File scriptFile = new File(npmDirectory,
-                                "bin" + File.separator + script);
-                        if (scriptFile.exists()) {
-                            scriptFile.setExecutable(true);
-                        }
-                    }
-                }
-
-                deleteTempDirectory(tmpDirectory);
-
-                getLogger().info("Installed node locally.");
-            }
-        } catch (IOException e) {
-            throw new InstallationException("Could not install Node", e);
+            extractFile(data.getArchive(), data.getTmpDirectory());
         } catch (DownloadException e) {
             throw new InstallationException("Could not download Node.js", e);
         } catch (ArchiveExtractionException e) {
             throw new InstallationException(
                     "Could not extract the Node archive", e);
         }
+
+        try {
+            if (platform.isWindows()) {
+                installNodeWindows(data);
+            } else {
+                installNodeUnix(data);
+            }
+        } catch (IOException e) {
+            throw new InstallationException("Could not install Node", e);
+        }
+
+        getLogger().info("Local node installation successful.");
     }
 
-    private void installNodeWithNpmForWindows() throws InstallationException {
-        try {
-            final String longNodeFilename = getLongNodeFilename(nodeVersion,
-                    true);
-            String downloadUrl =
-                    nodeDownloadRoot + getNodeDownloadFilename(nodeVersion,
-                            true);
-            String classifier = platform.getNodeClassifier();
+    private void installNodeUnix(InstallData data)
+            throws InstallationException, IOException {
 
-            File tmpDirectory = getTempDirectory();
+        // Search for the node binary
+        File nodeBinary = new File(data.getTmpDirectory(),
+                data.getNodeFilename() + File.separator + "bin" + File.separator
+                        + data.getNodeExecutable());
 
-            File archive = resolveArchive("node", nodeVersion, classifier,
-                    platform.getArchiveExtension());
-
-            downloadFileIfMissing(downloadUrl, archive, userName, password);
-
-            extractFile(archive, tmpDirectory);
-
-            // Search for the node binary
-            File nodeBinary = new File(tmpDirectory,
-                    longNodeFilename + File.separator + "node.exe");
-            if (!nodeBinary.exists()) {
-                throw new FileNotFoundException(
-                        "Could not find the downloaded Node.js binary in "
-                                + nodeBinary);
-            } else {
-                File destinationDirectory = getNodeInstallDirectory();
-
-                File destination = new File(destinationDirectory, "node.exe");
-                getLogger()
-                        .info("Copying node binary from {} to {}", nodeBinary,
-                                destination);
-                try {
-                    Files.move(nodeBinary.toPath(), destination.toPath(),
-                            StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    throw new InstallationException(
-                            "Could not install Node: Was not allowed to rename "
-                                    + nodeBinary + " to " + destination);
-                }
-
-                if (PROVIDED_VERSION.equals(npmVersion)) {
-                    File tmpNodeModulesDir = new File(tmpDirectory,
-                            longNodeFilename + File.separator + "node_modules");
-                    File nodeModulesDirectory = new File(destinationDirectory,
-                            "node_modules");
-                    FileUtils.copyDirectory(tmpNodeModulesDir,
-                            nodeModulesDirectory);
-                }
-                deleteTempDirectory(tmpDirectory);
-
-                getLogger().info("Installed node locally.");
-            }
-        } catch (IOException e) {
-            throw new InstallationException("Could not install Node", e);
-        } catch (DownloadException e) {
-            throw new InstallationException("Could not download Node.js", e);
-        } catch (ArchiveExtractionException e) {
-            throw new InstallationException(
-                    "Could not extract the Node archive", e);
+        if (!nodeBinary.exists()) {
+            throw new FileNotFoundException(
+                    "Could not find the downloaded Node.js binary in "
+                            + nodeBinary);
         }
 
+        File destinationDirectory = getNodeInstallDirectory();
+
+        File destination = new File(destinationDirectory,
+                data.getNodeExecutable());
+
+        copyNodeBinaryToDestination(nodeBinary, destination);
+
+        if (!destination.setExecutable(true, false)) {
+            throw new InstallationException(
+                    "Could not install Node: Was not allowed to make "
+                            + destination + " executable.");
+        }
+
+        if (npmProvided()) {
+            getLogger().info("Extracting NPM");
+            File tmpNodeModulesDir = new File(data.getTmpDirectory(),
+                    data.getNodeFilename() + File.separator + "lib"
+                            + File.separator + NODE_MODULES);
+            File nodeModulesDirectory = new File(destinationDirectory,
+                    NODE_MODULES);
+            File npmDirectory = new File(nodeModulesDirectory, "npm");
+            FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
+            // create a copy of the npm scripts next to the node executable
+            for (String script : Arrays.asList("npm", "npm.cmd")) {
+                File scriptFile = new File(npmDirectory,
+                        "bin" + File.separator + script);
+                if (scriptFile.exists()) {
+                    scriptFile.setExecutable(true);
+                }
+            }
+        }
+
+        deleteTempDirectory(data.getTmpDirectory());
+    }
+
+    private void installNodeWindows(InstallData data)
+            throws InstallationException, IOException {
+        // Search for the node binary
+        File nodeBinary = new File(data.getTmpDirectory(),
+                data.getNodeFilename() + File.separator + data
+                        .getNodeExecutable());
+        if (!nodeBinary.exists()) {
+            throw new FileNotFoundException(
+                    "Could not find the downloaded Node.js binary in "
+                            + nodeBinary);
+        }
+
+        File destinationDirectory = getNodeInstallDirectory();
+
+        File destination = new File(destinationDirectory,
+                data.getNodeExecutable());
+
+        copyNodeBinaryToDestination(nodeBinary, destination);
+
+        if (npmProvided()) {
+            getLogger().info("Extracting NPM");
+            File tmpNodeModulesDir = new File(data.getTmpDirectory(),
+                    data.getNodeFilename() + File.separator + NODE_MODULES);
+            File nodeModulesDirectory = new File(destinationDirectory,
+                    NODE_MODULES);
+            FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
+        }
+        deleteTempDirectory(data.getTmpDirectory());
+    }
+
+    private void copyNodeBinaryToDestination(File nodeBinary, File destination)
+            throws InstallationException {
+        getLogger().info("Copying node binary from {} to {}", nodeBinary,
+                destination);
+        if (destination.exists() && !destination.delete()) {
+            throw new InstallationException(
+                    "Could not install Node: Was not allowed to delete "
+                            + destination);
+        }
+        try {
+            Files.move(nodeBinary.toPath(), destination.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            getLogger().debug("Renaming failed.", e);
+            throw new InstallationException(
+                    "Could not install Node: Was not allowed to rename "
+                            + nodeBinary + " to " + destination);
+        }
     }
 
     private File getTempDirectory() {
@@ -442,8 +405,30 @@ public class NodeInstaller {
 
     private void extractFile(File archive, File destinationDirectory)
             throws ArchiveExtractionException {
-        getLogger().info("Unpacking {} into {}", archive, destinationDirectory);
-        archiveExtractor.extract(archive, destinationDirectory);
+        try {
+            getLogger().info("Unpacking {} into {}", archive,
+                    destinationDirectory);
+            archiveExtractor.extract(archive, destinationDirectory);
+        } catch (ArchiveExtractionException e) {
+            if (e.getCause() instanceof EOFException) {
+                // https://github.com/eirslett/frontend-maven-plugin/issues/794
+                // The downloading was probably interrupted and archive file is incomplete:
+                // delete it to retry from scratch
+                getLogger()
+                        .error("The archive file {} is corrupted and will be deleted. "
+                                        + "Please try the build again.",
+                                archive.getPath());
+                archive.delete();
+                try {
+                    FileUtils.deleteDirectory(destinationDirectory);
+                } catch (IOException ioe) {
+                    getLogger().error("Failed to remove target directory '{}'",
+                            destinationDirectory, ioe);
+                }
+            }
+
+            throw e;
+        }
     }
 
     private void downloadFileIfMissing(String downloadUrl, File destination,
@@ -466,7 +451,7 @@ public class NodeInstaller {
      *         optional classifier
      * @param archiveExtension
      *         archive extension
-     * @return archive {@link File}
+     * @return archive {@link File} for archive
      */
     private File resolveArchive(String name, String nodeVersion,
             String classifier, String archiveExtension) {
@@ -483,43 +468,25 @@ public class NodeInstaller {
         return new File(installDirectory, filename.toString());
     }
 
-    public File getNodePath() {
+    /**
+     * Get node executable file.
+     *
+     * @return node executable
+     */
+    public File getNodeExecutable() {
         String nodeExecutable = platform.isWindows() ?
                 NODE_WINDOWS :
                 NODE_DEFAULT;
         return new File(installDirectory + nodeExecutable);
     }
 
-    private String getLongNodeFilename(String nodeVersion,
-            boolean archiveOnWindows) {
-        if (platform.isWindows() && !archiveOnWindows) {
-            return "node.exe";
-        } else {
-            return "node-" + nodeVersion + "-" + platform.getNodeClassifier();
-        }
+    private String getLongNodeFilename(String nodeVersion) {
+        return "node-" + nodeVersion + "-" + platform.getNodeClassifier();
     }
 
-    private String getNodeDownloadFilename(String nodeVersion,
-            boolean archiveOnWindows) {
-        if (platform.isWindows() && !archiveOnWindows) {
-            if (platform.getArchitecture() == Platform.Architecture.X64) {
-                if (nodeVersion.startsWith("v0.")) {
-                    return nodeVersion + "/x64/node.exe";
-                } else {
-                    return nodeVersion + "/win-x64/node.exe";
-                }
-            } else {
-                if (nodeVersion.startsWith("v0.")) {
-                    return nodeVersion + "/node.exe";
-                } else {
-                    return nodeVersion + "/win-x86/node.exe";
-                }
-            }
-        } else {
-            return nodeVersion + "/" + getLongNodeFilename(nodeVersion,
-                    archiveOnWindows) + "." + platform.getOs()
-                    .getArchiveExtension();
-        }
+    private String getNodeDownloadFilename(String nodeVersion) {
+        return nodeVersion + "/" + getLongNodeFilename(nodeVersion) + "."
+                + platform.getOs().getArchiveExtension();
     }
 
     private static FrontendVersion getVersion(String tool,
@@ -543,5 +510,45 @@ public class NodeInstaller {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger("NodeInstaller");
+    }
+
+    private class InstallData {
+        String nodeFilename;
+        String downloadUrl;
+        File tmpDirectory;
+        File archive;
+        String nodeExecutable;
+
+        InstallData(String nodeVersion, String nodeDownloadRoot,
+                Platform platform) {
+            nodeFilename = getLongNodeFilename(nodeVersion);
+            downloadUrl =
+                    nodeDownloadRoot + getNodeDownloadFilename(nodeVersion);
+            tmpDirectory = getTempDirectory();
+            archive = resolveArchive("node", nodeVersion,
+                    platform.getNodeClassifier(),
+                    platform.getArchiveExtension());
+            nodeExecutable = platform.isWindows() ? "node.exe" : "node";
+        }
+
+        public String getNodeFilename() {
+            return nodeFilename;
+        }
+
+        public String getDownloadUrl() {
+            return downloadUrl;
+        }
+
+        public File getTmpDirectory() {
+            return tmpDirectory;
+        }
+
+        public File getArchive() {
+            return archive;
+        }
+
+        public String getNodeExecutable() {
+            return nodeExecutable;
+        }
     }
 }
