@@ -1499,10 +1499,10 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-    @Route(":threadID(int)/:messageID(int)")
-    @RouteAlias(":threadID(int)/last")
-    @RouteAlias(":threadID(int)/:something?")
-    @RoutePrefix("forum/thread")
+    @Route(":messageID(int)")
+    @RouteAlias("last")
+    @RouteAlias(":something?")
+    @RoutePrefix("forum/thread/:threadID(int)")
     public static class ParametersForumThreadView extends UrlParametersBase
             implements RouterLayout {
 
@@ -1517,9 +1517,9 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-    @Route(":urlIdentifier/:versionIdentifier?(v?\\d.*)/:tabIdentifier?(api)/:apiPath*")
-    @RouteAlias(":urlIdentifier/:versionIdentifier?(v?\\d.*)/:tabIdentifier?(overview|samples|links|reviews|discussions)")
-    @RoutePrefix("directory/component")
+    @Route(":tabIdentifier?(api)/:apiPath*")
+    @RouteAlias(":tabIdentifier?(overview|samples|links|reviews|discussions)")
+    @RoutePrefix("directory/component/:urlIdentifier/:versionIdentifier?(v?\\d.*)")
     public static class DetailsView extends UrlParametersBase
             implements RouterLayout {
 
