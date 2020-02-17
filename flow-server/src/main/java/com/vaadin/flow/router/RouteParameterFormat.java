@@ -23,6 +23,11 @@ package com.vaadin.flow.router;
 public enum RouteParameterFormat {
 
     /**
+     * If specified the original template is provided.
+     */
+    TEMPLATE,
+
+    /**
      * Whether the format should be the `:`, which is default.
      */
     COLON_FORMAT,
