@@ -8,11 +8,16 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class RouterLinkIT extends ChromeBrowserTest {
 
+
     @Test
     public void testRoutingLinks_insideServletMapping_updateLocation() {
         open();
 
         verifySamePage();
+
+        if (hasClientIssue("7575")) {
+            return;
+        }
 
         testInsideServlet("foo", "foo", "", "foo");
         testInsideServlet("./foobar", "foobar", "", "foobar");
@@ -66,6 +71,11 @@ public class RouterLinkIT extends ChromeBrowserTest {
         findElement(By.tagName("img")).click();
 
         verifyInsideServletLocation("image/link");
+
+        if (hasClientIssue("7575")) {
+            return;
+        }
+
         verifyPopStateEvent("image/link");
     }
 

@@ -44,7 +44,7 @@ public class RerouteView extends AbstractDivView {
         CheckBox checkbox = new CheckBox("RerouteToError");
         checkbox.setId("check");
         checkbox.addValueChangeListener(event -> {
-            reroute = checkbox.isChecked();
+            setReroute(checkbox.isChecked());
         });
         add(button);
         add(checkbox);

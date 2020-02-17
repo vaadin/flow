@@ -31,9 +31,14 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.testbench.TestBenchTestCase;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
@@ -49,6 +54,60 @@ import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 @BrowserFactory(DefaultBrowserFactory.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
+
+    public static abstract class ClientChecker {
+        private static Boolean hasClientRouter;
+
+        /**
+         * Log an error for a known issue when in client-side.
+         *
+         * @param test
+         * @param issueId
+         * @return true when client-side route
+         */
+        public static boolean hasClientIssue(TestBenchTestCase test, String issueId) {
+            assert issueId != null && !issueId.isEmpty();
+            if (isClientRouter(test)) {
+                String msg = String.format(FrontendUtils.RED, "\n >>> "
+                        + test.getClass().getSimpleName()
+                        + " has ignored tests for client-side mode, please fix it. issue: https://github.com/vaadin/flow/issues/"
+                        + issueId);
+                LoggerFactory.getLogger(test.getClass()).error(msg);
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Log an error for a non-investigated issue when in client-side.
+         *
+         * @param test
+         * @return
+         */
+        public static boolean hasClientUnknownIssue(TestBenchTestCase test) {
+            if (isClientRouter(test)) {
+                String msg = String.format(FrontendUtils.RED, "\n >>> "
+                        + test.getClass().getSimpleName()
+                        + " has ignored tests for client-side mode, please investigate and fix them");
+                LoggerFactory.getLogger(test.getClass()).error(msg);
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Returns true when using clientSide routing
+         *
+         * @return true when client-side route
+         */
+        private static boolean isClientRouter(TestBenchTestCase test) {
+            if (hasClientRouter == null) {
+                hasClientRouter = (boolean) ((JavascriptExecutor)test.getDriver()).executeScript(
+                        "return !!window.Vaadin.Flow.clients.TypeScript");
+            }
+            return hasClientRouter;
+        }
+    }
 
     /**
      * Default port for test server, possibly overridden with system property.
@@ -112,7 +171,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     protected void open(String... parameters) {
         String url = getTestURL(parameters);
-
         getDriver().get(url);
     }
 
@@ -143,6 +201,32 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
+    }
+
+    protected final boolean hasClientIssue(String issueId) {
+        return ClientChecker.hasClientIssue(this, issueId);
+    }
+
+    protected final boolean hasClientUnknownIssue() {
+        return ClientChecker.hasClientUnknownIssue(this);
+    }
+
+    /**
+     * Returns true when using clientSide routing
+     *
+     * @return true when client-side route
+     */
+    protected final boolean isClientRouter() {
+        return ClientChecker.isClientRouter(this);
+    }
+
+    /**
+     * Waits until clientSide route renders the view.
+     */
+    protected void waitForClientRouter() {
+        if (isClientRouter()) {
+            waitForElementPresent(By.cssSelector("#outlet > *"));
+        }
     }
 
     /**

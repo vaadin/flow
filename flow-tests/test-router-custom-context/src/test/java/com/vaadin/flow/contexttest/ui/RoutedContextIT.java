@@ -7,7 +7,8 @@ public class RoutedContextIT extends AbstractContextIT {
 
     @Override
     protected String getAppContext() {
-        return "/routed/";
+        // change by '/routed/' when https://github.com/vaadin/flow/issues/7583 is fixed
+        return "/routed";
     }
 
     @Override

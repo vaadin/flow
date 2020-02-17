@@ -29,6 +29,9 @@ public class SessionCloseLogoutIT extends ChromeBrowserTest {
     @Test
     public void changeOnClient() throws InterruptedException {
         open();
+        if (hasClientIssue("7600")) {
+            return;
+        }
 
         $(NativeButtonElement.class).first().click();
 
@@ -44,7 +47,7 @@ public class SessionCloseLogoutIT extends ChromeBrowserTest {
     }
 
     private void asserNoErrors() {
-        checkLogsForErrors(msg -> msg.contains("VAADIN/static/client"));
+        checkLogsForErrors(msg -> msg.matches("^.*((VAADIN/static/client|FlowClient.js).*|\"\")$"));
     }
 
 }

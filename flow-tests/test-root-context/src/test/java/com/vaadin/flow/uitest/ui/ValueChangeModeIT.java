@@ -8,8 +8,6 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.data.value.ValueChangeMode;
 
-import com.vaadin.flow.data.value.ValueChangeMode;
-
 public class ValueChangeModeIT extends AbstractDebounceSynchronizeIT {
 
     private WebElement input;
