@@ -408,7 +408,7 @@ public class FrontendUtils {
         try {
             nodeInstaller.install();
         } catch (InstallationException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Failed to install Node", e);
         }
 
         String command = isWindows() ? "node.exe" : "node";
