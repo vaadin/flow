@@ -18,6 +18,7 @@ package com.vaadin.flow.testutil;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
