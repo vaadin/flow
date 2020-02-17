@@ -82,4 +82,23 @@ public class DefaultArchiveExtractorTest {
         Assert.assertTrue("Archive subfolder/folder.file was not extracted",
                 new File(targetDir, SUBFOLDER_FILE).exists());
     }
+
+    @Test(expected = ArchiveExtractionException.class)
+    public void extractTarAsZip_ArchiveExtractionExceptionIsThrown()
+            throws IOException, ArchiveExtractionException{
+        File archiveFile = new File(baseDir, "archive.zip");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (OutputStream fo = Files.newOutputStream(
+                tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
+                fo); ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+            o.putArchiveEntry(
+                    o.createArchiveEntry(new File(ROOT_FILE), ROOT_FILE));
+            o.closeArchiveEntry();
+        }
+
+        new DefaultArchiveExtractor().extract(archiveFile, targetDir);
+
+    }
 }

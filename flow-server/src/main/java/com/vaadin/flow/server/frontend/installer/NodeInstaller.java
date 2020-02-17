@@ -53,7 +53,7 @@ public class NodeInstaller {
     public static final String PROVIDED_VERSION = "provided";
     public static final String NODE_MODULES = "node_modules";
 
-    private final Object LOCK = new Object();
+    private final Object lock = new Object();
 
     private String npmVersion = PROVIDED_VERSION;
     private String nodeVersion;
@@ -188,14 +188,14 @@ public class NodeInstaller {
     }
 
     /**
-     * Install node and NPM
+     * Install node and NPM.
      *
      * @throws InstallationException
      *         exception thrown when installation fails
      */
     public void install() throws InstallationException {
         // use lock object for a synchronized block
-        synchronized (LOCK) {
+        synchronized (lock) {
             // If no download root defined use default root
             if (nodeDownloadRoot == null) {
                 nodeDownloadRoot = URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT);
@@ -218,34 +218,27 @@ public class NodeInstaller {
         }
     }
 
-    private boolean nodeIsAlreadyInstalled() {
-        try {
-            File nodeFile = getNodeExecutable();
-            if (nodeFile.exists()) {
+    private boolean nodeIsAlreadyInstalled() throws InstallationException {
+        File nodeFile = getNodeExecutable();
+        if (nodeFile.exists()) {
 
-                List<String> nodeVersionCommand = new ArrayList<>();
-                nodeVersionCommand.add(nodeFile.toString());
-                nodeVersionCommand.add("--version");
-                String version = getVersion("Node", nodeVersionCommand)
-                        .getFullVersion();
+            List<String> nodeVersionCommand = new ArrayList<>();
+            nodeVersionCommand.add(nodeFile.toString());
+            nodeVersionCommand.add("--version");
+            String version = getVersion("Node", nodeVersionCommand)
+                    .getFullVersion();
 
-                if (version.equals(nodeVersion)) {
-                    getLogger().info("Node {} is already installed.", version);
-                    return true;
-                } else {
-                    getLogger()
-                            .info("Node {} was installed, but we need version {}",
-                                    version, nodeVersion);
-                    return false;
-                }
+            if (version.equals(nodeVersion)) {
+                getLogger().info("Node {} is already installed.", version);
+                return true;
             } else {
+                getLogger()
+                        .info("Node {} was installed, but we need version {}",
+                                version, nodeVersion);
                 return false;
             }
-        } catch (FrontendUtils.UnknownVersionException e) {
-            getLogger().error("Couldn't get node version due to '{}'",
-                    e.getMessage());
-            return false;
         }
+        return false;
     }
 
     private void installNode(InstallData data) throws InstallationException {
@@ -303,25 +296,34 @@ public class NodeInstaller {
         }
 
         if (npmProvided()) {
-            getLogger().info("Extracting NPM");
-            File tmpNodeModulesDir = new File(data.getTmpDirectory(),
-                    data.getNodeFilename() + File.separator + "lib"
-                            + File.separator + NODE_MODULES);
-            File nodeModulesDirectory = new File(destinationDirectory,
-                    NODE_MODULES);
-            File npmDirectory = new File(nodeModulesDirectory, "npm");
-            FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
-            // create a copy of the npm scripts next to the node executable
-            for (String script : Arrays.asList("npm", "npm.cmd")) {
-                File scriptFile = new File(npmDirectory,
-                        "bin" + File.separator + script);
-                if (scriptFile.exists()) {
-                    scriptFile.setExecutable(true);
-                }
-            }
+            extractUnixNpm(data, destinationDirectory);
         }
 
         deleteTempDirectory(data.getTmpDirectory());
+    }
+
+    private void extractUnixNpm(InstallData data, File destinationDirectory)
+            throws IOException {
+        getLogger().info("Extracting NPM");
+        File tmpNodeModulesDir = new File(data.getTmpDirectory(),
+                data.getNodeFilename() + File.separator + "lib" + File.separator
+                        + NODE_MODULES);
+        File nodeModulesDirectory = new File(destinationDirectory,
+                NODE_MODULES);
+        File npmDirectory = new File(nodeModulesDirectory, "npm");
+        FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
+        // create a copy of the npm scripts next to the node executable
+        for (String script : Arrays.asList("npm", "npm.cmd")) {
+            File scriptFile = new File(npmDirectory,
+                    "bin" + File.separator + script);
+            if (scriptFile.exists()) {
+                boolean success = scriptFile.setExecutable(true);
+                if (!success) {
+                    getLogger().debug("Failed to make '{}' executable.",
+                            scriptFile.toPath());
+                }
+            }
+        }
     }
 
     private void installNodeWindows(InstallData data)
@@ -374,15 +376,6 @@ public class NodeInstaller {
         }
     }
 
-    private File getTempDirectory() {
-        File tmpDirectory = new File(getNodeInstallDirectory(), "tmp");
-        if (!tmpDirectory.exists()) {
-            getLogger().debug("Creating temporary directory {}", tmpDirectory);
-            tmpDirectory.mkdirs();
-        }
-        return tmpDirectory;
-    }
-
     public String getInstallDirectory() {
         return new File(installDirectory, INSTALL_PATH).getPath();
     }
@@ -392,7 +385,10 @@ public class NodeInstaller {
         if (!nodeInstallDirectory.exists()) {
             getLogger().debug("Creating install directory {}",
                     nodeInstallDirectory);
-            nodeInstallDirectory.mkdirs();
+            boolean success = nodeInstallDirectory.mkdirs();
+            if (!success) {
+                getLogger().debug("Failed to create install directory");
+            }
         }
         return nodeInstallDirectory;
     }
@@ -417,9 +413,14 @@ public class NodeInstaller {
                 // delete it to retry from scratch
                 getLogger()
                         .error("The archive file {} is corrupted and will be deleted. "
-                                        + "Please try the build again.",
+                                        + "Please run the application again.",
                                 archive.getPath());
-                archive.delete();
+                boolean deleted = archive.delete();
+                if (!deleted) {
+                    getLogger().error("Failed to remove archive file {}. "
+                                    + "Please remove it manually and run the application.",
+                            archive.getPath());
+                }
                 try {
                     FileUtils.deleteDirectory(destinationDirectory);
                 } catch (IOException ioe) {
@@ -474,7 +475,7 @@ public class NodeInstaller {
      *
      * @return node executable
      */
-    public File getNodeExecutable() {
+    private File getNodeExecutable() {
         String nodeExecutable = platform.isWindows() ?
                 NODE_WINDOWS :
                 NODE_DEFAULT;
@@ -485,27 +486,24 @@ public class NodeInstaller {
         return "node-" + nodeVersion + "-" + platform.getNodeClassifier();
     }
 
-    private String getNodeDownloadFilename(String nodeVersion) {
-        return nodeVersion + "/" + getLongNodeFilename(nodeVersion) + "."
-                + platform.getOs().getArchiveExtension();
-    }
-
     private static FrontendVersion getVersion(String tool,
-            List<String> versionCommand)
-            throws FrontendUtils.UnknownVersionException {
+            List<String> versionCommand) throws InstallationException {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new FrontendUtils.UnknownVersionException(tool,
-                        "Using command " + String.join(" ", versionCommand));
+                throw new IOException(
+                        "Process exited with non 0 exit code. (" + exitCode
+                                + ")");
             }
             return FrontendUtils.parseFrontendVersion(
                     FrontendUtils.streamToString(process.getInputStream()));
         } catch (InterruptedException | IOException e) {
-            throw new FrontendUtils.UnknownVersionException(tool,
-                    "Using command " + String.join(" ", versionCommand), e);
+            throw new InstallationException(
+                    String.format("Unable to detect version of %s. %s", tool,
+                            "Using command " + String
+                                    .join(" ", versionCommand)), e);
         }
     }
 
@@ -550,6 +548,24 @@ public class NodeInstaller {
 
         public String getNodeExecutable() {
             return nodeExecutable;
+        }
+
+        private File getTempDirectory() {
+            File tmpDirectory = new File(getNodeInstallDirectory(), "tmp");
+            if (!tmpDirectory.exists()) {
+                getLogger()
+                        .debug("Creating temporary directory {}", tmpDirectory);
+                boolean success = tmpDirectory.mkdirs();
+                if (!success) {
+                    getLogger().debug("Failed to create temporary directory");
+                }
+            }
+            return tmpDirectory;
+        }
+
+        private String getNodeDownloadFilename(String nodeVersion) {
+            return nodeVersion + "/" + getLongNodeFilename(nodeVersion) + "."
+                    + platform.getOs().getArchiveExtension();
         }
     }
 }

@@ -95,7 +95,7 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
     }
 
-    public void downloadFile(File destination, URI downloadUri)
+    private void downloadFile(File destination, URI downloadUri)
             throws IOException, DownloadException {
         CloseableHttpResponse response = execute(downloadUri);
         int statusCode = response.getStatusLine().getStatusCode();
@@ -106,9 +106,10 @@ public final class DefaultFileDownloader implements FileDownloader {
         new File(
                 FilenameUtils.getFullPathNoEndSeparator(destination.toString()))
                 .mkdirs();
-        ReadableByteChannel rbc = Channels
-                .newChannel(response.getEntity().getContent());
-        try (FileOutputStream fos = new FileOutputStream(destination)) {
+
+        try (ReadableByteChannel rbc = Channels.newChannel(response.getEntity()
+                .getContent()); FileOutputStream fos = new FileOutputStream(
+                destination)) {
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
         }
     }
