@@ -72,6 +72,23 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Override
+    @Test
+    public void runNpmInstall_toolIsChanged_nodeModlesIsRemoved()
+            throws ExecutionFailedException, IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        // create a fake file in the node modules dir to check that it's removed
+        File yaml = new File(nodeModules, ".fake.file");
+        yaml.createNewFile();
+
+        getNodeUpdater().modified = true;
+        createTask().execute();
+
+        Assert.assertFalse(yaml.exists());
+    }
+
+    @Override
     protected String getToolName() {
         return "pnpm";
     }

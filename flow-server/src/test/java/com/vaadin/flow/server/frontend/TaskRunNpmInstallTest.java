@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,8 +29,6 @@ import org.slf4j.Logger;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class TaskRunNpmInstallTest {
 
@@ -71,7 +70,7 @@ public class TaskRunNpmInstallTest {
     @Test
     public void runNpmInstall_emptyDir_npmInstallIsExecuted()
             throws ExecutionFailedException {
-        File nodeModules = new File(npmFolder, NODE_MODULES);
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         nodeUpdater.modified = false;
         task.execute();
@@ -80,9 +79,22 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
+    public void runNpmInstall_toolIsChanged_nodeModlesIsRemoved()
+            throws ExecutionFailedException, IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        File yaml = new File(nodeModules, ".modules.yaml");
+        yaml.createNewFile();
+        task.execute();
+
+        Assert.assertFalse(yaml.exists());
+    }
+
+    @Test
     public void runNpmInstall_nonEmptyDir_npmInstallIsNotExecuted()
             throws IOException, ExecutionFailedException {
-        File nodeModules = new File(npmFolder, NODE_MODULES);
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         new File(nodeModules, "foo").createNewFile();
         nodeUpdater.modified = false;
@@ -95,7 +107,7 @@ public class TaskRunNpmInstallTest {
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
             throws ExecutionFailedException {
-        File nodeModules = new File(npmFolder, NODE_MODULES);
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
         nodeUpdater.modified = false;
