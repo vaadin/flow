@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -116,7 +117,9 @@ public class RouteConfiguration implements Serializable {
      * @param path
      *         path to check for route registration
      * @return true if there exists a route for the given path
+     * @deprecated use {@link #isPathTemplateRegistered(String)} instead.
      */
+    @Deprecated
     public boolean isPathRegistered(String path) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
@@ -127,6 +130,25 @@ public class RouteConfiguration implements Serializable {
                         .getRouteAliases().stream().anyMatch(
                                 routeAliasData -> routeAliasData.getUrl()
                                         .equals(path)));
+    }
+
+    /**
+     * Check if there is a registered target for the given pathTemplate.
+     *
+     * @param pathTemplate
+     *         pathTemplate to check for route registration
+     * @return true if there exists a route for the given pathTemplate
+     */
+    public boolean isPathTemplateRegistered(String pathTemplate) {
+        if (handledRegistry instanceof AbstractRouteRegistry) {
+            return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
+                    .hasPathTemplate(pathTemplate);
+        }
+        return getAvailableRoutes().stream().anyMatch(
+                routeData -> routeData.getUrl().equals(pathTemplate) || routeData
+                        .getRouteAliases().stream().anyMatch(
+                                routeAliasData -> routeAliasData.getUrl()
+                                        .equals(pathTemplate)));
     }
 
     /**
@@ -387,7 +409,7 @@ public class RouteConfiguration implements Serializable {
      * Get the registered url string for given navigation target.
      * <p>
      * Note! If the navigation target has a url parameter that is required then
-     * this method will throw and IllegalArgumentException.
+     * this method will throw an IllegalArgumentException.
      *
      * @param navigationTarget
      *         navigation target to get url for
@@ -400,20 +422,26 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * This method now returns an empty Optional.
+     * This method now returns the url template.
      *
      * @param navigationTarget
-     *            navigation target to get url for
+     *            navigation target to get url template for.
      * @return an empty Optional
      * @deprecated url base doesn't exist anymore in context of named parameters
-     *             in the middle of the route.
+     *             within the route. Use {@link #getUrlTemplate(Class)} instead.
      */
     @Deprecated
     public Optional<String> getUrlBase(
             Class<? extends Component> navigationTarget) {
-        return Optional.empty();
+        return getUrlTemplate(navigationTarget);
     }
 
+    public Optional<String> getUrlTemplate(
+            Class<? extends Component> navigationTarget) {
+        return handledRegistry.getTargetRoute(navigationTarget,
+                EnumSet.of(RouteParameterFormat.TEMPLATE));
+    }
+    
     /**
      * Get the url string for given navigation target with the parameter in the
      * url.

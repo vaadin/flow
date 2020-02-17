@@ -432,8 +432,15 @@ class RouteModel implements Serializable, Cloneable {
                     final String parameterName = routeSegment.getName();
 
                     if (routeSegment.getParameterDetails().isVarargs()) {
-                        final List<String> args = parameters
-                                .getList(parameterName);
+                        List<String> args = parameters.getList(parameterName);
+
+                        if (args == null) {
+                            final String value = parameters.get(parameterName);
+
+                            if (value != null) {
+                                args = Collections.singletonList(value);
+                            }
+                        }
 
                         if (args != null) {
                             for (String value : args) {
@@ -1051,6 +1058,11 @@ class RouteModel implements Serializable, Cloneable {
     }
 
     String getRoute(String pathTemplate, EnumSet<RouteParameterFormat> format) {
+
+        if (format.contains(RouteParameterFormat.TEMPLATE)) {
+            return pathTemplate;
+        }
+
         return root.getPath(pathTemplate, segment -> {
             StringBuilder result = new StringBuilder();
 
