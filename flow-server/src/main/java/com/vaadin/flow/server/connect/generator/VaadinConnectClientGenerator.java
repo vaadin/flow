@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,8 @@ public class VaadinConnectClientGenerator {
         Path urlMappingPath = Paths.get(urlMapping).normalize();
         Path endpointPrefixPath = Paths.get(endpointPrefix).normalize();
 
-        return urlMappingPath.relativize(endpointPrefixPath).toString();
+        String relativePath = urlMappingPath.relativize(endpointPrefixPath).toString();
+        return FilenameUtils.separatorsToUnix(relativePath);
     }
 
     private String removeTrailingStar(String original){
