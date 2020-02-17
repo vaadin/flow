@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -55,6 +56,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@NotThreadSafe
 public class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
@@ -396,6 +398,24 @@ public class FrontendUtilsTest {
             }
             vaadinDir.createNewFile();
             FrontendUtils.getVaadinHomeDirectory();
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public synchronized void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File homeDir = FrontendUtils.getVaadinHomeDirectory();
+            File node = new File(homeDir, "node/node");
+            FileUtils.forceMkdir(node);
+
+            FrontendUtils.ensureNodeExecutableInHome();
+
         } finally {
             System.setProperty(USER_HOME, originalHome);
         }

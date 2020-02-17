@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +33,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
+@NotThreadSafe
 public class TaskRunNpmInstallTest {
 
     @Rule
@@ -65,7 +68,7 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(nodeUpdater, false);
+        return new TaskRunNpmInstall(nodeUpdater, false, false);
     }
 
     @Test
@@ -111,6 +114,31 @@ public class TaskRunNpmInstallTest {
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test(expected = ExecutionFailedException.class)
+    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
+            throws IOException, ExecutionFailedException {
+        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+                new TaskRunNpmInstall(nodeUpdater, false, true));
+    }
+
+    protected void assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+            TaskRunNpmInstall task)
+            throws IOException, ExecutionFailedException {
+        String userHome = "user.home";
+        String originalHome = System.getProperty(userHome);
+        File home = temporaryFolder.newFolder();
+        System.setProperty(userHome, home.getPath());
+        try {
+            File homeDir = new File(home, ".vaadin");
+            File node = new File(homeDir, "node/node");
+            FileUtils.forceMkdir(node);
+
+            task.execute();
+        } finally {
+            System.setProperty(userHome, originalHome);
+        }
     }
 
     private String getRunningMsg() {

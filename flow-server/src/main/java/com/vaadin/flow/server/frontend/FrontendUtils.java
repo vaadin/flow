@@ -280,8 +280,8 @@ public class FrontendUtils {
             + "%n======================================================================================================%n";
 
     private static final String LOCAL_NODE_NOT_FOUND = "%n%n======================================================================================================"
-            + "%nVaadin requires node.js & npm to be installed. The {} directory already contains 'node' but it's either not a file "
-            + "or not a 'node' executable. Please check {} directory and clean up it: remove '{}'."
+            + "%nVaadin requires node.js & npm to be installed. The %s directory already contains 'node' but it's either not a file "
+            + "or not a 'node' executable. Please check %s directory and clean up it: remove '%s'."
             + "%n then please run the app or maven goal again."
             + "%n======================================================================================================%n";
 
@@ -409,7 +409,7 @@ public class FrontendUtils {
         File home = getVaadinHomeDirectory();
         File file = new File(home, nodeCommands.getSecond());
         if (file.exists()) {
-            if (frontendToolsLocator.verifyTool(file)) {
+            if (!frontendToolsLocator.verifyTool(file)) {
                 throw new IllegalStateException(String.format(
                         LOCAL_NODE_NOT_FOUND, home.getAbsolutePath(),
                         home.getAbsolutePath(), file.getAbsolutePath()));
