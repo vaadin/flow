@@ -16,18 +16,14 @@
  */
 package com.vaadin.flow.router;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 public class HasUrlParameterUtil {
 
@@ -43,9 +39,9 @@ public class HasUrlParameterUtil {
         if (hasUrlParameter(navigationTarget)) {
 
             if (hasOptionalParameter(navigationTarget)) {
-                path += "/[:" + PARAMETER_NAME + "]";
+                path += "/:" + PARAMETER_NAME + "?";
             } else if (hasWildcardParameter(navigationTarget)) {
-                path += "/...:" + PARAMETER_NAME;
+                path += "/:" + PARAMETER_NAME + "*";
             } else {
                 path += "/:" + PARAMETER_NAME;
             }
@@ -56,7 +52,7 @@ public class HasUrlParameterUtil {
             String type = getParameterType(parameterType);
 
             if (!"string".equals(type)) {
-                path += ":" + type;
+                path += "(" + type + ")";
             }
         }
         return path;
