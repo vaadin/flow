@@ -97,15 +97,15 @@ public class RouteModelTest {
         root.addRoute("", Root.class);
         root.addRoute("trunk", Trunk.class);
         root.addRoute("trunk/branch", Branch.class);
-        root.addRoute("trunk/branch/:id:int", Branch.class);
-        root.addRoute("trunk/branch/:id:int/...:list:long",
+        root.addRoute("trunk/branch/:id(int)", Branch.class);
+        root.addRoute("trunk/branch/:id(int)/:list*(long)",
                 BranchChildren.class);
-        root.addRoute("trunk/[:name]/[:type]/branch/[:id:int]/edit",
+        root.addRoute("trunk/:name?/:type?/branch/:id?(int)/edit",
                 BranchEdit.class);
         root.addRoute(
-                "trunk/:name/[:type]/branch/:id:int/flower/:open:bool/edit",
+                "trunk/:name/:type?/branch/:id(int)/flower/:open(bool)/edit",
                 FlowerEdit.class);
-        root.addRoute("trunk/twig/...:leafs", Twig.class);
+        root.addRoute("trunk/twig/:leafs*", Twig.class);
 
         RouteSearchResult result;
         String path;
@@ -177,14 +177,14 @@ public class RouteModelTest {
     public void varargs_url_parameter_defined_only_as_last_segment() {
         RouteModel root = RouteModel.create();
         try {
-            root.addRoute("trunk/...:vararg/edit", Root.class);
+            root.addRoute("trunk/:vararg*/edit", Root.class);
 
             Assert.fail(
                     "Varargs url parameter accepted in the middle of the path.");
         } catch (IllegalArgumentException e) {
         }
 
-        root.addRoute("trunk/edit/...:vararg", Root.class);
+        root.addRoute("trunk/edit/:vararg*", Root.class);
 
         String path = "trunk/edit/1/2/3";
         RouteSearchResult result = root.getRoute(path);

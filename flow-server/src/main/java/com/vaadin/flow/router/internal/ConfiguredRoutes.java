@@ -295,7 +295,7 @@ public class ConfiguredRoutes implements Serializable {
             return null;
         }
 
-        if (RouteModel.hasParameters(path)) {
+        if (RouteFormat.hasParameters(path)) {
             try {
                 // In case all parameters are optional, this will return
                 // successfully.

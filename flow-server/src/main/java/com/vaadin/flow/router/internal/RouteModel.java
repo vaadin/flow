@@ -53,144 +53,6 @@ class RouteModel implements Serializable, Cloneable {
     }
 
     /**
-     * Returns whether the specified pathTemplate contains url parameters.
-     *
-     * @param pathTemplate
-     *            a path template.
-     * @return true if the specified pathTemplate contains url parameters,
-     *         otherwise false.
-     */
-    static boolean hasParameters(String pathTemplate) {
-        return pathTemplate.contains(":");
-    }
-
-    /**
-     * Define a route url parameter details.
-     */
-    private static class ParameterDetails implements Serializable, Cloneable {
-
-        // NOTE: string may be omited when defining a parameter. If the
-        // type/regex is missing then string is used by default.
-        private static List<String> PRIMITIVE_TYPES = Arrays.asList("int",
-                "long", "bool", "boolean", "string");
-
-        private boolean optional;
-
-        private boolean varargs;
-
-        // Same name as with the segment's name which is extracted by
-        // ParameterDetails constructor and provided to the RouteSegment.
-        private String name;
-
-        // Regex or a primitive type.
-        private String regex;
-
-        private Pattern template;
-
-        /**
-         * Creates the parameter details using the input segmentPattern
-         * template.
-         *
-         * @param segmentPattern
-         *            segment template.
-         */
-        private ParameterDetails(String segmentPattern) {
-            optional = segmentPattern.startsWith("[")
-                    && segmentPattern.endsWith("]");
-            if (optional) {
-                segmentPattern = segmentPattern.substring(1,
-                        segmentPattern.length() - 1);
-            }
-
-            varargs = segmentPattern.startsWith("...");
-            if (varargs) {
-                segmentPattern = segmentPattern.substring(3);
-            }
-
-            // Remove :
-            segmentPattern = segmentPattern.substring(1);
-
-            // Extract the template defining the value of the parameter.
-            final int defStartIndex = segmentPattern.indexOf(":");
-            if (defStartIndex != -1) {
-
-                name = segmentPattern.substring(0, defStartIndex);
-
-                regex = segmentPattern.substring(defStartIndex + 1);
-                if (!isPrimitiveType()) {
-                    template = Pattern.compile(regex);
-                }
-
-            } else {
-                name = segmentPattern;
-                regex = "string";
-            }
-
-        }
-
-        boolean isPrimitiveType() {
-            return PRIMITIVE_TYPES.contains(regex);
-        }
-
-        public String getType() {
-            return regex;
-        }
-
-        public String getTypeAsPrimitive() {
-            return isPrimitiveType() ? regex : "string";
-        }
-
-        boolean isOptional() {
-            return optional;
-        }
-
-        boolean isVarargs() {
-            return varargs;
-        }
-
-        boolean isMandatory() {
-            return !isOptional() && !isVarargs();
-        }
-
-        boolean isEligible(String value) {
-            if (regex == null) {
-                return true;
-            }
-
-            if (template != null) {
-                return template.matcher(value).matches();
-            }
-
-            if (regex.equals("int")) {
-                try {
-                    Integer.valueOf(value);
-                    return true;
-                } catch (NumberFormatException e) {
-                }
-
-            } else if (regex.equals("long")) {
-                try {
-                    Long.valueOf(value);
-                    return true;
-                } catch (NumberFormatException e) {
-                }
-
-            } else if (regex.equals("bool") || regex.equals("boolean")) {
-                if (value.equalsIgnoreCase("true")
-                        || value.equalsIgnoreCase("false")) {
-                    return true;
-                }
-
-            } else if (regex.equals("string")) {
-                return true;
-            }
-
-            return false;
-        }
-
-    }
-
-    /**
      * Define a route url segment tree data model which is used to store
      * internally registered routes.
      * <p>
@@ -198,7 +60,12 @@ class RouteModel implements Serializable, Cloneable {
      * {@link RouteTarget} in case this segment is also the last which defines a
      * route.
      */
-    private static class RouteSegment implements Serializable, Cloneable {
+    static class RouteSegment implements Serializable, Cloneable {
+
+        // NOTE: string may be omited when defining a parameter. If the
+        // type/regex is missing then string is used by default.
+        private static List<String> PRIMITIVE_TYPES = Arrays.asList("int",
+                "long", "bool", "boolean", "string");
 
         /**
          * Create a new root segment instance. This is an empty segment defining
@@ -206,18 +73,6 @@ class RouteModel implements Serializable, Cloneable {
          */
         static RouteSegment createRoot() {
             return new RouteSegment("");
-        }
-
-        private static boolean isParameter(String segmentPattern) {
-            return segmentPattern.contains(":");
-        }
-
-        private static boolean isVarargsParameter(String segmentPattern) {
-            return segmentPattern.startsWith("...:");
-        }
-
-        private static boolean isOptionalParameter(String segmentPattern) {
-            return segmentPattern.startsWith("[:");
         }
 
         /**
@@ -231,12 +86,17 @@ class RouteModel implements Serializable, Cloneable {
          * distinction between static segment values and parameters which are
          * defined as a template used to extract the value from a url path.
          */
-        private String segmentTemplate;
+        private String template;
 
         /**
-         * This is valid only if the segment represents a url parameter.
+         * Parameter details.
          */
-        private ParameterDetails parameterDetails;
+        private RouteFormat.ParameterInfo info;
+
+        /**
+         * Parameter matching regex.
+         */
+        private Pattern pattern;
 
         /**
          * Target.
@@ -276,15 +136,18 @@ class RouteModel implements Serializable, Cloneable {
         }
 
         private RouteSegment(String segmentTemplate) {
-            this.segmentTemplate = segmentTemplate;
+            this.template = segmentTemplate;
 
-            if (isParameter(segmentTemplate)) {
-                parameterDetails = new ParameterDetails(segmentTemplate);
+            if (RouteFormat.isParameter(segmentTemplate)) {
+                info = new RouteFormat.ParameterInfo(segmentTemplate);
 
-                name = parameterDetails.name;
+                if (!isPrimitiveType()) {
+                    pattern = Pattern.compile(getType());
+                }
 
+                this.name = info.getName();
             } else {
-                name = segmentTemplate;
+                this.name = segmentTemplate;
             }
         }
 
@@ -293,8 +156,9 @@ class RouteModel implements Serializable, Cloneable {
             final RouteSegment clone = new RouteSegment();
 
             clone.name = name;
-            clone.segmentTemplate = segmentTemplate;
-            clone.parameterDetails = parameterDetails;
+            clone.template = template;
+            clone.info = info;
+            clone.pattern = pattern;
             clone.target = target;
 
             getStaticSegments().entrySet()
@@ -316,6 +180,87 @@ class RouteModel implements Serializable, Cloneable {
             return clone;
         }
 
+        String getName() {
+            return name;
+        }
+
+        String getTemplate() {
+            return template;
+        }
+
+        private boolean isParameter() {
+            return info != null;
+        }
+
+        boolean hasTarget() {
+            return target != null;
+        }
+
+        RouteTarget getTarget() {
+            return target;
+        }
+
+        boolean isPrimitiveType() {
+            return PRIMITIVE_TYPES.contains(getType());
+        }
+
+        public String getType() {
+            return info.getRegex();
+        }
+
+        public String getTypeAsPrimitive() {
+            return isPrimitiveType() ? getType() : "string";
+        }
+
+        boolean isOptional() {
+            return info.isOptional();
+        }
+
+        boolean isVarargs() {
+            return info.isVarargs();
+        }
+
+        boolean isMandatory() {
+            return !isOptional() && !isVarargs();
+        }
+
+        boolean isEligible(String value) {
+            if (getType().isEmpty()) {
+                return true;
+            }
+
+            if (pattern != null) {
+                return pattern.matcher(value).matches();
+            }
+
+            if (getType().equals("int")) {
+                try {
+                    Integer.valueOf(value);
+                    return true;
+                } catch (NumberFormatException e) {
+                }
+
+            } else if (getType().equals("long")) {
+                try {
+                    Long.valueOf(value);
+                    return true;
+                } catch (NumberFormatException e) {
+                }
+
+            } else if (getType().equals("bool")
+                    || getType().equals("boolean")) {
+                if (value.equalsIgnoreCase("true")
+                        || value.equalsIgnoreCase("false")) {
+                    return true;
+                }
+
+            } else if (getType().equals("string")) {
+                return true;
+            }
+
+            return false;
+        }
+
         /**
          * Collects all routes in an unmodifiable {@link Map}.
          *
@@ -335,7 +280,7 @@ class RouteModel implements Serializable, Cloneable {
             collectRoutes(result, getOptionalSegments());
             collectRoutes(result, getVarargsSegments());
 
-            if (segmentTemplate.isEmpty()) {
+            if (getTemplate().isEmpty()) {
                 return Collections.unmodifiableMap(result);
             } else {
                 return result;
@@ -425,13 +370,13 @@ class RouteModel implements Serializable, Cloneable {
             final List<String> result = new ArrayList<>(segments.size());
 
             matchSegments(segments, routeSegment -> {
-                String segment = routeSegment.getSegmentTemplate();
+                String segment = routeSegment.getTemplate();
 
                 if (routeSegment.isParameter()) {
 
                     final String parameterName = routeSegment.getName();
 
-                    if (routeSegment.getParameterDetails().isVarargs()) {
+                    if (routeSegment.isVarargs()) {
                         List<String> args = parameters.getList(parameterName);
 
                         if (args == null) {
@@ -444,8 +389,7 @@ class RouteModel implements Serializable, Cloneable {
 
                         if (args != null) {
                             for (String value : args) {
-                                if (!routeSegment.getParameterDetails()
-                                        .isEligible(value)) {
+                                if (!routeSegment.isEligible(value)) {
                                     throw new IllegalArgumentException(
                                             "Url varargs parameter `"
                                                     + parameterName
@@ -466,15 +410,13 @@ class RouteModel implements Serializable, Cloneable {
                     } else {
                         final String value = parameters.get(parameterName);
 
-                        if (value == null && routeSegment.getParameterDetails()
-                                .isMandatory()) {
+                        if (value == null && routeSegment.isMandatory()) {
                             throw new IllegalArgumentException("Url parameter `"
                                     + parameterName
                                     + "` is mandatory but missing from the parameters argument.");
                         }
 
-                        if (value != null && !routeSegment.getParameterDetails()
-                                .isEligible(value)) {
+                        if (value != null && !routeSegment.isEligible(value)) {
                             throw new IllegalArgumentException("Url parameter `"
                                     + parameterName + "` has specified value `"
                                     + value
@@ -497,30 +439,6 @@ class RouteModel implements Serializable, Cloneable {
             } else {
                 return String.join("/", result);
             }
-        }
-
-        private String getName() {
-            return name;
-        }
-
-        private String getSegmentTemplate() {
-            return segmentTemplate;
-        }
-
-        private boolean isParameter() {
-            return parameterDetails != null;
-        }
-
-        private ParameterDetails getParameterDetails() {
-            return parameterDetails;
-        }
-
-        private boolean hasTarget() {
-            return target != null;
-        }
-
-        private RouteTarget getTarget() {
-            return target;
         }
 
         private void collectRoutes(Map<String, RouteTarget> result,
@@ -591,7 +509,7 @@ class RouteModel implements Serializable, Cloneable {
             if (routeSegment == null) {
 
                 // We reject any route where varargs is not the last segment.
-                if (isVarargsParameter(segmentPattern)
+                if (RouteFormat.isVarargsParameter(segmentPattern)
                         && segmentPatterns.size() > 1) {
                     throw new IllegalArgumentException(
                             "A varargs url parameter may be defined only as the last path segment");
@@ -600,7 +518,7 @@ class RouteModel implements Serializable, Cloneable {
                 // We reject any route where the last segment is an optional
                 // parameter while there's already a target set for the same
                 // route without the optional parameter.
-                if (isOptionalParameter(segmentPattern)
+                if (RouteFormat.isOptionalParameter(segmentPattern)
                         && segmentPatterns.size() == 1 && hasTarget()) {
                     throw ambigousOptionalTarget(target.getTarget(),
                             getTarget().getTarget());
@@ -711,11 +629,10 @@ class RouteModel implements Serializable, Cloneable {
             if (potentialSegment.isParameter()) {
 
                 // Handle varargs.
-                if (potentialSegment.getParameterDetails().isVarargs()) {
+                if (potentialSegment.isVarargs()) {
 
                     for (String value : segments) {
-                        if (!potentialSegment.getParameterDetails()
-                                .isEligible(value)) {
+                        if (!potentialSegment.isEligible(value)) {
                             // If any value is not eligible we don't want to go
                             // any further.
                             return null;
@@ -730,8 +647,7 @@ class RouteModel implements Serializable, Cloneable {
                     // Handle one parameter value.
                     String value = segments.get(0);
 
-                    if (potentialSegment.getParameterDetails()
-                            .isEligible(value)) {
+                    if (potentialSegment.isEligible(value)) {
                         outputParameters.put(potentialSegment.getName(), value);
 
                     } else {
@@ -881,9 +797,8 @@ class RouteModel implements Serializable, Cloneable {
 
         private void addSegment(RouteSegment routeSegment,
                 Map<String, RouteSegment> children) {
-            children.put(routeSegment.getSegmentTemplate(), routeSegment);
-            getAllSegments().put(routeSegment.getSegmentTemplate(),
-                    routeSegment);
+            children.put(routeSegment.getTemplate(), routeSegment);
+            getAllSegments().put(routeSegment.getTemplate(), routeSegment);
         }
 
         private void removeSegment(String segmentTemplate,
@@ -897,10 +812,11 @@ class RouteModel implements Serializable, Cloneable {
          * which are siblings to segmentPattern.
          */
         private Map<String, RouteSegment> getChildren(String segmentPattern) {
-            return isVarargsParameter(segmentPattern) ? getVarargsSegments()
-                    : isOptionalParameter(segmentPattern)
+            return RouteFormat.isVarargsParameter(segmentPattern)
+                    ? getVarargsSegments()
+                    : RouteFormat.isOptionalParameter(segmentPattern)
                             ? getOptionalSegments()
-                            : isParameter(segmentPattern)
+                            : RouteFormat.isParameter(segmentPattern)
                                     ? getParameterSegments()
                                     : getStaticSegments();
         }
@@ -1076,21 +992,23 @@ class RouteModel implements Serializable, Cloneable {
                     .contains(RouteParameterFormat.SIMPLE_TYPE)
                     || format.contains(RouteParameterFormat.TYPE)
                     || format.contains(RouteParameterFormat.CAPITALIZED_TYPE);
+            boolean closeTypeBracket = false;
 
             if (format.contains(RouteParameterFormat.NAME)) {
                 result.append(segment.getName());
                 if (containsType) {
-                    result.append(":");
+                    result.append("(");
+                    closeTypeBracket = true;
                 }
             }
 
             if (containsType) {
-                String type = segment.getParameterDetails().getType();
+                String type = segment.getType();
 
                 if (format.contains(RouteParameterFormat.SIMPLE_TYPE)
-                        || segment.getParameterDetails().isPrimitiveType()) {
+                        || segment.isPrimitiveType()) {
 
-                    if (!segment.getParameterDetails().isPrimitiveType()) {
+                    if (!segment.isPrimitiveType()) {
                         type = "string";
                     }
 
@@ -1101,6 +1019,10 @@ class RouteModel implements Serializable, Cloneable {
                 }
 
                 result.append(type);
+
+                if (closeTypeBracket) {
+                    result.append(")");
+                }
             }
 
             if (result.charAt(0) == '{') {
@@ -1117,8 +1039,8 @@ class RouteModel implements Serializable, Cloneable {
         this.root.matchSegments(PathUtil.getSegmentsList(pathTemplate),
                 segment -> {
                     if (segment.isParameter()) {
-                        result.put(segment.getName(), segment
-                                .getParameterDetails().getTypeAsPrimitive());
+                        result.put(segment.getName(),
+                                segment.getTypeAsPrimitive());
                     }
                 });
         return result;

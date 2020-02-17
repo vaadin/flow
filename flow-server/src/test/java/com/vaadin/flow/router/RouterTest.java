@@ -1481,51 +1481,44 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-    @Route(value = "[:optional]/[:anotherOptional]", layout = ChainLinkWithParameter.class)
+    @Route(value = ":optional?/:anotherOptional?", layout = ChainLinkWithParameter.class)
     public static class TargetWithOptionalParameters extends UrlParametersBase {
 
     }
 
     @Route(value = ":targetChainLinkID", layout = ParentWithParameter.class)
-    @RoutePrefix("targetLink/[:chainLinkID]/chainLink")
+    @RoutePrefix("targetLink/:chainLinkID?/chainLink")
     @ParentLayout(ParentWithParameter.class)
     public static class ChainLinkWithParameterAndTarget
             extends UrlParametersBase implements RouterLayout {
 
     }
 
-    @Route(value = ":anotherTargetID/:yetAnotherID/foo/...:varargsFoo", layout = ChainLinkWithParameterAndTarget.class)
+    @Route(value = ":anotherTargetID/:yetAnotherID/foo/:varargsFoo*", layout = ChainLinkWithParameterAndTarget.class)
     public static class AnotherTargetWithParameter extends UrlParametersBase {
 
     }
 
-    @Route(":threadID:int/:messageID:int")
-    @RouteAlias(":threadID:int/last")
-    @RouteAlias(":threadID:int/[:something]")
+    @Route(":threadID(int)/:messageID(int)")
+    @RouteAlias(":threadID(int)/last")
+    @RouteAlias(":threadID(int)/:something?")
     @RoutePrefix("forum/thread")
     public static class ParametersForumThreadView extends UrlParametersBase
             implements RouterLayout {
 
     }
 
-    @Route(":alias:framework|platform|vaadin-spring|vaadin-spring-boot/[:version:v?\\d.*]/...:path")
-    @RouteAlias(":groupId:\\w[\\w\\d]+\\.[\\w\\d\\-\\.]+/:artifactId/[:version:v?\\d.*]/...:path")
-    @RouteAlias("...:path")
+    @Route(":alias(framework|platform|vaadin-spring|vaadin-spring-boot)/:version?(v?\\d.*)/:path*")
+    @RouteAlias(":groupId(\\w[\\w\\d]+\\.[\\w\\d\\-\\.]+)/:artifactId/:version?(v?\\d.*)/:path*")
+    @RouteAlias(":path*")
     @RoutePrefix("api")
     public static class ParametersApiView extends UrlParametersBase
             implements RouterLayout {
 
     }
 
-    @Route(":urlIdentifier/[:versionIdentifier:v?\\d.*]/[:tabIdentifier:api]/...:apiPath")
-    @RouteAlias(":urlIdentifier/[:versionIdentifier:v?\\d.*]/[:tabIdentifier:overview|samples|links|reviews|discussions]")
-
-//    @Route("{urlIdentifier}")
-//    @RouteAlias("{urlIdentifier}/{versionIdentifier:/v?\\d.*}/{tabIdentifier:api}/{+apiPath}")
-////    @RouteAlias("{urlIdentifier}{versionIdentifier:(/v?\\d.*)?}{tabIdentifier:(/overview|/samples|/links|/reviews|/discussions)?}")
-//
-////    @RouteAlias("{urlIdentifier}/{versionIdentifier:v?\\d.*}/{tabIdentifier:api}/{apiPath}")
-////    @RouteAlias("{urlIdentifier}/{versionIdentifier:v?\\d.*}/{tabIdentifier:overview|samples|links|reviews|discussions}")
+    @Route(":urlIdentifier/:versionIdentifier?(v?\\d.*)/:tabIdentifier?(api)/:apiPath*")
+    @RouteAlias(":urlIdentifier/:versionIdentifier?(v?\\d.*)/:tabIdentifier?(overview|samples|links|reviews|discussions)")
     @RoutePrefix("directory/component")
     public static class DetailsView extends UrlParametersBase
             implements RouterLayout {
@@ -3617,7 +3610,6 @@ public class RouterTest extends RoutingTestBase {
 
         navigate(url);
 
-//        System.out.println(url + ": " + UrlParametersBase.parameters);
         Assert.assertEquals("Incorrect parameters", parameters,
                 UrlParametersBase.parameters);
     }
