@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -66,6 +67,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@NotThreadSafe
 public class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
@@ -137,7 +139,9 @@ public class FrontendUtilsTest {
             throws FrontendUtils.UnknownVersionException {
         File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse("Clean test should not contain a installation folder", targetDir.exists());
+        Assert.assertFalse(
+                "Clean test should not contain a installation folder",
+                targetDir.exists());
 
         String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
                 null);
@@ -146,15 +150,15 @@ public class FrontendUtilsTest {
         List<String> nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(nodeExecutable);
         nodeVersionCommand.add("--version");
-        FrontendVersion node = FrontendUtils
-                .getVersion("node", nodeVersionCommand);
+        FrontendVersion node = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
         Assert.assertEquals("12.16.0", node.getFullVersion());
 
         List<String> npmVersionCommand = new ArrayList<>(
                 FrontendUtils.getNpmExecutable(targetDir.getPath()));
         npmVersionCommand.add("--version");
-        FrontendVersion npm = FrontendUtils
-                .getVersion("npm", npmVersionCommand);
+        FrontendVersion npm = FrontendUtils.getVersion("npm",
+                npmVersionCommand);
         Assert.assertEquals("6.13.4", npm.getFullVersion());
 
     }
@@ -168,7 +172,8 @@ public class FrontendUtilsTest {
 
         File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse("Clean test should not contain a installation folder",
+        Assert.assertFalse(
+                "Clean test should not contain a installation folder",
                 targetDir.exists());
         File downloadDir = tmpDir.newFolder("v12.16.0");
         File archiveFile = new File(downloadDir,
@@ -190,17 +195,15 @@ public class FrontendUtilsTest {
                 zipOutputStream.closeEntry();
             }
         } else {
-            try (OutputStream fo = Files.newOutputStream(
-                    tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
-                    fo); ArchiveOutputStream o = new TarArchiveOutputStream(
-                    gzo)) {
+            try (OutputStream fo = Files.newOutputStream(tempArchive);
+                    OutputStream gzo = new GzipCompressorOutputStream(fo);
+                    ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/bin/" + nodeExec),
                         prefix + "/bin/" + nodeExec));
                 o.closeArchiveEntry();
-                o.putArchiveEntry(
-                        o.createArchiveEntry(new File(prefix + "/bin/npm"),
-                                prefix + "/bin/npm"));
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/lib/node_modules/npm/bin/npm"),
@@ -511,6 +514,24 @@ public class FrontendUtilsTest {
         FrontendUtils.validateNodeAndNpmVersion(baseDir);
 
         Assert.assertTrue(file.exists());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public synchronized void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File homeDir = FrontendUtils.getVaadinHomeDirectory();
+            File node = new File(homeDir, "node/node");
+            FileUtils.forceMkdir(node);
+
+            FrontendUtils.ensureNodeExecutableInHome();
+
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
     }
 
     private VaadinService setupStatsAssetMocks(String statsFile)
