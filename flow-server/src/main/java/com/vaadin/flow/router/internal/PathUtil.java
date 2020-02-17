@@ -16,14 +16,16 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Utility methods for accessing path segments.
+ * Utility class which contains various methods for parsing a route url into
+ * segments.
  */
-public class PathUtil {
+public class PathUtil implements Serializable {
 
     /**
      * Returns a unmodifiable list containing the segments of the specified
