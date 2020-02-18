@@ -35,6 +35,10 @@ public class HistoryIT extends ChromeBrowserTest {
     public void testHistory() throws URISyntaxException {
         open();
 
+        if (hasClientIssue("7572")) {
+            return;
+        }
+
         URI baseUrl = getCurrentUrl();
 
         InputTextElement stateField = $(InputTextElement.class).id("state");

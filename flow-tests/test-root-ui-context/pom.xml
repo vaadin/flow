@@ -12,6 +12,8 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <!-- please remove after https://github.com/vaadin/flow/issues/7559 is fixed -->
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>
@@ -20,7 +22,6 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>

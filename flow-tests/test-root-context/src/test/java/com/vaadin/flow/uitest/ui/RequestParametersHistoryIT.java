@@ -40,8 +40,10 @@ public class RequestParametersHistoryIT extends ChromeBrowserTest {
     public void parameterProvided() {
         String paramValue = "Super-intelligent shade of the colour blue";
         open(String.format("%s=%s", RequestParametersHistoryView.REQUEST_PARAM_NAME, paramValue));
+        if (hasClientIssue("7589")) {
+            return;
+        }
         WebElement label = findElement(By.id(RequestParametersHistoryView.REQUEST_PARAM_ID));
-
         Assert.assertEquals(paramValue, label.getText());
     }
 
@@ -50,6 +52,9 @@ public class RequestParametersHistoryIT extends ChromeBrowserTest {
         String oldParamValue = "oldParamValue";
         String newParamValue = "newParamValue";
         open(String.format("%s=%s", RequestParametersHistoryView.REQUEST_PARAM_NAME, oldParamValue));
+        if (hasClientIssue("7589")) {
+            return;
+        }
         open(String.format("%s=%s", RequestParametersHistoryView.REQUEST_PARAM_NAME, newParamValue));
 
         findElement(By.id(RequestParametersHistoryView.BACK_BUTTON_ID)).click();
