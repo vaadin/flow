@@ -25,7 +25,6 @@ import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -123,8 +122,8 @@ public final class DefaultFileDownloader implements FileDownloader {
             return executeViaProxy(proxy, requestUri);
         } else {
             getLogger().info("No proxy was configured, downloading directly");
-            if (StringUtils.isNotEmpty(userName) && StringUtils
-                    .isNotEmpty(password)) {
+            if (userName != null && !userName.isEmpty() && password != null
+                    && !password.isEmpty()) {
                 getLogger().info("Using credentials ({})", userName);
                 // Auth target host
                 URL aURL = requestUri.toURL();
