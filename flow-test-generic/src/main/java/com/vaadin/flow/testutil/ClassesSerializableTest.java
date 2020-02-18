@@ -185,7 +185,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyFrontendFiles",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyLocalFrontendFiles",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCreatePackageJson",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGeneratePackageJson",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskRunNpmInstall",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",

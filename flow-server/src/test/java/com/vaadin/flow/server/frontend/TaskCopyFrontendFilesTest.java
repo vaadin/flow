@@ -68,7 +68,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_createPackageJson() throws IOException {
-        TaskCreatePackageJson task = new TaskCreatePackageJson(npmFolder, generatedFolder, frontendDepsFolder);
+        TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder, generatedFolder, frontendDepsFolder);
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
