@@ -87,7 +87,7 @@ import com.vaadin.flow.server.connect.exception.EndpointValidationException.Vali
  */
 @RestController
 @Import({ VaadinConnectControllerConfiguration.class,
-        VaadinConnectProperties.class })
+        VaadinEndpointProperties.class })
 public class VaadinConnectController {
     /**
      * A qualifier to override the request and response default json mapper.
