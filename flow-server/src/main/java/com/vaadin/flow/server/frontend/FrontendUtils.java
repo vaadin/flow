@@ -443,7 +443,7 @@ public class FrontendUtils {
      * in a search algorithm: {@link #getNodeExecutable(String)} first searches
      * executable in the provided directory and fallback to the globally
      * installed if it's not found there. The
-     * {@link #ensureNodeExecutableInDirectory()} doesn't search for globally
+     * {@link #ensureNodeExecutableInHome()} doesn't search for globally
      * installed executable. It tries to find it in the vaadin home directory
      * and if it's not found it downloads and installs it there.
      *
