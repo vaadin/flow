@@ -198,6 +198,17 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexTs",
 
+                // Node downloader classes
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ArchiveExtractor",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller\\$InstallData",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.Platform",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig\\$Proxy",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ProxyConfig",
+
                 // Various test classes
                 ".*\\.test(s)?\\..*", ".*Test.*",
                 "com\\.vaadin\\.flow\\.server\\.MockVaadinServletService",
