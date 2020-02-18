@@ -72,6 +72,43 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Override
+    @Test
+    public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
+            throws ExecutionFailedException, IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        FileUtils.forceMkdir(nodeModules);
+
+        // create a fake file in the node modules dir to check that it's removed
+        File fakeFile = new File(nodeModules, ".fake.file");
+        fakeFile.createNewFile();
+
+        getNodeUpdater().modified = true;
+        createTask().execute();
+
+        Assert.assertFalse(fakeFile.exists());
+    }
+
+    @Override
+    @Test
+    public void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
+            throws ExecutionFailedException, IOException {
+        getNodeUpdater().modified = true;
+        createTask().execute();
+
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        FileUtils.forceMkdir(nodeModules);
+
+        // create a fake file in the node modules dir to check that it's removed
+        File fakeFile = new File(nodeModules, ".fake.file");
+        fakeFile.createNewFile();
+
+        getNodeUpdater().modified = true;
+        createTask().execute();
+
+        Assert.assertTrue(fakeFile.exists());
+    }
+
+    @Override
     protected String getToolName() {
         return "pnpm";
     }

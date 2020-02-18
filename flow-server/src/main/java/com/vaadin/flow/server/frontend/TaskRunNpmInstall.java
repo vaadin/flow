@@ -50,10 +50,12 @@ import static elemental.json.impl.JsonUtil.stringify;
  */
 public class TaskRunNpmInstall implements FallibleCommand {
 
+    private static final String MODULES_YAML = ".modules.yaml";
+
     private final NodeUpdater packageUpdater;
 
     private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
-            "pnpm", ".ignored_pnpm", ".pnpm", ".modules.yaml");
+            "pnpm", ".ignored_pnpm", ".pnpm", MODULES_YAML);
     private final boolean enablePnpm;
 
     /**
@@ -146,6 +148,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
                         exception);
             }
+        }
+
+        try {
+            cleanUp();
+        } catch (IOException exception) {
+            throw new ExecutionFailedException("Couldn't remove "
+                    + packageUpdater.nodeModulesFolder + " directory",
+                    exception);
         }
 
         List<String> executable;
@@ -264,6 +274,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
             i++;
         }
         return lines;
+    }
+
+    private void cleanUp() throws IOException {
+        if (!packageUpdater.nodeModulesFolder.exists()) {
+            return;
+        }
+        File modulesYaml = new File(packageUpdater.nodeModulesFolder,
+                MODULES_YAML);
+        boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
+        if (hasModulesYaml != enablePnpm) {
+            FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+        }
     }
 
 }
