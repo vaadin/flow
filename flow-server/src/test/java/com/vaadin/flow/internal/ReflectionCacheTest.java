@@ -94,6 +94,20 @@ public class ReflectionCacheTest {
     }
 
     @Test
+    public void cacheIsClearedAfterGc() throws InterruptedException {
+        ReflectionCache<Object, Object> cache = new ReflectionCache<>(
+                type -> type);
+        cache.get(Object.class);
+
+        // Ensure garbage is collected before clearing
+        TestUtil.isGarbageCollected(new WeakReference<>(new Object()));
+
+        ReflectionCache.clearAll();
+
+        Assert.assertFalse(cache.contains(Object.class));
+    }
+
+    @Test
     public void currentInstancesNotAvailable() {
         String currentString = "My string";
         CurrentInstance.set(String.class, currentString);
