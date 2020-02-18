@@ -454,7 +454,7 @@ public class FrontendUtils {
             File home = getVaadinHomeDirectory();
             File file = new File(home, nodeCommands.getSecond());
             if (file.exists()) {
-                if (frontendToolsLocator.verifyTool(file)) {
+                if (!frontendToolsLocator.verifyTool(file)) {
                     throw new IllegalStateException(String.format(
                             LOCAL_NODE_NOT_FOUND, home.getAbsolutePath(),
                             home.getAbsolutePath(), file.getAbsolutePath()));
