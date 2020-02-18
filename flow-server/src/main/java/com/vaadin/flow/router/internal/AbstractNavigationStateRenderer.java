@@ -624,7 +624,7 @@ public abstract class AbstractNavigationStateRenderer
             List<String> targetParameters) {
         final boolean sameTarget = navigationState.getNavigationTarget()
                 .equals(targetType);
-
+// TODO: check with UrlParameters
         final boolean sameParameters = targetParameters.equals(navigationState
                 .getUrlParameters().orElse(Collections.emptyList()));
 
@@ -672,12 +672,6 @@ public abstract class AbstractNavigationStateRenderer
         // TODO: Why are we passing query parameters from previous navigation event?
         Location location = new Location(url,
                 event.getLocation().getQueryParameters());
-
-        if (beforeNavigation.hasForwardTarget()) {
-            List<String> segments = new ArrayList<>(location.getSegments());
-            segments.addAll(beforeNavigation.getForwardTargetParameters());
-            location = new Location(segments);
-        }
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC);

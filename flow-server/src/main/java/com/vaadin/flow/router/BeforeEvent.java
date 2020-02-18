@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.router.internal.PathUtil;
 
 /**
  * Abstract before event class that has the common functionalities for
@@ -251,8 +252,7 @@ public abstract class BeforeEvent extends EventObject {
     public void forwardTo(Class<? extends Component> forwardTargetComponent) {
         Objects.requireNonNull(forwardTargetComponent,
                 "forwardTargetComponent cannot be null");
-        forwardTo(new NavigationStateBuilder(ui.getRouter())
-                .withTarget(forwardTargetComponent).build());
+        forwardTo(getNavigationState(forwardTargetComponent, null, null));
     }
 
 
@@ -269,7 +269,7 @@ public abstract class BeforeEvent extends EventObject {
             UrlParameters parameters) {
         Objects.requireNonNull(forwardTargetComponent,
                 "forwardTargetComponent cannot be null");
-        forwardTo(getNavigationState(forwardTargetComponent, parameters));
+        forwardTo(getNavigationState(forwardTargetComponent, parameters, null));
     }
     /**
      * Forward to navigation component registered for given location string
@@ -280,7 +280,8 @@ public abstract class BeforeEvent extends EventObject {
      */
     public void forwardTo(String location) {
         getSource().getRegistry().getNavigationTarget(location)
-                .ifPresent(this::forwardTo);
+                .ifPresent(target -> forwardTo(
+                        getNavigationState(target, null, location)));
     }
 
     /**
@@ -351,9 +352,7 @@ public abstract class BeforeEvent extends EventObject {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
 
-        // TODO: set the correct resolved path on all create states methods
-        rerouteTo(new NavigationStateBuilder(ui.getRouter())
-                .withTarget(routeTargetType).build());
+        rerouteTo(getNavigationState(routeTargetType, null, null));
     }
 
     /**
@@ -369,7 +368,7 @@ public abstract class BeforeEvent extends EventObject {
             UrlParameters parameters) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
-        rerouteTo(getNavigationState(routeTargetType, parameters));
+        rerouteTo(getNavigationState(routeTargetType, null, null));
     }
 
     /**
@@ -380,8 +379,8 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      */
     public void rerouteTo(String route) {
-        getSource().getRegistry().getNavigationTarget(route)
-                .ifPresent(this::rerouteTo);
+        getSource().getRegistry().getNavigationTarget(route).ifPresent(
+                target -> rerouteTo(getNavigationState(target, null, route)));
     }
 
     /**
@@ -438,24 +437,26 @@ public abstract class BeforeEvent extends EventObject {
         }
     }
 
-    private <T> NavigationState getNavigationState(String route,
+    private <T> NavigationState getNavigationState(String url,
             List<T> routeParams) {
         List<String> segments = routeParams.stream().map(Object::toString)
                 .collect(Collectors.toList());
-        Class<? extends Component> target = getTargetOrThrow(route, segments);
+        Class<? extends Component> target = getTargetOrThrow(url, segments);
 
         if (!routeParams.isEmpty()) {
             checkUrlParameterType(routeParams.get(0), target);
         }
 
         return getNavigationState(target,
-                HasUrlParameterUtil.getParameters(segments));
+                HasUrlParameterUtil.getParameters(segments),
+                HasUrlParameterUtil.getUrl(url, routeParams));
     }
-
+    
     private NavigationState getNavigationState(
-            Class<? extends Component> target, UrlParameters parameters) {
+            Class<? extends Component> target, UrlParameters parameters,
+            String resolvedUrl) {
         return new NavigationStateBuilder(ui.getRouter())
-                .withTarget(target, parameters).build();
+                .withTarget(target, parameters).withPath(resolvedUrl).build();
     }
 
     /**

@@ -365,8 +365,18 @@ class RouteModel implements Serializable, Cloneable {
         }
 
         String getUrl(String pathTemplate, UrlParameters parameters) {
+            if (pathTemplate == null) {
+                return null;
+            }
+
             final List<String> segments = PathUtil
                     .getSegmentsList(pathTemplate);
+
+            if (segments.size() == 0
+                    && parameters.getParameters().size() == 0) {
+                return "";
+            }
+
             final List<String> result = new ArrayList<>(segments.size());
 
             matchSegments(segments, routeSegment -> {

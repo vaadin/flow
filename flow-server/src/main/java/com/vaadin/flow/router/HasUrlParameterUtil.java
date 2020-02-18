@@ -58,6 +58,11 @@ public class HasUrlParameterUtil {
         return path;
     }
 
+    public static <T> String getUrl(String url, List<T> parameters) {
+        return PathUtil.getPath(url, parameters.stream().map(t -> t.toString())
+                .collect(Collectors.toList()));
+    }
+
     public static <T> UrlParameters getParameters(T parameter) {
         if (parameter == null) {
             return new UrlParameters(null);
