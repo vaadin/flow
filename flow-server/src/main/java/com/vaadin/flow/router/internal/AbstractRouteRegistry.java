@@ -294,7 +294,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public Optional<String> getTargetRoute(
+    public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
@@ -303,7 +303,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public Optional<String> getTargetRoute(
+    public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget,
             EnumSet<RouteParameterFormat> format) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
@@ -313,13 +313,12 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void setRoute(String path,
+    public void setRoute(String urlTemplate,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
         configure(configuration -> {
-            RouteTarget routeTarget = addRouteToConfiguration(path,
-                    navigationTarget, configuration);
-            routeTarget.setParentLayouts(navigationTarget, parentChain);
+            addRouteToConfiguration(urlTemplate, navigationTarget, parentChain,
+                    configuration);
         });
     }
 
@@ -332,21 +331,21 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void removeRoute(String path) {
-        if (!getConfiguration().hasRoute(path)) {
+    public void removeRoute(String urlTemplate) {
+        if (!getConfiguration().hasRoute(urlTemplate)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(path));
+        configure(configuration -> configuration.removeRoute(urlTemplate));
     }
 
     @Override
     @Deprecated
-    public void removeRoute(String pathTemplate,
+    public void removeRoute(String urlTemplate,
             Class<? extends Component> navigationTarget) {
-        if (!getConfiguration().hasRoute(pathTemplate)) {
+        if (!getConfiguration().hasRoute(urlTemplate)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(pathTemplate,
+        configure(configuration -> configuration.removeRoute(urlTemplate,
                 navigationTarget));
     }
 
@@ -364,12 +363,14 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
      *            path for the navigation target
      * @param navigationTarget
      *            navigation target for given path
+     * @param parentChain
+     *            chain of parent layouts that should be used with this target
      * @param configuration
      *            mutable configuration object
-     * @return the route target to which the target was added
      */
-    private RouteTarget addRouteToConfiguration(String path,
+    private void addRouteToConfiguration(String path,
             Class<? extends Component> navigationTarget,
+            List<Class<? extends RouterLayout>> parentChain,
             ConfigureRoutes configuration) {
         if (!hasLock()) {
             throw new IllegalStateException(
@@ -378,12 +379,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         // Backward compatibility with HasUrlParameter for which the parameters
         // were stored in RouteTarget.
-        path = HasUrlParameterUtil.getPathTemplate(path,
-                navigationTarget);
+        path = HasUrlParameterUtil.getPathTemplate(path, navigationTarget);
 
-        configuration.setRoute(path, navigationTarget);
-
-        return configuration.getRouteTarget(path);
+        configuration.setRoute(path, navigationTarget, parentChain);
     }
 
     /**
