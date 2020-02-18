@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -35,5 +36,14 @@ public class StreamResourceView extends Div {
         download.setHref(resource);
         download.setId("link");
         add(download);
+
+        NativeButton reattach = new NativeButton("Remove and add back",
+                event -> {
+                    remove(download);
+                    add(download);
+                });
+        reattach.setId("detach-attach");
+
+        add(reattach);
     }
 }
