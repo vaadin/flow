@@ -79,7 +79,7 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_toolIsChanged_nodeModlesIsRemoved()
+    public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
             throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
@@ -93,7 +93,7 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_toolIsNotChanged_nodeModlesIsNotRemoved()
+    public void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
             throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
