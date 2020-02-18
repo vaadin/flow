@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +55,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.installer.Platform;
+import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -87,6 +90,9 @@ public class FrontendUtilsTest {
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
+
+    @Rule
+    public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
 
     private String baseDir;
 
@@ -137,24 +143,26 @@ public class FrontendUtilsTest {
             throws FrontendUtils.UnknownVersionException {
         File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse("Clean test should not contain a installation folder", targetDir.exists());
+        Assert.assertFalse(
+                "Clean test should not contain a installation folder",
+                targetDir.exists());
 
-        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
+        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir, "v12.16.0",
                 null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(nodeExecutable);
         nodeVersionCommand.add("--version");
-        FrontendVersion node = FrontendUtils
-                .getVersion("node", nodeVersionCommand);
+        FrontendVersion node = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
         Assert.assertEquals("12.16.0", node.getFullVersion());
 
         List<String> npmVersionCommand = new ArrayList<>(
                 FrontendUtils.getNpmExecutable(targetDir.getPath()));
         npmVersionCommand.add("--version");
-        FrontendVersion npm = FrontendUtils
-                .getVersion("npm", npmVersionCommand);
+        FrontendVersion npm = FrontendUtils.getVersion("npm",
+                npmVersionCommand);
         Assert.assertEquals("6.13.4", npm.getFullVersion());
 
     }
@@ -168,7 +176,8 @@ public class FrontendUtilsTest {
 
         File targetDir = new File(baseDir + "/installation");
 
-        Assert.assertFalse("Clean test should not contain a installation folder",
+        Assert.assertFalse(
+                "Clean test should not contain a installation folder",
                 targetDir.exists());
         File downloadDir = tmpDir.newFolder("v12.16.0");
         File archiveFile = new File(downloadDir,
@@ -190,17 +199,15 @@ public class FrontendUtilsTest {
                 zipOutputStream.closeEntry();
             }
         } else {
-            try (OutputStream fo = Files.newOutputStream(
-                    tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
-                    fo); ArchiveOutputStream o = new TarArchiveOutputStream(
-                    gzo)) {
+            try (OutputStream fo = Files.newOutputStream(tempArchive);
+                    OutputStream gzo = new GzipCompressorOutputStream(fo);
+                    ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/bin/" + nodeExec),
                         prefix + "/bin/" + nodeExec));
                 o.closeArchiveEntry();
-                o.putArchiveEntry(
-                        o.createArchiveEntry(new File(prefix + "/bin/npm"),
-                                prefix + "/bin/npm"));
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
                         new File(prefix + "/lib/node_modules/npm/bin/npm"),
@@ -213,8 +220,8 @@ public class FrontendUtilsTest {
             }
         }
 
-        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
-                new File(baseDir).toPath().toUri());
+        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir,
+                "v12.16.0", new File(baseDir).toPath().toUri());
         Assert.assertNotNull(nodeExecutable);
 
         Assert.assertTrue("npm should have been copied to node_modules",
@@ -591,5 +598,55 @@ public class FrontendUtilsTest {
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(stats);
         return service;
+    }
+
+    @Test
+    public void getProxies_npmrcWithProxySetting_shouldReturnProxiesList()
+            throws IOException {
+        File npmrc = tmpDirWithNpmrc.newFile(".npmrc");
+        Properties properties = new Properties();
+        properties.put("proxy", "http://httpuser:httppassword@httphost:8080");
+        properties.put("https-proxy",
+                "http://httpsuser:httpspassword@httpshost:8081");
+        properties.put("noproxy", "192.168.1.1,vaadin.com,mycompany.com");
+        FileOutputStream fileOutputStream = new FileOutputStream(npmrc);
+        properties.store(fileOutputStream, null);
+        fileOutputStream.close();
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils
+                .getProxies(tmpDirWithNpmrc.getRoot().getAbsolutePath());
+        Assert.assertEquals(2, proxyList.size());
+        ProxyConfig.Proxy httpsProxy = "https-proxy".equals(proxyList.get(0).id)
+                ? proxyList.get(0)
+                : proxyList.get(1);
+        ProxyConfig.Proxy httpProxy = "https-proxy".equals(proxyList.get(0).id)
+                ? proxyList.get(1)
+                : proxyList.get(0);
+
+        Assert.assertEquals("http", httpProxy.protocol);
+        Assert.assertEquals("httpuser", httpProxy.username);
+        Assert.assertEquals("httppassword", httpProxy.password);
+        Assert.assertEquals("httphost", httpProxy.host);
+        Assert.assertEquals(8080, httpProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                httpProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", httpsProxy.protocol);
+        Assert.assertEquals("httpsuser", httpsProxy.username);
+        Assert.assertEquals("httpspassword", httpsProxy.password);
+        Assert.assertEquals("httpshost", httpsProxy.host);
+        Assert.assertEquals(8081, httpsProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                httpsProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_noNpmrc_shouldReturnEmptyList() {
+        File npmrc = new File(baseDir + "/.npmrc");
+        if (npmrc.exists())
+            npmrc.delete();
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(baseDir);
+        Assert.assertTrue(proxyList.isEmpty());
     }
 }

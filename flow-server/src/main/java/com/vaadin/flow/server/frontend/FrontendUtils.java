@@ -19,10 +19,12 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -37,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -388,19 +391,22 @@ public class FrontendUtils {
     /**
      * Install node and npm into target directory.
      *
+     *
+     * @param baseDir
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param nodeVersion
-     *         node version to install
+     *            node version to install
      * @param downloadRoot
-     *         optional download root for downloading node. May be a filesystem
-     *         file or a URL see {@link NodeInstaller#setNodeDownloadRoot(URI)}.
+     *            optional download root for downloading node. May be a
+     *            filesystem file or a URL see
+     *            {@link NodeInstaller#setNodeDownloadRoot(URI)}.
      * @return node installation path
      */
-    protected static String installNode(File installDirectory,
+    protected static String installNode(String baseDir, File installDirectory,
             String nodeVersion, URI downloadRoot) {
         NodeInstaller nodeInstaller = new NodeInstaller(installDirectory,
-                getProxies()).setNodeVersion(nodeVersion);
+                getProxies(baseDir)).setNodeVersion(nodeVersion);
         if (downloadRoot != null) {
             nodeInstaller.setNodeDownloadRoot(downloadRoot);
         }
@@ -412,12 +418,38 @@ public class FrontendUtils {
         }
 
         String command = isWindows() ? "node.exe" : "node";
-        return new File(nodeInstaller.getInstallDirectory(), command).toString();
+        return new File(nodeInstaller.getInstallDirectory(), command)
+                .toString();
     }
 
-    private static List<ProxyConfig.Proxy> getProxies() {
-        // TODO: Implement proxy collection #7567
-        return Collections.emptyList();
+    // Not private because of test
+    static List<ProxyConfig.Proxy> getProxies(String baseDir) {
+        File npmrc = new File(baseDir + "/.npmrc");
+        if (!npmrc.exists()) {
+            return Collections.emptyList();
+        }
+
+        try {
+            Properties properties = new Properties();
+            properties.load(new FileReader(npmrc));
+            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+            String noProxy = properties.getProperty("noproxy");
+            if (noProxy != null)
+                noProxy = noProxy.replaceAll(",", "|");
+            String httpsProxy = properties.getProperty("https-proxy");
+            if (httpsProxy != null) {
+                proxyList.add(new ProxyConfig.Proxy("https-proxy", httpsProxy,
+                        noProxy));
+            }
+            String proxy = properties.getProperty("proxy");
+            if (proxy != null) {
+                proxyList.add(new ProxyConfig.Proxy("proxy", proxy, noProxy));
+            }
+
+            return proxyList;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -535,7 +567,8 @@ public class FrontendUtils {
                                 .orElse(null));
             }
             if (file == null && installNode) {
-                return new File(installNode(getVaadinHomeDirectory(), "v12.16.0", null));
+                return new File(installNode(baseDir, getVaadinHomeDirectory(),
+                        "v12.16.0", null));
             }
         } catch (FileNotFoundException exception) {
             Throwable cause = exception.getCause();
@@ -1261,7 +1294,7 @@ public class FrontendUtils {
          * @param extraInfo
          *            extra information which might be helpful to the end user
          */
-        public  UnknownVersionException(String tool, String extraInfo) {
+        public UnknownVersionException(String tool, String extraInfo) {
             super("Unable to detect version of " + tool + ". " + extraInfo);
         }
 
@@ -1305,11 +1338,11 @@ public class FrontendUtils {
      * Parse the version number of node/npm from version output string.
      *
      * @param versionString
-     *         string containing version output, typically produced by
-     *         <code>tool --version</code>
+     *            string containing version output, typically produced by
+     *            <code>tool --version</code>
      * @return FrontendVersion of versionString
      * @throws IOException
-     *         if parsing fails
+     *             if parsing fails
      */
     public static FrontendVersion parseFrontendVersion(String versionString)
             throws IOException {
