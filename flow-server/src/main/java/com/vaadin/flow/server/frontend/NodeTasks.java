@@ -460,7 +460,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (builder.createMissingPackageJson) {
-            TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
+            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
                     builder.flowResourcesFolder);
             commands.add(packageCreator);
