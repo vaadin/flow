@@ -7,7 +7,7 @@
   "builtAt": 1549540586721,
   "publicPath": "",
   "outputPath": "/Volumes/Framework/updates/skeleton-starter-flow/src/main/webapp/frontend/dist",
-  "assetsByChunkName" :{    "index": "build/index-1111.cache.js"
+  "assetsByChunkName" :{    "bundle": "build/vaadin-bundle-1111.cache.js"
      },
   "assets": [
     {

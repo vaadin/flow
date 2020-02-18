@@ -255,6 +255,11 @@ public class FrontendUtils {
     public static final String FALLBACK = "fallback";
 
     /**
+     * The entry-point key used for the exported bundle.
+     */
+    public static final String EXPORT_CHUNK = "export";
+
+    /**
      * A key in a Json object for css imports data.
      */
     public static final String CSS_IMPORTS = "cssImports";
@@ -504,7 +509,7 @@ public class FrontendUtils {
         if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
         }
-        
+
         String httpsProxyUrl = getNonNull(
                 System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getProperty(
