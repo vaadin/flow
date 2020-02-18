@@ -325,8 +325,11 @@ public class ConfiguredRoutes implements Serializable {
         // TODO: Feature Request:
         // implement so that in case the parameters don't match with the
         // main route, search within aliases.
-        return getRouteModel().getUrl(getTargetRoutes().get(navigationTarget),
-                parameters);
+        final String pathTemplate = getTargetRoutes().get(navigationTarget);
+        if (pathTemplate == null) {
+            return null;
+        }
+        return getRouteModel().getUrl(pathTemplate, parameters);
     }
 
     /**
