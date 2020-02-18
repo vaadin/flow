@@ -19,18 +19,11 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.OptionalParameter;
-import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
@@ -41,14 +34,38 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  */
 public class RouteTarget implements Serializable {
 
+    // TODO: add compiled template with parameters :)
+
+    private String urlTemplate;
+
     private Class<? extends Component> target;
 
     private List<Class<? extends RouterLayout>> parentLayouts;
 
-    private final boolean mutable;
+    private final boolean mutable = false;
 
-    private RouteTarget(boolean mutable) {
-        this.mutable = mutable;
+    /**
+     * Create a new Route target holder with the given target registered.
+     * <p>
+     * Note! This will create a mutable RouteTarget by default.
+     *
+     * @param urlTemplate
+     *            the url template assigned to this target.
+     * @param target
+     *            navigation target
+     * @param parents
+     *            parent layout chain
+     * @throws InvalidRouteConfigurationException
+     *             exception for miss configured routes where navigation targets
+     *             can not be clearly selected
+     */
+    public RouteTarget(String urlTemplate, Class<? extends Component> target,
+            List<Class<? extends RouterLayout>> parents) {
+        this.urlTemplate = urlTemplate;
+        this.target = target;
+        this.parentLayouts = parents != null
+                ? Collections.unmodifiableList(new ArrayList<>(parents))
+                : Collections.emptyList();
     }
 
     /**
@@ -61,9 +78,11 @@ public class RouteTarget implements Serializable {
      * @throws InvalidRouteConfigurationException
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
+     * @deprecated use {@link #RouteTarget(Class, List)} instead.
      */
+    @Deprecated
     public RouteTarget(Class<? extends Component> target) {
-        this(target, true);
+        setTarget(target);
     }
 
     /**
@@ -76,10 +95,11 @@ public class RouteTarget implements Serializable {
      * @throws InvalidRouteConfigurationException
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
+     * @deprecated mutable argument is ignored.
      */
+    @Deprecated
     public RouteTarget(Class<? extends Component> target, boolean mutable) {
-        this.mutable = mutable;
-        setTarget(target);
+        this(target);
     }
 
     /**
@@ -91,7 +111,7 @@ public class RouteTarget implements Serializable {
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
      * @deprecated RouteTarget wraps only one target component and parameters
-     *             are provided through {@link RouteSearchResult}
+     *             are provided through {@link NavigationRouteTarget}
      */
     @Deprecated
     public void addRoute(Class<? extends Component> target) {
@@ -109,56 +129,6 @@ public class RouteTarget implements Serializable {
 
         this.target = target;
     }
-
-    // TODO: use this in ConfigureRoutes or actually in RouteSegment
-//    private void validateParameter(Class<? extends Component> target)
-//            throws InvalidRouteConfigurationException {
-//        if (parameter != null) {
-//            throw new AmbiguousRouteConfigurationException(String.format(
-////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-//                    parameter.getName(), target.getName()), parameter);
-//        }
-//    }
-//
-//    private void validateWildcard(Class<? extends Component> target)
-//            throws InvalidRouteConfigurationException {
-//        if (wildCardParameter != null) {
-//            throw new AmbiguousRouteConfigurationException(String.format(
-////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with wildcard parameter have the same route.",
-//                    wildCardParameter.getName(), target.getName()),
-//                    wildCardParameter);
-//        }
-//    }
-//
-//    private void validateOptionalParameter(Class<? extends Component> target)
-//            throws InvalidRouteConfigurationException {
-//        if (this.target != null) {
-//            throw new AmbiguousRouteConfigurationException(String.format(
-////                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-//                    this.target.getName(), target.getName(), target.getName()),
-//                    this.target);
-//        } else if (optionalParameter != null) {
-//            String message = String.format(
-////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with parameter have the same route.",
-//                    optionalParameter.getName(), target.getName());
-//            throw new AmbiguousRouteConfigurationException(message,
-//                    optionalParameter);
-//        }
-//    }
-//
-//    private void validateNormalTarget(Class<? extends Component> target)
-//            throws InvalidRouteConfigurationException {
-//        if (this.target != null) {
-//            throw new AmbiguousRouteConfigurationException(String.format(
-////                    "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",
-//                    this.target.getName(), target.getName()), this.target);
-//        } else if (optionalParameter != null) {
-//            throw new AmbiguousRouteConfigurationException(String.format(
-////                    "Navigation targets '%s' and '%s' have the same path and '%s' has an OptionalParameter that will never be used as optional.",
-//                    target.getName(), optionalParameter.getName(),
-//                    optionalParameter.getName()), optionalParameter);
-//        }
-//    }
 
     /**
      * Get the component route target.
@@ -191,8 +161,7 @@ public class RouteTarget implements Serializable {
      * @return copy of this RouteTarget
      */
     public RouteTarget copy(boolean mutable) {
-        RouteTarget copy = new RouteTarget(mutable);
-        copy.target = target;
+        RouteTarget copy = new RouteTarget(target);
         copy.parentLayouts = parentLayouts;
         return copy;
     }

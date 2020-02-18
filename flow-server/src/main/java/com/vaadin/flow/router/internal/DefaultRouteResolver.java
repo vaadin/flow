@@ -40,7 +40,7 @@ public class DefaultRouteResolver implements RouteResolver {
         RouteRegistry registry = request.getRouter().getRegistry();
 
         final String path = request.getLocation().getPath();
-        RouteSearchResult navigationResult = getNavigationTarget(registry,
+        NavigationRouteTarget navigationResult = getNavigationTarget(registry,
                 path);
 
         if (!navigationResult.hasTarget()) {
@@ -64,9 +64,9 @@ public class DefaultRouteResolver implements RouteResolver {
         return builder.build();
     }
 
-    private RouteSearchResult getNavigationTarget(
+    private NavigationRouteTarget getNavigationTarget(
             RouteRegistry registry, String path) throws NotFoundException {
-        return registry.getNavigationTargetResult(path);
+        return registry.getNavigationRouteTarget(path);
     }
 
     private List<String> getPathParameters(String completePath,

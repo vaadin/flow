@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -30,6 +29,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -142,7 +142,7 @@ public class RouteConfiguration implements Serializable {
     public boolean isPathTemplateRegistered(String pathTemplate) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
-                    .hasPathTemplate(pathTemplate);
+                    .hasUrlTemplate(pathTemplate);
         }
         return getAvailableRoutes().stream().anyMatch(
                 routeData -> routeData.getUrl().equals(pathTemplate) || routeData
@@ -159,7 +159,7 @@ public class RouteConfiguration implements Serializable {
      * @return true if class is registered
      */
     public boolean isRouteRegistered(Class<? extends Component> route) {
-        return handledRegistry.getTargetRoute(route).isPresent();
+        return handledRegistry.getUrlTemplate(route).isPresent();
     }
 
     /**
@@ -187,7 +187,8 @@ public class RouteConfiguration implements Serializable {
      */
     public Optional<Class<? extends Component>> getRoute(String pathString,
             List<String> segments) {
-        return handledRegistry.getNavigationTarget(pathString, segments);
+        return handledRegistry
+                .getNavigationTarget(PathUtil.getPath(pathString, segments));
     }
 
     /**
@@ -438,7 +439,7 @@ public class RouteConfiguration implements Serializable {
 
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
-        return handledRegistry.getTargetRoute(navigationTarget,
+        return handledRegistry.getUrlTemplate(navigationTarget,
                 EnumSet.of(RouteParameterFormat.TEMPLATE));
     }
     
