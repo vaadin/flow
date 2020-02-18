@@ -462,11 +462,11 @@ public class FrontendUtils {
                             LOCAL_NODE_NOT_FOUND, home.getAbsolutePath(),
                             home.getAbsolutePath(), file.getAbsolutePath()));
                 }
+                return file.getAbsolutePath();
             } else {
-                installNode(getVaadinHomeDirectory(), DEFAULT_NODE_VERSION,
-                        null);
+                return installNode(getVaadinHomeDirectory(),
+                        DEFAULT_NODE_VERSION, null);
             }
-            return file.getAbsolutePath();
         } catch (FileNotFoundException exception) {
             throw new UncheckedIOException(exception);
         }
