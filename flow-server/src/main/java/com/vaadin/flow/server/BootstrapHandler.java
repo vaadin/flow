@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jsoup.Jsoup;
@@ -77,7 +79,9 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -400,7 +404,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * The following URI schemes are supported:
          * <ul>
          * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code>
-         * - resolves to the application context root</li> 
+         * - resolves to the application context root</li>
          * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
          * resolves to the base URI of the page</li>
          * </ul>
@@ -430,6 +434,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 response::setDateHeader);
 
         Document document = pageBuilder.getBootstrapPage(context);
+
         writeBootstrapPage(response, document.outerHtml());
 
         return true;
@@ -464,7 +469,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * Do not subclass this, unless you really know why you are doing it.
      */
-    protected static final class BootstrapPageBuilder
+    protected static class BootstrapPageBuilder
             implements PageBuilder, Serializable {
 
         /**
@@ -629,7 +634,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the UI for which the UIDL should be generated
          * @return a JSON object with the initial UIDL message
          */
-        protected JsonObject getInitialUidl(UI ui) {
+        private JsonObject getInitialUidl(UI ui) {
             JsonObject json = new UidlWriter().createUidl(ui, false);
 
             VaadinSession session = ui.getSession();
@@ -761,7 +766,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 throw new IOException(message.toString());
             }
             JsonObject chunks = Json.parse(content);
-            for (String key : chunks.keys()) {
+            for (String key : getChunkKeys(chunks)) {
                 String chunkName;
                 if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
                     chunkName = getArrayChunkName(chunks, key);
@@ -776,6 +781,22 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         // Fixes basic auth in Safari #6560
                         .attr("crossorigin", true));
             }
+        }
+
+        /**
+         * Return the list of chunk keys that should be considered by the
+         * bootstrap handler.
+         * 
+         * @param chunks
+         *            in the stat file
+         * @return
+         */
+        protected List<String> getChunkKeys(JsonObject chunks) {
+            // include all chunks but the one used for exported
+            // components.
+            return Arrays.stream(chunks.keys())
+                    .filter(s -> !EXPORT_CHUNK.equals(s))
+                    .collect(Collectors.toList());
         }
 
         private String getArrayChunkName(JsonObject chunks, String key) {
