@@ -33,15 +33,18 @@ public class TaskGenerateTsConfigTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File frontendFolder;
+    private File npmFolder;
     private File outputFolder;
     private TaskGenerateTsConfig taskGenerateTsConfig;
 
     @Before
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
+        npmFolder = temporaryFolder.newFolder();
         outputFolder = temporaryFolder.newFolder();
+
         taskGenerateTsConfig = new TaskGenerateTsConfig(frontendFolder,
-                outputFolder, temporaryFolder.getRoot());
+                npmFolder, outputFolder);
     }
 
     @Test
@@ -64,9 +67,23 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void should_notGenerateTsConfig_IndexTsAndTsConfigExist()
+    public void should_notGenerateTsConfig_frontendIndexTs_And_TsConfigExist()
             throws Exception {
         Files.createFile(new File(frontendFolder, INDEX_TS).toPath());
+        Files.createFile(new File(npmFolder, "tsconfig.json").toPath());
+        taskGenerateTsConfig.execute();
+        Assert.assertFalse(
+                "Should not generate tsconfig.json when index.ts and tsconfig"
+                        + ".json exist",
+                taskGenerateTsConfig.shouldGenerate());
+        Assert.assertTrue("The tsconfig.json should already exist",
+                taskGenerateTsConfig.getGeneratedFile().exists());
+    }
+
+    @Test
+    public void should_notGenerateTsConfig_generatedIndexTs_And_TsConfigExist()
+            throws Exception {
+        Files.createFile(new File(outputFolder, INDEX_TS).toPath());
         Files.createFile(new File(outputFolder, "tsconfig.json").toPath());
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
