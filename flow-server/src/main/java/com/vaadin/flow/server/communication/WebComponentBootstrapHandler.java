@@ -23,6 +23,8 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -51,6 +53,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -89,11 +92,19 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
     }
 
+    private static class WebComponentBootstrapPageBuilder
+            extends BootstrapPageBuilder {
+        @Override
+        protected List<String> getChunkKeys(JsonObject chunks) {
+            return Collections.singletonList(EXPORT_CHUNK);
+        }
+    }
+
     /**
      * Creates a new bootstrap handler with default page builder.
      */
     public WebComponentBootstrapHandler() {
-        super();
+        super(new WebComponentBootstrapPageBuilder());
     }
 
     /**
@@ -298,8 +309,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 || "style".equals(element.tagName())) {
             return true;
         } else {
-            // embedding context should not provide polyfill, it is left to the
-            // end-user
+            // embedding context should not provide polyfill, it is left
+            // to the end-user
             return "script".equals(element.tagName())
                     && element.attr("src").contains("webcomponents-loader.js");
         }
