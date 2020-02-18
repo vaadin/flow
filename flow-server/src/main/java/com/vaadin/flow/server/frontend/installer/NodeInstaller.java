@@ -442,34 +442,6 @@ public class NodeInstaller {
     }
 
     /**
-     * Build archive file name and return archive file target location.
-     *
-     * @param name
-     *         archive name
-     * @param nodeVersion
-     *         node version
-     * @param classifier
-     *         optional classifier
-     * @param archiveExtension
-     *         archive extension
-     * @return archive {@link File} for archive
-     */
-    private File resolveArchive(String name, String nodeVersion,
-            String classifier, String archiveExtension) {
-        if (!installDirectory.exists()) {
-            installDirectory.mkdirs();
-        }
-
-        StringBuilder filename = new StringBuilder().append(name).append("-")
-                .append(nodeVersion);
-        if (classifier != null) {
-            filename.append("-").append(classifier);
-        }
-        filename.append(".").append(archiveExtension);
-        return new File(installDirectory, filename.toString());
-    }
-
-    /**
      * Get node executable file.
      *
      * @return node executable
@@ -481,9 +453,6 @@ public class NodeInstaller {
         return new File(installDirectory + nodeExecutable);
     }
 
-    private String getLongNodeFilename(String nodeVersion) {
-        return "node-" + nodeVersion + "-" + platform.getNodeClassifier();
-    }
 
     private static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws InstallationException {
@@ -550,21 +519,53 @@ public class NodeInstaller {
         }
 
         private File getTempDirectory() {
-            File tmpDirectory = new File(getNodeInstallDirectory(), "tmp");
-            if (!tmpDirectory.exists()) {
+            File temporaryDirectory = new File(getNodeInstallDirectory(), "tmp");
+            if (!temporaryDirectory.exists()) {
                 getLogger()
-                        .debug("Creating temporary directory {}", tmpDirectory);
-                boolean success = tmpDirectory.mkdirs();
+                        .debug("Creating temporary directory {}", temporaryDirectory);
+                boolean success = temporaryDirectory.mkdirs();
                 if (!success) {
                     getLogger().debug("Failed to create temporary directory");
                 }
             }
-            return tmpDirectory;
+            return temporaryDirectory;
         }
 
         private String getNodeDownloadFilename(String nodeVersion) {
             return nodeVersion + "/" + getLongNodeFilename(nodeVersion) + "."
                     + platform.getOs().getArchiveExtension();
+        }
+
+        private String getLongNodeFilename(String nodeVersion) {
+            return "node-" + nodeVersion + "-" + platform.getNodeClassifier();
+        }
+
+        /**
+         * Build archive file name and return archive file target location.
+         *
+         * @param name
+         *         archive name
+         * @param nodeVersion
+         *         node version
+         * @param classifier
+         *         optional classifier
+         * @param archiveExtension
+         *         archive extension
+         * @return archive {@link File} for archive
+         */
+        private File resolveArchive(String name, String nodeVersion,
+                String classifier, String archiveExtension) {
+            if (!installDirectory.exists()) {
+                installDirectory.mkdirs();
+            }
+
+            StringBuilder filename = new StringBuilder().append(name).append("-")
+                    .append(nodeVersion);
+            if (classifier != null) {
+                filename.append("-").append(classifier);
+            }
+            filename.append(".").append(archiveExtension);
+            return new File(installDirectory, filename.toString());
         }
     }
 }
