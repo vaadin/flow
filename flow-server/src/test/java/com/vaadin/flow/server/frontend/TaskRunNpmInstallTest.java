@@ -84,11 +84,26 @@ public class TaskRunNpmInstallTest {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
 
+        nodeUpdater.modified = true;
         File yaml = new File(nodeModules, ".modules.yaml");
         yaml.createNewFile();
         task.execute();
 
         Assert.assertFalse(yaml.exists());
+    }
+
+    @Test
+    public void runNpmInstall_toolIsNotChanged_nodeModlesIsNotRemoved()
+            throws ExecutionFailedException, IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        nodeUpdater.modified = true;
+        File fakeFile = new File(nodeModules, ".fake.file");
+        fakeFile.createNewFile();
+        task.execute();
+
+        Assert.assertTrue(fakeFile.exists());
     }
 
     @Test

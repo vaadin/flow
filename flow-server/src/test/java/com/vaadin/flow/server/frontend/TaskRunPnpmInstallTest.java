@@ -79,13 +79,33 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         nodeModules.mkdir();
 
         // create a fake file in the node modules dir to check that it's removed
-        File yaml = new File(nodeModules, ".fake.file");
-        yaml.createNewFile();
+        File fakeFile = new File(nodeModules, ".fake.file");
+        fakeFile.createNewFile();
 
         getNodeUpdater().modified = true;
         createTask().execute();
 
-        Assert.assertFalse(yaml.exists());
+        Assert.assertFalse(fakeFile.exists());
+    }
+
+    @Override
+    @Test
+    public void runNpmInstall_toolIsNotChanged_nodeModlesIsNotRemoved()
+            throws ExecutionFailedException, IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        getNodeUpdater().modified = true;
+        createTask().execute();
+
+        // create a fake file in the node modules dir to check that it's removed
+        File fakeFile = new File(nodeModules, ".fake.file");
+        fakeFile.createNewFile();
+
+        getNodeUpdater().modified = true;
+        createTask().execute();
+
+        Assert.assertTrue(fakeFile.exists());
     }
 
     @Override
