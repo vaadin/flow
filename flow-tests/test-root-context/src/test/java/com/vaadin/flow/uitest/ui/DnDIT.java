@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import javax.validation.constraints.AssertFalse;
-
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;

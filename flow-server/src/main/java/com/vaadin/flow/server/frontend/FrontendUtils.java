@@ -934,7 +934,7 @@ public class FrontendUtils {
 
         try {
             List<String> npmVersionCommand = new ArrayList<>(
-                    FrontendUtils.getNpmExecutable(baseDir));
+                    FrontendUtils.getNpmExecutable(baseDir, false));
             npmVersionCommand.add("--version"); // NOSONAR
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,

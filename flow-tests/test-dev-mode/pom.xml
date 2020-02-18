@@ -15,7 +15,6 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.useDeprecatedV14Bootstrapping>false</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <dependencies>
@@ -52,14 +51,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>vaadin.useDeprecatedV14Bootstrapping</name>
-                            <value>${vaadin.useDeprecatedV14Bootstrapping}</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
             </plugin>
         </plugins>
     </build>
