@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.RouteTarget;
 
 /**
  * Contains all relevant information related to a valid navigation.
@@ -30,7 +31,7 @@ import com.vaadin.flow.component.Component;
  */
 public class NavigationState implements Serializable {
 
-    private Class<? extends Component> navigationTarget;
+    private RouteTarget navigationTarget;
     private UrlParameters urlParameters;
     private String resolvedPath;
     private final Router router;
@@ -50,8 +51,25 @@ public class NavigationState implements Serializable {
      *
      * @return the navigation target of this state
      */
-    public Class<? extends Component> getNavigationTarget() {
+//    public Class<? extends Component> getNavigationTarget() {
+//        return navigationTarget.getTarget();
+//    }
+
+    public RouteTarget getNavigationTarget() {
         return navigationTarget;
+    }
+
+    /**
+     * Sets the navigation target of this state.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @deprecated use {@link #setNavigationTarget(RouteTarget)} instead.
+     */
+    public void setNavigationTarget(
+            Class<? extends Component> navigationTarget) {
+        this.navigationTarget = router.getRegistry()
+                .getRouteTarget(navigationTarget, urlParameters);
     }
 
     /**
@@ -61,7 +79,7 @@ public class NavigationState implements Serializable {
      *            the navigation target to set
      */
     public void setNavigationTarget(
-            Class<? extends Component> navigationTarget) {
+            RouteTarget navigationTarget) {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
@@ -84,11 +102,9 @@ public class NavigationState implements Serializable {
      */
     public String getResolvedPath() {
         if (resolvedPath == null) {
-            try {
-                resolvedPath = RouteConfiguration.forRegistry(router.getRegistry())
-                        .getUrl(navigationTarget, urlParameters);
-            } catch (NotFoundException e) {
-            }
+            resolvedPath = router.getRegistry()
+                    .getTargetUrl(navigationTarget.getTarget(), urlParameters)
+                    .orElse(null);
         }
         return resolvedPath;
     }

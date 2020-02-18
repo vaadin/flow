@@ -29,8 +29,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.router.internal.RouteSearchResult;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -124,12 +126,12 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public void setRoute(String path,
+    public void setRoute(String urlTemplate,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
         if (routeFilters.stream().allMatch(
                 filter -> filter.testNavigationTarget(navigationTarget))) {
-            super.setRoute(path, navigationTarget, parentChain);
+            super.setRoute(urlTemplate, navigationTarget, parentChain);
         } else {
             LoggerFactory.getLogger(ApplicationRouteRegistry.class).info(
                     "Not registering route {} because it's not valid for all registered routeFilters.",
@@ -189,8 +191,14 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public RouteSearchResult getNavigationTargetResult(String path) {
-        return getConfiguration().getRouteSearchResult(path);
+    public NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return getConfiguration().getNavigationRouteTarget(url);
+    }
+
+    @Override
+    public RouteTarget getRouteTarget(Class<? extends Component> target,
+            UrlParameters parameters) {
+        return getConfiguration().getRouteTarget(target, parameters);
     }
 
     @Override
@@ -206,8 +214,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     @Override
     @Deprecated
     public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString, List<String> segments) {
-        return getNavigationTarget(PathUtil.getPath(pathString, segments));
+            String url, List<String> segments) {
+        return getNavigationTarget(PathUtil.getPath(url, segments));
     }
 
     /**

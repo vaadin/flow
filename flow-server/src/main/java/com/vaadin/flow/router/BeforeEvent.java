@@ -465,7 +465,7 @@ public abstract class BeforeEvent extends EventObject {
      * @return forward target type
      */
     public Class<? extends Component> getForwardTargetType() {
-        return forwardTargetState.getNavigationTarget();
+        return forwardTargetState.getNavigationTarget().getTarget();
     }
 
     /**
@@ -505,7 +505,7 @@ public abstract class BeforeEvent extends EventObject {
      * @return route target type
      */
     public Class<? extends Component> getRerouteTargetType() {
-        return rerouteTargetState.getNavigationTarget();
+        return rerouteTargetState.getNavigationTarget().getTarget();
     }
 
     /**

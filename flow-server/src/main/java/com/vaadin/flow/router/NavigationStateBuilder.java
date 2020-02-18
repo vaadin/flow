@@ -57,8 +57,8 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
             List<String> urlParameters) {
-        currentState.setNavigationTarget(navigationTarget);
         currentState.setUrlParameters(urlParameters);
+        currentState.setNavigationTarget(navigationTarget);
         return this;
     }
 
@@ -75,8 +75,8 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
             UrlParameters urlParameters) {
-        currentState.setNavigationTarget(navigationTarget);
         currentState.setParameters(urlParameters);
+        currentState.setNavigationTarget(navigationTarget);
         return this;
     }
 
