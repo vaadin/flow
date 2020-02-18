@@ -73,9 +73,8 @@ public class PathUtil implements Serializable {
     public static String getPath(String path, List<String> segments) {
         path = trimPath(path);
 
-        return (path.isEmpty() ? "" : path)
-                + ((segments == null || segments.isEmpty()) ? ""
-                        : ("/" + String.join("/", segments)));
+        return trimPath(path + ((segments == null || segments.isEmpty()) ? ""
+                : ("/" + String.join("/", segments))));
     }
 
     private static String trimPath(String path) {
