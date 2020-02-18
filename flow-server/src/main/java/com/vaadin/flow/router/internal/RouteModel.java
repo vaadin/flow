@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -291,11 +292,6 @@ class RouteModel implements Serializable, Cloneable {
             removePath(PathUtil.getSegmentsList(pathTemplate));
         }
 
-        void addPath(String pathTemplate,
-                Class<? extends Component> targetComponentClass) {
-            addPath(pathTemplate, new RouteTarget(targetComponentClass));
-        }
-
         /**
          * Add a pathTemplate template following this route segment. If the
          * template already exists and exception is thrown.
@@ -311,51 +307,50 @@ class RouteModel implements Serializable, Cloneable {
         }
 
         /**
-         * Finds a route for the given path.
+         * Finds a route for the given url.
          *
-         * @param path
-         *            real navigation path where the parameters are provided
-         *            with their real value. The method is looking to map the
-         *            value provided in the path with the ids found in the
-         *            stored templates.
+         * @param url
+         *            navigation url where the parameters are provided with
+         *            their real value. The method is looking to map the value
+         *            provided in the url with the ids found in the stored
+         *            templates.
          * @return a route result containing the target and parameter values
          *         mapped by their ids.
          */
-        RouteSearchResult getRoute(String path) {
+        NavigationRouteTarget getNavigationRouteTarget(String url) {
 
             Map<String, Object> urlParameters = new HashMap<>();
 
-            RouteTarget target = path == null ? null
-                    : findRouteTarget(PathUtil.getSegmentsList(path),
+            RouteTarget target = url == null ? null
+                    : findRouteTarget(PathUtil.getSegmentsList(url),
                             urlParameters);
 
-            return new RouteSearchResult(path, target, urlParameters);
+            return new NavigationRouteTarget(url, target, urlParameters);
         }
 
         /**
          * Gets a simple representation of the path tamplate.
          * 
-         * @param pathTemplate
+         * @param urlTemplate
          *            the full path template.
          * @param parameterFormat
          *            the parameter format function.
          * @return the simple path template.
          */
-        String getPath(String pathTemplate,
+        String getUrlTemplate(String urlTemplate,
                 Function<RouteSegment, String> parameterFormat) {
-            if (pathTemplate == null) {
+            if (urlTemplate == null) {
                 return null;
             }
 
-            final List<String> segments = PathUtil
-                    .getSegmentsList(pathTemplate);
+            final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
             final List<String> result = new ArrayList<>(segments.size());
 
-            matchSegments(segments, routeSegment -> {
+            matchSegmentTemplates(segments, routeSegment -> {
                 result.add(routeSegment.isParameter()
                         ? parameterFormat.apply(routeSegment)
                         : routeSegment.getName());
-            });
+            }, null);
 
             if (result.isEmpty()) {
                 return "";
@@ -364,13 +359,12 @@ class RouteModel implements Serializable, Cloneable {
             }
         }
 
-        String getUrl(String pathTemplate, UrlParameters parameters) {
-            if (pathTemplate == null) {
+        String getUrl(String urlTemplate, UrlParameters parameters) {
+            if (urlTemplate == null) {
                 return null;
             }
 
-            final List<String> segments = PathUtil
-                    .getSegmentsList(pathTemplate);
+            final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
 
             if (segments.size() == 0
                     && parameters.getParameters().size() == 0) {
@@ -379,7 +373,7 @@ class RouteModel implements Serializable, Cloneable {
 
             final List<String> result = new ArrayList<>(segments.size());
 
-            matchSegments(segments, routeSegment -> {
+            matchSegmentTemplates(segments, routeSegment -> {
                 String segment = routeSegment.getTemplate();
 
                 if (routeSegment.isParameter()) {
@@ -442,7 +436,7 @@ class RouteModel implements Serializable, Cloneable {
                 } else {
                     result.add(segment);
                 }
-            });
+            }, null);
 
             if (result.isEmpty()) {
                 return "";
@@ -700,25 +694,38 @@ class RouteModel implements Serializable, Cloneable {
             return target;
         }
 
-        void matchSegments(List<String> segments,
-                Consumer<RouteSegment> segmentProcessor) {
-            if (segments.isEmpty()) {
+        void matchSegmentTemplates(List<String> segmentTemplates,
+                Consumer<RouteSegment> segmentProcessor,
+                Consumer<RouteSegment> targetSegmentProcessor) {
+            if (segmentTemplates.isEmpty()) {
                 return;
             }
 
-            RouteSegment routeSegment = getAllSegments().get(segments.get(0));
+            RouteSegment routeSegment = getAllSegments()
+                    .get(segmentTemplates.get(0));
 
             if (routeSegment == null) {
                 throw new IllegalArgumentException(
                         "Unregistered path template specified `"
-                                + PathUtil.getPath(segments) + "`");
+                                + PathUtil.getPath(segmentTemplates) + "`");
             }
 
-            segmentProcessor.accept(routeSegment);
+            if (segmentProcessor != null) {
+                segmentProcessor.accept(routeSegment);
+            }
 
-            if (segments.size() > 1) {
-                routeSegment.matchSegments(segments.subList(1, segments.size()),
-                        segmentProcessor);
+            if (segmentTemplates.size() > 1) {
+                routeSegment.matchSegmentTemplates(
+                        segmentTemplates.subList(1, segmentTemplates.size()),
+                        segmentProcessor, targetSegmentProcessor);
+
+            } else if (routeSegment.getTarget() == null) {
+                throw new IllegalArgumentException(
+                        "Missing target at the end of the path `"
+                                + PathUtil.getPath(segmentTemplates) + "`");
+
+            } else if (targetSegmentProcessor != null) {
+                targetSegmentProcessor.accept(routeSegment);
             }
         }
 
@@ -923,7 +930,7 @@ class RouteModel implements Serializable, Cloneable {
      */
     void addRoute(String pathTemplate,
             Class<? extends Component> targetComponentClass) {
-        root.addPath(pathTemplate, targetComponentClass);
+        root.addPath(pathTemplate, new RouteTarget(targetComponentClass));
     }
 
     /**
@@ -948,48 +955,79 @@ class RouteModel implements Serializable, Cloneable {
     }
 
     /**
-     * Finds a route for the given path.
+     * Finds a route target for the given url.
      *
-     * @param path
-     *            real navigation path where the parameters are provided with
-     *            their real value. The method is looking to map the value
-     *            provided in the path with the ids found in the stored
-     *            templates.
+     * @param url
+     *            navigation url where the parameters are provided with their
+     *            real value. The method is looking to map the value provided in
+     *            the url with the ids found in the stored templates.
      * @return a route result containing the target and parameter values mapped
      *         by their ids.
      */
-    RouteSearchResult getRoute(String path) {
-        return root.getRoute(path);
+    NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return root.getNavigationRouteTarget(url);
+    }
+
+    /**
+     * Finds a route target for the given urlTemplate and parameters.
+     *
+     * @param urlTemplate
+     *            the full path template.
+     * @param parameters
+     *            the parameters to use or null if no parameters specified.
+     * @return a route result containing the target and parameter values mapped
+     *         by their ids.
+     * @throws IllegalArgumentException
+     *             in case urlTemplate is not registered or the parameters do
+     *             not match with the template.
+     */
+    RouteTarget getRouteTarget(String urlTemplate, UrlParameters parameters) {
+        AtomicReference<RouteTarget> target = null;
+        root.matchSegmentTemplates(PathUtil.getSegmentsList(urlTemplate), null,
+                routeSegment -> {
+                    target.set(routeSegment.getTarget());
+                });
+        return target.get();
     }
 
     /**
      * Gets a url path by replacing into the path template the url parameters.
      * <p>
-     * In case all parameters defined in the pathTemplate are optional or
+     * In case all parameters defined in the urlTemplate are optional or
      * varargs, parameters argument may be null and the path will be provided
      * without any parameters.
      * 
-     * @param pathTemplate
+     * @param urlTemplate
      *            the full path template.
      * @param parameters
      *            the parameters to use or null if no parameters specified.
      * @return the url.
      * @throws IllegalArgumentException
-     *             in case pathTemplate is not registered or the parameters do
+     *             in case urlTemplate is not registered or the parameters do
      *             not match with the template.
      */
-    String getUrl(String pathTemplate, UrlParameters parameters) {
-        return root.getUrl(pathTemplate,
+    String getUrl(String urlTemplate, UrlParameters parameters) {
+        return root.getUrl(urlTemplate,
                 parameters != null ? parameters : new UrlParameters(null));
     }
 
-    String getRoute(String pathTemplate, EnumSet<RouteParameterFormat> format) {
+    /**
+     *
+     * @param urlTemplate
+     * @param format
+     * @return
+     * @throws IllegalArgumentException
+     *             in case urlTemplate is not registered or the parameters do
+     *             not match with the template.
+     */
+    String formatUrlTemplate(String urlTemplate,
+            EnumSet<RouteParameterFormat> format) {
 
         if (format.contains(RouteParameterFormat.TEMPLATE)) {
-            return pathTemplate;
+            return urlTemplate;
         }
 
-        return root.getPath(pathTemplate, segment -> {
+        return root.getUrlTemplate(urlTemplate, segment -> {
             StringBuilder result = new StringBuilder();
 
             if (format.contains(RouteParameterFormat.CURLY_BRACKETS_FORMAT)) {
@@ -1013,20 +1051,7 @@ class RouteModel implements Serializable, Cloneable {
             }
 
             if (containsType) {
-                String type = segment.getType();
-
-                if (format.contains(RouteParameterFormat.SIMPLE_TYPE)
-                        || segment.isPrimitiveType()) {
-
-                    if (!segment.isPrimitiveType()) {
-                        type = "string";
-                    }
-
-                    if (format
-                            .contains(RouteParameterFormat.CAPITALIZED_TYPE)) {
-                        type = capitalize(type);
-                    }
-                }
+                String type = formatSegmentType(segment, format);
 
                 result.append(type);
 
@@ -1043,17 +1068,45 @@ class RouteModel implements Serializable, Cloneable {
         });
     }
 
-    Map<String, String> getParameters(String pathTemplate) {
+    /**
+     *
+     * @param pathTemplate
+     * @param format
+     * @return
+     * @throws IllegalArgumentException
+     *             in case urlTemplate is not registered or the parameters do
+     *             not match with the template.
+     */
+    Map<String, String> getParameters(String pathTemplate,
+            EnumSet<RouteParameterFormat> format) {
         Map<String, String> result = new HashMap<>();
 
-        this.root.matchSegments(PathUtil.getSegmentsList(pathTemplate),
+        this.root.matchSegmentTemplates(PathUtil.getSegmentsList(pathTemplate),
                 segment -> {
                     if (segment.isParameter()) {
                         result.put(segment.getName(),
-                                segment.getTypeAsPrimitive());
+                                formatSegmentType(segment, format));
                     }
-                });
+                }, null);
         return result;
+    }
+
+    private String formatSegmentType(RouteSegment segment,
+            EnumSet<RouteParameterFormat> format) {
+        String type = segment.getType();
+
+        if (format.contains(RouteParameterFormat.SIMPLE_TYPE)
+                || segment.isPrimitiveType()) {
+
+            if (!segment.isPrimitiveType()) {
+                type = "string";
+            }
+
+            if (format.contains(RouteParameterFormat.CAPITALIZED_TYPE)) {
+                type = capitalize(type);
+            }
+        }
+        return type;
     }
 
     private static String capitalize(String str) {
