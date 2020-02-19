@@ -385,6 +385,13 @@ public class StateNode implements Serializable {
         hasBeenDetached = false;
     }
 
+    public void prepareForResync() {
+        wasAttached = false;
+        isInitialChanges = true;
+        hasBeenAttached = false;
+        hasBeenDetached = false;
+    }
+
     /**
      * Gets the feature of the given type, creating one if necessary. This
      * method throws {@link IllegalStateException} if this node isn't configured
@@ -779,7 +786,7 @@ public class StateNode implements Serializable {
         }
     }
 
-    private void fireAttachListeners(boolean initialAttach) {
+    void fireAttachListeners(boolean initialAttach) {
         if (attachListeners != null) {
             List<Command> copy = new ArrayList<>(attachListeners);
 
@@ -789,7 +796,7 @@ public class StateNode implements Serializable {
         forEachFeature(f -> f.onAttach(initialAttach));
     }
 
-    private void fireDetachListeners() {
+    void fireDetachListeners() {
         if (detachListeners != null) {
             List<Command> copy = new ArrayList<>(detachListeners);
 

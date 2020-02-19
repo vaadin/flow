@@ -426,4 +426,13 @@ public class StateTree implements NodeOwner {
         }
 
     }
+
+    public void prepareForResync() {
+        getRootNode().visitNodeTreeBottomUp(StateNode::fireDetachListeners);
+        getRootNode().visitNodeTree(sn -> {
+            markAsDirty(sn);
+            sn.prepareForResync();
+        });
+        getRootNode().visitNodeTreeBottomUp(sn -> sn.fireAttachListeners(true));
+    }
 }

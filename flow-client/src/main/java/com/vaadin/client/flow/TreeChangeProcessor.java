@@ -66,9 +66,11 @@ public class TreeChangeProcessor {
                     int nodeId = (int) change
                             .getNumber(JsonConstants.CHANGE_NODE);
 
-                    StateNode node = new StateNode(nodeId, tree);
-                    tree.registerNode(node);
-                    nodes.add(node);
+                    if (nodeId != tree.getRootNode().getId()) {
+                        StateNode node = new StateNode(nodeId, tree);
+                        tree.registerNode(node);
+                        nodes.add(node);
+                    }
                 }
             }
 
