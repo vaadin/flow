@@ -429,9 +429,9 @@ public class FrontendUtils {
             return Collections.emptyList();
         }
 
-        try {
+        try (FileReader fileReader = new FileReader(npmrc)) {
             Properties properties = new Properties();
-            properties.load(new FileReader(npmrc));
+            properties.load(fileReader);
             List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
             String noProxy = properties.getProperty("noproxy");
             if (noProxy != null)
