@@ -1,13 +1,17 @@
 package com.vaadin.flow.uitest.ui;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PreserveOnRefreshView")
 @PreserveOnRefresh
@@ -41,6 +45,14 @@ public class PreserveOnRefreshView extends Div {
         looseElement.setProperty("id", NOTIFICATION_ID);
         looseElement.setText(uniqueId);
         UI.getCurrent().getElement().insertChild(0, looseElement);
+
+        StreamResource resource = new StreamResource("filename",
+                () -> new ByteArrayInputStream(
+                        "foo".getBytes(StandardCharsets.UTF_8)));
+        Anchor download = new Anchor("", "Download file");
+        download.setHref(resource);
+        download.setId("link");
+        add(download);
     }
 
     @Override
