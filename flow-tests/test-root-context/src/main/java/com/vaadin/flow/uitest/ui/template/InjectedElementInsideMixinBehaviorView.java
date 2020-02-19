@@ -28,6 +28,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.template.InjectedElementInsideMixinBehaviorView", layout = ViewTestLayout.class)
 @Tag("mixin-injects")
 @NpmPackage(value = "@polymer/iron-resizable-behavior", version = "3.0.1")
+@NpmPackage(value = "@polymer/polymer", version = "3.2.0")
 @JsModule("MixinInjectsElement.js")
 public class InjectedElementInsideMixinBehaviorView
         extends PolymerTemplate<TemplateModel> {
