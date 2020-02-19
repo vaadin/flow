@@ -161,7 +161,7 @@ public class ProxyConfig {
          * @param password
          *            password for proxy
          * @param nonProxyHosts
-         *            excluded hosts string
+         *            excluded hosts string delimited by '|'
          */
         public Proxy(String id, String protocol, String host, int port,
                 String username, String password, String nonProxyHosts) {
@@ -175,13 +175,15 @@ public class ProxyConfig {
         }
 
         /**
-         * Construct a Proxy object out of a proxy url
+         * Construct a Proxy object out of a proxy url.
          * 
          * @param id
          *            proxy id
          * @param proxyUrl
          *            proxy url with the format of
          *            protocol://user:password@server:port
+         * @param nonProxyHosts
+         *            excluded hosts string delimited by '|'
          */
         public Proxy(String id, String proxyUrl, String nonProxyHosts) {
             final Matcher matcher = PROXY_URL_REGEX.matcher(proxyUrl);
