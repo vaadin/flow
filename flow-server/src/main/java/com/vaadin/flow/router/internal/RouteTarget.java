@@ -42,6 +42,7 @@ public class RouteTarget implements Serializable {
 
     private List<Class<? extends RouterLayout>> parentLayouts;
 
+    @Deprecated
     private final boolean mutable = false;
 
     /**
@@ -59,7 +60,7 @@ public class RouteTarget implements Serializable {
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
      */
-    public RouteTarget(String urlTemplate, Class<? extends Component> target,
+    RouteTarget(String urlTemplate, Class<? extends Component> target,
             List<Class<? extends RouterLayout>> parents) {
         this.urlTemplate = urlTemplate;
         this.target = target;

@@ -437,12 +437,19 @@ public class RouteConfiguration implements Serializable {
         return getUrlTemplate(navigationTarget);
     }
 
+    /**
+     * Gets the url template for the given target.
+     * 
+     * @param navigationTarget
+     *            target class.
+     * @return main url template for the given target.
+     */
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
         return handledRegistry.getUrlTemplate(navigationTarget,
                 EnumSet.of(RouteParameterFormat.TEMPLATE));
     }
-    
+
     /**
      * Get the url string for given navigation target with the parameter in the
      * url.
