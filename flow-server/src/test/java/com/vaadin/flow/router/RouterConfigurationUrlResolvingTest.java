@@ -540,7 +540,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
     private String getUrlTemplate(
             Class<? extends Component> routeWithHasUrlParameterClass) {
-        return HasUrlParameterUtil.getPathTemplate(routeWithHasUrlParameterClass
+        return HasUrlParameterUtil.getUrlTemplate(routeWithHasUrlParameterClass
                         .getAnnotation(Route.class).value(),
                 routeWithHasUrlParameterClass);
     }

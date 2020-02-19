@@ -147,9 +147,7 @@ public class NavigationState implements Serializable {
      * parameters.
      *
      * @return the url parameters of this navigation state
-     * @deprecated use {@link #getParameters()}
      */
-    @Deprecated
     public Optional<List<String>> getUrlParameters() {
         return Optional.of(HasUrlParameterUtil
                 .getParameterValues(getParameters()));

@@ -816,14 +816,37 @@ public class UI extends Component
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
      */
     public <T, C extends Component & HasUrlParameter<T>> void navigate(
             Class<? extends C> navigationTarget, T parameter) {
         navigate(navigationTarget, HasUrlParameterUtil.getParameters(parameter));
     }
 
-    public <T, C extends Component & HasUrlParameter<T>> void navigate(
-            Class<? extends C> navigationTarget, UrlParameters parameters) {
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The parameters needs to comply with
+     * the ones defined in one of the {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to.
+     * @param parameters
+     *            parameters to pass to view.
+     * @throws IllegalArgumentException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    public void navigate(Class<? extends Component> navigationTarget,
+            UrlParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
@@ -841,6 +864,8 @@ public class UI extends Component
      *
      * @param location
      *            the location to navigate to, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the location or queryParameters are null.
      */
     public void navigate(String location) {
         navigate(location, QueryParameters.empty());
@@ -862,6 +887,8 @@ public class UI extends Component
      * @param queryParameters
      *            query parameters that are used for navigation, not
      *            {@code null}
+     * @throws IllegalArgumentException
+     *             if the location or queryParameters are null.
      */
     public void navigate(String location, QueryParameters queryParameters) {
         if (location == null) {

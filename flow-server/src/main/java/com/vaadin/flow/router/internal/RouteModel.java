@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -65,16 +66,8 @@ class RouteModel implements Serializable, Cloneable {
 
         // NOTE: string may be omited when defining a parameter. If the
         // type/regex is missing then string is used by default.
-        private static List<String> PRIMITIVE_TYPES = Arrays.asList("int",
+        private final static List<String> PRIMITIVE_TYPES = Arrays.asList("int",
                 "long", "bool", "boolean", "string");
-
-        /**
-         * Create a new root segment instance. This is an empty segment defining
-         * the root of the routes tree.
-         */
-        static RouteSegment createRoot() {
-            return new RouteSegment("");
-        }
 
         /**
          * Name of the segment.
@@ -150,6 +143,14 @@ class RouteModel implements Serializable, Cloneable {
             } else {
                 this.name = segmentTemplate;
             }
+        }
+
+        /**
+         * Create a new root segment instance. This is an empty segment defining
+         * the root of the routes tree.
+         */
+        static RouteSegment createRoot() {
+            return new RouteSegment("");
         }
 
         @Override
@@ -1021,7 +1022,7 @@ class RouteModel implements Serializable, Cloneable {
      *             not match with the template.
      */
     String formatUrlTemplate(String urlTemplate,
-            EnumSet<RouteParameterFormat> format) {
+            Set<RouteParameterFormat> format) {
 
         if (format.contains(RouteParameterFormat.TEMPLATE)) {
             return urlTemplate;
@@ -1092,7 +1093,7 @@ class RouteModel implements Serializable, Cloneable {
     }
 
     private String formatSegmentType(RouteSegment segment,
-            EnumSet<RouteParameterFormat> format) {
+            Set<RouteParameterFormat> format) {
         String type = segment.getType();
 
         if (format.contains(RouteParameterFormat.SIMPLE_TYPE)
