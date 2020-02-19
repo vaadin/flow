@@ -70,6 +70,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public abstract class AbstractNavigationStateRenderer
         implements NavigationHandler {
+
     private enum TransitionOutcome {
         FORWARDED, FINISHED, REROUTED, POSTPONED
     }
@@ -78,6 +79,8 @@ public abstract class AbstractNavigationStateRenderer
             .getConstantIntValues(HttpServletResponse.class);
 
     private final NavigationState navigationState;
+
+    private List<Class<? extends RouterLayout>> routeLayoutTypes;
 
     private Postpone postponed = null;
 
@@ -136,11 +139,17 @@ public abstract class AbstractNavigationStateRenderer
     public int handle(NavigationEvent event) {
         UI ui = event.getUI();
 
-        Class<? extends Component> routeTargetType = navigationState
+        final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
-        UrlParameters urlParameters = navigationState.getParameters();
-        List<Class<? extends RouterLayout>> routeLayoutTypes = getRouterLayoutTypes(
-                routeTargetType, ui.getRouter());
+        final UrlParameters urlParameters = navigationState.getParameters();
+        final RouteTarget routeTarget = navigationState.getRouteTarget();
+
+        routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
+                : null;
+        if (routeLayoutTypes == null) {
+            routeLayoutTypes = getRouterLayoutTypes(routeTargetType,
+                    ui.getRouter());
+        }
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
@@ -314,10 +323,8 @@ public abstract class AbstractNavigationStateRenderer
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        // TODO: get this from target, or should be added in the navigation state.
         List<Class<? extends RouterLayout>> routeLayoutTypes = new ArrayList<>(
-                getRouterLayoutTypes(routeTargetType,
-                        event.getUI().getRouter()));
+                this.routeLayoutTypes);
         Collections.reverse(routeLayoutTypes);
 
         final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>();

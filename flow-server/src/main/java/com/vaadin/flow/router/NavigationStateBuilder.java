@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.RouteTarget;
 
 /**
  * A builder class for constructing new {@link NavigationState} instances.
@@ -57,8 +58,8 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
             List<String> urlParameters) {
-        currentState.setUrlParameters(urlParameters);
         currentState.setNavigationTarget(navigationTarget);
+        currentState.setUrlParameters(urlParameters);
         return this;
     }
 
@@ -75,8 +76,25 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
             UrlParameters urlParameters) {
-        currentState.setParameters(urlParameters);
         currentState.setNavigationTarget(navigationTarget);
+        currentState.setParameters(urlParameters);
+        return this;
+    }
+
+    /**
+     * Assigns the given route target with the given url parameter to the
+     * navigation state being built.
+     *
+     * @param routeTarget
+     *            the route target
+     * @param urlParameters
+     *            the url parameter of the navigation target
+     * @return this builder, for chaining
+     */
+    public NavigationStateBuilder withTarget(RouteTarget routeTarget,
+            UrlParameters urlParameters) {
+        currentState.setRouteTarget(routeTarget);
+        currentState.setParameters(urlParameters);
         return this;
     }
 

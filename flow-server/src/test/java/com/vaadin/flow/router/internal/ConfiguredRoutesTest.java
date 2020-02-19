@@ -17,11 +17,11 @@ public class ConfiguredRoutesTest {
         ConfiguredRoutes configuration = new ConfiguredRoutes();
 
         Assert.assertFalse("No routes should be configured",
-                configuration.hasRoute(""));
+                configuration.hasUrlTemplate(""));
         Assert.assertFalse("No routes should be configured",
-                configuration.hasRoute("", Collections.emptyList()));
+                configuration.hasUrl(""));
         Assert.assertFalse("No routes should be configured",
-                configuration.getRoute("", Collections.emptyList())
+                configuration.getTarget("")
                         .isPresent());
         Assert.assertTrue("Configuration should be empty",
                 configuration.getRoutes().isEmpty());
@@ -30,7 +30,7 @@ public class ConfiguredRoutesTest {
         Assert.assertNull("No exception handler should be found.", configuration
                 .getExceptionHandlerByClass(RuntimeException.class));
         Assert.assertNull("No target route should be found", configuration
-                .getTargetRoute(BaseTarget.class));
+                .getUrlTemplate(BaseTarget.class));
         Assert.assertTrue("Configuration should be empty",
                 configuration.getExceptionHandlers().isEmpty());
         Assert.assertFalse("No route should be found", configuration
@@ -41,26 +41,24 @@ public class ConfiguredRoutesTest {
     public void mutableConfiguration_makingImmutableHasCorrectData() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
-        mutable.setRoute("", BaseTarget.class);
-        RouteTarget routeTarget = mutable.getRouteTarget("");
-        routeTarget.setParentLayouts(BaseTarget.class,
+        mutable.setRoute("", BaseTarget.class,
                 Arrays.asList(SecondParentTarget.class, ParentTarget.class));
 
         ConfiguredRoutes immutable = new ConfiguredRoutes(mutable);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
-                immutable.hasRoute(""));
-        Assert.assertTrue("Exact match with no path segments should exist",
-                immutable.hasRoute("", Collections.EMPTY_LIST));
+                immutable.hasUrlTemplate(""));
+        Assert.assertTrue("Exact match should exist",
+                immutable.hasUrl(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
-                immutable.getRoute("", Collections.EMPTY_LIST).get());
+                immutable.getTarget("").get());
 
         Assert.assertTrue(
                 "BaseTarget registration should have been copied over",
                 immutable.hasRouteTarget(BaseTarget.class));
         Assert.assertEquals("Configuration should have registered base target.",
-                "", immutable.getTargetRoute(BaseTarget.class));
+                "", immutable.getUrlTemplate(BaseTarget.class));
 
         Assert.assertEquals(
                 "Given parentLayouts should have been copied correctly",

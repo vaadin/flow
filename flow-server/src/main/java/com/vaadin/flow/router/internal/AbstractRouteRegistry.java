@@ -299,7 +299,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
         return Optional.ofNullable(
-                getConfiguration().getTargetRoute(navigationTarget));
+                getConfiguration().getUrlTemplate(navigationTarget));
     }
 
     @Override
@@ -309,7 +309,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
         return Optional.ofNullable(
-                getConfiguration().getTargetRoute(navigationTarget, format));
+                getConfiguration().getUrlTemplate(navigationTarget, format));
     }
 
     @Override

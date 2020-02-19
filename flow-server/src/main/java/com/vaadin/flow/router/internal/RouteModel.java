@@ -982,7 +982,7 @@ class RouteModel implements Serializable, Cloneable {
      *             not match with the template.
      */
     RouteTarget getRouteTarget(String urlTemplate, UrlParameters parameters) {
-        AtomicReference<RouteTarget> target = null;
+        AtomicReference<RouteTarget> target = new AtomicReference<>();
         root.matchSegmentTemplates(PathUtil.getSegmentsList(urlTemplate), null,
                 routeSegment -> {
                     target.set(routeSegment.getTarget());
