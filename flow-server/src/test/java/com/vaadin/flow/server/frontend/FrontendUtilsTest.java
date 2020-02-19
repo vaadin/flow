@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -69,6 +70,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@NotThreadSafe
 public class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
@@ -518,6 +520,24 @@ public class FrontendUtilsTest {
         FrontendUtils.validateNodeAndNpmVersion(baseDir);
 
         Assert.assertTrue(file.exists());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public synchronized void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File homeDir = FrontendUtils.getVaadinHomeDirectory();
+            File node = new File(homeDir, "node/node");
+            FileUtils.forceMkdir(node);
+
+            FrontendUtils.ensureNodeExecutableInHome();
+
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
     }
 
     private VaadinService setupStatsAssetMocks(String statsFile)

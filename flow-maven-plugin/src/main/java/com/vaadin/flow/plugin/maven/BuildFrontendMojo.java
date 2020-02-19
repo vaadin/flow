@@ -167,6 +167,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withConnectJavaSourceFolder(javaSourceFolder)
                         .withConnectGeneratedOpenApiJson(openApiJsonFile)
                         .withConnectClientTsApiFolder(generatedTsFolder)
+                        .withHomeNodeExecRequired(requireHomeNodeExec)
                         .build()
                         .execute();
     }
@@ -182,8 +183,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        String nodePath = FrontendUtils
+        String nodePath;
+        if (requireHomeNodeExec) {
+            nodePath = FrontendUtils.ensureNodeExecutableInHome();
+        } else {
+            nodePath = FrontendUtils
                 .getNodeExecutable(npmFolder.getAbsolutePath());
+        }
 
         List<String> command = Arrays.asList(nodePath,
                 webpackExecutable.getAbsolutePath(), "--progress");
@@ -191,7 +197,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .directory(project.getBasedir()).inheritIO();
         getLog().info("Running webpack ...");
         FrontendUtils.console(FrontendUtils.YELLOW,
-                FrontendUtils.commandToString(npmFolder.getAbsolutePath(), 
+                FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
                         command));
 
         Process webpackLaunch = null;
