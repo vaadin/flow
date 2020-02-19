@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -344,9 +345,10 @@ public class DevModeHandlerTest {
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void startDevModeHandler_vaadinHomeNodeIsAFolder_throws()
             throws IOException {
+        exception.expectCause(CoreMatchers.isA(IllegalStateException.class));
         String userHome = "user.home";
         String originalHome = System.getProperty(userHome);
         File home = temporaryFolder.newFolder();
@@ -360,7 +362,8 @@ public class DevModeHandlerTest {
             configuration.setApplicationOrSystemProperty(
                     Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                     Boolean.TRUE.toString());
-            DevModeHandler.start(configuration, npmFolder);
+            DevModeHandler.start(configuration, npmFolder,
+                    CompletableFuture.completedFuture(null)).join();
         } finally {
             System.setProperty(userHome, originalHome);
         }
