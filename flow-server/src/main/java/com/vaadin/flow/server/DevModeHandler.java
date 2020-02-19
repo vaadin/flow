@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -118,8 +117,7 @@ public final class DevModeHandler implements RequestHandler {
 
     private StringBuilder cumulativeOutput = new StringBuilder();
 
-    private final AtomicReference<Throwable> executionException = new AtomicReference<>();
-    private final AtomicBoolean devServerStarted = new AtomicBoolean();
+    private final CompletableFuture<Void> devServerStartFuture;
 
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, File webpack, File webpackConfig,
@@ -231,6 +229,14 @@ public final class DevModeHandler implements RequestHandler {
         });>>>>>>>2721ec 3
 
     Run (p)npm install and webpack dev server in a separate thread without blocking servlet container initializer
+=======
+        devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
+            // this will throw an exception if an exception has been thrown by
+            // the waitFor task
+            waitFor.getNow(null);
+            runOnFutureComplete(config, npmFolder, webpack, webpackConfig);
+        });
+>>>>>>> f93f56a Update unit tests and rewrite exception throwing.
     }
 
     /**
@@ -284,13 +290,12 @@ public final class DevModeHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        Throwable throwable = executionException.get();
-        if (throwable instanceof RuntimeException) {
-            throw (RuntimeException) throwable;
-        } else if (throwable != null) {
-            throw new IllegalStateException(throwable);
-        }
-        if (devServerStarted.get()) {
+        if (devServerStartFuture.isDone()) {
+            try {
+                devServerStartFuture.getNow(null);
+            } catch (CompletionException exception) {
+                throw getCause(exception);
+            }
             return false;
         } else {
             IOUtils.write("<html>"
@@ -299,6 +304,16 @@ public final class DevModeHandler implements RequestHandler {
                     + "</html>", response.getOutputStream(),
                     StandardCharsets.UTF_8);
             return true;
+        }
+    }
+
+    private RuntimeException getCause(Throwable exception) {
+        if (exception instanceof CompletionException) {
+            return getCause(exception.getCause());
+        } else if (exception instanceof RuntimeException) {
+            return (RuntimeException) exception;
+        } else {
+            throw new IllegalStateException(exception);
         }
     }
 
@@ -574,23 +589,13 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE);
     }
 
-    private void runOnFutureComplete(Void value, Throwable exception,
-            DeploymentConfiguration config, File npmFolder, File webpack,
-            File webpackConfig) {
-        if (exception == null) {
-            try {
-                doStartDevModeServer(config, npmFolder, webpack, webpackConfig);
-            } catch (Throwable throwable) {
-                executionException.set(throwable);
-                getLogger().error(null, throwable);
-            }
-        } else if (exception instanceof CompletionException) {
-            Throwable cause = ((CompletionException) exception).getCause();
-            executionException.set(cause);
-            getLogger().error(null, cause);
-        } else {
-            executionException.set(exception);
+    private void runOnFutureComplete(DeploymentConfiguration config,
+            File npmFolder, File webpack, File webpackConfig) {
+        try {
+            doStartDevModeServer(config, npmFolder, webpack, webpackConfig);
+        } catch (ExecutionFailedException exception) {
             getLogger().error(null, exception);
+            throw new CompletionException(exception);
         }
     }
 
@@ -793,6 +798,8 @@ public final class DevModeHandler implements RequestHandler {
 
     <<<<<<<Upstream,
 
+    based on master<<<<<<<Upstream,
+
     based on master
 
     private static final class LazyDevServerPortFileInit {
@@ -809,4 +816,24 @@ public final class DevModeHandler implements RequestHandler {
     }=======>>>>>>>2721ec 3
 
     Run (p)npm install and webpack dev server in a separate thread without blocking servlet container initializer
+=======
+
+    /**
+     * Waits for the dev server to start.
+     * <p>
+     * Suspends the caller's thread until the dev mode server is started (or
+     * failed to start).
+     *
+     * @see Thread#join()
+     */
+    void join() {
+        devServerStartFuture.join();
+    }
+
+    >>>>>>>
+
+    f93f56a Update
+    unit tests
+    and rewrite
+    exception throwing.
 }
