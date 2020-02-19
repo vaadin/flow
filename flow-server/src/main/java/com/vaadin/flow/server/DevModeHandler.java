@@ -135,7 +135,6 @@ public final class DevModeHandler implements RequestHandler {
             } finally {
                 devServerStarted.set(true);
             }
-<<<<<<< Upstream, based on master
             throw new IllegalStateException(format(
                     "webpack-dev-server port '%d' is defined but it's not working properly",
                     port));
