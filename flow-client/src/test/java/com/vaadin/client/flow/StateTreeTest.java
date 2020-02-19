@@ -326,4 +326,12 @@ public class StateTreeTest {
 
         Assert.assertFalse(tree.isActive(stateNode));
     }
+
+    @Test
+    public void treeHasChildren_prepareForResync_onlyRootRemainsRegistered() {
+        tree.registerNode(node);
+        tree.prepareForResync();
+        Assert.assertFalse(tree.getRootNode().isUnregistered());
+        Assert.assertTrue(node.isUnregistered());
+    }
 }
