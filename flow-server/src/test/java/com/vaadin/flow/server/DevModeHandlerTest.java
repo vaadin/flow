@@ -324,7 +324,8 @@ public class DevModeHandlerTest {
         System.setProperty(userHome, home.getPath());
         try {
             File homeDir = new File(home, ".vaadin");
-            File node = new File(homeDir, "node/node");
+            File node = new File(homeDir,
+                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
             FileUtils.forceMkdir(node);
 
             configuration.setApplicationOrSystemProperty(
