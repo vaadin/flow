@@ -17,10 +17,12 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("router-link")
 @JsModule("./RouterLinks.js")
+@NpmPackage(value = "@polymer/polymer", version = "3.2.0")
 public class RouterLinksTemplate extends PolymerTemplate<TemplateModel> {
 }
