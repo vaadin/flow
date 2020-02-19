@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.theme;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 
@@ -25,6 +26,7 @@ import com.vaadin.flow.theme.Theme;
 @Theme(MyTheme.class)
 @Tag("npm-themed-component")
 @JsModule("./src/npm-themed-component.js")
+@NpmPackage(value = "@polymer/polymer", version = "3.2.0")
 /*
  * Note that this is using component instead of polymer template, because
  * otherwise the themed module would have to import the original /src module, and
