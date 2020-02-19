@@ -636,10 +636,10 @@ public class FrontendUtilsTest {
         List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
                 tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test1");
         Assert.assertEquals(2, proxyList.size());
-        ProxyConfig.Proxy httpsProxy = "https-proxy".equals(proxyList.get(0).id)
+        ProxyConfig.Proxy httpsProxy = proxyList.get(0).id.startsWith("https-proxy")
                 ? proxyList.get(0)
                 : proxyList.get(1);
-        ProxyConfig.Proxy httpProxy = "https-proxy".equals(proxyList.get(0).id)
+        ProxyConfig.Proxy httpProxy = proxyList.get(0).id.startsWith("https-proxy")
                 ? proxyList.get(1)
                 : proxyList.get(0);
 
@@ -683,10 +683,10 @@ public class FrontendUtilsTest {
         List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
                 tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test2");
         Assert.assertEquals(2, proxyList.size());
-        ProxyConfig.Proxy httpsProxy = "https-proxy".equals(proxyList.get(0).id)
+        ProxyConfig.Proxy httpsProxy = proxyList.get(0).id.startsWith("https-proxy")
                 ? proxyList.get(0)
                 : proxyList.get(1);
-        ProxyConfig.Proxy httpProxy = "https-proxy".equals(proxyList.get(0).id)
+        ProxyConfig.Proxy httpProxy = proxyList.get(0).id.startsWith("https-proxy")
                 ? proxyList.get(1)
                 : proxyList.get(0);
 

@@ -35,9 +35,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ProxyConfig {
 
-    private static final Pattern PROXY_URL_REGEX = Pattern
-            .compile("(\\w+)://(([^:]+):(.*)@)?([^:]+)(:(\\d*))?");
-
     private final List<Proxy> proxies;
 
     /**
@@ -116,6 +113,9 @@ public class ProxyConfig {
      * Class for holding proxy information.
      */
     public static class Proxy implements Serializable {
+        private static final Pattern PROXY_URL_REGEX = Pattern
+                .compile("(\\w+)://(([^:]+):(.*)@)?([^:]+)(:(\\d*))?");
+
         /**
          * Id of proxy.
          */

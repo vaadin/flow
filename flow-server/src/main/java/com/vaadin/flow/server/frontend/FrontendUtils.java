@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -344,6 +345,8 @@ public class FrontendUtils {
             Constants.SUPPORTED_PNPM_MAJOR_VERSION,
             Constants.SUPPORTED_PNPM_MINOR_VERSION);
 
+    // Proxy config properties keys can be either fully upper case or fully
+    // lower case
     static final String NOPROXY_PROPERTY_KEY = "NOPROXY";
     static final String HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     static final String HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
@@ -434,84 +437,159 @@ public class FrontendUtils {
                 .toString();
     }
 
+    private static class NpmProxySettings {
+        private String proxy;
+        private String httpsProxy;
+        private String proxyConfigSource;
+        private String httpsProxyConfigSource;
+        private String noProxy;
+
+        String getProxy() {
+            return proxy;
+        }
+
+        void setProxy(String proxy, String source) {
+            this.proxy = proxy;
+            this.proxyConfigSource = proxy == null ? null : source;
+        }
+
+        String getHttpsProxy() {
+            return httpsProxy;
+        }
+
+        void setHttpsProxy(String httpsProxy, String source) {
+            this.httpsProxy = httpsProxy;
+            this.httpsProxyConfigSource = httpsProxy == null ? null : source;
+        }
+
+        String getNoProxy() {
+            return noProxy;
+        }
+
+        void setNoProxy(String noProxy) {
+            this.noProxy = noProxy;
+        }
+
+        boolean isAllPropertiesSet() {
+            return noProxy != null && httpsProxy != null && proxy == null;
+        }
+
+        List<ProxyConfig.Proxy> toProxyList() {
+            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+            String noProxy = this.noProxy;
+            if (noProxy != null)
+                noProxy = noProxy.replaceAll(",", "|");
+            if (httpsProxy != null) {
+                proxyList.add(new ProxyConfig.Proxy(
+                        "https-proxy - " + httpsProxyConfigSource, httpsProxy,
+                        noProxy));
+            }
+            if (proxy != null) {
+                proxyList.add(new ProxyConfig.Proxy(
+                        "proxy - " + proxyConfigSource, proxy, noProxy));
+            }
+            return proxyList;
+        }
+    }
+
     /**
      * Read list of configured proxies in order from system properties, .npmrc
      * file in the project root folder, .npmrc file in user root folder and
      * system environment variables.
-     * 
+     *
      * @param baseDir
      *            project root folder.
      * @return list of configured proxies
      */
     // Not private because of test
     static List<ProxyConfig.Proxy> getProxies(String baseDir) {
-        File projectNpmrc = new File(baseDir + "/.npmrc");
-        File userNpmrc = new File("~/.npmrc");
+        File projectNpmrc = new File(baseDir, ".npmrc");
+        File userNpmrc = new File(FileUtils.getUserDirectory(), ".npmrc");
 
-        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-        String noProxy = System.getProperty(NOPROXY_PROPERTY_KEY);
-        String httpsProxy = System.getProperty(HTTPS_PROXY_PROPERTY_KEY);
-        String proxy = System.getProperty(HTTP_PROXY_PROPERTY_KEY);
+        NpmProxySettings npmProxySettings = new NpmProxySettings();
+        readProxySettingsFromSystemProperties(npmProxySettings);
+        readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc,
+                npmProxySettings);
+        readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc,
+                npmProxySettings);
+        readProxySettingsFromEnvironmentVariables(npmProxySettings);
 
-        if (projectNpmrc.exists()
-                && (noProxy == null || httpsProxy == null || proxy == null)) {
-            try (FileReader fileReader = new FileReader(projectNpmrc)) {
+        return npmProxySettings.toProxyList();
+    }
+
+    private static void readProxySettingsFromNpmrcFile(String fileDescription,
+            File npmrc, NpmProxySettings npmProxySettings) {
+        if (npmrc.exists() && (!npmProxySettings.isAllPropertiesSet())) {
+            try (FileReader fileReader = new FileReader(npmrc)) {
                 Properties properties = new Properties();
                 properties.load(fileReader);
-                if (noProxy == null) {
-                    noProxy = properties.getProperty("noproxy");
+                if (npmProxySettings.getNoProxy() == null) {
+                    npmProxySettings
+                            .setNoProxy(properties.getProperty("noproxy"));
                 }
-                if (httpsProxy == null) {
-                    httpsProxy = properties.getProperty("https-proxy");
+                if (npmProxySettings.getHttpsProxy() == null) {
+                    npmProxySettings.setHttpsProxy(
+                            properties.getProperty("https-proxy"),
+                            fileDescription);
                 }
-                if (proxy == null) {
-                    proxy = properties.getProperty("proxy");
+                if (npmProxySettings.getProxy() == null) {
+                    npmProxySettings.setProxy(properties.getProperty("proxy"),
+                            fileDescription);
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         }
+    }
 
-        if (userNpmrc.exists()
-                && (noProxy == null || httpsProxy == null || proxy == null)) {
-            try (FileReader fileReader = new FileReader(userNpmrc)) {
-                Properties properties = new Properties();
-                properties.load(fileReader);
-                if (noProxy == null) {
-                    noProxy = properties.getProperty("noproxy");
-                }
-                if (httpsProxy == null) {
-                    httpsProxy = properties.getProperty("https-proxy");
-                }
-                if (proxy == null) {
-                    proxy = properties.getProperty("proxy");
-                }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+    private static void readProxySettingsFromSystemProperties(
+            NpmProxySettings npmProxySettings) {
+        if (npmProxySettings.getNoProxy() == null) {
+            npmProxySettings.setNoProxy(ObjectUtils.firstNonNull(
+                    System.getProperty(NOPROXY_PROPERTY_KEY),
+                    System.getProperty(NOPROXY_PROPERTY_KEY.toLowerCase())));
         }
+        if (npmProxySettings.getHttpsProxy() == null) {
+            npmProxySettings.setHttpsProxy(
+                    ObjectUtils.firstNonNull(
+                            System.getProperty(HTTPS_PROXY_PROPERTY_KEY),
+                            System.getProperty(
+                                    HTTPS_PROXY_PROPERTY_KEY.toLowerCase())),
+                    "system");
+        }
+        if (npmProxySettings.getProxy() == null) {
+            npmProxySettings.setProxy(
+                    ObjectUtils.firstNonNull(
+                            System.getProperty(HTTP_PROXY_PROPERTY_KEY),
+                            System.getProperty(
+                                    HTTP_PROXY_PROPERTY_KEY.toLowerCase())),
+                    "system");
+        }
+    }
 
-        if (httpsProxy == null) {
-            httpsProxy = System.getenv(HTTPS_PROXY_PROPERTY_KEY);
+    private static void readProxySettingsFromEnvironmentVariables(
+            NpmProxySettings npmProxySettings) {
+        if (npmProxySettings.getNoProxy() == null) {
+            npmProxySettings.setNoProxy(ObjectUtils.firstNonNull(
+                    System.getenv(NOPROXY_PROPERTY_KEY),
+                    System.getenv(NOPROXY_PROPERTY_KEY.toLowerCase())));
         }
-        if (proxy == null) {
-            proxy = System.getenv(HTTP_PROXY_PROPERTY_KEY);
+        if (npmProxySettings.getHttpsProxy() == null) {
+            npmProxySettings.setHttpsProxy(
+                    ObjectUtils.firstNonNull(
+                            System.getenv(HTTPS_PROXY_PROPERTY_KEY),
+                            System.getenv(
+                                    HTTPS_PROXY_PROPERTY_KEY.toLowerCase())),
+                    "env");
         }
-        if (noProxy == null) {
-            noProxy = System.getenv(NOPROXY_PROPERTY_KEY);
+        if (npmProxySettings.getProxy() == null) {
+            npmProxySettings.setProxy(
+                    ObjectUtils.firstNonNull(
+                            System.getenv(HTTP_PROXY_PROPERTY_KEY),
+                            System.getenv(
+                                    HTTP_PROXY_PROPERTY_KEY.toLowerCase())),
+                    "env");
         }
-
-        if (noProxy != null)
-            noProxy = noProxy.replaceAll(",", "|");
-        if (httpsProxy != null) {
-            proxyList.add(
-                    new ProxyConfig.Proxy("https-proxy", httpsProxy, noProxy));
-        }
-        if (proxy != null) {
-            proxyList.add(new ProxyConfig.Proxy("proxy", proxy, noProxy));
-        }
-
-        return proxyList;
     }
 
     /**
@@ -529,9 +607,9 @@ public class FrontendUtils {
      *
      * @see #getNodeExecutable(String)
      *
-     * @return the full path to the executable
      * @param baseDir
      *            project root folder.
+     * @return the full path to the executable
      */
     public static String ensureNodeExecutableInHome(String baseDir) {
         Pair<String, String> nodeCommands = getNodeCommands();
@@ -833,8 +911,8 @@ public class FrontendUtils {
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(format(
-                        NO_CONNECTION, "getting the stats content hash."));
+                throw new WebpackConnectionException(format(NO_CONNECTION,
+                        "getting the stats content hash."));
             }
             return streamToString(statsConnection.getInputStream())
                     .replaceAll("\"", "");
@@ -955,8 +1033,8 @@ public class FrontendUtils {
                     .prepareConnection("/assetsByChunkName", "GET");
             if (assetsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(format(
-                        NO_CONNECTION, "getting assets by chunk name."));
+                throw new WebpackConnectionException(
+                        format(NO_CONNECTION, "getting assets by chunk name."));
             }
             return streamToString(assetsConnection.getInputStream());
         }
@@ -1200,8 +1278,8 @@ public class FrontendUtils {
 
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return format(TOO_OLD, tool, version, supportedMajor,
-                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
+        return format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
+                PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private static String buildShouldWorkString(String tool, String version,
@@ -1216,8 +1294,8 @@ public class FrontendUtils {
         for (String instruction : extraUpdateInstructions) {
             extraInstructions.append("%n  - or ").append(instruction);
         }
-        return format(BAD_VERSION, tool, version,
-                extraInstructions.toString(), PARAM_IGNORE_VERSION_CHECKS);
+        return format(BAD_VERSION, tool, version, extraInstructions.toString(),
+                PARAM_IGNORE_VERSION_CHECKS);
     }
 
     /**
