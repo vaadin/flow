@@ -116,9 +116,9 @@ public class FrontendVersion
     public FrontendVersion(String version) {
         Objects.requireNonNull(version);
         if (!Character.isDigit(version.charAt(0))) {
-            this.version = version.substring(1);
+            this.version = version.substring(1).trim();
         } else {
-            this.version = version;
+            this.version = version.trim();
         }
 
         final String[] digits = this.version.split("[-.]", 4);

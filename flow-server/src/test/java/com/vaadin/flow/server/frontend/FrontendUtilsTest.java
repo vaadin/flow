@@ -21,19 +21,29 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,6 +52,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.installer.Platform;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -118,6 +129,96 @@ public class FrontendUtilsTest {
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
         assertNpmCommand(() -> getVaadinHomeDir());
+    }
+
+    @Test
+    @Ignore("Ignored to lessen PRs hitting the server too often")
+    public void installNode_NodeIsInstalledToTargetDirectory()
+            throws FrontendUtils.UnknownVersionException {
+        File targetDir = new File(baseDir + "/installation");
+
+        Assert.assertFalse("Clean test should not contain a installation folder", targetDir.exists());
+
+        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
+                null);
+        Assert.assertNotNull(nodeExecutable);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        FrontendVersion node = FrontendUtils
+                .getVersion("node", nodeVersionCommand);
+        Assert.assertEquals("12.16.0", node.getFullVersion());
+
+        List<String> npmVersionCommand = new ArrayList<>(
+                FrontendUtils.getNpmExecutable(targetDir.getPath()));
+        npmVersionCommand.add("--version");
+        FrontendVersion npm = FrontendUtils
+                .getVersion("npm", npmVersionCommand);
+        Assert.assertEquals("6.13.4", npm.getFullVersion());
+
+    }
+
+    @Test
+    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
+            throws IOException {
+        Platform platform = Platform.guess();
+        String nodeExec = platform.isWindows() ? "node.exe" : "node";
+        String prefix = "node-v12.16.0-" + platform.getNodeClassifier();
+
+        File targetDir = new File(baseDir + "/installation");
+
+        Assert.assertFalse("Clean test should not contain a installation folder",
+                targetDir.exists());
+        File downloadDir = tmpDir.newFolder("v12.16.0");
+        File archiveFile = new File(downloadDir,
+                prefix + "." + platform.getArchiveExtension());
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        if (platform.getArchiveExtension().equals("zip")) {
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                    Files.newOutputStream(tempArchive))) {
+                zipOutputStream
+                        .putNextEntry(new ZipEntry(prefix + "/" + nodeExec));
+                zipOutputStream.closeEntry();
+                zipOutputStream.putNextEntry(
+                        new ZipEntry(prefix + "/node_modules/npm/bin/npm"));
+                zipOutputStream.closeEntry();
+                zipOutputStream.putNextEntry(
+                        new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
+                zipOutputStream.closeEntry();
+            }
+        } else {
+            try (OutputStream fo = Files.newOutputStream(
+                    tempArchive); OutputStream gzo = new GzipCompressorOutputStream(
+                    fo); ArchiveOutputStream o = new TarArchiveOutputStream(
+                    gzo)) {
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/" + nodeExec),
+                        prefix + "/bin/" + nodeExec));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(
+                        o.createArchiveEntry(new File(prefix + "/bin/npm"),
+                                prefix + "/bin/npm"));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/lib/node_modules/npm/bin/npm"),
+                        prefix + "/lib/node_modules/npm/bin/npm"));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/lib/node_modules/npm/bin/npm.cmd"),
+                        prefix + "/lib/node_modules/npm/bin/npm.cmd"));
+                o.closeArchiveEntry();
+            }
+        }
+
+        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
+                new File(baseDir).toPath().toUri());
+        Assert.assertNotNull(nodeExecutable);
+
+        Assert.assertTrue("npm should have been copied to node_modules",
+                new File(targetDir, "node/node_modules/npm/bin/npm").exists());
     }
 
     @Test
