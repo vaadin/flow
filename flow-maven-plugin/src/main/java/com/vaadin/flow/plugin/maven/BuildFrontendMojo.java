@@ -185,7 +185,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         String nodePath;
         if (requireHomeNodeExec) {
-            nodePath = FrontendUtils.ensureNodeExecutableInHome();
+            nodePath = FrontendUtils.ensureNodeExecutableInHome(npmFolder.getAbsolutePath());
         } else {
             nodePath = FrontendUtils
                 .getNodeExecutable(npmFolder.getAbsolutePath());
