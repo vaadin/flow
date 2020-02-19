@@ -65,7 +65,6 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -401,6 +400,7 @@ public class FrontendUtils {
      *
      *
      * @param baseDir
+     *            project root folder.
      * @param installDirectory
      *            installation directory
      * @param nodeVersion
@@ -430,6 +430,14 @@ public class FrontendUtils {
                 .toString();
     }
 
+    /**
+     * Read list of configured proxies from .npmrc file in the project root
+     * folder.
+     * 
+     * @param baseDir
+     *            project root folder.
+     * @return list of configured proxies
+     */
     // Not private because of test
     static List<ProxyConfig.Proxy> getProxies(String baseDir) {
         File npmrc = new File(baseDir + "/.npmrc");
@@ -469,15 +477,17 @@ public class FrontendUtils {
      * in a search algorithm: {@link #getNodeExecutable(String)} first searches
      * executable in the provided directory and fallback to the globally
      * installed if it's not found there. The
-     * {@link #ensureNodeExecutableInHome()} doesn't search for globally
+     * {@link #ensureNodeExecutableInHome(String)} doesn't search for globally
      * installed executable. It tries to find it in the vaadin home directory
      * and if it's not found it downloads and installs it there.
      *
      * @see #getNodeExecutable(String)
      *
      * @return the full path to the executable
+     * @param baseDir
+     *            project root folder.
      */
-    public static String ensureNodeExecutableInHome() {
+    public static String ensureNodeExecutableInHome(String baseDir) {
         Pair<String, String> nodeCommands = getNodeCommands();
         try {
             File home = getVaadinHomeDirectory();
@@ -490,7 +500,7 @@ public class FrontendUtils {
                 }
                 return file.getAbsolutePath();
             } else {
-                return installNode(getVaadinHomeDirectory(),
+                return installNode(baseDir, getVaadinHomeDirectory(),
                         DEFAULT_NODE_VERSION, null);
             }
         } catch (FileNotFoundException exception) {
