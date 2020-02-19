@@ -269,9 +269,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             return;
         }
 
-        getRouteModel().removePath(urlTemplate);
         RouteTarget removedRoute = getRoutesMap().remove(urlTemplate);
-
         if (removedRoute != null) {
             final Class<? extends Component> target = removedRoute.getTarget();
 
@@ -284,11 +282,16 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             }
 
             final String mainUrlTemplate = getTargetRoutes().get(target);
-            if (!Objects.equals(urlTemplate, mainUrlTemplate)
-                    && !urlTemplates.isEmpty()) {
-                getTargetRoutes().put(target, urlTemplates.get(0));
+            if (Objects.equals(urlTemplate, mainUrlTemplate)) {
+                if (urlTemplates.isEmpty()) {
+                    getTargetRoutes().remove(target);
+                } else {
+                    getTargetRoutes().put(target, urlTemplates.get(0));
+                }
             }
         }
+
+        getRouteModel().removePath(urlTemplate);
     }
 
     /**
@@ -312,8 +315,13 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         removeRoute(urlTemplate);
     }
 
+    @Override
+    Map<Class<? extends Component>, List<String>> getTargetUrlTemplates() {
+        return target2UrlTemplates;
+    }
+
     private void setTargetRouteImpl(Class<? extends Component> navigationTarget,
-            String pathPattern) {
+                                    String pathPattern) {
         getTargetRoutes().put(navigationTarget, pathPattern);
     }
 

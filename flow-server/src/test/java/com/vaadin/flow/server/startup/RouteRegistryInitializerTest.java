@@ -317,9 +317,9 @@ public class RouteRegistryInitializerTest {
                 RouteParameterFormat.CAPITALIZED_TYPE);
 
         Assert.assertEquals("parameter/{Boolean}",
-                registry.getTargetRoute(ParameterRoute.class, format).get());
+                registry.getUrlTemplate(ParameterRoute.class, format).get());
         Assert.assertEquals("string/{String}", registry
-                .getTargetRoute(StringParameterRoute.class, format).get());
+                .getUrlTemplate(StringParameterRoute.class, format).get());
     }
 
     @Test

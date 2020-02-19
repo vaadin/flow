@@ -178,7 +178,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    @Deprecated
     public Optional<Class<? extends Component>> getNavigationTarget(
             String url, List<String> segments) {
         Objects.requireNonNull(url, "pathString must not be null.");
