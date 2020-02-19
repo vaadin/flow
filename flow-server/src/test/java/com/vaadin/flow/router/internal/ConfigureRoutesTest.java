@@ -48,12 +48,12 @@ public class ConfigureRoutesTest {
         mutable.setRoute("", BaseTarget.class);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
-                mutable.hasRoute(""));
-        Assert.assertTrue("Exact match with no path segments should exist",
-                mutable.hasRoute("", Collections.EMPTY_LIST));
+                mutable.hasUrlTemplate(""));
+        Assert.assertTrue("Exact match should exist",
+                mutable.hasUrl(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
-                mutable.getRoute("", Collections.EMPTY_LIST).get());
+                mutable.getTarget("").get());
     }
 
     @Test
@@ -65,7 +65,7 @@ public class ConfigureRoutesTest {
         Assert.assertTrue("", mutable.hasRouteTarget(BaseTarget.class));
 
         Assert.assertEquals("Configuration should have registered base target.",
-                "", mutable.getTargetRoute(BaseTarget.class));
+                "", mutable.getUrlTemplate(BaseTarget.class));
     }
 
     @Test
@@ -77,16 +77,16 @@ public class ConfigureRoutesTest {
         ConfiguredRoutes immutable = new ConfiguredRoutes(mutable);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
-                immutable.hasRoute(""));
-        Assert.assertTrue("Exact match with no path segments should exist",
-                immutable.hasRoute("", Collections.EMPTY_LIST));
+                immutable.hasUrlTemplate(""));
+        Assert.assertTrue("Exact match should exist",
+                immutable.hasUrl(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
-                immutable.getRoute("", Collections.EMPTY_LIST).get());
+                immutable.getTarget("").get());
 
         Assert.assertTrue("", immutable.hasRouteTarget(BaseTarget.class));
         Assert.assertEquals("Configuration should have registered base target.",
-                "", immutable.getTargetRoute(BaseTarget.class));
+                "", immutable.getUrlTemplate(BaseTarget.class));
     }
 
     @Test

@@ -153,12 +153,11 @@ public class SessionRouteRegistryTest {
                         HasUrlParameterUtil.getParameters("foo")).isPresent());
         Assert.assertTrue(
                 "Parameter class should have been available from the registry",
-                registry.getTargetRoute(Parameter.class).isPresent());
+                registry.getUrlTemplate(Parameter.class).isPresent());
         Assert.assertEquals("Parameter route should have been available.",
                 Parameter.class,
                 registry.getNavigationTarget("home", Arrays.asList("param"))
                         .get());
-
     }
 
     @Test

@@ -107,68 +107,68 @@ public class RouteModelTest {
                 FlowerEdit.class);
         root.addRoute("trunk/twig/:leafs*", Twig.class);
 
-        RouteSearchResult result;
+        NavigationRouteTarget result;
         String path;
 
         path = "trunk/twig";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, Twig.class, null);
 
         path = "trunk/twig/a/b/c";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, Twig.class,
                 parameters("leafs", varargs("a", "b", "c")));
 
         path = "";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, Root.class, null);
 
         path = "trunk";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, Trunk.class, null);
 
         path = "trunk/branch";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, Branch.class, null);
 
         path = "trunk/branch/12";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, Branch.class, parameters("id", "12"));
 
         path = "trunk/branch/12/1/2/3/4/5/6/7";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, BranchChildren.class, parameters("id", "12",
                 "list", varargs("1", "2", "3", "4", "5", "6", "7")));
 
         path = "trunk/branch/view";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, null, null);
 
         path = "trunk/branch/edit";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, BranchEdit.class, null);
 
         path = "trunk/red/branch/12/edit";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, BranchEdit.class,
                 parameters("id", "12", "name", "red"));
 
         path = "trunk/branch/12/edit";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, BranchEdit.class, parameters("id", "12"));
 
         path = "trunk/red/birch/branch/12/edit";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, BranchEdit.class,
                 parameters("id", "12", "name", "red", "type", "birch"));
 
         path = "trunk/red/branch/12/flower/true/edit";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, FlowerEdit.class,
                 parameters("id", "12", "name", "red", "open", "true"));
 
         path = "trunk/red/branch/12/flower/edit";
-        result = root.getRoute(path);
+        result = root.getNavigationRouteTarget(path);
         assertResult(result, path, null, null);
 
     }
@@ -187,12 +187,12 @@ public class RouteModelTest {
         root.addRoute("trunk/edit/:vararg*", Root.class);
 
         String path = "trunk/edit/1/2/3";
-        RouteSearchResult result = root.getRoute(path);
+        NavigationRouteTarget result = root.getNavigationRouteTarget(path);
         assertResult(result, path, Root.class,
                 parameters("vararg", varargs("1", "2", "3")));
     }
 
-    private void assertResult(RouteSearchResult result, String path,
+    private void assertResult(NavigationRouteTarget result, String path,
             Class<? extends Component> target,
             UrlParameters urlParameters) {
 
@@ -200,7 +200,7 @@ public class RouteModelTest {
             urlParameters = new UrlParameters(null);
         }
 
-        Assert.assertEquals("Invalid path", path, result.getPath());
+        Assert.assertEquals("Invalid path", path, result.getUrl());
 
         Assert.assertEquals(
                 "Weird expected target [" + target + "], actual result ["

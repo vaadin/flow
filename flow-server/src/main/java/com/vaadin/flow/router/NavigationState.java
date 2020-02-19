@@ -31,7 +31,8 @@ import com.vaadin.flow.router.internal.RouteTarget;
  */
 public class NavigationState implements Serializable {
 
-    private RouteTarget navigationTarget;
+    private Class<? extends Component> navigationTarget;
+    private RouteTarget routeTarget;
     private UrlParameters urlParameters;
     private String resolvedPath;
     private final Router router;
@@ -51,11 +52,7 @@ public class NavigationState implements Serializable {
      *
      * @return the navigation target of this state
      */
-//    public Class<? extends Component> getNavigationTarget() {
-//        return navigationTarget.getTarget();
-//    }
-
-    public RouteTarget getNavigationTarget() {
+    public Class<? extends Component> getNavigationTarget() {
         return navigationTarget;
     }
 
@@ -64,25 +61,35 @@ public class NavigationState implements Serializable {
      *
      * @param navigationTarget
      *            navigation target
-     * @deprecated use {@link #setNavigationTarget(RouteTarget)} instead.
      */
-    public void setNavigationTarget(
-            Class<? extends Component> navigationTarget) {
-        this.navigationTarget = router.getRegistry()
-                .getRouteTarget(navigationTarget, urlParameters);
+    void setNavigationTarget(Class<? extends Component> navigationTarget) {
+        this.navigationTarget = navigationTarget;
     }
 
     /**
-     * Sets the navigation target of this state.
+     * Sets the route target of this state.
      *
-     * @param navigationTarget
-     *            the navigation target to set
+     * @param routeTarget
+     *            the route target to set
      */
-    public void setNavigationTarget(
-            RouteTarget navigationTarget) {
-        Objects.requireNonNull(navigationTarget,
-                "navigationTarget cannot be null");
-        this.navigationTarget = navigationTarget;
+    void setRouteTarget(RouteTarget routeTarget) {
+        Objects.requireNonNull(routeTarget,
+                "routeTarget cannot be null");
+        this.routeTarget = routeTarget;
+        this.navigationTarget = routeTarget.getTarget();
+    }
+
+    /**
+     * Gets the route target for this navigation state.
+     * 
+     * @return the route target to navigate to.
+     */
+    public RouteTarget getRouteTarget() {
+        if (routeTarget == null && navigationTarget != null) {
+            routeTarget = router.getRegistry().getRouteTarget(navigationTarget,
+                    urlParameters);
+        }
+        return routeTarget;
     }
 
     /**
@@ -91,7 +98,7 @@ public class NavigationState implements Serializable {
      * @param resolvedPath
      *            path for which the target was selected
      */
-    public void setResolvedPath(String resolvedPath) {
+    void setResolvedPath(String resolvedPath) {
         this.resolvedPath = resolvedPath;
     }
 
@@ -103,7 +110,7 @@ public class NavigationState implements Serializable {
     public String getResolvedPath() {
         if (resolvedPath == null) {
             resolvedPath = router.getRegistry()
-                    .getTargetUrl(navigationTarget.getTarget(), urlParameters)
+                    .getTargetUrl(getNavigationTarget(), getParameters())
                     .orElse(null);
         }
         return resolvedPath;
@@ -111,12 +118,19 @@ public class NavigationState implements Serializable {
 
     /**
      * Sets the url parameters.
-     * 
+     *
      * @param urlParameters
      *            url parameters.
      */
-    public void setParameters(UrlParameters urlParameters) {
+    void setParameters(UrlParameters urlParameters) {
         this.urlParameters = urlParameters;
+
+        // Ensures that is deprecated navigationTarget is set and getRouteTarget
+        // is invoked, this will reset the routeTarget since new urlParameters
+        // are set.
+        if (navigationTarget != null && routeTarget != null) {
+            routeTarget = null;
+        }
     }
 
     /**

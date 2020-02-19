@@ -22,19 +22,25 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.UrlParameters;
 
 public class TestAbstractRouteRegistry extends AbstractRouteRegistry {
 
     @Override
-    public RouteSearchResult getNavigationTargetResult(String path) {
-        return getConfiguration().getRouteSearchResult(path);
+    public NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return getConfiguration().getNavigationRouteTarget(url);
+    }
+
+    @Override
+    public RouteTarget getRouteTarget(Class<? extends Component> target,
+            UrlParameters parameters) {
+        return getConfiguration().getRouteTarget(target, parameters);
     }
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
-        Objects.requireNonNull(pathString,
-                "pathString must not be null.");
+        Objects.requireNonNull(pathString, "pathString must not be null.");
         return getConfiguration().getTarget(pathString);
     }
 
@@ -42,8 +48,7 @@ public class TestAbstractRouteRegistry extends AbstractRouteRegistry {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString, List<String> segments) {
 
-        return getNavigationTarget(
-                PathUtil.getPath(pathString, segments));
+        return getNavigationTarget(PathUtil.getPath(pathString, segments));
     }
 
 }

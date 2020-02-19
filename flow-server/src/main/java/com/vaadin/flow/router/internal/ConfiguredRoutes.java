@@ -245,7 +245,7 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Get the route class matching the given path and path segments.
      *
-     * @param pathString
+     * @param url
      *            string to get the route for
      * @param segments
      *            possible path segments
@@ -253,9 +253,9 @@ public class ConfiguredRoutes implements Serializable {
      * @deprecated use {@link #getTarget(String)} instead.
      */
     @Deprecated
-    public Optional<Class<? extends Component>> getRoute(String pathString,
+    public Optional<Class<? extends Component>> getRoute(String url,
             List<String> segments) {
-        return getTarget(PathUtil.getPath(pathString, segments));
+        return getTarget(PathUtil.getPath(url, segments));
     }
 
     /**
@@ -286,21 +286,21 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route path simple template String for the given navigation target
+     * Get the route url template String for the given navigation target
      * class.
      *
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @return base route string if target class found
      */
-    public String getTargetRoute(Class<? extends Component> navigationTarget) {
+    public String getUrlTemplate(Class<? extends Component> navigationTarget) {
         return getRouteModel().formatUrlTemplate(
                 getTargetRoutes().get(navigationTarget),
                 EnumSet.of(RouteParameterFormat.TEMPLATE));
     }
 
     /**
-     * Get the route path template String for the given navigation target class
+     * Get the route url template String for the given navigation target class
      * and using the specified parameters format.
      *
      * @param navigationTarget
@@ -309,14 +309,14 @@ public class ConfiguredRoutes implements Serializable {
      *            settings used to format the result parameters.
      * @return base route string if target class found
      */
-    public String getTargetRoute(Class<? extends Component> navigationTarget,
+    public String getUrlTemplate(Class<? extends Component> navigationTarget,
             EnumSet<RouteParameterFormat> format) {
-        final String pathTemplate = getTargetRoutes().get(navigationTarget);
-        if (pathTemplate == null) {
+        final String urlTemplate = getTargetRoutes().get(navigationTarget);
+        if (urlTemplate == null) {
             return null;
         }
 
-        return getRouteModel().formatUrlTemplate(pathTemplate, format);
+        return getRouteModel().formatUrlTemplate(urlTemplate, format);
     }
 
     /**
@@ -431,26 +431,26 @@ public class ConfiguredRoutes implements Serializable {
         }
     }
 
-    public Map<String, String> getParameters(String pathTemplate) {
-        return getRouteModel().getParameters(pathTemplate,
+    public Map<String, String> getParameters(String urlTemplate) {
+        return getRouteModel().getParameters(urlTemplate,
                 EnumSet.of(RouteParameterFormat.CAPITALIZED_TYPE));
     }
 
     /**
-     * Get the RouteTarget stored for the given pathTemplate.
+     * Get the RouteTarget stored for the given urlTemplate.
      *
-     * @param pathTemplate
-     *            pathTemplate to get route target for
-     * @return route target for pathTemplate, <code>null</code> if nothing
+     * @param urlTemplate
+     *            urlTemplate to get route target for
+     * @return route target for urlTemplate, <code>null</code> if nothing
      *         registered
      */
-    protected RouteTarget getRouteTarget(String pathTemplate) {
-        return getRoutesMap().get(pathTemplate);
+    protected RouteTarget getRouteTarget(String urlTemplate) {
+        return getRoutesMap().get(urlTemplate);
     }
 
     private <T> T iterateUrlTemplates(
             Class<? extends Component> navigationTarget,
-            Function<String, T> urlTemplateTransform) {
+            Function<String, T> urlTemplateOutput) {
 
         final List<String> urlTemplates = getTargetUrlTemplates()
                 .get(navigationTarget);
@@ -459,7 +459,7 @@ public class ConfiguredRoutes implements Serializable {
         }
 
         for (String urlTemplate : urlTemplates) {
-            final T result = urlTemplateTransform.apply(urlTemplate);
+            final T result = urlTemplateOutput.apply(urlTemplate);
             if (result != null) {
                 return result;
             }
