@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,22 +33,22 @@ import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
  */
 @Configuration
 public class VaadinConnectControllerConfiguration {
-    private final VaadinConnectProperties vaadinConnectProperties;
+    private final VaadinEndpointProperties vaadinEndpointProperties;
 
     /**
      * Initializes the connect configuration.
      *
-     * @param vaadinConnectProperties
+     * @param vaadinEndpointProperties
      *            Vaadin Connect properties
      */
     public VaadinConnectControllerConfiguration(
-            VaadinConnectProperties vaadinConnectProperties) {
-        this.vaadinConnectProperties = vaadinConnectProperties;
+            VaadinEndpointProperties vaadinEndpointProperties) {
+        this.vaadinEndpointProperties = vaadinEndpointProperties;
     }
 
     /**
      * Registers {@link VaadinConnectController} to use
-     * {@link VaadinConnectProperties#getVaadinConnectPrefix()} as a prefix
+     * {@link VaadinEndpointProperties#getVaadinEndpointPrefix()} as a prefix
      * for all Vaadin Connect endpoints.
      *
      * @return updated configuration for {@link VaadinConnectController}
@@ -95,7 +95,7 @@ public class VaadinConnectControllerConfiguration {
             RequestMappingInfo mapping) {
         PatternsRequestCondition connectEndpointPattern =
                 new PatternsRequestCondition(
-                vaadinConnectProperties.getVaadinConnectPrefix())
+                vaadinEndpointProperties.getVaadinEndpointPrefix())
                         .combine(mapping.getPatternsCondition());
 
         return new RequestMappingInfo(mapping.getName(), connectEndpointPattern,

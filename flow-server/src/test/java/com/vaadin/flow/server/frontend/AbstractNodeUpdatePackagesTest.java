@@ -61,7 +61,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private TaskUpdatePackages packageUpdater;
-    private TaskCreatePackageJson packageCreator;
+    private TaskGeneratePackageJson packageCreator;
     private File baseDir;
     private File generatedDir;
     private File resourcesDir;
@@ -85,7 +85,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
-        packageCreator = new TaskCreatePackageJson(baseDir, generatedDir, resourcesDir);
+        packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir, resourcesDir);
 
         classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,

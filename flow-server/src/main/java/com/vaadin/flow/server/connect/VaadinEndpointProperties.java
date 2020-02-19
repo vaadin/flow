@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,34 +23,21 @@ import org.springframework.stereotype.Component;
  * Class that contains all Vaadin Connect customizable properties.
  */
 @Component
-@ConfigurationProperties("vaadin.connect")
-public class VaadinConnectProperties {
+@ConfigurationProperties("vaadin.endpoint")
+public class VaadinEndpointProperties {
 
-    @Value("${vaadin.connect.prefix:/connect}")
-    private String vaadinConnectPrefix;
-
-    @Value("${vaadin.connect.auth.token-signing-key:}")
-    private String vaadinConnectTokenSigningKey;
+    @Value("${vaadin.endpoint.prefix:/connect}")
+    private String vaadinEndpointPrefix;
 
     /**
      * Customize the prefix for all Vaadin Connect endpoints. See default value
-     * in the {@link VaadinConnectProperties#vaadinConnectPrefix} field
+     * in the {@link VaadinEndpointProperties#vaadinEndpointPrefix} field
      * annotation.
      *
      * @return prefix that should be used to access any Vaadin Connect endpoint
      */
-    public String getVaadinConnectPrefix() {
-        return vaadinConnectPrefix;
+    public String getVaadinEndpointPrefix() {
+        return vaadinEndpointPrefix;
     }
 
-    /**
-     * Customize the application token signing key. When not given any key, the
-     * application will use a random one which is generated each time the
-     * application is run.
-     *
-     * @return token signing key
-     */
-    public String getVaadinConnectTokenSigningKey() {
-        return vaadinConnectTokenSigningKey;
-    }
 }

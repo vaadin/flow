@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -41,7 +41,7 @@ public class OpenApiSpecGenerator {
     public static final String APPLICATION_API_VERSION = "vaadin.connect.api.version";
     public static final String SERVER = "vaadin.connect.server";
     public static final String SERVER_DESCRIPTION = "vaadin.connect.server.description";
-    public static final String PREFIX = "vaadin.connect.prefix";
+    public static final String PREFIX = "vaadin.endpoint.prefix";
     public static final String DEFAULT_SERVER = "http://localhost:8080";
     public static final String DEFAULT_SERVER_DESCRIPTION = "Vaadin Connect backend";
     public static final String DEFAULT_APPLICATION_TITLE = "Vaadin Connect Application";

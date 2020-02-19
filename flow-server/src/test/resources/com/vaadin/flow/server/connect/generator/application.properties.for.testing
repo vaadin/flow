@@ -1,5 +1,5 @@
 vaadin.connect.server=https://myhost.com
-vaadin.connect.prefix=/myprefix
+vaadin.endpoint.prefix=/myprefix
 vaadin.connect.server.description=Vaadin connect backend server
 vaadin.connect.api.version=1.1.1
 vaadin.connect.application.title=My super application

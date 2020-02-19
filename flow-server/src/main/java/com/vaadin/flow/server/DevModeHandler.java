@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
@@ -147,8 +148,18 @@ public final class DevModeHandler {
 
         validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
+        boolean useHomeNodeExec = config.getBooleanProperty(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
+
+        String nodeExec = null;
+        if (useHomeNodeExec) {
+            nodeExec = FrontendUtils.ensureNodeExecutableInHome();
+        } else {
+            nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
+        }
+
         List<String> command = new ArrayList<>();
-        command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
+        command.add(nodeExec);
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());
