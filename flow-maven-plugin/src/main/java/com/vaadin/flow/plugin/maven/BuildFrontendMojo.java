@@ -117,9 +117,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
     private boolean pnpmEnable;
 
-    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = "false")
-    private boolean requireHomeNodeExec;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         updateBuildFile();

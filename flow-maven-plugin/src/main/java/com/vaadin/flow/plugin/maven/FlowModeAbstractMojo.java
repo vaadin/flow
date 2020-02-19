@@ -66,8 +66,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public boolean productionMode;
 
     /**
-     * Whether or not we are running in legacy V14 bootstrap mode.
-     * True if defined or if it's set to true.
+     * Whether or not we are running in legacy V14 bootstrap mode. True if
+     * defined or if it's set to true.
      */
     @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
     private String useDeprecatedV14Bootstrapping;
@@ -112,7 +112,17 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File generatedTsFolder;
 
     /**
-     * Check if the plugin is running in legacy V14 bootstrap mode or not. Default: false.
+     * Whether vaadin home node executable usage is forced. If it's set to
+     * {@code true} then vaadin home 'node' is checked and installed if it's
+     * absent. Then it will be used instead of globally 'node' or locally
+     * installed installed 'node'.
+     */
+    @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = "false")
+    protected boolean requireHomeNodeExec;
+
+    /**
+     * Check if the plugin is running in legacy V14 bootstrap mode or not.
+     * Default: false.
      *
      * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
      */
