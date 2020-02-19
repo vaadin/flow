@@ -285,6 +285,27 @@ public class DevModeHandlerTest {
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void startDevModeHandler_vaadinHomeNodeIsAFolder_throws()
+            throws IOException {
+        String userHome = "user.home";
+        String originalHome = System.getProperty(userHome);
+        File home = temporaryFolder.newFolder();
+        System.setProperty(userHome, home.getPath());
+        try {
+            File homeDir = new File(home, ".vaadin");
+            File node = new File(homeDir, "node/node");
+            FileUtils.forceMkdir(node);
+
+            configuration.setApplicationOrSystemProperty(
+                    Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                    Boolean.TRUE.toString());
+            DevModeHandler.start(configuration, npmFolder);
+        } finally {
+            System.setProperty(userHome, originalHome);
+        }
+    }
+
     private VaadinServlet prepareServlet(int port)
             throws ServletException, IOException {
         DevModeHandler.start(port, configuration, npmFolder);

@@ -237,6 +237,14 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
+     * Configuration parameter name for requiring node executable installed in
+     * home directory.
+     *
+     * @since
+     */
+    public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
+
+    /**
      * The path used in the vaadin servlet for handling static resources.
      */
     public static final String META_INF = "META-INF/";

@@ -144,8 +144,18 @@ public final class DevModeHandler {
 
         FrontendUtils.validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
+        boolean useHomeNodeExec = config.getBooleanProperty(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
+
+        String nodeExec = null;
+        if (useHomeNodeExec) {
+            nodeExec = FrontendUtils.ensureNodeExecutableInHome();
+        } else {
+            nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
+        }
+
         List<String> command = new ArrayList<>();
-        command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
+        command.add(nodeExec);
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());

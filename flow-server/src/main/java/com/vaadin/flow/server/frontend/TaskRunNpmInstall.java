@@ -57,6 +57,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
             "pnpm", ".ignored_pnpm", ".pnpm", MODULES_YAML);
     private final boolean enablePnpm;
+    private final boolean requireHomeNodeExec;
 
     /**
      * Create an instance of the command.
@@ -66,10 +67,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            execution modified the package.json file
      * @param enablePnpm
      *            whether PNPM should be used instead of NPM
+     * @param requireHomeNodeExec
+     *            whether vaadin home node executable has to be used
      */
-    TaskRunNpmInstall(NodeUpdater packageUpdater, boolean enablePnpm) {
+    TaskRunNpmInstall(NodeUpdater packageUpdater, boolean enablePnpm,
+            boolean requireHomeNodeExec) {
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
+        this.requireHomeNodeExec = requireHomeNodeExec;
     }
 
     @Override
@@ -160,7 +165,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
+
         try {
+            if (requireHomeNodeExec) {
+                FrontendUtils.ensureNodeExecutableInHome();
+            }
             executable = enablePnpm ? FrontendUtils.getPnpmExecutable(baseDir)
                     : FrontendUtils.getNpmExecutable(baseDir);
         } catch (IllegalStateException exception) {
