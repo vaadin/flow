@@ -18,11 +18,11 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -239,7 +239,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         List<RouteBaseData<?>> flatRoutes = new ArrayList<>();
         for (RouteData route : routeData) {
             RouteData nonAliasCollection = new RouteData(
-                    route.getParentLayouts(), route.getUrl(),
+                    route.getParentLayouts(), route.getUrlTemplate(),
                     route.getDefinedParameters(), route.getNavigationTarget(),
                     Collections.emptyList());
 
@@ -261,12 +261,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+    public List<Class<? extends RouterLayout>> getRouteLayouts(String url,
             Class<? extends Component> navigationTarget) {
-        if (getConfiguration().hasUrl(path)) {
-            return getConfiguration().getParentLayouts(path, navigationTarget);
-        }
-        return Collections.emptyList();
+        return getConfiguration().getParentLayouts(url, navigationTarget);
     }
 
     @Override
@@ -305,7 +302,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget,
-            EnumSet<RouteParameterFormat> format) {
+            Set<RouteParameterFormat> format) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
         return Optional.ofNullable(
@@ -327,7 +324,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasRouteTarget(routeTarget)) {
             return;
         }
-        configure(configuration -> configuration.removeTarget(routeTarget));
+        configure(configuration -> configuration.removeRoute(routeTarget));
     }
 
     @Override
@@ -339,7 +336,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    @Deprecated
     public void removeRoute(String urlTemplate,
             Class<? extends Component> navigationTarget) {
         if (!getConfiguration().hasRoute(urlTemplate)) {
@@ -379,7 +375,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         // Backward compatibility with HasUrlParameter for which the parameters
         // were stored in RouteTarget.
-        path = HasUrlParameterUtil.getPathTemplate(path, navigationTarget);
+        path = HasUrlParameterUtil.getUrlTemplate(path, navigationTarget);
 
         configuration.setRoute(path, navigationTarget, parentChain);
     }

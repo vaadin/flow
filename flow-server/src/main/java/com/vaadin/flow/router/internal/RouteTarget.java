@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.flow.router.internal;
 
@@ -33,8 +32,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  * @since 1.0
  */
 public class RouteTarget implements Serializable {
-
-    // TODO: add compiled template with parameters :)
 
     private String urlTemplate;
 
@@ -79,7 +76,7 @@ public class RouteTarget implements Serializable {
      * @throws InvalidRouteConfigurationException
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
-     * @deprecated use {@link #RouteTarget(Class, List)} instead.
+     * @deprecated use {@link #RouteTarget(String, Class, List)} instead.
      */
     @Deprecated
     public RouteTarget(Class<? extends Component> target) {
@@ -120,8 +117,7 @@ public class RouteTarget implements Serializable {
         setTarget(target);
     }
 
-    private void setTarget(Class<? extends Component> target)
-            throws InvalidRouteConfigurationException {
+    private void setTarget(Class<? extends Component> target) {
         if (this.target != null) {
             throw new AmbiguousRouteConfigurationException(String.format(
                     "Navigation targets must have unique routes, found navigation targets '%s' and '%s' with the same route.",

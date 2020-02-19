@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,7 +29,6 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
-import com.vaadin.flow.router.internal.PathUtil;
 
 /**
  * Abstract before event class that has the common functionalities for
@@ -472,10 +470,21 @@ public abstract class BeforeEvent extends EventObject {
      * Get the URL parameters of the forward target.
      *
      * @return URL parameters of forward target
+     * @deprecated use {@link #getForwardTargetUrlParameters()} instead.
      */
+    @Deprecated
     public List<String> getForwardTargetParameters() {
         return forwardTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Get the URL parameters of the forward target.
+     *
+     * @return URL parameters of forward target
+     */
+    public UrlParameters getForwardTargetUrlParameters() {
+        return forwardTargetState.getParameters();
     }
 
     /**
@@ -512,10 +521,21 @@ public abstract class BeforeEvent extends EventObject {
      * Get the URL parameters of the reroute target.
      *
      * @return URL parameters of reroute target
+     * @deprecated use {@link #getRerouteTargetUrlParameters()} instead.
      */
+    @Deprecated
     public List<String> getRerouteTargetParameters() {
         return rerouteTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Get the URL parameters of the reroute target.
+     *
+     * @return URL parameters of reroute target
+     */
+    public UrlParameters getRerouteTargetUrlParameters() {
+        return rerouteTargetState.getParameters();
     }
 
     /**
@@ -536,6 +556,11 @@ public abstract class BeforeEvent extends EventObject {
         return navigationTarget;
     }
 
+    /**
+     * Gets the url parameters associated with this event.
+     * 
+     * @return url parameters retrieved from the navigation url.
+     */
     public UrlParameters getUrlParameters() {
         return urlParameters;
     }

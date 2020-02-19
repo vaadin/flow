@@ -188,7 +188,7 @@ public class RouteConfigurationTest {
 
         Assert.assertTrue("Expected path 'url' to be registered",
                 routeConfiguration.isPathTemplateRegistered(
-                        HasUrlParameterUtil.getPathTemplate("url", Url.class)));
+                        HasUrlParameterUtil.getUrlTemplate("url", Url.class)));
 
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
                 .getRoute("url");
