@@ -84,6 +84,8 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean enablePnpm;
 
+        private boolean requireHomeNodeExec;
+
         /**
          * Directory for for npm and folders and files.
          */
@@ -343,6 +345,18 @@ public class NodeTasks implements FallibleCommand {
             enablePnpm = enable;
             return this;
         }
+
+        /**
+         * Requires node executable to be installed in vaadin home folder.
+         *
+         * @param requireHomeNodeExec
+         *            requires vaadin home node exec
+         * @return the builder, for chaining
+         */
+        public Builder withHomeNodeExecRequired(boolean requireHomeNodeExec) {
+            this.requireHomeNodeExec = requireHomeNodeExec;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -382,7 +396,7 @@ public class NodeTasks implements FallibleCommand {
 
             if (builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater,
-                        builder.enablePnpm));
+                        builder.enablePnpm, builder.requireHomeNodeExec));
             }
         }
 

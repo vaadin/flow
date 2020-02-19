@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -187,6 +189,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
                         .withTokenFile(getTokenFile()).enablePnpm(pnpmEnable)
+                        .withHomeNodeExecRequired(requireHomeNodeExec)
                         .build().execute();
     }
 
@@ -201,8 +204,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        String nodePath = FrontendUtils
+        String nodePath;
+        if (requireHomeNodeExec) {
+            nodePath = FrontendUtils.ensureNodeExecutableInHome();
+        } else {
+            nodePath = FrontendUtils
                 .getNodeExecutable(npmFolder.getAbsolutePath());
+        }
 
         Process webpackLaunch = null;
         try {

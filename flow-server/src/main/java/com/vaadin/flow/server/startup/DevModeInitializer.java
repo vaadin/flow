@@ -276,6 +276,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
         boolean enablePnpm = config.getBooleanProperty(
                 Constants.SERVLET_PARAMETER_ENABLE_PNPM, true);
 
+        boolean useHomeNodeExec = config.getBooleanProperty(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
+
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         try {
@@ -287,7 +290,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .populateTokenFileData(tokenFileData)
                     .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                    .build().execute();
+                    .withHomeNodeExecRequired(useHomeNodeExec).build()
+                    .execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);
