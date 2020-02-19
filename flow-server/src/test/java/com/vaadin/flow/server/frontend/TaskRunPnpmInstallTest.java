@@ -109,13 +109,21 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Override
+    @Test(expected = ExecutionFailedException.class)
+    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
+            throws IOException, ExecutionFailedException {
+        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+                new TaskRunNpmInstall(getNodeUpdater(), true, true));
+    }
+
+    @Override
     protected String getToolName() {
         return "pnpm";
     }
 
     @Override
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getNodeUpdater(), true) {
+        return new TaskRunNpmInstall(getNodeUpdater(), true, false) {
             @Override
             protected String generateVersionsJson() {
                 return null;
@@ -124,7 +132,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(getNodeUpdater(), true) {
+        return new TaskRunNpmInstall(getNodeUpdater(), true, false) {
             @Override
             protected String generateVersionsJson() {
                 try {
