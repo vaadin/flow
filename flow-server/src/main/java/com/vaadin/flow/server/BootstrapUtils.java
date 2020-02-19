@@ -44,7 +44,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
@@ -239,9 +238,9 @@ class BootstrapUtils {
 
         try (InputStream inlineResourceStream = getInlineResourceStream(request,
                 file);
-                BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(inlineResourceStream,
-                                requestCharset))) {
+             BufferedReader bufferedReader = new BufferedReader(
+                     new InputStreamReader(inlineResourceStream,
+                             requestCharset))) {
             return bufferedReader.lines()
                     .collect(Collectors.joining(System.lineSeparator()));
         } catch (IOException e) {
@@ -251,7 +250,7 @@ class BootstrapUtils {
     }
 
     private static InputStream getInlineResourceStream(VaadinRequest request,
-            String file) {
+                                                       String file) {
         InputStream stream = request.getService().getClassLoader()
                 .getResourceAsStream(file);
 
@@ -276,7 +275,7 @@ class BootstrapUtils {
      *         defined, or an empty optional if no such class is available
      */
     public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
-            VaadinRequest request) {
+                                                                    VaadinRequest request) {
         assert ui != null;
         assert request != null;
         if (ui.getRouter() == null) {
@@ -311,9 +310,9 @@ class BootstrapUtils {
     }
 
     private static Class<?> resolveTopParentLayout(UI ui,
-            NavigationState navigationState) {
+                                                   NavigationState navigationState) {
         Class<? extends RouterLayout> parentLayout = getTopParentLayout(
-                navigationState);
+                ui.getRouter(), navigationState);
         if (parentLayout != null) {
             return parentLayout;
         }
@@ -322,13 +321,10 @@ class BootstrapUtils {
     }
 
     private static Class<? extends RouterLayout> getTopParentLayout(
-            NavigationState navigationState) {
-        final RouteTarget routeTarget = navigationState.getRouteTarget();
-        if (routeTarget == null) {
-            return null;
-        }
-        List<Class<? extends RouterLayout>> routeLayouts = routeTarget
-                .getParentLayouts();
+            Router router, NavigationState navigationState) {
+        List<Class<? extends RouterLayout>> routeLayouts = router.getRegistry()
+                .getRouteLayouts(navigationState.getResolvedPath(),
+                        navigationState.getNavigationTarget());
         if (routeLayouts.isEmpty()) {
             return null;
         }
