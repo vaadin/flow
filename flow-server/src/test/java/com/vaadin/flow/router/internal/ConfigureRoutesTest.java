@@ -49,8 +49,6 @@ public class ConfigureRoutesTest {
 
         Assert.assertTrue("Configuration should have \"\" route registered",
                 mutable.hasUrlTemplate(""));
-        Assert.assertTrue("Exact match should exist",
-                mutable.hasUrl(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
                 mutable.getTarget("").get());
@@ -78,8 +76,6 @@ public class ConfigureRoutesTest {
 
         Assert.assertTrue("Configuration should have \"\" route registered",
                 immutable.hasUrlTemplate(""));
-        Assert.assertTrue("Exact match should exist",
-                immutable.hasUrl(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
                 immutable.getTarget("").get());

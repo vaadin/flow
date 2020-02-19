@@ -92,29 +92,30 @@ public class RouteNotFoundError extends Component
                 .getRegisteredRoutes();
 
         return routes.stream()
-                .sorted((route1, route2) -> route1.getUrl()
-                        .compareTo(route2.getUrl()))
+                .sorted((route1, route2) -> route1.getUrlTemplate()
+                        .compareTo(route2.getUrlTemplate()))
                 .map(this::routeToHtml).map(Element::outerHtml)
                 .collect(Collectors.joining());
     }
 
     private Element routeToHtml(RouteData route) {
-        String text = route.getUrl();
+        String text = route.getUrlTemplate();
         if (text == null || text.isEmpty()) {
             text = "<root>";
         }
 
-        if (!route.getUrl().contains(":")) {
-            return elementAsLink(route.getUrl(), text);
+        if (!route.getUrlTemplate().contains(":")) {
+            return elementAsLink(route.getUrlTemplate(), text);
         } else {
             Class<? extends Component> target = route.getNavigationTarget();
             if (ParameterDeserializer.isAnnotatedParameter(target,
                     OptionalParameter.class)) {
-                text = text + " (supports optional parameter)";
-                return elementAsLink(route.getUrl(), text);
+                text += " (supports optional parameter)";
             } else {
-                return new Element(Tag.LI).text(text + " (requires parameter)");
+                text += " (requires parameter)";
             }
+
+            return new Element(Tag.LI).text(text);
         }
     }
 

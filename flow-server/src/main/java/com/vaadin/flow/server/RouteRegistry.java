@@ -16,17 +16,17 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedListener;
@@ -178,7 +178,6 @@ public interface RouteRegistry extends Serializable {
      *            parameters for the target url.
      * @return optional navigation target url string
      */
-    // TODO: deprecate in favor of getUrl
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
             UrlParameters parameters);
 
@@ -209,20 +208,22 @@ public interface RouteRegistry extends Serializable {
      * @return optional navigation target url string
      */
     Optional<String> getUrlTemplate(Class<? extends Component> navigationTarget,
-            EnumSet<RouteParameterFormat> format);
+            Set<RouteParameterFormat> format);
 
     /**
-     * Get the layout chain for given navigation target on the targeted path.
+     * Get the layout chain for given navigation target on the targeted url.
      * <p>
      * This chain may be pre-defined or generated from annotation data.
      *
-     * @param path
-     *            path to use for resolving chain
+     * @param url
+     *            url to use for resolving chain
      * @param navigationTarget
      *            navigation target to get layout chain for
      * @return layout chain of target
+     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
-    List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+    @Deprecated
+    List<Class<? extends RouterLayout>> getRouteLayouts(String url,
             Class<? extends Component> navigationTarget);
 
     /**

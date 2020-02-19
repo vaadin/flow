@@ -160,22 +160,12 @@ public class ConfiguredRoutes implements Serializable {
      * @param segments
      *            path segments for route
      * @return true if a route is found, else false
-     * @deprecated use {@link #hasUrl(String)} instead.
+     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
     @Deprecated
     public boolean hasRoute(String url, List<String> segments) {
-        return hasUrl(PathUtil.getPath(url, segments));
-    }
-
-    /**
-     * See if configuration matches the given path with any registered route.
-     *
-     * @param url
-     *            url to check
-     * @return true if configuration matches the given url.
-     */
-    public boolean hasUrl(String url) {
-        return getRouteModel().getNavigationRouteTarget(url).hasTarget();
+        return getNavigationRouteTarget(PathUtil.getPath(url, segments))
+                .hasTarget();
     }
 
     /**
@@ -232,8 +222,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return {@link Optional} containing the navigationTarget class if found
      */
     public Optional<Class<? extends Component>> getTarget(String url) {
-        final NavigationRouteTarget result = getRouteModel()
-                .getNavigationRouteTarget(url);
+        final NavigationRouteTarget result = getNavigationRouteTarget(url);
         if (result.hasTarget()) {
             final RouteTarget routeTarget = result.getTarget();
             return Optional.ofNullable(routeTarget.getTarget());
@@ -250,7 +239,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param segments
      *            possible path segments
      * @return {@link Optional} containing the navigationTarget class if found
-     * @deprecated use {@link #getTarget(String)} instead.
+     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
     @Deprecated
     public Optional<Class<? extends Component>> getRoute(String url,
@@ -310,7 +299,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return base route string if target class found
      */
     public String getUrlTemplate(Class<? extends Component> navigationTarget,
-            EnumSet<RouteParameterFormat> format) {
+            Set<RouteParameterFormat> format) {
         final String urlTemplate = getTargetRoutes().get(navigationTarget);
         if (urlTemplate == null) {
             return null;
@@ -388,21 +377,15 @@ public class ConfiguredRoutes implements Serializable {
      * @param navigationTarget
      *            navigation target on url to get parent layout chain for.
      * @return list of parent layout chain.
+     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
+    @Deprecated
     public List<Class<? extends RouterLayout>> getParentLayouts(String url,
             Class<? extends Component> navigationTarget) {
-        final NavigationRouteTarget result = getRouteModel()
-                .getNavigationRouteTarget(url);
+        final NavigationRouteTarget result = getNavigationRouteTarget(url);
 
         if (result.hasTarget()) {
-            final RouteTarget routeTarget = result.getTarget();
-
-            if (!Objects.equals(routeTarget.getTarget(), navigationTarget)) {
-                throw new IllegalArgumentException(
-                        "Invalid navigationTarget argument");
-            }
-
-            return routeTarget.getParentLayouts();
+            return result.getTarget().getParentLayouts();
         } else {
             return Collections.emptyList();
         }
@@ -418,10 +401,10 @@ public class ConfiguredRoutes implements Serializable {
     public List<Class<? extends RouterLayout>> getParentLayouts(
             Class<? extends Component> navigationTarget) {
 
-        final String pathTemplate = getTargetRoutes().get(navigationTarget);
+        final String urlTemplate = getTargetRoutes().get(navigationTarget);
         RouteTarget target = null;
-        if (pathTemplate != null) {
-            target = getRoutesMap().get(pathTemplate);
+        if (urlTemplate != null) {
+            target = getRoutesMap().get(urlTemplate);
         }
 
         if (target != null) {
@@ -431,6 +414,13 @@ public class ConfiguredRoutes implements Serializable {
         }
     }
 
+    /**
+     * Gets the parameters defined by the given urlTemplate.
+     * 
+     * @param urlTemplate
+     *            url template to get parameters from.
+     * @return map parameter names with their types.
+     */
     public Map<String, String> getParameters(String urlTemplate) {
         return getRouteModel().getParameters(urlTemplate,
                 EnumSet.of(RouteParameterFormat.CAPITALIZED_TYPE));

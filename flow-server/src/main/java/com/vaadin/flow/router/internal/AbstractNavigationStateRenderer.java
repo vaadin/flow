@@ -16,7 +16,6 @@
 package com.vaadin.flow.router.internal;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +24,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -56,7 +54,6 @@ import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
-import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
@@ -614,13 +611,13 @@ public abstract class AbstractNavigationStateRenderer
             BeforeEvent beforeEvent) {
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                        beforeEvent.getForwardTargetParameters())) {
+                        beforeEvent.getForwardTargetUrlParameters())) {
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 
         if (beforeEvent.hasRerouteTarget()
                 && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetParameters())) {
+                        beforeEvent.getRerouteTargetUrlParameters())) {
             return Optional.of(TransitionOutcome.REROUTED);
         }
 
@@ -628,12 +625,12 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private boolean isSameNavigationState(Class<? extends Component> targetType,
-            List<String> targetParameters) {
+            UrlParameters targetParameters) {
         final boolean sameTarget = navigationState.getNavigationTarget()
                 .equals(targetType);
-// TODO: check with UrlParameters
+
         final boolean sameParameters = targetParameters.equals(navigationState
-                .getUrlParameters().orElse(Collections.emptyList()));
+                .getParameters());
 
         return sameTarget && sameParameters;
     }

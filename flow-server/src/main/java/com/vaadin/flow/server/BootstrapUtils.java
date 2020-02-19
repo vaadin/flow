@@ -44,6 +44,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
@@ -312,7 +313,7 @@ class BootstrapUtils {
     private static Class<?> resolveTopParentLayout(UI ui,
             NavigationState navigationState) {
         Class<? extends RouterLayout> parentLayout = getTopParentLayout(
-                ui.getRouter(), navigationState);
+                navigationState);
         if (parentLayout != null) {
             return parentLayout;
         }
@@ -321,10 +322,13 @@ class BootstrapUtils {
     }
 
     private static Class<? extends RouterLayout> getTopParentLayout(
-            Router router, NavigationState navigationState) {
-        List<Class<? extends RouterLayout>> routeLayouts = router.getRegistry()
-                .getRouteLayouts(navigationState.getResolvedPath(),
-                        navigationState.getNavigationTarget());
+            NavigationState navigationState) {
+        final RouteTarget routeTarget = navigationState.getRouteTarget();
+        if (routeTarget == null) {
+            return null;
+        }
+        List<Class<? extends RouterLayout>> routeLayouts = routeTarget
+                .getParentLayouts();
         if (routeLayouts.isEmpty()) {
             return null;
         }
