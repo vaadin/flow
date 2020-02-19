@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
+import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
@@ -126,117 +127,12 @@ public final class DevModeHandler implements RequestHandler {
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
 
-        waitFor.whenCompleteAsync((value, exception) -> {
-            try {
-                runOnFutureComplete(value, exception, config, npmFolder,
-                        webpack, webpackConfig);
-            } finally {
-                devServerStarted.set(true);
-            }
-            throw new IllegalStateException(format(
-                    "webpack-dev-server port '%d' is defined but it's not working properly",
-                    port));
-        }
-
-        long start = System.nanoTime();
-        getLogger().info("Starting webpack-dev-server");
-
-        watchDog = new DevServerWatchDog();
-
-        // Look for a free port
-        port = getFreePort();
-
-        ProcessBuilder processBuilder = new ProcessBuilder()
-                .directory(npmFolder);
-
-        validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
-
-        boolean useHomeNodeExec = config.getBooleanProperty(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
-
-        String nodeExec = null;
-        if (useHomeNodeExec) {
-            nodeExec = FrontendUtils.ensureNodeExecutableInHome();
-        } else {
-            nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
-        }
-
-        List<String> command = new ArrayList<>();
-        command.add(nodeExec);
-        command.add(webpack.getAbsolutePath());
-        command.add("--config");
-        command.add(webpackConfig.getAbsolutePath());
-        command.add("--port");
-        command.add(String.valueOf(port));
-        command.add("--watchDogPort=" + watchDog.getWatchDogPort());
-        command.addAll(Arrays.asList(config
-                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false --progress --colors")
-                .split(" +")));
-
-        console(GREEN, START);
-        console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
-
-        processBuilder.command(command);
-        try {
-            webpackProcess = processBuilder
-                    .redirectError(ProcessBuilder.Redirect.PIPE)
-                    .redirectErrorStream(true).start();
-
-            // We only can save the webpackProcess reference the first time that
-            // the DevModeHandler is created. There is no way to store
-            // it in the servlet container, and we do not want to save it in the
-            // global JVM.
-            // We instruct the JVM to stop the webpack-dev-server daemon when
-            // the JVM stops, to avoid leaving daemons running in the system.
-            // NOTE: that in the corner case that the JVM crashes or it is
-            // killed
-            // the daemon will be kept running. But anyways it will also happens
-            // if the system was configured to be stop the daemon when the
-            // servlet context is destroyed.
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
-
-            Pattern succeed = Pattern.compile(config.getStringProperty(
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
-                    DEFAULT_OUTPUT_PATTERN));
-
-            Pattern failure = Pattern.compile(config.getStringProperty(
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
-                    DEFAULT_ERROR_PATTERN));
-
-            logStream(webpackProcess.getInputStream(), succeed, failure);
-
-            getLogger().info(LOG_START);
-            synchronized (this) {
-                this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
-                        SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
-                        DEFAULT_TIMEOUT_FOR_PATTERN)));
-            }
-
-            if (!webpackProcess.isAlive()) {
-                throw new IllegalStateException("Webpack exited prematurely");
-            }
-
-            long ms = (System.nanoTime() - start) / 1000000;
-            getLogger().info(LOG_END, ms);
-
-        } catch (IOException | InterruptedException e) {
-            getLogger().error("Failed to start the webpack process", e);
-        }
-
-        saveRunningDevServerPort();
-=======
-        });>>>>>>>2721ec 3
-
-    Run (p)npm install and webpack dev server in a separate thread without blocking servlet container initializer
-=======
         devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
             runOnFutureComplete(config, npmFolder, webpack, webpackConfig);
         });
->>>>>>> f93f56a Update unit tests and rewrite exception throwing.
     }
 
     /**
@@ -298,11 +194,9 @@ public final class DevModeHandler implements RequestHandler {
             }
             return false;
         } else {
-            IOUtils.write("<html>"
-                    + "  <head><meta http-equiv='refresh' content='3'></head>"
-                    + "  <body> The webpack dev server has not yet started. Please wait... </body>"
-                    + "</html>", response.getOutputStream(),
-                    StandardCharsets.UTF_8);
+            InputStream inputStream = DevModeHandler.class
+                    .getResourceAsStream("dev-mode-not-ready.html");
+            IOUtils.copy(inputStream, response.getOutputStream());
             return true;
         }
     }
@@ -586,7 +480,7 @@ public final class DevModeHandler implements RequestHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     public void removeRunningDevServerPort() {
-        FileUtils.deleteQuietly(LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE);
+        FileUtils.deleteQuietly(computeDevServerPortFileName());
     }
 
     private void runOnFutureComplete(DeploymentConfiguration config,
@@ -600,10 +494,11 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private void saveRunningDevServerPort() {
-        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
+        File portFile = computeDevServerPortFileName();
         try {
+            FileUtils.forceMkdir(portFile.getParentFile());
             FileUtils.writeStringToFile(portFile, String.valueOf(port),
-                    StandardCharsets.UTF_8);
+                    "UTF-8");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -623,7 +518,7 @@ public final class DevModeHandler implements RequestHandler {
                 watchDog.set(null);
                 return;
             }
-            throw new ExecutionFailedException(format(
+            throw new IllegalStateException(format(
                     "webpack-dev-server port '%d' is defined but it's not working properly",
                     port));
         }
@@ -631,8 +526,7 @@ public final class DevModeHandler implements RequestHandler {
         long start = System.nanoTime();
         getLogger().info("Starting webpack-dev-server");
 
-        DevServerWatchDog watchDogInstance = new DevServerWatchDog();
-        watchDog.set(watchDogInstance);
+        watchDog.set(new DevServerWatchDog());
 
         // Look for a free port
         port = getFreePort();
@@ -642,14 +536,24 @@ public final class DevModeHandler implements RequestHandler {
 
         validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
 
+        boolean useHomeNodeExec = config.getBooleanProperty(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
+
+        String nodeExec = null;
+        if (useHomeNodeExec) {
+            nodeExec = FrontendUtils.ensureNodeExecutableInHome();
+        } else {
+            nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
+        }
+
         List<String> command = new ArrayList<>();
-        command.add(getNodeExecutable(npmFolder.getAbsolutePath()));
+        command.add(nodeExec);
         command.add(webpack.getAbsolutePath());
         command.add("--config");
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
-        command.add("--watchDogPort=" + watchDogInstance.getWatchDogPort());
+        command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "-d --inline=false --progress --colors")
@@ -660,23 +564,21 @@ public final class DevModeHandler implements RequestHandler {
 
         processBuilder.command(command);
         try {
-            Process process = processBuilder
-                    .redirectError(ProcessBuilder.Redirect.PIPE)
-                    .redirectErrorStream(true).start();
+            webpackProcess.set(
+                    processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
+                            .redirectErrorStream(true).start());
 
-            webpackProcess.set(process);
-
-            // We only can save the webpackProcess reference the first time
-            // that the DevModeHandler is created. There is no way to store
-            // it in the servlet container, and we do not want to save it in
-            // the global JVM.
-            // We instruct the JVM to stop the webpack-dev-server daemon
-            // when the JVM stops, to avoid leaving daemons running in the
-            // system.
+            // We only can save the webpackProcess reference the first time that
+            // the DevModeHandler is created. There is no way to store
+            // it in the servlet container, and we do not want to save it in the
+            // global JVM.
+            // We instruct the JVM to stop the webpack-dev-server daemon when
+            // the JVM stops, to avoid leaving daemons running in the system.
             // NOTE: that in the corner case that the JVM crashes or it is
-            // killed the daemon will be kept running. But anyways it will also
-            // happen if the system was configured to be stop the daemon when
-            // the servlet context is destroyed.
+            // killed
+            // the daemon will be kept running. But anyways it will also happens
+            // if the system was configured to be stop the daemon when the
+            // servlet context is destroyed.
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
             Pattern succeed = Pattern.compile(config.getStringProperty(
@@ -687,7 +589,7 @@ public final class DevModeHandler implements RequestHandler {
                     SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
                     DEFAULT_ERROR_PATTERN));
 
-            logStream(process.getInputStream(), succeed, failure);
+            logStream(webpackProcess.get().getInputStream(), succeed, failure);
 
             getLogger().info(LOG_START);
             synchronized (this) {
@@ -696,9 +598,8 @@ public final class DevModeHandler implements RequestHandler {
                         DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
 
-            if (!process.isAlive()) {
-                throw new ExecutionFailedException(
-                        "Webpack exited prematurely");
+            if (!webpackProcess.get().isAlive()) {
+                throw new IllegalStateException("Webpack exited prematurely");
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
@@ -713,20 +614,36 @@ public final class DevModeHandler implements RequestHandler {
 
     private static int getRunningDevServerPort() {
         int port = 0;
-        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
+        File portFile = computeDevServerPortFileName();
         if (portFile.canRead()) {
             try {
                 String portString = FileUtils
-                        .readFileToString(portFile, StandardCharsets.UTF_8)
-                        .trim();
-                if (!portString.isEmpty()) {
-                    port = Integer.parseInt(portString);
-                }
+                        .readFileToString(portFile, "UTF-8").trim();
+                port = Integer.parseInt(portString);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         }
         return port;
+    }
+
+    private static File computeDevServerPortFileName() {
+        // The thread group is the same in each servlet-container restart
+        String threadGroup = String
+                .valueOf(Thread.currentThread().getThreadGroup().hashCode());
+
+        // There is an unique name for the JVM
+        String jvmUniqueName = ManagementFactory.getRuntimeMXBean().getName();
+
+        // Use UUID for generate an unique identifier based on the thread and
+        // JVM
+        String uniqueUid = UUID.nameUUIDFromBytes(
+                (jvmUniqueName + threadGroup).getBytes(StandardCharsets.UTF_8))
+                .toString();
+
+        // File is placed in the user temporary folder, it works for all
+        // platforms
+        return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
     }
 
     /**
@@ -796,28 +713,6 @@ public final class DevModeHandler implements RequestHandler {
         removeRunningDevServerPort();
     }
 
-    <<<<<<<Upstream,
-
-    based on master<<<<<<<Upstream,
-
-    based on master
-
-    private static final class LazyDevServerPortFileInit {
-
-        private static final File DEV_SERVER_PORT_FILE = createDevServerPortFile();
-
-        private static File createDevServerPortFile() {
-            try {
-                return File.createTempFile("flow-dev-server", "port");
-            } catch (IOException exception) {
-                throw new UncheckedIOException(exception);
-            }
-        }
-    }=======>>>>>>>2721ec 3
-
-    Run (p)npm install and webpack dev server in a separate thread without blocking servlet container initializer
-=======
-
     /**
      * Waits for the dev server to start.
      * <p>
@@ -830,10 +725,4 @@ public final class DevModeHandler implements RequestHandler {
         devServerStartFuture.join();
     }
 
-    >>>>>>>
-
-    f93f56a Update
-    unit tests
-    and rewrite
-    exception throwing.
 }
