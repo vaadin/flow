@@ -34,6 +34,7 @@ import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
@@ -124,12 +125,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                     List<RouteBaseData<?>> addedVisible = event.getAddedRoutes()
                             .stream()
                             .filter(routeData -> !configuration
-                                    .hasUrlTemplate(routeData.getUrl()))
+                                    .hasUrlTemplate(routeData.getUrlTemplate()))
                             .collect(Collectors.toList());
                     List<RouteBaseData<?>> removedVisible = event
                             .getRemovedRoutes().stream()
                             .filter(routeData -> !configuration
-                                    .hasRoute(routeData.getUrl()))
+                                    .hasUrlTemplate(routeData.getUrlTemplate()))
                             .collect(Collectors.toList());
                     // Only fire an event if we have visible changes.
                     if (!(addedVisible.isEmpty() && removedVisible.isEmpty())) {
@@ -171,9 +172,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String pathString) {
         Objects.requireNonNull(pathString, "pathString must not be null.");
-        if (getConfiguration().hasUrl(pathString)) {
-            return getConfiguration().getTarget(pathString);
+        final Optional<Class<? extends Component>> target = getConfiguration()
+                .getTarget(pathString);
+        if (target.isPresent()) {
+            return target;
         }
+
         return getParentRegistry().getNavigationTarget(pathString);
     }
 
@@ -181,9 +185,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     public Optional<Class<? extends Component>> getNavigationTarget(
             String url, List<String> segments) {
         Objects.requireNonNull(url, "pathString must not be null.");
-        if (getConfiguration().hasRoute(url, segments)) {
-            return getConfiguration().getRoute(url, segments);
+        final Optional<Class<? extends Component>> target = getConfiguration()
+                .getTarget(PathUtil.getPath(url, segments));
+        if (target.isPresent()) {
+            return target;
         }
+
         return getParentRegistry().getNavigationTarget(url, segments);
     }
 
@@ -224,7 +231,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     @Override
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget,
-            EnumSet<RouteParameterFormat> format) {
+            Set<RouteParameterFormat> format) {
         final Optional<String> targetRoute = super.getUrlTemplate(
                 navigationTarget, format);
         if (targetRoute.isPresent()) {
@@ -234,12 +241,14 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
+    public List<Class<? extends RouterLayout>> getRouteLayouts(String url,
             Class<? extends Component> navigationTarget) {
-        if (getConfiguration().hasRoute(path)) {
-            return super.getRouteLayouts(path, navigationTarget);
+        final NavigationRouteTarget navigationRouteTarget = getConfiguration()
+                .getNavigationRouteTarget(url);
+        if (navigationRouteTarget.hasTarget()) {
+            return navigationRouteTarget.getTarget().getParentLayouts();
         }
-        return getParentRegistry().getRouteLayouts(path, navigationTarget);
+        return getParentRegistry().getRouteLayouts(url, navigationTarget);
     }
 
     private RouteRegistry getParentRegistry() {

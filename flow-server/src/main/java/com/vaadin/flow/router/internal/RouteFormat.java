@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
@@ -61,7 +59,7 @@ class RouteFormat implements Serializable {
             template = template.substring(1);
 
             // Extract the template defining the value of the parameter.
-            final int regexStartIndex = template.indexOf("(");
+            final int regexStartIndex = template.indexOf('(');
             if (regexStartIndex != -1) {
 
                 name = template.substring(0, regexStartIndex);

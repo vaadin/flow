@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.HasUrlParameterUtil;
 import com.vaadin.flow.router.RouterLayout;
 
 /**
@@ -222,24 +221,12 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Remove the targetRoute completely from the configuration.
-     *
-     * @param targetRoute
-     *         target registered route to remove
-     * @deprecated use {@link #removeTarget(Class)} instead.
-     */
-    @Deprecated
-    public void removeRoute(Class<? extends Component> targetRoute) {
-        removeTarget(targetRoute);
-    }
-
-    /**
      * Remove the target completely from the configuration.
      *
      * @param target
-     *            target registered route to remove
+     *         target registered route to remove
      */
-    public void removeTarget(Class<? extends Component> target) {
+    public void removeRoute(Class<? extends Component> target) {
         if (!hasRouteTarget(target)) {
             return;
         }

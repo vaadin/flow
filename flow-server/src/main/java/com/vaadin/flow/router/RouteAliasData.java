@@ -43,7 +43,9 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *         navigation target path parameters
      * @param navigationTarget
      *         route navigation target
+     * @deprecated use {@link #RouteAliasData(List, String, Map, Class)} instead.
      */
+    @Deprecated
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
             String pathTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {
@@ -73,7 +75,7 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
         if (obj instanceof RouteAliasData) {
             RouteAliasData other = (RouteAliasData) obj;
             return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrl().equals(this.getUrl()) && other
+                    && other.getUrlTemplate().equals(this.getUrlTemplate()) && other
                     .getNavigationTarget().equals(getNavigationTarget());
         }
         return false;
@@ -82,13 +84,13 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
     @Override
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getUrl() + '\'' + ", parameters=" + getParameters()
+                + getUrlTemplate() + '\'' + ", parameters=" + getDefinedParameters()
                 + ", navigationTarget=" + getNavigationTarget() + '}';
     }
 
     @Override
     public int hashCode() {
         return Objects
-                .hash(getParentLayouts(), getUrl(), getNavigationTarget());
+                .hash(getParentLayouts(), getUrlTemplate(), getNavigationTarget());
     }
 }

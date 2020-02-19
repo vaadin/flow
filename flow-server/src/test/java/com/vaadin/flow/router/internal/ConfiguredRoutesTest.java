@@ -19,8 +19,6 @@ public class ConfiguredRoutesTest {
         Assert.assertFalse("No routes should be configured",
                 configuration.hasUrlTemplate(""));
         Assert.assertFalse("No routes should be configured",
-                configuration.hasUrl(""));
-        Assert.assertFalse("No routes should be configured",
                 configuration.getTarget("")
                         .isPresent());
         Assert.assertTrue("Configuration should be empty",
@@ -48,8 +46,6 @@ public class ConfiguredRoutesTest {
 
         Assert.assertTrue("Configuration should have \"\" route registered",
                 immutable.hasUrlTemplate(""));
-        Assert.assertTrue("Exact match should exist",
-                immutable.hasUrl(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
                 immutable.getTarget("").get());

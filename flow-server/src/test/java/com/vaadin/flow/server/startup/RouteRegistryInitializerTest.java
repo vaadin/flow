@@ -1101,23 +1101,23 @@ public class RouteRegistryInitializerTest {
 
         // RouteData should be sorted by path template
         Assert.assertEquals("Sort order was not the one expected", "",
-                registeredRoutes.get(0).getPathTemplate());
+                registeredRoutes.get(0).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected", "absolute",
-                registeredRoutes.get(1).getPathTemplate());
+                registeredRoutes.get(1).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                "absolute/levels", registeredRoutes.get(2).getPathTemplate());
+                "absolute/levels", registeredRoutes.get(2).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                HasUrlParameterUtil.getPathTemplate("parameter",
+                HasUrlParameterUtil.getUrlTemplate("parameter",
                         ParameterRoute.class),
-                registeredRoutes.get(3).getPathTemplate());
+                registeredRoutes.get(3).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected", "parent",
-                registeredRoutes.get(4).getPathTemplate());
+                registeredRoutes.get(4).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                "parent/prefix", registeredRoutes.get(5).getPathTemplate());
+                "parent/prefix", registeredRoutes.get(5).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                HasUrlParameterUtil.getPathTemplate("string",
+                HasUrlParameterUtil.getUrlTemplate("string",
                         StringParameterRoute.class),
-                registeredRoutes.get(6).getPathTemplate());
+                registeredRoutes.get(6).getUrlTemplate());
     }
 
     @Test

@@ -86,7 +86,7 @@ public class NavigationRouteTarget implements Serializable {
     @Override
     public String toString() {
         return "[url: \"" + url + "\", target: "
-                + (target != null ? target.getRoutes().toString() : null)
+                + (target != null ? target.getTarget() : null)
                 + ", parameters: " + urlParameters + "]";
     }
 }
