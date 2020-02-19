@@ -27,6 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -333,16 +334,20 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * Check if the webpack.generated.js resources is inside 2 jars
      * (flow-server.jar and application.jar) if this is the case then we can
      * accept a build info file from inside jar with a single jar in the path.
+     * <p>
+     * Else we will accept any flow-build-info and log a warning that it may not
+     * be the correct file, but it's the best we could find.
      *
      * @param resources
-     *            flow-build-info url resource files
-     * @return flow-build-info json string or <code>null</code> if no applicable
-     *         files found
+     *            flow-build-info url resource files, not null or empty
+     * @return flow-build-info json string
      * @throws IOException
      *             exception reading stream
      */
     private static String getPossibleJarResource(List<URL> resources)
             throws IOException {
+        Objects.requireNonNull(resources);
+        assert !resources.isEmpty() : "Possible jar resource requires resources to be available.";
         URL webpackGenerated = DeploymentConfiguration.class.getClassLoader()
                 .getResource(FrontendUtils.WEBPACK_GENERATED);
         // If jar!/ exists 2 times for webpack.generated.json then we are
