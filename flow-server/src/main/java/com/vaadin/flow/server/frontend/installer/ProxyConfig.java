@@ -189,7 +189,7 @@ public class ProxyConfig {
             final Matcher matcher = PROXY_URL_REGEX.matcher(proxyUrl);
             if (!matcher.matches())
                 throw new IllegalArgumentException(
-                        "Provided proxyUrl does not match the format protocol://user:password@server:port");
+                        "Provided proxyUrl does not match the format protocol://user:password@server:port nor protocol://server:port");
 
             this.id = id;
             protocol = matcher.group(1);

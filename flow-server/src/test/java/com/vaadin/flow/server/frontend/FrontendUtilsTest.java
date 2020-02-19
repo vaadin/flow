@@ -149,8 +149,8 @@ public class FrontendUtilsTest {
                 "Clean test should not contain a installation folder",
                 targetDir.exists());
 
-        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir, "v12.16.0",
-                null);
+        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir,
+                "v12.16.0", null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -533,7 +533,7 @@ public class FrontendUtilsTest {
             File node = new File(homeDir, "node/node");
             FileUtils.forceMkdir(node);
 
-            FrontendUtils.ensureNodeExecutableInHome();
+            FrontendUtils.ensureNodeExecutableInHome(baseDir);
 
         } finally {
             System.setProperty(USER_HOME, originalHome);
@@ -623,7 +623,7 @@ public class FrontendUtilsTest {
     @Test
     public void getProxies_npmrcWithProxySetting_shouldReturnProxiesList()
             throws IOException {
-        File npmrc = tmpDirWithNpmrc.newFile(".npmrc");
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
         Properties properties = new Properties();
         properties.put("proxy", "http://httpuser:httppassword@httphost:8080");
         properties.put("https-proxy",
@@ -633,8 +633,8 @@ public class FrontendUtilsTest {
         properties.store(fileOutputStream, null);
         fileOutputStream.close();
 
-        List<ProxyConfig.Proxy> proxyList = FrontendUtils
-                .getProxies(tmpDirWithNpmrc.getRoot().getAbsolutePath());
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
+                tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test1");
         Assert.assertEquals(2, proxyList.size());
         ProxyConfig.Proxy httpsProxy = "https-proxy".equals(proxyList.get(0).id)
                 ? proxyList.get(0)
@@ -657,6 +657,53 @@ public class FrontendUtilsTest {
         Assert.assertEquals("httpshost", httpsProxy.host);
         Assert.assertEquals(8081, httpsProxy.port);
         Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                httpsProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_systemPropertiesAndNpmrcWithProxySetting_shouldReturnProxiesInSystemProperties()
+            throws IOException {
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test2"), ".npmrc");
+        Properties properties = new Properties();
+        properties.put("proxy", "http://httpuser:httppassword@httphost:8080");
+        properties.put("https-proxy",
+                "http://httpsuser:httpspassword@httpshost:8081");
+        properties.put("noproxy", "192.168.1.1,vaadin.com,mycompany.com");
+        FileOutputStream fileOutputStream = new FileOutputStream(npmrc);
+        properties.store(fileOutputStream, null);
+        fileOutputStream.close();
+
+        System.setProperty(FrontendUtils.NOPROXY_PROPERTY_KEY,
+                "somethingelse,someotherip,75.41.41.33");
+        System.setProperty(FrontendUtils.HTTP_PROXY_PROPERTY_KEY,
+                "http://anotheruser:anotherpassword@aanotherhost:9090");
+        System.setProperty(FrontendUtils.HTTPS_PROXY_PROPERTY_KEY,
+                "http://anotherusers:anotherpasswords@aanotherhosts:9091");
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
+                tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test2");
+        Assert.assertEquals(2, proxyList.size());
+        ProxyConfig.Proxy httpsProxy = "https-proxy".equals(proxyList.get(0).id)
+                ? proxyList.get(0)
+                : proxyList.get(1);
+        ProxyConfig.Proxy httpProxy = "https-proxy".equals(proxyList.get(0).id)
+                ? proxyList.get(1)
+                : proxyList.get(0);
+
+        Assert.assertEquals("http", httpProxy.protocol);
+        Assert.assertEquals("anotheruser", httpProxy.username);
+        Assert.assertEquals("anotherpassword", httpProxy.password);
+        Assert.assertEquals("aanotherhost", httpProxy.host);
+        Assert.assertEquals(9090, httpProxy.port);
+        Assert.assertEquals("somethingelse|someotherip|75.41.41.33",
+                httpProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", httpsProxy.protocol);
+        Assert.assertEquals("anotherusers", httpsProxy.username);
+        Assert.assertEquals("anotherpasswords", httpsProxy.password);
+        Assert.assertEquals("aanotherhosts", httpsProxy.host);
+        Assert.assertEquals(9091, httpsProxy.port);
+        Assert.assertEquals("somethingelse|someotherip|75.41.41.33",
                 httpsProxy.nonProxyHosts);
     }
 

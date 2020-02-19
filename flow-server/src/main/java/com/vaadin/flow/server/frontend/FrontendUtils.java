@@ -344,6 +344,10 @@ public class FrontendUtils {
             Constants.SUPPORTED_PNPM_MAJOR_VERSION,
             Constants.SUPPORTED_PNPM_MINOR_VERSION);
 
+    static final String NOPROXY_PROPERTY_KEY = "NOPROXY";
+    static final String HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
+    static final String HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
+
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private static String operatingSystem = null;
@@ -431,8 +435,9 @@ public class FrontendUtils {
     }
 
     /**
-     * Read list of configured proxies from .npmrc file in the project root
-     * folder.
+     * Read list of configured proxies in order from system properties, .npmrc
+     * file in the project root folder, .npmrc file in user root folder and
+     * system environment variables.
      * 
      * @param baseDir
      *            project root folder.
@@ -440,32 +445,73 @@ public class FrontendUtils {
      */
     // Not private because of test
     static List<ProxyConfig.Proxy> getProxies(String baseDir) {
-        File npmrc = new File(baseDir + "/.npmrc");
-        if (!npmrc.exists()) {
-            return Collections.emptyList();
+        File projectNpmrc = new File(baseDir + "/.npmrc");
+        File userNpmrc = new File("~/.npmrc");
+
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+        String noProxy = System.getProperty(NOPROXY_PROPERTY_KEY);
+        String httpsProxy = System.getProperty(HTTPS_PROXY_PROPERTY_KEY);
+        String proxy = System.getProperty(HTTP_PROXY_PROPERTY_KEY);
+
+        if (projectNpmrc.exists()
+                && (noProxy == null || httpsProxy == null || proxy == null)) {
+            try (FileReader fileReader = new FileReader(projectNpmrc)) {
+                Properties properties = new Properties();
+                properties.load(fileReader);
+                if (noProxy == null) {
+                    noProxy = properties.getProperty("noproxy");
+                }
+                if (httpsProxy == null) {
+                    httpsProxy = properties.getProperty("https-proxy");
+                }
+                if (proxy == null) {
+                    proxy = properties.getProperty("proxy");
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
 
-        try (FileReader fileReader = new FileReader(npmrc)) {
-            Properties properties = new Properties();
-            properties.load(fileReader);
-            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-            String noProxy = properties.getProperty("noproxy");
-            if (noProxy != null)
-                noProxy = noProxy.replaceAll(",", "|");
-            String httpsProxy = properties.getProperty("https-proxy");
-            if (httpsProxy != null) {
-                proxyList.add(new ProxyConfig.Proxy("https-proxy", httpsProxy,
-                        noProxy));
+        if (userNpmrc.exists()
+                && (noProxy == null || httpsProxy == null || proxy == null)) {
+            try (FileReader fileReader = new FileReader(userNpmrc)) {
+                Properties properties = new Properties();
+                properties.load(fileReader);
+                if (noProxy == null) {
+                    noProxy = properties.getProperty("noproxy");
+                }
+                if (httpsProxy == null) {
+                    httpsProxy = properties.getProperty("https-proxy");
+                }
+                if (proxy == null) {
+                    proxy = properties.getProperty("proxy");
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
-            String proxy = properties.getProperty("proxy");
-            if (proxy != null) {
-                proxyList.add(new ProxyConfig.Proxy("proxy", proxy, noProxy));
-            }
-
-            return proxyList;
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
         }
+
+        if (httpsProxy == null) {
+            httpsProxy = System.getenv(HTTPS_PROXY_PROPERTY_KEY);
+        }
+        if (proxy == null) {
+            proxy = System.getenv(HTTP_PROXY_PROPERTY_KEY);
+        }
+        if (noProxy == null) {
+            noProxy = System.getenv(NOPROXY_PROPERTY_KEY);
+        }
+
+        if (noProxy != null)
+            noProxy = noProxy.replaceAll(",", "|");
+        if (httpsProxy != null) {
+            proxyList.add(
+                    new ProxyConfig.Proxy("https-proxy", httpsProxy, noProxy));
+        }
+        if (proxy != null) {
+            proxyList.add(new ProxyConfig.Proxy("proxy", proxy, noProxy));
+        }
+
+        return proxyList;
     }
 
     /**
@@ -609,7 +655,7 @@ public class FrontendUtils {
             // There are IOException coming from process fork
         }
         if (file == null) {
-            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
+            throw new IllegalStateException(format(NODE_NOT_FOUND));
         }
         return file;
     }
@@ -787,7 +833,7 @@ public class FrontendUtils {
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
+                throw new WebpackConnectionException(format(
                         NO_CONNECTION, "getting the stats content hash."));
             }
             return streamToString(statsConnection.getInputStream())
@@ -803,7 +849,7 @@ public class FrontendUtils {
                 .prepareConnection("/stats.json", "GET");
         if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new WebpackConnectionException(
-                    String.format(NO_CONNECTION, "downloading stats.json"));
+                    format(NO_CONNECTION, "downloading stats.json"));
         }
         return statsConnection.getInputStream();
     }
@@ -909,7 +955,7 @@ public class FrontendUtils {
                     .prepareConnection("/assetsByChunkName", "GET");
             if (assetsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
+                throw new WebpackConnectionException(format(
                         NO_CONNECTION, "getting assets by chunk name."));
             }
             return streamToString(assetsConnection.getInputStream());
@@ -1084,7 +1130,7 @@ public class FrontendUtils {
                 if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
                     return false;
                 } else {
-                    getLogger().warn(String.format(
+                    getLogger().warn(format(
                             "installed pnpm ('%s', version %s) is too old, installing supported version locally",
                             String.join(" ", pnpmCommand),
                             pnpmVersion.getFullVersion()));
@@ -1154,13 +1200,13 @@ public class FrontendUtils {
 
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return String.format(TOO_OLD, tool, version, supportedMajor,
+        return format(TOO_OLD, tool, version, supportedMajor,
                 supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private static String buildShouldWorkString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return String.format(SHOULD_WORK, tool, version, supportedMajor,
+        return format(SHOULD_WORK, tool, version, supportedMajor,
                 supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
@@ -1170,7 +1216,7 @@ public class FrontendUtils {
         for (String instruction : extraUpdateInstructions) {
             extraInstructions.append("%n  - or ").append(instruction);
         }
-        return String.format(BAD_VERSION, tool, version,
+        return format(BAD_VERSION, tool, version,
                 extraInstructions.toString(), PARAM_IGNORE_VERSION_CHECKS);
     }
 
