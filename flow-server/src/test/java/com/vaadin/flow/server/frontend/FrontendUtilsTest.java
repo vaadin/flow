@@ -498,13 +498,14 @@ public class FrontendUtilsTest {
     @Test(expected = IllegalStateException.class)
     public synchronized void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
             throws IOException {
-        String originalHome = System.getProperty(USER_HOME);
-        File home = tmpDir.newFolder();
-        System.setProperty(USER_HOME, home.getPath());
-        try {
-            File homeDir = FrontendUtils.getVaadinHomeDirectory();
-            File node = new File(homeDir, "node/node");
-            FileUtils.forceMkdir(node);
+            String originalHome = System.getProperty(USER_HOME);
+            File home = tmpDir.newFolder();
+            System.setProperty(USER_HOME, home.getPath());
+            try {
+                File homeDir = FrontendUtils.getVaadinHomeDirectory();
+                File node = new File(homeDir,
+                        FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+                FileUtils.forceMkdir(node);
 
             FrontendUtils.ensureNodeExecutableInHome();
 
