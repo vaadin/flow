@@ -149,7 +149,8 @@ public final class DevModeHandler {
 
         String nodeExec = null;
         if (useHomeNodeExec) {
-            nodeExec = FrontendUtils.ensureNodeExecutableInHome();
+            nodeExec = FrontendUtils
+                    .ensureNodeExecutableInHome(npmFolder.getAbsolutePath());
         } else {
             nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
         }

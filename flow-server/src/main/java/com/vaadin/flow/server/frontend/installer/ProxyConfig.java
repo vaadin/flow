@@ -20,6 +20,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +41,7 @@ public class ProxyConfig {
      * Create a new proxy configuration with given proxies.
      *
      * @param proxies
-     *         list of available proxies
+     *            list of available proxies
      */
     public ProxyConfig(List<Proxy> proxies) {
         this.proxies = proxies;
@@ -58,7 +60,7 @@ public class ProxyConfig {
      * Get a proxy for url.
      *
      * @param requestUrl
-     *         url to get proxy for
+     *            url to get proxy for
      * @return Proxy if one found, else null.
      */
     public Proxy getProxyForUrl(String requestUrl) {
@@ -80,7 +82,8 @@ public class ProxyConfig {
     /**
      * Get a defined secure proxy.
      *
-     * @return first secure proxy from the proxy list, or null if no secure proxies.
+     * @return first secure proxy from the proxy list, or null if no secure
+     *         proxies.
      */
     public Proxy getSecureProxy() {
         for (Proxy proxy : proxies) {
@@ -95,7 +98,7 @@ public class ProxyConfig {
      * Get first proxy that is not secure.
      *
      * @return first proxy that is not secure from the proxy list, or null if no
-     * secure proxies.
+     *         secure proxies.
      */
     public Proxy getInsecureProxy() {
         for (Proxy proxy : proxies) {
@@ -110,6 +113,9 @@ public class ProxyConfig {
      * Class for holding proxy information.
      */
     public static class Proxy implements Serializable {
+        private static final Pattern PROXY_URL_REGEX = Pattern
+                .compile("(\\w+)://(([^:]+):(.*)@)?([^:]+)(:(\\d*))?");
+
         /**
          * Id of proxy.
          */
@@ -135,7 +141,7 @@ public class ProxyConfig {
          */
         public final String password;
         /**
-         * Excluded hosts string.
+         * Excluded hosts string delimited by '|'.
          */
         public final String nonProxyHosts;
 
@@ -143,19 +149,19 @@ public class ProxyConfig {
          * Construct a Proxy object.
          *
          * @param id
-         *         proxy id
+         *            proxy id
          * @param protocol
-         *         proxy protocol
+         *            proxy protocol
          * @param host
-         *         proxy host
+         *            proxy host
          * @param port
-         *         proxy port
+         *            proxy port
          * @param username
-         *         user name for proxy
+         *            user name for proxy
          * @param password
-         *         password for proxy
+         *            password for proxy
          * @param nonProxyHosts
-         *         excluded hosts string
+         *            excluded hosts string delimited by '|'
          */
         public Proxy(String id, String protocol, String host, int port,
                 String username, String password, String nonProxyHosts) {
@@ -165,6 +171,32 @@ public class ProxyConfig {
             this.port = port;
             this.username = username;
             this.password = password;
+            this.nonProxyHosts = nonProxyHosts;
+        }
+
+        /**
+         * Construct a Proxy object out of a proxy url.
+         * 
+         * @param id
+         *            proxy id
+         * @param proxyUrl
+         *            proxy url with the format of
+         *            protocol://user:password@server:port
+         * @param nonProxyHosts
+         *            excluded hosts string delimited by '|'
+         */
+        public Proxy(String id, String proxyUrl, String nonProxyHosts) {
+            final Matcher matcher = PROXY_URL_REGEX.matcher(proxyUrl);
+            if (!matcher.matches())
+                throw new IllegalArgumentException(
+                        "Provided proxyUrl does not match the format protocol://user:password@server:port nor protocol://server:port");
+
+            this.id = id;
+            protocol = matcher.group(1);
+            username = matcher.group(3);
+            password = matcher.group(4);
+            host = matcher.group(5);
+            port = Integer.parseInt(matcher.group(7));
             this.nonProxyHosts = nonProxyHosts;
         }
 
@@ -183,11 +215,12 @@ public class ProxyConfig {
          * @return URI for this proxy
          */
         public URI getUri() {
-            String authentication = useAuthentication() ?
-                    username + ":" + password :
-                    null;
+            String authentication = useAuthentication()
+                    ? username + ":" + password
+                    : null;
             try {
-                // Proxies should be schemed with http, even if the protocol is https
+                // Proxies should be schemed with http, even if the protocol is
+                // https
                 return new URI("http", authentication, host, port, null, null,
                         null);
             } catch (URISyntaxException e) {
@@ -208,14 +241,14 @@ public class ProxyConfig {
          * Check if given host is excluded for proxy.
          *
          * @param host
-         *         host to check
+         *            host to check
          * @return true if host matches a nonProxyHosts pattern
          */
         public boolean isNonProxyHost(String host) {
             if (host != null && nonProxyHosts != null
                     && nonProxyHosts.length() > 0) {
                 for (StringTokenizer tokenizer = new StringTokenizer(
-                        nonProxyHosts, "|"); tokenizer.hasMoreTokens(); ) {
+                        nonProxyHosts, "|"); tokenizer.hasMoreTokens();) {
                     String pattern = tokenizer.nextToken();
                     pattern = pattern.replace(".", "\\.").replace("*", ".*");
                     if (host.matches(pattern)) {
@@ -230,14 +263,16 @@ public class ProxyConfig {
         @Override
         public String toString() {
             return id + "{" + "protocol='" + protocol + '\'' + ", host='" + host
-                    + '\'' + ", port=" + port + (useAuthentication() ?
-                    ", with username/passport authentication" :
-                    "") + '}';
+                    + '\'' + ", port=" + port
+                    + (useAuthentication()
+                            ? ", with username/passport authentication"
+                            : "")
+                    + '}';
         }
     }
 
     /**
-     * Exception thrown fora proxy  configuration exception.
+     * Exception thrown fora proxy configuration exception.
      */
     private static class ProxyConfigException extends RuntimeException {
 
@@ -245,9 +280,9 @@ public class ProxyConfig {
          * Create exception with message and cause.
          *
          * @param message
-         *         exception message
+         *            exception message
          * @param cause
-         *         exception cause
+         *            exception cause
          */
         private ProxyConfigException(String message, Exception cause) {
             super(message, cause);
