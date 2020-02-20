@@ -3277,10 +3277,10 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 = String
                 .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String pathTemplate = HasUrlParameterFormat
+        String urlTemplate = HasUrlParameterFormat
                 .getUrlTemplate("optional", WithoutOptionalParameter.class);
 
-        String exceptionText3 = "<li>" + pathTemplate
+        String exceptionText3 = "<li>" + urlTemplate
                 + " (requires parameter)</li>";
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,

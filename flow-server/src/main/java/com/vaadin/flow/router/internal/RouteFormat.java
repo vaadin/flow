@@ -108,15 +108,15 @@ public class RouteFormat implements Serializable {
     }
 
     /**
-     * Returns whether the specified pathTemplate contains url parameters.
+     * Returns whether the specified urlTemplate contains url parameters.
      *
-     * @param pathTemplate
+     * @param urlTemplate
      *            a path template.
-     * @return true if the specified pathTemplate contains url parameters,
+     * @return true if the specified urlTemplate contains url parameters,
      *         otherwise false.
      */
-    static boolean hasParameters(String pathTemplate) {
-        return pathTemplate.contains(":");
+    static boolean hasParameters(String urlTemplate) {
+        return urlTemplate.contains(":");
     }
 
     static boolean isParameter(String segmentTemplate) {

@@ -37,8 +37,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      *
      * @param parentLayouts
      *         route parent layout class chain
-     * @param pathTemplate
-     *         full route pathTemplate
+     * @param urlTemplate
+     *         full route urlTemplate
      * @param parameters
      *         navigation target path parameters
      * @param navigationTarget
@@ -49,10 +49,10 @@ public class RouteData extends RouteBaseData<RouteData> {
      */
     @Deprecated
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String pathTemplate, List<Class<?>> parameters,
+            String urlTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
-        super(parentLayouts, pathTemplate, parameters, navigationTarget);
+        super(parentLayouts, urlTemplate, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
@@ -63,8 +63,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      *
      * @param parentLayouts
      *            route parent layout class chain
-     * @param pathTemplate
-     *            full route pathTemplate
+     * @param urlTemplate
+     *            full route urlTemplate
      * @param parameters
      *            navigation target path parameters
      * @param navigationTarget
@@ -73,10 +73,10 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            list of aliases for this route
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String pathTemplate, Map<String, String> parameters,
+            String urlTemplate, Map<String, String> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
-        super(parentLayouts, pathTemplate, parameters, navigationTarget);
+        super(parentLayouts, urlTemplate, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
