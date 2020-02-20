@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -51,7 +52,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.FrontendUtils.console;
@@ -118,8 +118,7 @@ public final class DevModeHandler implements RequestHandler {
     private final CompletableFuture<Void> devServerStartFuture;
 
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
-            File npmFolder, File webpack, File webpackConfig,
-            CompletableFuture<Void> waitFor) {
+            File npmFolder, CompletableFuture<Void> waitFor) {
 
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
@@ -236,7 +235,7 @@ public final class DevModeHandler implements RequestHandler {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
-            runOnFutureComplete(config, npmFolder, webpack, webpackConfig);
+            runOnFutureComplete(config, npmFolder);
         });
     }
 
@@ -320,42 +319,12 @@ public final class DevModeHandler implements RequestHandler {
             DeploymentConfiguration configuration, File npmFolder,
             CompletableFuture<Void> waitFor) {
 
-        File webpack = null;
-        File webpackConfig = null;
         if (runningPort == 0) {
             runningPort = getRunningDevServerPort();
         }
 
-        // Skip checks if we have a webpack-dev-server already running
-        if (runningPort == 0) {
-            webpack = new File(npmFolder, WEBPACK_SERVER);
-            webpackConfig = new File(npmFolder, WEBPACK_CONFIG);
-            if (!npmFolder.exists()) {
-                getLogger().warn(
-                        "Instance not created because cannot change to '{}'",
-                        npmFolder);
-                return null;
-            }
-            if (!webpack.canExecute()) {
-                getLogger().warn(
-                        "Instance not created because cannot execute '{}'. Did you run `npm install`",
-                        webpack);
-                return null;
-            } else if (!webpack.exists()) {
-                getLogger().warn(
-                        "Instance not created because file '{}' doesn't exist. Did you run `npm install`",
-                        webpack);
-                return null;
-            }
-            if (!webpackConfig.canRead()) {
-                getLogger().warn(
-                        "Instance not created because there is not webpack configuration '{}'",
-                        webpackConfig);
-                return null;
-            }
-        }
         return new DevModeHandler(configuration, runningPort, npmFolder,
-                webpack, webpackConfig, waitFor);
+                waitFor);
     }
 
     /**
@@ -586,9 +555,9 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private void runOnFutureComplete(DeploymentConfiguration config,
-            File npmFolder, File webpack, File webpackConfig) {
+            File npmFolder) {
         try {
-            doStartDevModeServer(config, npmFolder, webpack, webpackConfig);
+            doStartDevModeServer(config, npmFolder);
         } catch (ExecutionFailedException exception) {
             getLogger().error(null, exception);
             throw new CompletionException(exception);
@@ -606,8 +575,7 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private void doStartDevModeServer(DeploymentConfiguration config,
-            File npmFolder, File webpack, File webpackConfig)
-            throws ExecutionFailedException {
+            File npmFolder) throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
         if (port > 0) {
             if (checkWebpackConnection()) {
@@ -623,6 +591,8 @@ public final class DevModeHandler implements RequestHandler {
                     "webpack-dev-server port '%d' is defined but it's not working properly",
                     port));
         }
+        // here the port == 0
+        Pair<File, File> webPackFiles = validateFiles(npmFolder);
 
         long start = System.nanoTime();
         getLogger().info("Starting webpack-dev-server");
@@ -647,18 +617,8 @@ public final class DevModeHandler implements RequestHandler {
             nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
         }
 
-        List<String> command = new ArrayList<>();
-        command.add(nodeExec);
-        command.add(webpack.getAbsolutePath());
-        command.add("--config");
-        command.add(webpackConfig.getAbsolutePath());
-        command.add("--port");
-        command.add(String.valueOf(port));
-        command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
-        command.addAll(Arrays.asList(config
-                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false --progress --colors")
-                .split(" +")));
+        List<String> command = makeCommands(config, webPackFiles.getFirst(),
+                webPackFiles.getSecond(), nodeExec);
 
         console(GREEN, START);
         console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
@@ -711,6 +671,60 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         saveRunningDevServerPort();
+    }
+
+    private List<String> makeCommands(DeploymentConfiguration config,
+            File webpack, File webpackConfig, String nodeExec) {
+        List<String> command = new ArrayList<>();
+        command.add(nodeExec);
+        command.add(webpack.getAbsolutePath());
+        command.add("--config");
+        command.add(webpackConfig.getAbsolutePath());
+        command.add("--port");
+        command.add(String.valueOf(port));
+        command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
+        command.addAll(Arrays.asList(config
+                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                        "-d --inline=false --progress --colors")
+                .split(" +")));
+        return command;
+    }
+
+    private Pair<File, File> validateFiles(File npmFolder)
+            throws ExecutionFailedException {
+        assert port == 0;
+        // Skip checks if we have a webpack-dev-server already running
+        File webpack = new File(npmFolder, WEBPACK_SERVER);
+        File webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
+        if (!npmFolder.exists()) {
+            getLogger().warn("No project folder'{}' exists", npmFolder);
+            throw new ExecutionFailedException(
+                    "Couldn't start dev server because "
+                            + "the target execution folder doesn't exist.");
+        }
+        if (!webpack.exists()) {
+            getLogger().warn("'{}' doesn't exist. Did you run `npm install`?",
+                    webpack);
+            throw new ExecutionFailedException(
+                    "Couldn't start dev server because "
+                            + "'{}' doesn't exist. `npm install` has not been executed most likely.");
+        } else if (!webpack.canExecute()) {
+            getLogger().warn(
+                    "'{}' is not an executable. Did you run `npm install`?",
+                    webpack);
+            throw new ExecutionFailedException(
+                    "Couldn't start dev server because "
+                            + "'{}' is not an executable. `npm install` has not been executed most likely.");
+        }
+        if (!webpackConfig.canRead()) {
+            getLogger().warn(
+                    "Webpack configuration '{}' is not found or is not readable.",
+                    webpackConfig);
+            throw new ExecutionFailedException(
+                    "Couldn't start dev server because "
+                            + "'{}' doesn't exist or is not readable.");
+        }
+        return new Pair<>(webpack, webpackConfig);
     }
 
     private static int getRunningDevServerPort() {
