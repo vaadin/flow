@@ -57,13 +57,13 @@ public class UrlParameters implements Serializable {
      *            parameters mapping.
      */
     public UrlParameters(String... keysAndValues) {
-        Map<String, String> params = new HashMap<>(keysAndValues.length / 2);
+        Map<String, String> paramsMap = new HashMap<>(keysAndValues.length / 2);
 
         for (int i = 0; i < keysAndValues.length; i += 2) {
-            params.put(keysAndValues[i], keysAndValues[i + 1]);
+            paramsMap.put(keysAndValues[i], keysAndValues[i + 1]);
         }
 
-        this.params = Collections.unmodifiableMap(params);
+        this.params = Collections.unmodifiableMap(paramsMap);
     }
 
     /**
