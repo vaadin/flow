@@ -32,8 +32,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsView",
-        layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsView", layout = ViewTestLayout.class)
 public class ShortcutsView extends Div {
 
     private Paragraph invisibleP = new Paragraph("invisible");
@@ -53,12 +52,14 @@ public class ShortcutsView extends Div {
         // clickShortcutWorks
         NativeButton button = new NativeButton();
         button.setId("button");
+        button.setText("Button triggered by Alt + B");
         button.addClickListener(e -> actual.setValue("button"));
         button.addClickShortcut(Key.KEY_B, KeyModifier.ALT);
 
         // focusShortcutWorks
         Input input = new Input();
         input.setId("input");
+        input.setValue("Got focus by Alt + F");
         input.addFocusShortcut(Key.KEY_F, KeyModifier.ALT);
 
         // shortcutsOnlyWorkWhenComponentIsVisible
@@ -67,8 +68,10 @@ public class ShortcutsView extends Div {
             actual.setValue("toggled!");
         }, Key.KEY_I, KeyModifier.ALT);
 
-        Shortcuts.addShortcutListener(invisibleP, () -> actual
-                .setValue("invisibleP"), Key.KEY_V).withAlt();
+        Shortcuts
+                .addShortcutListener(invisibleP,
+                        () -> actual.setValue("invisibleP"), Key.KEY_V)
+                .withAlt();
 
         add(button, input, invisibleP);
 
@@ -89,46 +92,65 @@ public class ShortcutsView extends Div {
 
         Input focusTarget = new Input();
         focusTarget.setId("focusTarget");
+        focusTarget.setValue("Listening to Alt + S when it gets focus");
 
         subview.add(focusTarget);
 
-        Shortcuts.addShortcutListener(subview,
-                () -> actual.setValue("subview"), Key.KEY_S, KeyModifier.ALT)
-                .listenOn(subview);
+        Shortcuts.addShortcutListener(subview, () -> actual.setValue("subview"),
+                Key.KEY_S, KeyModifier.ALT).listenOn(subview);
 
         add(subview);
+
+        // multipleListenOnScopesTheShortcut
+        Paragraph multipleListenOnDesc = new Paragraph(
+                "Alt+H on either of the three following inputs triggers a shortcut.");
+        Input listenOn1 = new Input();
+        listenOn1.setId("listenOn1");
+        Input listenOn2 = new Input();
+        listenOn2.setId("listenOn2");
+        Input listenOn3 = new Input();
+        listenOn3.setId("listenOn3");
+
+        Shortcuts
+                .addShortcutListener(subview,
+                        () -> actual.setValue(
+                                "removal-input"),
+                        Key.KEY_H, KeyModifier.ALT)
+                .listenOn(listenOn1, listenOn2, listenOn3);
+
+        add(listenOn1, listenOn2, listenOn3);
 
         // shortcutsOnlyWorkWhenComponentIsAttached
         Paragraph attachable = new Paragraph("attachable");
         attachable.setId("attachable");
 
-        Shortcuts.addShortcutListener(attachable, () -> actual
-                .setValue("attachable"), Key.KEY_A).withAlt();
+        Shortcuts
+                .addShortcutListener(attachable,
+                        () -> actual.setValue("attachable"), Key.KEY_A)
+                .withAlt();
 
         UI.getCurrent().addShortcutListener(() -> {
             attached = !attached;
             if (attached) {
                 add(attachable);
-            }
-            else {
+            } else {
                 remove(attachable);
             }
             actual.setValue("toggled!");
         }, Key.KEY_Y, KeyModifier.ALT);
 
         // modifyingShortcutShouldChangeShortcutEvent
-        flipFloppingRegistration =
-                UI.getCurrent().addShortcutListener(event -> {
+        flipFloppingRegistration = UI.getCurrent()
+                .addShortcutListener(event -> {
                     if (event.getKeyModifiers().contains(KeyModifier.ALT)) {
                         actual.setValue("Alt");
-                        flipFloppingRegistration.withModifiers(
-                                KeyModifier.SHIFT);
-                    } else if (event.getKeyModifiers().contains(
-                            KeyModifier.SHIFT)) {
+                        flipFloppingRegistration
+                                .withModifiers(KeyModifier.SHIFT);
+                    } else if (event.getKeyModifiers()
+                            .contains(KeyModifier.SHIFT)) {
                         actual.setValue("Shift");
                         flipFloppingRegistration.withModifiers(KeyModifier.ALT);
-                    }
-                    else {
+                    } else {
                         actual.setValue("Failed");
                     }
 
@@ -160,13 +182,54 @@ public class ShortcutsView extends Div {
         wrapper2.add(clickInput2, clickButton2);
         add(wrapper1, wrapper2);
 
+        // clickShortcutWithMultipleListenOnAllowsKeyDefaults
+        Div wrapper3 = new Div();
+        final Input clickInput3 = new Input();
+        clickInput3.setType("text");
+        clickInput3.setId("click-input-3");
+
+        final Input clickInput4 = new Input();
+        clickInput4.setType("text");
+        clickInput4.setId("click-input-4");
+
+        NativeButton clickButton3 = new NativeButton("CB3",
+                event -> actual.setValue("click3: " + clickInput3.getValue()
+                        + "," + clickInput4.getValue()));
+        clickButton3.addClickShortcut(Key.ENTER).listenOn(clickInput3,
+                clickInput4);
+
+        wrapper3.add(clickInput3, clickInput4, clickButton3);
+        add(wrapper3);
+
+        Div wrapper4 = new Div();
+        final Input clickInput5 = new Input();
+        clickInput5.setType("text");
+        clickInput5.setId("click-input-5");
+
+        final Input clickInput6 = new Input();
+        clickInput6.setType("text");
+        clickInput6.setId("click-input-6");
+
+        NativeButton clickButton4 = new NativeButton("CB4",
+                event -> actual.setValue("click4: " + clickInput5.getValue()
+                        + "," + clickInput6.getValue()));
+        clickButton4.addClickShortcut(Key.ENTER)
+                .listenOn(clickInput5, clickInput6)
+                // this matches the default of other shortcuts but changes
+                // the default of the click shortcut
+                .setBrowserDefaultAllowed(false);
+
+        wrapper4.add(clickInput5, clickInput6, clickButton4);
+        add(wrapper4);
+
         // removingShortcutCleansJavascriptEventSettingsItUsed
         AtomicReference<ShortcutRegistration> removalAtomicReference = new AtomicReference<>();
         final Input removalInput = new Input(ValueChangeMode.EAGER);
         removalInput.setId("removal-input");
         ShortcutRegistration removalRegistration = Shortcuts
                 .addShortcutListener(removalInput, () -> {
-                    removalInput.setValue(removalInput.getValue().toUpperCase());
+                    removalInput
+                            .setValue(removalInput.getValue().toUpperCase());
                     removalAtomicReference.get().remove();
                 }, Key.KEY_D);
         removalAtomicReference.set(removalRegistration);
