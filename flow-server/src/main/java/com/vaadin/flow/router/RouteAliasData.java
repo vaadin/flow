@@ -37,8 +37,8 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *
      * @param parentLayouts
      *         route parent layout class chain
-     * @param pathTemplate
-     *         full route pathTemplate
+     * @param urlTemplate
+     *         full route urlTemplate
      * @param parameters
      *         navigation target path parameters
      * @param navigationTarget
@@ -47,9 +47,9 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      */
     @Deprecated
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
-            String pathTemplate, List<Class<?>> parameters,
+            String urlTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {
-        super(parentLayouts, pathTemplate, parameters, navigationTarget);
+        super(parentLayouts, urlTemplate, parameters, navigationTarget);
     }
 
     /**
@@ -57,17 +57,17 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *
      * @param parentLayouts
      *            route parent layout class chain
-     * @param pathTemplate
-     *            full route pathTemplate
+     * @param urlTemplate
+     *            full route urlTemplate
      * @param parameters
      *            navigation target path parameters
      * @param navigationTarget
      *            route navigation target
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
-            String pathTemplate, Map<String, String> parameters,
+            String urlTemplate, Map<String, String> parameters,
             Class<? extends Component> navigationTarget) {
-        super(parentLayouts, pathTemplate, parameters, navigationTarget);
+        super(parentLayouts, urlTemplate, parameters, navigationTarget);
     }
 
     @Override
