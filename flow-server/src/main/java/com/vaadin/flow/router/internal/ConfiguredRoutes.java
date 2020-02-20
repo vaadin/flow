@@ -423,7 +423,7 @@ public class ConfiguredRoutes implements Serializable {
      */
     public Map<String, String> getParameters(String urlTemplate) {
         return getRouteModel().getParameters(urlTemplate,
-                EnumSet.of(RouteParameterFormat.REGEX_NAME));
+                EnumSet.of(RouteParameterFormat.REGEX));
     }
 
     /**
