@@ -1500,10 +1500,10 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
-    @Route(":messageID(" + RouteParameterRegex.INT_REGEX + ")")
+    @Route(":messageID(" + RouteParameterRegex.INT + ")")
     @RouteAlias("last")
     @RouteAlias(":something?")
-    @RoutePrefix("forum/thread/:threadID(" + RouteParameterRegex.INT_REGEX + ")")
+    @RoutePrefix("forum/thread/:threadID(" + RouteParameterRegex.INT + ")")
     public static class ParametersForumThreadView extends UrlParametersBase
             implements RouterLayout {
 

@@ -27,9 +27,9 @@ import com.vaadin.flow.router.RouteParameterRegex;
  */
 public class RouteFormat implements Serializable {
 
-    static final String INT_REGEX = RouteParameterRegex.INT_REGEX;
-    static final String LONG_REGEX = RouteParameterRegex.LONG_REGEX;
-    static final String BOOL_REGEX = RouteParameterRegex.BOOL_REGEX;
+    static final String INT_REGEX = RouteParameterRegex.INT;
+    static final String LONG_REGEX = RouteParameterRegex.LONG;
+    static final String BOOL_REGEX = RouteParameterRegex.BOOL;
     static final String STRING_REGEX = "";
 
     // NOTE: string may be omited when defining a parameter. If the
