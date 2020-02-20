@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -49,9 +48,6 @@ import com.vaadin.flow.shared.Registration;
 public class RouteConfiguration implements Serializable {
 
     private RouteRegistry handledRegistry;
-
-    private static final Pattern PARAMETER_PATTERN = Pattern
-            .compile("/\\{[\\s\\S]*}");
 
     private RouteConfiguration(RouteRegistry registry) {
         handledRegistry = registry;
