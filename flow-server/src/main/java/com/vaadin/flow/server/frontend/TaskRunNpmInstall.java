@@ -168,7 +168,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         try {
             if (requireHomeNodeExec) {
-                FrontendUtils.ensureNodeExecutableInHome();
+                FrontendUtils.ensureNodeExecutableInHome(baseDir);
             }
             executable = enablePnpm ? FrontendUtils.getPnpmExecutable(baseDir)
                     : FrontendUtils.getNpmExecutable(baseDir);

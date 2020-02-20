@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +56,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.installer.Platform;
+import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -89,6 +92,9 @@ public class FrontendUtilsTest {
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
+
+    @Rule
+    public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
 
     private String baseDir;
 
@@ -143,8 +149,8 @@ public class FrontendUtilsTest {
                 "Clean test should not contain a installation folder",
                 targetDir.exists());
 
-        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
-                null);
+        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir,
+                "v12.16.0", null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -216,8 +222,8 @@ public class FrontendUtilsTest {
             }
         }
 
-        String nodeExecutable = FrontendUtils.installNode(targetDir, "v12.16.0",
-                new File(baseDir).toPath().toUri());
+        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir,
+                "v12.16.0", new File(baseDir).toPath().toUri());
         Assert.assertNotNull(nodeExecutable);
 
         Assert.assertTrue("npm should have been copied to node_modules",
@@ -507,7 +513,7 @@ public class FrontendUtilsTest {
                         FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
                 FileUtils.forceMkdir(node);
 
-            FrontendUtils.ensureNodeExecutableInHome();
+            FrontendUtils.ensureNodeExecutableInHome(baseDir);
 
         } finally {
             System.setProperty(USER_HOME, originalHome);
@@ -592,5 +598,170 @@ public class FrontendUtilsTest {
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(stats);
         return service;
+    }
+
+    @Test
+    public void getProxies_npmrcWithProxySetting_shouldReturnProxiesList()
+            throws IOException {
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
+        Properties properties = new Properties();
+        properties.put(FrontendUtils.NPMRC_PROXY_PROPERTY_KEY,
+                "http://httpuser:httppassword@httphost:8080");
+        properties.put(FrontendUtils.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+                "http://httpsuser:httpspassword@httpshost:8081");
+        properties.put(FrontendUtils.NPMRC_NOPROXY_PROPERTY_KEY,
+                "192.168.1.1,vaadin.com,mycompany.com");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
+            properties.store(fileOutputStream, null);
+        }
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
+                tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test1");
+        Assert.assertEquals(2, proxyList.size());
+        ProxyConfig.Proxy httpsProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(0) : proxyList.get(1);
+        ProxyConfig.Proxy httpProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(1) : proxyList.get(0);
+
+        Assert.assertEquals("http", httpProxy.protocol);
+        Assert.assertEquals("httpuser", httpProxy.username);
+        Assert.assertEquals("httppassword", httpProxy.password);
+        Assert.assertEquals("httphost", httpProxy.host);
+        Assert.assertEquals(8080, httpProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                httpProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", httpsProxy.protocol);
+        Assert.assertEquals("httpsuser", httpsProxy.username);
+        Assert.assertEquals("httpspassword", httpsProxy.password);
+        Assert.assertEquals("httpshost", httpsProxy.host);
+        Assert.assertEquals(8081, httpsProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                httpsProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_npmrcWithProxySettingNoNoproxy_shouldReturnNullNoproxy()
+            throws IOException {
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
+        Properties properties = new Properties();
+        properties.put(FrontendUtils.NPMRC_PROXY_PROPERTY_KEY,
+                "http://httpuser:httppassword@httphost:8080");
+        properties.put(FrontendUtils.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+                "http://httpsuser:httpspassword@httpshost:8081");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
+            properties.store(fileOutputStream, null);
+        }
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
+                tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test1");
+        Assert.assertEquals(2, proxyList.size());
+        ProxyConfig.Proxy httpsProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(0) : proxyList.get(1);
+        ProxyConfig.Proxy httpProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(1) : proxyList.get(0);
+
+        Assert.assertEquals("http", httpProxy.protocol);
+        Assert.assertEquals("httpuser", httpProxy.username);
+        Assert.assertEquals("httppassword", httpProxy.password);
+        Assert.assertEquals("httphost", httpProxy.host);
+        Assert.assertEquals(8080, httpProxy.port);
+        Assert.assertNull(httpProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", httpsProxy.protocol);
+        Assert.assertEquals("httpsuser", httpsProxy.username);
+        Assert.assertEquals("httpspassword", httpsProxy.password);
+        Assert.assertEquals("httpshost", httpsProxy.host);
+        Assert.assertEquals(8081, httpsProxy.port);
+        Assert.assertNull(httpsProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_systemPropertiesAndNpmrcWithProxySetting_shouldReturnAllProxies()
+            throws IOException {
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test2"), ".npmrc");
+        Properties properties = new Properties();
+        properties.put(FrontendUtils.NPMRC_PROXY_PROPERTY_KEY,
+                "http://httpuser:httppassword@httphost:8080");
+        properties.put(FrontendUtils.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+                "http://httpsuser:httpspassword@httpshost:8081");
+        properties.put(FrontendUtils.NPMRC_NOPROXY_PROPERTY_KEY,
+                "192.168.1.1,vaadin.com,mycompany.com");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
+            properties.store(fileOutputStream, null);
+        }
+
+        List<ProxyConfig.Proxy> proxyList = null;
+        try {
+            System.setProperty(FrontendUtils.SYSTEM_NOPROXY_PROPERTY_KEY,
+                    "somethingelse,someotherip,75.41.41.33");
+            System.setProperty(FrontendUtils.SYSTEM_HTTP_PROXY_PROPERTY_KEY,
+                    "http://anotheruser:anotherpassword@aanotherhost:9090");
+            System.setProperty(FrontendUtils.SYSTEM_HTTPS_PROXY_PROPERTY_KEY,
+                    "http://anotherusers:anotherpasswords@aanotherhosts:9091");
+
+            proxyList = FrontendUtils.getProxies(
+                    tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test2");
+        } finally {
+            System.clearProperty(FrontendUtils.SYSTEM_NOPROXY_PROPERTY_KEY);
+            System.clearProperty(FrontendUtils.SYSTEM_HTTP_PROXY_PROPERTY_KEY);
+            System.clearProperty(FrontendUtils.SYSTEM_HTTPS_PROXY_PROPERTY_KEY);
+        }
+
+        Assert.assertEquals(4, proxyList.size());
+
+        // The first two items should be system proxies
+        ProxyConfig.Proxy systemHttpsProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(0) : proxyList.get(1);
+        ProxyConfig.Proxy systemProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(1) : proxyList.get(0);
+
+        // Items 2 and 3 should be npmrc proxies
+        ProxyConfig.Proxy npmrcHttpsProxy = proxyList.get(2).id.startsWith(
+                "https-proxy") ? proxyList.get(2) : proxyList.get(3);
+        ProxyConfig.Proxy npmrcProxy = proxyList.get(2).id.startsWith(
+                "https-proxy") ? proxyList.get(3) : proxyList.get(2);
+
+        Assert.assertEquals("http", systemProxy.protocol);
+        Assert.assertEquals("anotheruser", systemProxy.username);
+        Assert.assertEquals("anotherpassword", systemProxy.password);
+        Assert.assertEquals("aanotherhost", systemProxy.host);
+        Assert.assertEquals(9090, systemProxy.port);
+        Assert.assertEquals("somethingelse|someotherip|75.41.41.33",
+                systemProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", systemHttpsProxy.protocol);
+        Assert.assertEquals("anotherusers", systemHttpsProxy.username);
+        Assert.assertEquals("anotherpasswords", systemHttpsProxy.password);
+        Assert.assertEquals("aanotherhosts", systemHttpsProxy.host);
+        Assert.assertEquals(9091, systemHttpsProxy.port);
+        Assert.assertEquals("somethingelse|someotherip|75.41.41.33",
+                systemHttpsProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", npmrcHttpsProxy.protocol);
+        Assert.assertEquals("httpsuser", npmrcHttpsProxy.username);
+        Assert.assertEquals("httpspassword", npmrcHttpsProxy.password);
+        Assert.assertEquals("httpshost", npmrcHttpsProxy.host);
+        Assert.assertEquals(8081, npmrcHttpsProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                npmrcHttpsProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", npmrcProxy.protocol);
+        Assert.assertEquals("httpuser", npmrcProxy.username);
+        Assert.assertEquals("httppassword", npmrcProxy.password);
+        Assert.assertEquals("httphost", npmrcProxy.host);
+        Assert.assertEquals(8080, npmrcProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                npmrcProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_noNpmrc_shouldReturnEmptyList() {
+        File npmrc = new File(baseDir + "/.npmrc");
+        if (npmrc.exists())
+            npmrc.delete();
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(baseDir);
+        Assert.assertTrue(proxyList.isEmpty());
     }
 }
