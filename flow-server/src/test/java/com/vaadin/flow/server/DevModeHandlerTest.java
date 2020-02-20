@@ -332,7 +332,7 @@ public class DevModeHandlerTest {
         int port = prepareHttpServer(0, HTTP_OK, "foo");
 
         DevModeHandler.start(port, configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
+                CompletableFuture.completedFuture(null)).join();
         assertNotNull(DevModeHandler.getDevModeHandler());
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
 
@@ -340,7 +340,7 @@ public class DevModeHandlerTest {
         assertNull(DevModeHandler.getDevModeHandler());
 
         DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
+                CompletableFuture.completedFuture(null)).join();
         assertNotNull(DevModeHandler.getDevModeHandler());
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
     }
