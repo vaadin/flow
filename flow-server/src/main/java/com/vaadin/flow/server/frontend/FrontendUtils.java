@@ -345,11 +345,15 @@ public class FrontendUtils {
             Constants.SUPPORTED_PNPM_MAJOR_VERSION,
             Constants.SUPPORTED_PNPM_MINOR_VERSION);
 
-    // Proxy config properties keys can be either fully upper case or fully
-    // lower case
-    static final String NOPROXY_PROPERTY_KEY = "NOPROXY";
-    static final String HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
-    static final String HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
+    static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";
+    static final String NPMRC_HTTPS_PROXY_PROPERTY_KEY = "https-proxy";
+    static final String NPMRC_PROXY_PROPERTY_KEY = "proxy";
+
+    // Proxy config properties keys (for both system properties and environment
+    // variables) can be either fully upper case or fully lower case
+    static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
+    static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
+    static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
@@ -437,61 +441,6 @@ public class FrontendUtils {
                 .toString();
     }
 
-    private static class NpmProxySettings {
-        private String proxy;
-        private String httpsProxy;
-        private String proxyConfigSource;
-        private String httpsProxyConfigSource;
-        private String noProxy;
-
-        String getProxy() {
-            return proxy;
-        }
-
-        void setProxy(String proxy, String source) {
-            this.proxy = proxy;
-            this.proxyConfigSource = proxy == null ? null : source;
-        }
-
-        String getHttpsProxy() {
-            return httpsProxy;
-        }
-
-        void setHttpsProxy(String httpsProxy, String source) {
-            this.httpsProxy = httpsProxy;
-            this.httpsProxyConfigSource = httpsProxy == null ? null : source;
-        }
-
-        String getNoProxy() {
-            return noProxy;
-        }
-
-        void setNoProxy(String noProxy) {
-            this.noProxy = noProxy;
-        }
-
-        boolean isAllPropertiesSet() {
-            return noProxy != null && httpsProxy != null && proxy == null;
-        }
-
-        List<ProxyConfig.Proxy> toProxyList() {
-            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-            String noProxy = this.noProxy;
-            if (noProxy != null)
-                noProxy = noProxy.replaceAll(",", "|");
-            if (httpsProxy != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "https-proxy - " + httpsProxyConfigSource, httpsProxy,
-                        noProxy));
-            }
-            if (proxy != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "proxy - " + proxyConfigSource, proxy, noProxy));
-            }
-            return proxyList;
-        }
-    }
-
     /**
      * Read list of configured proxies in order from system properties, .npmrc
      * file in the project root folder, .npmrc file in user root folder and
@@ -505,91 +454,105 @@ public class FrontendUtils {
     static List<ProxyConfig.Proxy> getProxies(String baseDir) {
         File projectNpmrc = new File(baseDir, ".npmrc");
         File userNpmrc = new File(FileUtils.getUserDirectory(), ".npmrc");
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>();
 
-        NpmProxySettings npmProxySettings = new NpmProxySettings();
-        readProxySettingsFromSystemProperties(npmProxySettings);
-        readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc,
-                npmProxySettings);
-        readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc,
-                npmProxySettings);
-        readProxySettingsFromEnvironmentVariables(npmProxySettings);
+        proxyList.addAll(readProxySettingsFromSystemProperties());
+        proxyList.addAll(
+                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
+        proxyList.addAll(
+                readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc));
+        proxyList.addAll(readProxySettingsFromEnvironmentVariables());
 
-        return npmProxySettings.toProxyList();
+        return proxyList;
     }
 
-    private static void readProxySettingsFromNpmrcFile(String fileDescription,
-            File npmrc, NpmProxySettings npmProxySettings) {
-        if (npmrc.exists() && (!npmProxySettings.isAllPropertiesSet())) {
-            try (FileReader fileReader = new FileReader(npmrc)) {
-                Properties properties = new Properties();
-                properties.load(fileReader);
-                if (npmProxySettings.getNoProxy() == null) {
-                    npmProxySettings
-                            .setNoProxy(properties.getProperty("noproxy"));
-                }
-                if (npmProxySettings.getHttpsProxy() == null) {
-                    npmProxySettings.setHttpsProxy(
-                            properties.getProperty("https-proxy"),
-                            fileDescription);
-                }
-                if (npmProxySettings.getProxy() == null) {
-                    npmProxySettings.setProxy(properties.getProperty("proxy"),
-                            fileDescription);
-                }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+    private static List<ProxyConfig.Proxy> readProxySettingsFromNpmrcFile(
+            String fileDescription, File npmrc) {
+        if (!npmrc.exists()) {
+            return Collections.emptyList();
+        }
+
+        try (FileReader fileReader = new FileReader(npmrc)) {
+            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+            Properties properties = new Properties();
+            properties.load(fileReader);
+            String noproxy = properties.getProperty(NPMRC_NOPROXY_PROPERTY_KEY);
+            if (noproxy != null)
+                noproxy = noproxy.replaceAll(",", "|");
+            String httpsProxyUrl = properties
+                    .getProperty(NPMRC_HTTPS_PROXY_PROPERTY_KEY);
+            if (httpsProxyUrl != null) {
+                proxyList.add(new ProxyConfig.Proxy(
+                        "https-proxy - " + fileDescription, httpsProxyUrl,
+                        noproxy));
             }
+            String proxyUrl = properties.getProperty(NPMRC_PROXY_PROPERTY_KEY);
+            if (proxyUrl != null) {
+                proxyList.add(new ProxyConfig.Proxy(
+                        "proxy - " + fileDescription, proxyUrl, noproxy));
+            }
+            return proxyList;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
-    private static void readProxySettingsFromSystemProperties(
-            NpmProxySettings npmProxySettings) {
-        if (npmProxySettings.getNoProxy() == null) {
-            npmProxySettings.setNoProxy(ObjectUtils.firstNonNull(
-                    System.getProperty(NOPROXY_PROPERTY_KEY),
-                    System.getProperty(NOPROXY_PROPERTY_KEY.toLowerCase())));
+    private static List<ProxyConfig.Proxy> readProxySettingsFromSystemProperties() {
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+
+        String noproxy = ObjectUtils.firstNonNull(
+                System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
+                System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
+        if (noproxy != null)
+            noproxy = noproxy.replaceAll(",", "|");
+
+        String httpsProxyUrl = ObjectUtils.firstNonNull(
+                System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
+                System.getProperty(
+                        SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (httpsProxyUrl != null) {
+            proxyList.add(new ProxyConfig.Proxy("https-proxy - system",
+                    httpsProxyUrl, noproxy));
         }
-        if (npmProxySettings.getHttpsProxy() == null) {
-            npmProxySettings.setHttpsProxy(
-                    ObjectUtils.firstNonNull(
-                            System.getProperty(HTTPS_PROXY_PROPERTY_KEY),
-                            System.getProperty(
-                                    HTTPS_PROXY_PROPERTY_KEY.toLowerCase())),
-                    "system");
+
+        String proxyUrl = ObjectUtils.firstNonNull(
+                System.getProperty(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
+                System.getProperty(
+                        SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (proxyUrl != null) {
+            proxyList.add(
+                    new ProxyConfig.Proxy("proxy - system", proxyUrl, noproxy));
         }
-        if (npmProxySettings.getProxy() == null) {
-            npmProxySettings.setProxy(
-                    ObjectUtils.firstNonNull(
-                            System.getProperty(HTTP_PROXY_PROPERTY_KEY),
-                            System.getProperty(
-                                    HTTP_PROXY_PROPERTY_KEY.toLowerCase())),
-                    "system");
-        }
+
+        return proxyList;
     }
 
-    private static void readProxySettingsFromEnvironmentVariables(
-            NpmProxySettings npmProxySettings) {
-        if (npmProxySettings.getNoProxy() == null) {
-            npmProxySettings.setNoProxy(ObjectUtils.firstNonNull(
-                    System.getenv(NOPROXY_PROPERTY_KEY),
-                    System.getenv(NOPROXY_PROPERTY_KEY.toLowerCase())));
+    private static List<ProxyConfig.Proxy> readProxySettingsFromEnvironmentVariables() {
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+
+        String noproxy = ObjectUtils.firstNonNull(
+                System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
+                System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
+        if (noproxy != null)
+            noproxy = noproxy.replaceAll(",", "|");
+
+        String httpsProxyUrl = ObjectUtils.firstNonNull(
+                System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
+                System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (httpsProxyUrl != null) {
+            proxyList.add(new ProxyConfig.Proxy("https-proxy - env",
+                    httpsProxyUrl, noproxy));
         }
-        if (npmProxySettings.getHttpsProxy() == null) {
-            npmProxySettings.setHttpsProxy(
-                    ObjectUtils.firstNonNull(
-                            System.getenv(HTTPS_PROXY_PROPERTY_KEY),
-                            System.getenv(
-                                    HTTPS_PROXY_PROPERTY_KEY.toLowerCase())),
-                    "env");
+
+        String proxyUrl = ObjectUtils.firstNonNull(
+                System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
+                System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (proxyUrl != null) {
+            proxyList.add(
+                    new ProxyConfig.Proxy("proxy - env", proxyUrl, noproxy));
         }
-        if (npmProxySettings.getProxy() == null) {
-            npmProxySettings.setProxy(
-                    ObjectUtils.firstNonNull(
-                            System.getenv(HTTP_PROXY_PROPERTY_KEY),
-                            System.getenv(
-                                    HTTP_PROXY_PROPERTY_KEY.toLowerCase())),
-                    "env");
-        }
+
+        return proxyList;
     }
 
     /**
