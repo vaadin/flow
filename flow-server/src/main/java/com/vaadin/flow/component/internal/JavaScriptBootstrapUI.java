@@ -43,7 +43,6 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 
 /**
@@ -59,6 +58,7 @@ public class JavaScriptBootstrapUI extends UI {
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
+    private String forwardToLocation = null;
 
     /**
      * Create UI for client side bootstrapping.
@@ -95,7 +95,7 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoute) {
+                              String flowRoute) {
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -110,8 +110,12 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeFirstSlash(flowRoute)));
 
         // Inform the client, that everything went fine.
-        wrapperElement.executeJs("this.serverConnected($0)", postponed);
-
+        if (forwardToLocation != null && !postponed) {
+            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
+                    false, forwardToLocation);
+        } else {
+            wrapperElement.executeJs("this.serverConnected($0)", postponed);
+        }
         // If this call happens, there is a client-side routing, thus
         // it's needed to remove the flag that might be set in
         // IndexHtmlRequestHandler
@@ -131,15 +135,16 @@ public class JavaScriptBootstrapUI extends UI {
     public void leaveNavigation(String route) {
         boolean postponed = navigateToPlaceholder(
                 new Location(removeFirstSlash(route)));
-        // Inform the client whether the navigation should be postponed
-        wrapperElement.executeJs("this.serverConnected($0)", postponed);
+
+        // Inform the client, that everything went fine.
+        handleForwardToClientSide(forwardToLocation, postponed);
     }
 
     private boolean navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     this.getRouter()).withTarget(ClientViewPlaceholder.class)
-                            .build();
+                    .build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
@@ -181,7 +186,7 @@ public class JavaScriptBootstrapUI extends UI {
     private boolean shouldHandleNavigation(Location location) {
         return !getInternals().hasLastHandledLocation()
                 || !sameLocation(getInternals().getLastHandledLocation(),
-                        location);
+                location);
     }
 
     private boolean sameLocation(Location oldLocation, Location newLocation) {
@@ -198,7 +203,7 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean handleNavigation(Location location,
-            NavigationState navigationState) {
+                                     NavigationState navigationState) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
 
@@ -206,6 +211,8 @@ public class JavaScriptBootstrapUI extends UI {
                 navigationState);
 
         clientNavigationStateRenderer.handle(navigationEvent);
+
+        forwardToLocation = clientNavigationStateRenderer.forwardToLocation;
 
         adjustPageTitle();
 
@@ -284,7 +291,7 @@ public class JavaScriptBootstrapUI extends UI {
             // prevent looping
             if (navigationInProgress || getInternals().hasLastHandledLocation()
                     && sameLocation(getInternals().getLastHandledLocation(),
-                            location)) {
+                    location)) {
                 return;
             }
 
@@ -296,10 +303,16 @@ public class JavaScriptBootstrapUI extends UI {
             if (navigationState != null) {
                 // Navigation can be done in server side without extra
                 // round-trip
-                handleNavigation(location, navigationState);
+                boolean shouldHandleClientSide = handleNavigation(location, navigationState);
+                if (forwardToLocation != null) {
+                    handleForwardToClientSide(forwardToLocation, shouldHandleClientSide);
+                return;
+                } else {
+                    // Update browser URL but do not fire client-side navigation
+                    execJs = CLIENT_PUSHSTATE_TO;
+                }
 
-                // Update browser URL but do not fire client-side navigation
-                execJs = CLIENT_PUSHSTATE_TO;
+
             } else {
 
                 // Server cannot resolve navigation, let client-side to handle
@@ -308,6 +321,17 @@ public class JavaScriptBootstrapUI extends UI {
             }
             navigationInProgress = false;
             getPage().executeJs(execJs, location.getPathWithQueryParameters());
+        }
+    }
+
+    private void handleForwardToClientSide(String route, boolean postpone) {
+        if(route != null && !postpone) {
+            getUI().ifPresent(ui ->
+                    ui.getPage().setLocation(forwardToLocation));
+            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
+                    false, forwardToLocation);
+        } else {
+            wrapperElement.executeJs("this.serverConnected($0)", postpone);
         }
     }
 
