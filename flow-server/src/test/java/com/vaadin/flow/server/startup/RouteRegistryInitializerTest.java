@@ -38,7 +38,6 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.router.HasUrlParameterUtil;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.ParentLayout;
@@ -53,6 +52,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -312,13 +312,12 @@ public class RouteRegistryInitializerTest {
                         .collect(Collectors.toSet()),
                 servletContext);
 
-        final EnumSet<RouteParameterFormat> format = EnumSet.of(
-                RouteParameterFormat.CURLY_BRACKETS_FORMAT,
-                RouteParameterFormat.CAPITALIZED_TYPE);
+        final EnumSet<RouteParameterFormat> format = EnumSet
+                .of(RouteParameterFormat.SIMPLE_TYPE);
 
-        Assert.assertEquals("parameter/{Boolean}",
+        Assert.assertEquals("parameter/:bool",
                 registry.getUrlTemplate(ParameterRoute.class, format).get());
-        Assert.assertEquals("string/{String}", registry
+        Assert.assertEquals("string/:string", registry
                 .getUrlTemplate(StringParameterRoute.class, format).get());
     }
 
@@ -1107,7 +1106,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Sort order was not the one expected",
                 "absolute/levels", registeredRoutes.get(2).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                HasUrlParameterUtil.getUrlTemplate("parameter",
+                HasUrlParameterFormat.getUrlTemplate("parameter",
                         ParameterRoute.class),
                 registeredRoutes.get(3).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected", "parent",
@@ -1115,7 +1114,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Sort order was not the one expected",
                 "parent/prefix", registeredRoutes.get(5).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                HasUrlParameterUtil.getUrlTemplate("string",
+                HasUrlParameterFormat.getUrlTemplate("string",
                         StringParameterRoute.class),
                 registeredRoutes.get(6).getUrlTemplate());
     }

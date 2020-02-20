@@ -71,7 +71,7 @@ public class ConfiguredRoutes implements Serializable {
     public ConfiguredRoutes(ConfiguredRoutes original) {
         Map<String, RouteTarget> routeMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRouteMap = new HashMap<>();
-        Map<Class<? extends Component>, List<String>> target2UrlTemplates = new HashMap<>();
+        Map<Class<? extends Component>, List<String>> target2UrlTemplatesMap = new HashMap<>();
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
@@ -79,10 +79,10 @@ public class ConfiguredRoutes implements Serializable {
             routeMap.put(route.getKey(), route.getValue().copy(false));
         }
         targetRouteMap.putAll(original.getTargetRoutes());
-        target2UrlTemplates.putAll(original.getTargetUrlTemplates());
+        target2UrlTemplatesMap.putAll(original.getTargetUrlTemplates());
         exceptionTargetMap.putAll(original.getExceptionHandlers());
 
-        this.routeModel = original.getRouteModel().clone();
+        this.routeModel = RouteModel.copy(original.getRouteModel());
         this.urlTemplate2RouteTarget = routeMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(routeMap);
@@ -91,7 +91,7 @@ public class ConfiguredRoutes implements Serializable {
                 : Collections.unmodifiableMap(targetRouteMap);
         this.target2UrlTemplates = targetRouteMap.isEmpty()
                 ? Collections.emptyMap()
-                : Collections.unmodifiableMap(target2UrlTemplates);
+                : Collections.unmodifiableMap(target2UrlTemplatesMap);
         this.exception2Target = exceptionTargetMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(exceptionTargetMap);

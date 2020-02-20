@@ -46,7 +46,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
-import com.vaadin.flow.router.internal.RouteModelTest;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -66,6 +66,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -3249,7 +3250,7 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 = String
                 .format("Couldn't find route for '%s'", locationString);
 
-        String optionalTemplate = HasUrlParameterUtil
+        String optionalTemplate = HasUrlParameterFormat
                 .getUrlTemplate("optional", OptionalParameter.class);
 
         String exceptionText3 = "<li>" + optionalTemplate
@@ -3276,7 +3277,7 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 = String
                 .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String pathTemplate = HasUrlParameterUtil
+        String pathTemplate = HasUrlParameterFormat
                 .getUrlTemplate("optional", WithoutOptionalParameter.class);
 
         String exceptionText3 = "<li>" + pathTemplate
@@ -3613,11 +3614,6 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Incorrect parameters", parameters,
                 UrlParametersBase.parameters);
     }
-
-    private UrlParameters parameters(Object... keysAndValues) {
-        return RouteModelTest.parameters(keysAndValues);
-    }
-
 
     private List<String> getProcessEventsTrunkChainNames(String... leaf) {
         final List<String> chainNames = new ArrayList<>(

@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router;
+package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,22 +23,27 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.internal.PathUtil;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.ParameterDeserializer;
+import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.WildcardParameter;
 
 /**
  * Utility methods to transform urls and parameters from/into the
  * {@link HasUrlParameter} format into/from the url template format.
  */
-public class HasUrlParameterUtil {
+public class HasUrlParameterFormat implements Serializable {
 
     /**
      * Reserved parameter name used when setup internally route path pattern
      * with the parameter design for backward compatibility with
      * {@link HasUrlParameter}
      */
-    public final static String PARAMETER_NAME = "___url_parameter";
+    public static final String PARAMETER_NAME = "___url_parameter";
 
-    private HasUrlParameterUtil() {
+    private HasUrlParameterFormat() {
     }
 
     /**
@@ -103,7 +109,7 @@ public class HasUrlParameterUtil {
      */
     public static <T> UrlParameters getParameters(T parameter) {
         if (parameter == null) {
-            return new UrlParameters(null);
+            return new UrlParameters();
 
         } else if (parameter instanceof String) {
             final List<String> segments = PathUtil
@@ -133,14 +139,14 @@ public class HasUrlParameterUtil {
             return getParameters(parametersList.get(0));
         }
 
-        Map<String, Object> map;
+        Map<String, String> map;
 
         if (parametersList.isEmpty()) {
             map = null;
         } else {
             map = Collections.singletonMap(PARAMETER_NAME,
-                    Collections.unmodifiableList(parametersList.stream()
-                            .map(T::toString).collect(Collectors.toList())));
+                    parametersList.stream().map(T::toString)
+                            .collect(Collectors.joining("/")));
         }
 
         return new UrlParameters(map);
@@ -157,11 +163,11 @@ public class HasUrlParameterUtil {
     public static List<String> getParameterValues(UrlParameters urlParameters) {
 
         List<String> parameters = urlParameters
-                .getList(HasUrlParameterUtil.PARAMETER_NAME);
+                .getSegments(HasUrlParameterFormat.PARAMETER_NAME);
 
         if (parameters == null) {
             final String value = urlParameters
-                    .get(HasUrlParameterUtil.PARAMETER_NAME);
+                    .get(HasUrlParameterFormat.PARAMETER_NAME);
 
             if (value != null) {
                 parameters = Collections.singletonList(value);
@@ -183,7 +189,7 @@ public class HasUrlParameterUtil {
      * @return the class types of the parameters.
      */
     public static List<Class<?>> getParameterTypes(Collection<String> types) {
-        return types.stream().map(HasUrlParameterUtil::getType)
+        return types.stream().map(HasUrlParameterFormat::getType)
                 .collect(Collectors.toList());
     }
 
@@ -202,7 +208,7 @@ public class HasUrlParameterUtil {
         if (hasUrlParameter(navigationTarget)
                 && hasMandatoryParameter(navigationTarget)
                 && (parameters == null || parameters
-                        .get(HasUrlParameterUtil.PARAMETER_NAME) == null)) {
+                        .get(HasUrlParameterFormat.PARAMETER_NAME) == null)) {
             throw new IllegalArgumentException(String.format(
                     "Navigation target '%s' requires a parameter and can not be resolved. "
                             + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
@@ -275,24 +281,23 @@ public class HasUrlParameterUtil {
     private static String getParameterType(Class<?> parameterType) {
         String type = null;
         if (parameterType.isAssignableFrom(Integer.class)) {
-            type = "int";
+            type = RouteFormat.INT_TEMPLATE;
         } else if (parameterType.isAssignableFrom(Long.class)) {
-            type = "long";
+            type = RouteFormat.LONG_TEMPLATE;
         } else if (parameterType.isAssignableFrom(Boolean.class)) {
-            type = "boolean";
+            type = RouteFormat.BOOL_TYPE;
         } else {
-            type = "string";
+            type = RouteFormat.STRING_TEMPLATE;
         }
         return type;
     }
 
     private static Class<?> getType(String s) {
-        if ("int".equalsIgnoreCase(s)) {
+        if (RouteFormat.INT_TEMPLATE.equalsIgnoreCase(s)) {
             return Integer.class;
-        } else if ("long".equalsIgnoreCase(s)) {
+        } else if (RouteFormat.LONG_TEMPLATE.equalsIgnoreCase(s)) {
             return Long.class;
-        } else if ("boolean".equalsIgnoreCase(s)
-                || "bool".equalsIgnoreCase(s)) {
+        } else if (RouteFormat.BOOL_TYPE.equalsIgnoreCase(s)) {
             return Boolean.class;
         } else {
             return String.class;

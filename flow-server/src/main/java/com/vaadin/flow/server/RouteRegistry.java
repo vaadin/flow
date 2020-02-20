@@ -163,7 +163,6 @@ public interface RouteRegistry extends Serializable {
      *            {@code null}
      * @return optional navigation target url string
      */
-    // TODO: deprecate in favor of getUrl
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget);
 
     /**

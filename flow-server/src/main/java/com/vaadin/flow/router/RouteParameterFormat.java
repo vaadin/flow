@@ -28,16 +28,6 @@ public enum RouteParameterFormat {
     TEMPLATE,
 
     /**
-     * Whether the format should be the `:`, which is default.
-     */
-    COLON_FORMAT,
-
-    /**
-     * Whether the format should be the `{}`.
-     */
-    CURLY_BRACKETS_FORMAT,
-
-    /**
      * The name of the parameter.
      */
     NAME,

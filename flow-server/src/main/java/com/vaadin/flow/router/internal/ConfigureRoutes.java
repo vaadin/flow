@@ -78,7 +78,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         target2UrlTemplates.putAll(original.getTargetUrlTemplates());
         exceptionTargetsMap.putAll(original.getExceptionHandlers());
 
-        this.routeModel = original.getRouteModel().clone();
+        this.routeModel = RouteModel.copy(original.getRouteModel());
 
         this.routeMap = routesMap;
         this.targetRouteMap = targetRoutesMap;
@@ -165,8 +165,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
 
-        final RouteTarget target = new RouteTarget(urlTemplate,
-                navigationTarget, parentChain);
+        final RouteTarget target = new RouteTarget(navigationTarget, parentChain);
 
         getRouteModel().addRoute(urlTemplate, target);
 
@@ -235,7 +234,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         getTargetRoutes().remove(target);
 
         getTargetUrlTemplates().remove(target).forEach(urlTemplate -> {
-            getRouteModel().removePath(urlTemplate);
+            getRouteModel().removeRoute(urlTemplate);
             getRoutesMap().remove(urlTemplate);
         });
     }
@@ -278,7 +277,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             }
         }
 
-        getRouteModel().removePath(urlTemplate);
+        getRouteModel().removeRoute(urlTemplate);
     }
 
     /**

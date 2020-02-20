@@ -22,29 +22,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.router.internal.PathUtil;
+
 /**
  * Container which stores the url parameters extracted from a navigation url
  * received from the client.
  */
 public class UrlParameters implements Serializable {
 
+    private Map<String, String> params;
+
     /**
-     * Creates a url parameters container using the given keys and values.
-     *
-     * @param keysAndValues
-     *            parameters mapping.
+     * Creates an empty UrlParameters instance.
      */
-    public static UrlParameters create(String... keysAndValues) {
-        Map<String, Object> params = new HashMap<>(keysAndValues.length / 2);
-
-        for (int i = 0; i < keysAndValues.length; i++) {
-            params.put(keysAndValues[i], keysAndValues[++i]);
-        }
-
-        return new UrlParameters(params);
+    public UrlParameters() {
+        params = Collections.emptyMap();
     }
-
-    private Map<String, Object> params;
 
     /**
      * Creates a url parameters container using the given map as argument.
@@ -52,10 +45,25 @@ public class UrlParameters implements Serializable {
      * @param params
      *            parameters mapping.
      */
-    // TODO: change this to <String, String> and provide wildcard as path
-    public UrlParameters(Map<String, Object> params) {
+    public UrlParameters(Map<String, String> params) {
         this.params = params != null ? Collections.unmodifiableMap(params)
                 : Collections.emptyMap();
+    }
+
+    /**
+     * Creates a UrlParameters container using the given keys and values.
+     *
+     * @param keysAndValues
+     *            parameters mapping.
+     */
+    public UrlParameters(String... keysAndValues) {
+        Map<String, String> params = new HashMap<>(keysAndValues.length / 2);
+
+        for (int i = 0; i < keysAndValues.length; i += 2) {
+            params.put(keysAndValues[i], keysAndValues[i + 1]);
+        }
+
+        this.params = Collections.unmodifiableMap(params);
     }
 
     /**
@@ -63,11 +71,16 @@ public class UrlParameters implements Serializable {
      * 
      * @return the available parameter names.
      */
-    public Set<String> getAvailableParameterNames() {
+    public Set<String> getParameterNames() {
         return params.keySet();
     }
 
-    public Map<String, Object> getParameters() {
+    /**
+     * Gets the parameters as a {@link Map}.
+     * 
+     * @return a Map containing the parameter names and values.
+     */
+    public Map<String, String> getParameters() {
         return params;
     }
 
@@ -79,12 +92,7 @@ public class UrlParameters implements Serializable {
      * @return the string representation of the parameter.
      */
     public String get(String parameterName) {
-        final Object value = getObject(parameterName);
-        if (value == null) {
-            return null;
-        }
-
-        return value.toString();
+        return getValue(parameterName);
     }
 
     /**
@@ -100,7 +108,7 @@ public class UrlParameters implements Serializable {
             return null;
         }
 
-        return new Integer(value);
+        return Integer.valueOf(value);
     }
 
     /**
@@ -116,7 +124,7 @@ public class UrlParameters implements Serializable {
             return null;
         }
 
-        return new Long(value);
+        return Long.valueOf(value);
     }
 
     /**
@@ -132,41 +140,24 @@ public class UrlParameters implements Serializable {
             return null;
         }
 
-        return new Boolean(value);
+        return Boolean.valueOf(value);
     }
 
     /**
-     * Gets a list representing the varargs value of a parameter.
+     * Gets a list representing the wildcard value of a parameter, where each
+     * element in the list is a path segment.
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return a list representing the varargs value of a parameter.
+     * @return a list representing the wildcard value of a parameter.
      */
-    public List<String> getList(String parameterName) {
-        final Object value = getObject(parameterName);
+    public List<String> getSegments(String parameterName) {
+        final String value = get(parameterName);
         if (value == null) {
             return null;
         }
 
-        if (value instanceof List) {
-            // This should be already unmodifiable but from here we can't really
-            // guarantee.
-            return Collections.unmodifiableList((List<String>) value);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Gets the actual object value of the parameter. Currently this is always a
-     * string.
-     * 
-     * @param parameterName
-     *            the name of the parameter.
-     * @return the actual object value of the parameter.
-     */
-    private Object getObject(String parameterName) {
-        return params.get(parameterName);
+        return PathUtil.getSegmentsList(value);
     }
 
     @Override
@@ -187,4 +178,9 @@ public class UrlParameters implements Serializable {
     public int hashCode() {
         return params.hashCode();
     }
+
+    private String getValue(String parameterName) {
+        return params.get(parameterName);
+    }
+
 }

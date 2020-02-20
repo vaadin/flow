@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
@@ -187,8 +188,9 @@ public class RouteConfigurationTest {
                 routeConfiguration.isPathTemplateRegistered("path"));
 
         Assert.assertTrue("Expected path 'url' to be registered",
-                routeConfiguration.isPathTemplateRegistered(
-                        HasUrlParameterUtil.getUrlTemplate("url", Url.class)));
+                routeConfiguration
+                        .isPathTemplateRegistered(HasUrlParameterFormat
+                                .getUrlTemplate("url", Url.class)));
 
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
                 .getRoute("url");
