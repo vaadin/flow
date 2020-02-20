@@ -26,6 +26,7 @@ import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.UrlParameters;
 import org.junit.Assert;
 import org.junit.Test;
@@ -90,13 +91,19 @@ public class RouteModelTest {
         root.addRoute("", routeTarget(Root.class));
         root.addRoute("trunk", routeTarget(Trunk.class));
         root.addRoute("trunk/branch", routeTarget(Branch.class));
-        root.addRoute("trunk/branch/:id(int)", routeTarget(Branch.class));
-        root.addRoute("trunk/branch/:id(int)/:list*(long)",
-                routeTarget(BranchChildren.class));
-        root.addRoute("trunk/:name?/:type?/branch/:id?(int)/edit",
-                routeTarget(BranchEdit.class));
+        root.addRoute("trunk/branch/:id(" + RouteParameterRegex.INT_REGEX + ")",
+                routeTarget(Branch.class));
         root.addRoute(
-                "trunk/:name/:type?/branch/:id(int)/flower/:open(bool)/edit",
+                "trunk/branch/:id(" + RouteParameterRegex.INT_REGEX
+                        + ")/:list*(" + RouteParameterRegex.LONG_REGEX + ")",
+                routeTarget(BranchChildren.class));
+        root.addRoute(
+                "trunk/:name?/:type?/branch/:id?("
+                        + RouteParameterRegex.INT_REGEX + ")/edit",
+                routeTarget(BranchEdit.class));
+        root.addRoute("trunk/:name/:type?/branch/:id("
+                + RouteParameterRegex.INT_REGEX + ")/flower/:open("
+                + RouteParameterRegex.BOOL_REGEX + ")/edit",
                 routeTarget(FlowerEdit.class));
         root.addRoute("trunk/twig/:leafs*", routeTarget(Twig.class));
 
