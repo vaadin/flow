@@ -193,31 +193,32 @@ public class DevModeHandlerTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotInstalled()
-            throws Exception {
+    public void webpackNotInstalled_throws() throws Exception {
+        exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         new File(baseDir, WEBPACK_SERVER).delete();
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertNull(hanlder);
+        DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null)).join();
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
+    public void webpackIsNotExecutable_throws() {
+        exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         // The set executable doesn't work in Windows and will always return
         // false
         boolean systemImplementsExecutable = new File(baseDir, WEBPACK_SERVER)
                 .setExecutable(false);
         if (systemImplementsExecutable) {
-            assertNull(DevModeHandler.start(configuration, npmFolder,
-                    CompletableFuture.completedFuture(null)));
+            DevModeHandler.start(configuration, npmFolder,
+                    CompletableFuture.completedFuture(null)).join();
         }
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
+    public void webpackNotConfigured_throws() {
+        exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).delete();
-        assertNull(DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null)));
+        DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null)).join();
     }
 
     @Test
