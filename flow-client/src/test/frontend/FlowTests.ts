@@ -452,12 +452,12 @@ suite("Flow", () => {
 
     return route.action({pathname: 'Foo'})
         .then((elem: any) => {
-            return elem.onBeforeEnter({pathname: 'Foo'}, {redirect: () => {
-                return {redirectContext: {pathname: 'Lorem'}}
+            return elem.onBeforeEnter({pathname: 'Foo'}, {redirect: (context: any) => {
+                return {redirectContext: context}
             }, })
             .then((result: any) => {
                 // Navigate to expect destination
-                assert.equal('Lorem', result.redirectContext.pathname);
+                assert.equal('Lorem', result.redirectContext);
             });
         });
   });
