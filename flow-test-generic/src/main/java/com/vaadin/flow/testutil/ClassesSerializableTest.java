@@ -197,6 +197,7 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsConfig",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexTs",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsDefinitions",
 
                 // Node downloader classes
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",
