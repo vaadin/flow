@@ -93,10 +93,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         List<RouteData> registeredRoutes = getParentRegistry()
                 .getRegisteredRoutes();
         if (!registeredRoutes.isEmpty()) {
-            Set<String> collect = routes.stream().map(RouteData::getUrl)
+            Set<String> collect = routes.stream().map(RouteData::getUrlTemplate)
                     .collect(Collectors.toSet());
             registeredRoutes.stream()
-                    .filter(data -> !collect.contains(data.getUrl()))
+                    .filter(data -> !collect.contains(data.getUrlTemplate()))
                     .forEach(routes::add);
         }
 
