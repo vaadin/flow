@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.router;
 
+import java.io.Serializable;
+
 /**
  * Predefined regex used with url template parameters.
  */
-public class RouteParameterRegex {
+public class RouteParameterRegex implements Serializable {
 
     /**
      * Int type regex.
@@ -34,5 +36,8 @@ public class RouteParameterRegex {
      * Bool type regex.
      */
     public static final String BOOL = "true|false";
+
+    private RouteParameterRegex() {
+    }
 
 }
