@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
@@ -33,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -477,7 +475,7 @@ public final class DevModeHandler implements RequestHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     public void removeRunningDevServerPort() {
-        FileUtils.deleteQuietly(computeDevServerPortFileName());
+        FileUtils.deleteQuietly(LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE);
     }
 
     private void runOnFutureComplete(DeploymentConfiguration config,
@@ -491,11 +489,10 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private void saveRunningDevServerPort() {
-        File portFile = computeDevServerPortFileName();
+        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
         try {
-            FileUtils.forceMkdir(portFile.getParentFile());
             FileUtils.writeStringToFile(portFile, String.valueOf(port),
-                    "UTF-8");
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -611,36 +608,20 @@ public final class DevModeHandler implements RequestHandler {
 
     private static int getRunningDevServerPort() {
         int port = 0;
-        File portFile = computeDevServerPortFileName();
+        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
         if (portFile.canRead()) {
             try {
                 String portString = FileUtils
-                        .readFileToString(portFile, "UTF-8").trim();
-                port = Integer.parseInt(portString);
+                        .readFileToString(portFile, StandardCharsets.UTF_8)
+                        .trim();
+                if (!portString.isEmpty()) {
+                    port = Integer.parseInt(portString);
+                }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
         }
         return port;
-    }
-
-    private static File computeDevServerPortFileName() {
-        // The thread group is the same in each servlet-container restart
-        String threadGroup = String
-                .valueOf(Thread.currentThread().getThreadGroup().hashCode());
-
-        // There is an unique name for the JVM
-        String jvmUniqueName = ManagementFactory.getRuntimeMXBean().getName();
-
-        // Use UUID for generate an unique identifier based on the thread and
-        // JVM
-        String uniqueUid = UUID.nameUUIDFromBytes(
-                (jvmUniqueName + threadGroup).getBytes(StandardCharsets.UTF_8))
-                .toString();
-
-        // File is placed in the user temporary folder, it works for all
-        // platforms
-        return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
     }
 
     /**
@@ -720,6 +701,20 @@ public final class DevModeHandler implements RequestHandler {
      */
     void join() {
         devServerStartFuture.join();
+    }
+
+    private static final class LazyDevServerPortFileInit {
+
+        private static final File DEV_SERVER_PORT_FILE = createDevServerPortFile();
+
+        private static File createDevServerPortFile() {
+            try {
+                return File.createTempFile("flow-dev-server", "port");
+            } catch (IOException exception) {
+                throw new UncheckedIOException(exception);
+            }
+        }
+
     }
 
 }
