@@ -342,11 +342,11 @@ class RouteModel implements Serializable {
 
             Map<String, String> urlParameters = new HashMap<>();
 
-            RouteTarget target = url == null ? null
+            RouteTarget routeTarget = url == null ? null
                     : findRouteTarget(PathUtil.getSegmentsList(url),
                             urlParameters);
 
-            return new NavigationRouteTarget(url, target, urlParameters);
+            return new NavigationRouteTarget(url, routeTarget, urlParameters);
         }
 
         /**
@@ -367,11 +367,11 @@ class RouteModel implements Serializable {
             final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
             final List<String> result = new ArrayList<>(segments.size());
 
-            matchSegmentTemplates(segments, routeSegment -> {
-                result.add(routeSegment.isParameter()
-                        ? parameterFormat.apply(routeSegment)
-                        : routeSegment.getName());
-            }, null);
+            matchSegmentTemplates(segments,
+                    routeSegment -> result.add(routeSegment.isParameter()
+                            ? parameterFormat.apply(routeSegment)
+                            : routeSegment.getName()),
+                    null);
 
             if (result.isEmpty()) {
                 return "";
@@ -959,9 +959,7 @@ class RouteModel implements Serializable {
     RouteTarget getRouteTarget(String urlTemplate, UrlParameters parameters) {
         AtomicReference<RouteTarget> target = new AtomicReference<>();
         root.matchSegmentTemplates(PathUtil.getSegmentsList(urlTemplate), null,
-                routeSegment -> {
-                    target.set(routeSegment.getTarget());
-                });
+                routeSegment -> target.set(routeSegment.getTarget()));
         return target.get();
     }
 
