@@ -33,22 +33,15 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  */
 public class RouteTarget implements Serializable {
 
-    private String urlTemplate;
-
     private Class<? extends Component> target;
 
     private List<Class<? extends RouterLayout>> parentLayouts;
-
-    @Deprecated
-    private final boolean mutable = false;
 
     /**
      * Create a new Route target holder with the given target registered.
      * <p>
      * Note! This will create a mutable RouteTarget by default.
      *
-     * @param urlTemplate
-     *            the url template assigned to this target.
      * @param target
      *            navigation target
      * @param parents
@@ -57,9 +50,8 @@ public class RouteTarget implements Serializable {
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
      */
-    RouteTarget(String urlTemplate, Class<? extends Component> target,
+    RouteTarget(Class<? extends Component> target,
             List<Class<? extends RouterLayout>> parents) {
-        this.urlTemplate = urlTemplate;
         this.target = target;
         this.parentLayouts = parents != null
                 ? Collections.unmodifiableList(new ArrayList<>(parents))
@@ -76,7 +68,7 @@ public class RouteTarget implements Serializable {
      * @throws InvalidRouteConfigurationException
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
-     * @deprecated use {@link #RouteTarget(String, Class, List)} instead.
+     * @deprecated use {@link #RouteTarget(Class, List)} instead.
      */
     @Deprecated
     public RouteTarget(Class<? extends Component> target) {
@@ -284,9 +276,7 @@ public class RouteTarget implements Serializable {
     }
 
     private void throwIfImmutable() {
-        if (!mutable) {
-            throw new IllegalStateException(
-                    "Tried to mutate immutable configuration.");
-        }
+        throw new IllegalStateException(
+                "Tried to mutate immutable configuration.");
     }
 }

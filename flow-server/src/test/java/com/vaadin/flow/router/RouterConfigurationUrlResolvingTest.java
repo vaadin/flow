@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.EventObject;
 import java.util.List;
 
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -540,8 +541,9 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
     private String getUrlTemplate(
             Class<? extends Component> routeWithHasUrlParameterClass) {
-        return HasUrlParameterUtil.getUrlTemplate(routeWithHasUrlParameterClass
-                        .getAnnotation(Route.class).value(),
+        return HasUrlParameterFormat.getUrlTemplate(
+                routeWithHasUrlParameterClass.getAnnotation(Route.class)
+                        .value(),
                 routeWithHasUrlParameterClass);
     }
 

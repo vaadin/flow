@@ -21,8 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.vaadin.flow.router.HasUrlParameterUtil;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -150,7 +149,8 @@ public class SessionRouteRegistryTest {
         Assert.assertTrue(
                 "Parameter class should have been available from the registry",
                 registry.getTargetUrl(Parameter.class,
-                        HasUrlParameterUtil.getParameters("foo")).isPresent());
+                        HasUrlParameterFormat.getParameters("foo"))
+                        .isPresent());
         Assert.assertTrue(
                 "Parameter class should have been available from the registry",
                 registry.getUrlTemplate(Parameter.class).isPresent());
