@@ -19,21 +19,23 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.router.RouteParameterRegex;
+
 /**
  * Utility class which contains various methods for defining url parameter
  * template.
  */
-class RouteFormat implements Serializable {
+public class RouteFormat implements Serializable {
 
-    static final String INT_TEMPLATE = "int";
-    static final String LONG_TEMPLATE = "long";
-    static final String BOOL_TEMPLATE = "bool";
-    static final String STRING_TEMPLATE = "string";
+    static final String INT_REGEX = RouteParameterRegex.INT_REGEX;
+    static final String LONG_REGEX = RouteParameterRegex.LONG_REGEX;
+    static final String BOOL_REGEX = RouteParameterRegex.BOOL_REGEX;
+    static final String STRING_REGEX = "";
 
     // NOTE: string may be omited when defining a parameter. If the
     // type/regex is missing then string is used by default.
-    static final List<String> PRIMITIVE_TEMPLATES = Arrays.asList(INT_TEMPLATE,
-            LONG_TEMPLATE, BOOL_TEMPLATE, STRING_TEMPLATE);
+    static final List<String> PRIMITIVE_REGEX = Arrays.asList(INT_REGEX,
+            LONG_REGEX, BOOL_REGEX, STRING_REGEX);
 
     /**
      * Define a route url parameter details.
@@ -80,7 +82,7 @@ class RouteFormat implements Serializable {
                         template.length() - 1);
             } else {
                 name = template;
-                regex = STRING_TEMPLATE;
+                regex = STRING_REGEX;
             }
         }
 
@@ -129,6 +131,18 @@ class RouteFormat implements Serializable {
     static boolean isVarargsParameter(String segmentTemplate) {
         return isParameter(segmentTemplate) && (segmentTemplate.endsWith("*")
                 || segmentTemplate.contains("*("));
+    }
+
+    static String getRegexName(String regex) {
+        if (RouteFormat.INT_REGEX.equalsIgnoreCase(regex)) {
+            return "int";
+        } else if (RouteFormat.LONG_REGEX.equalsIgnoreCase(regex)) {
+            return "long";
+        } else if (RouteFormat.BOOL_REGEX.equalsIgnoreCase(regex)) {
+            return "bool";
+        } else {
+            return "string";
+        }
     }
 
 }

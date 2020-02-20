@@ -21,10 +21,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -450,8 +448,8 @@ public class RouteConfiguration implements Serializable {
      */
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
-        return handledRegistry.getUrlTemplate(navigationTarget,
-                EnumSet.of(RouteParameterFormat.TEMPLATE));
+        return handledRegistry.getUrlTemplate(navigationTarget, EnumSet
+                .of(RouteParameterFormat.NAME, RouteParameterFormat.REGEX));
     }
 
     /**
