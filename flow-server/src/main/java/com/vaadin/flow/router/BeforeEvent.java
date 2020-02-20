@@ -28,6 +28,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 
 /**
@@ -105,12 +106,12 @@ public abstract class BeforeEvent extends EventObject {
      *            the layout chain for the navigation target
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
-                       Location location, Class<?> navigationTarget, UI ui,
-                       List<Class<? extends RouterLayout>> layouts) {
-        this(router, trigger, location, navigationTarget, new UrlParameters(null),
+            Location location, Class<?> navigationTarget, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
+        this(router, trigger, location, navigationTarget, new UrlParameters(),
                 ui, Collections.emptyList());
     }
-    
+
     /**
      * Constructs a new BeforeNavigation Event.
      *
@@ -253,7 +254,6 @@ public abstract class BeforeEvent extends EventObject {
         forwardTo(getNavigationState(forwardTargetComponent, null, null));
     }
 
-
     /**
      * Forward the navigation to show the given component instead of the
      * component that is currently about to be displayed.
@@ -269,6 +269,7 @@ public abstract class BeforeEvent extends EventObject {
                 "forwardTargetComponent cannot be null");
         forwardTo(getNavigationState(forwardTargetComponent, parameters, null));
     }
+
     /**
      * Forward to navigation component registered for given location string
      * instead of the component about to be displayed.
@@ -446,10 +447,10 @@ public abstract class BeforeEvent extends EventObject {
         }
 
         return getNavigationState(target,
-                HasUrlParameterUtil.getParameters(segments),
-                HasUrlParameterUtil.getUrl(url, routeParams));
+                HasUrlParameterFormat.getParameters(segments),
+                HasUrlParameterFormat.getUrl(url, routeParams));
     }
-    
+
     private NavigationState getNavigationState(
             Class<? extends Component> target, UrlParameters parameters,
             String resolvedUrl) {

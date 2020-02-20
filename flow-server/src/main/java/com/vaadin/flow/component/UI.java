@@ -25,8 +25,8 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
-import com.vaadin.flow.router.HasUrlParameterUtil;
 import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -823,7 +823,8 @@ public class UI extends Component
      */
     public <T, C extends Component & HasUrlParameter<T>> void navigate(
             Class<? extends C> navigationTarget, T parameter) {
-        navigate(navigationTarget, HasUrlParameterUtil.getParameters(parameter));
+        navigate(navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**

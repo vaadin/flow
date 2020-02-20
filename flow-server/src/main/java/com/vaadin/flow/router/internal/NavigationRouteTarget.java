@@ -40,7 +40,7 @@ public class NavigationRouteTarget implements Serializable {
     private UrlParameters urlParameters;
 
     NavigationRouteTarget(String url, RouteTarget target,
-            Map<String, Object> urlParameters) {
+            Map<String, String> urlParameters) {
         this.url = url;
         this.target = target;
         this.urlParameters = new UrlParameters(urlParameters);

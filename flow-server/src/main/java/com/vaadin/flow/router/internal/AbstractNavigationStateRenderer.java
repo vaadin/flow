@@ -320,12 +320,12 @@ public abstract class AbstractNavigationStateRenderer
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        List<Class<? extends RouterLayout>> routeLayoutTypes = new ArrayList<>(
+        List<Class<? extends RouterLayout>> layoutTypes = new ArrayList<>(
                 this.routeLayoutTypes);
-        Collections.reverse(routeLayoutTypes);
+        Collections.reverse(layoutTypes);
 
         final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>();
-        for (Class<? extends RouterLayout> parentType : routeLayoutTypes) {
+        for (Class<? extends RouterLayout> parentType : layoutTypes) {
             chain.add(parentType);
         }
         chain.add(routeTargetType);
