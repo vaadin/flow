@@ -157,7 +157,8 @@ public abstract class RouteBaseData<T extends RouteBaseData>
 
     @Override
     public int compareTo(T otherRouteData) {
-        return this.getUrl().compareToIgnoreCase(otherRouteData.getUrl());
+        return this.getUrlTemplate()
+                .compareToIgnoreCase(otherRouteData.getUrlTemplate());
     }
 
     @Override

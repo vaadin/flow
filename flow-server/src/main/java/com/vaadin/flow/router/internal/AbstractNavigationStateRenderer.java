@@ -315,8 +315,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     // The last element in the returned list is always a Component class
-    private List<Class<? extends HasElement>> createTypesChain(
-            NavigationEvent event) {
+    private List<Class<? extends HasElement>> getTypesChain() {
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
@@ -440,7 +439,7 @@ public abstract class AbstractNavigationStateRenderer
                 .getActiveRouterTargetsChain();
 
         // Create the chain components if missing.
-        List<Class<? extends HasElement>> typesChain = createTypesChain(event);
+        List<Class<? extends HasElement>> typesChain = getTypesChain(event);
 
         try {
             for (Class<? extends HasElement> elementType : typesChain) {
