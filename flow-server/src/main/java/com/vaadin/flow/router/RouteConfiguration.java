@@ -120,11 +120,11 @@ public class RouteConfiguration implements Serializable {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
                     .hasRoute(path);
         }
-        return getAvailableRoutes().stream().anyMatch(
-                routeData -> routeData.getUrl().equals(path) || routeData
-                        .getRouteAliases().stream().anyMatch(
-                                routeAliasData -> routeAliasData.getUrl()
-                                        .equals(path)));
+        return getAvailableRoutes().stream()
+                .anyMatch(routeData -> routeData.getUrlTemplate().equals(path)
+                        || routeData.getRouteAliases().stream()
+                                .anyMatch(routeAliasData -> routeAliasData
+                                        .getUrlTemplate().equals(path)));
     }
 
     /**
@@ -140,10 +140,10 @@ public class RouteConfiguration implements Serializable {
                     .hasUrlTemplate(urlTemplate);
         }
         return getAvailableRoutes().stream().anyMatch(
-                routeData -> routeData.getUrl().equals(urlTemplate) || routeData
-                        .getRouteAliases().stream().anyMatch(
-                                routeAliasData -> routeAliasData.getUrl()
-                                        .equals(urlTemplate)));
+                routeData -> routeData.getUrlTemplate().equals(urlTemplate)
+                        || routeData.getRouteAliases().stream()
+                                .anyMatch(routeAliasData -> routeAliasData
+                                        .getUrlTemplate().equals(urlTemplate)));
     }
 
     /**
