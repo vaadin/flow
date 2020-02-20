@@ -30,7 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
-    public static final String TSCONFIG_JSON = "tsconfig.json";
+    static final String TSCONFIG_JSON = "tsconfig.json";
     private final File npmFolder;
 
     /**

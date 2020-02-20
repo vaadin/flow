@@ -28,49 +28,49 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 
-public class TaskGenerateCssModuleTest {
+public class TaskGenerateTsDefinitionsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     private File outputFolder;
-    private TaskGenerateCssModule taskGenerateCssModule;
+    private TaskGenerateTsDefinitions taskGenerateTsDefinitions;
 
     @Before
     public void setUp() throws IOException {
         outputFolder = temporaryFolder.newFolder();
-        taskGenerateCssModule = new TaskGenerateCssModule(outputFolder);
+        taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(outputFolder);
     }
 
     @Test
-    public void should_generateCssModule_CssModuleNotExistAndTsConfigExists()
+    public void should_generateTsDefinitions_TsDefinitionsNotExistAndTsConfigExists()
             throws Exception {
         Files.createFile(new File(outputFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
                 .toPath());
-        taskGenerateCssModule.execute();
+        taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should generate types.d.ts when tsconfig.json exists and "
                         + "types.d.ts doesn't exist",
-                taskGenerateCssModule.shouldGenerate());
+                taskGenerateTsDefinitions.shouldGenerate());
         Assert.assertTrue("The generated types.d.ts should not exist",
-                taskGenerateCssModule.getGeneratedFile().exists());
+                taskGenerateTsDefinitions.getGeneratedFile().exists());
         Assert.assertEquals(
                 "The generated content should be equals the default content",
-                taskGenerateCssModule.getFileContent(),
+                taskGenerateTsDefinitions.getFileContent(),
                 IOUtils.toString(
-                        taskGenerateCssModule.getGeneratedFile().toURI(),
+                        taskGenerateTsDefinitions.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8));
     }
 
     @Test
-    public void should_notGenerateCssModule_TsConfigNotExist()
+    public void should_notGenerateTsDefinitions_TsConfigNotExist()
             throws Exception {
         Files.createFile(new File(outputFolder, "types.d.ts").toPath());
-        taskGenerateCssModule.execute();
+        taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should not generate types.d.ts when tsconfig.json "
                         + "doesn't exist",
-                taskGenerateCssModule.shouldGenerate());
+                taskGenerateTsDefinitions.shouldGenerate());
         Assert.assertTrue("The types.d.ts should already exist",
-                taskGenerateCssModule.getGeneratedFile().exists());
+                taskGenerateTsDefinitions.getGeneratedFile().exists());
     }
 
 }
