@@ -2,7 +2,7 @@ const { suite, test, beforeEach, afterEach } = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import { Flow } from "../../main/resources/META-INF/resources/frontend/Flow";
+import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
@@ -442,6 +442,26 @@ suite("Flow", () => {
       });
   });
 
+  test("onBeforeEnter should handle forwardTo `server->client` navigation", () => {
+    // true to prevent navigation from server
+    stubServerRemoteFunction('foobar-12345', false, undefined, {pathname: 'Lorem', search: ''});
+    mockInitResponse('foobar-12345');
+
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+
+    return route.action({pathname: 'Foo'})
+        .then((elem: any) => {
+            return elem.onBeforeEnter({pathname: 'Foo'}, {redirect: () => {
+                return {redirectContext: {pathname: 'Lorem'}}
+            }, })
+            .then((result: any) => {
+                // Navigate to expect destination
+                assert.equal('Lorem', result.redirectContext.pathname);
+            });
+        });
+  });
+
   test("onBeforeLeave should not cause double round-trip on `server->server` navigation", () => {
     // true to prevent navigation from server
     stubServerRemoteFunction('foobar-12345', true);
@@ -521,7 +541,8 @@ suite("Flow", () => {
   });
 });
 
-function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp) {
+function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp,
+                                  url?: NavigationParameters) {
   let container : any;
 
   // Stub remote function exported in JavaScriptBootstrapUI.
@@ -551,14 +572,14 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
 
       // asynchronously resolve the remote server call
       setTimeout(() => {
-        container.serverConnected(cancel);
-        // container should be visible when not cancelled
-        assert.equal(cancel ? 'none' : '', container.style.display);
+        container.serverConnected(cancel, url);
+        // container should be visible when not cancelled or not has redirect server-client
+        assert.equal(cancel || url ? 'none' : '', container.style.display);
       }, 10);
     },
     leaveNavigation: () => {
       // asynchronously resolve the promise
-      setTimeout(() => container.serverConnected(cancel), 10);
+      setTimeout(() => container.serverConnected(cancel, url), 10);
     }
   };
 }
