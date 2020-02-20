@@ -152,7 +152,7 @@ class RouteModel implements Serializable {
                 info = new RouteFormat.ParameterInfo(segmentTemplate);
 
                 if (!isPrimitiveType()) {
-                    pattern = Pattern.compile(getType());
+                    pattern = Pattern.compile(getRegex());
                 }
 
                 this.name = info.getName();
@@ -219,16 +219,16 @@ class RouteModel implements Serializable {
 
         boolean isPrimitiveType() {
             return isParameter()
-                    ? RouteFormat.PRIMITIVE_TEMPLATES.contains(getType())
+                    ? RouteFormat.PRIMITIVE_REGEX.contains(getRegex())
                     : false;
         }
 
-        String getType() {
+        String getRegex() {
             return isParameter() ? info.getRegex() : null;
         }
 
         String getTypeAsPrimitive() {
-            return isPrimitiveType() ? getType() : RouteFormat.STRING_TEMPLATE;
+            return isPrimitiveType() ? getRegex() : RouteFormat.STRING_REGEX;
         }
 
         boolean isOptional() {
@@ -248,7 +248,7 @@ class RouteModel implements Serializable {
                 return Objects.equals(getName(), value);
             }
 
-            if (getType().isEmpty()) {
+            if (getRegex().isEmpty()) {
                 return true;
             }
 
@@ -256,27 +256,27 @@ class RouteModel implements Serializable {
                 return pattern.matcher(value).matches();
             }
 
-            if (RouteFormat.INT_TEMPLATE.equals(getType())) {
+            if (RouteFormat.INT_REGEX.equals(getRegex())) {
                 try {
                     Integer.valueOf(value);
                     return true;
                 } catch (NumberFormatException e) {
                 }
 
-            } else if (RouteFormat.LONG_TEMPLATE.equals(getType())) {
+            } else if (RouteFormat.LONG_REGEX.equals(getRegex())) {
                 try {
                     Long.valueOf(value);
                     return true;
                 } catch (NumberFormatException e) {
                 }
 
-            } else if (RouteFormat.BOOL_TEMPLATE.equals(getType())) {
+            } else if (RouteFormat.BOOL_REGEX.equals(getRegex())) {
                 if (value.equalsIgnoreCase("true")
                         || value.equalsIgnoreCase("false")) {
                     return true;
                 }
 
-            } else if (RouteFormat.STRING_TEMPLATE.equals(getType())) {
+            } else if (RouteFormat.STRING_REGEX.equals(getRegex())) {
                 return true;
             }
 
@@ -1001,7 +1001,8 @@ class RouteModel implements Serializable {
     String formatUrlTemplate(String urlTemplate,
             Set<RouteParameterFormat> format) {
 
-        if (format.contains(RouteParameterFormat.TEMPLATE)) {
+        if (format.contains(RouteParameterFormat.NAME)
+                && format.contains(RouteParameterFormat.REGEX)) {
             return urlTemplate;
         }
 
@@ -1010,21 +1011,20 @@ class RouteModel implements Serializable {
 
             result.append(":");
 
-            final boolean containsType = format
-                    .contains(RouteParameterFormat.SIMPLE_TYPE)
-                    || format.contains(RouteParameterFormat.TYPE)
-                    || format.contains(RouteParameterFormat.CAPITALIZED_TYPE);
+            final boolean containsRegex = format
+                    .contains(RouteParameterFormat.REGEX)
+                    || format.contains(RouteParameterFormat.REGEX_NAME);
             boolean closeTypeBracket = false;
 
             if (format.contains(RouteParameterFormat.NAME)) {
                 result.append(segment.getName());
-                if (containsType) {
+                if (containsRegex) {
                     result.append("(");
                     closeTypeBracket = true;
                 }
             }
 
-            if (containsType) {
+            if (containsRegex) {
                 String type = formatSegmentType(segment, format);
 
                 result.append(type);
@@ -1069,28 +1069,13 @@ class RouteModel implements Serializable {
 
     private String formatSegmentType(RouteSegment segment,
             Set<RouteParameterFormat> format) {
-        String type = segment.getType();
+        String regex = segment.getRegex();
 
-        if (format.contains(RouteParameterFormat.SIMPLE_TYPE)
-                || segment.isPrimitiveType()) {
-
-            if (!segment.isPrimitiveType()) {
-                type = "string";
-            }
-
-            if (format.contains(RouteParameterFormat.CAPITALIZED_TYPE)) {
-                type = capitalize(type);
-            }
-        }
-        return type;
-    }
-
-    private static String capitalize(String str) {
-        if (str == null || str.isEmpty()) {
-            return str;
+        if (format.contains(RouteParameterFormat.REGEX_NAME)) {
+            regex = RouteFormat.getRegexName(regex);
         }
 
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
+        return regex;
     }
 
 }

@@ -16,26 +16,23 @@
 package com.vaadin.flow.router;
 
 /**
- * Define the route parameters format flags. This is used when retrieving route
- * information, so that the result may contain the parameters definition
- * represented according with the specified flags.
+ * Predefined regex used with url template parameters.
  */
-public enum RouteParameterFormat {
+public class RouteParameterRegex {
 
     /**
-     * The name of the parameter.
+     * Int type regex.
      */
-    NAME,
+    public static final String INT_REGEX = "-?[0-1]?[0-9]{1,9}";
 
     /**
-     * If specified the original template is provided.
+     * Long type regex.
      */
-    REGEX,
+    public static final String LONG_REGEX = "-?[0-8]?[0-9]{1,18}";
 
     /**
-     * The simple template of the parameter, i.e. <code>int</code>,
-     * <code>long</code>, <code>bool</code>, <code>string</code>.
+     * Bool type regex.
      */
-    REGEX_NAME,
+    public static final String BOOL_REGEX = "true|false";
 
 }
