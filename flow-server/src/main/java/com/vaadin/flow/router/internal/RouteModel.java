@@ -219,7 +219,7 @@ class RouteModel implements Serializable {
 
         boolean isPrimitiveType() {
             return isParameter()
-                    ? RouteFormat.PRIMITIVE_TYPES.contains(getType())
+                    ? RouteFormat.PRIMITIVE_TEMPLATES.contains(getType())
                     : false;
         }
 
@@ -270,7 +270,7 @@ class RouteModel implements Serializable {
                 } catch (NumberFormatException e) {
                 }
 
-            } else if (RouteFormat.BOOL_TYPE.equals(getType())) {
+            } else if (RouteFormat.BOOL_TEMPLATE.equals(getType())) {
                 if (value.equalsIgnoreCase("true")
                         || value.equalsIgnoreCase("false")) {
                     return true;
@@ -1009,7 +1009,7 @@ class RouteModel implements Serializable {
             StringBuilder result = new StringBuilder();
 
             result.append(":");
-            
+
             final boolean containsType = format
                     .contains(RouteParameterFormat.SIMPLE_TYPE)
                     || format.contains(RouteParameterFormat.TYPE)
