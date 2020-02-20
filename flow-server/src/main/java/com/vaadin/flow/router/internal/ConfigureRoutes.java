@@ -67,7 +67,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     public ConfigureRoutes(ConfiguredRoutes original) {
         Map<String, RouteTarget> routesMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-        Map<Class<? extends Component>, List<String>> target2UrlTemplates = new HashMap<>();
+        Map<Class<? extends Component>, List<String>> target2UrlTemplatesMap = new HashMap<>();
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
@@ -75,14 +75,14 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             routesMap.put(route.getKey(), route.getValue().copy(true));
         }
         targetRoutesMap.putAll(original.getTargetRoutes());
-        target2UrlTemplates.putAll(original.getTargetUrlTemplates());
+        target2UrlTemplatesMap.putAll(original.getTargetUrlTemplates());
         exceptionTargetsMap.putAll(original.getExceptionHandlers());
 
         this.routeModel = RouteModel.copy(original.getRouteModel());
 
         this.routeMap = routesMap;
         this.targetRouteMap = targetRoutesMap;
-        this.target2UrlTemplates = target2UrlTemplates;
+        this.target2UrlTemplates = target2UrlTemplatesMap;
         this.exceptionTargetMap = exceptionTargetsMap;
     }
 
