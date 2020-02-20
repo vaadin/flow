@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteTarget;
 
 /**
@@ -139,7 +140,7 @@ public class NavigationState implements Serializable {
      * @return url parameters.
      */
     public UrlParameters getParameters() {
-        return urlParameters != null ? urlParameters : new UrlParameters(null);
+        return urlParameters != null ? urlParameters : new UrlParameters();
     }
 
     /**
@@ -149,7 +150,7 @@ public class NavigationState implements Serializable {
      * @return the url parameters of this navigation state
      */
     public Optional<List<String>> getUrlParameters() {
-        return Optional.of(HasUrlParameterUtil
+        return Optional.of(HasUrlParameterFormat
                 .getParameterValues(getParameters()));
     }
 
@@ -162,6 +163,6 @@ public class NavigationState implements Serializable {
      */
     @Deprecated
     public void setUrlParameters(List<String> urlParameters) {
-        setParameters(HasUrlParameterUtil.getParameters(urlParameters));
+        setParameters(HasUrlParameterFormat.getParameters(urlParameters));
     }
 }

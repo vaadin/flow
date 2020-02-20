@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.Command;
@@ -473,7 +474,8 @@ public class RouteConfiguration implements Serializable {
         if (parameter == null) {
             return getUrl(navigationTarget);
         }
-        return getUrl(navigationTarget, HasUrlParameterUtil.getParameters(parameter));
+        return getUrl(navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -497,7 +499,7 @@ public class RouteConfiguration implements Serializable {
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, List<T> parameters) {
         return getUrl(navigationTarget,
-                HasUrlParameterUtil.getParameters(parameters));
+                HasUrlParameterFormat.getParameters(parameters));
     }
 
     /**

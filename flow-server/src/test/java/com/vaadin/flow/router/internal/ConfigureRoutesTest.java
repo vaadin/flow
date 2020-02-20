@@ -1,9 +1,5 @@
 package com.vaadin.flow.router.internal;
 
-import java.util.Arrays;
-import java.util.Collections;
-
-import com.vaadin.flow.router.HasUrlParameterUtil;
 import org.junit.Assert;
 import org.junit.Test;
 

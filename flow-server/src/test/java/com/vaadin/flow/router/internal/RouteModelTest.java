@@ -61,22 +61,15 @@ public class RouteModelTest {
     }
 
     /**
-     * Creates a parameters map where any even index argument is a key and must
-     * be a String (starting with 0) and any odd index argument is a value
-     * (starting with 1)
-     * 
+     * Creates a parameters map where any even index argument is a key (starting
+     * with 0) and any odd index argument is a value (starting with 1)
+     *
      * @param keysAndValues
      *            the keys and values of the map.
      * @return a Map containing the specified arguments.
      */
-    public static UrlParameters parameters(Object... keysAndValues) {
-        Map<String, Object> result = new HashMap<>(keysAndValues.length / 2);
-
-        for (int i = 0; i < keysAndValues.length; i++) {
-            result.put((String) keysAndValues[i], keysAndValues[++i]);
-        }
-
-        return new UrlParameters(result);
+    public static UrlParameters parameters(String... keysAndValues) {
+        return new UrlParameters(keysAndValues);
     }
 
     /**
@@ -86,26 +79,26 @@ public class RouteModelTest {
      *            an array of strings.
      * @return a List containing the specified arguments.
      */
-    public static List<String> varargs(String... varargs) {
-        return Arrays.asList(varargs);
+    public static String varargs(String... varargs) {
+        return PathUtil.getPath(Arrays.asList(varargs));
     }
 
     @Test
     public void route_model_with_various_urls() {
 
         RouteModel root = RouteModel.create();
-        root.addRoute("", Root.class);
-        root.addRoute("trunk", Trunk.class);
-        root.addRoute("trunk/branch", Branch.class);
-        root.addRoute("trunk/branch/:id(int)", Branch.class);
+        root.addRoute("", routeTarget(Root.class));
+        root.addRoute("trunk", routeTarget(Trunk.class));
+        root.addRoute("trunk/branch", routeTarget(Branch.class));
+        root.addRoute("trunk/branch/:id(int)", routeTarget(Branch.class));
         root.addRoute("trunk/branch/:id(int)/:list*(long)",
-                BranchChildren.class);
+                routeTarget(BranchChildren.class));
         root.addRoute("trunk/:name?/:type?/branch/:id?(int)/edit",
-                BranchEdit.class);
+                routeTarget(BranchEdit.class));
         root.addRoute(
                 "trunk/:name/:type?/branch/:id(int)/flower/:open(bool)/edit",
-                FlowerEdit.class);
-        root.addRoute("trunk/twig/:leafs*", Twig.class);
+                routeTarget(FlowerEdit.class));
+        root.addRoute("trunk/twig/:leafs*", routeTarget(Twig.class));
 
         NavigationRouteTarget result;
         String path;
@@ -177,14 +170,14 @@ public class RouteModelTest {
     public void varargs_url_parameter_defined_only_as_last_segment() {
         RouteModel root = RouteModel.create();
         try {
-            root.addRoute("trunk/:vararg*/edit", Root.class);
+            root.addRoute("trunk/:vararg*/edit", routeTarget(Root.class));
 
             Assert.fail(
                     "Varargs url parameter accepted in the middle of the path.");
         } catch (IllegalArgumentException e) {
         }
 
-        root.addRoute("trunk/edit/:vararg*", Root.class);
+        root.addRoute("trunk/edit/:vararg*", routeTarget(Root.class));
 
         String path = "trunk/edit/1/2/3";
         NavigationRouteTarget result = root.getNavigationRouteTarget(path);
@@ -192,12 +185,15 @@ public class RouteModelTest {
                 parameters("vararg", varargs("1", "2", "3")));
     }
 
+    private RouteTarget routeTarget(Class<? extends Component> target) {
+        return new RouteTarget(target, null);
+    }
+
     private void assertResult(NavigationRouteTarget result, String path,
-            Class<? extends Component> target,
-            UrlParameters urlParameters) {
+            Class<? extends Component> target, UrlParameters urlParameters) {
 
         if (urlParameters == null) {
-            urlParameters = new UrlParameters(null);
+            urlParameters = new UrlParameters();
         }
 
         Assert.assertEquals("Invalid path", path, result.getUrl());
