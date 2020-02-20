@@ -394,8 +394,7 @@ public class IndexHtmlRequestHandlerTest {
         DevModeHandler handler = DevModeHandler.start(0,
                 deploymentConfiguration, npmFolder,
                 CompletableFuture.completedFuture(null));
-        Method join = DevModeHandler.class
-                .getDeclaredMethod("getRunningDevServerPort");
+        Method join = DevModeHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
         join.invoke(handler);
         // Ask to the DevModeHandler for the computed random port
