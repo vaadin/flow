@@ -303,10 +303,10 @@ public class JavaScriptBootstrapUI extends UI {
             if (navigationState != null) {
                 // Navigation can be done in server side without extra
                 // round-trip
-                boolean shouldHandleClientSide = handleNavigation(location, navigationState);
+                boolean isPostpone = handleNavigation(location, navigationState);
                 if (forwardToLocation != null) {
-                    handleForwardToClientSide(forwardToLocation, shouldHandleClientSide);
-                return;
+                    handleForwardToClientSide(forwardToLocation, isPostpone);
+                    return;
                 } else {
                     // Update browser URL but do not fire client-side navigation
                     execJs = CLIENT_PUSHSTATE_TO;
@@ -325,11 +325,12 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private void handleForwardToClientSide(String route, boolean postpone) {
-        if(route != null && !postpone) {
-            getUI().ifPresent(ui ->
-                    ui.getPage().setLocation(forwardToLocation));
-            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
-                    false, forwardToLocation);
+        if(route != null) {
+            wrapperElement.executeJs("this.serverConnected($0)", true);
+            if (!postpone) {
+                getUI().ifPresent(ui ->
+                        ui.getPage().setLocation(route));
+            }
         } else {
             wrapperElement.executeJs("this.serverConnected($0)", postpone);
         }
