@@ -66,9 +66,6 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        File tsConfigFile = new File(npmFolder, TSCONFIG_JSON);
-        return !tsConfigFile.exists()
-                && (new File(frontendFolder, INDEX_TS).exists()
-                        || new File(outputDirectory, INDEX_TS).exists());
+        return !new File(npmFolder, TSCONFIG_JSON).exists();
     }
 }
