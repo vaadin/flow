@@ -128,22 +128,22 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Check if there is a registered target for the given pathTemplate.
+     * Check if there is a registered target for the given urlTemplate.
      *
-     * @param pathTemplate
-     *         pathTemplate to check for route registration
-     * @return true if there exists a route for the given pathTemplate
+     * @param urlTemplate
+     *         urlTemplate to check for route registration
+     * @return true if there exists a route for the given urlTemplate
      */
-    public boolean isPathTemplateRegistered(String pathTemplate) {
+    public boolean isPathTemplateRegistered(String urlTemplate) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
-                    .hasUrlTemplate(pathTemplate);
+                    .hasUrlTemplate(urlTemplate);
         }
         return getAvailableRoutes().stream().anyMatch(
-                routeData -> routeData.getUrl().equals(pathTemplate) || routeData
+                routeData -> routeData.getUrl().equals(urlTemplate) || routeData
                         .getRouteAliases().stream().anyMatch(
                                 routeAliasData -> routeAliasData.getUrl()
-                                        .equals(pathTemplate)));
+                                        .equals(urlTemplate)));
     }
 
     /**
