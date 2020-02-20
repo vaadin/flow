@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.lumo;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -26,6 +27,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 @JsModule("./src/LumoThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.lumo.ExplicitLumoTemplateView")
 @Theme(Lumo.class)
+@NpmPackage(value = "@polymer/polymer", version = "3.2.0")
 /*
  * Note that this is using component instead of polymer template, because
  * otherwise the themed module would have to import the original /src module,
