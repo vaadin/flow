@@ -63,7 +63,6 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -461,8 +460,10 @@ public class FrontendUtils {
                 }
                 return file.getAbsolutePath();
             } else {
-                return installNode(getVaadinHomeDirectory(),
-                        DEFAULT_NODE_VERSION, null);
+                getLogger()
+                        .info("Node not found in {}. Installing node {}.", home,
+                                DEFAULT_NODE_VERSION);
+                return installNode(home, DEFAULT_NODE_VERSION, null);
             }
         } catch (FileNotFoundException exception) {
             throw new UncheckedIOException(exception);
@@ -559,7 +560,11 @@ public class FrontendUtils {
                                 .orElse(null));
             }
             if (file == null && installNode) {
-                return new File(installNode(getVaadinHomeDirectory(),
+                File vaadinHome = getVaadinHomeDirectory();
+                getLogger()
+                        .info("Couldn't find {}. Installing Node and NPM to {}.",
+                                cmd, vaadinHome);
+                return new File(installNode(vaadinHome,
                         DEFAULT_NODE_VERSION, null));
             }
         } catch (FileNotFoundException exception) {
