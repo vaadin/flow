@@ -439,7 +439,7 @@ public abstract class AbstractNavigationStateRenderer
                 .getActiveRouterTargetsChain();
 
         // Create the chain components if missing.
-        List<Class<? extends HasElement>> typesChain = getTypesChain(event);
+        List<Class<? extends HasElement>> typesChain = getTypesChain();
 
         try {
             for (Class<? extends HasElement> elementType : typesChain) {
