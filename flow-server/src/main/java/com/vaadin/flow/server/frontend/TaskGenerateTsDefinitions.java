@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -29,9 +30,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * @since 3.0
  */
-public class TaskGenerateCssModule extends AbstractTaskClientGenerator {
+public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
-    private static final String CSS_MODULE = "types.d.ts";
+    private static final String TS_DIFINITIONS = "types.d.ts";
     private final File npmFolder;
 
     /**
@@ -40,25 +41,25 @@ public class TaskGenerateCssModule extends AbstractTaskClientGenerator {
      * @param npmFolder
      *            project folder where the file will be generated.
      */
-    TaskGenerateCssModule(File npmFolder) {
+    TaskGenerateTsDefinitions(File npmFolder) {
         this.npmFolder = npmFolder;
     }
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream(CSS_MODULE),
+        return IOUtils.toString(getClass().getResourceAsStream(TS_DIFINITIONS),
                 UTF_8);
     }
 
     @Override
     protected File getGeneratedFile() {
-        return new File(npmFolder, CSS_MODULE);
+        return new File(npmFolder, TS_DIFINITIONS);
     }
 
     @Override
     protected boolean shouldGenerate() {
-        File tsConfigFile = new File(npmFolder, CSS_MODULE);
-        return !tsConfigFile.exists()
+        File TsDifinitionsFile = new File(npmFolder, TS_DIFINITIONS);
+        return !TsDifinitionsFile.exists()
                 && new File(npmFolder, TaskGenerateTsConfig.TSCONFIG_JSON).exists();
     }
 }
