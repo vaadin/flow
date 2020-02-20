@@ -313,7 +313,7 @@ public class RouteRegistryInitializerTest {
                 servletContext);
 
         final EnumSet<RouteParameterFormat> format = EnumSet
-                .of(RouteParameterFormat.SIMPLE_TYPE);
+                .of(RouteParameterFormat.REGEX_NAME);
 
         Assert.assertEquals("parameter/:bool",
                 registry.getUrlTemplate(ParameterRoute.class, format).get());

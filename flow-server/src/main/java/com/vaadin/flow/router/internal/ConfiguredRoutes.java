@@ -284,8 +284,8 @@ public class ConfiguredRoutes implements Serializable {
      */
     public String getUrlTemplate(Class<? extends Component> navigationTarget) {
         return getRouteModel().formatUrlTemplate(
-                getTargetRoutes().get(navigationTarget),
-                EnumSet.of(RouteParameterFormat.TEMPLATE));
+                getTargetRoutes().get(navigationTarget), EnumSet.of(
+                        RouteParameterFormat.NAME, RouteParameterFormat.REGEX));
     }
 
     /**
@@ -423,7 +423,7 @@ public class ConfiguredRoutes implements Serializable {
      */
     public Map<String, String> getParameters(String urlTemplate) {
         return getRouteModel().getParameters(urlTemplate,
-                EnumSet.of(RouteParameterFormat.CAPITALIZED_TYPE));
+                EnumSet.of(RouteParameterFormat.REGEX_NAME));
     }
 
     /**
