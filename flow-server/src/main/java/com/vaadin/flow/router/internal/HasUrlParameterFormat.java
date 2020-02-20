@@ -285,7 +285,7 @@ public class HasUrlParameterFormat implements Serializable {
         } else if (parameterType.isAssignableFrom(Long.class)) {
             type = RouteFormat.LONG_TEMPLATE;
         } else if (parameterType.isAssignableFrom(Boolean.class)) {
-            type = RouteFormat.BOOL_TYPE;
+            type = RouteFormat.BOOL_TEMPLATE;
         } else {
             type = RouteFormat.STRING_TEMPLATE;
         }
@@ -297,7 +297,7 @@ public class HasUrlParameterFormat implements Serializable {
             return Integer.class;
         } else if (RouteFormat.LONG_TEMPLATE.equalsIgnoreCase(s)) {
             return Long.class;
-        } else if (RouteFormat.BOOL_TYPE.equalsIgnoreCase(s)) {
+        } else if (RouteFormat.BOOL_TEMPLATE.equalsIgnoreCase(s)) {
             return Boolean.class;
         } else {
             return String.class;
