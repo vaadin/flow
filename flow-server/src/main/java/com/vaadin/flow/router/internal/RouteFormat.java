@@ -27,13 +27,13 @@ class RouteFormat implements Serializable {
 
     static final String INT_TEMPLATE = "int";
     static final String LONG_TEMPLATE = "long";
-    static final String BOOL_TYPE = "bool";
+    static final String BOOL_TEMPLATE = "bool";
     static final String STRING_TEMPLATE = "string";
 
     // NOTE: string may be omited when defining a parameter. If the
     // type/regex is missing then string is used by default.
-    final static List<String> PRIMITIVE_TYPES = Arrays.asList(INT_TEMPLATE,
-            LONG_TEMPLATE, BOOL_TYPE, STRING_TEMPLATE);
+    static final List<String> PRIMITIVE_TEMPLATES = Arrays.asList(INT_TEMPLATE,
+            LONG_TEMPLATE, BOOL_TEMPLATE, STRING_TEMPLATE);
 
     /**
      * Define a route url parameter details.
@@ -80,7 +80,7 @@ class RouteFormat implements Serializable {
                         template.length() - 1);
             } else {
                 name = template;
-                regex = "string";
+                regex = STRING_TEMPLATE;
             }
         }
 
