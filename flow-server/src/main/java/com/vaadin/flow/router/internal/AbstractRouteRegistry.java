@@ -204,14 +204,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                             .forEach(aliasRoutePathTemplate -> routeAliases
                                     .add(new RouteAliasData(
                                             getParentLayouts(configuration,
-                                                    target,
                                                     aliasRoutePathTemplate),
                                             aliasRoutePathTemplate,
                                             configuration.getParameters(
                                                     aliasRoutePathTemplate),
                                             target)));
                     List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
-                            configuration, target, targetRoutePathTemplate);
+                            configuration, targetRoutePathTemplate);
                     RouteData route = new RouteData(parentLayouts,
                             targetRoutePathTemplate,
                             configuration
