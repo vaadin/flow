@@ -18,6 +18,7 @@ package com.vaadin.client.flow;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
@@ -27,6 +28,7 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
+import elemental.dom.Node;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -127,22 +129,28 @@ public class StateTree {
 
     /**
      * Unregisters all nodes except root from this tree, and clears the root's
-     * features. Use to reset the tree in preparation for rebuilding it in
-     * in a resynchronization response.
+     * features. Use to reset the tree in preparation for rebuilding it in in a
+     * resynchronization response.
      */
     public void prepareForResync() {
         idToNode.forEach((node, b) -> {
             if (node != rootNode) {
+                final Node dom = node.getDomNode();
+                if (dom != null
+                        && ServerEventObject.getIfPresent(dom) != null) {
+                    // reject any promise waiting on this node
+                    ServerEventObject.getIfPresent(dom).rejectPromises();
+                }
                 unregisterNode(node);
                 node.setParent(null);
             }
         });
         rootNode.forEachFeature((feature, featureId) -> {
             if (feature instanceof NodeList) {
-                final NodeList nodeList = (NodeList)feature;
+                final NodeList nodeList = (NodeList) feature;
                 if (featureId.intValue() == NodeFeatures.ELEMENT_CHILDREN) {
-                    // splice() instead of clear() to preserve auxilliary DOM
-                    // nodes such as loading indicator and <noscript>
+                    // splice() instead of clear() to preserve auxiliary DOM
+                    // nodes (loading indicator and <noscript>)
                     nodeList.splice(0, nodeList.length());
                 } else {
                     nodeList.clear();
