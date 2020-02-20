@@ -545,6 +545,10 @@ public class NodeTasks implements FallibleCommand {
 
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(builder.npmFolder);
         commands.add(taskGenerateTsConfig);
+
+        TaskGenerateCssModule taskGenerateCssModule =
+                new TaskGenerateCssModule(builder.npmFolder);
+        commands.add(taskGenerateCssModule);
     }
 
     private void addConnectServicesTasks(Builder builder) {

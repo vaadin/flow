@@ -20,7 +20,9 @@
     "experimentalDecorators": true
   },
   "include": [
-    "frontend/**/*.ts", "frontend/index.js"
+    "frontend/**/*.ts",
+    "frontend/index.js",
+    "types.d.ts"
   ],
   "exclude": []
 }
