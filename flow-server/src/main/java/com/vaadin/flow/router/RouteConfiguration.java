@@ -389,10 +389,13 @@ public class RouteConfiguration implements Serializable {
      * will be the first found match for all paths that are registered.
      *
      * @param path
-     *         path to remove from registry
+     *            path to remove from registry
      * @param navigationTarget
-     *         path navigation target to remove
+     *            path navigation target to remove
+     * @deprecated use {@link #removeRoute(String)} or
+     *             {@link #removeRoute(Class)} instead.
      */
+    @Deprecated
     public void removeRoute(String path,
             Class<? extends Component> navigationTarget) {
         handledRegistry.removeRoute(path, navigationTarget);
@@ -540,21 +543,6 @@ public class RouteConfiguration implements Serializable {
                 .getSessionRegistry(VaadinSession.getCurrent());
     }
 
-    /**
-     * Trim the given route string of extra characters that can be left in
-     * special cases like root target containing optional parameter.
-     *
-     * @param routeString
-     *         route string to trim
-     * @return trimmed route
-     */
-    private String trimRouteString(String routeString) {
-        if (routeString.startsWith("/")) {
-            routeString = routeString.substring(1);
-        }
-        return routeString;
-    }
-
     @SafeVarargs
     private final boolean isAnnotatedParameter(
             Class<? extends Component> navigationTarget,
@@ -566,27 +554,6 @@ public class RouteConfiguration implements Serializable {
             }
         }
         return false;
-    }
-
-    private boolean hasUrlParameters(
-            Class<? extends Component> navigationTarget) {
-        return HasUrlParameter.class.isAssignableFrom(navigationTarget);
-    }
-
-    private <T> List<String> serializeUrlParameters(List<T> urlParameters) {
-        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
-                .collect(Collectors.toList());
-    }
-
-    private String getUrlBase(Class<? extends Component> navigationTarget,
-            String targetUrl) {
-        String routeString = targetUrl;
-        if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
-                WildcardParameter.class) || HasUrlParameter.class
-                .isAssignableFrom(navigationTarget)) {
-            routeString = PARAMETER_PATTERN.matcher(routeString).replaceAll("");
-        }
-        return trimRouteString(routeString);
     }
 
 }
