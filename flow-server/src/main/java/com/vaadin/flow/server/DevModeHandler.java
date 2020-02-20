@@ -389,9 +389,6 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-
-        // TODO : show 'error' message if dev server is not yet started
-
         // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
