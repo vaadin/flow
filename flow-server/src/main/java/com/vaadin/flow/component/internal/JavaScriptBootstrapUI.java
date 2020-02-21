@@ -43,7 +43,6 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,7 +223,7 @@ public class JavaScriptBootstrapUI extends UI {
 
         clientNavigationStateRenderer.handle(navigationEvent);
 
-        forwardToLocation = clientNavigationStateRenderer.forwardToLocation;
+        forwardToLocation = clientNavigationStateRenderer.getForwardToLocation();
 
         adjustPageTitle();
 

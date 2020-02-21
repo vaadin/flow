@@ -49,8 +49,26 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
-    public boolean isClientSideView = false;
-    public String forwardToLocation = null;
+    private boolean isClientSideView = false;
+    private String forwardToLocation = null;
+
+    /**
+     * Check if the forward target is client-side route.
+     *
+     * @return forward target is client-side route
+     */
+    public boolean isClientSideView() {
+        return isClientSideView;
+    }
+
+    /**
+     * Gets the new location.
+     *
+     * @return the new location
+     */
+    public String getForwardToLocation() {
+        return forwardToLocation;
+    }
 
     /**
      * Construct event from a NavigationEvent.
