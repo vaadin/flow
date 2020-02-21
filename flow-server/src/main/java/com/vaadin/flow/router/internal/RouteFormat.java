@@ -25,7 +25,7 @@ import com.vaadin.flow.router.RouteParameterRegex;
  * Utility class which contains various methods for defining url parameter
  * template.
  */
-public class RouteFormat implements Serializable {
+class RouteFormat implements Serializable {
 
     static final String INT_REGEX = RouteParameterRegex.INT;
     static final String LONG_REGEX = RouteParameterRegex.LONG;
@@ -134,11 +134,11 @@ public class RouteFormat implements Serializable {
     }
 
     static String getRegexName(String regex) {
-        if (RouteFormat.INT_REGEX.equalsIgnoreCase(regex)) {
+        if (INT_REGEX.equals(regex)) {
             return "int";
-        } else if (RouteFormat.LONG_REGEX.equalsIgnoreCase(regex)) {
+        } else if (LONG_REGEX.equals(regex)) {
             return "long";
-        } else if (RouteFormat.BOOL_REGEX.equalsIgnoreCase(regex)) {
+        } else if (BOOL_REGEX.equals(regex)) {
             return "bool";
         } else {
             return "string";

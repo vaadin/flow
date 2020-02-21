@@ -170,9 +170,6 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         getRouteModel().addRoute(urlTemplate, target);
 
         if (!hasRouteTarget(navigationTarget)) {
-            // FIXME: This seems inconsistent with the case when adding same
-            // navigationTarget with different parent layouts. In that case the
-            // new registered route is not an alias.
             setTargetRouteImpl(navigationTarget, urlTemplate);
         }
 
