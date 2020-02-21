@@ -54,7 +54,8 @@ public class NavigationState implements Serializable {
      * @return the navigation target of this state
      */
     public Class<? extends Component> getNavigationTarget() {
-        return navigationTarget;
+        return navigationTarget != null ? navigationTarget
+                : routeTarget != null ? routeTarget.getTarget() : null;
     }
 
     /**
@@ -64,6 +65,8 @@ public class NavigationState implements Serializable {
      *            navigation target
      */
     void setNavigationTarget(Class<? extends Component> navigationTarget) {
+        Objects.requireNonNull(navigationTarget,
+                "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
     }
 
@@ -77,7 +80,6 @@ public class NavigationState implements Serializable {
         Objects.requireNonNull(routeTarget,
                 "routeTarget cannot be null");
         this.routeTarget = routeTarget;
-        this.navigationTarget = routeTarget.getTarget();
     }
 
     /**
@@ -89,6 +91,10 @@ public class NavigationState implements Serializable {
         if (routeTarget == null && navigationTarget != null) {
             routeTarget = router.getRegistry().getRouteTarget(navigationTarget,
                     urlParameters);
+
+            if (routeTarget != null) {
+                assert navigationTarget.equals(routeTarget.getTarget());
+            }
         }
         return routeTarget;
     }
@@ -124,14 +130,9 @@ public class NavigationState implements Serializable {
      *            url parameters.
      */
     void setParameters(UrlParameters urlParameters) {
+        Objects.requireNonNull(urlParameters,
+                "urlParameters cannot be null");
         this.urlParameters = urlParameters;
-
-        // Ensures that is deprecated navigationTarget is set and getRouteTarget
-        // is invoked, this will reset the routeTarget since new urlParameters
-        // are set.
-        if (navigationTarget != null && routeTarget != null) {
-            routeTarget = null;
-        }
     }
 
     /**
