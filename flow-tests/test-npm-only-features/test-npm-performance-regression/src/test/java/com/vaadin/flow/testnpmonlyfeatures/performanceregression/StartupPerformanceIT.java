@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -33,6 +34,12 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
     public void devModeInitializerToWebpackUpIsBelowThreshold() {
         getDriver().get(getRootURL());
         waitForDevServer();
+
+        long timeoutTime = System.currentTimeMillis() + 20000;
+        while (System.currentTimeMillis() < timeoutTime
+                && !isElementPresent(By.id("performance-component"))) {
+            getDriver().navigate().refresh();
+        }
 
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
