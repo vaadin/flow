@@ -18,11 +18,9 @@ package com.vaadin.flow.testnpmonlyfeatures.general;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 
 @JsModule("./init-listener-component.js")
 @Tag("init-listener-component")
-@NpmPackage(value = "@polymer/polymer", version = "3.2.0")
 public class ComponentAddedViaInitListenerView extends Component {
 
 }

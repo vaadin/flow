@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -25,7 +24,6 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("template-scalability-panel")
 @JsModule("./template-scalability-panel.js")
-@NpmPackage(value = "@polymer/polymer", version = "3.2.0")
 public class TemplateScalabilityPanel extends PolymerTemplate<TemplateModel> {
 
     @Id("ack-btn")

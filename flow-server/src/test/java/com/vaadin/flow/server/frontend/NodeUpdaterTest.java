@@ -114,6 +114,17 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
+        JsonObject object = Json.createObject();
+        object.put(nodeUpdater.VAADIN_DEP_KEY,
+                nodeUpdater.createVaadinPackagesJson());
+        nodeUpdater.updateDefaultDependencies(object);
+
+        String version = getPolymerVersion(object);
+        Assert.assertEquals("3.2.0", version);
+    }
+
+    @Test
     public void updateMainDefaultDependencies_polymerVersionIsProvidedByUser_useProvided() {
         JsonObject object = Json.createObject();
         JsonObject dependencies = Json.createObject();
@@ -154,11 +165,6 @@ public class NodeUpdaterTest {
 
         Assert.assertEquals("5.0.1", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
-    }
-
-    @Test
-    public void getDefaultDependencies_should_not_include_polymer(){
-        Assert.assertFalse(NodeUpdater.getDefaultDependencies().containsKey("@polymer/polymer"));
     }
 
     private String getPolymerVersion(JsonObject object) {

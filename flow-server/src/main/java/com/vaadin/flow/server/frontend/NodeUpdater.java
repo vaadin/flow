@@ -245,6 +245,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@vaadin/router", "^1.6.0");
 
+        defaults.put("@polymer/polymer", POLYMER_VERSION);
+
         return defaults;
     }
 

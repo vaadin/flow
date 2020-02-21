@@ -19,7 +19,6 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.polymertemplate.Id;
@@ -31,7 +30,6 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 @Route(value = "route-path")
 @Tag("my-component")
 @JsModule("./my-component.js")
-@NpmPackage(value = "@polymer/polymer", version = "3.2.0")
 public class IdTestView extends PolymerTemplate<TemplateModel> {
 
     @WebServlet("/servlet-path/*")

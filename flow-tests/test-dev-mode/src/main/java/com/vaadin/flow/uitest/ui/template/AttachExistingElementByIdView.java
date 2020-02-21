@@ -17,7 +17,6 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
@@ -26,7 +25,6 @@ public class AttachExistingElementByIdView extends AbstractDivView {
 
     @JsModule("./AttachExistingElementById.js")
     @Tag("existing-element")
-    @NpmPackage(value = "@polymer/polymer", version = "3.2.0")
     public static class AttachExistingElementByIdTemplate
             extends AbstractAttachExistingElementByIdTemplate {
 
