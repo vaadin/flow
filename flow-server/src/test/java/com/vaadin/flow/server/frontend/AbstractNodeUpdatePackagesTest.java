@@ -746,8 +746,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         JsonObject deps = packJsonObject.get(DEPENDENCIES);
         // No Flow deps
         Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
-        // No Polymer deps
-        Assert.assertFalse(deps.hasKey("@polymer/polymer"));
+        // Contains initially generated default polymer dep
+        Assert.assertTrue(deps.hasKey("@polymer/polymer"));
     }
 
     JsonObject getPackageJson(File packageFile) throws IOException {

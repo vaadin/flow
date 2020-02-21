@@ -16,7 +16,6 @@ import org.mockito.stubbing.Answer;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -319,7 +318,6 @@ public class NpmTemplateParserTest {
 
     @Tag("likeable-element")
     @JsModule("./frontend/LikeableElement.js")
-    @NpmPackage(value = "@polymer/polymer", version = "3.2.0")
     public class Likeable extends PolymerTemplate<TemplateModel> {
     }
 
