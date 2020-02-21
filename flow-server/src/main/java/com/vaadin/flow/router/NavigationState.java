@@ -130,8 +130,6 @@ public class NavigationState implements Serializable {
      *            url parameters.
      */
     void setParameters(UrlParameters urlParameters) {
-        Objects.requireNonNull(urlParameters,
-                "urlParameters cannot be null");
         this.urlParameters = urlParameters;
     }
 
