@@ -43,7 +43,6 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,7 +223,7 @@ public class JavaScriptBootstrapUI extends UI {
 
         clientNavigationStateRenderer.handle(navigationEvent);
 
-        forwardToLocation = clientNavigationStateRenderer.forwardToLocation;
+        forwardToLocation = clientNavigationStateRenderer.getForwardToLocation();
 
         adjustPageTitle();
 
@@ -342,9 +341,8 @@ public class JavaScriptBootstrapUI extends UI {
                     "The event.forwardTo() API in beforeLeave from server-view to client-view is not supported, "
                     + "you can use the combination between postpone() and getUI().get().getPage().setLocation(\"{}\") "
                     + " API in order to forward to other location", route);
-        } else {
-            wrapperElement.executeJs("this.serverConnected($0)", postpone);
         }
+        wrapperElement.executeJs("this.serverConnected($0)", postpone);
     }
 
     private static Logger getLogger() {

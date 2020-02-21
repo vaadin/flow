@@ -81,8 +81,7 @@ public abstract class AbstractNavigationStateRenderer
 
     private LocationChangeEvent locationChangeEvent = null;
 
-    public String forwardToLocation = null;
-
+    private String forwardToLocation = null;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -92,6 +91,15 @@ public abstract class AbstractNavigationStateRenderer
      */
     public AbstractNavigationStateRenderer(NavigationState navigationState) {
         this.navigationState = navigationState;
+    }
+
+    /**
+     * Gets the new location.
+     *
+     * @return the new location
+     */
+    public String getForwardToLocation() {
+        return forwardToLocation;
     }
 
     /**
@@ -298,8 +306,8 @@ public abstract class AbstractNavigationStateRenderer
             BeforeEvent beforeNavigation) {
 
         if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
-            if (beforeNavigation.isClientSideView) {
-                forwardToLocation = beforeNavigation.forwardToLocation;
+            if (beforeNavigation.isClientSideView()) {
+                forwardToLocation = beforeNavigation.getForwardToLocation();
                 return Optional.of(HttpServletResponse.SC_OK);
             }
             return Optional.of(forward(event, beforeNavigation));
@@ -611,7 +619,7 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
                         beforeEvent.getForwardTargetParameters())
-                || beforeEvent.isClientSideView) {
+                || beforeEvent.isClientSideView()) {
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 
