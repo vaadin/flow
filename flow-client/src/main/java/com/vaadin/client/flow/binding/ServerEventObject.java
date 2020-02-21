@@ -226,13 +226,26 @@ public final class ServerEventObject extends JavaScriptObject {
      * @return a reference to the <code>$server</code> object in the element
      */
     public static ServerEventObject get(Element element) {
-        ServerEventObject serverObject = WidgetUtil
-                .crazyJsoCast(WidgetUtil.getJsProperty(element, "$server"));
+        ServerEventObject serverObject = getIfPresent(element);
         if (serverObject == null) {
             serverObject = (ServerEventObject) JavaScriptObject.createObject();
             WidgetUtil.setJsProperty(element, "$server", serverObject);
         }
         return serverObject;
+    }
+
+    /**
+     * Gets or creates <code>element.$server</code> for the given element, if
+     * present.
+     *
+     * @param node
+     *            the element to use
+     * @return a reference to the <code>$server</code> object in the element, or
+     *         <code>null</code> if note present.
+     */
+    public static ServerEventObject getIfPresent(Node node) {
+        return WidgetUtil
+                .crazyJsoCast(WidgetUtil.getJsProperty(node, "$server"));
     }
 
     protected static ServerEventDataExpression getOrCreateExpression(
@@ -248,4 +261,20 @@ public final class ServerEventObject extends JavaScriptObject {
 
         return expression;
     }
+
+    /**
+     * Reject all promises pending on this server object. Called during client
+     * resynchronization to free consumers of promises that are never delivered
+     * by the server.
+     */
+    public native void rejectPromises()
+    /*-{
+        var promises = this[@ServerEventObject::PROMISE_CALLBACK_NAME].promises;
+        if (promises !== undefined ) {
+            promises.forEach(function (item) {
+                item[1](Error("Client is resynchronizing"));
+            });
+        }
+    }-*/;
+
 }

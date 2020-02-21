@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -324,8 +323,16 @@ public class ServerRpcHandler implements Serializable {
                     + "indicate a bug in Vaadin platform. If you see this "
                     + "message regularly please open a bug report at "
                     + "https://github.com/vaadin/flow/issues");
-            ui.getInternals().getStateTree().getRootNode()
-                    .visitNodeTree(StateNode::markAsDirty);
+
+            // Run detach listeners and re-attach all nodes again to the
+            // state tree, in order to send changes for a full re-build of
+            // the client-side state tree in the response
+            ui.getInternals().getStateTree().prepareForResync();
+
+            // At this point, make no assumptions about which dependencies have
+            // been accepted by the client
+            ui.getInternals().getDependencyList().clearPendingSendToClient();
+
             // Signal by exception instead of return value to keep the method
             // signature for source and binary compatibility
             throw new ResynchronizationRequiredException();
