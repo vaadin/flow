@@ -603,18 +603,18 @@ public final class DevModeHandler implements RequestHandler {
                             + "the target execution folder doesn't exist.");
         }
         if (!webpack.exists()) {
-            getLogger().warn("'{}' doesn't exist. Did you run `npm install`?",
+            getLogger().warn("'%s' doesn't exist. Did you run `npm install`?",
                     webpack);
             throw new ExecutionFailedException(
                     "Couldn't start dev server because "
-                            + "'{}' doesn't exist. `npm install` has not been executed most likely.");
+                            + "'%s' doesn't exist. `npm install` has not been executed most likely.");
         } else if (!webpack.canExecute()) {
             getLogger().warn(
                     "'{}' is not an executable. Did you run `npm install`?",
                     webpack);
             throw new ExecutionFailedException(
                     "Couldn't start dev server because "
-                            + "'{}' is not an executable. `npm install` has not been executed most likely.");
+                            + "'%s' is not an executable. `npm install` has not been executed most likely.");
         }
         if (!webpackConfig.canRead()) {
             getLogger().warn(
@@ -622,7 +622,7 @@ public final class DevModeHandler implements RequestHandler {
                     webpackConfig);
             throw new ExecutionFailedException(
                     "Couldn't start dev server because "
-                            + "'{}' doesn't exist or is not readable.");
+                            + "'%s' doesn't exist or is not readable.");
         }
         return new Pair<>(webpack, webpackConfig);
     }
