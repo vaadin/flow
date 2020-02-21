@@ -402,12 +402,12 @@ public class TestBenchHelpers extends ParallelTest {
      * immidiately.
      */
     protected void waitForDevServer() {
-//        Object result;
-//        do {
-//            getCommandExecutor().waitForVaadin();
-//            result = getCommandExecutor().executeScript(
-//                    "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
-//        } while (Boolean.TRUE.equals(result));
+        Object result;
+        do {
+            getCommandExecutor().waitForVaadin();
+            result = getCommandExecutor().executeScript(
+                    "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
+        } while (Boolean.TRUE.equals(result));
     }
 
     private WebElement getShadowRoot(WebElement webComponent) {
