@@ -46,7 +46,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -454,13 +453,13 @@ public class FrontendUtils {
     private static List<ProxyConfig.Proxy> readProxySettingsFromSystemProperties() {
         List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
 
-        String noproxy = ObjectUtils.firstNonNull(
+        String noproxy = getNonNull(
                 System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
         if (noproxy != null)
             noproxy = noproxy.replaceAll(",", "|");
 
-        String httpsProxyUrl = ObjectUtils.firstNonNull(
+        String httpsProxyUrl = getNonNull(
                 System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getProperty(
                         SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
@@ -469,7 +468,7 @@ public class FrontendUtils {
                     httpsProxyUrl, noproxy));
         }
 
-        String proxyUrl = ObjectUtils.firstNonNull(
+        String proxyUrl = getNonNull(
                 System.getProperty(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
                 System.getProperty(
                         SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
@@ -484,13 +483,13 @@ public class FrontendUtils {
     private static List<ProxyConfig.Proxy> readProxySettingsFromEnvironmentVariables() {
         List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
 
-        String noproxy = ObjectUtils.firstNonNull(
+        String noproxy = getNonNull(
                 System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
         if (noproxy != null)
             noproxy = noproxy.replaceAll(",", "|");
 
-        String httpsProxyUrl = ObjectUtils.firstNonNull(
+        String httpsProxyUrl = getNonNull(
                 System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
         if (httpsProxyUrl != null) {
@@ -498,7 +497,7 @@ public class FrontendUtils {
                     httpsProxyUrl, noproxy));
         }
 
-        String proxyUrl = ObjectUtils.firstNonNull(
+        String proxyUrl = getNonNull(
                 System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
         if (proxyUrl != null) {
@@ -507,6 +506,22 @@ public class FrontendUtils {
         }
 
         return proxyList;
+    }
+
+    /**
+     * Get the first non null value from the given array.
+     *
+     * @param valueArray
+     *         array of values to get non null from
+     * @return first non null value or null if no values found
+     */
+    private static String getNonNull(String... valueArray) {
+        for (String value : valueArray) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     /**
@@ -675,7 +690,7 @@ public class FrontendUtils {
             // There are IOException coming from process fork
         }
         if (file == null) {
-            throw new IllegalStateException(format(NODE_NOT_FOUND));
+            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
         }
         return file;
     }
@@ -801,7 +816,7 @@ public class FrontendUtils {
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(format(NO_CONNECTION,
+                throw new WebpackConnectionException(String.format(NO_CONNECTION,
                         "getting the stats content hash."));
             }
             return streamToString(statsConnection.getInputStream())
@@ -817,7 +832,7 @@ public class FrontendUtils {
                 .prepareConnection("/stats.json", "GET");
         if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new WebpackConnectionException(
-                    format(NO_CONNECTION, "downloading stats.json"));
+                    String.format(NO_CONNECTION, "downloading stats.json"));
         }
         return statsConnection.getInputStream();
     }
@@ -918,7 +933,7 @@ public class FrontendUtils {
             if (assetsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
                 throw new WebpackConnectionException(
-                        format(NO_CONNECTION, "getting assets by chunk name."));
+                        String.format(NO_CONNECTION, "getting assets by chunk name."));
             }
             return streamToString(assetsConnection.getInputStream());
         }
@@ -1092,7 +1107,7 @@ public class FrontendUtils {
                 if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
                     return false;
                 } else {
-                    getLogger().warn(format(
+                    getLogger().warn(String.format(
                             "installed pnpm ('%s', version %s) is too old, installing supported version locally",
                             String.join(" ", pnpmCommand),
                             pnpmVersion.getFullVersion()));
@@ -1162,13 +1177,13 @@ public class FrontendUtils {
 
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
+        return String.format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
                 PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private static String buildShouldWorkString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return format(SHOULD_WORK, tool, version, supportedMajor,
+        return String.format(SHOULD_WORK, tool, version, supportedMajor,
                 supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
@@ -1178,7 +1193,7 @@ public class FrontendUtils {
         for (String instruction : extraUpdateInstructions) {
             extraInstructions.append("%n  - or ").append(instruction);
         }
-        return format(BAD_VERSION, tool, version, extraInstructions.toString(),
+        return String.format(BAD_VERSION, tool, version, extraInstructions.toString(),
                 PARAM_IGNORE_VERSION_CHECKS);
     }
 
