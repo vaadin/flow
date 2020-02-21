@@ -26,9 +26,13 @@ import java.util.regex.Pattern;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class StartupPerformanceIT {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class StartupPerformanceIT extends ChromeBrowserTest {
     @Test
     public void devModeInitializerToWebpackUpIsBelow5500ms() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
                 "- (Started|Reusing) webpack-dev-server", true);
@@ -56,11 +60,11 @@ public class StartupPerformanceIT {
         try {
             Files.lines(getLogPath()).forEach(line -> {
                 Matcher matcherFirst = startPattern.matcher(line);
-                if (matcherFirst.find() && startTime.get() == 0) {
+                if (matcherFirst.matches() && startTime.get() == 0) {
                     startTime.set(Integer.parseInt(matcherFirst.group(1)));
                 }
                 Matcher matcherEnd = endPattern.matcher(line);
-                if (matcherEnd.find()) {
+                if (matcherEnd.matches()) {
                     endTime.set(Integer.parseInt(matcherEnd.group(1)));
                 }
             });
