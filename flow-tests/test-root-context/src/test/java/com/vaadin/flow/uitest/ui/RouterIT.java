@@ -127,5 +127,6 @@ public class RouterIT extends ChromeBrowserTest {
 
     private void openRouteUrl(String route) {
         getDriver().get(getRootURL() + getTestPath() + route);
+        waitForDevServer();
     }
 }
