@@ -155,6 +155,9 @@ public final class DevModeHandler implements RequestHandler {
      *            deployment configuration
      * @param npmFolder
      *            folder with npm configuration files
+     * @param waitFor
+     *            a completable future whose execution result needs to be
+     *            available to start the webpack dev server
      *
      * @return the instance in case everything is alright, null otherwise
      */
