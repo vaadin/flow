@@ -194,6 +194,9 @@ public class PrepareFrontendMojoTest {
     private void assertPackageJsonContent() throws IOException {
         JsonObject packageJsonObject = getPackageJson(packageJson);
 
+        assertContainsPackage(packageJsonObject.getObject("dependencies"),
+                "@polymer/polymer");
+
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
                 "webpack", "webpack-cli", "webpack-dev-server",
                 "copy-webpack-plugin", "html-webpack-plugin");
