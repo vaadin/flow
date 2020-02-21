@@ -1,6 +1,13 @@
 <html>
 <head>
 <script type="text/javascript">
+
+window.Vaadin = window.Vaadin || {};
+window.Vaadin.Flow = window.Vaadin.Flow || {};
+// Make sure that there are no any client. It allows to work correct waitForVaadin in TB
+window.Vaadin.Flow.clients = null;
+window.Vaadin.Flow.devServerIsNotLoaded =true;
+
 function deferReload(){
     setTimeout(function(){
         location.reload();
