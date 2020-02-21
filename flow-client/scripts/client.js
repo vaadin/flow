@@ -40,7 +40,7 @@ fs.writeFileSync(toSourceDir + toFile, clientSource, 'utf8');
 // Write to target
 fs.writeFileSync(toTargetDir + toFile, clientSource, 'utf8');
 
-// Get 
+// Check that chromedriver version matches in flow and intern
 const driversContent = fs.readFileSync('../drivers.xml', 'utf8');
 const [,flowChromeVersion] = /\/([\d\\.]+)\/chromedriver/.exec(driversContent);
 const internJson = require('../intern.json');
