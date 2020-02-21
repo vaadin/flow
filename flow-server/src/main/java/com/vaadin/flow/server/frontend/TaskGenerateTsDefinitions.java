@@ -15,47 +15,48 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.commons.io.IOUtils;
 
+import java.io.File;
+import java.io.IOException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Generate <code>tsconfig.json</code> if it is missing in project folder and
- * <code>index.ts</code> exists in frontend folder.
+ * Generate <code>types.d.ts</code> if it is missing in project folder and
+ * <code>tsconfig.json</code> exists in project folder.
  *
  * @since 3.0
  */
-public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
+public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
-    static final String TSCONFIG_JSON = "tsconfig.json";
+    private static final String TS_DEFINITIONS = "types.d.ts";
     private final File npmFolder;
 
     /**
-     * Create a task to generate <code>tsconfig.json</code> file.
+     * Create a task to generate <code>types.d.ts</code> file.
      *
      * @param npmFolder
      *            project folder where the file will be generated.
      */
-    TaskGenerateTsConfig(File npmFolder) {
+    TaskGenerateTsDefinitions(File npmFolder) {
         this.npmFolder = npmFolder;
     }
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream(TSCONFIG_JSON),
+        return IOUtils.toString(getClass().getResourceAsStream(TS_DEFINITIONS),
                 UTF_8);
     }
 
     @Override
     protected File getGeneratedFile() {
-        return new File(npmFolder, TSCONFIG_JSON);
+        return new File(npmFolder, TS_DEFINITIONS);
     }
 
     @Override
     protected boolean shouldGenerate() {
-        return !new File(npmFolder, TSCONFIG_JSON).exists();
+        File tsDefinitionsFile = new File(npmFolder, TS_DEFINITIONS);
+        return !tsDefinitionsFile.exists()
+                && new File(npmFolder, TaskGenerateTsConfig.TSCONFIG_JSON).exists();
     }
 }
