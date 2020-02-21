@@ -593,32 +593,35 @@ public final class DevModeHandler implements RequestHandler {
         File webpack = new File(npmFolder, WEBPACK_SERVER);
         File webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
         if (!npmFolder.exists()) {
-            getLogger().warn("No project folder'{}' exists", npmFolder);
+            getLogger().warn("No project folder '{}' exists", npmFolder);
             throw new ExecutionFailedException(
                     "Couldn't start dev server because "
                             + "the target execution folder doesn't exist.");
         }
         if (!webpack.exists()) {
-            getLogger().warn("'%s' doesn't exist. Did you run `npm install`?",
+            getLogger().warn("'{}' doesn't exist. Did you run `npm install`?",
                     webpack);
-            throw new ExecutionFailedException(
+            throw new ExecutionFailedException(String.format(
                     "Couldn't start dev server because "
-                            + "'%s' doesn't exist. `npm install` has not been executed most likely.");
+                            + "'%s' doesn't exist. `npm install` has not been executed most likely.",
+                    webpack));
         } else if (!webpack.canExecute()) {
             getLogger().warn(
                     "'{}' is not an executable. Did you run `npm install`?",
                     webpack);
-            throw new ExecutionFailedException(
+            throw new ExecutionFailedException(String.format(
                     "Couldn't start dev server because "
-                            + "'%s' is not an executable. `npm install` has not been executed most likely.");
+                            + "'%s' is not an executable. `npm install` has not been executed most likely.",
+                    webpack));
         }
         if (!webpackConfig.canRead()) {
             getLogger().warn(
                     "Webpack configuration '{}' is not found or is not readable.",
                     webpackConfig);
-            throw new ExecutionFailedException(
+            throw new ExecutionFailedException(String.format(
                     "Couldn't start dev server because "
-                            + "'%s' doesn't exist or is not readable.");
+                            + "'%s' doesn't exist or is not readable.",
+                    webpackConfig));
         }
         return new Pair<>(webpack, webpackConfig);
     }
