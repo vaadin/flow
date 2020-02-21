@@ -11,6 +11,7 @@ public class ViewTitleIT extends ChromeBrowserTest {
     @Override
     protected void open() {
         getDriver().get(getRootURL() + "/view/");
+        waitForDevServer();
     }
 
     @Test
