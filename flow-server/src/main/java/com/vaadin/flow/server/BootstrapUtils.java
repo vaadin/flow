@@ -284,7 +284,7 @@ class BootstrapUtils {
         Optional<Class<?>> navigationTarget = ui.getRouter()
                 .resolveNavigationTarget(request.getPathInfo(),
                         request.getParameterMap())
-                .map(navigationState -> resolveTopParentLayout(ui,
+                .map(navigationState -> resolveTopParentLayout(
                         navigationState));
         if (navigationTarget.isPresent()) {
             return navigationTarget;
@@ -309,10 +309,10 @@ class BootstrapUtils {
                 });
     }
 
-    private static Class<?> resolveTopParentLayout(UI ui,
-                                                   NavigationState navigationState) {
+    private static Class<?> resolveTopParentLayout(
+            NavigationState navigationState) {
         Class<? extends RouterLayout> parentLayout = getTopParentLayout(
-                ui.getRouter(), navigationState);
+                navigationState);
         if (parentLayout != null) {
             return parentLayout;
         }
@@ -321,10 +321,9 @@ class BootstrapUtils {
     }
 
     private static Class<? extends RouterLayout> getTopParentLayout(
-            Router router, NavigationState navigationState) {
-        List<Class<? extends RouterLayout>> routeLayouts = router.getRegistry()
-                .getRouteLayouts(navigationState.getResolvedPath(),
-                        navigationState.getNavigationTarget());
+            NavigationState navigationState) {
+        List<Class<? extends RouterLayout>> routeLayouts = navigationState
+                .getRouteTarget().getParentLayouts();
         if (routeLayouts.isEmpty()) {
             return null;
         }
