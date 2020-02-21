@@ -43,7 +43,10 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
@@ -81,6 +84,15 @@ public class JavaScriptBootstrapUI extends UI {
         wrapperElement.getChildren().forEach(childElement -> ComponentUtil
                 .findComponents(childElement, childComponents::add));
         return childComponents.build();
+    }
+
+    /**
+     * Gets the client-side location used for forwardTo.
+     *
+     * @return a forward location
+     */
+    public String getForwardToLocation() {
+        return forwardToLocation;
     }
 
     /**
@@ -326,14 +338,18 @@ public class JavaScriptBootstrapUI extends UI {
 
     private void handleForwardToClientSide(String route, boolean postpone) {
         if(route != null) {
-            wrapperElement.executeJs("this.serverConnected($0)", true);
-            if (!postpone) {
-                getUI().ifPresent(ui ->
-                        ui.getPage().setLocation(route));
-            }
+            getLogger().warn(
+                    "The event.forwardTo() API in beforeLeave from server-view to client-view is not supported, "
+                    + "you can use the combination between postpone() and getUI().get().getPage().setLocation(\"{}\") "
+                    + " API in order to forward to other location", route);
         } else {
             wrapperElement.executeJs("this.serverConnected($0)", postpone);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(JavaScriptBootstrapUI.class.getName());
     }
 
     /**
