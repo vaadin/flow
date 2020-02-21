@@ -284,8 +284,7 @@ class BootstrapUtils {
         Optional<Class<?>> navigationTarget = ui.getRouter()
                 .resolveNavigationTarget(request.getPathInfo(),
                         request.getParameterMap())
-                .map(navigationState -> resolveTopParentLayout(
-                        navigationState));
+                .map(BootstrapUtils::resolveTopParentLayout);
         if (navigationTarget.isPresent()) {
             return navigationTarget;
         }
