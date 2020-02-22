@@ -59,7 +59,6 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
@@ -1148,7 +1147,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
 
-        UI ui = ReflectTools.createInstance(uiClass);
+        UI ui = request.getService().getInstantiator().createUI(uiClass);
         ui.getInternals().setContextRoot(
                 request.getService().getContextRootRelativePath(request));
 

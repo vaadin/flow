@@ -203,6 +203,18 @@ public interface Instantiator extends Serializable {
     <T extends Component> T createComponent(Class<T> componentClass);
 
     /**
+     * Creates an instance of a UI by its {@code uiClass}.
+     *
+     * @param uiClass
+     *            the instance type to create, not <code>null</code>
+     * @param <T>
+     *            the UI type
+     *
+     * @return the created instance, not <code>null</code>
+     */
+    <T extends UI> T createUI(Class<T> uiClass);
+
+    /**
      * Gets the instantiator to use for the given UI.
      *
      * @param ui

@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
 
@@ -41,11 +42,20 @@ public class MockInstantiator implements Instantiator {
 
     @Override
     public <T> T getOrCreate(Class<T> type) {
-        return ReflectTools.createInstance(type);
+        return create(type);
     }
 
     @Override
     public <T extends Component> T createComponent(Class<T> componentClass) {
-        return ReflectTools.createInstance(componentClass);
+        return create(componentClass);
+    }
+
+    @Override
+    public <T extends UI> T createUI(Class<T> uiClass) {
+        return create(uiClass);
+    }
+
+    private <T> T create(Class<T> type) {
+        return ReflectTools.createInstance(type);
     }
 }
