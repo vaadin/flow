@@ -75,6 +75,11 @@ import static java.net.HttpURLConnection.HTTP_OK;
  */
 public final class DevModeHandler implements RequestHandler {
 
+    /**
+     * 
+     */
+    private static final String COULDN_T_START_DEV_SERVER = "Couldn't start dev server because ";
+
     private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
     // It's not possible to know whether webpack is ready unless reading output
@@ -138,6 +143,9 @@ public final class DevModeHandler implements RequestHandler {
      *            deployment configuration
      * @param npmFolder
      *            folder with npm configuration files
+     * @param waitFor
+     *            a completable future whose execution result needs to be
+     *            available to start the webpack dev server
      *
      * @return the instance in case everything is alright, null otherwise
      */
@@ -599,14 +607,14 @@ public final class DevModeHandler implements RequestHandler {
         if (!npmFolder.exists()) {
             getLogger().warn("No project folder '{}' exists", npmFolder);
             throw new ExecutionFailedException(
-                    "Couldn't start dev server because "
+                    COULDN_T_START_DEV_SERVER
                             + "the target execution folder doesn't exist.");
         }
         if (!webpack.exists()) {
             getLogger().warn("'{}' doesn't exist. Did you run `npm install`?",
                     webpack);
             throw new ExecutionFailedException(String.format(
-                    "Couldn't start dev server because "
+                    COULDN_T_START_DEV_SERVER
                             + "'%s' doesn't exist. `npm install` has not been executed most likely.",
                     webpack));
         } else if (!webpack.canExecute()) {
@@ -614,7 +622,7 @@ public final class DevModeHandler implements RequestHandler {
                     "'{}' is not an executable. Did you run `npm install`?",
                     webpack);
             throw new ExecutionFailedException(String.format(
-                    "Couldn't start dev server because "
+                    COULDN_T_START_DEV_SERVER
                             + "'%s' is not an executable. `npm install` has not been executed most likely.",
                     webpack));
         }
@@ -623,7 +631,7 @@ public final class DevModeHandler implements RequestHandler {
                     "Webpack configuration '{}' is not found or is not readable.",
                     webpackConfig);
             throw new ExecutionFailedException(String.format(
-                    "Couldn't start dev server because "
+                    COULDN_T_START_DEV_SERVER
                             + "'%s' doesn't exist or is not readable.",
                     webpackConfig));
         }
