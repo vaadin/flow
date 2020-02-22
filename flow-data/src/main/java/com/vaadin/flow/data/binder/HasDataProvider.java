@@ -43,7 +43,7 @@ public interface HasDataProvider<T> extends HasItems<T> {
      * @param dataProvider
      *            the data provider, not null
      */
-    void setDataProvider(DataProvider<T, ?> dataProvider);
+    void setDataProvider(DataProvider<? extends T, ?> dataProvider);
 
     @Override
     default void setItems(Collection<T> items) {

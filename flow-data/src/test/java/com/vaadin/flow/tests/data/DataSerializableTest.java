@@ -34,7 +34,7 @@ public class DataSerializableTest extends ClassesSerializableTest {
         private Registration registration;
 
         @Override
-        public void setDataProvider(DataProvider<Object, ?> dataProvider) {
+        public void setDataProvider(DataProvider<?, ?> dataProvider) {
             if (registration != null) {
                 registration.remove();
             }
