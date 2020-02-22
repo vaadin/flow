@@ -73,7 +73,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      *             if the query is not of type HierarchicalQuery
      */
     @Override
-    public default Stream<T> fetch(Query<T, F> query) {
+    public default Stream<? extends T> fetch(Query<T, F> query) {
         if (query instanceof HierarchicalQuery<?, ?>) {
             return fetchChildren((HierarchicalQuery<T, F>) query);
         }
@@ -101,7 +101,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      *            given query to request data with
      * @return a stream of data objects resulting from the query
      */
-    public Stream<T> fetchChildren(HierarchicalQuery<T, F> query);
+    public Stream<? extends T> fetchChildren(HierarchicalQuery<T, F> query);
 
     /**
      * Check whether a given item has any children associated with it.

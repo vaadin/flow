@@ -87,7 +87,7 @@ public abstract class DataProviderWrapper<T, F, M>
     }
 
     @Override
-    public Stream<T> fetch(Query<T, F> t) {
+    public Stream<? extends T> fetch(Query<T, F> t) {
         return dataProvider.fetch(new Query<>(t.getOffset(), t.getLimit(),
                 t.getSortOrders(), t.getInMemorySorting(), getFilter(t)));
     }

@@ -87,7 +87,7 @@ public interface DataProvider<T, F> extends Serializable {
      * @return the result of the query request: a stream of data objects, not
      *         {@code null}
      */
-    Stream<T> fetch(Query<T, F> query);
+    Stream<? extends T> fetch(Query<T, F> query);
 
     /**
      * Refreshes the given item. This method should be used to inform all

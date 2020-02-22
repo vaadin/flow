@@ -65,7 +65,7 @@ public abstract class AbstractBackEndHierarchicalDataProvider<T, F>
     }
 
     @Override
-    public Stream<T> fetchChildren(HierarchicalQuery<T, F> query) {
+    public Stream<? extends T> fetchChildren(HierarchicalQuery<T, F> query) {
         return fetchChildrenFromBackEnd(mixInSortOrders(query));
     }
 
@@ -91,6 +91,6 @@ public abstract class AbstractBackEndHierarchicalDataProvider<T, F>
      *            parent item to fetch children from
      * @return a stream of items matching the query
      */
-    protected abstract Stream<T> fetchChildrenFromBackEnd(
+    protected abstract Stream<? extends T> fetchChildrenFromBackEnd(
             HierarchicalQuery<T, F> query);
 }

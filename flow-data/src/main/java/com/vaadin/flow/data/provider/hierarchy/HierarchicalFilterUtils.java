@@ -48,7 +48,7 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
-        public Stream<T> fetchChildren(HierarchicalQuery<T, Q> query) {
+        public Stream<? extends T> fetchChildren(HierarchicalQuery<T, Q> query) {
             return getDataProvider()
                     .fetchChildren(adapt(query, getFilter(query)));
         }
@@ -64,7 +64,7 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
-        public Stream<T> fetch(Query<T, Q> query) {
+        public Stream<? extends T> fetch(Query<T, Q> query) {
             return HierarchicalConfigurableFilterDataProvider.super.fetch(
                     query);
         }
@@ -111,7 +111,7 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
-        public Stream<T> fetchChildren(HierarchicalQuery<T, F> query) {
+        public Stream<? extends T> fetchChildren(HierarchicalQuery<T, F> query) {
             return getDataProvider()
                     .fetchChildren(adapt(query, getFilter(query)));
         }
@@ -127,7 +127,7 @@ final class HierarchicalFilterUtils {
         }
 
         @Override
-        public Stream<T> fetch(Query<T, F> query) {
+        public Stream<? extends T> fetch(Query<T, F> query) {
             return HierarchicalDataProvider.super.fetch(query);
         }
 
