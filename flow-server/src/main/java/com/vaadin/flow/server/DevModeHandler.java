@@ -78,7 +78,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 public final class DevModeHandler implements RequestHandler {
 
     /**
-     * 
+     *
      */
     private static final String COULDN_T_START_DEV_SERVER = "Couldn't start dev server because ";
 
@@ -215,7 +215,7 @@ public final class DevModeHandler implements RequestHandler {
         } else if (exception instanceof RuntimeException) {
             return (RuntimeException) exception;
         } else {
-            throw new IllegalStateException(exception);
+            return new IllegalStateException(exception);
         }
     }
 
@@ -603,9 +603,8 @@ public final class DevModeHandler implements RequestHandler {
         File webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
         if (!npmFolder.exists()) {
             getLogger().warn("No project folder '{}' exists", npmFolder);
-            throw new ExecutionFailedException(
-                    COULDN_T_START_DEV_SERVER
-                            + "the target execution folder doesn't exist.");
+            throw new ExecutionFailedException(COULDN_T_START_DEV_SERVER
+                    + "the target execution folder doesn't exist.");
         }
         if (!webpack.exists()) {
             getLogger().warn("'{}' doesn't exist. Did you run `npm install`?",
