@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -45,6 +46,9 @@ public class TaskRunNpmInstallTest {
     private File npmFolder;
 
     private Logger logger = Mockito.mock(Logger.class);
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws IOException {
@@ -143,9 +147,11 @@ public class TaskRunNpmInstallTest {
         Mockito.verify(logger).info(getRunningMsg());
     }
 
-    @Test(expected = ExecutionFailedException.class)
+    @Test
     public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
             throws IOException, ExecutionFailedException {
+        exception.expectMessage(
+                "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
                 new TaskRunNpmInstall(nodeUpdater, false, true));
     }
@@ -159,7 +165,8 @@ public class TaskRunNpmInstallTest {
         System.setProperty(userHome, home.getPath());
         try {
             File homeDir = new File(home, ".vaadin");
-            File node = new File(homeDir, "node/node");
+            File node = new File(homeDir,
+                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
             FileUtils.forceMkdir(node);
 
             task.execute();

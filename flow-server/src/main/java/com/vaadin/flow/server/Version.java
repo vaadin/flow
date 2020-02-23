@@ -22,7 +22,7 @@ import java.util.Properties;
 import org.slf4j.LoggerFactory;
 
 /**
- * Provides information about the current version of the framework.
+ * Provides information about the current version of Vaadin Flow.
  *
  * @author Vaadin Ltd
  * @since 1.0

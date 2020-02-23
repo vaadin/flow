@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -153,7 +152,8 @@ public final class DevModeHandler {
 
         String nodeExec = null;
         if (useHomeNodeExec) {
-            nodeExec = FrontendUtils.ensureNodeExecutableInHome();
+            nodeExec = FrontendUtils
+                    .ensureNodeExecutableInHome(npmFolder.getAbsolutePath());
         } else {
             nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
         }
