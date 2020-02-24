@@ -60,7 +60,9 @@ public class JavaScriptBootstrapUI extends UI {
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
+
     private String forwardToLocation = null;
+    private boolean isClientSideView = false;
 
     /**
      * Create UI for client side bootstrapping.
@@ -121,12 +123,20 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeFirstSlash(flowRoute)));
 
         // Inform the client, that everything went fine.
-        if (forwardToLocation != null && !postponed) {
-            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
-                    false, forwardToLocation);
-        } else {
+//        if (!postponed && !forwardToLocation.equals("")) {
+//            if (isClientSideView) {
+//                wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
+//                        false, forwardToLocation);
+//            } else {
+//                String execJs;
+//                // Update browser URL but do not fire client-side navigation
+//                execJs = CLIENT_PUSHSTATE_TO;
+//                navigationInProgress = false;
+//                getPage().executeJs(execJs, new Location(removeFirstSlash(forwardToLocation)).getQueryParameters());
+//            }
+//        } else {
             wrapperElement.executeJs("this.serverConnected($0)", postponed);
-        }
+//        }
         // If this call happens, there is a client-side routing, thus
         // it's needed to remove the flag that might be set in
         // IndexHtmlRequestHandler
@@ -223,7 +233,9 @@ public class JavaScriptBootstrapUI extends UI {
 
         clientNavigationStateRenderer.handle(navigationEvent);
 
-        forwardToLocation = clientNavigationStateRenderer.getForwardToLocation();
+        forwardToLocation =  this.getInternals().getActiveViewLocation().getFirstSegment();
+        isClientSideView = !this.getRouter()
+                .resolveNavigationTarget(new Location(removeFirstSlash(forwardToLocation))).isPresent();
 
         adjustPageTitle();
 
@@ -317,6 +329,7 @@ public class JavaScriptBootstrapUI extends UI {
                 boolean isPostpone = handleNavigation(location, navigationState);
                 if (forwardToLocation != null) {
                     handleForwardToClientSide(forwardToLocation, isPostpone);
+                    navigationInProgress = false;
                     return;
                 } else {
                     // Update browser URL but do not fire client-side navigation

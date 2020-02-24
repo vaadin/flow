@@ -83,6 +83,12 @@ public abstract class AbstractNavigationStateRenderer
 
     private String forwardToLocation = null;
 
+    public boolean isClientSideView() {
+        return isClientSideView;
+    }
+
+    private boolean isClientSideView = false;
+
     /**
      * Creates a new renderer for the given navigation state.
      *
@@ -244,10 +250,18 @@ public abstract class AbstractNavigationStateRenderer
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        // Change the UI according to the navigation Component chain.
-        ui.getInternals().showRouteTarget(event.getLocation(),
-                navigationState.getResolvedPath(), componentInstance,
-                routerLayouts);
+        if (isClientSideView) {
+            // Change the UI according to the navigation Component chain.
+            ui.getInternals().showRouteTarget(new Location(removeFirstSlash(forwardToLocation)),
+                    forwardToLocation, componentInstance,
+                    routerLayouts);
+        } else {
+            // Change the UI according to the navigation Component chain.
+            ui.getInternals().showRouteTarget(event.getLocation(),
+                    navigationState.getResolvedPath(), componentInstance,
+                    routerLayouts);
+        }
+
 
         updatePageTitle(event, componentInstance);
 
@@ -265,6 +279,10 @@ public abstract class AbstractNavigationStateRenderer
                 afterNavigationHandlers);
 
         return statusCode;
+    }
+
+    private String removeFirstSlash(String route) {
+        return route.replaceFirst("^/+", "");
     }
 
     /**
@@ -308,7 +326,8 @@ public abstract class AbstractNavigationStateRenderer
         if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
             if (beforeNavigation.isClientSideView()) {
                 forwardToLocation = beforeNavigation.getForwardToLocation();
-                return Optional.of(HttpServletResponse.SC_OK);
+                isClientSideView = beforeNavigation.isClientSideView();
+                return Optional.empty();
             }
             return Optional.of(forward(event, beforeNavigation));
         }
