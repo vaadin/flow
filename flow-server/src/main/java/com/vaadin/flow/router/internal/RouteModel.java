@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -355,7 +356,8 @@ class RouteModel implements Serializable {
 
             final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
 
-            if (segments.isEmpty() && parameters.getParameters().size() == 0) {
+            if (segments.isEmpty()
+                    && parameters.getParameterNames().size() == 0) {
                 return "";
             }
 
@@ -367,12 +369,13 @@ class RouteModel implements Serializable {
                 final String parameterName = routeSegment.getName();
 
                 if (routeSegment.isVarargs()) {
-                    List<String> args = parameters.getSegments(parameterName);
+                    List<String> args = parameters.getWildcard(parameterName);
 
-                    if (args == null) {
-                        final String value = parameters.get(parameterName);
-                        if (value != null) {
-                            args = Collections.singletonList(value);
+                    if (args.isEmpty()) {
+                        final Optional<String> value = parameters
+                                .get(parameterName);
+                        if (value.isPresent()) {
+                            args = Collections.singletonList(value.get());
                         } else {
                             args = Collections.emptyList();
                         }
@@ -396,15 +399,17 @@ class RouteModel implements Serializable {
                     return;
 
                 } else if (routeSegment.isParameter()) {
-                    final String value = parameters.get(parameterName);
+                    final Optional<String> value = parameters
+                            .get(parameterName);
 
-                    if (value == null && routeSegment.isMandatory()) {
+                    if (!value.isPresent() && routeSegment.isMandatory()) {
                         throw new IllegalArgumentException("Url parameter `"
                                 + parameterName
                                 + "` is mandatory but missing from the parameters argument.");
                     }
 
-                    if (value != null && !routeSegment.isEligible(value)) {
+                    if (value.isPresent()
+                            && !routeSegment.isEligible(value.get())) {
                         throw new IllegalArgumentException("Url parameter `"
                                 + parameterName + "` has specified value `"
                                 + value
@@ -412,9 +417,7 @@ class RouteModel implements Serializable {
                                 + segment + "`");
                     }
 
-                    if (value != null) {
-                        result.add(value);
-                    }
+                    value.ifPresent(s -> result.add(s));
 
                 } else {
                     result.add(segment);
