@@ -17,12 +17,7 @@
 
 package com.vaadin.flow.router.internal;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -221,5 +216,4 @@ public class RouteModelTest {
                 result.getUrlParameters());
 
     }
-
 }
