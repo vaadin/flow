@@ -587,6 +587,9 @@ public class FrontendUtils {
                 }
                 return file.getAbsolutePath();
             } else {
+                getLogger()
+                        .info("Node not found in {}. Installing node {}.", home,
+                                DEFAULT_NODE_VERSION);
                 return installNode(baseDir, getVaadinHomeDirectory(),
                         DEFAULT_NODE_VERSION, null);
             }
@@ -685,7 +688,11 @@ public class FrontendUtils {
                                 .orElse(null));
             }
             if (file == null && installNode) {
-                return new File(installNode(baseDir, getVaadinHomeDirectory(),
+                File vaadinHome = getVaadinHomeDirectory();
+                getLogger()
+                        .info("Couldn't find {}. Installing Node and NPM to {}.",
+                                cmd, vaadinHome);
+                return new File(installNode(baseDir, vaadinHome,
                         DEFAULT_NODE_VERSION, null));
             }
         } catch (FileNotFoundException exception) {
