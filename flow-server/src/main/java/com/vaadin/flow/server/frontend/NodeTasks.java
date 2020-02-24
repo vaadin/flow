@@ -92,6 +92,7 @@ public class NodeTasks implements FallibleCommand {
 
         private File connectClientTsApiFolder;
 
+        private boolean requireHomeNodeExec;
 
         /**
          * Directory for for npm and folders and files.
@@ -260,10 +261,9 @@ public class NodeTasks implements FallibleCommand {
          * @return the builder
          */
         public Builder withFlowResourcesFolder(File flowResourcesFolder) {
-            this.flowResourcesFolder = flowResourcesFolder
-                    .isAbsolute() ? flowResourcesFolder
-                            : new File(npmFolder,
-                                    flowResourcesFolder.getPath());
+            this.flowResourcesFolder = flowResourcesFolder.isAbsolute()
+                    ? flowResourcesFolder
+                    : new File(npmFolder, flowResourcesFolder.getPath());
             return this;
         }
 
@@ -437,6 +437,18 @@ public class NodeTasks implements FallibleCommand {
             enablePnpm = enable;
             return this;
         }
+
+        /**
+         * Requires node executable to be installed in vaadin home folder.
+         *
+         * @param requireHomeNodeExec
+         *            requires vaadin home node exec
+         * @return the builder, for chaining
+         */
+        public Builder withHomeNodeExecRequired(boolean requireHomeNodeExec) {
+            this.requireHomeNodeExec = requireHomeNodeExec;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -460,7 +472,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (builder.createMissingPackageJson) {
-            TaskCreatePackageJson packageCreator = new TaskCreatePackageJson(
+            TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
                     builder.flowResourcesFolder);
             commands.add(packageCreator);
@@ -480,21 +492,18 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
                     builder.generatedFolder, builder.flowResourcesFolder,
-                    builder.cleanNpmFiles,
-                    builder.enablePnpm);
+                    builder.cleanNpmFiles, builder.enablePnpm);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater,
-                        builder.enablePnpm));
+                        builder.enablePnpm, builder.requireHomeNodeExec));
             }
         }
 
-
-
         if (builder.jarFiles != null) {
-            commands.add(new TaskCopyFrontendFiles(
-                    builder.flowResourcesFolder, builder.jarFiles));
+            commands.add(new TaskCopyFrontendFiles(builder.flowResourcesFolder,
+                    builder.jarFiles));
 
             if (builder.localResourcesFolder != null) {
                 commands.add(new TaskCopyLocalFrontendFiles(
@@ -534,9 +543,12 @@ public class NodeTasks implements FallibleCommand {
                 outputDirectory);
         commands.add(taskGenerateIndexTs);
 
-        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                builder.frontendDirectory, builder.npmFolder, outputDirectory);
+        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(builder.npmFolder);
         commands.add(taskGenerateTsConfig);
+
+        TaskGenerateTsDefinitions taskGenerateTsDefinitions =
+                new TaskGenerateTsDefinitions(builder.npmFolder);
+        commands.add(taskGenerateTsDefinitions);
     }
 
     private void addConnectServicesTasks(Builder builder) {

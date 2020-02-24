@@ -19,11 +19,14 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -36,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,17 +50,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.server.frontend.installer.InstallationException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -70,6 +77,8 @@ import static java.lang.String.format;
  * @since 2.0
  */
 public class FrontendUtils {
+
+    private static final String DEFAULT_NODE_VERSION = "v12.16.0";
 
     protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
@@ -277,6 +286,12 @@ public class FrontendUtils {
             + "%nIn case you have just installed node.js globally, it was not discovered, so you need to restart your system to get the path variables updated."
             + "%n======================================================================================================%n";
 
+    private static final String LOCAL_NODE_NOT_FOUND = "%n%n======================================================================================================"
+            + "%nVaadin requires node.js & npm to be installed. The %s directory already contains 'node' but it's either not a file "
+            + "or not a 'node' executable. Please check %s directory and clean up it: remove '%s'."
+            + "%n then please run the app or maven goal again."
+            + "%n======================================================================================================%n";
+
     private static final String SHOULD_WORK = "%n%n======================================================================================================"
             + "%nYour installed '%s' version (%s) is not supported but should still work. Supported versions are %d.%d+" //
             + "%nYou can install a new one:"
@@ -328,6 +343,16 @@ public class FrontendUtils {
             Constants.SUPPORTED_PNPM_MAJOR_VERSION,
             Constants.SUPPORTED_PNPM_MINOR_VERSION);
 
+    static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";
+    static final String NPMRC_HTTPS_PROXY_PROPERTY_KEY = "https-proxy";
+    static final String NPMRC_PROXY_PROPERTY_KEY = "proxy";
+
+    // Proxy config properties keys (for both system properties and environment
+    // variables) can be either fully upper case or fully lower case
+    static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
+    static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
+    static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
+
     private static FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     private static String operatingSystem = null;
@@ -374,10 +399,201 @@ public class FrontendUtils {
      * @return the full path to the executable
      */
     public static String getNodeExecutable(String baseDir) {
+        Pair<String, String> nodeCommands = getNodeCommands();
+        return getExecutable(baseDir, nodeCommands.getFirst(),
+                nodeCommands.getSecond(), true).getAbsolutePath();
+    }
+
+    /**
+     * Install node and npm into target directory.
+     *
+     *
+     * @param baseDir
+     *            project root folder.
+     * @param installDirectory
+     *            installation directory
+     * @param nodeVersion
+     *            node version to install
+     * @param downloadRoot
+     *            optional download root for downloading node. May be a
+     *            filesystem file or a URL see
+     *            {@link NodeInstaller#setNodeDownloadRoot(URI)}.
+     * @return node installation path
+     */
+    protected static String installNode(String baseDir, File installDirectory,
+            String nodeVersion, URI downloadRoot) {
+        NodeInstaller nodeInstaller = new NodeInstaller(installDirectory,
+                getProxies(baseDir)).setNodeVersion(nodeVersion);
+        if (downloadRoot != null) {
+            nodeInstaller.setNodeDownloadRoot(downloadRoot);
+        }
+
+        try {
+            nodeInstaller.install();
+        } catch (InstallationException e) {
+            throw new IllegalStateException("Failed to install Node", e);
+        }
+
         String command = isWindows() ? "node.exe" : "node";
-        String defaultNode = FrontendUtils.isWindows() ? "node/node.exe"
-                : "node/node";
-        return getExecutable(baseDir, command, defaultNode).getAbsolutePath();
+        return new File(nodeInstaller.getInstallDirectory(), command)
+                .toString();
+    }
+
+    /**
+     * Read list of configured proxies in order from system properties, .npmrc
+     * file in the project root folder, .npmrc file in user root folder and
+     * system environment variables.
+     *
+     * @param baseDir
+     *            project root folder.
+     * @return list of configured proxies
+     */
+    // Not private because of test
+    static List<ProxyConfig.Proxy> getProxies(String baseDir) {
+        File projectNpmrc = new File(baseDir, ".npmrc");
+        File userNpmrc = new File(FileUtils.getUserDirectory(), ".npmrc");
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>();
+
+        proxyList.addAll(readProxySettingsFromSystemProperties());
+        proxyList.addAll(
+                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
+        proxyList.addAll(
+                readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc));
+        proxyList.addAll(readProxySettingsFromEnvironmentVariables());
+
+        return proxyList;
+    }
+
+    private static List<ProxyConfig.Proxy> readProxySettingsFromNpmrcFile(
+            String fileDescription, File npmrc) {
+        if (!npmrc.exists()) {
+            return Collections.emptyList();
+        }
+
+        try (FileReader fileReader = new FileReader(npmrc)) {
+            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+            Properties properties = new Properties();
+            properties.load(fileReader);
+            String noproxy = properties.getProperty(NPMRC_NOPROXY_PROPERTY_KEY);
+            if (noproxy != null)
+                noproxy = noproxy.replaceAll(",", "|");
+            String httpsProxyUrl = properties
+                    .getProperty(NPMRC_HTTPS_PROXY_PROPERTY_KEY);
+            if (httpsProxyUrl != null) {
+                proxyList.add(new ProxyConfig.Proxy(
+                        "https-proxy - " + fileDescription, httpsProxyUrl,
+                        noproxy));
+            }
+            String proxyUrl = properties.getProperty(NPMRC_PROXY_PROPERTY_KEY);
+            if (proxyUrl != null) {
+                proxyList.add(new ProxyConfig.Proxy(
+                        "proxy - " + fileDescription, proxyUrl, noproxy));
+            }
+            return proxyList;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static List<ProxyConfig.Proxy> readProxySettingsFromSystemProperties() {
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+
+        String noproxy = ObjectUtils.firstNonNull(
+                System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
+                System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
+        if (noproxy != null)
+            noproxy = noproxy.replaceAll(",", "|");
+
+        String httpsProxyUrl = ObjectUtils.firstNonNull(
+                System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
+                System.getProperty(
+                        SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (httpsProxyUrl != null) {
+            proxyList.add(new ProxyConfig.Proxy("https-proxy - system",
+                    httpsProxyUrl, noproxy));
+        }
+
+        String proxyUrl = ObjectUtils.firstNonNull(
+                System.getProperty(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
+                System.getProperty(
+                        SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (proxyUrl != null) {
+            proxyList.add(
+                    new ProxyConfig.Proxy("proxy - system", proxyUrl, noproxy));
+        }
+
+        return proxyList;
+    }
+
+    private static List<ProxyConfig.Proxy> readProxySettingsFromEnvironmentVariables() {
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+
+        String noproxy = ObjectUtils.firstNonNull(
+                System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
+                System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
+        if (noproxy != null)
+            noproxy = noproxy.replaceAll(",", "|");
+
+        String httpsProxyUrl = ObjectUtils.firstNonNull(
+                System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
+                System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (httpsProxyUrl != null) {
+            proxyList.add(new ProxyConfig.Proxy("https-proxy - env",
+                    httpsProxyUrl, noproxy));
+        }
+
+        String proxyUrl = ObjectUtils.firstNonNull(
+                System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY),
+                System.getenv(SYSTEM_HTTP_PROXY_PROPERTY_KEY.toLowerCase()));
+        if (proxyUrl != null) {
+            proxyList.add(
+                    new ProxyConfig.Proxy("proxy - env", proxyUrl, noproxy));
+        }
+
+        return proxyList;
+    }
+
+    /**
+     * Locate <code>node</code> executable in the provided
+     * {@link #getVaadinHomeDirectory()} and install it if it's not available
+     * there.
+     * <p>
+     * The difference between {@link #getNodeExecutable(String)} and this method
+     * in a search algorithm: {@link #getNodeExecutable(String)} first searches
+     * executable in the provided directory and fallback to the globally
+     * installed if it's not found there. The
+     * {@link #ensureNodeExecutableInHome(String)} doesn't search for globally
+     * installed executable. It tries to find it in the vaadin home directory
+     * and if it's not found it downloads and installs it there.
+     *
+     * @see #getNodeExecutable(String)
+     *
+     * @param baseDir
+     *            project root folder.
+     * @return the full path to the executable
+     */
+    public static String ensureNodeExecutableInHome(String baseDir) {
+        Pair<String, String> nodeCommands = getNodeCommands();
+        try {
+            File home = getVaadinHomeDirectory();
+            File file = new File(home, nodeCommands.getSecond());
+            if (file.exists()) {
+                if (!frontendToolsLocator.verifyTool(file)) {
+                    throw new IllegalStateException(String.format(
+                            LOCAL_NODE_NOT_FOUND, home.getAbsolutePath(),
+                            home.getAbsolutePath(), file.getAbsolutePath()));
+                }
+                return file.getAbsolutePath();
+            } else {
+                getLogger()
+                        .info("Node not found in {}. Installing node {}.", home,
+                                DEFAULT_NODE_VERSION);
+                return installNode(baseDir, getVaadinHomeDirectory(),
+                        DEFAULT_NODE_VERSION, null);
+            }
+        } catch (FileNotFoundException exception) {
+            throw new UncheckedIOException(exception);
+        }
     }
 
     /**
@@ -431,7 +647,7 @@ public class FrontendUtils {
      * @return the list of all commands in sequence that need to be executed to
      *         have pnpm running
      */
-    public static List<String> getPnpmExecutable(String baseDir,
+    static List<String> getPnpmExecutable(String baseDir,
             boolean failOnAbsence) {
         // First try local pnpm JS script if it exists
         List<String> returnCommand = new ArrayList<>();
@@ -443,7 +659,7 @@ public class FrontendUtils {
             // Otherwise look for regular `pnpm`
             String command = isWindows() ? "pnpm.cmd" : "pnpm";
             if (failOnAbsence) {
-                returnCommand.add(getExecutable(baseDir, command, null)
+                returnCommand.add(getExecutable(baseDir, command, null, false)
                         .getAbsolutePath());
             } else {
                 returnCommand.addAll(frontendToolsLocator.tryLocateTool(command)
@@ -454,33 +670,8 @@ public class FrontendUtils {
         return returnCommand;
     }
 
-    /**
-     * Locate <code>bower</code> executable.
-     * <p>
-     * An empty list is returned if bower is not found
-     *
-     * @param baseDir
-     *            project root folder.
-     *
-     * @return the list of all commands in sequence that need to be executed to
-     *         have bower running, an empty list if bower is not found
-     */
-    public static List<String> getBowerExecutable(String baseDir) {
-        File file = new File(baseDir, "node_modules/bower/bin/bower");
-        if (file.canRead()) {
-            // We return a two element list with node binary and bower script
-            return Arrays.asList(getNodeExecutable(baseDir),
-                    file.getAbsolutePath());
-        }
-        // Otherwise look for a regular `bower`
-        String command = isWindows() ? "bower.cmd" : "bower";
-        return frontendToolsLocator.tryLocateTool(command).map(File::getPath)
-                .map(Collections::singletonList)
-                .orElse(Collections.emptyList());
-    }
-
     private static File getExecutable(String baseDir, String cmd,
-            String defaultLocation) {
+            String defaultLocation, boolean installNode) {
         File file = null;
         try {
             if (defaultLocation == null) {
@@ -494,6 +685,14 @@ public class FrontendUtils {
                         .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
                                 .orElse(null));
             }
+            if (file == null && installNode) {
+                File vaadinHome = getVaadinHomeDirectory();
+                getLogger()
+                        .info("Couldn't find {}. Installing Node and NPM to {}.",
+                                cmd, vaadinHome);
+                return new File(installNode(baseDir, vaadinHome,
+                        DEFAULT_NODE_VERSION, null));
+            }
         } catch (FileNotFoundException exception) {
             Throwable cause = exception.getCause();
             assert cause != null;
@@ -502,7 +701,7 @@ public class FrontendUtils {
             // There are IOException coming from process fork
         }
         if (file == null) {
-            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
+            throw new IllegalStateException(format(NODE_NOT_FOUND));
         }
         return file;
     }
@@ -680,8 +879,8 @@ public class FrontendUtils {
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
-                        NO_CONNECTION, "getting the stats content hash."));
+                throw new WebpackConnectionException(format(NO_CONNECTION,
+                        "getting the stats content hash."));
             }
             return streamToString(statsConnection.getInputStream())
                     .replaceAll("\"", "");
@@ -696,7 +895,7 @@ public class FrontendUtils {
                 .prepareConnection("/stats.json", "GET");
         if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new WebpackConnectionException(
-                    String.format(NO_CONNECTION, "downloading stats.json"));
+                    format(NO_CONNECTION, "downloading stats.json"));
         }
         return statsConnection.getInputStream();
     }
@@ -802,8 +1001,8 @@ public class FrontendUtils {
                     .prepareConnection("/assetsByChunkName", "GET");
             if (assetsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
-                        NO_CONNECTION, "getting assets by chunk name."));
+                throw new WebpackConnectionException(
+                        format(NO_CONNECTION, "getting assets by chunk name."));
             }
             return streamToString(assetsConnection.getInputStream());
         }
@@ -891,7 +1090,7 @@ public class FrontendUtils {
 
         try {
             List<String> npmVersionCommand = new ArrayList<>(
-                    FrontendUtils.getNpmExecutable(baseDir));
+                    FrontendUtils.getNpmExecutable(baseDir, false));
             npmVersionCommand.add("--version"); // NOSONAR
             FrontendVersion npmVersion = getVersion("npm", npmVersionCommand);
             validateToolVersion("npm", npmVersion, SUPPORTED_NPM_VERSION,
@@ -977,7 +1176,7 @@ public class FrontendUtils {
                 if (isVersionAtLeast(pnpmVersion, SUPPORTED_PNPM_VERSION)) {
                     return false;
                 } else {
-                    getLogger().warn(String.format(
+                    getLogger().warn(format(
                             "installed pnpm ('%s', version %s) is too old, installing supported version locally",
                             String.join(" ", pnpmCommand),
                             pnpmVersion.getFullVersion()));
@@ -1047,13 +1246,13 @@ public class FrontendUtils {
 
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return String.format(TOO_OLD, tool, version, supportedMajor,
-                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
+        return format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
+                PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private static String buildShouldWorkString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return String.format(SHOULD_WORK, tool, version, supportedMajor,
+        return format(SHOULD_WORK, tool, version, supportedMajor,
                 supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
@@ -1063,8 +1262,8 @@ public class FrontendUtils {
         for (String instruction : extraUpdateInstructions) {
             extraInstructions.append("%n  - or ").append(instruction);
         }
-        return String.format(BAD_VERSION, tool, version,
-                extraInstructions.toString(), PARAM_IGNORE_VERSION_CHECKS);
+        return format(BAD_VERSION, tool, version, extraInstructions.toString(),
+                PARAM_IGNORE_VERSION_CHECKS);
     }
 
     /**
@@ -1240,7 +1439,7 @@ public class FrontendUtils {
         }
     }
 
-    private static FrontendVersion getVersion(String tool,
+    protected static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
         try {
             Process process = FrontendUtils.createProcessBuilder(versionCommand)
@@ -1256,6 +1455,21 @@ public class FrontendUtils {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
+    }
+
+    /**
+     * Parse the version number of node/npm from version output string.
+     *
+     * @param versionString
+     *            string containing version output, typically produced by
+     *            <code>tool --version</code>
+     * @return FrontendVersion of versionString
+     * @throws IOException
+     *             if parsing fails
+     */
+    public static FrontendVersion parseFrontendVersion(String versionString)
+            throws IOException {
+        return new FrontendVersion((parseVersionString(versionString)));
     }
 
     /**
@@ -1309,9 +1523,9 @@ public class FrontendUtils {
                         getVaadinHomeDirectory().getAbsolutePath());
             }
             if (returnCommand.isEmpty()) {
-                // Otherwise look for regulag `npm`
+                // Otherwise look for regular `npm`
                 String command = isWindows() ? "npm.cmd" : "npm";
-                returnCommand.add(getExecutable(baseDir, command, null)
+                returnCommand.add(getExecutable(baseDir, command, null, true)
                         .getAbsolutePath());
             }
             returnCommand.add("--no-update-notifier");
@@ -1451,5 +1665,13 @@ public class FrontendUtils {
     @SuppressWarnings("squid:S106")
     public static void console(String format, Object message) {
         System.out.print(format(format, message));
+    }
+
+    private static Pair<String, String> getNodeCommands() {
+        if (isWindows()) {
+            return new Pair<>("node.exe", "node/node.exe");
+        } else {
+            return new Pair<>("node", "node/node");
+        }
     }
 }

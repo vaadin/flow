@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +30,8 @@ import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
+import static com.vaadin.flow.testutil.ChromeBrowserTest.createHeadlessChromeDriver;
+import static com.vaadin.flow.testutil.ChromeBrowserTest.isJavaInDebugMode;
 /**
  * Abstract base class for parallel flow TestBench tests.
  *
@@ -70,6 +68,9 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     public void setup() throws Exception {
         if(USE_HUB) {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
+        } else if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
+            setDriver(createHeadlessChromeDriver());
+            return;
         }
         super.setup();
     }

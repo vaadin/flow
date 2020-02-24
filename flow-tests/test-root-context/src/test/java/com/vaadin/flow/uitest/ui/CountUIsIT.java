@@ -39,6 +39,9 @@ public class CountUIsIT extends ChromeBrowserTest {
         WebElement uisCount = findElement(By.id("uis"));
         int count = Integer.parseInt(uisCount.getText());
 
+        if (hasClientUnknownIssue()) {
+            return;
+        }
         // there should not be any UI instance which is created but never has
         // been navigated (no any enter event into a navigation target)
         Assert.assertEquals(0, count);

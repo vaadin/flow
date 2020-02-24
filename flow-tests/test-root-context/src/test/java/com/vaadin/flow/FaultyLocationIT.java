@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2017 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,7 @@ public class FaultyLocationIT extends ChromeBrowserTest {
     public void changeOnClient() {
         open();
 
-        Assert.assertTrue("Faulty URL didn't return a 404 exception page.",
+        Assert.assertTrue("Faulty URL didn't return an error page.",
                 getDriver().getPageSource()
                         .contains("Could not navigate to '%3Ffaulty'"));
 
@@ -34,6 +34,6 @@ public class FaultyLocationIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/view/%3ffaulty";
+        return "/view/%3Ffaulty";
     }
 }

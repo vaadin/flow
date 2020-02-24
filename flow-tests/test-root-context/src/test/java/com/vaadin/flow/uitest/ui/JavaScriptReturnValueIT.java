@@ -30,6 +30,10 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
     public void testAllCombinations() {
         open();
 
+        if (hasClientUnknownIssue()) {
+            return;
+        }
+
         /*
          * There are 3 * 4 * 2 * 3 = 72 different combinations in the UI, let's
          * test all of them just because we can

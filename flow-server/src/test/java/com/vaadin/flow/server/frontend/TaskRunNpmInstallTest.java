@@ -18,9 +18,13 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -29,8 +33,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-
+@NotThreadSafe
 public class TaskRunNpmInstallTest {
 
     @Rule
@@ -43,6 +46,9 @@ public class TaskRunNpmInstallTest {
     private File npmFolder;
 
     private Logger logger = Mockito.mock(Logger.class);
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws IOException {
@@ -65,13 +71,13 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(nodeUpdater, false);
+        return new TaskRunNpmInstall(nodeUpdater, false, false);
     }
 
     @Test
     public void runNpmInstall_emptyDir_npmInstallIsExecuted()
             throws ExecutionFailedException {
-        File nodeModules = new File(npmFolder, NODE_MODULES);
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         nodeUpdater.modified = false;
         task.execute();
@@ -80,9 +86,37 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
+    public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
+            throws ExecutionFailedException, IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        nodeUpdater.modified = true;
+        File yaml = new File(nodeModules, ".modules.yaml");
+        yaml.createNewFile();
+        task.execute();
+
+        Assert.assertFalse(yaml.exists());
+    }
+
+    @Test
+    public void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
+            throws ExecutionFailedException, IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        nodeUpdater.modified = true;
+        File fakeFile = new File(nodeModules, ".fake.file");
+        fakeFile.createNewFile();
+        task.execute();
+
+        Assert.assertTrue(fakeFile.exists());
+    }
+
+    @Test
     public void runNpmInstall_nonEmptyDir_npmInstallIsNotExecuted()
             throws IOException, ExecutionFailedException {
-        File nodeModules = new File(npmFolder, NODE_MODULES);
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         new File(nodeModules, "foo").createNewFile();
         nodeUpdater.modified = false;
@@ -95,7 +129,7 @@ public class TaskRunNpmInstallTest {
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
             throws ExecutionFailedException {
-        File nodeModules = new File(npmFolder, NODE_MODULES);
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
         nodeUpdater.modified = false;
@@ -111,6 +145,34 @@ public class TaskRunNpmInstallTest {
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
+            throws IOException, ExecutionFailedException {
+        exception.expectMessage(
+                "it's either not a file or not a 'node' executable.");
+        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+                new TaskRunNpmInstall(nodeUpdater, false, true));
+    }
+
+    protected void assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+            TaskRunNpmInstall task)
+            throws IOException, ExecutionFailedException {
+        String userHome = "user.home";
+        String originalHome = System.getProperty(userHome);
+        File home = temporaryFolder.newFolder();
+        System.setProperty(userHome, home.getPath());
+        try {
+            File homeDir = new File(home, ".vaadin");
+            File node = new File(homeDir,
+                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+            FileUtils.forceMkdir(node);
+
+            task.execute();
+        } finally {
+            System.setProperty(userHome, originalHome);
+        }
     }
 
     private String getRunningMsg() {

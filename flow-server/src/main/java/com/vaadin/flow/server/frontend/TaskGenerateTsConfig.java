@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -31,26 +30,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
-    private static final String TSCONFIG_JSON = "tsconfig.json";
-    private final File frontendFolder;
+    static final String TSCONFIG_JSON = "tsconfig.json";
     private final File npmFolder;
-    private final File outputDirectory;
 
     /**
      * Create a task to generate <code>tsconfig.json</code> file.
-     * 
-     * @param frontendFolder
-     *            frontend folder is to check if <code>index.ts</code> exists or
-     *            not.
+     *
      * @param npmFolder
      *            project folder where the file will be generated.
-     * @param outputDirectory
-     *            the output directory of the generated index.ts file
      */
-    TaskGenerateTsConfig(File frontendFolder, File npmFolder, File outputDirectory) {
-        this.frontendFolder = frontendFolder;
+    TaskGenerateTsConfig(File npmFolder) {
         this.npmFolder = npmFolder;
-        this.outputDirectory = outputDirectory;
     }
 
     @Override
@@ -66,9 +56,6 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        File tsConfigFile = new File(npmFolder, TSCONFIG_JSON);
-        return !tsConfigFile.exists()
-                && new File(frontendFolder, INDEX_TS).exists()
-                || new File(outputDirectory, INDEX_TS).exists();
+        return !new File(npmFolder, TSCONFIG_JSON).exists();
     }
 }

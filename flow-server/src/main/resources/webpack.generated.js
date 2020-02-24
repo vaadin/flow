@@ -136,7 +136,7 @@ module.exports = {
   },
   plugins: [
     // Generate compressed bundles when not devMode
-    ...(devMode ? [] : [new CompressionPlugin()]),
+    devMode && new CompressionPlugin(),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {

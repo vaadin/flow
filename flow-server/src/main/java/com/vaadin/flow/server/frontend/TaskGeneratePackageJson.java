@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -30,7 +29,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  *
  * @since 2.0
  */
-public class TaskCreatePackageJson extends NodeUpdater {
+public class TaskGeneratePackageJson extends NodeUpdater {
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -43,7 +42,7 @@ public class TaskCreatePackageJson extends NodeUpdater {
      *            folder where flow resources taken from jars will be placed.
      *            default)
      */
-    TaskCreatePackageJson(File npmFolder, File generatedPath, File flowResourcesPath) {
+    TaskGeneratePackageJson(File npmFolder, File generatedPath, File flowResourcesPath) {
         super(null, null, npmFolder, generatedPath, flowResourcesPath);
     }
 
