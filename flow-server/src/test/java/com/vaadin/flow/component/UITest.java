@@ -12,6 +12,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.UrlParameters;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -77,6 +80,19 @@ public class UITest {
     @Route("foo/bar")
     @Tag(Tag.DIV)
     public static class FooBarNavigationTarget extends Component {
+
+    }
+
+    @Route(value = ":barParam/bar", layout = FooBarParamParentNavigationTarget.class)
+    @Tag(Tag.DIV)
+    public static class FooBarParamNavigationTarget extends Component {
+
+    }
+
+    @RoutePrefix("foo/:fooParam")
+    @Tag(Tag.DIV)
+    public static class FooBarParamParentNavigationTarget extends Component
+            implements RouterLayout {
 
     }
 
@@ -182,7 +198,8 @@ public class UITest {
             routeConfiguration.update(() -> {
                 routeConfiguration.getHandledRegistry().clean();
                 Arrays.asList(RootNavigationTarget.class,
-                        FooBarNavigationTarget.class)
+                        FooBarNavigationTarget.class,
+                        FooBarParamNavigationTarget.class)
                         .forEach(routeConfiguration::setAnnotatedRoute);
             });
 
@@ -259,6 +276,27 @@ public class UITest {
         Assert.assertEquals(route, value.getPath());
         Assert.assertEquals(params, value.getQueryParameters());
     }
+
+    @Test
+    public void navigateWithParameters_afterServerNavigation()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate(FooBarParamNavigationTarget.class,
+                new UrlParameters("fooParam", "flu", "barParam", "beer"));
+
+        assertEquals("foo/flu/beer/bar",
+                ui.getInternals().getActiveViewLocation().getPath());
+        List<HasElement> chain = ui.getInternals()
+                .getActiveRouterTargetsChain();
+        Assert.assertEquals(2, chain.size());
+        Assert.assertThat(chain.get(0),
+                CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
+        Assert.assertThat(chain.get(1), CoreMatchers
+                .instanceOf(FooBarParamParentNavigationTarget.class));
+    }
+
 
     @Test
     public void localeSet_directionUpdated() {
@@ -831,4 +869,5 @@ public class UITest {
 
         assertEquals("Handler should have run once", 1, runCount.get());
     }
+
 }
