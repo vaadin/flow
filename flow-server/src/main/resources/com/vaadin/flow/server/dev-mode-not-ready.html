@@ -6,14 +6,13 @@
 // It allows to work correct waitForVaadin in TB
 window.Vaadin = {Flow: {devServerIsNotLoaded: true}};
 
-function deferReload(){
-    setTimeout(function(){
-        location.reload();
-    }, 1000);
-}
+setTimeout(function(){
+    location.reload();
+}, 2000);
+
 </script>
 </head>
-<body onload="deferReload()">
+<body>
   <div style="position: absolute; top: 1em; right: 1em; border: solid 1px; padding: 1em">
     The webpack dev server has not yet started. Please wait...
   </div>
