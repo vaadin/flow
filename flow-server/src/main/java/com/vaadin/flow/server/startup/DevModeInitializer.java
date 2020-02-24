@@ -334,24 +334,25 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec).build();
 
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            try {
-                tasks.execute();
+        CompletableFuture<Void> runNodeTasks = CompletableFuture
+                .runAsync(() -> {
+                    try {
+                        tasks.execute();
 
-                FallbackChunk chunk = FrontendUtils
-                        .readFallbackChunk(tokenFileData);
-                if (chunk != null) {
-                    vaadinContext.setAttribute(chunk);
-                }
-            } catch (ExecutionFailedException exception) {
-                log().debug(
-                        "Could not initialize dev mode handler. One of the node tasks failed",
-                        exception);
-                throw new CompletionException(exception);
-            }
-        });
+                        FallbackChunk chunk = FrontendUtils
+                                .readFallbackChunk(tokenFileData);
+                        if (chunk != null) {
+                            vaadinContext.setAttribute(chunk);
+                        }
+                    } catch (ExecutionFailedException exception) {
+                        log().debug(
+                                "Could not initialize dev mode handler. One of the node tasks failed",
+                                exception);
+                        throw new CompletionException(exception);
+                    }
+                });
 
-        DevModeHandler.start(config, builder.npmFolder, future);
+        DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
     }
 
     private static Logger log() {

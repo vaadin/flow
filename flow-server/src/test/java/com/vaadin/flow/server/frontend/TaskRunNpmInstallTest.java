@@ -22,7 +22,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -101,7 +100,6 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    @Ignore("On CI for some reason this test is failing even though it never fails locally")
     public void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
             throws ExecutionFailedException, IOException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
