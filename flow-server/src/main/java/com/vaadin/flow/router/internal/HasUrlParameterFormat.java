@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -163,14 +164,14 @@ public class HasUrlParameterFormat implements Serializable {
     public static List<String> getParameterValues(UrlParameters urlParameters) {
 
         List<String> parameters = urlParameters
-                .getSegments(HasUrlParameterFormat.PARAMETER_NAME);
+                .getWildcard(HasUrlParameterFormat.PARAMETER_NAME);
 
-        if (parameters == null) {
-            final String value = urlParameters
+        if (parameters.isEmpty()) {
+            final Optional<String> value = urlParameters
                     .get(HasUrlParameterFormat.PARAMETER_NAME);
 
-            if (value != null) {
-                parameters = Collections.singletonList(value);
+            if (value.isPresent()) {
+                parameters = Collections.singletonList(value.get());
             }
         }
 
