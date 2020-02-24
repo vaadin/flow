@@ -77,9 +77,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
  */
 public final class DevModeHandler implements RequestHandler {
 
-    /**
-     *
-     */
     private static final String COULDN_T_START_DEV_SERVER = "Couldn't start dev server because ";
 
     private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
