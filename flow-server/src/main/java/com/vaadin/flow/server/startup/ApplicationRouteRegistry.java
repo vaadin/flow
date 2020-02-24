@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
-import com.vaadin.flow.router.internal.RouteTarget;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;

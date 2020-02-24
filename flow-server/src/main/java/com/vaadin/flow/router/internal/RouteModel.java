@@ -35,6 +35,7 @@ import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Define a route url segment tree data model which is used to store internally
