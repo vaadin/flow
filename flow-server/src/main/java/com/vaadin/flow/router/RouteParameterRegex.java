@@ -25,12 +25,12 @@ public class RouteParameterRegex implements Serializable {
     /**
      * Int type regex.
      */
-    public static final String INT = "-?[0-1]?[0-9]{1,9}";
+    public static final String INT = "[+-]?[0-1]?[0-9]{1,9}";
 
     /**
      * Long type regex.
      */
-    public static final String LONG = "-?[0-8]?[0-9]{1,18}";
+    public static final String LONG = "[+-]?[0-8]?[0-9]{1,18}";
 
     /**
      * Bool type regex.
