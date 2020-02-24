@@ -32,6 +32,7 @@ import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
 import static com.vaadin.flow.testutil.ChromeBrowserTest.createHeadlessChromeDriver;
 import static com.vaadin.flow.testutil.ChromeBrowserTest.isJavaInDebugMode;
+
 /**
  * Abstract base class for parallel flow TestBench tests.
  *
@@ -66,9 +67,10 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     @Before
     @Override
     public void setup() throws Exception {
-        if(USE_HUB) {
+        if (USE_HUB) {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
-        } else if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
+        } else if (Browser.CHROME == getRunLocallyBrowser()
+                && !isJavaInDebugMode()) {
             setDriver(createHeadlessChromeDriver());
             return;
         }

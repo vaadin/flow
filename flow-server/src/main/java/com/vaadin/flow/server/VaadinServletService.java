@@ -28,11 +28,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
-import com.vaadin.flow.internal.UsageStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
@@ -95,6 +95,12 @@ public class VaadinServletService extends VaadinService {
                         e);
             }
         }
+        if (getDeploymentConfiguration().enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            if (handler != null) {
+                handlers.add(0, handler);
+            }
+        }
         addBootstrapHandler(handlers);
         return handlers;
     }
@@ -104,7 +110,9 @@ public class VaadinServletService extends VaadinService {
             handlers.add(0, new BootstrapHandler());
             getLogger().debug("Using '{}' in deprecated V14 bootstrapping",
                     BootstrapHandler.class.getName());
-            UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
+            UsageStatistics.markAsUsed(
+                    Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER,
+                    Version.getFullVersion());
         } else {
             handlers.add(0, new IndexHtmlRequestHandler());
             getLogger().debug("Using '{}' in client mode bootstrapping",
