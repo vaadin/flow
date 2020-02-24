@@ -107,24 +107,16 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Check if there is a registered target for the given path.
+     * Check if there is a registered target for the given urlTamplate.
      *
-     * @param path
-     *         path to check for route registration
-     * @return true if there exists a route for the given path
-     * @deprecated use {@link #isPathTemplateRegistered(String)} instead.
+     * @param urlTamplate
+     *         urlTamplate to check for route registration
+     * @return true if there exists a route for the given urlTamplate
+     * @deprecated use {@link #isUrlTemplateRegistered(String)} instead.
      */
     @Deprecated
-    public boolean isPathRegistered(String path) {
-        if (handledRegistry instanceof AbstractRouteRegistry) {
-            return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
-                    .hasRoute(path);
-        }
-        return getAvailableRoutes().stream()
-                .anyMatch(routeData -> routeData.getUrlTemplate().equals(path)
-                        || routeData.getRouteAliases().stream()
-                                .anyMatch(routeAliasData -> routeAliasData
-                                        .getUrlTemplate().equals(path)));
+    public boolean isPathRegistered(String urlTamplate) {
+        return isUrlTemplateRegistered(urlTamplate);
     }
 
     /**
@@ -134,7 +126,7 @@ public class RouteConfiguration implements Serializable {
      *         urlTemplate to check for route registration
      * @return true if there exists a route for the given urlTemplate
      */
-    public boolean isPathTemplateRegistered(String urlTemplate) {
+    public boolean isUrlTemplateRegistered(String urlTemplate) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
                     .hasUrlTemplate(urlTemplate);
