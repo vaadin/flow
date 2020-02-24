@@ -487,8 +487,8 @@ public final class DevModeHandler implements RequestHandler {
                 watchDog.set(null);
                 return;
             }
-            throw new IllegalStateException(format(
-                    "webpack-dev-server port '%d' is defined but it's not working properly",
+            throw new IllegalStateException(format(COULDN_T_START_DEV_SERVER
+                    + "webpack-dev-server port '%d' is defined but it's not working properly",
                     port));
         }
         // here the port == 0
