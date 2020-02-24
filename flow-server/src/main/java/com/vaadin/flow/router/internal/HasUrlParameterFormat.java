@@ -175,10 +175,6 @@ public class HasUrlParameterFormat implements Serializable {
             }
         }
 
-        if (parameters == null) {
-            parameters = Collections.emptyList();
-        }
-
         return parameters;
     }
 
@@ -208,8 +204,9 @@ public class HasUrlParameterFormat implements Serializable {
             UrlParameters parameters) {
         if (hasUrlParameter(navigationTarget)
                 && hasMandatoryParameter(navigationTarget)
-                && (parameters == null || parameters
-                        .get(HasUrlParameterFormat.PARAMETER_NAME) == null)) {
+                && (parameters == null
+                        || !parameters.get(HasUrlParameterFormat.PARAMETER_NAME)
+                                .isPresent())) {
             throw new IllegalArgumentException(String.format(
                     "Navigation target '%s' requires a parameter and can not be resolved. "
                             + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
