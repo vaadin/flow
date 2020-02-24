@@ -114,7 +114,7 @@ public class ShortcutsView extends Div {
         Shortcuts
                 .addShortcutListener(subview,
                         () -> actual.setValue(
-                                "removal-input"),
+                                "Alt+H triggered on one of the listenOns"),
                         Key.KEY_H, KeyModifier.ALT)
                 .listenOn(listenOn1, listenOn2, listenOn3);
 
