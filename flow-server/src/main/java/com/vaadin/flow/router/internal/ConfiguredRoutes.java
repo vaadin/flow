@@ -69,7 +69,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param original
      *            original configuration to get data from
      */
-    public ConfiguredRoutes(ConfiguredRoutes original) {
+    public ConfiguredRoutes(ConfigureRoutes original) {
         Map<String, RouteTarget> routeMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRouteMap = new HashMap<>();
         Map<Class<? extends Component>, List<String>> target2UrlTemplatesMap = new HashMap<>();
