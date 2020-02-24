@@ -40,7 +40,7 @@ public class HasUrlParameterFormat implements Serializable {
     /**
      * Reserved parameter name used when setup internally route path pattern
      * with the parameter design for backward compatibility with
-     * {@link HasUrlParameter}
+     * {@link HasUrlParameter}.
      */
     public static final String PARAMETER_NAME = "___url_parameter";
 
