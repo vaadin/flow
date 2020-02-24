@@ -108,6 +108,26 @@ public class ShortcutsIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void multipleListenOnScopesTheShortcut() {
+        sendKeys(Keys.ALT, "h");
+        assertActualEquals(DEFAULT_VALUE); // nothing happened
+
+        sendAltHKeysAndVerify("listenOn1");
+        sendAltHKeysAndVerify("listenOn2");
+        sendAltHKeysAndVerify("listenOn3");
+    }
+
+    private void sendAltHKeysAndVerify(String listenOnInputId) {
+        resetActual();
+        WebElement listenOn = findElement(By.id(listenOnInputId));
+        listenOn.sendKeys(Keys.ALT, "h");
+        assertActualEquals("Alt+H triggered on one of the listenOns");
+
+        // using the shortcut prevented "h" from being written
+        Assert.assertEquals("", listenOn.getText());
+    }
+
+    @Test
     public void shortcutsOnlyWorkWhenComponentIsAttached() {
         sendKeys(Keys.ALT, "a");
         assertActualEquals(DEFAULT_VALUE); // nothing happens
@@ -160,6 +180,39 @@ public class ShortcutsIT extends ChromeBrowserTest {
         sendKeys(Keys.ENTER);
 
         assertActualEquals("click: ");
+    }
+
+    @Test
+    public void clickShortcutWithMultipleListenOnAllowsKeyDefaults() {
+        WebElement textField3 = findElement(By.id("click-input-3"));
+        WebElement textField4 = findElement(By.id("click-input-4"));
+        WebElement textField5 = findElement(By.id("click-input-5"));
+        WebElement textField6 = findElement(By.id("click-input-6"));
+
+        // ClickButton3: allows browser's default behavior
+        textField3.sendKeys("value 3");
+        // using sendKeys(...) to send the ENTER instead of textField3
+        // .sendKeys(...) since that causes the test to become flaky for some
+        // reason
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click3: value 3,");
+
+        textField4.sendKeys("value 4");
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click3: value 3,value 4");
+
+        // ClickButton4: prevents browser's default behavior
+        textField5.sendKeys("value 5");
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click4: ,");
+
+        textField6.sendKeys("value 6");
+        sendKeys(Keys.ENTER);
+
+        assertActualEquals("click4: value 5,");
     }
 
     @Test
