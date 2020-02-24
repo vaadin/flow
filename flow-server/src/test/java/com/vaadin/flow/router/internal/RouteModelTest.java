@@ -23,6 +23,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.server.startup.RouteTarget;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -41,6 +41,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
+import com.vaadin.flow.server.startup.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
