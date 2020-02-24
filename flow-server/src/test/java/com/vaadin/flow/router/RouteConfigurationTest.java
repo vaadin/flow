@@ -185,11 +185,11 @@ public class RouteConfigurationTest {
 
         Assert.assertFalse(
                 "Removing the path 'path' should have cleared it from the registry",
-                routeConfiguration.isPathTemplateRegistered("path"));
+                routeConfiguration.isUrlTemplateRegistered("path"));
 
         Assert.assertTrue("Expected path 'url' to be registered",
                 routeConfiguration
-                        .isPathTemplateRegistered(HasUrlParameterFormat
+                        .isUrlTemplateRegistered(HasUrlParameterFormat
                                 .getUrlTemplate("url", Url.class)));
 
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
