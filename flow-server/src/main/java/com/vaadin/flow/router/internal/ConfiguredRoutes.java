@@ -276,8 +276,20 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route url template String for the given navigation target
-     * class.
+     * Get the route url template String for the given navigation target class.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @return base route string if target class found
+     * @deprecated use {@link #getUrlTemplate(Class)} instead.
+     */
+    @Deprecated
+    public String getTargetRoute(Class<? extends Component> navigationTarget) {
+        return getUrlTemplate(navigationTarget);
+    }
+
+    /**
+     * Get the route url template String for the given navigation target class.
      *
      * @param navigationTarget
      *            navigationTarget to get registered route for
