@@ -83,6 +83,10 @@ public class DevModeHandlerTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    private static class CustomRuntimeException extends RuntimeException {
+
+    }
+
     private String baseDir;
 
     @Before
@@ -368,6 +372,18 @@ public class DevModeHandlerTest {
         } finally {
             System.setProperty(userHome, originalHome);
         }
+    }
+
+    @Test(expected = CustomRuntimeException.class)
+    public void startDevModeHandler_prepareTasksThorws_handleThrows()
+            throws IOException {
+        CompletableFuture<Void> throwFuture = new CompletableFuture<>();
+        throwFuture.completeExceptionally(new CustomRuntimeException());
+        DevModeHandler handler = DevModeHandler.start(0, configuration,
+                npmFolder, throwFuture);
+        handler.handleRequest(Mockito.mock(VaadinSession.class),
+                Mockito.mock(VaadinRequest.class),
+                Mockito.mock(VaadinResponse.class));
     }
 
     private VaadinServlet prepareServlet(int port)
