@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -509,6 +510,30 @@ public class FrontendUtilsTest {
         } finally {
             System.setProperty(USER_HOME, originalHome);
         }
+    }
+
+    @Test
+    public void commandToString_longCommand_resultIsWrapped() {
+        List<String> command = Arrays.asList("./node/node",
+                "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
+                "--config", "./webpack.config.js", "--port 57799",
+                "--watchDogPort=57798", "-d", "--inline=false",
+                "--progress", "--colors");
+        String wrappedCommand = FrontendUtils.commandToString(".", command);
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
+                + "    --config ./webpack.config.js --port 57799 \\ \n"
+                + "    --watchDogPort=57798 -d --inline=false --progress \\ \n"
+                + "    --colors \n", wrappedCommand);
+    }
+
+    @Test
+    public void commandToString_commandContainsBaseDir_baseDirIsReplaced() {
+        List<String> command = Arrays.asList("./node/node",
+                "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
+        String wrappedCommand = FrontendUtils.commandToString("/somewhere/not/disclosable", command);
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n", wrappedCommand);
     }
 
     @Test
