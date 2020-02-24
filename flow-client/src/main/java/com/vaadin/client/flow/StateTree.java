@@ -133,6 +133,10 @@ public class StateTree {
      * resynchronization response.
      */
     public void prepareForResync() {
+        rootNode.getList(NodeFeatures.VIRTUAL_CHILDREN)
+                .forEach(sn -> clearLists((StateNode) sn));
+        clearLists(rootNode);
+
         idToNode.forEach((node, b) -> {
             if (node != rootNode) {
                 final Node dom = node.getDomNode();
@@ -145,7 +149,10 @@ public class StateTree {
                 node.setParent(null);
             }
         });
-        rootNode.forEachFeature((feature, featureId) -> {
+    }
+
+    private void clearLists(StateNode stateNode) {
+        stateNode.forEachFeature((feature, featureId) -> {
             if (feature instanceof NodeList) {
                 final NodeList nodeList = (NodeList) feature;
                 if (featureId.intValue() == NodeFeatures.ELEMENT_CHILDREN) {
