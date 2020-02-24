@@ -501,9 +501,10 @@ public class FrontendUtils {
         String noproxy = getNonNull(
                 System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
-        if (noproxy != null)
+        if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
-
+        }
+        
         String httpsProxyUrl = getNonNull(
                 System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getProperty(
@@ -531,8 +532,9 @@ public class FrontendUtils {
         String noproxy = getNonNull(
                 System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
-        if (noproxy != null)
+        if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
+        }
 
         String httpsProxyUrl = getNonNull(
                 System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
