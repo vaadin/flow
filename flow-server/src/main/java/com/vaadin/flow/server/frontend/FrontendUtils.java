@@ -46,7 +46,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.text.WordUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -456,9 +455,10 @@ public class FrontendUtils {
         String noproxy = getNonNull(
                 System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getProperty(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
-        if (noproxy != null)
+        if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
-
+        }
+        
         String httpsProxyUrl = getNonNull(
                 System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getProperty(
@@ -486,8 +486,9 @@ public class FrontendUtils {
         String noproxy = getNonNull(
                 System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
-        if (noproxy != null)
+        if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
+        }
 
         String httpsProxyUrl = getNonNull(
                 System.getenv(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
@@ -1574,11 +1575,21 @@ public class FrontendUtils {
      *            the command and it's arguments
      * @return the string for printing in logs
      */
-    public static String commandToString(String baseDir,
-                                         List<String> command) {
-        return "\n" + WordUtils
-                .wrap(String.join(" ", command).replace(baseDir, "."), 50)
-                .replace("\r", "").replace("\n", " \\ \n    ") + "\n";
+    public static String commandToString(String baseDir, List<String> command) {
+        StringBuilder retval = new StringBuilder("\n");
+        StringBuilder curLine = new StringBuilder();
+        for (String fragment : command) {
+            if (curLine.length() + fragment.length() > 55) {
+                retval.append(curLine.toString());
+                retval.append("\\ \n");
+                curLine = new StringBuilder("    ");
+            }
+            curLine.append(fragment.replace(baseDir, "."));
+            curLine.append(" ");
+        }
+        retval.append(curLine.toString());
+        retval.append("\n");
+        return retval.toString();
     }
 
     private static Pair<String, String> getNodeCommands() {
