@@ -106,10 +106,23 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File javaSourceFolder;
 
     /**
+     * Whether to use byte code scanner strategy to discover frontend
+     * components.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
+    protected boolean optimizeBundle;
+
+    /**
      * The folder where flow will put TS API files for client projects.
      */
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
     protected File generatedTsFolder;
+
+    /**
+     * Instructs to use pnpm for installing npm frontend resources.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
+    protected boolean pnpmEnable;
 
     /**
      * Whether vaadin home node executable usage is forced. If it's set to
