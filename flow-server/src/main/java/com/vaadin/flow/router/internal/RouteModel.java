@@ -357,7 +357,7 @@ class RouteModel implements Serializable {
             final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
 
             if (segments.isEmpty()
-                    && parameters.getParameterNames().size() == 0) {
+                    && parameters.getParameterNames().isEmpty()) {
                 return "";
             }
 
@@ -417,7 +417,7 @@ class RouteModel implements Serializable {
                                 + segment + "`");
                     }
 
-                    value.ifPresent(s -> result.add(s));
+                    value.ifPresent(result::add);
 
                 } else {
                     result.add(segment);
