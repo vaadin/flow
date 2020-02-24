@@ -151,8 +151,9 @@ class RouteModel implements Serializable {
             if (RouteFormat.isParameter(segmentTemplate)) {
                 info = new RouteFormat.ParameterInfo(segmentTemplate);
 
-                if (!isPrimitiveType()) {
-                    pattern = Pattern.compile(getRegex());
+                final String regex = getRegex();
+                if (!regex.isEmpty()) {
+                    pattern = Pattern.compile(regex);
                 }
 
                 this.name = info.getName();
@@ -217,18 +218,8 @@ class RouteModel implements Serializable {
             return info != null;
         }
 
-        boolean isPrimitiveType() {
-            return isParameter()
-                    ? RouteFormat.PRIMITIVE_REGEX.contains(getRegex())
-                    : false;
-        }
-
         String getRegex() {
             return isParameter() ? info.getRegex() : null;
-        }
-
-        String getTypeAsPrimitive() {
-            return isPrimitiveType() ? getRegex() : RouteFormat.STRING_REGEX;
         }
 
         boolean isOptional() {
@@ -254,30 +245,6 @@ class RouteModel implements Serializable {
 
             if (pattern != null) {
                 return pattern.matcher(value).matches();
-            }
-
-            if (RouteFormat.INT_REGEX.equals(getRegex())) {
-                try {
-                    Integer.valueOf(value);
-                    return true;
-                } catch (NumberFormatException e) {
-                }
-
-            } else if (RouteFormat.LONG_REGEX.equals(getRegex())) {
-                try {
-                    Long.valueOf(value);
-                    return true;
-                } catch (NumberFormatException e) {
-                }
-
-            } else if (RouteFormat.BOOL_REGEX.equals(getRegex())) {
-                if (value.equalsIgnoreCase("true")
-                        || value.equalsIgnoreCase("false")) {
-                    return true;
-                }
-
-            } else if (RouteFormat.STRING_REGEX.equals(getRegex())) {
-                return true;
             }
 
             return false;
