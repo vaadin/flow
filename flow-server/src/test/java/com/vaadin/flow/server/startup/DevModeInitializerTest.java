@@ -1,7 +1,6 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,6 +10,7 @@ import java.net.URLStreamHandler;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +36,7 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
@@ -108,20 +109,38 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void should_Run_Updaters_doesNotThrow() throws Exception {
-        // no any exception means that updaters are executed and dev mode server
-        // started
+    public void should_Run_Updaters() throws Exception {
         runOnStartup();
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
-    public void should_Run_Updaters_when_NoNodeConfFiles_doesNotThrow()
-            throws Exception {
+    public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
-        // no any exception means that updaters are executed and dev mode server
-        // started
         runOnStartup();
+        assertNotNull(getDevModeHandler());
+    }
+
+    @Test
+    public void should_Not_Run_Updaters_when_NoMainPackageFile()
+            throws Exception {
+        assertNull(getDevModeHandler());
+        mainPackageFile.delete();
+        assertNull(getDevModeHandler());
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
+        runOnStartup();
+        assertNotNull(getDevModeHandler());
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
+        webpackFile.delete();
+        runOnStartup();
+        assertNotNull(getDevModeHandler());
     }
 
     @Test
@@ -131,6 +150,15 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         assertNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Test
+    public void should_Not_AddContextListener() throws Exception {
+        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor
+                .forClass(EventListener.class);
+        runOnStartup();
+        Mockito.verify(servletContext, Mockito.never())
+                .addListener(arg.capture());
     }
 
     @Test
@@ -157,7 +185,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
         ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
                 .forClass(FallbackChunk.class);
         Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
@@ -199,8 +226,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
-        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
+        Assert.assertTrue(
+                "Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
 
@@ -237,7 +264,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
     }

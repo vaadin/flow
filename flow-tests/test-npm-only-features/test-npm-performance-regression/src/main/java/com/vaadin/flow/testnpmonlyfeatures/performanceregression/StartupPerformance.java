@@ -29,8 +29,8 @@ import org.tensorflow.op.image.DecodeJpeg;
 import org.tensorflow.op.math.SegmentSum;
 import org.tensorflow.op.summary.WriteAudioSummary;
 
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.html.Div;
 
 @Route("")
 public class StartupPerformance extends Div {
@@ -41,7 +41,7 @@ public class StartupPerformance extends Div {
     WriteAudioSummary writeAudioSummary;
     SegmentSum<Integer> segmentSum;
     DecodeJpeg decodeJpeg;
-    Multimap<String, String> mmap;
+    Multimap<String,String> mmap;
     Injector injector;
     MetricRegistry registry;
     MetricSet metricSet;
@@ -49,8 +49,4 @@ public class StartupPerformance extends Div {
     Gauge gauge;
     Actor actor;
     ActorSelection actorSelection;
-
-    public StartupPerformance() {
-        setId("performance-component");
-    }
 }

@@ -33,7 +33,6 @@ public class DynamicallyRegisteredRouteIT extends ChromeBrowserTest {
                 + TestingServiceInitListener.DYNAMICALLY_REGISTERED_ROUTE,
                 null);
         getDriver().get(testURL);
-        waitForDevServer();
 
         List<WebElement> elements = findElements(
                 By.id(DynamicallyRegisteredRoute.ID));

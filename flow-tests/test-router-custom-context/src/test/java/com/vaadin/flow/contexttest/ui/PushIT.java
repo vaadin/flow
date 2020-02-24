@@ -77,7 +77,6 @@ public class PushIT extends ChromeBrowserTest {
             url += "?transport=" + transport.getIdentifier();
         }
         getDriver().get(url);
-        waitForDevServer();
 
         findElement(By.id(DependencyLayout.RUN_PUSH_ID)).click();
 
