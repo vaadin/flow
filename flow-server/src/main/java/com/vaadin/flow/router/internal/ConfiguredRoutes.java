@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Route configuration class that is used as a value object.
@@ -204,7 +205,7 @@ public class ConfiguredRoutes implements Serializable {
      *         component and url parameters.
      */
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-            UrlParameters parameters) {
+                                      UrlParameters parameters) {
         return iterateUrlTemplates(target, urlTemplate -> {
             try {
                 return getRouteModel().getRouteTarget(urlTemplate, parameters);

@@ -58,6 +58,7 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Base class for navigation handlers that target a navigation state.

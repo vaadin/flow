@@ -34,7 +34,7 @@ import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.server.startup.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -158,7 +158,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-            UrlParameters parameters) {
+                                      UrlParameters parameters) {
         final RouteTarget routeTarget = getConfiguration()
                 .getRouteTarget(target, parameters);
         if (routeTarget != null) {

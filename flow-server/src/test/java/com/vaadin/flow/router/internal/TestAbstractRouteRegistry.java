@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.server.startup.RouteTarget;
 
 public class TestAbstractRouteRegistry extends AbstractRouteRegistry {
 

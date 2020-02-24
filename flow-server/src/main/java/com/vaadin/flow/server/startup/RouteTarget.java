@@ -12,8 +12,9 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package com.vaadin.flow.router.internal;
+package com.vaadin.flow.server.startup;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
@@ -50,7 +52,7 @@ public class RouteTarget implements Serializable {
      *             exception for miss configured routes where navigation targets
      *             can not be clearly selected
      */
-    RouteTarget(Class<? extends Component> target,
+    public RouteTarget(Class<? extends Component> target,
             List<Class<? extends RouterLayout>> parents) {
         this.target = target;
         this.parentLayouts = parents != null
