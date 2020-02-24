@@ -64,7 +64,7 @@ public class NavigationState implements Serializable {
      * @param navigationTarget
      *            navigation target
      */
-    void setNavigationTarget(Class<? extends Component> navigationTarget) {
+    public void setNavigationTarget(Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
@@ -105,7 +105,7 @@ public class NavigationState implements Serializable {
      * @param resolvedPath
      *            path for which the target was selected
      */
-    void setResolvedPath(String resolvedPath) {
+    public void setResolvedPath(String resolvedPath) {
         this.resolvedPath = resolvedPath;
     }
 
