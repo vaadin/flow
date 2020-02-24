@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.dom.Element;
@@ -44,6 +46,9 @@ public class ShortcutRegistrationTest {
     private UI ui;
     private Component lifecycleOwner;
     private Component[] listenOn = new Component[3];
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void initTests() {
@@ -226,6 +231,46 @@ public class ShortcutRegistrationTest {
 
         assertFalse("Allows propagation was not false",
                 registration.isEventPropagationAllowed());
+    }
+
+    @Test
+    public void listenOnWithDuplicateShouldThrowException() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event -> {
+                }, Key.KEY_A);
+
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
+                ShortcutRegistration.LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES);
+        registration.listenOn(listenOn[0], listenOn[1], listenOn[1]);
+    }
+
+    @Test
+    public void listenOnWithNullEntriesShouldThrowException() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event -> {
+                }, Key.KEY_A);
+
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
+                ShortcutRegistration.LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL);
+        registration.listenOn(listenOn[0], null, listenOn[1]);
+    }
+
+    @Test
+    public void listenOnItemsAreChangedAfterCallingListenOnShouldNotHaveAnyEffect() {
+        ShortcutRegistration registration = new ShortcutRegistration(
+                lifecycleOwner, () -> listenOn, event -> {
+                }, Key.KEY_A);
+
+        Component[] newListenOn = new Component[] { listenOn[0], listenOn[1] };
+        registration.listenOn(newListenOn);
+        newListenOn[0] = null;
+        newListenOn[1] = null;
+
+        clientResponse();
+
+        assertTrue(registration.isShortcutActive());
     }
 
     /**

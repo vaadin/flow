@@ -43,6 +43,8 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.3
  */
 public class ShortcutRegistration implements Registration, Serializable {
+    static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL = "listenOnComponents should not contain null!";
+    static final String LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES = "listenOnComponents should not have duplicate entries!";
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
 
@@ -235,17 +237,39 @@ public class ShortcutRegistration implements Registration, Serializable {
      *
      * @param listenOnComponents
      *            {@code Component}s onto which the shortcut listeners are
-     *            bound. Must not be null.
+     *            bound. Must not be null. Must not contain null. Must not have
+     *            duplicate components.
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration listenOn(Component... listenOnComponents) {
         Objects.requireNonNull(listenOnComponents,
                 "listenOnComponents must not be null!");
+        if (Arrays.stream(listenOnComponents).anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException(
+                    LISTEN_ON_COMPONENTS_SHOULD_NOT_CONTAIN_NULL);
+        }
+        if (hasDuplicate(listenOnComponents)) {
+            throw new IllegalArgumentException(
+                    LISTEN_ON_COMPONENTS_SHOULD_NOT_HAVE_DUPLICATE_ENTRIES);
+        }
         removeAllListenerRegistrations();
-        this.listenOnSuppliers = () -> listenOnComponents;
+        final Component[] copyOfListenOnComponents = Arrays
+                .copyOf(listenOnComponents, listenOnComponents.length);
+        this.listenOnSuppliers = () -> copyOfListenOnComponents;
         prepareForClientResponse();
 
         return this;
+    }
+
+    private boolean hasDuplicate(Component[] components) {
+        Set<Component> set = new HashSet<>(components.length);
+        for (Component component : components) {
+            if (!set.add(component)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -495,9 +519,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private void configureHandlerListenerRegistration(int listenOnIndex) {
-        if (shortcutListenerRegistrations == null) {
-            shortcutListenerRegistrations = new CompoundRegistration[listenOnComponents.length];
-        }
         if (shortcutListenerRegistrations[listenOnIndex] != null) {
             Optional<Registration> registration = shortcutListenerRegistrations[listenOnIndex].registrations
                     .stream().filter(r -> r instanceof DomListenerRegistration)
@@ -600,7 +621,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private void removeAllListenerRegistrations() {
         if (listenOnAttachListenerRegistrations != null) {
             for (CompoundRegistration listenOnAttachListenerRegistration : listenOnAttachListenerRegistrations) {
-                if(listenOnAttachListenerRegistration != null)
+                if (listenOnAttachListenerRegistration != null)
                     listenOnAttachListenerRegistration.remove();
             }
             listenOnAttachListenerRegistrations = null;
@@ -612,7 +633,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     private void removeListenerRegistration() {
         if (shortcutListenerRegistrations != null) {
             for (CompoundRegistration shortcutListenerRegistration : shortcutListenerRegistrations) {
-                if(shortcutListenerRegistration != null)
+                if (shortcutListenerRegistration != null)
                     shortcutListenerRegistration.remove();
             }
             shortcutListenerRegistrations = null;
