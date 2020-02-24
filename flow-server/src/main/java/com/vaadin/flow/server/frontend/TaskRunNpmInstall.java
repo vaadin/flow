@@ -269,8 +269,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
         File modulesYaml = new File(packageUpdater.nodeModulesFolder,
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
-        if (hasModulesYaml != enablePnpm) {
+        if (!enablePnpm && hasModulesYaml) {
             FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+        } else if (enablePnpm && !hasModulesYaml) {
+            // presence of .staging dir with a "pnpm-*" folder means that pnpm
+            // download is in progress, don't remove anything in this case
+            File staging = new File(".staging");
+            if (!staging.isDirectory() || staging.listFiles(
+                    (dir, name) -> name.startsWith("pnpm-")).length == 0) {
+                FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+            }
         }
     }
 
