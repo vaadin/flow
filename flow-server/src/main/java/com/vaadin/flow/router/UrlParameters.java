@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.router.internal.PathUtil;
@@ -76,23 +77,15 @@ public class UrlParameters implements Serializable {
     }
 
     /**
-     * Gets the parameters as a {@link Map}.
-     * 
-     * @return a Map containing the parameter names and values.
-     */
-    public Map<String, String> getParameters() {
-        return params;
-    }
-
-    /**
      * Gets the string representation of a parameter.
      * 
      * @param parameterName
      *            the name of the parameter.
-     * @return the string representation of the parameter.
+     * @return an {@link Optional} {@link String} representation of the
+     *         parameter.
      */
-    public String get(String parameterName) {
-        return getValue(parameterName);
+    public Optional<String> get(String parameterName) {
+        return Optional.ofNullable(getValue(parameterName));
     }
 
     /**
@@ -100,15 +93,16 @@ public class UrlParameters implements Serializable {
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return the int representation of the parameter.
+     * @return an {@link Optional} {@link Integer} representation of the
+     *         parameter.
      */
-    public Integer getInt(String parameterName) {
-        final String value = get(parameterName);
+    public Optional<Integer> getInt(String parameterName) {
+        final String value = getValue(parameterName);
         if (value == null) {
-            return null;
+            return Optional.empty();
         }
 
-        return Integer.valueOf(value);
+        return Optional.of(Integer.valueOf(value));
     }
 
     /**
@@ -116,15 +110,15 @@ public class UrlParameters implements Serializable {
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return the long representation of the parameter.
+     * @return an {@link Optional} {@link Long} representation of the parameter.
      */
-    public Long getLong(String parameterName) {
-        final String value = get(parameterName);
+    public Optional<Long> getLong(String parameterName) {
+        final String value = getValue(parameterName);
         if (value == null) {
-            return null;
+            return Optional.empty();
         }
 
-        return Long.valueOf(value);
+        return Optional.of(Long.valueOf(value));
     }
 
     /**
@@ -132,29 +126,32 @@ public class UrlParameters implements Serializable {
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return the boolean representation of the parameter.
+     * @return an {@link Optional} {@link Boolean} representation of the
+     *         parameter.
      */
-    public Boolean getBool(String parameterName) {
-        final String value = get(parameterName);
+    public Optional<Boolean> getBool(String parameterName) {
+        final String value = getValue(parameterName);
         if (value == null) {
-            return null;
+            return Optional.empty();
         }
 
-        return Boolean.valueOf(value);
+        return Optional.of(Boolean.valueOf(value));
     }
 
     /**
      * Gets a list representing the wildcard value of a parameter, where each
-     * element in the list is a path segment.
+     * element in the list is a path segment. In case the value is missing the
+     * result is an empty {@link List}.
      *
      * @param parameterName
      *            the name of the parameter.
-     * @return a list representing the wildcard value of a parameter.
+     * @return a {@link List} representing the wildcard value of a parameter, or
+     *         an empty {@link List} is the wildcard is missing.
      */
-    public List<String> getSegments(String parameterName) {
-        final String value = get(parameterName);
+    public List<String> getWildcard(String parameterName) {
+        final String value = getValue(parameterName);
         if (value == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         return PathUtil.getSegmentsList(value);
