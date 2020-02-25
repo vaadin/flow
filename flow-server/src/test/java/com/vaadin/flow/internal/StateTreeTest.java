@@ -568,4 +568,26 @@ public class StateTreeTest {
         Assert.assertTrue(collectedNodes.contains(node2));
         Assert.assertTrue(collectedNodes.contains(node3));
     }
+
+
+    @Test
+    public void prepareForResync_nodeHasAttachAndDetachListeners_treeIsDirtyAndListenersAreCalled() {
+        StateNode node1 = tree.getRootNode();
+        StateNode node2 = StateNodeTest.createEmptyNode("node2");
+        StateNodeTest.setParent(node2, node1);
+
+        AtomicInteger attachCount = new AtomicInteger();
+        node2.addAttachListener(attachCount::incrementAndGet);
+        AtomicInteger detachCount = new AtomicInteger();
+        node2.addDetachListener(detachCount::incrementAndGet);
+
+        tree.collectChanges(c -> {});
+        Assert.assertEquals(0, tree.collectDirtyNodes().size());
+
+        tree.getRootNode().prepareForResync();
+
+        Assert.assertEquals(1, attachCount.get());
+        Assert.assertEquals(1, detachCount.get());
+        Assert.assertEquals(2, tree.collectDirtyNodes().size());
+    }
 }

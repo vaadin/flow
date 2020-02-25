@@ -387,12 +387,10 @@ public class StateNode implements Serializable {
 
     /**
      * Prepares the tree below this node for resynchronization by detaching all
-     * nodes, setting their internal state to not yet attached, and calling the
-     * attach listeners. The effect is that the client will receive the same
-     * changes as when the component tree was initially attached, so that it can
-     * build the DOM tree from scratch.
+     * descendants, setting their internal state to not yet attached, and
+     * calling the attach listeners.
      */
-    public void prepareForResync() {
+    protected void prepareForResync() {
         visitNodeTreeBottomUp(StateNode::fireDetachListeners);
         visitNodeTree(stateNode -> {
             getOwner().markAsDirty(stateNode);
