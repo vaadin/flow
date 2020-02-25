@@ -327,7 +327,7 @@ public class ServerRpcHandler implements Serializable {
             // Run detach listeners and re-attach all nodes again to the
             // state tree, in order to send changes for a full re-build of
             // the client-side state tree in the response
-            ui.getInternals().getStateTree().prepareForResync();
+            ui.getInternals().getStateTree().getRootNode().prepareForResync();
 
             // At this point, make no assumptions about which dependencies have
             // been accepted by the client

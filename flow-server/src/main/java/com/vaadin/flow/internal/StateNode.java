@@ -386,13 +386,22 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Resets the node to state before it was attached to a state tree.
+     * Prepares the tree below this node for resynchronization by detaching all
+     * nodes, setting their internal state to not yet attached, and calling the
+     * attach listeners. The effect is that the client will receive the same
+     * changes as when the component tree was initially attached, so that it can
+     * build the DOM tree from scratch.
      */
     public void prepareForResync() {
-        wasAttached = false;
-        isInitialChanges = true;
-        hasBeenAttached = false;
-        hasBeenDetached = false;
+        visitNodeTreeBottomUp(StateNode::fireDetachListeners);
+        visitNodeTree(stateNode -> {
+            getOwner().markAsDirty(stateNode);
+            stateNode.wasAttached = false;
+            stateNode.isInitialChanges = true;
+            stateNode.hasBeenAttached = false;
+            stateNode.hasBeenDetached = false;
+        });
+        visitNodeTreeBottomUp(sn -> sn.fireAttachListeners(true));
     }
 
     /**
@@ -789,7 +798,7 @@ public class StateNode implements Serializable {
         }
     }
 
-    void fireAttachListeners(boolean initialAttach) {
+    private void fireAttachListeners(boolean initialAttach) {
         if (attachListeners != null) {
             List<Command> copy = new ArrayList<>(attachListeners);
 
@@ -799,7 +808,7 @@ public class StateNode implements Serializable {
         forEachFeature(f -> f.onAttach(initialAttach));
     }
 
-    void fireDetachListeners() {
+    private void fireDetachListeners() {
         if (detachListeners != null) {
             List<Command> copy = new ArrayList<>(detachListeners);
 
