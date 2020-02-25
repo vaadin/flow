@@ -519,33 +519,31 @@ class RouteModel implements Serializable {
                 routeSegment = addSegment(segmentPattern, children);
             }
 
-            addSubRoute(routeSegment, segmentPatterns, target);
+            routeSegment.setRouteTarget(segmentPatterns, target);
         }
 
-        private void addSubRoute(RouteSegment potentialSegment,
-                List<String> segmentPatterns, RouteTarget target) {
+        private void setRouteTarget(List<String> segmentPatterns,
+                RouteTarget target) {
             if (segmentPatterns.size() > 1) {
-                potentialSegment.addSubRoute(
-                        segmentPatterns.subList(1, segmentPatterns.size()),
+                addSubRoute(segmentPatterns.subList(1, segmentPatterns.size()),
                         target);
 
             } else {
-                if (!potentialSegment.hasTarget()) {
+                if (!hasTarget()) {
 
                     // We reject any route where there's already a target set
                     // for the same route with an optional.
-                    RouteSegment optional = potentialSegment
-                            .getOptionalParameterWithTarget();
+                    RouteSegment optional = getOptionalParameterWithTarget();
                     if (optional != null) {
                         throw optional.ambigousOptionalTarget(
                                 optional.getTarget().getTarget(),
                                 target.getTarget());
                     }
 
-                    potentialSegment.target = target;
+                    this.target = target;
 
                 } else {
-                    throw potentialSegment.ambigousTarget(target.getTarget());
+                    throw ambigousTarget(target.getTarget());
                 }
             }
         }
@@ -560,8 +558,8 @@ class RouteModel implements Serializable {
                     : getStaticSegments().get(segments.get(0));
 
             if (routeSegment != null) {
-                RouteTarget foundTarget = findRouteTarget(routeSegment,
-                        segments, urlParameters);
+                RouteTarget foundTarget = routeSegment.getRouteTarget(segments,
+                        urlParameters);
                 if (foundTarget != null) {
                     return foundTarget;
                 }
@@ -572,16 +570,16 @@ class RouteModel implements Serializable {
             if (!segments.isEmpty()) {
 
                 for (RouteSegment parameter : getParameterSegments().values()) {
-                    RouteTarget foundTarget = findRouteTarget(parameter,
-                            segments, urlParameters);
+                    RouteTarget foundTarget = parameter.getRouteTarget(segments,
+                            urlParameters);
                     if (foundTarget != null) {
                         return foundTarget;
                     }
                 }
 
                 for (RouteSegment parameter : getOptionalSegments().values()) {
-                    RouteTarget foundTarget = findRouteTarget(parameter,
-                            segments, urlParameters);
+                    RouteTarget foundTarget = parameter.getRouteTarget(segments,
+                            urlParameters);
                     if (foundTarget != null) {
                         return foundTarget;
                     }
@@ -602,8 +600,8 @@ class RouteModel implements Serializable {
 
                 for (RouteSegment varargParameter : getVarargsSegments()
                         .values()) {
-                    RouteTarget foundTarget = findRouteTarget(varargParameter,
-                            segments, urlParameters);
+                    RouteTarget foundTarget = varargParameter
+                            .getRouteTarget(segments, urlParameters);
                     if (foundTarget != null) {
                         return foundTarget;
                     }
@@ -613,32 +611,31 @@ class RouteModel implements Serializable {
             return null;
         }
 
-        private RouteTarget findRouteTarget(RouteSegment potentialSegment,
-                List<String> segments, Map<String, String> urlParameters) {
+        private RouteTarget getRouteTarget(List<String> segments,
+                Map<String, String> urlParameters) {
 
             Map<String, String> outputParameters = new HashMap<>();
 
             // Handle varargs.
-            if (potentialSegment.isVarargs()) {
+            if (isVarargs()) {
 
                 for (String value : segments) {
-                    if (!potentialSegment.isEligible(value)) {
+                    if (!isEligible(value)) {
                         // If any value is not eligible we don't want to go
                         // any further.
                         return null;
                     }
                 }
 
-                outputParameters.put(potentialSegment.getName(),
-                        PathUtil.getPath(segments));
+                outputParameters.put(getName(), PathUtil.getPath(segments));
                 segments = Collections.emptyList();
 
-            } else if (potentialSegment.isParameter()) {
+            } else if (isParameter()) {
                 // Handle one parameter value.
                 String value = segments.get(0);
 
-                if (potentialSegment.isEligible(value)) {
-                    outputParameters.put(potentialSegment.getName(), value);
+                if (isEligible(value)) {
+                    outputParameters.put(getName(), value);
 
                 } else {
                     // If the value is not eligible we don't want to go any
@@ -654,17 +651,15 @@ class RouteModel implements Serializable {
 
             if (!segments.isEmpty()) {
                 // Continue looking if there any more segments.
-                foundTarget = potentialSegment.findRouteTarget(segments,
-                        outputParameters);
+                foundTarget = findRouteTarget(segments, outputParameters);
 
-            } else if (potentialSegment.hasTarget()) {
+            } else if (hasTarget()) {
                 // Found target.
-                foundTarget = potentialSegment.getTarget();
+                foundTarget = getTarget();
 
             } else {
                 // Look for target in optional children.
-                RouteSegment optionalChild = potentialSegment
-                        .getAnyOptionalOrVarargsParameterWithTarget();
+                RouteSegment optionalChild = getAnyOptionalOrVarargsParameterWithTarget();
                 if (optionalChild != null) {
                     foundTarget = optionalChild.getTarget();
                 } else {
