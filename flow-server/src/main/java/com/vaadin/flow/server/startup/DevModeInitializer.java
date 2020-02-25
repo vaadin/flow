@@ -193,10 +193,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 .getServletRegistrations().values();
 
         if (registrations.isEmpty()) {
-            ServletRegistration.Dynamic registration = context
-                    .addServlet("devModeVaadinFooBar", VaadinServlet.class);
-
-            registrations = Collections.singleton(registration);
+            return;
         }
 
         DeploymentConfiguration config = StubServletConfig
