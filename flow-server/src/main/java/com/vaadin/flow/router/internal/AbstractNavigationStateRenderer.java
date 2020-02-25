@@ -59,6 +59,8 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -83,12 +85,6 @@ public abstract class AbstractNavigationStateRenderer
 
     private String forwardToLocation = null;
 
-    public boolean isClientSideView() {
-        return isClientSideView;
-    }
-
-    private boolean isClientSideView = false;
-
     /**
      * Creates a new renderer for the given navigation state.
      *
@@ -97,15 +93,6 @@ public abstract class AbstractNavigationStateRenderer
      */
     public AbstractNavigationStateRenderer(NavigationState navigationState) {
         this.navigationState = navigationState;
-    }
-
-    /**
-     * Gets the new location.
-     *
-     * @return the new location
-     */
-    public String getForwardToLocation() {
-        return forwardToLocation;
     }
 
     /**
@@ -250,7 +237,7 @@ public abstract class AbstractNavigationStateRenderer
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        if (isClientSideView) {
+        if (forwardToLocation != null) {
             // Change the UI according to the navigation Component chain.
             ui.getInternals().showRouteTarget(new Location(removeFirstSlash(forwardToLocation)),
                     forwardToLocation, componentInstance,
@@ -324,9 +311,19 @@ public abstract class AbstractNavigationStateRenderer
             BeforeEvent beforeNavigation) {
 
         if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
+            // inform that is BeforeEnterEvent
+            if (beforeNavigation instanceof BeforeLeaveEvent) {
+                String forwardOnBeforeLeave = beforeNavigation.getForwardToLocation() != null
+                        ? beforeNavigation.getForwardToLocation() : beforeNavigation.getLocation().getPath();
+                getLogger().warn(
+                        "The event.forwardTo() API in beforeLeave is not supported, "
+                                + "you can use the combination between postpone() and "
+                                + "getUI().get().getPage().setLocation(\"{}\") "
+                                + " API in order to forward to other location", forwardOnBeforeLeave);
+            }
             if (beforeNavigation.isClientSideView()) {
                 forwardToLocation = beforeNavigation.getForwardToLocation();
-                isClientSideView = beforeNavigation.isClientSideView();
+
                 return Optional.empty();
             }
             return Optional.of(forward(event, beforeNavigation));
@@ -914,4 +911,8 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(AbstractNavigationStateRenderer.class.getName());
+    }
 }

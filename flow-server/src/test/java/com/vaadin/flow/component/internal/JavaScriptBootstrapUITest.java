@@ -33,7 +33,6 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 
-import static com.vaadin.flow.component.UI.getCurrent;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NAVIGATE_TO;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_PUSHSTATE_TO;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
