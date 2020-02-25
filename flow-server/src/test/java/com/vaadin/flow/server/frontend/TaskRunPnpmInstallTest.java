@@ -75,17 +75,27 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Test
     public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
             throws ExecutionFailedException, IOException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        FileUtils.forceMkdir(nodeModules);
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // create some package.json file so pnpm does some installation into
+        // node_modules folder
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"pnpm\": \"4.5.0\"}}",
+                StandardCharsets.UTF_8);
+
+        getNodeUpdater().modified = true;
+        createTask().execute();
 
         // create a fake file in the node modules dir to check that it's removed
-        File fakeFile = new File(nodeModules, ".fake.file");
+        File fakeFile = new File(getNodeUpdater().nodeModulesFolder,
+                ".fake.file");
         fakeFile.createNewFile();
 
         getNodeUpdater().modified = true;
         createTask().execute();
 
-        Assert.assertFalse(fakeFile.exists());
+        Assert.assertTrue(fakeFile.exists());
     }
 
     @Override
