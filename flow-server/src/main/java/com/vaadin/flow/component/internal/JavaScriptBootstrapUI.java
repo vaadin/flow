@@ -43,7 +43,6 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 
 /**
@@ -59,6 +58,9 @@ public class JavaScriptBootstrapUI extends UI {
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
+
+    private String forwardToLocation = null;
+    private boolean isClientSideView = false;
 
     /**
      * Create UI for client side bootstrapping.
@@ -84,6 +86,15 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     /**
+     * Gets the client-side location used for forwardTo.
+     *
+     * @return a forward location
+     */
+    public String getForwardToLocation() {
+        return forwardToLocation;
+    }
+
+    /**
      * Connect a client with the server side UI.
      *
      * @param clientElementTag
@@ -95,7 +106,7 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoute) {
+                              String flowRoute) {
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -110,8 +121,12 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeFirstSlash(flowRoute)));
 
         // Inform the client, that everything went fine.
-        wrapperElement.executeJs("this.serverConnected($0)", postponed);
-
+        if (!postponed && isClientSideView) {
+            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
+                    false, forwardToLocation);
+        } else {
+            wrapperElement.executeJs("this.serverConnected($0)", postponed);
+        }
         // If this call happens, there is a client-side routing, thus
         // it's needed to remove the flag that might be set in
         // IndexHtmlRequestHandler
@@ -131,6 +146,7 @@ public class JavaScriptBootstrapUI extends UI {
     public void leaveNavigation(String route) {
         boolean postponed = navigateToPlaceholder(
                 new Location(removeFirstSlash(route)));
+
         // Inform the client whether the navigation should be postponed
         wrapperElement.executeJs("this.serverConnected($0)", postponed);
     }
@@ -139,7 +155,7 @@ public class JavaScriptBootstrapUI extends UI {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     this.getRouter()).withTarget(ClientViewPlaceholder.class)
-                            .build();
+                    .build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
@@ -181,7 +197,7 @@ public class JavaScriptBootstrapUI extends UI {
     private boolean shouldHandleNavigation(Location location) {
         return !getInternals().hasLastHandledLocation()
                 || !sameLocation(getInternals().getLastHandledLocation(),
-                        location);
+                location);
     }
 
     private boolean sameLocation(Location oldLocation, Location newLocation) {
@@ -198,7 +214,7 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean handleNavigation(Location location,
-            NavigationState navigationState) {
+                                     NavigationState navigationState) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
 
@@ -207,6 +223,18 @@ public class JavaScriptBootstrapUI extends UI {
 
         clientNavigationStateRenderer.handle(navigationEvent);
 
+        // true if has forwardTo or not in server-views
+        if (!getInternals().getActiveRouterTargetsChain().isEmpty()
+                && !getInternals().getActiveRouterTargetsChain().get(0).getClass().getName()
+                .toLowerCase().contains(getInternals().getActiveViewLocation().getFirstSegment())) {
+            // true if the forwardTo target is client-view
+            isClientSideView = !this.getRouter()
+                    .resolveNavigationTarget(new Location(removeFirstSlash(this.getInternals()
+                            .getActiveViewLocation().getFirstSegment()))).isPresent();
+            if (isClientSideView) {
+                forwardToLocation =  this.getInternals().getActiveViewLocation().getFirstSegment();
+            }
+        }
         adjustPageTitle();
 
         return getInternals().getContinueNavigationAction() != null;
@@ -284,7 +312,7 @@ public class JavaScriptBootstrapUI extends UI {
             // prevent looping
             if (navigationInProgress || getInternals().hasLastHandledLocation()
                     && sameLocation(getInternals().getLastHandledLocation(),
-                            location)) {
+                    location)) {
                 return;
             }
 
@@ -297,9 +325,14 @@ public class JavaScriptBootstrapUI extends UI {
                 // Navigation can be done in server side without extra
                 // round-trip
                 handleNavigation(location, navigationState);
-
-                // Update browser URL but do not fire client-side navigation
-                execJs = CLIENT_PUSHSTATE_TO;
+                if (isClientSideView) {
+                    navigationInProgress = false;
+                    this.navigate(forwardToLocation);
+                    return;
+                } else {
+                    // Update browser URL but do not fire client-side navigation
+                    execJs = CLIENT_PUSHSTATE_TO;
+                }
             } else {
 
                 // Server cannot resolve navigation, let client-side to handle
