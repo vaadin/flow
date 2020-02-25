@@ -120,10 +120,14 @@ public class JavaScriptBootstrapUI extends UI {
         boolean postponed = renderViewForRoute(
                 new Location(removeFirstSlash(flowRoute)));
 
-        // Inform the client, that everything went fine.
-        if (!postponed && isClientSideView) {
-            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
-                    false, forwardToLocation);
+        if (!wrapperElement.toString().contains("Could not navigate to")) {
+            // Inform the client, that everything went fine.
+            if (!postponed && isClientSideView) {
+                wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
+                        false, forwardToLocation);
+            } else {
+                wrapperElement.executeJs("this.serverConnected($0)", postponed);
+            }
         } else {
             wrapperElement.executeJs("this.serverConnected($0)", postponed);
         }
@@ -232,7 +236,7 @@ public class JavaScriptBootstrapUI extends UI {
                     .resolveNavigationTarget(new Location(removeFirstSlash(this.getInternals()
                             .getActiveViewLocation().getFirstSegment()))).isPresent();
             if (isClientSideView) {
-                forwardToLocation =  this.getInternals().getActiveViewLocation().getFirstSegment();
+                forwardToLocation =  this.getInternals().getActiveViewLocation().getPathWithQueryParameters();
             }
         }
         adjustPageTitle();
