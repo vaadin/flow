@@ -261,20 +261,4 @@ public final class ServerEventObject extends JavaScriptObject {
 
         return expression;
     }
-
-    /**
-     * Reject all promises pending on this server object. Called during client
-     * resynchronization to free consumers of promises that are never delivered
-     * by the server.
-     */
-    public native void rejectPromises()
-    /*-{
-        var promises = this[@ServerEventObject::PROMISE_CALLBACK_NAME].promises;
-        if (promises !== undefined ) {
-            promises.forEach(function (item) {
-                item[1](Error("Client is resynchronizing"));
-            });
-        }
-    }-*/;
-
 }

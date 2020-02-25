@@ -15,7 +15,6 @@ public class ResynchronizationView extends AbstractDivView {
     final static String CALL_BUTTON = "call";
 
     final static String ADDED_CLASS = "added";
-    final static String REJECTED_CLASS = "rejected";
 
     public ResynchronizationView() {
         setId(ID);
@@ -26,23 +25,6 @@ public class ResynchronizationView extends AbstractDivView {
             add(added);
             triggerResync();
         }));
-
-        add(createButton("Desync and call function", CALL_BUTTON, e -> {
-            // add a span to <body> for the test (not to view, since the DOM
-            // will be rebuilt on resync)
-            final String js = String.format(
-                    "document.getElementById(\"%s\").$server.clientCallable()"
-                            + ".then(_ => {})"
-                            + ".catch(_ => { document.body.innerHTML += '<span class=\"%s\">rejected</span>';});",
-                    ID, REJECTED_CLASS);
-            getUI().get().getPage().executeJs(js);
-        }));
-    }
-
-    @ClientCallable
-    public int clientCallable() {
-        triggerResync();
-        return 0;
     }
 
     private void triggerResync() {

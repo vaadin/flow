@@ -135,12 +135,6 @@ public class StateTree {
     public void prepareForResync() {
         idToNode.forEach((node, b) -> {
             if (node != rootNode) {
-                final Node dom = node.getDomNode();
-                if (dom != null
-                        && ServerEventObject.getIfPresent(dom) != null) {
-                    // reject any promise waiting on this node
-                    ServerEventObject.getIfPresent(dom).rejectPromises();
-                }
                 unregisterNode(node);
                 node.setParent(null);
             }
