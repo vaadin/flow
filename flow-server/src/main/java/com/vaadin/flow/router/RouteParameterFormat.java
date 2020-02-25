@@ -28,12 +28,17 @@ public enum RouteParameterFormat {
     NAME,
 
     /**
-     * If specified the original template is provided.
+     * Original template regex.
      */
     REGEX,
 
     /**
-     * The simple template of the parameter, i.e. <code>int</code>,
+     * Parameter modifier, i.e. optional or wildcard.
+     */
+    MODIFIER,
+
+    /**
+     * The named template of the parameter, i.e. <code>int</code>,
      * <code>long</code>, <code>bool</code>, <code>string</code>.
      */
     REGEX_NAME,

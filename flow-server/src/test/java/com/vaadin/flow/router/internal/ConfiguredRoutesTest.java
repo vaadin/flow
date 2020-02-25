@@ -2,7 +2,10 @@ package com.vaadin.flow.router.internal;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 
+import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterRegex;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -60,6 +63,74 @@ public class ConfiguredRoutesTest {
                 "Given parentLayouts should have been copied correctly",
                 Arrays.asList(SecondParentTarget.class, ParentTarget.class),
                 immutable.getParentLayouts("", BaseTarget.class));
+    }
+
+    @Test
+    public void configuration_provides_formatted_url_template() {
+        ConfigureRoutes config = new ConfigureRoutes();
+
+        final String urlTemplate = "/path/to" 
+                + "/:intType(" + RouteParameterRegex.INT + ")"
+                + "/:longType?(" + RouteParameterRegex.LONG + ")"
+                + "/:boolType?(" + RouteParameterRegex.BOOL + ")"
+                + "/:stringType?/:varargs*(thinking|of|U|and|I)";
+        config.setRoute(urlTemplate, BaseTarget.class);
+
+        Assert.assertFalse("Url template should not contain prefixed forward slash '/'",
+                urlTemplate.equals(config.getUrlTemplate(BaseTarget.class)));
+
+        Assert.assertEquals("Invalid urlTemplate", urlTemplate.substring(1),
+                config.getUrlTemplate(BaseTarget.class));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:intType(int)/:longType?(long)/:boolType?(bool)/:stringType?(string)/:varargs*(string)",
+                config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.NAME,
+                                RouteParameterFormat.MODIFIER,
+                                RouteParameterFormat.REGEX_NAME)));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:intType/:longType?/:boolType?/:stringType?/:varargs*",
+                config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.NAME,
+                                RouteParameterFormat.MODIFIER)));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:intType/:longType/:boolType/:stringType/:varargs",
+                config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.NAME)));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:(int)/:?(long)/:?(bool)/:?(string)/:*(string)",
+                config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.MODIFIER,
+                                RouteParameterFormat.REGEX_NAME)));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:(" + RouteParameterRegex.INT + ")/:?("
+                        + RouteParameterRegex.LONG + ")/:?("
+                        + RouteParameterRegex.BOOL
+                        + ")/:?/:*(thinking|of|U|and|I)",
+                config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.MODIFIER,
+                                RouteParameterFormat.REGEX)));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:int/:long/:bool/:string/:string",
+                config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.REGEX_NAME)));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:/:?/:?/:?/:*", config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.MODIFIER)));
+
+        Assert.assertEquals("Invalid formatted urlTemplate",
+                "path/to/:" + RouteParameterRegex.INT + "/:"
+                        + RouteParameterRegex.LONG + "/:"
+                        + RouteParameterRegex.BOOL + "/:/:thinking|of|U|and|I",
+                config.getUrlTemplate(BaseTarget.class,
+                        EnumSet.of(RouteParameterFormat.REGEX)));
+
     }
 
     @Tag("div")

@@ -156,20 +156,24 @@ public class RouteConfigurationTest {
             routeConfiguration.setRoute("path", Secondary.class);
             routeConfiguration.setRoute("parents", MiddleLayout.class,
                     MainLayout.class);
+            routeConfiguration.setAnnotatedRoute(ParameterView.class);
         });
 
         Assert.assertEquals(
                 "After unlock registry should be updated for others to configure with new data",
-                3, routeConfiguration.getAvailableRoutes().size());
+                4, routeConfiguration.getAvailableRoutes().size());
         Assert.assertTrue("Expected path '' to be registered",
-                routeConfiguration.isPathRegistered(""));
+                routeConfiguration.isUrlTemplateRegistered(""));
         Assert.assertTrue("Expected path 'path' to be registered",
-                routeConfiguration.isPathRegistered("path"));
+                routeConfiguration.isUrlTemplateRegistered("path"));
         Assert.assertTrue("Expected path 'parents' to be registered",
-                routeConfiguration.isPathRegistered("parents"));
+                routeConfiguration.isUrlTemplateRegistered("parents"));
 
         Assert.assertEquals("Url should have only been 'parents'", "parents",
                 routeConfiguration.getUrl(MiddleLayout.class));
+
+        Assert.assertEquals("Url should have only been 'parents'", "parents",
+                routeConfiguration.getUrlTemplate(MiddleLayout.class).get());
 
         Optional<Class<? extends Component>> pathRoute = routeConfiguration
                 .getRoute("path");
@@ -178,6 +182,22 @@ public class RouteConfigurationTest {
         Assert.assertEquals("'path' registration should be Secondary",
                 Secondary.class, pathRoute.get());
 
+        Assert.assertEquals("Missing or incorrect url with parameters",
+                "double/1234567890/float/12345678900",
+                routeConfiguration.getUrl(ParameterView.class,
+                        new UrlParameters("int", "1234567890", "long",
+                                "12345678900")));
+
+        Assert.assertEquals("Missing or incorrect url template",
+                "double/:int(" + RouteParameterRegex.INT + ")/float/:long("
+                        + RouteParameterRegex.LONG + ")",
+                routeConfiguration.getUrlTemplate(ParameterView.class).get());
+
+        Assert.assertTrue("Missing url template",
+                routeConfiguration.isUrlTemplateRegistered("double/:int("
+                        + RouteParameterRegex.INT + ")/float/:long("
+                        + RouteParameterRegex.LONG + ")"));
+        
         routeConfiguration.update(() -> {
             routeConfiguration.removeRoute("path");
             routeConfiguration.setRoute("url", Url.class);
@@ -490,6 +510,17 @@ public class RouteConfigurationTest {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
+    }
+
+    @RoutePrefix("double/:int(" + RouteParameterRegex.INT + ")")
+    @Tag("div")
+    private static class MainView extends Component implements RouterLayout {
+    }
+
+    @Route(value = "float/:long(" + RouteParameterRegex.LONG
+            + ")", layout = MainView.class)
+    @Tag("div")
+    private static class ParameterView extends Component {
     }
 
     /**

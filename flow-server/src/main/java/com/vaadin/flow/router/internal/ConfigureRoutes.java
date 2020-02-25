@@ -166,6 +166,8 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
 
+        urlTemplate = PathUtil.trimPath(urlTemplate);
+
         final RouteTarget target = new RouteTarget(navigationTarget, parentChain);
 
         getRouteModel().addRoute(urlTemplate, target);

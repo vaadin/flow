@@ -297,8 +297,10 @@ public class ConfiguredRoutes implements Serializable {
      */
     public String getUrlTemplate(Class<? extends Component> navigationTarget) {
         return getRouteModel().formatUrlTemplate(
-                getTargetRoutes().get(navigationTarget), EnumSet.of(
-                        RouteParameterFormat.NAME, RouteParameterFormat.REGEX));
+                getTargetRoutes().get(navigationTarget),
+                EnumSet.of(RouteParameterFormat.NAME,
+                        RouteParameterFormat.MODIFIER,
+                        RouteParameterFormat.REGEX));
     }
 
     /**

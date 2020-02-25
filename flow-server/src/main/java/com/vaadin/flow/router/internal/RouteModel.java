@@ -971,6 +971,7 @@ class RouteModel implements Serializable {
             Set<RouteParameterFormat> format) {
 
         if (format.contains(RouteParameterFormat.NAME)
+                && format.contains(RouteParameterFormat.MODIFIER)
                 && format.contains(RouteParameterFormat.REGEX)) {
             return urlTemplate;
         }
@@ -980,25 +981,30 @@ class RouteModel implements Serializable {
 
             result.append(":");
 
-            final boolean containsRegex = format
+            final boolean formatRegex = format
                     .contains(RouteParameterFormat.REGEX)
                     || format.contains(RouteParameterFormat.REGEX_NAME);
-            boolean closeTypeBracket = false;
+            boolean wrapRegex = false;
 
             if (format.contains(RouteParameterFormat.NAME)) {
                 result.append(segment.getName());
-                if (containsRegex) {
-                    result.append("(");
-                    closeTypeBracket = true;
-                }
+                wrapRegex = true;
             }
 
-            if (containsRegex) {
-                String type = formatSegmentType(segment, format);
+            if (format.contains(RouteParameterFormat.MODIFIER)) {
+                result.append(RouteFormat.getModifier(segment.getTemplate()));
+                wrapRegex = true;
+            }
+
+            final String type = formatSegmentType(segment, format);
+            if (!type.isEmpty() && formatRegex) {
+                if (wrapRegex) {
+                    result.append("(");
+                }
 
                 result.append(type);
 
-                if (closeTypeBracket) {
+                if (wrapRegex) {
                     result.append(")");
                 }
             }

@@ -27,6 +27,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.Command;
@@ -436,8 +437,10 @@ public class RouteConfiguration implements Serializable {
      */
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
-        return handledRegistry.getUrlTemplate(navigationTarget, EnumSet
-                .of(RouteParameterFormat.NAME, RouteParameterFormat.REGEX));
+        return handledRegistry.getUrlTemplate(navigationTarget,
+                EnumSet.of(RouteParameterFormat.NAME,
+                        RouteParameterFormat.MODIFIER,
+                        RouteParameterFormat.REGEX));
     }
 
     /**

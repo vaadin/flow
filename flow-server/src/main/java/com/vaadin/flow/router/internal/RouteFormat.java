@@ -133,6 +133,16 @@ class RouteFormat implements Serializable {
                 || segmentTemplate.contains("*("));
     }
 
+    static String getModifier(String segmentTemplate) {
+        if (isOptionalParameter(segmentTemplate)) {
+            return "?";
+        } else if (isVarargsParameter(segmentTemplate)) {
+            return "*";
+        }
+
+        return "";
+    }
+
     static String getRegexName(String regex) {
         if (INT_REGEX.equals(regex)) {
             return "int";

@@ -76,7 +76,7 @@ public class PathUtil implements Serializable {
                 : ("/" + String.join("/", segments))));
     }
 
-    private static String trimPath(String path) {
+    static String trimPath(String path) {
         if (path == null) {
             return "";
         }

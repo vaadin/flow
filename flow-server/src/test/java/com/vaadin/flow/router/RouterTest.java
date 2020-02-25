@@ -1447,18 +1447,14 @@ public class RouterTest extends RoutingTestBase {
     public static class UrlParametersBase extends Component
             implements BeforeEnterObserver {
 
-        static Map<String, UrlParameters> parametersLog = new HashMap<>();
-
         static UrlParameters parameters;
 
         static void clear() {
-            parametersLog.clear();
             parameters = null;
         }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            parametersLog.put(event.getLocation().getPath(), event.getUrlParameters());
             parameters = event.getUrlParameters();
         }
     }
@@ -1497,6 +1493,20 @@ public class RouterTest extends RoutingTestBase {
 
     @Route(value = ":anotherTargetID/:yetAnotherID/foo/:varargsFoo*", layout = ChainLinkWithParameterAndTarget.class)
     public static class AnotherTargetWithParameter extends UrlParametersBase {
+
+    }
+
+    @Route(":intType(" + RouteParameterRegex.INT + ")")
+    @RouteAlias(":longType(" + RouteParameterRegex.LONG + ")")
+    @RouteAlias(":boolType(" + RouteParameterRegex.BOOL + ")")
+    @RouteAlias(":stringType")
+    @RouteAlias(":intType?(" + RouteParameterRegex.INT + ")"
+            + "/:longType?(" + RouteParameterRegex.LONG + ")"
+            + "/:boolType?(" + RouteParameterRegex.BOOL + ")"
+            + "/:stringType?/:varargs*(thinking|of|U|and|I)")
+    @RoutePrefix("param/types")
+    public static class ParameterTypesView extends UrlParametersBase
+            implements RouterLayout {
 
     }
 
@@ -3450,13 +3460,22 @@ public class RouterTest extends RoutingTestBase {
 
     @Test // #2740 #4213
     public void url_parameters_fail_to_be_extracted_from_views() {
-        setNavigationTargets(TargetWithParameter.class,
+        setNavigationTargets(ChainLinkWithParameter.class,
+                TargetWithOptionalParameters.class,
+                TargetWithParameter.class,
                 AnotherTargetWithParameter.class,
-                ChainLinkWithParameterAndTarget.class,
-                ChainLinkWithParameter.class,
-                TargetWithOptionalParameters.class);
+                ChainLinkWithParameterAndTarget.class);
 
-        // TODO: add failing url test
+        assertUrlParameters("qwe/123/link", null);
+
+        assertUrlParameters("link/qwe/123/456", null);
+
+        assertUrlParameters("123/link/456/789/target/bar", null);
+
+        assertUrlParameters(
+                "123/targetLink/456/789/chainLink/987/foo/a/b/c/d/e/f", null);
+
+        assertUrlParameters("987/765/targetLink/chainLink/543", null);
     }
 
     @Test // #2740 #4213
@@ -3518,6 +3537,44 @@ public class RouterTest extends RoutingTestBase {
                         "targetChainLinkID", "543"));
         assertUrlParameters("987/targetLink/chainLink/543",
                 parameters("parentID", "987", "targetChainLinkID", "543"));
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_parameters_view() {
+        setNavigationTargets(ParameterTypesView.class);
+
+        assertUrlParameters("param/types/123", parameters("intType", "123"));
+
+        assertUrlParameters("param/types/12345678900",
+                parameters("longType", "12345678900"));
+
+        assertUrlParameters("param/types/true", parameters("boolType", "true"));
+
+        assertUrlParameters("param/types/false",
+                parameters("boolType", "false"));
+
+        assertUrlParameters("param/types/thinking",
+                parameters("stringType", "thinking"));
+
+        assertUrlParameters("param/types/1/am/thinking/of/U/and/I",
+                parameters("intType", "1", "stringType", "am", "varargs",
+                        "thinking/of/U/and/I"));
+        Assert.assertEquals("Invalid varargs",
+                Arrays.asList("thinking", "of", "U", "and", "I"),
+                UrlParametersBase.parameters.getWildcard("varargs"));
+
+        assertUrlParameters("param/types/12345678900/long",
+                parameters("longType", "12345678900", "stringType", "long"));
+
+        assertUrlParameters("param/types/long/12345678900", null);
+
+        assertUrlParameters("param/types/true/false",
+                parameters("boolType", "true", "stringType", "false"));
+
+        assertUrlParameters("param/types/thinking/of/U/and/I",
+                parameters("stringType", "thinking", "varargs", "of/U/and/I"));
+
+        assertUrlParameters("param/types/I/am/thinking", null);
     }
 
     @Test // #2740 #4213
@@ -3604,6 +3661,9 @@ public class RouterTest extends RoutingTestBase {
         assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7",
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "versionIdentifier", "1.0.0-alpha7"));
+
+        // Assert url failure
+        assertUrlParameters("directory/component", null);
     }
 
     private void assertUrlParameters(String url, UrlParameters parameters) {
