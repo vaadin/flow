@@ -44,7 +44,8 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
 
         RouteConfiguration configuration = RouteConfiguration
                 .forApplicationScope();
-        if (!configuration.isPathRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
+        if (!configuration
+                .isUrlTemplateRegistered(DYNAMICALLY_REGISTERED_ROUTE)) {
             configuration.setRoute(DYNAMICALLY_REGISTERED_ROUTE,
                     DynamicallyRegisteredRoute.class);
         }
@@ -53,7 +54,6 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
             requestCount.incrementAndGet();
             return false;
         });
-
     }
 
     public static int getInitCount() {

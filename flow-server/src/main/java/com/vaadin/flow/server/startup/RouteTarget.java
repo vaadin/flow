@@ -31,7 +31,9 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  * Route target stores the target component and parent layouts.
  *
  * @since 1.0
+ * @deprecated due to be moved to com.vaadin.flow.router package.
  */
+@Deprecated
 public class RouteTarget implements Serializable {
 
     private Class<? extends Component> target;
@@ -151,8 +153,7 @@ public class RouteTarget implements Serializable {
      * @return copy of this RouteTarget
      */
     public RouteTarget copy(boolean mutable) {
-        RouteTarget copy = new RouteTarget(target);
-        copy.parentLayouts = parentLayouts;
+        RouteTarget copy = new RouteTarget(target, parentLayouts);
         return copy;
     }
 
