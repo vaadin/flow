@@ -28,7 +28,6 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
 
     private void openTestUrl(String url) {
         getDriver().get(getRootURL() + "/foo" + url);
-        waitForDevServer();
     }
 
     @Test
@@ -56,20 +55,16 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         WebElement meta = findElement(By.cssSelector("meta[name=foo]"));
         Assert.assertNotNull(meta);
         Assert.assertEquals("bar", meta.getAttribute("content"));
-        WebElement metaViewPort = findElement(
-                By.cssSelector("meta[name=viewport]"));
+        WebElement metaViewPort = findElement(By.cssSelector("meta[name=viewport]"));
         Assert.assertNotNull(metaViewPort);
-        Assert.assertEquals(
-                "width=device-width, height=device-height, initial-scale=1.0",
-                metaViewPort.getAttribute("content"));
+        Assert.assertEquals("width=device-width, height=device-height, initial-scale=1.0", metaViewPort.getAttribute("content"));
     }
 
     @Test
     public void should_accessVaadinService_getCurrent_inAppShellConstructor() {
         openTestUrl("/");
         waitForElementPresent(By.tagName("meta"));
-        WebElement meta = findElement(
-                By.cssSelector("meta[name=test-resource-url]"));
+        WebElement meta = findElement(By.cssSelector("meta[name=test-resource-url]"));
         Assert.assertNotNull(meta);
         Assert.assertEquals("my-resource", meta.getAttribute("content"));
     }
@@ -102,7 +97,8 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 .findFirst();
         Assert.assertTrue("The response should have viewport meta element",
                 viewportMeta.isPresent());
-        Assert.assertEquals("viewport meta element should have correct content",
+        Assert.assertEquals(
+                "viewport meta element should have correct content",
                 "width=device-width, height=device-height, initial-scale=1.0",
                 viewportMeta.get().getAttribute("content"));
     }
@@ -116,7 +112,8 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 .findFirst();
         Assert.assertTrue("The response should have style element",
                 styleElement.isPresent());
-        Assert.assertEquals("style element should have correct content",
+        Assert.assertEquals(
+                "style element should have correct content",
                 "body,#outlet{height:50vh;width:50vw;}",
                 styleElement.get().getText());
     }
@@ -200,6 +197,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         String content = findElement(By.id("result")).getText();
         Assert.assertTrue(content.contains("Empty view"));
     }
+
 
     @Test
     public void should_bootstrapFlowCorrectly_When_CallingFromMultipleSegmentsPath() {
@@ -364,9 +362,8 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         findElement(By.linkText("Server view")).click();
         waitForElementPresent(By.id("mainLayout"));
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertEquals(
-                "Should load server view content with " + "vaadin-router",
-                "Main layout\nServer view", mainLayoutContent);
+        Assert.assertEquals("Should load server view content with " +
+                "vaadin-router", "Main layout\nServer view", mainLayoutContent);
 
     }
 
@@ -377,12 +374,12 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         findElement(By.id("loadVaadinRouter")).click();
         waitForElementPresent(By.id("outlet"));
 
+
         findElement(By.linkText("Server view")).click();
         waitForElementPresent(By.id("mainLayout"));
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        Assert.assertEquals(
-                "Should load server view content with " + "vaadin-router",
-                "Main layout\nServer view", mainLayoutContent);
+        Assert.assertEquals("Should load server view content with " +
+                "vaadin-router", "Main layout\nServer view", mainLayoutContent);
 
         findElement(By.linkText("Client view")).click();
         waitForElementPresent(By.id("clientView"));
@@ -412,7 +409,8 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
 
         findElement(By.linkText("Server view")).click();
         waitForElementPresent(By.id("serverView"));
-        String serverViewContent = findElement(By.id("mainLayout")).getText();
+        String serverViewContent = findElement(By.id("mainLayout"))
+                .getText();
         Assert.assertEquals(
                 "Should load server side view content with vaadin-router",
                 "Main layout\nServer view", serverViewContent);
@@ -550,12 +548,18 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         String homeViewContent = findElement(By.id("emptyUi")).getText();
         Assert.assertEquals(
                 "Should render home view when calling ui.navigate(\"\")",
-                "Empty view", homeViewContent);
+                "Empty view",
+                homeViewContent
+        );
 
         String expectedUrl = getRootURL() + "/foo/";
         String actualUrl = getDriver().getCurrentUrl();
-        Assert.assertEquals("Should update URL to context path when calling"
-                + " ui.navigate(\"\"),", expectedUrl, actualUrl);
+        Assert.assertEquals(
+                "Should update URL to context path when calling"
+                        + " ui.navigate(\"\"),",
+                expectedUrl,
+                actualUrl
+        );
     }
 
     @Test
@@ -575,7 +579,9 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         Assert.assertEquals(
                 "Should update the browser url when calling"
                         + " ui.navigate(\"serverview\")",
-                expectedUrl, currentUrl);
+                expectedUrl,
+                currentUrl
+        );
     }
 
     @Test
@@ -586,9 +592,9 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("div2"));
 
         Assert.assertEquals("Should have window.vaadinPush", "object",
-                executeScript("return typeof window.vaadinPush"));
+                (String) executeScript("return typeof window.vaadinPush"));
         Assert.assertEquals("Should have window.vaadinPush.atmosphere",
-                "object", executeScript(
+                "object", (String) executeScript(
                         "return typeof window.vaadinPush" + ".atmosphere"));
     }
 }

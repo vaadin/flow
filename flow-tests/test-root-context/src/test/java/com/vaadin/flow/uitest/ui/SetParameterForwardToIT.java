@@ -10,14 +10,14 @@ public class SetParameterForwardToIT extends ChromeBrowserTest {
 
     @Test
     public void testForwardingToViewInSetParameter() {
-        final String baseLoc = "/view/com.vaadin.flow.uitest.ui.SetParameterForwardToView";
+        final String baseLoc =
+                "/view/com.vaadin.flow.uitest.ui.SetParameterForwardToView";
         getDriver().get(getRootURL() + baseLoc + "/one");
-        waitForDevServer();
 
         waitForElementPresent(By.id(SetParameterForwardToView.LOCATION_ID));
         final String locationId = findElement(
                 By.id(SetParameterForwardToView.LOCATION_ID)).getText();
-        Assert.assertTrue("should redirect to " + baseLoc + "/two",
+        Assert.assertTrue("should redirect to "+ baseLoc + "/two",
                 locationId.endsWith("/two"));
         if (hasClientIssue("7578")) {
             return;

@@ -25,33 +25,21 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class StartupPerformanceIT extends ChromeBrowserTest {
+public class StartupPerformanceIT {
     @Test
     public void devModeInitializerToWebpackUpIsBelow5500ms() {
-        getDriver().get(getRootURL());
-        waitForDevServer();
-
-        long timeoutTime = System.currentTimeMillis() + 20000;
-        while (System.currentTimeMillis() < timeoutTime
-                && !isElementPresent(By.id("performance-component"))) {
-            getDriver().navigate().refresh();
-        }
-
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
                 "- (Started|Reusing) webpack-dev-server", true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "- Running `pnpm install`",
-                "- Frontend dependencies resolved successfully", false);
+                "- Frontend dependencies resolved successfully",
+                false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
-        // please, rollback to 5500 when
-        // https://github.com/vaadin/flow/issues/7596 is fixed
+        // please, rollback to 5500 when https://github.com/vaadin/flow/issues/7596 is fixed
         final int thresholdMs = 9500;
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",

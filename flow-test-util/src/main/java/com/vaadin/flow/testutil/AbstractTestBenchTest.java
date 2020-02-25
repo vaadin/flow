@@ -65,8 +65,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
          * @param issueId
          * @return true when client-side route
          */
-        public static boolean hasClientIssue(TestBenchTestCase test,
-                String issueId) {
+        public static boolean hasClientIssue(TestBenchTestCase test, String issueId) {
             assert issueId != null && !issueId.isEmpty();
             if (isClientRouter(test)) {
                 String msg = String.format(FrontendUtils.RED, "\n >>> "
@@ -103,9 +102,8 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
          */
         private static boolean isClientRouter(TestBenchTestCase test) {
             if (hasClientRouter == null) {
-                hasClientRouter = (boolean) ((JavascriptExecutor) test
-                        .getDriver()).executeScript(
-                                "return !!window.Vaadin.Flow.clients.TypeScript");
+                hasClientRouter = (boolean) ((JavascriptExecutor)test.getDriver()).executeScript(
+                        "return !!window.Vaadin.Flow.clients.TypeScript");
             }
             return hasClientRouter;
         }
@@ -174,7 +172,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     protected void open(String... parameters) {
         String url = getTestURL(parameters);
         getDriver().get(url);
-        waitForDevServer();
     }
 
     protected void openProduction(String... parameters) {
@@ -204,7 +201,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
-        waitForDevServer();
     }
 
     protected final boolean hasClientIssue(String issueId) {
