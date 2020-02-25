@@ -153,8 +153,7 @@ public class RouteTarget implements Serializable {
      * @return copy of this RouteTarget
      */
     public RouteTarget copy(boolean mutable) {
-        RouteTarget copy = new RouteTarget(target, parentLayouts);
-        return copy;
+        return new RouteTarget(target, parentLayouts);
     }
 
     /**
