@@ -2,6 +2,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -17,6 +18,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.connect.Endpoint;
 
 import elemental.json.Json;
@@ -27,9 +29,9 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsP
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -76,14 +78,14 @@ public class PrepareFrontendMojoTest {
         defaultJavaSource = new File(".", "src/test/java");
         generatedTsFolder = new File(projectBase, "frontend/generated");
 
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
+        ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
                 WEBPACK_CONFIG);
         ReflectionUtils.setVariableValueInObject(mojo,
                 "webpackGeneratedTemplate", WEBPACK_GENERATED);
-        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
-                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo,
+                Constants.GENERATED_TOKEN, projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
@@ -102,6 +104,11 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
                 flowResourcesFolder);
 
+        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
+
         Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
     }
@@ -119,7 +126,8 @@ public class PrepareFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        Assert.assertNotNull("useDeprecatedV14Bootstrapping token should be available",
+        Assert.assertNotNull(
+                "useDeprecatedV14Bootstrapping token should be available",
                 buildInfo.get(SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
     }
 
@@ -144,8 +152,34 @@ public class PrepareFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        Assert.assertNotNull("useDeprecatedV14Bootstrapping token should be available",
+        Assert.assertNotNull(
+                "useDeprecatedV14Bootstrapping token should be available",
                 buildInfo.get(SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
+    }
+
+    @Test
+    public void writeTokenFile_devModePropertiesAreWritten()
+            throws IOException, MojoExecutionException, MojoFailureException {
+
+        mojo.execute();
+
+        String json = org.apache.commons.io.FileUtils
+                .readFileToString(tokenFile, StandardCharsets.UTF_8);
+        JsonObject buildInfo = JsonUtil.parse(json);
+
+        Assert.assertTrue(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM
+                        + "should have been written",
+                buildInfo.getBoolean(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertTrue(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE
+                        + "should have been written",
+                buildInfo.getBoolean(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertTrue(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
+                        + "should have been written",
+                buildInfo.getBoolean(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test

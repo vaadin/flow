@@ -161,7 +161,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                 requireHomeNodeExec);
         buildInfo.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                requireHomeNodeExec);
+                optimizeBundle);
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
