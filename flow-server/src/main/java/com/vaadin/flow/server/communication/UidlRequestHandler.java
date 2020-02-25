@@ -20,11 +20,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
@@ -37,9 +40,17 @@ import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurity
 import com.vaadin.flow.server.communication.ServerRpcHandler.ResynchronizationRequiredException;
 import com.vaadin.flow.shared.JsonConstants;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
+import elemental.json.impl.JsonUtil;
 
+import static com.vaadin.flow.shared.ApplicationConstants.RPC_INVOCATIONS;
+import static com.vaadin.flow.shared.ApplicationConstants.SERVER_SYNC_ID;
+import static com.vaadin.flow.shared.JsonConstants.RPC_NAVIGATION_LOCATION;
+import static com.vaadin.flow.shared.JsonConstants.UIDL_KEY_EXECUTE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -55,7 +66,19 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class UidlRequestHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {
 
+
     private ServerRpcHandler rpcHandler;
+
+    public static final Pattern HASH_PATTERN = Pattern.compile("window.location.hash ?= ?'(.*?)'");
+    public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
+    public static final String PUSH_STATE =
+            "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
+
+    private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
+    private static final String RPC = RPC_INVOCATIONS;
+    private static final String LOCATION = RPC_NAVIGATION_LOCATION;
+    private static final String CHANGES = "changes";
+    private static final String EXECUTE = UIDL_KEY_EXECUTE;
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -116,13 +139,21 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         commitJsonResponse(response, json);
     }
 
-    private static void writeUidl(UI ui, Writer writer, boolean resync)
+    void writeUidl(UI ui, Writer writer, boolean resync)
             throws IOException {
-        JsonObject uidl = new UidlWriter().createUidl(ui, false, resync);
+        JsonObject uidl = createUidl(ui, resync);
+
+        if (ui instanceof JavaScriptBootstrapUI) {
+            removeOffendingMprHashFragment(uidl);
+        }
 
         // some dirt to prevent cross site scripting
         String responseString = "for(;;);[" + uidl.toJson() + "]";
         writer.write(responseString);
+    }
+
+    JsonObject createUidl(UI ui, boolean resync) {
+        return new UidlWriter().createUidl(ui, false, resync);
     }
 
     private static final Logger getLogger() {
@@ -186,4 +217,92 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         // NOTE GateIn requires the buffers to be flushed to work
         outputStream.flush();
     }
+
+    private void removeOffendingMprHashFragment(JsonObject uidl) {
+        if (!uidl.hasKey(EXECUTE)) {
+            return;
+        }
+        JsonArray exec = uidl.getArray(EXECUTE);
+        String hash = null;
+        int idx = -1;
+        for (int i = 0; i < exec.length(); i++) {
+            JsonArray arr = exec.get(i);
+            for (int j = 0; j < arr.length(); j++) {
+                if (!arr.get(j).getType().equals(JsonType.STRING)) {
+                    continue;
+                }
+                String script = arr.getString(j);
+                if (script.contains("history.pushState")) {
+                    idx = i;
+                    continue;
+                }
+                if (!script.startsWith(SYNC_ID)) {
+                    continue;
+                }
+                JsonObject json = JsonUtil.parse("{" + script + "}");
+                hash = replaceHashFragment(json);
+                if (hash != null) {
+                    script = JsonUtil.stringify(json);
+                    // unwrap curly brackets
+                    script = script.substring(1, script.length() - 1);
+                    arr.set(j, script);
+                }
+            }
+        }
+
+        if (hash != null) {
+            idx = idx >= 0 ? idx : exec.length();
+            JsonArray arr = Json.createArray();
+            arr.set(0, "");
+            arr.set(1, String.format(PUSH_STATE, hash));
+            exec.set(idx, arr);
+        }
+    }
+
+    private String replaceHashFragment(JsonObject json) {
+        String url = null;
+        JsonArray changes = json.getArray(CHANGES);
+        for (int i = 0; i < changes.length(); i++) {
+            JsonArray change = changes.getArray(i);
+            if (change.length() < 3
+                    || !change.get(2).getType().equals(JsonType.ARRAY)) {
+                continue;
+            }
+            JsonArray value = change.getArray(2);
+            if (value.length() < 2 || !value.get(1).getType().equals(JsonType.OBJECT)) {
+                continue;
+            }
+            JsonObject location = value.getObject(1);
+            if (!location.hasKey(LOCATION)) {
+                continue;
+            }
+            Matcher match = URL_PATTERN.matcher(location.getString(LOCATION));
+            if (match.find()) {
+                location.put(LOCATION, match.group(1));
+                url = match.group(2);
+                break;
+            }
+        }
+        JsonArray rpcs = json.getArray(RPC);
+        for (int i = 0; i < rpcs.length(); i++) {
+            JsonArray rpc = rpcs.getArray(i);
+            if (rpc.length() < 4
+                    || !rpc.get(3).getType().equals(JsonType.ARRAY)) {
+                continue;
+            }
+            JsonArray scripts = rpc.getArray(3);
+            for (int j = 0; j < scripts.length(); j++) {
+                String exec = scripts.getString(j);
+                Matcher match = HASH_PATTERN.matcher(exec);
+                if (match.find()) {
+                    url = match.group(1);
+                    // replace JS with noop
+                    scripts.set(j, ";");
+                    break;
+                }
+            }
+        }
+        return url;
+    }
 }
+
