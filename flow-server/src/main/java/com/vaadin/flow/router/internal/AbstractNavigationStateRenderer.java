@@ -74,6 +74,12 @@ public abstract class AbstractNavigationStateRenderer
         FORWARDED, FINISHED, REROUTED, POSTPONED
     }
 
+    static final String NOT_SUPPORT_FORWARD_BEFORELEAVE =
+            "The event.forwardTo() API in beforeLeave is not supported, "
+            + "you can use the combination between postpone() and "
+            + "getUI().get().getPage().setLocation(\"{}\") "
+            + " API in order to forward to other location";
+
     private static List<Integer> statusCodes = ReflectTools
             .getConstantIntValues(HttpServletResponse.class);
 
@@ -83,7 +89,7 @@ public abstract class AbstractNavigationStateRenderer
 
     private LocationChangeEvent locationChangeEvent = null;
 
-    private String forwardToLocation = null;
+    private String forwardToUrl = null;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -237,10 +243,10 @@ public abstract class AbstractNavigationStateRenderer
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        if (forwardToLocation != null) {
+        if (forwardToUrl != null) {
             // Change the UI according to the navigation Component chain.
-            ui.getInternals().showRouteTarget(new Location(removeFirstSlash(forwardToLocation)),
-                    forwardToLocation, componentInstance,
+            ui.getInternals().showRouteTarget(new Location(removeFirstSlash(forwardToUrl)),
+                    forwardToUrl, componentInstance,
                     routerLayouts);
         } else {
             // Change the UI according to the navigation Component chain.
@@ -313,16 +319,12 @@ public abstract class AbstractNavigationStateRenderer
         if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
             // inform that is BeforeEnterEvent
             if (beforeNavigation instanceof BeforeLeaveEvent) {
-                String forwardOnBeforeLeave = beforeNavigation.getForwardToLocation() != null
-                        ? beforeNavigation.getForwardToLocation() : beforeNavigation.getLocation().getPath();
-                getLogger().warn(
-                        "The event.forwardTo() API in beforeLeave is not supported, "
-                                + "you can use the combination between postpone() and "
-                                + "getUI().get().getPage().setLocation(\"{}\") "
-                                + " API in order to forward to other location", forwardOnBeforeLeave);
+                String forwardOnBeforeLeave = beforeNavigation.getForwardToUrl() != null
+                        ? beforeNavigation.getForwardToUrl() : beforeNavigation.getLocation().getPath();
+                getLogger().warn(NOT_SUPPORT_FORWARD_BEFORELEAVE, forwardOnBeforeLeave);
             }
-            if (beforeNavigation.isClientSideView()) {
-                forwardToLocation = beforeNavigation.getForwardToLocation();
+            if (beforeNavigation.isUnknownRoute()) {
+                forwardToUrl = beforeNavigation.getForwardToUrl();
                 return Optional.empty();
             }
             return Optional.of(forward(event, beforeNavigation));
@@ -634,7 +636,7 @@ public abstract class AbstractNavigationStateRenderer
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
                 beforeEvent.getForwardTargetParameters())
-                || beforeEvent.isClientSideView()) {
+                || beforeEvent.isUnknownRoute()) {
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 

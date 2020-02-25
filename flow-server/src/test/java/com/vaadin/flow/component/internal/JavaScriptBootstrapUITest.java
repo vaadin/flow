@@ -192,7 +192,7 @@ public class JavaScriptBootstrapUITest  {
     public void should_handle_forward_to_client_side_view_on_beforeEnter() {
         ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeEnter");
 
-        assertEquals("client-view", ui.getForwardToLocation());
+        assertEquals("client-view", ui.getForwardToUrl());
     }
 
     @Test

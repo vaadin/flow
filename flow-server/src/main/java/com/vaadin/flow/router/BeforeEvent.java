@@ -49,8 +49,8 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
-    private boolean isClientSideView = false;
-    private String forwardToLocation = null;
+    private boolean isUnknownRoute = false;
+    private String forwardToUrl = null;
 
     /**
      * Construct event from a NavigationEvent.
@@ -109,17 +109,17 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return forward target is client-side route
      */
-    public boolean isClientSideView() {
-        return isClientSideView;
+    public boolean isUnknownRoute() {
+        return isUnknownRoute;
     }
 
     /**
-     * Gets the new location.
+     * Gets the new forward url.
      *
-     * @return the new location
+     * @return the new forward url
      */
-    public String getForwardToLocation() {
-        return forwardToLocation;
+    public String getForwardToUrl() {
+        return forwardToUrl;
     }
 
     /**
@@ -237,8 +237,8 @@ public abstract class BeforeEvent extends EventObject {
             getSource().getRegistry().getNavigationTarget(location).ifPresent(this::forwardTo);
         } else {
             // inform that forward target location is client-side view
-            isClientSideView = true;
-            forwardToLocation = location;
+            isUnknownRoute = true;
+            forwardToUrl = location;
         }
     }
 
