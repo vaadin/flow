@@ -131,12 +131,12 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
     public void testPrepareForResync_unregistersDescendantsAndClearsRootChildren() {
         // given
         StateNode root = tree.getRootNode();
-        StateNode child = new StateNode(1, tree);
+        StateNode child = new StateNode(2, tree);
         child.setParent(root);
         tree.registerNode(child);
         root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0,child);
 
-        StateNode grandChild = new StateNode(2, tree);
+        StateNode grandChild = new StateNode(3, tree);
         grandChild.setParent(child);
         tree.registerNode(grandChild);
         child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, grandChild);
@@ -155,7 +155,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
     public void testPrepareForResync_rejectsPendingPromise() {
         // given
         StateNode root = tree.getRootNode();
-        StateNode child = new StateNode(1, tree);
+        StateNode child = new StateNode(2, tree);
         child.setParent(root);
         tree.registerNode(child);
         root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0,child);
