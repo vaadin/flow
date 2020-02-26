@@ -428,18 +428,11 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Prepares the tree for resynchronization by detaching all nodes,
-     * setting their internal state to not yet attached, and calling the
-     * attach listeners. The effect is that the client will receive the same
-     * changes as when the component tree was initially attached, so that it
-     * can build the DOM tree from scratch.
+     * Prepares the tree for resynchronization, meaning that the client will
+     * receive the same changes as when the component tree was initially
+     * attached, so that it can build the DOM tree from scratch.
      */
     public void prepareForResync() {
-        getRootNode().visitNodeTreeBottomUp(StateNode::fireDetachListeners);
-        getRootNode().visitNodeTree(sn -> {
-            markAsDirty(sn);
-            sn.prepareForResync();
-        });
-        getRootNode().visitNodeTreeBottomUp(sn -> sn.fireAttachListeners(true));
+        rootNode.prepareForResync();
     }
 }
