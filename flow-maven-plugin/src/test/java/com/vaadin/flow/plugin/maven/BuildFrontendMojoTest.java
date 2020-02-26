@@ -220,7 +220,7 @@ public class BuildFrontendMojoTest {
                 " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
                 "};",
                 "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
-                "document.body.setAttribute('theme', 'dark');"));
+                "document.documentElement.setAttribute('theme', 'dark');"));
 
         expectedLines.addAll(getExpectedImports());
 
@@ -392,8 +392,8 @@ public class BuildFrontendMojoTest {
     @Test
     public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
             throws Exception {
-        ReflectionUtils.setVariableValueInObject(mojo, "useDeprecatedV14Bootstrapping",
-                "true");
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "useDeprecatedV14Bootstrapping", "true");
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
         mojo.execute();
         Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
@@ -403,8 +403,7 @@ public class BuildFrontendMojoTest {
     public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
         File connectClientApi = new File(generatedTsFolder,
                 "connect-client.default.ts");
-        File endpointClientApi = new File(generatedTsFolder,
-                "MyEndpoint.ts");
+        File endpointClientApi = new File(generatedTsFolder, "MyEndpoint.ts");
 
         Assert.assertFalse(connectClientApi.exists());
         Assert.assertFalse(endpointClientApi.exists());
