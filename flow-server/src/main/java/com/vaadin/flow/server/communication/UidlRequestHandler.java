@@ -271,7 +271,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
         JsonArray rpcs = json.getArray(RPC);
         for (int i = 0; i < rpcs.length(); i++) {
-            String hash = removeHashInRpc(changes.getArray(i));
+            String hash = removeHashInRpc(rpcs.getArray(i));
             if (hash != null) {
                 removed = hash;
             }
