@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.Text;
+import java.io.ByteArrayInputStream;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 
 public class AnchorTest extends ComponentTest {
 
