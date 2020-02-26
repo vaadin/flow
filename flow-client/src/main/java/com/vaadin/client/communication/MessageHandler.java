@@ -229,6 +229,9 @@ public class MessageHandler {
                     + " while waiting for " + getExpectedServerId());
             lastSeenServerSyncId = serverId - 1;
             removeOldPendingMessages();
+
+            // Unregister all nodes and rebuild the state tree
+            registry.getStateTree().prepareForResync();
         }
 
         boolean locked = !responseHandlingLocks.isEmpty();

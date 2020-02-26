@@ -22,6 +22,7 @@ import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.nodefeature.MapProperty;
+import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
@@ -122,6 +123,32 @@ public class StateTree {
 
         idToNode.delete(getKey(node));
         node.unregister();
+    }
+
+    /**
+     * Unregisters all nodes except root from this tree, and clears the root's
+     * features. Use to reset the tree in preparation for rebuilding it in in a
+     * resynchronization response.
+     */
+    public void prepareForResync() {
+        idToNode.forEach((node, b) -> {
+            if (node != rootNode) {
+                unregisterNode(node);
+                node.setParent(null);
+            }
+        });
+        rootNode.forEachFeature((feature, featureId) -> {
+            if (feature instanceof NodeList) {
+                final NodeList nodeList = (NodeList) feature;
+                if (featureId.intValue() == NodeFeatures.ELEMENT_CHILDREN) {
+                    // splice() instead of clear() to preserve auxiliary DOM
+                    // nodes (loading indicator and <noscript>)
+                    nodeList.splice(0, nodeList.length());
+                } else {
+                    nodeList.clear();
+                }
+            }
+        });
     }
 
     /**
