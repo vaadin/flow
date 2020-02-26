@@ -35,12 +35,12 @@ public class StartupPerformanceIT {
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "- Running `pnpm install`",
-                "- Frontend dependencies resolved successfully",
-                false);
+                "- Frontend dependencies resolved successfully", false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
-        // please, rollback to 5500 when https://github.com/vaadin/flow/issues/7596 is fixed
-        final int thresholdMs = 9500;
+        // please, rollback to 5500 when
+        // https://github.com/vaadin/flow/issues/7596 is fixed
+        final int thresholdMs = 11500;
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",
                         thresholdMs, startupTimeWithoutNpmInstallTime),
