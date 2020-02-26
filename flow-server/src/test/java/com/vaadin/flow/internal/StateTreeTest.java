@@ -569,6 +569,7 @@ public class StateTreeTest {
         Assert.assertTrue(collectedNodes.contains(node3));
     }
 
+
     @Test
     public void prepareForResync_nodeHasAttachAndDetachListeners_treeIsDirtyAndListenersAreCalled() {
         StateNode node1 = tree.getRootNode();
@@ -583,7 +584,7 @@ public class StateTreeTest {
         tree.collectChanges(c -> {});
         Assert.assertEquals(0, tree.collectDirtyNodes().size());
 
-        tree.prepareForResync();
+        tree.getRootNode().prepareForResync();
 
         Assert.assertEquals(1, attachCount.get());
         Assert.assertEquals(1, detachCount.get());
