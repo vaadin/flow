@@ -146,6 +146,13 @@ public class JavaScriptBootstrapUITest  {
     }
 
     @Test
+    public void should_navigate_when_endingSlash() {
+        ui.connectClient("foo", "bar", "/clean/");
+        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+    }
+
+    @Test
     public void getChildren_should_notReturnAnEmptyList() {
         ui.connectClient("foo", "bar", "/clean");
         assertEquals(1, ui.getChildren().count());

@@ -119,7 +119,7 @@ public class JavaScriptBootstrapUI extends UI {
         }
         // Render the flow view that the user wants to navigate to.
         boolean postponed = renderViewForRoute(
-                new Location(removeFirstSlash(flowRoute)));
+                new Location(removeLastSlash(removeFirstSlash(flowRoute))));
 
         // check the target could not navigate or has the push route
         if (!wrapperElement.toString().contains("Could not navigate to")
