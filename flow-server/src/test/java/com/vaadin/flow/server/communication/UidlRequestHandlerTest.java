@@ -131,9 +131,10 @@ public class UidlRequestHandlerTest {
         assertTrue(out.endsWith("}]"));
 
         uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
+        String v7Uidl = uidl.getArray("execute").getArray(2).getString(1);
 
-        assertTrue(uidl.getArray("execute").getArray(2).getString(1)
-                .contains("http://localhost:9998/#!away"));
+        assertTrue(v7Uidl.contains("http://localhost:9998/#!away"));
+        assertTrue(v7Uidl.contains("window.location.hash = '!away';"));
 
         assertEquals(
                 "setTimeout(() => window.history.pushState(null, '', $0))",
@@ -156,10 +157,10 @@ public class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
 
-        assertFalse(uidl.getArray("execute").getArray(2).getString(1)
-                .contains("http://localhost:9998/#!away"));
-        assertTrue(uidl.getArray("execute").getArray(2).getString(1)
-                .contains("http://localhost:9998/"));
+        String v7Uidl = uidl.getArray("execute").getArray(2).getString(1);
+        assertFalse(v7Uidl.contains("http://localhost:9998/#!away"));
+        assertTrue(v7Uidl.contains("http://localhost:9998/"));
+        assertFalse(v7Uidl.contains("window.location.hash = '!away';"));
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
@@ -208,7 +209,7 @@ public class UidlRequestHandlerTest {
       "\"syncId\": 2," +
       "\"clientId\": 2," +
       "\"changes\": [" +
-      "  [\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#!away\"}]]" +
+      "  [],[\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#!away\"}]]" +
       "]," +
       "\"state\": {" +
       "}," +
@@ -217,11 +218,11 @@ public class UidlRequestHandlerTest {
       "\"hierarchy\": {" +
       "}," +
       "\"rpc\": [" +
-      "  [" +
+      "  [],[" +
       "  \"11\"," +
       "  \"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc\"," +
       "  \"executeJavaScript\", [ \"window.location.hash = '!away';\" ]" +
-      "  ]" +
+      "  ],[]" +
       "]," +
       "\"meta\": {}, \"resources\": {},\"typeMappings\": {},\"typeInheritanceMap\": {}, \"timings\": []";
 
