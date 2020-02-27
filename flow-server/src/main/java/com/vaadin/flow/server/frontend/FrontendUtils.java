@@ -470,29 +470,31 @@ public class FrontendUtils {
             return Collections.emptyList();
         }
 
+        List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
+        Properties properties = new Properties();
+
         try (FileReader fileReader = new FileReader(npmrc)) {
-            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-            Properties properties = new Properties();
             properties.load(fileReader);
-            String noproxy = properties.getProperty(NPMRC_NOPROXY_PROPERTY_KEY);
-            if (noproxy != null)
-                noproxy = noproxy.replaceAll(",", "|");
-            String httpsProxyUrl = properties
-                    .getProperty(NPMRC_HTTPS_PROXY_PROPERTY_KEY);
-            if (httpsProxyUrl != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "https-proxy - " + fileDescription, httpsProxyUrl,
-                        noproxy));
-            }
-            String proxyUrl = properties.getProperty(NPMRC_PROXY_PROPERTY_KEY);
-            if (proxyUrl != null) {
-                proxyList.add(new ProxyConfig.Proxy(
-                        "proxy - " + fileDescription, proxyUrl, noproxy));
-            }
-            return proxyList;
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+
+        String noproxy = properties.getProperty(NPMRC_NOPROXY_PROPERTY_KEY);
+        if (noproxy != null)
+            noproxy = noproxy.replaceAll(",", "|");
+        String httpsProxyUrl = properties
+                .getProperty(NPMRC_HTTPS_PROXY_PROPERTY_KEY);
+        if (httpsProxyUrl != null) {
+            proxyList.add(new ProxyConfig.Proxy(
+                    "https-proxy - " + fileDescription, httpsProxyUrl,
+                    noproxy));
+        }
+        String proxyUrl = properties.getProperty(NPMRC_PROXY_PROPERTY_KEY);
+        if (proxyUrl != null) {
+            proxyList.add(new ProxyConfig.Proxy("proxy - " + fileDescription,
+                    proxyUrl, noproxy));
+        }
+        return proxyList;
     }
 
     private static List<ProxyConfig.Proxy> readProxySettingsFromSystemProperties() {
@@ -703,6 +705,15 @@ public class FrontendUtils {
                         .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
                                 .orElse(null));
             }
+        } catch (FileNotFoundException exception) {
+            Throwable cause = exception.getCause();
+            assert cause != null;
+            throw new IllegalStateException(cause);
+        } catch (Exception e) { // NOSONAR
+            // There are IOException coming from process fork
+        }
+
+        try {
             if (file == null && installNode) {
                 File vaadinHome = getVaadinHomeDirectory();
                 getLogger()
@@ -715,9 +726,8 @@ public class FrontendUtils {
             Throwable cause = exception.getCause();
             assert cause != null;
             throw new IllegalStateException(cause);
-        } catch (Exception e) { // NOSONAR
-            // There are IOException coming from process fork
         }
+
         if (file == null) {
             throw new IllegalStateException(String.format(NODE_NOT_FOUND));
         }
