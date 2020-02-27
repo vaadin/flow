@@ -18,7 +18,9 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
+import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouteParameterRegex;
 
 /**
@@ -36,6 +38,106 @@ class RouteFormat implements Serializable {
     // type/regex is missing then string is used by default.
     static final List<String> PRIMITIVE_REGEX = Arrays.asList(INT_REGEX,
             LONG_REGEX, BOOL_REGEX, STRING_REGEX);
+
+    /**
+     * Returns whether the specified urlTemplate contains url parameters.
+     *
+     * @param urlTemplate
+     *            a path template.
+     * @return true if the specified urlTemplate contains url parameters,
+     *         otherwise false.
+     */
+    static boolean hasParameters(String urlTemplate) {
+        return urlTemplate.contains(":");
+    }
+
+    static boolean isParameter(String segmentTemplate) {
+        return segmentTemplate.contains(":");
+    }
+
+    static boolean isOptionalParameter(String segmentTemplate) {
+        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("?")
+                || segmentTemplate.contains("?("));
+    }
+
+    static boolean isVarargsParameter(String segmentTemplate) {
+        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("*")
+                || segmentTemplate.contains("*("));
+    }
+
+    static String getModifier(String segmentTemplate) {
+        if (isOptionalParameter(segmentTemplate)) {
+            return "?";
+        } else if (isVarargsParameter(segmentTemplate)) {
+            return "*";
+        }
+
+        return "";
+    }
+
+    static String getRegexName(String regex) {
+        if (INT_REGEX.equals(regex)) {
+            return "int";
+        } else if (LONG_REGEX.equals(regex)) {
+            return "long";
+        } else if (BOOL_REGEX.equals(regex)) {
+            return "bool";
+        } else {
+            return "string";
+        }
+    }
+
+    static String formatSegment(RouteModel.RouteSegment segment,
+            Set<RouteParameterFormat> format) {
+
+        if (!segment.isParameter()) {
+            return segment.getName();
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        result.append(":");
+
+        final boolean formatRegex = format.contains(RouteParameterFormat.REGEX)
+                || format.contains(RouteParameterFormat.REGEX_NAME);
+        boolean wrapRegex = false;
+
+        if (format.contains(RouteParameterFormat.NAME)) {
+            result.append(segment.getName());
+            wrapRegex = true;
+        }
+
+        if (format.contains(RouteParameterFormat.MODIFIER)) {
+            result.append(getModifier(segment.getTemplate()));
+            wrapRegex = true;
+        }
+
+        final String type = formatSegmentRegex(segment, format);
+        if (!type.isEmpty() && formatRegex) {
+            if (wrapRegex) {
+                result.append("(");
+            }
+
+            result.append(type);
+
+            if (wrapRegex) {
+                result.append(")");
+            }
+        }
+
+        return result.toString();
+    }
+
+    static String formatSegmentRegex(RouteModel.RouteSegment segment,
+            Set<RouteParameterFormat> format) {
+        String regex = segment.getRegex();
+
+        if (format.contains(RouteParameterFormat.REGEX_NAME)) {
+            regex = getRegexName(regex);
+        }
+
+        return regex;
+    }
 
     /**
      * Define a route url parameter details.
@@ -104,54 +206,6 @@ class RouteFormat implements Serializable {
 
         public String getRegex() {
             return regex;
-        }
-    }
-
-    /**
-     * Returns whether the specified urlTemplate contains url parameters.
-     *
-     * @param urlTemplate
-     *            a path template.
-     * @return true if the specified urlTemplate contains url parameters,
-     *         otherwise false.
-     */
-    static boolean hasParameters(String urlTemplate) {
-        return urlTemplate.contains(":");
-    }
-
-    static boolean isParameter(String segmentTemplate) {
-        return segmentTemplate.contains(":");
-    }
-
-    static boolean isOptionalParameter(String segmentTemplate) {
-        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("?")
-                || segmentTemplate.contains("?("));
-    }
-
-    static boolean isVarargsParameter(String segmentTemplate) {
-        return isParameter(segmentTemplate) && (segmentTemplate.endsWith("*")
-                || segmentTemplate.contains("*("));
-    }
-
-    static String getModifier(String segmentTemplate) {
-        if (isOptionalParameter(segmentTemplate)) {
-            return "?";
-        } else if (isVarargsParameter(segmentTemplate)) {
-            return "*";
-        }
-
-        return "";
-    }
-
-    static String getRegexName(String regex) {
-        if (INT_REGEX.equals(regex)) {
-            return "int";
-        } else if (LONG_REGEX.equals(regex)) {
-            return "long";
-        } else if (BOOL_REGEX.equals(regex)) {
-            return "bool";
-        } else {
-            return "string";
         }
     }
 

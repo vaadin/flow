@@ -57,7 +57,8 @@ public class PathUtil implements Serializable {
      * @return path form from input segments.
      */
     public static String getPath(List<String> segments) {
-        return getPath("", segments);
+        return trimPath((segments == null || segments.isEmpty()) ? ""
+                : String.join("/", segments));
     }
 
     /**

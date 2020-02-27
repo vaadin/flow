@@ -194,34 +194,37 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
             ConfiguredRoutes configuration) {
         List<RouteData> registeredRoutes = new ArrayList<>();
         configuration.getTargetRoutes()
-                .forEach((target, targetRoutePathTemplate) -> {
-
-                    List<RouteAliasData> routeAliases = new ArrayList<>();
-
-                    configuration.getRoutePaths(target).stream()
-                            .filter(routePathTemplate -> !routePathTemplate
-                                    .equals(targetRoutePathTemplate))
-                            .forEach(aliasRoutePathTemplate -> routeAliases
-                                    .add(new RouteAliasData(
-                                            getParentLayouts(configuration,
-                                                    aliasRoutePathTemplate),
-                                            aliasRoutePathTemplate,
-                                            configuration.getParameters(
-                                                    aliasRoutePathTemplate),
-                                            target)));
-                    List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
-                            configuration, targetRoutePathTemplate);
-                    RouteData route = new RouteData(parentLayouts,
-                            targetRoutePathTemplate,
-                            configuration
-                                    .getParameters(targetRoutePathTemplate),
-                            target, routeAliases);
-                    registeredRoutes.add(route);
+                .forEach((target, urlTemplate) -> {
+                    populateRegisteredRoutes(configuration, registeredRoutes,
+                            target, urlTemplate);
                 });
 
         Collections.sort(registeredRoutes);
 
         return Collections.unmodifiableList(registeredRoutes);
+    }
+
+    private void populateRegisteredRoutes(ConfiguredRoutes configuration,
+            List<RouteData> registeredRoutes, Class<? extends Component> target,
+            String urlTemplate) {
+        List<RouteAliasData> routeAliases = new ArrayList<>();
+
+        configuration.getRoutePaths(target).stream().filter(
+                routePathTemplate -> !routePathTemplate.equals(urlTemplate))
+                .forEach(
+                        aliasRoutePathTemplate -> routeAliases
+                                .add(new RouteAliasData(
+                                        getParentLayouts(configuration,
+                                                aliasRoutePathTemplate),
+                                        aliasRoutePathTemplate,
+                                        configuration.getParameters(
+                                                aliasRoutePathTemplate),
+                                        target)));
+        List<Class<? extends RouterLayout>> parentLayouts = getParentLayouts(
+                configuration, urlTemplate);
+        RouteData route = new RouteData(parentLayouts, urlTemplate,
+                configuration.getParameters(urlTemplate), target, routeAliases);
+        registeredRoutes.add(route);
     }
 
     /**
@@ -266,7 +269,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        requireNonNull(navigationTarget);
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget, null);
 
@@ -278,7 +281,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget,
             UrlParameters parameters) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        requireNonNull(navigationTarget);
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget,
                 parameters);
@@ -290,7 +293,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        requireNonNull(navigationTarget);
 
         return Optional.ofNullable(
                 getConfiguration().getUrlTemplate(navigationTarget));
@@ -300,7 +303,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget,
             Set<RouteParameterFormat> format) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        requireNonNull(navigationTarget);
 
         return Optional.ofNullable(
                 getConfiguration().getUrlTemplate(navigationTarget, format));
@@ -342,6 +345,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public void clean() {
         configure(ConfigureRoutes::clear);
+    }
+    
+    private void requireNonNull(Class<? extends Component> navigationTarget) {
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
     }
 
     /**
