@@ -164,7 +164,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void listener_should_stopDevModeHandler_onDestroy()
             throws Exception {
-        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+        System.setProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
         runOnStartup();
 
@@ -177,8 +177,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                "true");
+        System.setProperty("vaadin." + Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);

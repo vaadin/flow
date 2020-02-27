@@ -21,7 +21,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,7 +34,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
+import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinConfigurationException;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletConfiguration;
@@ -74,6 +75,29 @@ public class ServletDeployer implements ServletContextListener {
 
     private enum VaadinServletCreation {
         NO_CREATION, SERVLET_EXISTS, SERVLET_CREATED;
+    }
+
+    public static class VaadinServletContextConfig implements VaadinConfig {
+        private ServletContext servletContext;
+
+        public VaadinServletContextConfig(ServletContext servletContext) {
+            this.servletContext = servletContext;
+        }
+
+        @Override
+        public VaadinContext getVaadinContext() {
+            return new VaadinServletContext(servletContext);
+        }
+
+        @Override
+        public Enumeration<String> getConfigParameterNames() {
+            return Collections.emptyEnumeration();
+        }
+
+        @Override
+        public String getConfigParameter(String name) {
+            return null;
+        }
     }
 
     /**
@@ -142,6 +166,28 @@ public class ServletDeployer implements ServletContextListener {
                 throw new IllegalStateException(String.format(
                         "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
                         registration.getName(), servletClass), e);
+            }
+        }
+
+        /**
+         * Creates a DeploymentConfiguration.
+         *
+         * @param context
+         *            the ServletContext
+         * @param servletClass
+         *            the class to look for properties defined with annotations
+         * @return a DeploymentConfiguration instance
+         */
+        public static DeploymentConfiguration createDeploymentConfiguration(
+                ServletContext context, Class<?> servletClass) {
+            try {
+                return DeploymentConfigurationFactory
+                        .createPropertyDeploymentConfiguration(servletClass,
+                                new VaadinServletContextConfig(context));
+            } catch (VaadinConfigurationException e) {
+                throw new IllegalStateException(String.format(
+                        "Failed to get deployment configuration data for servlet class '%s'",
+                        servletClass), e);
             }
         }
     }

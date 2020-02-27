@@ -20,10 +20,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -84,7 +81,6 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -187,16 +183,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
-        Collection<? extends ServletRegistration> registrations = context
-                .getServletRegistrations().values();
-
-        if (registrations.isEmpty()) {
-            return;
-        }
-
         DeploymentConfiguration config = StubServletConfig
-                .createDeploymentConfiguration(context,
-                        registrations.iterator().next(), VaadinServlet.class);
+                .createDeploymentConfiguration(context, VaadinServlet.class);
 
         initDevModeHandler(classes, context, config);
     }
