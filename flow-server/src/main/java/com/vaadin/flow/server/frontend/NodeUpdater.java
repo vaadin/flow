@@ -196,7 +196,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
         }
 
-        createVaadinPackagesJson(packageJson);
+        addVaadinDefaultsToJson(packageJson);
 
         return packageJson;
     }
@@ -224,8 +224,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         return jsonContent;
     }
 
-    static void createVaadinPackagesJson(JsonObject packageJson) {
-        JsonObject vaadinPackages = computeIfAbsent(packageJson, VAADIN_DEP_KEY,
+    static void addVaadinDefaultsToJson(JsonObject json) {
+        JsonObject vaadinPackages = computeIfAbsent(json, VAADIN_DEP_KEY,
                 Json::createObject);
 
         computeIfAbsent(vaadinPackages, DEPENDENCIES,
