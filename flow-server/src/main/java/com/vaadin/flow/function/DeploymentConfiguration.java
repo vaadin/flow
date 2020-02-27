@@ -89,6 +89,18 @@ public interface DeploymentConfiguration extends Serializable {
     int getHeartbeatInterval();
 
     /**
+     * In certain cases, such as when combining XmlHttpRequests and push over
+     * low bandwidth connections, messages may be received out of order by the
+     * client. This property specifies the maximum time (in milliseconds) that
+     * the client will then wait for the predecessors of a received out-order
+     * message, before considering them missing and requesting a full
+     * resynchronization of the application state from the server.
+     * 
+     * @return The max message suspend timeout
+     */
+    int getMaxMessageSuspendTimeout();
+
+    /**
      * Returns the number of seconds that a WebComponent will wait for a
      * reconnect before removing the server-side component from memory.
      *
