@@ -15,9 +15,9 @@ interface AppInitResponse {
 }
 
 interface HTMLRouterContainer extends HTMLElement {
-  onBeforeEnter ?: (ctx: NavigationParameters, cmd: NavigationCommands) => Promise<any>;
-  onBeforeLeave ?: (ctx: NavigationParameters, cmd: NavigationCommands) => Promise<any>;
-  serverConnected ?: (cancel: boolean) => void;
+  onBeforeEnter ?: (ctx: NavigationParameters, cmd: PreventAndRedirectCommands) => Promise<any>;
+  onBeforeLeave ?: (ctx: NavigationParameters, cmd: PreventCommands) => Promise<any>;
+  serverConnected ?: (cancel: boolean, url?: NavigationParameters) => void;
 }
 
 interface FlowRoute {
@@ -35,8 +35,12 @@ export interface NavigationParameters {
   search: string;
 }
 
-export interface NavigationCommands {
+export interface PreventCommands {
   prevent: () => any;
+}
+
+export interface PreventAndRedirectCommands extends PreventCommands {
+  redirect: (route: string) => any;
 }
 
 // flow uses body for keeping references
@@ -79,9 +83,9 @@ export class Flow {
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
     this.baseRegex = new RegExp('^' +
-      // IE11 does not support document.baseURI
-      (document.baseURI || elm && elm.href || '/')
-        .replace(/^https?:\/\/[^\/]+/i, ''));
+        // IE11 does not support document.baseURI
+        (document.baseURI || elm && elm.href || '/')
+            .replace(/^https?:\/\/[^\/]+/i, ''));
   }
 
   /**
@@ -120,9 +124,9 @@ export class Flow {
   // Send a remote call to `JavaScriptBootstrapUI` to check
   // whether navigation has to be cancelled.
   private async flowLeave(
-    // @ts-ignore
-    ctx: NavigationParameters,
-    cmd?: NavigationCommands): Promise<any> {
+      // @ts-ignore
+      ctx: NavigationParameters,
+      cmd?: PreventCommands): Promise<any> {
 
     // server -> server
     if (this.pathname === ctx.pathname) {
@@ -132,7 +136,7 @@ export class Flow {
     return new Promise(resolve => {
       this.isActive = true;
       // The callback to run from server side to cancel navigation
-      this.container.serverConnected = cancel => {
+      this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
         // Make Testbench know that server request has finished
         this.isActive = false;
@@ -145,13 +149,15 @@ export class Flow {
 
   // Send the remote call to `JavaScriptBootstrapUI` to render the flow
   // route specified by the context
-  private async flowNavigate(ctx: NavigationParameters, cmd?: NavigationCommands): Promise<HTMLElement> {
+  private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
     return new Promise(resolve => {
       this.isActive = true;
       // The callback to run from server side once the view is ready
-      this.container.serverConnected = cancel => {
+      this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
         if (cmd && cancel) {
           resolve(cmd.prevent());
+        } else if (cmd && cmd.redirect && redirectContext) {
+          resolve(cmd.redirect(redirectContext.pathname));
         } else {
           this.container.style.display = '';
           resolve(this.container);
@@ -162,7 +168,7 @@ export class Flow {
 
       // Call server side to navigate to the given route
       flowRoot.$server
-        .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
+          .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
     });
   }
 
@@ -247,8 +253,8 @@ export class Flow {
       const intervalId = setInterval(() => {
         // client `isActive() == true` while initializing or processing
         const initializing = Object.keys($wnd.Vaadin.Flow.clients)
-          .filter(key => key !== 'TypeScript')
-          .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
+            .filter(key => key !== 'TypeScript')
+            .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
           resolve();
@@ -272,12 +278,12 @@ export class Flow {
       const httpRequest = xhr as any;
       const currentPath = location.pathname || '/';
       const requestPath = `${currentPath}?v-r=init` +
-            (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+          (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
 
       httpRequest.open('GET', requestPath);
 
       httpRequest.onerror = () => reject(new Error(
-        `Invalid server response when initializing Flow UI.
+          `Invalid server response when initializing Flow UI.
         ${httpRequest.status}
         ${httpRequest.responseText}`));
 
