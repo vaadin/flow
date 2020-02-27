@@ -42,6 +42,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
+
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -72,7 +73,10 @@ public class Page implements Serializable {
             Registration registration = addListener(ResizeEvent.class,
                     event -> listener
                             .browserWindowResized(event.getApiEvent()));
-            return new ResizeRegistration(this, registration);
+
+            Registration combined = Registration
+                    .combine(this::listenerIsUnregistered, registration);
+            return Registration.once(combined::remove);
         }
 
         private void listenerIsUnregistered() {
@@ -98,31 +102,6 @@ public class Page implements Serializable {
         private BrowserWindowResizeEvent getApiEvent() {
             return apiEvent;
         }
-    }
-
-    private static class ResizeRegistration implements Registration {
-        private boolean isInvoked;
-
-        private final Registration origin;
-        private final ResizeEventReceiver receiver;
-
-        private ResizeRegistration(ResizeEventReceiver receiver,
-                Registration origin) {
-            this.origin = origin;
-            this.receiver = receiver;
-        }
-
-        @Override
-        public void remove() {
-            if (isInvoked) {
-                return;
-            }
-            origin.remove();
-            receiver.listenerIsUnregistered();
-
-            isInvoked = true;
-        }
-
     }
 
     private ResizeEventReceiver resizeReceiver;
