@@ -28,7 +28,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * Tests for handling internal errors and session expiration
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */
@@ -36,6 +36,7 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     private static final String UPDATE = "update";
     private static final String CLOSE_SESSION = "close-session";
+    private int count;
 
     @Test
     public void sessionExpired_refreshByDefault() {
@@ -48,7 +49,18 @@ public class InternalErrorIT extends ChromeBrowserTest {
         clickButton(CLOSE_SESSION);
 
         try {
-            waitUntil(driver -> !isMessageUpdated());
+            waitUntil(driver -> {
+                if (!isMessageUpdated()) {
+                    return true;
+                }
+                if (count % 2 == 0) {
+                    clickButton(UPDATE);
+                } else {
+                    clickButton(CLOSE_SESSION);
+                }
+                count++;
+                return false;
+            });
         } catch (TimeoutException e) {
             Assert.fail(
                     "After killing the session, the page should be refreshed, "
