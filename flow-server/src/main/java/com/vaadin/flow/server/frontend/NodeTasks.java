@@ -92,7 +92,6 @@ public class NodeTasks implements FallibleCommand {
 
         private File connectClientTsApiFolder;
 
-
         /**
          * Directory for for npm and folders and files.
          */
@@ -260,10 +259,9 @@ public class NodeTasks implements FallibleCommand {
          * @return the builder
          */
         public Builder withFlowResourcesFolder(File flowResourcesFolder) {
-            this.flowResourcesFolder = flowResourcesFolder
-                    .isAbsolute() ? flowResourcesFolder
-                            : new File(npmFolder,
-                                    flowResourcesFolder.getPath());
+            this.flowResourcesFolder = flowResourcesFolder.isAbsolute()
+                    ? flowResourcesFolder
+                    : new File(npmFolder, flowResourcesFolder.getPath());
             return this;
         }
 
@@ -480,21 +478,18 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdatePackages packageUpdater = new TaskUpdatePackages(
                     classFinder, frontendDependencies, builder.npmFolder,
                     builder.generatedFolder, builder.flowResourcesFolder,
-                    builder.cleanNpmFiles,
-                    builder.enablePnpm);
+                    builder.cleanNpmFiles, builder.enablePnpm);
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(packageUpdater,
+                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
                         builder.enablePnpm));
             }
         }
 
-
-
         if (builder.jarFiles != null) {
-            commands.add(new TaskCopyFrontendFiles(
-                    builder.flowResourcesFolder, builder.jarFiles));
+            commands.add(new TaskCopyFrontendFiles(builder.flowResourcesFolder,
+                    builder.jarFiles));
 
             if (builder.localResourcesFolder != null) {
                 commands.add(new TaskCopyLocalFrontendFiles(
@@ -534,7 +529,8 @@ public class NodeTasks implements FallibleCommand {
                 outputDirectory);
         commands.add(taskGenerateIndexTs);
 
-        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(builder.npmFolder);
+        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
+                builder.npmFolder);
         commands.add(taskGenerateTsConfig);
     }
 
