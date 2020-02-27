@@ -579,8 +579,7 @@ public abstract class VaadinService implements Serializable {
      * @see SessionInitListener
      */
     public Registration addSessionInitListener(SessionInitListener listener) {
-        sessionInitListeners.add(listener);
-        return () -> sessionInitListeners.remove(listener);
+        return Registration.addAndRemove(sessionInitListeners, listener);
     }
 
     /**
@@ -592,8 +591,7 @@ public abstract class VaadinService implements Serializable {
      * @see UIInitListener
      */
     public Registration addUIInitListener(UIInitListener listener) {
-        uiInitListeners.add(listener);
-        return () -> uiInitListeners.remove(listener);
+        return Registration.addAndRemove(uiInitListeners, listener);
     }
 
     /**
@@ -610,8 +608,7 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
-        sessionDestroyListeners.add(listener);
-        return () -> sessionDestroyListeners.remove(listener);
+        return Registration.addAndRemove(sessionDestroyListeners, listener);
     }
 
     /**
@@ -2057,8 +2054,7 @@ public abstract class VaadinService implements Serializable {
      */
     public Registration addServiceDestroyListener(
             ServiceDestroyListener listener) {
-        serviceDestroyListeners.add(listener);
-        return () -> serviceDestroyListeners.remove(listener);
+        return Registration.addAndRemove(serviceDestroyListeners, listener);
     }
 
     /**
