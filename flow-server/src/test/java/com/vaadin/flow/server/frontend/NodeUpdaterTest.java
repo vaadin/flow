@@ -115,7 +115,7 @@ public class NodeUpdaterTest {
     @Test
     public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
         JsonObject object = Json.createObject();
-        object.put(nodeUpdater.VAADIN_DEP_KEY, nodeUpdater.createVaadinPackagesJson());
+        nodeUpdater.createVaadinPackagesJson(object);
         nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
@@ -128,12 +128,28 @@ public class NodeUpdaterTest {
         JsonObject dependencies = Json.createObject();
         dependencies.put("@polymer/polymer", "4.0.0");
         object.put(NodeUpdater.DEPENDENCIES, dependencies);
-        object.put(NodeUpdater.VAADIN_DEP_KEY, nodeUpdater.createVaadinPackagesJson());
+        nodeUpdater.createVaadinPackagesJson(object);
 
         nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
         Assert.assertEquals("4.0.0", version);
+    }
+
+    @Test
+    public void updateMainDefaultDependencies_vaadinIsProvidedByUser_useDefault() {
+        JsonObject object = Json.createObject();
+
+        JsonObject vaadin = Json.createObject();
+        vaadin.put("disableUsageStatistics", true);
+        object.put(NodeUpdater.VAADIN_DEP_KEY, vaadin);
+
+        nodeUpdater.createVaadinPackagesJson(object);
+        nodeUpdater.updateDefaultDependencies(object);
+
+        Assert.assertEquals("3.2.0", getPolymerVersion(object));
+        Assert.assertEquals("3.2.0", getPolymerVersion(
+                object.getObject(NodeUpdater.VAADIN_DEP_KEY)));
     }
 
     @Test
