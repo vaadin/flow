@@ -13,7 +13,7 @@ Flow EAP discussion in Gitter IM at https://gitter.im/vaadin-flow/Lobby
 
 Instructions on how to set up a working environment for developing the Flow project follow below.
 
-`master` branch is the next version (3.1) yet to be released. 
+`master` branch is the latest version (3.1) that will at some point be released in the [Vaadin platform 16.0.0](https://github.com/vaadin/platform). 
 See other branches for other framework versions:
 * 1.0 branch is Vaadin 10 LTS (Flow version 1.0)
 * 1.4 branch is for Vaadin 13 (Flow version 1.4) (End of line)
