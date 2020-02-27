@@ -25,7 +25,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 @Tag("explicit-lumo-themed-template")
 @JsModule("./src/LumoThemedTemplate.js")
 @Route(value = "com.vaadin.flow.uitest.ui.lumo.ExplicitLumoTemplateView")
-@Theme(Lumo.class)
+@Theme(value = Lumo.class, variant = Lumo.DARK)
 /*
  * Note that this is using component instead of polymer template, because
  * otherwise the themed module would have to import the original /src module,
