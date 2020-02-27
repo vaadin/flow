@@ -162,8 +162,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Registration addRoutesChangeListener(
             RoutesChangedListener listener) {
-        routesChangedListeners.add(listener);
-        return () -> routesChangedListeners.remove(listener);
+        return Registration.addAndRemove(routesChangedListeners, listener);
     }
 
     protected boolean hasLock() {

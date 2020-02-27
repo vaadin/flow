@@ -102,6 +102,16 @@ public class JavaScriptBootstrapUITest  {
         }
     }
 
+    @Route("forwardToClientSideViewOnBeforeEnter")
+    @Tag(Tag.DIV)
+    public static class ForwardToClientSideViewOnBeforeEnter extends Component implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.forwardTo("client-view");
+        }
+    }
+
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -112,6 +122,8 @@ public class JavaScriptBootstrapUITest  {
                 ProductView.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("exception",
                 FailOnException.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("forwardToClientSideViewOnBeforeEnter",
+                ForwardToClientSideViewOnBeforeEnter.class, Collections.emptyList());
         ui = new JavaScriptBootstrapUI();
         ui.getInternals().setSession(mocks.getSession());
 
@@ -174,6 +186,13 @@ public class JavaScriptBootstrapUITest  {
         ui.leaveNavigation("/client-view");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+    }
+
+    @Test
+    public void should_handle_forward_to_client_side_view_on_beforeEnter() {
+        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeEnter");
+
+        assertEquals("client-view", ui.getForwardToUrl());
     }
 
     @Test
@@ -397,5 +416,4 @@ public class JavaScriptBootstrapUITest  {
                     + exceptionText + "'", errorText.contains(exceptionText));
         }
     }
-
 }

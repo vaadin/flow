@@ -32,13 +32,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -83,10 +81,6 @@ public class DevModeHandlerTest {
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private static class CustomRuntimeException extends RuntimeException {
-
-    }
-
     private String baseDir;
 
     @Before
@@ -125,10 +119,7 @@ public class DevModeHandlerTest {
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled()
             throws Exception {
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertNotNull(hanlder);
-        hanlder.join();
+        assertNotNull(DevModeHandler.start(configuration, npmFolder));
         assertTrue(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
                         .canRead());
@@ -144,8 +135,7 @@ public class DevModeHandlerTest {
         exception.expectMessage("Webpack exited prematurely");
 
         createStubWebpackServer("Foo", 0, baseDir);
-        DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
+        DevModeHandler.start(configuration, npmFolder);
     }
 
     @Test
@@ -153,10 +143,7 @@ public class DevModeHandlerTest {
         configuration.setApplicationOrSystemProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300, baseDir);
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertNotNull(hanlder);
-        hanlder.join();
+        assertNotNull(DevModeHandler.start(configuration, npmFolder));
         int port = DevModeHandler.getDevModeHandler().getPort();
         assertTrue(port > 0);
 
@@ -171,100 +158,83 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_ProductionMode()
             throws Exception {
         configuration.setProductionMode(true);
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertNull(hanlder);
+        assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
     @Test
     public void enableDevServerFalse_shouldNotCreateInstance()
             throws Exception {
         configuration.setEnableDevServer(false);
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertNull(hanlder);
+        assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         int port = prepareHttpServer(0, HTTP_OK, "bar");
-        DevModeHandler handler = DevModeHandler.start(port, configuration,
-                npmFolder, CompletableFuture.completedFuture(null));
-        handler.join();
+        DevModeHandler.start(port, configuration, npmFolder);
         assertFalse(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
                         .canRead());
     }
 
     @Test
-    public void webpackNotInstalled_throws() throws Exception {
-        exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
+    public void shouldNot_CreateInstance_When_WebpackNotInstalled()
+            throws Exception {
         new File(baseDir, WEBPACK_SERVER).delete();
-        DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
     @Test
-    public void webpackIsNotExecutable_throws() {
-        exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
+    public void shouldNot_CreateInstance_When_WebpackIsNotExecutable() {
         // The set executable doesn't work in Windows and will always return
         // false
         boolean systemImplementsExecutable = new File(baseDir, WEBPACK_SERVER)
                 .setExecutable(false);
         if (systemImplementsExecutable) {
-            DevModeHandler.start(configuration, npmFolder,
-                    CompletableFuture.completedFuture(null)).join();
+            assertNull(DevModeHandler.start(configuration, npmFolder));
         }
     }
 
     @Test
-    public void webpackNotConfigured_throws() {
-        exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
+    public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).delete();
-        DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        assertNull(DevModeHandler.start(configuration, npmFolder));
     }
 
     @Test
     public void should_HandleJavaScriptRequests() {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertTrue(handler.isDevModeRequest(request));
+        assertTrue(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
     }
 
     @Test
     public void shouldNot_HandleNonVaadinRequests() {
         HttpServletRequest request = prepareRequest("/foo.js");
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertFalse(handler.isDevModeRequest(request));
+        assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
     }
 
     @Test
     public void shouldNot_HandleOtherRequests() {
         HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertFalse(handler.isDevModeRequest(request));
+        assertFalse(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
     }
 
     @Test
     public void should_HandleAnyAssetInVaadin() {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertTrue(handler.isDevModeRequest(request));
+        assertTrue(DevModeHandler.start(configuration, npmFolder)
+                .isDevModeRequest(request));
     }
 
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
-        DevModeHandler handler = DevModeHandler.start(0, configuration,
-                npmFolder, CompletableFuture.completedFuture(null));
-        handler.join();
-        handler.serveDevModeRequest(request, null);
+        DevModeHandler.start(0, configuration, npmFolder)
+                .serveDevModeRequest(request, null);
     }
 
     @Test
@@ -275,9 +245,7 @@ public class DevModeHandlerTest {
         int port = prepareHttpServer(0, HTTP_OK, "bar");
 
         DevModeHandler devModeHandler = DevModeHandler.start(port,
-                configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        devModeHandler.join();
+                configuration, npmFolder);
         assertTrue(devModeHandler.serveDevModeRequest(request, response));
         assertEquals(HTTP_OK, responseStatus);
 
@@ -325,8 +293,7 @@ public class DevModeHandlerTest {
 
         String statsContent = "{}";
         int port = prepareHttpServer(0, HTTP_OK, statsContent);
-        DevModeHandler.start(port, configuration, npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        DevModeHandler.start(port, configuration, npmFolder);
 
         assertEquals(statsContent,
                 FrontendUtils.getStatsContent(vaadinService));
@@ -336,24 +303,21 @@ public class DevModeHandlerTest {
     public void should_reuseWebpackPort_AfterRestart() throws Exception {
         int port = prepareHttpServer(0, HTTP_OK, "foo");
 
-        DevModeHandler.start(port, configuration, npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        DevModeHandler.start(port, configuration, npmFolder);
         assertNotNull(DevModeHandler.getDevModeHandler());
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
 
         removeDevModeHandlerInstance();
         assertNull(DevModeHandler.getDevModeHandler());
 
-        DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        DevModeHandler.start(configuration, npmFolder);
         assertNotNull(DevModeHandler.getDevModeHandler());
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void startDevModeHandler_vaadinHomeNodeIsAFolder_throws()
             throws IOException {
-        exception.expectCause(CoreMatchers.isA(IllegalStateException.class));
         String userHome = "user.home";
         String originalHome = System.getProperty(userHome);
         File home = temporaryFolder.newFolder();
@@ -367,29 +331,15 @@ public class DevModeHandlerTest {
             configuration.setApplicationOrSystemProperty(
                     Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                     Boolean.TRUE.toString());
-            DevModeHandler.start(configuration, npmFolder,
-                    CompletableFuture.completedFuture(null)).join();
+            DevModeHandler.start(configuration, npmFolder);
         } finally {
             System.setProperty(userHome, originalHome);
         }
     }
 
-    @Test(expected = CustomRuntimeException.class)
-    public void startDevModeHandler_prepareTasksThorws_handleThrows()
-            throws IOException {
-        CompletableFuture<Void> throwFuture = new CompletableFuture<>();
-        throwFuture.completeExceptionally(new CustomRuntimeException());
-        DevModeHandler handler = DevModeHandler.start(0, configuration,
-                npmFolder, throwFuture);
-        handler.handleRequest(Mockito.mock(VaadinSession.class),
-                Mockito.mock(VaadinRequest.class),
-                Mockito.mock(VaadinResponse.class));
-    }
-
     private VaadinServlet prepareServlet(int port)
             throws ServletException, IOException {
-        DevModeHandler.start(port, configuration, npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        DevModeHandler.start(port, configuration, npmFolder);
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);
         ServletContext ctx = mock(ServletContext.class);
