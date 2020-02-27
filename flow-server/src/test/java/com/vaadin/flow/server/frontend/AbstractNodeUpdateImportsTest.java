@@ -137,7 +137,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "const div = document.createElement('div');",
                 "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
                 "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                "document.body.setAttribute('theme', 'dark');"));
+                "document.documentElement.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
         // An import without `.js` extension

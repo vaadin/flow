@@ -53,6 +53,7 @@ import com.vaadin.flow.plugin.TestUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
@@ -196,10 +197,14 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(importsFile.exists());
 
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "const div = document.createElement('div');",
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                "document.body.setAttribute('theme', 'dark');"));
+                "export const addCssBlock = function(block, before = false) {",
+                " const tpl = document.createElement('template');",
+                " tpl.innerHTML = block;",
+                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
+                "};",
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
+                "document.documentElement.setAttribute('theme', 'dark');"));
+
         expectedLines.addAll(getExpectedImports());
 
         mojo.execute();
@@ -306,7 +311,8 @@ public class BuildFrontendMojoTest {
         assertContainsPackage(dependencies, "@vaadin/vaadin-button",
                 "@vaadin/vaadin-element-mixin");
 
-        Assert.assertFalse("Foo should have been removed", dependencies.hasKey("foo"));
+        Assert.assertFalse("Foo should have been removed",
+                dependencies.hasKey("foo"));
         Assert.assertTrue("Bar should remain", dependencies.hasKey("bar"));
     }
 
