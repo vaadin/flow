@@ -22,8 +22,8 @@ import java.util.Set;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.Timer;
-
 import com.vaadin.client.communication.MessageHandler;
+import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -121,6 +121,18 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
 
     }
 
+    private static class TestMessageSender extends MessageSender {
+
+        public TestMessageSender(Registry registry) {
+            super(registry);
+        }
+
+        @Override
+        public void resynchronize() {
+            setResyncState(true);
+        }
+    }
+
     @Override
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
@@ -135,6 +147,7 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                 set(ApplicationConfiguration.class,
                         new ApplicationConfiguration());
                 set(EventsOrder.class, new EventsOrder());
+                set(MessageSender.class, new TestMessageSender(this));
             }
         };
         handler = new TestMessageHandler(registry);
@@ -219,6 +232,35 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         }.schedule(100);
     }
 
+    public void testForceHandleMessage_resyncIsRequested() {
+        resetInternalEvents();
+        setResyncState(false);
+
+        // given a max message suspension time of 200 ms
+        registry.getApplicationConfiguration().setMaxMessageSuspendTimeout(200);
+
+        // when two out-of-order messages happen
+        JavaScriptObject object1 = JavaScriptObject.createObject();
+        JsonObject obj1 = object1.cast();
+        obj1.put("syncId", 1);
+        handler.handleJSON(object1.cast());
+
+        JavaScriptObject object2 = JavaScriptObject.createObject();
+        JsonObject obj2 = object2.cast();
+        obj2.put("syncId", 3);
+        handler.handleJSON(object2.cast());
+
+        // then a resync message is sent within 300 ms
+        delayTestFinish(500);
+        new Timer() {
+            @Override
+            public void run() {
+                assertTrue(getResyncState());
+                finishTest();
+            }
+        }.schedule(300);
+    }
+
     private TestResourceLoader getResourceLoader() {
         return (TestResourceLoader) registry.getResourceLoader();
     }
@@ -236,6 +278,16 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
     private static native String getInternalEvent(int index)
     /*-{
          return window.testEvents[index];
+    }-*/;
+
+    private static native void setResyncState(boolean resync)
+    /*-{
+        window.resynchronizing = resync;
+    }-*/;
+
+    private static native boolean getResyncState()
+    /*-{
+        return window.resynchronizing;
     }-*/;
 
 }

@@ -166,23 +166,21 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the max message suspend delay.
+     * Gets the maximum message suspension delay.
      *
      * @return The maximum time, in milliseconds, to suspend out-of-order
-     *         messages waiting for their predecessor before considering it
-     *         lost.
+     *         messages waiting for their predecessor before resynchronizing.
      */
     public int getMaxMessageSuspendTimeout() {
         return maxMessageSuspendTimeout;
     }
 
     /**
-     * Sets the interval for heartbeat requests.
+     * Sets the maximum message suspension delay.
      *
      * @param maxMessageSuspendTimeout
      *            The maximum time, in milliseconds, to suspend out-of-order
-     *            messages waiting for their predecessor before considering it
-     *            lost.
+     *            messages waiting for their predecessor before resynchronizing.
      */
     public void setMaxMessageSuspendTimeout(int maxMessageSuspendTimeout) {
         this.maxMessageSuspendTimeout = maxMessageSuspendTimeout;

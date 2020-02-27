@@ -96,7 +96,7 @@ public interface DeploymentConfiguration extends Serializable {
      * message, before considering them missing and requesting a full
      * resynchronization of the application state from the server.
      * 
-     * @return The max message suspend timeout
+     * @return The maximum message suspension timeout
      */
     int getMaxMessageSuspendTimeout();
 
