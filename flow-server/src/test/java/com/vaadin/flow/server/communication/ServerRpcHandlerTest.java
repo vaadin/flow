@@ -12,6 +12,7 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.MessageDigestUtil;
@@ -28,6 +29,8 @@ public class ServerRpcHandlerTest {
     private VaadinSession session;
     private UI ui;
     private UIInternals uiInternals;
+    private DependencyList dependencyList;
+
     private StateTree uiTree;
     final private String csrfToken = "";
 
@@ -43,6 +46,7 @@ public class ServerRpcHandlerTest {
         session = Mockito.mock(VaadinSession.class);
         ui = Mockito.mock(UI.class);
         uiInternals = Mockito.mock(UIInternals.class);
+        dependencyList = Mockito.mock(DependencyList.class);
 
         Mockito.when(request.getService()).thenReturn(service);
         Mockito.when(session.getService()).thenReturn(service);
@@ -58,12 +62,14 @@ public class ServerRpcHandlerTest {
 
         uiTree = new StateTree(uiInternals);
         Mockito.when(uiInternals.getStateTree()).thenReturn(uiTree);
+        Mockito.when(uiInternals.getDependencyList())
+                .thenReturn(dependencyList);
 
         serverRpcHandler = new ServerRpcHandler();
     }
 
     @Test
-    public void handleRpc_resynchronize_shouldResynchronizeClientAndMarksTreeDirty()
+    public void handleRpc_resynchronize_throwsExceptionAndDirtiesTreeAndClearsDependenciesSent()
             throws IOException,
             ServerRpcHandler.InvalidUIDLSecurityKeyException {
         // given
@@ -77,12 +83,15 @@ public class ServerRpcHandlerTest {
         // when
         serverRpcHandler.handleRpc(ui, reader, request);
 
-        // then
+        // then there are dirty nodes
         Assert.assertTrue(uiTree.hasDirtyNodes());
+
+        // the dependencies-sent cache was cleared
+        Mockito.verify(dependencyList).clearPendingSendToClient();
     }
 
     @Test
-    public void handleRpc_duplicateMessage_doNotThrhow()
+    public void handleRpc_duplicateMessage_doNotThrow()
             throws InvalidUIDLSecurityKeyException, IOException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
         ServerRpcHandler handler = new ServerRpcHandler() {
@@ -102,7 +111,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void handleRpc_unexpectedMessage_thrhow()
+    public void handleRpc_unexpectedMessage_throw()
             throws InvalidUIDLSecurityKeyException, IOException {
         ServerRpcHandler handler = new ServerRpcHandler() {
             @Override
