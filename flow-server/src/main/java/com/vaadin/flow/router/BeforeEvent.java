@@ -109,7 +109,7 @@ public abstract class BeforeEvent extends EventObject {
             Location location, Class<?> navigationTarget, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         this(router, trigger, location, navigationTarget, new UrlParameters(),
-                ui, Collections.emptyList());
+                ui, layouts);
     }
 
     /**
