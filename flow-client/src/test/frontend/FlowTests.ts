@@ -71,6 +71,7 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
       {
         "appConfig": {
           "heartbeatInterval" : 300,
+          "maxMessageSuspendTimeout": 5000,
           "contextRootUrl" : "../",
           "debug" : true,
           "v-uiId" : 0,
