@@ -99,6 +99,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public int getMaxMessageSuspendTimeout() {
+            return 0;
+        }
+
+        @Override
         public int getWebComponentDisconnect() {
             return 0;
         }
