@@ -84,4 +84,28 @@ public class ElementUtilTest {
         ElementUtil.setComponent(e, c2);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void removeVirtualChild_notVirtual_errors() {
+        Element child = ElementFactory.createAnchor();
+        Element parent = ElementFactory.createDiv();
+        parent.appendChild(child);
+
+        ElementUtil.removeVirtualChildFromParent(child);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void removeVirtualChild_detachedTwice_errorSecondTime() {
+        Element child = ElementFactory.createAnchor();
+        Element parent = ElementFactory.createDiv();
+        parent.appendVirtualChild(child);
+
+        Assert.assertTrue(child.isVirtualChild());
+
+        ElementUtil.removeVirtualChildFromParent(child);
+
+        Assert.assertFalse(child.isVirtualChild());
+        
+        ElementUtil.removeVirtualChildFromParent(child);
+    }
+
 }

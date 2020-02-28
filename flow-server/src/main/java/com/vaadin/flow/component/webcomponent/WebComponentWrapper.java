@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.HeartbeatEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.shared.Registration;
@@ -111,20 +112,26 @@ public class WebComponentWrapper extends Component {
         if (uiOptional.isPresent() && disconnectRegistration == null) {
             disconnect = System.currentTimeMillis();
             disconnectRegistration = uiOptional.get().getInternals()
-                    .addHeartbeatListener(event -> {
-                        int disconnectTimeout = event.getSource().getSession()
-                                .getConfiguration().getWebComponentDisconnect();
-
-                        int timeout = 1000 * disconnectTimeout;
-
-                        if (event.getSource().getInternals()
-                                .getLastHeartbeatTimestamp()
-                                - disconnect > timeout) {
-                            ElementUtil.removeVirtualChildFromParent(getElement());
-                            disconnectRegistration.remove();
-                        }
-                    });
+                    .addHeartbeatListener(this::cleanupDisconnectedWebComponent);
         }
     }
 
+    private void cleanupDisconnectedWebComponent(HeartbeatEvent event) {
+        int disconnectTimeout = event.getSource().getSession()
+                .getConfiguration().getWebComponentDisconnect();
+        int timeout = 1000 * disconnectTimeout;
+
+        if (event.getSource().getInternals()
+                .getLastHeartbeatTimestamp()
+                - disconnect > timeout) {
+            try {
+                ElementUtil.removeVirtualChildFromParent(getElement());
+            } catch (IllegalStateException | IllegalArgumentException e) {
+                throw new IllegalStateException("Failed to detach embedded Flow web component from parent during cleanup", e);
+            } finally {
+                // clean up the heatbeat listener always
+                disconnectRegistration.remove();
+            }
+        }
+    }
 }

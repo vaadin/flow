@@ -205,6 +205,10 @@ public class WebComponentWrapperTest {
         Assert.assertFalse(
                 "Wrapper should have been disconnected also on the server",
                 wrapper.getParent().isPresent());
+
+        // the hearbeat listener should be disconnected
+        // -> another fake heartbeat won't trigger the listener and cause errors
+        internals.setLastHeartbeatTimestamp(System.currentTimeMillis() + 1200);
     }
 
     /**

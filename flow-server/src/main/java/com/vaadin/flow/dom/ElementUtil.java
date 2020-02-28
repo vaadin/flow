@@ -266,11 +266,16 @@ public class ElementUtil {
      * Ensure the virtual child is removed from its parent.
      * 
      * @param element
-     *            the element to remove as a virtual child
+     *            the element to remove as a virtual child, not {@code null}
      */
     public static void removeVirtualChildFromParent(Element element) {
-        assert(element.isVirtualChild());
         Element parent = element.getParent();
+        if (parent == null) {
+            throw new IllegalStateException("Virtual element has been detached from parent already");
+        }
+        if (!element.isVirtualChild()) {
+            throw new IllegalArgumentException("Element is not a virtual child");
+        }
         if (parent.getNode().hasFeature(VirtualChildrenList.class)) {
             VirtualChildrenList childrenList = parent.getNode()
                     .getFeature(VirtualChildrenList.class);
@@ -278,7 +283,7 @@ public class ElementUtil {
                     .indexOf(element.getNode());
             if (index == -1) {
                 throw new IllegalArgumentException(
-                        "Failing to clean-up an embedded Flow web component, parent UI doesn't contain it as a virtual child.");
+                        "Given element is not a virtual child to its current parent.");
             }
             childrenList.remove(index);
         }
