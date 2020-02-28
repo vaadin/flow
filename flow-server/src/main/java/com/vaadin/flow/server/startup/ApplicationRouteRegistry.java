@@ -208,7 +208,6 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    @Deprecated
     public Optional<Class<? extends Component>> getNavigationTarget(
             String url, List<String> segments) {
         return getNavigationTarget(PathUtil.getPath(url, segments));
