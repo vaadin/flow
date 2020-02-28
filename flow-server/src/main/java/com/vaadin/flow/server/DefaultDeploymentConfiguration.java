@@ -69,6 +69,11 @@ public class DefaultDeploymentConfiguration
     public static final int DEFAULT_HEARTBEAT_INTERVAL = 300;
 
     /**
+     * Default value for {@link #getMaxMessageSuspendTimeout()} ()} = {@value} .
+     */
+    public static final int DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT = 5000;
+
+    /**
      * Default value for {@link #getWebComponentDisconnect()} = {@value}.
      */
     public static final int DEFAULT_WEB_COMPONENT_DISCONNECT = 300;
@@ -90,6 +95,7 @@ public class DefaultDeploymentConfiguration
     private boolean compatibilityMode;
     private boolean xsrfProtectionEnabled;
     private int heartbeatInterval;
+    private int maxMessageSuspendTimeout;
     private int webComponentDisconnect;
     private boolean closeIdleSessions;
     private PushMode pushMode;
@@ -121,6 +127,7 @@ public class DefaultDeploymentConfiguration
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
+        checkMaxMessageSuspendTimeout();
         checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
         checkPushMode();
@@ -178,6 +185,16 @@ public class DefaultDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return heartbeatInterval;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The default max message suspension time is 5000 milliseconds.
+     */
+    @Override
+    public int getMaxMessageSuspendTimeout() {
+        return maxMessageSuspendTimeout;
     }
 
     @Override
@@ -308,6 +325,21 @@ public class DefaultDeploymentConfiguration
         } catch (NumberFormatException e) {
             getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
+        }
+    }
+
+    private void checkMaxMessageSuspendTimeout() {
+        try {
+            maxMessageSuspendTimeout = getApplicationOrSystemProperty(
+                    Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                    DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT, Integer::parseInt);
+        } catch (NumberFormatException e) {
+            String warning = SEPARATOR
+                    + "\nWARNING: maxMessageSuspendInterval has been set to an illegal value."
+                    + "The default of " + DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT
+                    + " ms will be used." + SEPARATOR;
+            getLogger().warn(warning);
+            maxMessageSuspendTimeout = DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT;
         }
     }
 

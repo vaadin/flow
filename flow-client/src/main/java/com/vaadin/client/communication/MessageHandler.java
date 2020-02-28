@@ -58,9 +58,6 @@ public class MessageHandler {
     public static final String JSON_COMMUNICATION_PREFIX = "for(;;);[";
     public static final String JSON_COMMUNICATION_SUFFIX = "]";
 
-    /** The max timeout that response handling may be suspended. */
-    private static final int MAX_SUSPENDED_TIMEOUT = 5000;
-
     /**
      * The value of an undefined sync id.
      * <p>
@@ -263,7 +260,9 @@ public class MessageHandler {
             }
             pendingUIDLMessages.push(new PendingUIDLMessage(valueMap));
             if (!forceHandleMessage.isRunning()) {
-                forceHandleMessage.schedule(MAX_SUSPENDED_TIMEOUT);
+                int timeout = registry.getApplicationConfiguration()
+                        .getMaxMessageSuspendTimeout();
+                forceHandleMessage.schedule(timeout);
             }
             return;
         }
