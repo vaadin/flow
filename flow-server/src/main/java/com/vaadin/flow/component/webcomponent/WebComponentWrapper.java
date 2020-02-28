@@ -120,8 +120,14 @@ public class WebComponentWrapper extends Component {
                         if (event.getSource().getInternals()
                                 .getLastHeartbeatTimestamp()
                                 - disconnect > timeout) {
-                            ElementUtil.removeVirtualChildFromParent(getElement());
-                            disconnectRegistration.remove();
+                            try {
+                                ElementUtil.removeVirtualChildFromParent(getElement());
+                            } catch (Exception e) {
+                                throw new IllegalStateException("Failed to detach embedded Flow web component from parent", e);
+                            } finally {
+                                // clean up the heatbeat listener always
+                                disconnectRegistration.remove();
+                            }
                         }
                     });
         }
