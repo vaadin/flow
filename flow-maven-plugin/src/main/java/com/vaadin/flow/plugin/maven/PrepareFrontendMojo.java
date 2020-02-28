@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
@@ -51,9 +52,9 @@ import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -141,7 +142,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
-        buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, useDeprecatedV14Bootstrapping());
+        buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
+                useDeprecatedV14Bootstrapping());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL, eagerServerLoad);
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
@@ -154,6 +156,12 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                 openApiJsonFile.getAbsolutePath());
         buildInfo.put(CONNECT_GENERATED_TS_DIR_TOKEN,
                 generatedTsFolder.getAbsolutePath());
+
+        buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
+        buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                requireHomeNodeExec);
+        buildInfo.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                optimizeBundle);
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
