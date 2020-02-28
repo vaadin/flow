@@ -73,7 +73,10 @@ public class Page implements Serializable {
             Registration registration = addListener(ResizeEvent.class,
                     event -> listener
                             .browserWindowResized(event.getApiEvent()));
-            return new ResizeRegistration(this, registration);
+
+            Registration combined = Registration
+                    .combine(this::listenerIsUnregistered, registration);
+            return Registration.once(combined::remove);
         }
 
         private void listenerIsUnregistered() {
@@ -99,31 +102,6 @@ public class Page implements Serializable {
         private BrowserWindowResizeEvent getApiEvent() {
             return apiEvent;
         }
-    }
-
-    private static class ResizeRegistration implements Registration {
-        private boolean isInvoked;
-
-        private final Registration origin;
-        private final ResizeEventReceiver receiver;
-
-        private ResizeRegistration(ResizeEventReceiver receiver,
-                                   Registration origin) {
-            this.origin = origin;
-            this.receiver = receiver;
-        }
-
-        @Override
-        public void remove() {
-            if (isInvoked) {
-                return;
-            }
-            origin.remove();
-            receiver.listenerIsUnregistered();
-
-            isInvoked = true;
-        }
-
     }
 
     private ResizeEventReceiver resizeReceiver;
@@ -374,7 +352,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-                                             Serializable... parameters) {
+            Serializable... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -519,9 +497,9 @@ public class Page implements Serializable {
         private static String readJS() {
             try (InputStream stream = Page.class
                     .getResourceAsStream(JS_FILE_NAME);
-                 BufferedReader bf = new BufferedReader(
-                         new InputStreamReader(stream,
-                                 StandardCharsets.UTF_8))) {
+                    BufferedReader bf = new BufferedReader(
+                            new InputStreamReader(stream,
+                                    StandardCharsets.UTF_8))) {
                 StringBuilder builder = new StringBuilder();
                 bf.lines().forEach(builder::append);
                 return builder.toString();

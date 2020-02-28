@@ -71,8 +71,10 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     public static final Pattern HASH_PATTERN = Pattern.compile("window.location.hash ?= ?'(.*?)'");
     public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
-    public static final String PUSH_STATE =
+    public static final String PUSH_STATE_HASH =
             "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
+    public static final String PUSH_STATE_LOCATION =
+            "setTimeout(() => history.pushState(null, null, '%s'));";
 
     private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
     private static final String RPC = RPC_INVOCATIONS;
@@ -224,7 +226,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
 
         JsonArray exec = uidl.getArray(EXECUTE);
-        String hash = null;
+        String location = null;
         int idx = -1;
         for (int i = 0; i < exec.length(); i++) {
             JsonArray arr = exec.get(i);
@@ -240,9 +242,10 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                 if (!script.startsWith(SYNC_ID)) {
                     continue;
                 }
+
                 JsonObject json = JsonUtil.parse("{" + script + "}");
-                hash = removeHashInV7Uidl(json);
-                if (hash != null) {
+                location = removeHashInV7Uidl(json);
+                if (location != null) {
                     script = JsonUtil.stringify(json);
                     // remove curly brackets
                     script = script.substring(1, script.length() - 1);
@@ -251,11 +254,15 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             }
         }
 
-        if (hash != null) {
+        if (location != null) {
             idx = idx >= 0 ? idx : exec.length();
             JsonArray arr = Json.createArray();
             arr.set(0, "");
-            arr.set(1, String.format(PUSH_STATE, hash));
+            arr.set(1,
+                    String.format(
+                            location.startsWith("http") ? PUSH_STATE_LOCATION
+                                    : PUSH_STATE_HASH,
+                            location));
             exec.set(idx, arr);
         }
     }
@@ -271,8 +278,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
         JsonArray rpcs = json.getArray(RPC);
         for (int i = 0; i < rpcs.length(); i++) {
-            String hash = removeHashInRpc(changes.getArray(i));
-            if (hash != null) {
+            String hash = removeHashInRpc(rpcs.getArray(i));
+            if (removed == null && hash != null) {
                 removed = hash;
             }
         }
@@ -293,12 +300,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (!location.hasKey(LOCATION)) {
             return null;
         }
-        Matcher match = URL_PATTERN.matcher(location.getString(LOCATION));
+        String url = location.getString(LOCATION);
+        Matcher match = URL_PATTERN.matcher(url);
         if (match.find()) {
             location.put(LOCATION, match.group(1));
-            return match.group(2);
         }
-        return null;
+        return url;
     }
 
     private String removeHashInRpc(JsonArray rpc) {

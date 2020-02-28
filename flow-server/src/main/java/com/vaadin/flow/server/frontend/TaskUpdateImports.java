@@ -61,7 +61,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 public class TaskUpdateImports extends NodeUpdater {
 
     private static final String THEME_LINE_TPL = "addCssBlock('%s', true);";
-    private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
+    private static final String THEME_VARIANT_TPL = "document.documentElement.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");

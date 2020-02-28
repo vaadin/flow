@@ -496,7 +496,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(packageUpdater,
+                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec));
             }
         }
@@ -543,11 +543,12 @@ public class NodeTasks implements FallibleCommand {
                 outputDirectory);
         commands.add(taskGenerateIndexTs);
 
-        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(builder.npmFolder);
+        TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
+                builder.npmFolder);
         commands.add(taskGenerateTsConfig);
 
-        TaskGenerateTsDefinitions taskGenerateTsDefinitions =
-                new TaskGenerateTsDefinitions(builder.npmFolder);
+        TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
+                builder.npmFolder);
         commands.add(taskGenerateTsDefinitions);
     }
 

@@ -221,7 +221,7 @@ public class BuildFrontendMojoTest {
                 " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
                 "};",
                 "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
-                "document.body.setAttribute('theme', 'dark');"));
+                "document.documentElement.setAttribute('theme', 'dark');"));
 
         expectedLines.addAll(getExpectedImports());
 
