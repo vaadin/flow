@@ -59,6 +59,22 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     protected boolean compatibility;
 
+    @Parameter(defaultValue = "${project.basedir}/src/main/java")
+    protected File javaSourceFolder;
+
+    /**
+     * Whether to use byte code scanner strategy to discover frontend
+     * components.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
+    protected boolean optimizeBundle;
+
+    /**
+     * Instructs to use pnpm for installing npm frontend resources.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
+    protected boolean pnpmEnable;
+
     /**
      * Whether vaadin home node executable usage is forced. If it's set to
      * {@code true} then vaadin home 'node' is checked and installed if it's

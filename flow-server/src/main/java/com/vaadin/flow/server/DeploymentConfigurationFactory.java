@@ -44,6 +44,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
@@ -104,7 +105,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws VaadinConfigurationException thrown if property construction fails
+     * @throws VaadinConfigurationException
+     *             thrown if property construction fails
      */
     public static DeploymentConfiguration createDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
@@ -123,7 +125,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * @param vaadinConfig
      *            the config to get the rest of the properties from
      * @return {@link DeploymentConfiguration} instance
-     * @throws VaadinConfigurationException thrown if property construction fails
+     * @throws VaadinConfigurationException
+     *             thrown if property construction fails
      */
     public static DeploymentConfiguration createPropertyDeploymentConfiguration(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
@@ -137,11 +140,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * in current application.
      *
      * @param systemPropertyBaseClass
-     *         the class to look for properties defined with annotations
+     *            the class to look for properties defined with annotations
      * @param vaadinConfig
-     *         the config to get the rest of the properties from
+     *            the config to get the rest of the properties from
      * @return {@link Properties} instance
-     * @throws VaadinConfigurationException thrown if property construction fails
+     * @throws VaadinConfigurationException
+     *             thrown if property construction fails
      */
     protected static Properties createInitParameters(
             Class<?> systemPropertyBaseClass, VaadinConfig vaadinConfig)
@@ -160,10 +164,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = vaadinConfig
-                .getConfigParameterNames(); e.hasMoreElements(); ) {
+                .getConfigParameterNames(); e.hasMoreElements();) {
             final String name = e.nextElement();
-            initParameters
-                    .setProperty(name, vaadinConfig.getConfigParameter(name));
+            initParameters.setProperty(name,
+                    vaadinConfig.getConfigParameter(name));
         }
 
         readBuildInfo(initParameters);
@@ -182,8 +186,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_PRODUCTION_MODE)));
             }
-            if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN) || buildInfo
-                    .hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+            if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
+                    || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
                 // If external stats file is flagged then compatibility mode and
                 // dev server should both be false - only variable that can
                 // be configured, in addition to stats variables, is
@@ -244,6 +248,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
                         String.valueOf(buildInfo.getBoolean(
                                 SERVLET_PARAMETER_REUSE_DEV_SERVER)));
             }
+            setInitParametersUsingTokenData(initParameters, buildInfo);
 
             FallbackChunk fallbackChunk = FrontendUtils
                     .readFallbackChunk(buildInfo);
@@ -262,6 +267,96 @@ public final class DeploymentConfigurationFactory implements Serializable {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private static void setInitParametersUsingTokenData(
+            Properties initParameters, JsonObject buildInfo) {
+        if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
+        }
+        if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
+                || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+            // If external stats file is flagged then
+            // dev server should be false - only variable that can
+            // be configured, in addition to stats variables, is
+            // production mode
+            initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                    Boolean.toString(false));
+            initParameters.setProperty(EXTERNAL_STATS_FILE,
+                    Boolean.toString(true));
+            if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                initParameters.setProperty(EXTERNAL_STATS_URL,
+                        buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
+            }
+            // NO OTHER CONFIGURATION:
+            return;
+        }
+
+        if (buildInfo.hasKey(NPM_TOKEN)) {
+            initParameters.setProperty(PROJECT_BASEDIR,
+                    buildInfo.getString(NPM_TOKEN));
+            verifyFolderExists(initParameters, buildInfo.getString(NPM_TOKEN));
+        }
+
+        if (buildInfo.hasKey(FRONTEND_TOKEN)) {
+            initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                    buildInfo.getString(FRONTEND_TOKEN));
+            // Only verify frontend folder if it's not a subfolder of the
+            // npm folder.
+            if (!buildInfo.hasKey(NPM_TOKEN)
+                    || !buildInfo.getString(FRONTEND_TOKEN)
+                            .startsWith(buildInfo.getString(NPM_TOKEN))) {
+                verifyFolderExists(initParameters,
+                        buildInfo.getString(FRONTEND_TOKEN));
+            }
+        }
+
+        // These should be internal only so if there is a System
+        // property override then the user probably knows what
+        // they are doing.
+        if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+        }
+        if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            initParameters.setProperty(SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+        }
+
+        setDevModePropertiesUsingTokenData(initParameters, buildInfo);
+    }
+
+    private static void setDevModePropertiesUsingTokenData(
+            Properties initParameters, JsonObject buildInfo) {
+        // read dev mode properties from the token and set init parameter only
+        // if it's not yet set
+        if (initParameters
+                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM) == null
+                && buildInfo.hasKey(Constants.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            initParameters.setProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.SERVLET_PARAMETER_ENABLE_PNPM)));
+        }
+        if (initParameters
+                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE) == null
+                && buildInfo.hasKey(Constants.REQUIRE_HOME_NODE_EXECUTABLE)) {
+            initParameters.setProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.REQUIRE_HOME_NODE_EXECUTABLE)));
+        }
+        if (initParameters.getProperty(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE) == null
+                && buildInfo.hasKey(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)) {
+            initParameters.setProperty(
+                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)));
+        }
     }
 
     private static String getTokenFileContents(Properties initParameters) {
@@ -285,21 +380,19 @@ public final class DeploymentConfigurationFactory implements Serializable {
         if (tokenLocation != null) {
             File tokenFile = new File(tokenLocation);
             if (tokenFile != null && tokenFile.canRead()) {
-                json = FileUtils
-                        .readFileToString(tokenFile, StandardCharsets.UTF_8);
+                json = FileUtils.readFileToString(tokenFile,
+                        StandardCharsets.UTF_8);
             }
         }
         return json;
     }
 
-    private static String getResourceFromClassloader()
-            throws IOException {
+    private static String getResourceFromClassloader() throws IOException {
         String json = null;
         // token file is in the class-path of the application
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-        List<URL> resources = Collections
-                .list(DeploymentConfiguration.class.getClassLoader()
-                        .getResources(tokenResource));
+        List<URL> resources = Collections.list(DeploymentConfiguration.class
+                .getClassLoader().getResources(tokenResource));
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
         URL resource = resources.stream()
@@ -319,15 +412,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
     private static boolean isProductionMode(Properties initParameters) {
         String booleanString;
         // First check system property then initParameters
-        if (System
-                .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE)
-                != null) {
+        if (System.getProperty(
+                VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE) != null) {
             booleanString = System.getProperty(
                     VAADIN_PREFIX + SERVLET_PARAMETER_PRODUCTION_MODE);
         } else {
-            booleanString = initParameters
-                    .getProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
-                            Boolean.FALSE.toString());
+            booleanString = initParameters.getProperty(
+                    SERVLET_PARAMETER_PRODUCTION_MODE,
+                    Boolean.FALSE.toString());
         }
 
         boolean parsedBoolean = Boolean.parseBoolean(booleanString);
@@ -353,12 +445,13 @@ public final class DeploymentConfigurationFactory implements Serializable {
      *            flow-build-info url resource files, not null or empty
      * @return flow-build-info json string
      * @throws IOException
-     *         exception reading stream
+     *             exception reading stream
      */
     private static String getPossibleJarResource(List<URL> resources)
             throws IOException {
         Objects.requireNonNull(resources);
-        assert !resources.isEmpty() : "Possible jar resource requires resources to be available.";
+        assert !resources
+                .isEmpty() : "Possible jar resource requires resources to be available.";
         URL webpackGenerated = DeploymentConfiguration.class.getClassLoader()
                 .getResource(FrontendUtils.WEBPACK_GENERATED);
         // If jar!/ exists 2 times for webpack.generated.json then we are
@@ -374,16 +467,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
         URL firstResource = resources.get(0);
         if (resources.size() > 1) {
-            String warningMessage = String
-                    .format("Unable to fully determine correct flow-build-info.%n"
-                                    + "Accepting file '%s' first match of '%s' possible.%n"
-                                    + "Please verify flow-build-info file content.",
-                            firstResource.getPath(), resources.size());
+            String warningMessage = String.format(
+                    "Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s' first match of '%s' possible.%n"
+                            + "Please verify flow-build-info file content.",
+                    firstResource.getPath(), resources.size());
             logger.warn(warningMessage);
         } else {
-            String debugMessage = String
-                    .format("Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'", firstResource.getPath());
+            String debugMessage = String.format(
+                    "Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s'",
+                    firstResource.getPath());
             logger.debug(debugMessage);
         }
         return FrontendUtils.streamToString(firstResource.openStream());
@@ -476,12 +570,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * value pairs and add them to the initial properties object.
      *
      * @param systemPropertyBaseClass
-     *         base class for constructing the configuration
+     *            base class for constructing the configuration
      * @param initParameters
-     *         current initParameters object
+     *            current initParameters object
      * @throws VaadinConfigurationException
-     *         exception thrown for failure in invoking method on configuration
-     *         annotation
+     *             exception thrown for failure in invoking method on
+     *             configuration annotation
      */
     private static void readConfigurationAnnotation(
             Class<?> systemPropertyBaseClass, Properties initParameters)
@@ -519,7 +613,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 // This should never happen
                 throw new VaadinConfigurationException(
                         "Could not read @VaadinServletConfiguration value "
-                                + method.getName(), e);
+                                + method.getName(),
+                        e);
             }
         }
     }

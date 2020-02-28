@@ -518,6 +518,55 @@ public class DeploymentConfigurationFactoryTest {
         Assert.assertEquals("bar-id", data.getId());
     }
 
+    @Test
+    public void createInitParameters_readDevModeProperties() throws Exception {
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"pnpm.enable\": true,",
+                        "\"require.home.node\": true,",
+                        "\"devmode.optimizeBundle\": true", "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
+                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
+                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                config.getInitParameters().getProperty(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+    }
+
+    @Test
+    public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
+            throws Exception {
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"pnpm.enable\": true,",
+                        "\"require.home.node\": true,",
+                        "\"devmode.optimizeBundle\": true", "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        config.getInitParameters().setProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                Boolean.FALSE.toString());
+        config.getInitParameters().setProperty(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                Boolean.FALSE.toString());
+        config.getInitParameters().setProperty(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                Boolean.FALSE.toString());
+
+        Assert.assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
+                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
+                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertEquals(Boolean.FALSE.toString(),
+                config.getInitParameters().getProperty(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+    }
+
     private DeploymentConfiguration createConfig(Map<String, String> map)
             throws Exception {
         return DeploymentConfigurationFactory.createDeploymentConfiguration(

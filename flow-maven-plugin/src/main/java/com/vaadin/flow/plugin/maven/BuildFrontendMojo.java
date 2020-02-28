@@ -188,8 +188,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
                         .withTokenFile(getTokenFile()).enablePnpm(pnpmEnable)
-                        .withHomeNodeExecRequired(requireHomeNodeExec)
-                        .build().execute();
+                        .withHomeNodeExecRequired(requireHomeNodeExec).build()
+                        .execute();
     }
 
     private void runWebpack() {
@@ -205,10 +205,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         String nodePath;
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         if (requireHomeNodeExec) {
-            nodePath = tools
-                    .forceAlternativeNodeExecutable();
+            nodePath = tools.forceAlternativeNodeExecutable();
         } else {
             nodePath = tools.getNodeExecutable();
         }
@@ -274,6 +273,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(
+                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -43,6 +44,7 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
@@ -148,21 +150,23 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             FileUtils.forceMkdir(generatedFolder);
         } catch (IOException e) {
-            throw new MojoFailureException(
-                    "Failed to create folder '" + generatedFolder
-                            + "'. Verify that you may write to path.", e);
+            throw new MojoFailureException("Failed to create folder '"
+                    + generatedFolder + "'. Verify that you may write to path.",
+                    e);
         }
         try {
-            NodeTasks.Builder builder = new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                    generatedFolder, frontendDirectory)
+            NodeTasks.Builder builder = new NodeTasks.Builder(
+                    getClassFinder(project), npmFolder, generatedFolder,
+                    frontendDirectory)
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false);
-            // If building a jar project copy jar artifact contents now as we might
+            // If building a jar project copy jar artifact contents now as we
+            // might
             // not be able to read files from jar path.
-            if("jar".equals(project.getPackaging())) {
+            if ("jar".equals(project.getPackaging())) {
                 Set<File> jarFiles = project.getArtifacts().stream()
                         .filter(artifact -> "jar".equals(artifact.getType()))
                         .map(Artifact::getFile).collect(Collectors.toSet());
@@ -187,6 +191,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN, frontendDirectory.getAbsolutePath());
+
+        buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
+        buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                requireHomeNodeExec);
+        buildInfo.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                optimizeBundle);
+
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
