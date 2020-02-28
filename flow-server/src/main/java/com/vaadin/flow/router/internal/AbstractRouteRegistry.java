@@ -193,11 +193,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     private List<RouteData> getRegisteredRoutes(
             ConfiguredRoutes configuration) {
         List<RouteData> registeredRoutes = new ArrayList<>();
-        configuration.getTargetRoutes()
-                .forEach((target, urlTemplate) -> {
-                    populateRegisteredRoutes(configuration, registeredRoutes,
-                            target, urlTemplate);
-                });
+        configuration.getTargetRoutes().forEach(
+                (target, urlTemplate) -> populateRegisteredRoutes(configuration,
+                        registeredRoutes, target, urlTemplate));
 
         Collections.sort(registeredRoutes);
 

@@ -16,7 +16,6 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -902,62 +901,71 @@ class RouteModel implements Serializable {
 
     private Optional<String> getSegmentValue(RouteSegment routeSegment,
             UrlParameters parameters) {
-        String segment = routeSegment.getTemplate();
-
-        final String parameterName = routeSegment.getName();
 
         if (routeSegment.isVarargs()) {
-            List<String> args = parameters.getWildcard(parameterName);
-
-            if (args.isEmpty()) {
-                final Optional<String> value = parameters.get(parameterName);
-                if (value.isPresent()) {
-                    args = Collections.singletonList(value.get());
-                } else {
-                    args = Collections.emptyList();
-                }
-            }
-
-            final List<String> result = new ArrayList<>(args.size());
-
-            for (String value : args) {
-                if (!routeSegment.isEligible(value)) {
-                    throw new IllegalArgumentException("Url varargs parameter `"
-                            + parameterName + "` has a specified value `"
-                            + value
-                            + "`, which is invalid according to the parameter definition `"
-                            + segment + "`");
-                }
-
-                result.add(value);
-            }
-
-            // Varargs are always last so no need to even try going
-            // forward.
-            final String path = PathUtil.getPath(result);
-            return path.isEmpty() ? Optional.empty() : Optional.of(path);
+            return getVarargsValue(routeSegment, parameters);
 
         } else if (routeSegment.isParameter()) {
-            final Optional<String> value = parameters.get(parameterName);
-
-            if (!value.isPresent() && routeSegment.isMandatory()) {
-                throw new IllegalArgumentException("Url parameter `"
-                        + parameterName
-                        + "` is mandatory but missing from the parameters argument.");
-            }
-
-            if (value.isPresent() && !routeSegment.isEligible(value.get())) {
-                throw new IllegalArgumentException("Url parameter `"
-                        + parameterName + "` has specified value `" + value
-                        + "`, which is invalid according to the parameter definition `"
-                        + segment + "`");
-            }
-
-            return value;
+            return getParameterValue(routeSegment, parameters);
 
         } else {
-            return Optional.of(segment);
+            return Optional.of(routeSegment.getName());
         }
+    }
+
+    private Optional<String> getVarargsValue(RouteSegment routeSegment,
+            UrlParameters parameters) {
+        final String parameterName = routeSegment.getName();
+
+        List<String> args = parameters.getWildcard(parameterName);
+
+        if (args.isEmpty()) {
+            final Optional<String> value = parameters.get(parameterName);
+            if (value.isPresent()) {
+                args = Collections.singletonList(value.get());
+            } else {
+                args = Collections.emptyList();
+            }
+        }
+
+        final List<String> result = new ArrayList<>(args.size());
+
+        for (String value : args) {
+            if (!routeSegment.isEligible(value)) {
+                throw new IllegalArgumentException("Url varargs parameter `"
+                        + parameterName + "` has a specified value `" + value
+                        + "`, which is invalid according to the parameter definition `"
+                        + routeSegment.getTemplate() + "`");
+            }
+
+            result.add(value);
+        }
+
+        // Varargs are always last so no need to even try going
+        // forward.
+        final String path = PathUtil.getPath(result);
+        return path.isEmpty() ? Optional.empty() : Optional.of(path);
+    }
+
+    private Optional<String> getParameterValue(RouteSegment routeSegment,
+            UrlParameters parameters) {
+        final String parameterName = routeSegment.getName();
+
+        final Optional<String> value = parameters.get(parameterName);
+
+        if (!value.isPresent() && routeSegment.isMandatory()) {
+            throw new IllegalArgumentException("Url parameter `" + parameterName
+                    + "` is mandatory but missing from the parameters argument.");
+        }
+
+        if (value.isPresent() && !routeSegment.isEligible(value.get())) {
+            throw new IllegalArgumentException("Url parameter `" + parameterName
+                    + "` has specified value `" + value
+                    + "`, which is invalid according to the parameter definition `"
+                    + routeSegment.getTemplate() + "`");
+        }
+
+        return value;
     }
 
     /**
