@@ -87,6 +87,7 @@ public class GwtApplicationConnectionTest extends ClientEngineTestBase {
     private native void mockFlowBootstrapScript(boolean webComponentMode) /*-{
         var mockCfg = {
             'heartbeatInterval' : 300,
+            'maxMessageSuspendTimeout': 5000,
             'contextRootUrl' : '../',
             'debug' : true,
             'v-uiId' : 0,

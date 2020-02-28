@@ -212,4 +212,23 @@ public class DefaultDeploymentConfigurationTest {
         Assert.assertFalse(config.useCompiledFrontendResources());
     }
 
+    public void maxMessageSuspendTimeout_validValue_accepted() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                "2700");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertEquals(2700, config.getMaxMessageSuspendTimeout());
+    }
+
+    @Test
+    public void maxMessageSuspendTimeout_invalidValue_defaultValue() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT, "kk");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertEquals(5000, config.getMaxMessageSuspendTimeout());
+    }
 }
