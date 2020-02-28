@@ -43,9 +43,7 @@ public class NavigationState implements Serializable {
      *
      * @param router
      *            the router managing navigation
-     * @deprecated due to private package modifier
      */
-    @Deprecated
     public NavigationState(Router router) {
         this.router = router;
     }
