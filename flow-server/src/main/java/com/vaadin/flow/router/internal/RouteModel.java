@@ -476,8 +476,9 @@ class RouteModel implements Serializable {
 
             // Static segments
             if (routeSegment != null) {
-                RouteTarget foundTarget = routeSegment.getRouteTarget(segments,
-                        urlParameters);
+                RouteTarget foundTarget = routeSegment
+                        .getRouteTargetMatchingParameter(segments,
+                                urlParameters);
                 if (foundTarget != null) {
                     return foundTarget;
                 }
@@ -543,8 +544,9 @@ class RouteModel implements Serializable {
                 Map<String, String> urlParameters,
                 Map<String, RouteSegment> children) {
             for (RouteSegment segment : children.values()) {
-                RouteTarget foundTarget = segment.getRouteTarget(segments,
-                        urlParameters);
+                RouteTarget foundTarget = segment
+                        .getRouteTargetMatchingParameter(segments,
+                                urlParameters);
                 if (foundTarget != null) {
                     return foundTarget;
                 }
@@ -552,8 +554,8 @@ class RouteModel implements Serializable {
             return null;
         }
 
-        private RouteTarget getRouteTarget(List<String> segments,
-                Map<String, String> urlParameters) {
+        private RouteTarget getRouteTargetMatchingParameter(
+                List<String> segments, Map<String, String> urlParameters) {
 
             Map<String, String> outputParameters = new HashMap<>();
 
@@ -585,11 +587,22 @@ class RouteModel implements Serializable {
                 }
             }
 
-            RouteTarget foundTarget;
-
             segments = segments.size() <= 1 ? Collections.emptyList()
                     : segments.subList(1, segments.size());
 
+            RouteTarget foundTarget = getRouteTarget(segments,
+                    outputParameters);
+
+            if (foundTarget != null) {
+                urlParameters.putAll(outputParameters);
+            }
+
+            return foundTarget;
+        }
+
+        private RouteTarget getRouteTarget(List<String> segments,
+                Map<String, String> outputParameters) {
+            RouteTarget foundTarget;
             if (!segments.isEmpty()) {
                 // Continue looking if there any more segments.
                 foundTarget = findRouteTarget(segments, outputParameters);
@@ -607,11 +620,6 @@ class RouteModel implements Serializable {
                     foundTarget = null;
                 }
             }
-
-            if (foundTarget != null) {
-                urlParameters.putAll(outputParameters);
-            }
-
             return foundTarget;
         }
 
