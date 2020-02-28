@@ -66,8 +66,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public boolean productionMode;
 
     /**
-     * Whether or not we are running in legacy V14 bootstrap mode.
-     * True if defined or if it's set to true.
+     * Whether or not we are running in legacy V14 bootstrap mode. True if
+     * defined or if it's set to true.
      */
     @Parameter(defaultValue = "${vaadin.useDeprecatedV14Bootstrapping}")
     private String useDeprecatedV14Bootstrapping;
@@ -106,13 +106,27 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File javaSourceFolder;
 
     /**
+     * Whether to use byte code scanner strategy to discover frontend
+     * components.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
+    protected boolean optimizeBundle;
+
+    /**
      * The folder where flow will put TS API files for client projects.
      */
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
     protected File generatedTsFolder;
 
     /**
-     * Check if the plugin is running in legacy V14 bootstrap mode or not. Default: false.
+     * Instructs to use pnpm for installing npm frontend resources.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
+    protected boolean pnpmEnable;
+
+    /**
+     * Check if the plugin is running in legacy V14 bootstrap mode or not.
+     * Default: false.
      *
      * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
      */

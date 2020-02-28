@@ -107,16 +107,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
-    /**
-     * Whether to use byte code scanner strategy to discover frontend
-     * components.
-     */
-    @Parameter(defaultValue = "true")
-    private boolean optimizeBundle;
-
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
-    private boolean pnpmEnable;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         updateBuildFile();
@@ -250,6 +240,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
+
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
