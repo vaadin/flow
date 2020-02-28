@@ -118,9 +118,8 @@ public class UidlRequestHandlerTest {
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
-        JsonObject uidl = JsonUtil.parse(UIDLString);
-        uidl.getArray("execute").getArray(2).set(1, V7UIDLString);
 
+        JsonObject uidl = generateUidl(true, true);
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
@@ -147,9 +146,8 @@ public class UidlRequestHandlerTest {
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
-        JsonObject uidl = JsonUtil.parse(UIDLString);
-        uidl.getArray("execute").getArray(2).set(1, V7UIDLString);
 
+        JsonObject uidl = generateUidl(true, true);
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
@@ -161,6 +159,42 @@ public class UidlRequestHandlerTest {
         assertFalse(v7Uidl.contains("http://localhost:9998/#!away"));
         assertTrue(v7Uidl.contains("http://localhost:9998/"));
         assertFalse(v7Uidl.contains("window.location.hash = '!away';"));
+    }
+
+    @Test
+    public void should_changeURL_when_v7LocationProvided() throws Exception {
+        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+
+        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        StringWriter writer = new StringWriter();
+
+        JsonObject uidl = generateUidl(true, true);
+        doReturn(uidl).when(handler).createUidl(ui, false);
+
+        handler.writeUidl(ui, writer, false);
+
+        String out = writer.toString();
+        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
+
+        assertEquals(
+                "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
+                uidl.getArray("execute").getArray(1).getString(1));
+    }
+
+    @Test
+    public void should_updateHash_when_v7LocationNotProvided() throws Exception {
+        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+
+        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        StringWriter writer = new StringWriter();
+
+        JsonObject uidl = generateUidl(false, true);
+        doReturn(uidl).when(handler).createUidl(ui, false);
+
+        handler.writeUidl(ui, writer, false);
+
+        String out = writer.toString();
+        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
@@ -173,7 +207,8 @@ public class UidlRequestHandlerTest {
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
-        JsonObject uidl = JsonUtil.parse(UIDLString);
+
+        JsonObject uidl = generateUidl(true, true);
         uidl.getArray("execute").getArray(2).remove(1);
 
         doReturn(uidl).when(handler).createUidl(ui, false);
@@ -191,39 +226,59 @@ public class UidlRequestHandlerTest {
         assertEquals(expected, actual);
     }
 
-    private String UIDLString =
-      "{" +
-      "  \"syncId\": 3," +
-      "  \"clientId\": 3," +
-      "  \"changes\": []," +
-      "  \"execute\": [" +
-      "   [\"\", \"document.title = $0\"]," +
-      "   [\"\", \"setTimeout(() => window.history.pushState(null, '', $0))\"]," +
-      "   [[0, 16], \"___PLACE_FOR_V7_UIDL___\", \"$0.firstElementChild.setResponse($1)\"]," +
-      "   [1,null,[0, 16], \"return (function() { this.$server['}p']($0, true, $1)}).apply($2)\"]" +
-      "  ]," +
-      "  \"timings\": []" +
-      "}";
+    private JsonObject generateUidl(boolean withLocation, boolean withHash) {
+        JsonObject uidl = JsonUtil.parse(
+            "{" +
+            "  \"syncId\": 3," +
+            "  \"clientId\": 3," +
+            "  \"changes\": []," +
+            "  \"execute\": [" +
+            "   [\"\", \"document.title = $0\"]," +
+            "   [\"\", \"setTimeout(() => window.history.pushState(null, '', $0))\"]," +
+            "   [[0, 16], \"___PLACE_FOR_V7_UIDL___\", \"$0.firstElementChild.setResponse($1)\"]," +
+            "   [1,null,[0, 16], \"return (function() { this.$server['}p']($0, true, $1)}).apply($2)\"]" +
+            "  ]," +
+            "  \"timings\": []" +
+            "}");
 
-    private String V7UIDLString =
-      "\"syncId\": 2," +
-      "\"clientId\": 2," +
-      "\"changes\": [" +
-      "  [],[\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#!away\"}]]" +
-      "]," +
-      "\"state\": {" +
-      "}," +
-      "\"types\": {" +
-      "}," +
-      "\"hierarchy\": {" +
-      "}," +
-      "\"rpc\": [" +
-      "  [],[" +
-      "  \"11\"," +
-      "  \"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc\"," +
-      "  \"executeJavaScript\", [ \"window.location.hash = '!away';\" ]" +
-      "  ],[]" +
-      "]," +
-      "\"meta\": {}, \"resources\": {},\"typeMappings\": {},\"typeInheritanceMap\": {}, \"timings\": []";
+        String v7String =
+            "\"syncId\": 2," +
+            "\"clientId\": 2," +
+            "\"changes\": [" +
+            "  [],[\"___PLACE_FOR_LOCATION_CHANGE___\"]" +
+            "]," +
+            "\"state\": {" +
+            "}," +
+            "\"types\": {" +
+            "}," +
+            "\"hierarchy\": {" +
+            "}," +
+            "\"rpc\": [" +
+            "  [],[" +
+            "  \"11\"," +
+            "  \"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc\"," +
+            "  \"executeJavaScript\", [ \"___PLACE_FOR_HASH_RPC___\" ]" +
+            "  ],[]" +
+            "]," +
+            "\"meta\": {}, \"resources\": {},\"typeMappings\": {},\"typeInheritanceMap\": {}, \"timings\": []";
+
+        String locationChange =
+            "\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#!away\"}]";
+
+        String hashRpc =
+             "window.location.hash = '!away';";
+
+        if (withLocation) {
+            v7String = v7String.replace("\"___PLACE_FOR_LOCATION_CHANGE___\"", locationChange);
+        }
+        if (withHash) {
+            v7String = v7String.replace("___PLACE_FOR_HASH_RPC___", hashRpc);
+        }
+
+        uidl.getArray("execute").getArray(2).set(1, v7String);
+        return uidl;
+    }
+
+
 
 }
