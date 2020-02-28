@@ -160,10 +160,10 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
         // Override with application config from web.xml
         for (final Enumeration<String> e = vaadinConfig
-                .getConfigParameterNames(); e.hasMoreElements(); ) {
+                .getConfigParameterNames(); e.hasMoreElements();) {
             final String name = e.nextElement();
-            initParameters
-                    .setProperty(name, vaadinConfig.getConfigParameter(name));
+            initParameters.setProperty(name,
+                    vaadinConfig.getConfigParameter(name));
         }
 
         readBuildInfo(initParameters);
@@ -177,6 +177,29 @@ public final class DeploymentConfigurationFactory implements Serializable {
         // already set.
         if (json != null) {
             JsonObject buildInfo = JsonUtil.parse(json);
+            setInitParametersUsingTokenData(initParameters, buildInfo);
+
+            FallbackChunk fallbackChunk = FrontendUtils
+                    .readFallbackChunk(buildInfo);
+            if (fallbackChunk != null) {
+                initParameters.put(FALLBACK_CHUNK, fallbackChunk);
+            }
+        }
+
+        try {
+            boolean hasWebPackConfig = hasWebpackConfig(initParameters);
+            boolean hasTokenFile = json != null;
+            SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
+                    value, hasTokenFile, hasWebPackConfig);
+            initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+    }
+
+    private static void setInitParametersUsingTokenData(
+            Properties initParameters, JsonObject buildInfo) {
             if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
                 initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
                         String.valueOf(buildInfo.getBoolean(
@@ -245,23 +268,36 @@ public final class DeploymentConfigurationFactory implements Serializable {
                                 SERVLET_PARAMETER_REUSE_DEV_SERVER)));
             }
 
-            FallbackChunk fallbackChunk = FrontendUtils
-                    .readFallbackChunk(buildInfo);
-            if (fallbackChunk != null) {
-                initParameters.put(FALLBACK_CHUNK, fallbackChunk);
-            }
-        }
+        setDevModePropertiesUsingTokenData(initParameters, buildInfo);
+    }
 
-        try {
-            boolean hasWebPackConfig = hasWebpackConfig(initParameters);
-            boolean hasTokenFile = json != null;
-            SerializableConsumer<CompatibilityModeStatus> strategy = value -> verifyMode(
-                    value, hasTokenFile, hasWebPackConfig);
-            initParameters.put(DEV_MODE_ENABLE_STRATEGY, strategy);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+    private static void setDevModePropertiesUsingTokenData(
+            Properties initParameters, JsonObject buildInfo) {
+        // read dev mode properties from the token and set init parameter only
+        // if it's not yet set
+        if (initParameters
+                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM) == null
+                && buildInfo.hasKey(Constants.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            initParameters.setProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.SERVLET_PARAMETER_ENABLE_PNPM)));
         }
-
+        if (initParameters
+                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE) == null
+                && buildInfo.hasKey(Constants.REQUIRE_HOME_NODE_EXECUTABLE)) {
+            initParameters.setProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.REQUIRE_HOME_NODE_EXECUTABLE)));
+        }
+        if (initParameters.getProperty(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE) == null
+                && buildInfo.hasKey(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)) {
+            initParameters.setProperty(
+                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)));
+        }
     }
 
     private static String getTokenFileContents(Properties initParameters) {
@@ -358,7 +394,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
     private static String getPossibleJarResource(List<URL> resources)
             throws IOException {
         Objects.requireNonNull(resources);
-        assert !resources.isEmpty() : "Possible jar resource requires resources to be available.";
+        assert !resources
+                .isEmpty() : "Possible jar resource requires resources to be available.";
         URL webpackGenerated = DeploymentConfiguration.class.getClassLoader()
                 .getResource(FrontendUtils.WEBPACK_GENERATED);
         // If jar!/ exists 2 times for webpack.generated.json then we are
@@ -374,16 +411,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
         URL firstResource = resources.get(0);
         if (resources.size() > 1) {
-            String warningMessage = String
-                    .format("Unable to fully determine correct flow-build-info.%n"
-                                    + "Accepting file '%s' first match of '%s' possible.%n"
-                                    + "Please verify flow-build-info file content.",
-                            firstResource.getPath(), resources.size());
+            String warningMessage = String.format(
+                    "Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s' first match of '%s' possible.%n"
+                            + "Please verify flow-build-info file content.",
+                    firstResource.getPath(), resources.size());
             logger.warn(warningMessage);
         } else {
-            String debugMessage = String
-                    .format("Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'", firstResource.getPath());
+            String debugMessage = String.format(
+                    "Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s'",
+                    firstResource.getPath());
             logger.debug(debugMessage);
         }
         return FrontendUtils.streamToString(firstResource.openStream());
