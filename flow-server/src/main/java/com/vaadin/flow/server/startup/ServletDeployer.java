@@ -77,10 +77,14 @@ public class ServletDeployer implements ServletContextListener {
         NO_CREATION, SERVLET_EXISTS, SERVLET_CREATED;
     }
 
-    public static class VaadinServletContextConfig implements VaadinConfig {
-        private ServletContext servletContext;
+    /**
+     * An implementation of {@link VaadinConfig} which provides a
+     * {@link VaadinContext} but no config parameter.
+     */
+    private static class VaadinServletContextConfig implements VaadinConfig {
+        private transient ServletContext servletContext;
 
-        public VaadinServletContextConfig(ServletContext servletContext) {
+        private VaadinServletContextConfig(ServletContext servletContext) {
             this.servletContext = servletContext;
         }
 

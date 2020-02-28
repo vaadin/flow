@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -22,7 +21,6 @@ import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -286,7 +284,6 @@ public class DeploymentConfigurationFactoryTest {
                 tokenFile.getPath()));
     }
 
-    @Ignore("It relies only on servlet init params.")
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderNoNpmFolder()
             throws Exception {
@@ -301,7 +298,6 @@ public class DeploymentConfigurationFactoryTest {
                 tokenFile.getPath()));
     }
 
-    @Ignore("It relies only on servlet init params.")
     @Test
     public void shouldThrow_tokenFileContainsNonExistingFrontendFolderOutsideNpmSubFolder()
             throws Exception {
