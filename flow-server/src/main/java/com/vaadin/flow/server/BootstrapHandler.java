@@ -1410,6 +1410,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             appConfig.put("heartbeatInterval",
                     deploymentConfiguration.getHeartbeatInterval());
+            
+            appConfig.put("maxMessageSuspendTimeout",
+                    deploymentConfiguration.getMaxMessageSuspendTimeout());
 
             boolean sendUrlsAsParameters = deploymentConfiguration
                     .isSendUrlsAsParameters();

@@ -34,6 +34,7 @@ public class ApplicationConfiguration {
     private int uiId;
     private ErrorMessage sessionExpiredError;
     private int heartbeatInterval;
+    private int maxMessageSuspendTimeout;
 
     private boolean productionMode;
     private boolean requestTiming;
@@ -163,6 +164,27 @@ public class ApplicationConfiguration {
      */
     public void setHeartbeatInterval(int heartbeatInterval) {
         this.heartbeatInterval = heartbeatInterval;
+    }
+
+    /**
+     * Gets the maximum message suspension delay.
+     *
+     * @return The maximum time, in milliseconds, to suspend out-of-order
+     *         messages waiting for their predecessor before resynchronizing.
+     */
+    public int getMaxMessageSuspendTimeout() {
+        return maxMessageSuspendTimeout;
+    }
+
+    /**
+     * Sets the maximum message suspension delay.
+     *
+     * @param maxMessageSuspendTimeout
+     *            The maximum time, in milliseconds, to suspend out-of-order
+     *            messages waiting for their predecessor before resynchronizing.
+     */
+    public void setMaxMessageSuspendTimeout(int maxMessageSuspendTimeout) {
+        this.maxMessageSuspendTimeout = maxMessageSuspendTimeout;
     }
 
     /**
