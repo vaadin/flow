@@ -63,9 +63,7 @@ public class NavigationState implements Serializable {
      *
      * @param navigationTarget
      *            navigation target
-     * @deprecated due to private package modifier
      */
-    @Deprecated
     public void setNavigationTarget(Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget cannot be null");
@@ -106,9 +104,7 @@ public class NavigationState implements Serializable {
      *
      * @param resolvedPath
      *            path for which the target was selected
-     * @deprecated due to private package modifier
      */
-    @Deprecated
     public void setResolvedPath(String resolvedPath) {
         this.resolvedPath = resolvedPath;
     }
