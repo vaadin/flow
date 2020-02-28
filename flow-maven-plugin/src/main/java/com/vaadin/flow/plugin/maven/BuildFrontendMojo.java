@@ -135,9 +135,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
-    private boolean pnpmEnable;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
@@ -274,6 +271,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
