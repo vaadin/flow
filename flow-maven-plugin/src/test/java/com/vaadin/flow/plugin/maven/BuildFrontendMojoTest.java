@@ -197,12 +197,9 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(importsFile.exists());
 
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "export const addCssBlock = function(block, before = false) {",
-                " const tpl = document.createElement('template');",
-                " tpl.innerHTML = block;",
-                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
-                "};",
-                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
+                "const div = document.createElement('div');",
+                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
+                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
                 "document.documentElement.setAttribute('theme', 'dark');"));
 
         expectedLines.addAll(getExpectedImports());
