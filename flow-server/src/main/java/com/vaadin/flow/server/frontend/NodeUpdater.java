@@ -24,19 +24,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -192,9 +193,9 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson.put(DEP_NAME_KEY, DEP_NAME_DEFAULT);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
         }
-        if (!packageJson.hasKey(VAADIN_DEP_KEY)) {
-            packageJson.put(VAADIN_DEP_KEY, createVaadinPackagesJson());
-        }
+
+        addVaadinDefaultsToJson(packageJson);
+
         return packageJson;
     }
 
@@ -208,21 +209,33 @@ public abstract class NodeUpdater implements FallibleCommand {
         return jsonContent;
     }
 
-    static JsonObject createVaadinPackagesJson() {
-        JsonObject vaadinPackages = Json.createObject();
-        vaadinPackages.put(DEPENDENCIES, Json.createObject());
-        vaadinPackages.put(DEV_DEPENDENCIES, Json.createObject());
+    static void addVaadinDefaultsToJson(JsonObject json) {
+        JsonObject vaadinPackages = computeIfAbsent(json, VAADIN_DEP_KEY,
+                Json::createObject);
 
-        // Add default dependencies
-        JsonObject dependencies = vaadinPackages.getObject(DEPENDENCIES);
-        getDefaultDependencies().forEach(dependencies::put);
+        computeIfAbsent(vaadinPackages, DEPENDENCIES,
+                () -> {
+                    final JsonObject dependencies = Json.createObject();
+                    getDefaultDependencies().forEach(dependencies::put);
+                    return dependencies;
+                });
+        computeIfAbsent(vaadinPackages, DEV_DEPENDENCIES,
+                () -> {
+                    final JsonObject devDependencies = Json.createObject();
+                    getDefaultDevDependencies().forEach(devDependencies::put);
+                    return devDependencies;
+                });
+        computeIfAbsent(vaadinPackages, HASH_KEY, () -> Json.create(""));
+    }
 
-        // Add default developmentDependencies
-        JsonObject devDependencies = vaadinPackages.getObject(DEV_DEPENDENCIES);
-        getDefaultDevDependencies().forEach(devDependencies::put);
-
-        vaadinPackages.put(HASH_KEY, "");
-        return vaadinPackages;
+    private static <T extends JsonValue> T computeIfAbsent(
+            JsonObject jsonObject, String key, Supplier<T> valueSupplier) {
+        T result = jsonObject.get(key);
+        if (result == null) {
+            result = valueSupplier.get();
+            jsonObject.put(key, result);
+        }
+        return result;
     }
 
     static Map<String, String> getDefaultDependencies() {
