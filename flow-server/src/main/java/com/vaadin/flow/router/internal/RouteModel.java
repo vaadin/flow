@@ -474,6 +474,7 @@ class RouteModel implements Serializable {
             RouteSegment routeSegment = segments.isEmpty() ? this
                     : getStaticSegments().get(segments.get(0));
 
+            // Static segments
             if (routeSegment != null) {
                 RouteTarget foundTarget = routeSegment.getRouteTarget(segments,
                         urlParameters);
@@ -488,31 +489,28 @@ class RouteModel implements Serializable {
 
                 RouteTarget foundTarget;
 
+                // Mandatory parameters
                 foundTarget = findRouteTarget(segments, urlParameters,
                         getParameterSegments());
                 if (foundTarget != null) {
                     return foundTarget;
                 }
 
+                // Optionals
                 foundTarget = findRouteTarget(segments, urlParameters,
                         getOptionalSegments());
                 if (foundTarget != null) {
                     return foundTarget;
                 }
 
-                for (RouteSegment parameter : getOptionalSegments().values()) {
-                    // Try ignoring the parameter if optional and look into its
-                    // children using the same segments.
-                    Map<String, String> outputParameters = new HashMap<>();
-                    foundTarget = parameter.findRouteTarget(segments,
-                            outputParameters);
-
-                    if (foundTarget != null) {
-                        urlParameters.putAll(outputParameters);
-                        return foundTarget;
-                    }
+                // Optional's children
+                foundTarget = findRouteTargetInOptionals(segments,
+                        urlParameters);
+                if (foundTarget != null) {
+                    return foundTarget;
                 }
 
+                // Varargs
                 foundTarget = findRouteTarget(segments, urlParameters,
                         getVarargsSegments());
                 if (foundTarget != null) {
@@ -520,6 +518,24 @@ class RouteModel implements Serializable {
                 }
             }
 
+            return null;
+        }
+
+        private RouteTarget findRouteTargetInOptionals(List<String> segments,
+                Map<String, String> urlParameters) {
+            RouteTarget foundTarget;
+            for (RouteSegment parameter : getOptionalSegments().values()) {
+                // Try ignoring the parameter if optional and look into its
+                // children using the same segments.
+                Map<String, String> outputParameters = new HashMap<>();
+                foundTarget = parameter.findRouteTarget(segments,
+                        outputParameters);
+
+                if (foundTarget != null) {
+                    urlParameters.putAll(outputParameters);
+                    return foundTarget;
+                }
+            }
             return null;
         }
 
