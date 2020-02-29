@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-parent</artifactId>
-        <version>13.0-SNAPSHOT</version>
+        <version>13.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>vaadin-spring</artifactId>

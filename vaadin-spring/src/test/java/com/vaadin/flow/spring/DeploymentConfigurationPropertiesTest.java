@@ -71,7 +71,7 @@ public class DeploymentConfigurationPropertiesTest {
 
         // Check that we have added all other constants as parameters (except
         // those we know)
-        Assert.assertEquals(46, constantsCopy.size());
+        Assert.assertEquals(48, constantsCopy.size());
 
         Assert.assertTrue(constantsCopy
                 .contains(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION));
@@ -114,5 +114,9 @@ public class DeploymentConfigurationPropertiesTest {
                 Constants.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT));
         Assert.assertTrue(
                 constantsCopy.contains(Constants.VAADIN_VERSIONS_JSON));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT));
     }
 }
