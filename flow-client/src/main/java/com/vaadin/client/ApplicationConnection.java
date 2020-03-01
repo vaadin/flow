@@ -32,7 +32,6 @@ import elemental.dom.Document.Events;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.CustomEvent;
-import elemental.events.Event;
 
 /**
  * Main class for an application / UI.
@@ -124,8 +123,8 @@ public class ApplicationConnection {
      *            <code>details</code> any additional details that should be
      *            added to the event or null
      */
-    public static void fireDomEventEvent(String eventTypeArg, boolean canBubble,
-            boolean canCancel, String details) {
+    public static void fireDomEvent(String eventTypeArg, boolean canBubble,
+                                    boolean canCancel, String details) {
         Document document = Browser.getDocument();
         CustomEvent customEvent = (CustomEvent) document
                 .createEvent(Events.CUSTOM);
@@ -141,7 +140,7 @@ public class ApplicationConnection {
      */
     public void fireAllProcessingDoneEventIfIdle() {
         if (!isActive()) {
-            fireDomEventEvent(Xhr.VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT,
+            fireDomEvent(Xhr.VAADIN_ALL_REQUEST_PROCESSING_DONE_EVENT,
                     true, false, null);
         }
     }
