@@ -38,10 +38,17 @@ public class InternalErrorIT extends ChromeBrowserTest {
     private static final String CLOSE_SESSION = "close-session";
     private int count;
 
+    @Override
+    public void setup() throws Exception {
+        super.setup();
+
+        open();
+        // make sure system message provider is resets
+        clickButton("reset-system-messages");
+    }
+
     @Test
     public void sessionExpired_refreshByDefault() {
-        open();
-
         clickButton(UPDATE);
         clickButton(CLOSE_SESSION);
 
@@ -75,8 +82,6 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @Test
     public void enableSessionExpiredNotification_sessionExpired_notificationShown() {
-        open();
-
         clickButton("enable-notification");
 
         // Refresh to take the new config into use
@@ -98,8 +103,6 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @Test
     public void internalError_showNotification_clickNotification_refresh() {
-        open();
-
         clickButton(UPDATE);
 
         clickButton("cause-exception");
@@ -125,8 +128,6 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @Test
     public void internalError_showNotification_clickEsc_refresh() {
-        open();
-
         clickButton(UPDATE);
 
         clickButton("cause-exception");
