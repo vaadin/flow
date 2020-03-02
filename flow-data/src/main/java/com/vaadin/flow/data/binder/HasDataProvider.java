@@ -20,7 +20,7 @@ import java.util.Collection;
 import com.vaadin.flow.data.provider.DataProvider;
 
 /**
- * A generic interface for listing components that use a data provider for
+ * A generic interface for listing components that use a {@link DataProvider} for
  * showing data.
  * <p>
  * A listing component should implement either this interface or
@@ -37,13 +37,13 @@ import com.vaadin.flow.data.provider.DataProvider;
 public interface HasDataProvider<T> extends HasItems<T> {
 
     /**
-     * Sets the data provider for this listing. The data provider is queried for
+     * Sets the {@link DataProvider} for this listing. The {@link DataProvider} is queried for
      * displayed items as needed.
      *
      * @param dataProvider
-     *            the data provider, not null
+     *            the {@link DataProvider}, not null
      */
-    void setDataProvider(DataProvider<T, ?> dataProvider);
+    void setDataProvider(DataProvider<? extends T, ?> dataProvider);
 
     @Override
     default void setItems(Collection<T> items) {
