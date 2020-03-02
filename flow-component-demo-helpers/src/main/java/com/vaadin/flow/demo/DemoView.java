@@ -30,6 +30,7 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.NativeButton;
@@ -158,7 +159,13 @@ public abstract class DemoView extends Component
         });
 
         if (heading != null && !heading.isEmpty()) {
-            tab.add(new H3(heading));
+            H3 label=new H3(heading);
+            label.setId(String.format("%s_%s",tabName,heading));
+            Anchor anchor=new Anchor();
+            anchor.setHref(String.format("#%s_%s",tabName,heading));
+            anchor.getElement().setAttribute("router-link",true);
+            label.add(anchor);
+            tab.add(label);
         }
 
         Card card = new Card();
