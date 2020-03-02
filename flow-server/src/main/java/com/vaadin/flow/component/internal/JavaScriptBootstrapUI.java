@@ -37,6 +37,7 @@ import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -229,15 +230,15 @@ public class JavaScriptBootstrapUI extends UI {
                 navigationState);
 
         clientNavigationStateRenderer.handle(navigationEvent);
-
         // true if has forwardTo in server-views
         if (!getInternals().getActiveRouterTargetsChain().isEmpty()
-                && !getInternals().getActiveRouterTargetsChain().get(0).getClass().getName()
-                .toLowerCase().contains(getInternals().getActiveViewLocation().getFirstSegment())) {
+                && getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class) != null
+                && !getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class)
+                .value().contains(getInternals().getActiveViewLocation().getPathWithQueryParameters())) {
             // true if the forwardTo target is client-view
             isUnknownRoute = !this.getRouter()
                     .resolveNavigationTarget(new Location(removeFirstSlash(this.getInternals()
-                            .getActiveViewLocation().getFirstSegment()))).isPresent();
+                            .getActiveViewLocation().getPathWithQueryParameters()))).isPresent();
             if (isUnknownRoute) {
                 forwardToUrl =  this.getInternals().getActiveViewLocation().getPathWithQueryParameters();
             }
