@@ -5,20 +5,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 
-public class EnableDisablePush extends UI {
+public class EnableDisablePush extends AbstractTestUIWithLog {
 
     private int c = 0;
 
     private final Timer timer = new Timer(true);
-
-    private int logCount;
 
     private final class CounterTask extends TimerTask {
 
@@ -51,7 +47,7 @@ public class EnableDisablePush extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-
+        super.init(request);
         getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         log("Push enabled");
 
@@ -96,13 +92,6 @@ public class EnableDisablePush extends UI {
         button.setId(id);
         button.addClickListener(event -> action.run());
         return button;
-    }
-
-    private void log(String msg) {
-        Div div = new Div();
-        div.addClassName("log");
-        logCount++;
-        div.setText(logCount + ". " + msg);
     }
 
 }

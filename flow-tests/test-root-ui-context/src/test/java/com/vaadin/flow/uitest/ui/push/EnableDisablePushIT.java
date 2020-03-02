@@ -9,7 +9,7 @@ import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.parallel.TestCategory;
 
 @TestCategory("push")
-public class EnableDisablePushTest extends ChromeBrowserTest {
+public class EnableDisablePushIT extends ChromeBrowserTest {
     @Test
     public void testEnablePushWhenUsingPolling() throws Exception {
         open();
