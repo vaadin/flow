@@ -164,7 +164,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void listener_should_stopDevModeHandler_onDestroy()
             throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
         runOnStartup();
 
@@ -177,7 +177,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        System.setProperty("vaadin." + Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, "true");
+        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
@@ -225,8 +226,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        Assert.assertTrue(
-                "Should generate OpenAPI spec if Endpoint is used.",
+        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
 
@@ -265,6 +265,16 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         devModeInitializer.onStartup(classes, servletContext);
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
+    }
+
+    @Test
+    public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
+            throws Exception {
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        Mockito.when(servletContext.getServletRegistrations())
+                .thenReturn(Collections.emptyMap());
+        devModeInitializer.onStartup(classes, servletContext);
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
@@ -349,5 +359,4 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertTrue("Resource doesn't load from given path",
                 locations.get(0).exists());
     }
-
 }

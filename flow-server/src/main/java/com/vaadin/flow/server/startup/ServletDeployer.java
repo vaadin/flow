@@ -37,10 +37,12 @@ import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
@@ -88,8 +90,23 @@ public class ServletDeployer implements ServletContextListener {
             this.servletContext = servletContext;
         }
 
+        /**
+         * Ensures there is a valid instance of {@link ServletContext}.
+         */
+        private void ensureServletContext() {
+            if (servletContext == null && VaadinService
+                    .getCurrent() instanceof VaadinServletService) {
+                servletContext = ((VaadinServletService) VaadinService.getCurrent())
+                        .getServlet().getServletContext();
+            } else if (servletContext == null) {
+                throw new IllegalStateException(
+                        "The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");
+            }
+        }
+
         @Override
         public VaadinContext getVaadinContext() {
+            ensureServletContext();
             return new VaadinServletContext(servletContext);
         }
 

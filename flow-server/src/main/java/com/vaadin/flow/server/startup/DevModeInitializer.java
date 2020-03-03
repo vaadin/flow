@@ -20,6 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
 import java.io.File;
@@ -36,10 +37,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,8 +186,21 @@ public class DevModeInitializer implements ServletContainerInitializer,
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
-        DeploymentConfiguration config = StubServletConfig
-                .createDeploymentConfiguration(context, VaadinServlet.class);
+        Collection<? extends ServletRegistration> registrations = context
+                .getServletRegistrations().values();
+
+        Optional<? extends ServletRegistration> vaadinServletRegistration = registrations
+                .stream().filter(registration -> VaadinServlet.class.getName()
+                        .equals(registration.getClassName()))
+                .findAny();
+        DeploymentConfiguration config;
+        if (vaadinServletRegistration.isPresent()) {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    vaadinServletRegistration.get(), VaadinServlet.class);
+        } else {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    VaadinServlet.class);
+        }
 
         initDevModeHandler(classes, context, config);
     }

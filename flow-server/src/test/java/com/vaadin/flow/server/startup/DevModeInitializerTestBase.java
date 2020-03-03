@@ -1,13 +1,16 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -44,6 +48,7 @@ public class DevModeInitializerTestBase {
     // These fields are intentionally scoped default so
     // as they can be used in package tests
     ServletContext servletContext;
+    Map<String, String> initParams;
     Set<Class<?>> classes;
     File mainPackageFile;
     File webpackFile;
@@ -63,14 +68,31 @@ public class DevModeInitializerTestBase {
         createStubWebpackServer("Compiled", 500, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
+        ServletRegistration vaadinServletRegistration = Mockito
+                .mock(ServletRegistration.class);
 
-        System.setProperty("vaadin." + FrontendUtils.PROJECT_BASEDIR, baseDir);
-        System.setProperty("vaadin." + Constants.SERVLET_PARAMETER_ENABLE_PNPM,
-                "true");
+        Mockito.when(vaadinServletRegistration.getClassName())
+                .thenReturn(VaadinServlet.class.getName());
+
+        initParams = new HashMap<>();
+        initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
+        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, "true");
+
+        Mockito.when(vaadinServletRegistration.getInitParameters())
+                .thenReturn(initParams);
 
         classes = new HashSet<>();
         classes.add(this.getClass());
 
+        Map registry = new HashMap();
+
+        // Adding extra registrations to make sure that DevModeInitializer picks
+        // the correct registration which is a VaadinServlet registration.
+        registry.put("extra1", Mockito.mock(ServletRegistration.class));
+        registry.put("foo", vaadinServletRegistration);
+        registry.put("extra2", Mockito.mock(ServletRegistration.class));
+        Mockito.when(servletContext.getServletRegistrations())
+                .thenReturn(registry);
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
         Mockito.when(servletContext.getClassLoader())
@@ -122,11 +144,6 @@ public class DevModeInitializerTestBase {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE);
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
         System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
-        System.clearProperty("vaadin."
-                + Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
-        System.clearProperty("vaadin." + FrontendUtils.PROJECT_BASEDIR);
-        System.clearProperty(
-                "vaadin." + Constants.SERVLET_PARAMETER_ENABLE_PNPM);
 
         webpackFile.delete();
         mainPackageFile.delete();
