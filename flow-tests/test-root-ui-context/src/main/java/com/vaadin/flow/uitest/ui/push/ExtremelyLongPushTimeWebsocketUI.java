@@ -5,7 +5,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.ui.Transport;
 
 @Push(transport = Transport.WEBSOCKET)
-public class ExtremelyLongPushTimeWebsocket extends ExtremelyLongPushTime {
+public class ExtremelyLongPushTimeWebsocketUI extends ExtremelyLongPushTimeUI {
 
     @Override
     public void init(VaadinRequest request) {

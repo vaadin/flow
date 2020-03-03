@@ -26,5 +26,6 @@ public class Log extends Div {
         div.addClassName("log");
         logCount++;
         div.setText(logCount + ". " + msg);
+        add(div);
     }
 }

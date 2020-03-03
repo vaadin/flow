@@ -18,15 +18,14 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
-import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.parallel.ExcludeFromSuite;
 
-@Category(SlowTests.class)
+@ExcludeFromSuite
 public class ExtremelyLongPushTimeIT extends ChromeBrowserTest {
 
     private static final int ONE_HOUR_IN_MS = 20 * 1000;

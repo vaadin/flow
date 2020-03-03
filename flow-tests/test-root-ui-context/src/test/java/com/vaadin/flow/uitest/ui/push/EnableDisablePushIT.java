@@ -2,13 +2,16 @@ package com.vaadin.flow.uitest.ui.push;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
+import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.parallel.TestCategory;
 
 @TestCategory("push")
+@Category(PushTests.class)
 public class EnableDisablePushIT extends ChromeBrowserTest {
     @Test
     public void testEnablePushWhenUsingPolling() throws Exception {

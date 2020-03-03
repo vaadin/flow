@@ -10,7 +10,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 
-public class EnableDisablePush extends AbstractTestUIWithLog {
+public class EnableDisablePushUI extends AbstractTestUIWithLog {
 
     private int c = 0;
 

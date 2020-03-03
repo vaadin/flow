@@ -5,7 +5,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.ui.Transport;
 
 @Push(transport = Transport.LONG_POLLING)
-public class ExtremelyLongPushTime extends PushLargeData {
+public class ExtremelyLongPushTimeUI extends PushLargeData {
 
     private static final int DURATION_MS = 48 * 60 * 60 * 1000; // 48 H
     private static int INTERVAL_MS = 60 * 1000; // 1 minute
