@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -54,16 +56,22 @@ public class TaskRunNpmInstall implements FallibleCommand {
             "pnpm", ".ignored_pnpm", ".pnpm", MODULES_YAML);
     private final boolean enablePnpm;
 
+    private final ClassFinder classFinder;
+
     /**
      * Create an instance of the command.
      *
+     * @param classFinder
+     *            a reusable class finder
      * @param packageUpdater
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      * @param enablePnpm
      *            whether PNPM should be used instead of NPM
      */
-    TaskRunNpmInstall(NodeUpdater packageUpdater, boolean enablePnpm) {
+    TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
+            boolean enablePnpm) {
+        this.classFinder = classFinder;
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
     }
@@ -88,15 +96,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * @throws IOException
      */
     protected String generateVersionsJson() throws IOException {
-        try (InputStream content = TaskRunNpmInstall.class
-                .getResourceAsStream("/" + Constants.VAADIN_VERSIONS_JSON)) {
-            if (content == null) {
-                packageUpdater.log().warn(
-                        "Couldn't find {} file to pin dependency versions."
-                                + " Transitive dependencies won't be pinned for pnpm.",
-                        Constants.VAADIN_VERSIONS_JSON);
-                return null;
-            }
+        URL resource = classFinder.getResource(Constants.VAADIN_VERSIONS_JSON);
+        if (resource == null) {
+            packageUpdater.log()
+                    .warn("Couldn't find {} file to pin dependency versions."
+                            + " Transitive dependencies won't be pinned for pnpm.",
+                            Constants.VAADIN_VERSIONS_JSON);
+            return null;
+        }
+        try (InputStream content = resource.openStream()) {
+
             File versions = new File(packageUpdater.generatedFolder,
                     "versions.json");
             VersionsJsonConverter convert = new VersionsJsonConverter(Json

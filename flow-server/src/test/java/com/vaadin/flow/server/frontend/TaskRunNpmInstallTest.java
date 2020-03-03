@@ -18,10 +18,12 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -41,14 +43,22 @@ public class TaskRunNpmInstallTest {
 
     private File npmFolder;
 
+    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+
     private Logger logger = Mockito.mock(Logger.class);
+
+    private File generatedFolder;
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws IOException {
+        File generatedFolder = temporaryFolder.newFolder();
         npmFolder = temporaryFolder.newFolder();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File(""), null) {
+                getGeneratedFolder(), null) {
 
             @Override
             public void execute() {
@@ -64,7 +74,7 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(nodeUpdater, false);
+        return new TaskRunNpmInstall(getClassFinder(), nodeUpdater, false);
     }
 
     @Test
@@ -140,6 +150,25 @@ public class TaskRunNpmInstallTest {
         Mockito.verify(logger).info(getRunningMsg());
     }
 
+    protected void assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+            TaskRunNpmInstall task)
+            throws IOException, ExecutionFailedException {
+        String userHome = "user.home";
+        String originalHome = System.getProperty(userHome);
+        File home = temporaryFolder.newFolder();
+        System.setProperty(userHome, home.getPath());
+        try {
+            File homeDir = new File(home, ".vaadin");
+            File node = new File(homeDir,
+                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+            FileUtils.forceMkdir(node);
+
+            task.execute();
+        } finally {
+            System.setProperty(userHome, originalHome);
+        }
+    }
+
     private String getRunningMsg() {
         return "Running `" + getToolName() + " install` to "
                 + "resolve and optionally download frontend dependencies. "
@@ -150,7 +179,15 @@ public class TaskRunNpmInstallTest {
         return nodeUpdater;
     }
 
+    protected ClassFinder getClassFinder() {
+        return finder;
+    }
+
     protected String getToolName() {
         return "npm";
+    }
+
+    protected File getGeneratedFolder() {
+        return generatedFolder;
     }
 }

@@ -20,12 +20,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -110,6 +114,38 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertTrue(fakeFile.exists());
     }
 
+    @Test
+    public void runPnpmInstall_versionsJsonIsFound_pnpmHookFileIsGenerated()
+            throws IOException, ExecutionFailedException {
+        ClassFinder classFinder = getClassFinder();
+        File versions = temporaryFolder.newFile();
+        FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
+        Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versions.toURI().toURL());
+
+        TaskRunNpmInstall task = createTask();
+        getNodeUpdater().modified = true;
+        task.execute();
+
+        File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
+        Assert.assertTrue(file.exists());
+        String content = FileUtils.readFileToString(file,
+                StandardCharsets.UTF_8);
+        Assert.assertThat(content,
+                CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
+    }
+
+    @Test
+    public void runPnpmInstall_versionsJsonIsNotFound_pnpmHookFileIsNotGenerated()
+            throws IOException, ExecutionFailedException {
+        TaskRunNpmInstall task = createTask();
+        getNodeUpdater().modified = true;
+        task.execute();
+
+        File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
+        Assert.assertFalse(file.exists());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
@@ -117,16 +153,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getNodeUpdater(), true) {
-            @Override
-            protected String generateVersionsJson() {
-                return null;
-            }
-        };
+        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(getNodeUpdater(), true) {
+        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -141,4 +172,5 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             }
         };
     }
+
 }
