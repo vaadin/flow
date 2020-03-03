@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.connect;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -61,6 +63,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -68,6 +71,7 @@ import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException.ValidationErrorData;
+import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 /**
  * The controller that is responsible for processing Vaadin Connect requests.
@@ -94,7 +98,7 @@ public class VaadinConnectController {
      *
      * @see #VaadinConnectController(ObjectMapper, VaadinConnectAccessChecker,
      *      EndpointNameChecker, ExplicitNullableTypeChecker,
-     *      ApplicationContext)
+     *      ApplicationContext, ServletContext)
      */
     public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER =
             "vaadinEndpointMapper";
@@ -134,7 +138,8 @@ public class VaadinConnectController {
             VaadinConnectAccessChecker accessChecker,
             EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
-            ApplicationContext context) {
+            ApplicationContext context,
+            ServletContext servletContext) {
         this.vaadinEndpointMapper = vaadinEndpointMapper != null
                 ? vaadinEndpointMapper
                 : getDefaultObjectMapper(context);
@@ -144,6 +149,23 @@ public class VaadinConnectController {
         context.getBeansWithAnnotation(Endpoint.class).forEach(
                 (name, endpointBean) -> validateEndpointBean(endpointNameChecker,
                         name, endpointBean));
+
+
+        DeploymentConfiguration cfg = createDeploymentConfiguration(servletContext);
+        if (cfg != null) {
+            accessChecker.enableCsrf(cfg.isXsrfProtectionEnabled());
+        }
+    }
+
+    private DeploymentConfiguration createDeploymentConfiguration(
+            ServletContext ctx) {
+        if (ctx.getServletRegistrations().isEmpty()) {
+            return null;
+        }
+        ServletRegistration reg = ctx.getServletRegistrations().entrySet()
+                .iterator().next().getValue();
+        return StubServletConfig.createDeploymentConfiguration(ctx, reg,
+                VaadinConnectController.class);
     }
 
     private static Logger getLogger() {
