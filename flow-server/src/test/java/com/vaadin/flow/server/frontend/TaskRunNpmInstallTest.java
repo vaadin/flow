@@ -45,17 +45,22 @@ public class TaskRunNpmInstallTest {
 
     private File npmFolder;
 
+    private ClassFinder finder = Mockito.mock(ClassFinder.class);
+
     private Logger logger = Mockito.mock(Logger.class);
+
+    private File generatedFolder;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() throws IOException {
+        File generatedFolder = temporaryFolder.newFolder();
         npmFolder = temporaryFolder.newFolder();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File(""), null) {
+                getGeneratedFolder(), null) {
 
             @Override
             public void execute() {
@@ -71,7 +76,8 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(nodeUpdater, false, false);
+        return new TaskRunNpmInstall(getClassFinder(), nodeUpdater, false,
+                false);
     }
 
     @Test
@@ -152,8 +158,8 @@ public class TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(nodeUpdater, false, true));
+        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
+                getClassFinder(), nodeUpdater, false, true));
     }
 
     protected void assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
@@ -185,7 +191,15 @@ public class TaskRunNpmInstallTest {
         return nodeUpdater;
     }
 
+    protected ClassFinder getClassFinder() {
+        return finder;
+    }
+
     protected String getToolName() {
         return "npm";
+    }
+
+    protected File getGeneratedFolder() {
+        return generatedFolder;
     }
 }

@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.lumo;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public abstract class AbstractThemedTemplateIT extends ChromeBrowserTest {
 
@@ -36,14 +37,18 @@ public abstract class AbstractThemedTemplateIT extends ChromeBrowserTest {
         // this is silly, but a concrete way to test that the lumo files are
         // imported by verifying that the lumo css variables introduced in the
         // files work
-        Assert.assertEquals("color variables not applied", "rgba(255, 66, 56, 1)",
-                div.getCssValue("color"));
-        Assert.assertEquals("typography variables not applied","40px", div.getCssValue("font-size"));
-        Assert.assertEquals("sizing variables not applied","36px solid rgb(0, 0, 0)",
-                div.getCssValue("border"));
-        Assert.assertEquals("spacing variables not applied","12px 24px", div.getCssValue("margin"));
-        Assert.assertEquals("style variables not applied","20px", div.getCssValue("border-radius"));
-        Assert.assertEquals("icons variables not applied","lumo-icons", div.getCssValue("font-family"));
+        Assert.assertEquals("color variables not applied",
+                "rgba(246, 84, 76, 1)", div.getCssValue("color"));
+        Assert.assertEquals("typography variables not applied", "40px",
+                div.getCssValue("font-size"));
+        Assert.assertEquals("sizing variables not applied",
+                "36px solid rgb(0, 0, 0)", div.getCssValue("border"));
+        Assert.assertEquals("spacing variables not applied", "12px 24px",
+                div.getCssValue("margin"));
+        Assert.assertEquals("style variables not applied", "20px",
+                div.getCssValue("border-radius"));
+        Assert.assertEquals("icons variables not applied", "lumo-icons",
+                div.getCssValue("font-family"));
     }
 
     protected abstract String getTagName();

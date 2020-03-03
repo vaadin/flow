@@ -386,6 +386,23 @@ public class StateNode implements Serializable {
     }
 
     /**
+     * Prepares the tree below this node for resynchronization by detaching all
+     * descendants, setting their internal state to not yet attached, and
+     * calling the attach listeners.
+     */
+    protected void prepareForResync() {
+        visitNodeTreeBottomUp(StateNode::fireDetachListeners);
+        visitNodeTree(stateNode -> {
+            getOwner().markAsDirty(stateNode);
+            stateNode.wasAttached = false;
+            stateNode.isInitialChanges = true;
+            stateNode.hasBeenAttached = false;
+            stateNode.hasBeenDetached = false;
+        });
+        visitNodeTreeBottomUp(sn -> sn.fireAttachListeners(true));
+    }
+
+    /**
      * Gets the feature of the given type, creating one if necessary. This
      * method throws {@link IllegalStateException} if this node isn't configured
      * to use the desired feature. Use {@link #hasFeature(Class)} to check

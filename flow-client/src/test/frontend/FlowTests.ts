@@ -2,7 +2,7 @@ const { suite, test, beforeEach, afterEach } = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import { Flow } from "../../main/resources/META-INF/resources/frontend/Flow";
+import {Flow, NavigationParameters} from "../../main/resources/META-INF/resources/frontend/Flow";
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
 import "../../main/resources/META-INF/resources/frontend/FlowBootstrap";
@@ -71,6 +71,7 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
       {
         "appConfig": {
           "heartbeatInterval" : 300,
+          "maxMessageSuspendTimeout": 5000,
           "contextRootUrl" : "../",
           "debug" : true,
           "v-uiId" : 0,
@@ -186,42 +187,42 @@ suite("Flow", () => {
   });
 
   test("should inject appId script when calling flowInit(true) with custom config.imports", () => {
-      assert.isUndefined($wnd.Vaadin);
+    assert.isUndefined($wnd.Vaadin);
 
-      const initial = createInitResponse('FooBar-12345');
-      $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
+    const initial = createInitResponse('FooBar-12345');
+    $wnd.Vaadin = {TypeScript: {initial: JSON.parse(initial)}};
 
-      const flow = new Flow({
-        imports: () => {}
-      });
-      return (flow as any).flowInit(true)
-        .then(() => {
-          assert.isDefined(flow.response);
-          assert.isDefined(flow.response.appConfig);
-
-          // Check that serverside routing is enabled
-          assert.isFalse(flow.response.appConfig.webComponentMode);
-
-          // Check that bootstrap was initialized
-          assert.isDefined($wnd.Vaadin.Flow.initApplication);
-          assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
-          // Check that flowClient was initialized
-          assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
-          assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
-
-          // Check that pushScript is not initialized
-          assert.isUndefined($wnd.vaadinPush);
-
-          // Check that Flow.ts inject appId script
-          const appIdScript = document.body.querySelector('script[type="module"][data-app-id]');
-          assert.isDefined(appIdScript);
-          const injectedAppId = appIdScript.getAttribute('data-app-id');
-          assert.isTrue(flow.response.appConfig.appId.startsWith(injectedAppId));
-
-          // Check that initial was removed
-          assert.isUndefined($wnd.Vaadin.Flow.initial);
-        });
+    const flow = new Flow({
+      imports: () => {}
     });
+    return (flow as any).flowInit(true)
+      .then(() => {
+        assert.isDefined(flow.response);
+        assert.isDefined(flow.response.appConfig);
+
+        // Check that serverside routing is enabled
+        assert.isFalse(flow.response.appConfig.webComponentMode);
+
+        // Check that bootstrap was initialized
+        assert.isDefined($wnd.Vaadin.Flow.initApplication);
+        assert.isDefined($wnd.Vaadin.Flow.registerWidgetset);
+        // Check that flowClient was initialized
+        assert.isDefined($wnd.Vaadin.Flow.clients.FooBar.resolveUri);
+        assert.isFalse($wnd.Vaadin.Flow.clients.FooBar.isActive());
+
+        // Check that pushScript is not initialized
+        assert.isUndefined($wnd.vaadinPush);
+
+        // Check that Flow.ts inject appId script
+        const appIdScript = document.body.querySelector('script[type="module"][data-app-id]');
+        assert.isDefined(appIdScript);
+        const injectedAppId = appIdScript.getAttribute('data-app-id');
+        assert.isTrue(flow.response.appConfig.appId.startsWith(injectedAppId));
+
+        // Check that initial was removed
+        assert.isUndefined($wnd.Vaadin.Flow.initial);
+      });
+  });
 
   test("should throw when an incorrect server response is received", () => {
     // Configure an invalid server response
@@ -401,9 +402,9 @@ suite("Flow", () => {
 
         // @ts-ignore
         elem.onBeforeEnter({pathname: 'Foo/Bar.baz'}, {prevent: () => {
-          return {cancel: true};
-        }})
-        .then(obj => assert.isTrue(obj.cancel));
+            return {cancel: true};
+          }})
+          .then(obj => assert.isTrue(obj.cancel));
 
       });
   });
@@ -422,23 +423,43 @@ suite("Flow", () => {
         assert.equal('Foo', flow.pathname);
 
         return elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
-          // set cancel to false even though server is cancelling
-          return {cancel: false};
-        }})
-        .then((result: any) => {
-          // view content was set
-          assert.isFalse(result.cancel);
-          assert.equal(1, elem.children.length);
-
-          return elem.onBeforeLeave({pathname: 'Lorem'}, {prevent: () => {
-            // set cancel to true
-            return {cancel: true};
+            // set cancel to false even though server is cancelling
+            return {cancel: false};
           }})
           .then((result: any) => {
-            // Navigation cancelled onBeforeLeave
-            assert.isTrue(result.cancel);
+            // view content was set
+            assert.isFalse(result.cancel);
+            assert.equal(1, elem.children.length);
+
+            return elem.onBeforeLeave({pathname: 'Lorem'}, {prevent: () => {
+                // set cancel to true
+                return {cancel: true};
+              }})
+              .then((result: any) => {
+                // Navigation cancelled onBeforeLeave
+                assert.isTrue(result.cancel);
+              });
           });
-        });
+      });
+  });
+
+  test("onBeforeEnter should handle forwardTo `server->client` navigation", () => {
+    // true to prevent navigation from server
+    stubServerRemoteFunction('foobar-12345', false, undefined, {pathname: 'Lorem', search: ''});
+    mockInitResponse('foobar-12345');
+
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+
+    return route.action({pathname: 'Foo'})
+      .then((elem: any) => {
+        return elem.onBeforeEnter({pathname: 'Foo'}, {redirect: (context: any) => {
+            return {redirectContext: context}
+          }, })
+          .then((result: any) => {
+            // Navigate to expect destination
+            assert.equal('Lorem', result.redirectContext);
+          });
       });
   });
 
@@ -453,21 +474,21 @@ suite("Flow", () => {
     return route.action({pathname: 'Foo'})
       .then((elem: any) => {
         return elem.onBeforeEnter({pathname: 'Foo'}, {prevent: () => {
-          // set cancel to false even though server is cancelling
-          return {cancel: false};
-        }})
-        .then(() => {
-          return elem.onBeforeLeave({pathname: 'Foo'}, {prevent: () => {
-            // set cancel to true
-            return {cancel: true};
+            // set cancel to false even though server is cancelling
+            return {cancel: false};
           }})
-          .then((result: any) => {
-            // since server call is skipped, prevent() above is not executed
-            // checking that cancel was not set demonstrates that there
-            // were no double round-trip
-            assert.isUndefined(result.cancel);
+          .then(() => {
+            return elem.onBeforeLeave({pathname: 'Foo'}, {prevent: () => {
+                // set cancel to true
+                return {cancel: true};
+              }})
+              .then((result: any) => {
+                // since server call is skipped, prevent() above is not executed
+                // checking that cancel was not set demonstrates that there
+                // were no double round-trip
+                assert.isUndefined(result.cancel);
+              });
           });
-        });
       });
   });
 
@@ -521,7 +542,8 @@ suite("Flow", () => {
   });
 });
 
-function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp) {
+function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRegex?: RegExp,
+                                  url?: NavigationParameters) {
   let container : any;
 
   // Stub remote function exported in JavaScriptBootstrapUI.
@@ -551,14 +573,14 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
 
       // asynchronously resolve the remote server call
       setTimeout(() => {
-        container.serverConnected(cancel);
-        // container should be visible when not cancelled
-        assert.equal(cancel ? 'none' : '', container.style.display);
+        container.serverConnected(cancel, url);
+        // container should be visible when not cancelled or not has redirect server-client
+        assert.equal(cancel || url ? 'none' : '', container.style.display);
       }, 10);
     },
     leaveNavigation: () => {
       // asynchronously resolve the promise
-      setTimeout(() => container.serverConnected(cancel), 10);
+      setTimeout(() => container.serverConnected(cancel, url), 10);
     }
   };
 }
