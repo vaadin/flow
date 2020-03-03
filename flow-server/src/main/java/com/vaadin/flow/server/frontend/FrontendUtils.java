@@ -475,7 +475,7 @@ public class FrontendUtils {
             return Collections.emptyList();
         }
 
-        try (FileReader fileReader = new FileReader(npmrc)) {
+        try (FileReader fileReader = new FileReader(npmrc)) { // NOSONAR
             List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
             Properties properties = new Properties();
             properties.load(fileReader);
@@ -716,7 +716,7 @@ public class FrontendUtils {
                 return new File(installNode(baseDir, vaadinHome,
                         DEFAULT_NODE_VERSION, null));
             }
-        } catch (FileNotFoundException exception) {
+        } catch (FileNotFoundException exception) { // NOSONAR
             Throwable cause = exception.getCause();
             assert cause != null;
             throw new IllegalStateException(cause);
@@ -1560,7 +1560,7 @@ public class FrontendUtils {
             }
 
             return returnCommand;
-        } catch (FileNotFoundException exception) {
+        } catch (FileNotFoundException exception) { // NOSONAR
             assert exception.getCause() != null;
             throw new IllegalStateException(exception.getCause());
         }
