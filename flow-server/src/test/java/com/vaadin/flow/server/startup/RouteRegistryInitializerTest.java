@@ -47,6 +47,7 @@ import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
@@ -1172,25 +1173,28 @@ public class RouteRegistryInitializerTest {
                 registeredRoutes.size());
 
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(0).getParameters().size());
+                registeredRoutes.get(0).getDefinedParameters().size());
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(1).getParameters().size());
+                registeredRoutes.get(1).getDefinedParameters().size());
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(2).getParameters().size());
+                registeredRoutes.get(2).getDefinedParameters().size());
         Assert.assertEquals("Missing parameters", 1,
-                registeredRoutes.get(3).getParameters().size());
+                registeredRoutes.get(3).getDefinedParameters().size());
 
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(4).getParameters().size());
+                registeredRoutes.get(4).getDefinedParameters().size());
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(5).getParameters().size());
+                registeredRoutes.get(5).getDefinedParameters().size());
         Assert.assertEquals("Missing parameters", 1,
-                registeredRoutes.get(6).getParameters().size());
+                registeredRoutes.get(6).getDefinedParameters().size());
 
         Assert.assertEquals("Unexpected parameter type encountered",
-                Boolean.class, registeredRoutes.get(3).getParameters().get(0));
-        Assert.assertEquals("Unexpected parameter type encountered",
-                String.class, registeredRoutes.get(6).getParameters().get(0));
+                RouteParameterRegex.BOOL,
+                registeredRoutes.get(3).getDefinedParameters()
+                        .get(HasUrlParameterFormat.PARAMETER_NAME));
+        Assert.assertEquals("Unexpected parameter type encountered", "",
+                registeredRoutes.get(6).getDefinedParameters()
+                        .get(HasUrlParameterFormat.PARAMETER_NAME));
     }
 
     @Test
@@ -1210,15 +1214,15 @@ public class RouteRegistryInitializerTest {
         List<RouteAliasData> routeAliases = routeData.getRouteAliases();
 
         Assert.assertEquals("Sort order was not the one expected",
-                "absolute/alias2", routeAliases.get(0).getUrl());
+                "absolute/alias2", routeAliases.get(0).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected", "alias3",
-                routeAliases.get(1).getUrl());
+                routeAliases.get(1).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected", "alias4",
-                routeAliases.get(2).getUrl());
+                routeAliases.get(2).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                "parent/alias1", routeAliases.get(3).getUrl());
+                "parent/alias1", routeAliases.get(3).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected",
-                "parent/middle/alias5", routeAliases.get(4).getUrl());
+                "parent/middle/alias5", routeAliases.get(4).getUrlTemplate());
 
         Assert.assertEquals("Sort order was not the one expected",
                 AbsoluteMiddleParent.class,
