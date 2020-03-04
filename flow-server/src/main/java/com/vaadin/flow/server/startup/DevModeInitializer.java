@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -189,14 +188,27 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
 
-        Optional<? extends ServletRegistration> vaadinServletRegistration = registrations
-                .stream().filter(registration -> isVaadinServletSubClass(
-                        registration.getClassName()))
-                .findAny();
+        ServletRegistration vaadinServletRegistration = null;
+        for (ServletRegistration registration : registrations) {
+            try {
+                if (registration.getClassName() != null
+                        && isVaadinServletSubClass(
+                                registration.getClassName())) {
+                    vaadinServletRegistration = registration;
+                    break;
+                }
+            } catch (ClassNotFoundException e) {
+                throw new ServletException(
+                        String.format("Servlet class name (%s) can't be found!",
+                                registration.getClassName()),
+                        e);
+            }
+        }
+
         DeploymentConfiguration config;
-        if (vaadinServletRegistration.isPresent()) {
+        if (vaadinServletRegistration != null) {
             config = StubServletConfig.createDeploymentConfiguration(context,
-                    vaadinServletRegistration.get(), VaadinServlet.class);
+                    vaadinServletRegistration, VaadinServlet.class);
         } else {
             config = StubServletConfig.createDeploymentConfiguration(context,
                     VaadinServlet.class);
@@ -205,13 +217,9 @@ public class DevModeInitializer implements ServletContainerInitializer,
         initDevModeHandler(classes, context, config);
     }
 
-    private boolean isVaadinServletSubClass(String className) {
-        try {
-            return VaadinServlet.class
-                    .isAssignableFrom(Class.forName(className));
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+    private boolean isVaadinServletSubClass(String className)
+            throws ClassNotFoundException {
+        return VaadinServlet.class.isAssignableFrom(Class.forName(className));
     }
 
     /**
