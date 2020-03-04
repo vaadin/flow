@@ -196,7 +196,7 @@ public class RouteModelTest {
             Class<? extends Component> target, UrlParameters urlParameters) {
 
         if (urlParameters == null) {
-            urlParameters = new UrlParameters();
+            urlParameters = UrlParameters.empty();
         }
 
         Assert.assertEquals("Invalid path", path, result.getUrl());

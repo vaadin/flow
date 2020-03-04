@@ -434,7 +434,7 @@ public class ConfiguredRoutes implements Serializable {
      * 
      * @param urlTemplate
      *            url template to get parameters from.
-     * @return map parameter names with their types.
+     * @return map parameter names with their defined regex.
      */
     public Map<String, String> getParameters(String urlTemplate) {
         return getRouteModel().getParameters(urlTemplate,

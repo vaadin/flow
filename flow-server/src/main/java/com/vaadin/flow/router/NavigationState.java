@@ -139,7 +139,7 @@ public class NavigationState implements Serializable {
      * @return url parameters.
      */
     public UrlParameters getParameters() {
-        return urlParameters != null ? urlParameters : new UrlParameters();
+        return urlParameters != null ? urlParameters : UrlParameters.empty();
     }
 
     /**

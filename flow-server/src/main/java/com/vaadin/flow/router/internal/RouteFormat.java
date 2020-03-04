@@ -34,11 +34,6 @@ class RouteFormat implements Serializable {
     static final String BOOL_REGEX = RouteParameterRegex.BOOL;
     static final String STRING_REGEX = "";
 
-    // NOTE: string may be omited when defining a parameter. If the
-    // type/regex is missing then string is used by default.
-    static final List<String> PRIMITIVE_REGEX = Arrays.asList(INT_REGEX,
-            LONG_REGEX, BOOL_REGEX, STRING_REGEX);
-
     /**
      * Returns whether the specified urlTemplate contains url parameters.
      *
@@ -52,7 +47,7 @@ class RouteFormat implements Serializable {
     }
 
     static boolean isParameter(String segmentTemplate) {
-        return segmentTemplate.contains(":");
+        return segmentTemplate.startsWith(":");
     }
 
     static boolean isOptionalParameter(String segmentTemplate) {
@@ -112,13 +107,13 @@ class RouteFormat implements Serializable {
             wrapRegex = true;
         }
 
-        final String type = formatSegmentRegex(segment, format);
-        if (!type.isEmpty() && formatRegex) {
+        final String regex = formatSegmentRegex(segment, format);
+        if (!regex.isEmpty() && formatRegex) {
             if (wrapRegex) {
                 result.append("(");
             }
 
-            result.append(type);
+            result.append(regex);
 
             if (wrapRegex) {
                 result.append(")");
@@ -130,13 +125,12 @@ class RouteFormat implements Serializable {
 
     static String formatSegmentRegex(RouteModel.RouteSegment segment,
             Set<RouteParameterFormat> format) {
-        String regex = segment.getRegex();
-
+        final String regex = segment.getRegex();
         if (format.contains(RouteParameterFormat.REGEX_NAME)) {
-            regex = getRegexName(regex);
+            return getRegexName(regex);
+        } else {
+            return regex;
         }
-
-        return regex;
     }
 
     /**
@@ -159,7 +153,7 @@ class RouteFormat implements Serializable {
 
             if (!isParameter(template)) {
                 throw new IllegalArgumentException(
-                        "Please provide a parameter template.");
+                        "The given string is not a parameter template.");
             }
 
             optional = isOptionalParameter(template);

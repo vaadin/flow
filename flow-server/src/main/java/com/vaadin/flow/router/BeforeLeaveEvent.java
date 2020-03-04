@@ -84,14 +84,14 @@ public class BeforeLeaveEvent extends BeforeEvent {
     }
 
     /**
-     * Construct event from a NavigationEvent.
+     * Constructs event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on-going
+     *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
-     *            Navigation target
+     *            navigation target, not <code>null</code>
      * @param layouts
-     *            Navigation layout chain
+     *            navigation layout chain, not <code>null</code>
      */
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
@@ -100,16 +100,16 @@ public class BeforeLeaveEvent extends BeforeEvent {
 
 
     /**
-     * Construct event from a NavigationEvent.
+     * Constructs event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on-going
+     *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
-     *            Navigation target
+     *            navigation target, not <code>null</code>
      * @param urlParameters
-     *            url parameters
+     *            url parameters, not <code>null</code>
      * @param layouts
-     *            Navigation layout chain
+     *            navigation layout chain, not <code>null</code>
      */
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
             UrlParameters urlParameters,
@@ -118,21 +118,22 @@ public class BeforeLeaveEvent extends BeforeEvent {
     }
 
     /**
-     * Constructs a new BeforeNavigation Event.
+     * Constructs a new BeforeLeaveEvent.
      *
      * @param router
-     *            the router that triggered the change, not {@code null}
+     *            the router that triggered the change, not <code>null</code>
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
      * @param location
-     *            the new location, not {@code null}
+     *            the new location, not <code>null</code>
      * @param navigationTarget
-     *            navigation target class
+     *            navigation target class, not <code>null</code>
      * @param ui
-     *            the UI related to the navigation
+     *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui,
@@ -142,23 +143,24 @@ public class BeforeLeaveEvent extends BeforeEvent {
 
 
     /**
-     * Constructs a new BeforeNavigation Event.
+     * Constructs a new BeforeLeaveEvent.
      *
      * @param router
-     *            the router that triggered the change, not {@code null}
+     *            the router that triggered the change, not <code>null</code>
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
      * @param location
-     *            the new location, not {@code null}
+     *            the new location, not <code>null</code>
      * @param navigationTarget
-     *            navigation target class
+     *            navigation target class, not <code>null</code>
      * @param urlParameters
-     *            url parameters
+     *            url parameters, not <code>null</code>
      * @param ui
-     *            the UI related to the navigation
+     *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
                             Location location, Class<?> navigationTarget,

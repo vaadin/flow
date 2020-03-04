@@ -42,22 +42,32 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     private final Class<? extends Component> navigationTarget;
 
     /**
-     * RouteBaseData constructor.
+     * RouteBaseData constructor. This constructor doesn't support parameters.
+     * When a non empty List is provided {@link IllegalArgumentException} is
+     * raised.
      *
      * @param parentLayouts
-     *         route parent layout class chain
+     *            route parent layout class chain
      * @param urlTemplate
-     *         full route url
+     *            full route url
      * @param parameters
-     *         navigation target path parameters
+     *            supports only null or empty list. If a non empty list is
+     *            passed and {@link IllegalArgumentException} is raised.
      * @param navigationTarget
-     *         route navigation target
+     *            route navigation target
+     * @throws IllegalArgumentException
+     *             if parameters is not empty.
      * @deprecated use {@link #RouteBaseData(List, String, Map, Class)} instead.
      */
     @Deprecated
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
             String urlTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {
+        if (!(parameters == null || parameters.isEmpty())) {
+            throw new IllegalArgumentException(
+                    "Please provide an empty parameters list or use the constructor receiving the parameters as a Map");
+        }
+
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
         this.urlTemplate = urlTemplate;
         this.parameters = Collections.emptyMap();
@@ -127,20 +137,22 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     }
 
     /**
-     * Get {@link Route} url parameters if any.
+     * This method will throw {@link UnsupportedOperationException}.
      *
      * @return url parameters (by type and in order)
+     * @throws UnsupportedOperationException
      * @deprecated use {@link #getDefinedParameters()} instead.
      */
     @Deprecated
     public List<Class<?>> getParameters() {
-        return HasUrlParameterFormat.getParameterTypes(parameters.values());
+        throw new UnsupportedOperationException(
+                "Use getDefinedParameters instead.");
     }
 
     /**
      * Get {@link Route} url parameters if any.
      *
-     * @return url parameters names mapped with their types.
+     * @return url parameters names mapped with their defined regex.
      */
     public Map<String, String> getDefinedParameters() {
         return parameters;

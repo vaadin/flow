@@ -39,12 +39,8 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
- * Define a route url segment tree data model which is used to store internally
+ * Define a route url template data model which is used to store internally
  * registered routes.
- *
- * A segment may contain a set of the next segment(s) in route(s) and also a
- * {@link RouteTarget} in case this segment is also the last which defines a
- * route.
  */
 class RouteModel implements Serializable {
 
@@ -78,12 +74,12 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Define a route url segment tree data model which is used to store
-     * internally registered routes.
+     * Define a route url segment node with references to its children nodes,
+     * thus resembling a recursive tree data structure.
      * <p>
-     * A segment may contain a set of the next segment(s) in route(s) and also a
-     * {@link RouteTarget} in case this segment is also the last which defines a
-     * route.
+     * A segment can contain a set of the next segment(s) in route(s) and also a
+     * {@link RouteTarget} in case this segment is the last in the segments
+     * chain referring to its target.
      */
     static final class RouteSegment implements Serializable {
 
@@ -165,8 +161,7 @@ class RouteModel implements Serializable {
         }
 
         /**
-         * Create a new root segment instance. This is an empty segment defining
-         * the root of the routes tree.
+         * Create a new root segment instance.
          */
         static RouteSegment createRoot() {
             return new RouteSegment("");
@@ -252,32 +247,6 @@ class RouteModel implements Serializable {
             return false;
         }
 
-        /**
-         * Collects all routes in an unmodifiable {@link Map}.
-         *
-         * @return a {@link Map} containing all paths and their specific
-         *         targets.
-         */
-        Map<String, RouteTarget> getRoutes() {
-
-            Map<String, RouteTarget> result = new HashMap<>();
-
-            if (target != null) {
-                result.put("", target);
-            }
-
-            collectRoutes(result, getStaticSegments());
-            collectRoutes(result, getParameterSegments());
-            collectRoutes(result, getOptionalSegments());
-            collectRoutes(result, getVarargsSegments());
-
-            if (getTemplate().isEmpty()) {
-                return Collections.unmodifiableMap(result);
-            } else {
-                return result;
-            }
-        }
-
         void removeSubRoute(String urlTemplate) {
             removeSubRoute(PathUtil.getSegmentsList(urlTemplate));
         }
@@ -349,23 +318,6 @@ class RouteModel implements Serializable {
             }
         }
 
-        private void collectRoutes(Map<String, RouteTarget> result,
-                Map<String, RouteSegment> children) {
-            for (Map.Entry<String, RouteSegment> segmentEntry : children
-                    .entrySet()) {
-
-                for (Map.Entry<String, RouteTarget> targetEntry : segmentEntry
-                        .getValue().getRoutes().entrySet()) {
-
-                    final String key = targetEntry.getKey();
-                    result.put(
-                            segmentEntry.getKey()
-                                    + (key.isEmpty() ? "" : ("/" + key)),
-                            targetEntry.getValue());
-                }
-            }
-        }
-
         private void removeSubRoute(List<String> segmentPatterns) {
             RouteSegment routeSegment;
             String segmentPattern = null;
@@ -421,7 +373,7 @@ class RouteModel implements Serializable {
                 if (RouteFormat.isVarargsParameter(segmentPattern)
                         && segmentPatterns.size() > 1) {
                     throw new IllegalArgumentException(
-                            "A varargs url parameter may be defined only as the last path segment");
+                            "A varargs url parameter can be defined only as the last path segment");
                 }
 
                 // We reject any route where the last segment is an optional
@@ -805,16 +757,7 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Collects all routes in an unmodifiable {@link Map}.
-     *
-     * @return a {@link Map} containing all paths and their specific targets.
-     */
-    Map<String, RouteTarget> getRoutes() {
-        return root.getRoutes();
-    }
-
-    /**
-     * Remove a path by it's url template.
+     * Remove a path by its url template.
      * 
      * @param urlTemplate
      *            the full url template.
@@ -825,7 +768,7 @@ class RouteModel implements Serializable {
 
     /**
      * Add a urlTemplate template following this route segment. If the template
-     * already exists and exception is thrown.
+     * already exists an exception is thrown.
      *
      * @param urlTemplate
      *            a path template where parameters are defined by their ids and
@@ -834,10 +777,10 @@ class RouteModel implements Serializable {
      *            target to set for the given path template.
      * @throws InvalidRouteConfigurationException
      *             if the combination of urlTemplate and target doesn't make
-     *             send within the current state of the model.
+     *             sense within the current state of the model.
      * @throws IllegalArgumentException
      *             in case the varargs are specified in the middle of the
-     *             urlTemplate. Varargs may be specified only as the last
+     *             urlTemplate. Varargs can be specified only as the last
      *             segment definition.
      */
     void addRoute(String urlTemplate, RouteTarget target) {
@@ -882,7 +825,7 @@ class RouteModel implements Serializable {
      * Gets a url path by replacing into the path template the url parameters.
      * <p>
      * In case all parameters defined in the urlTemplate are optional or
-     * varargs, parameters argument may be null and the path will be provided
+     * varargs, parameter arguments can be null and the path will be provided
      * without any parameters.
      * 
      * @param urlTemplate
@@ -901,7 +844,7 @@ class RouteModel implements Serializable {
         }
 
         final UrlParameters parameters = urlParameters != null ? urlParameters
-                : new UrlParameters();
+                : UrlParameters.empty();
 
         final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
 
@@ -942,15 +885,6 @@ class RouteModel implements Serializable {
         final String parameterName = routeSegment.getName();
 
         List<String> args = parameters.getWildcard(parameterName);
-
-        if (args.isEmpty()) {
-            final Optional<String> value = parameters.get(parameterName);
-            if (value.isPresent()) {
-                args = Collections.singletonList(value.get());
-            } else {
-                args = Collections.emptyList();
-            }
-        }
 
         final List<String> result = new ArrayList<>(args.size());
 

@@ -33,17 +33,22 @@ import com.vaadin.flow.component.Component;
 public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     /**
-     * AliasData constructor.
+     * AliasData constructor. This constructor doesn't support parameters. When
+     * a non empty List is provided {@link IllegalArgumentException} is raised.
      *
      * @param parentLayouts
-     *         route parent layout class chain
+     *            route parent layout class chain
      * @param urlTemplate
-     *         full route urlTemplate
+     *            full route urlTemplate
      * @param parameters
-     *         navigation target path parameters
+     *            supports only null or empty list. If a non empty list is
+     *            passed and {@link IllegalArgumentException} is raised.
      * @param navigationTarget
-     *         route navigation target
-     * @deprecated use {@link #RouteAliasData(List, String, Map, Class)} instead.
+     *            route navigation target
+     * @throws IllegalArgumentException
+     *             if parameters is not empty.
+     * @deprecated use {@link #RouteAliasData(List, String, Map, Class)}
+     *             instead.
      */
     @Deprecated
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,

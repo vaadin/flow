@@ -26,25 +26,25 @@ import java.util.Set;
 import com.vaadin.flow.router.internal.PathUtil;
 
 /**
- * Container which stores the url parameters extracted from a navigation url
- * received from the client.
+ * Immutable container which stores the url parameters extracted from a
+ * navigation url received from the client.
  */
-public class UrlParameters implements Serializable {
+public final class UrlParameters implements Serializable {
+
+    private static final UrlParameters EMPTY = new UrlParameters();
 
     private Map<String, String> params;
 
-    /**
-     * Creates an empty UrlParameters instance.
-     */
-    public UrlParameters() {
+    private UrlParameters() {
         params = Collections.emptyMap();
     }
 
     /**
-     * Creates a url parameters container using the given map as argument.
+     * Creates a UrlParameters container using the given map as argument.
      * 
      * @param params
-     *            parameters mapping.
+     *            parameters mapping containing the parameter names mapping
+     *            their values.
      */
     public UrlParameters(Map<String, String> params) {
         this.params = params != null ? Collections.unmodifiableMap(params)
@@ -52,19 +52,48 @@ public class UrlParameters implements Serializable {
     }
 
     /**
-     * Creates a UrlParameters container using the given keys and values.
+     * Creates a UrlParameters container using the given parameter names and
+     * values. The input argument contains a sequence of pairs where the first
+     * string in the pair represents the parameter name, while the second string
+     * in the pair represents its value.
      *
-     * @param keysAndValues
-     *            parameters mapping.
+     * @param namesAndValues
+     *            parameters mapping containing an even size varargs. First and
+     *            odd index elements represents the name of the parameter and
+     *            following even index element represents the value for the
+     *            preceding parameter name.
+     * @throws IllegalArgumentException
+     *             if the varargs size is not a multiple of 2 or the name of a
+     *             parameter is specified more than once.
      */
-    public UrlParameters(String... keysAndValues) {
-        Map<String, String> paramsMap = new HashMap<>(keysAndValues.length / 2);
+    public UrlParameters(String... namesAndValues) {
+        if (namesAndValues.length % 2 == 1) {
+            throw new IllegalArgumentException(
+                    "Input varargs must be of even size.");
+        }
 
-        for (int i = 0; i < keysAndValues.length; i += 2) {
-            paramsMap.put(keysAndValues[i], keysAndValues[i + 1]);
+        Map<String, String> paramsMap = new HashMap<>(
+                namesAndValues.length / 2);
+
+        for (int i = 0; i < namesAndValues.length; i += 2) {
+            final String name = namesAndValues[i];
+            if (paramsMap.containsKey(name)) {
+                throw new IllegalArgumentException(
+                        "Parameter " + name + " is specified more than once.");
+            }
+
+            final String value = namesAndValues[i + 1];
+            paramsMap.put(name, value);
         }
 
         this.params = Collections.unmodifiableMap(paramsMap);
+    }
+
+    /**
+     * Creates an empty UrlParameters instance.
+     */
+    public static UrlParameters empty() {
+        return EMPTY;
     }
 
     /**
@@ -82,7 +111,7 @@ public class UrlParameters implements Serializable {
      * @param parameterName
      *            the name of the parameter.
      * @return an {@link Optional} {@link String} representation of the
-     *         parameter.
+     *         parameter. If the value is missing the {@link Optional} is empty.
      */
     public Optional<String> get(String parameterName) {
         return Optional.ofNullable(getValue(parameterName));
@@ -94,9 +123,11 @@ public class UrlParameters implements Serializable {
      * @param parameterName
      *            the name of the parameter.
      * @return an {@link Optional} {@link Integer} representation of the
-     *         parameter.
+     *         parameter. If the value is missing the {@link Optional} is empty.
+     * @exception NumberFormatException
+     *                if the value cannot be parsed as an Integer.
      */
-    public Optional<Integer> getInt(String parameterName) {
+    public Optional<Integer> getInteger(String parameterName) {
         final String value = getValue(parameterName);
         if (value == null) {
             return Optional.empty();
@@ -111,6 +142,9 @@ public class UrlParameters implements Serializable {
      * @param parameterName
      *            the name of the parameter.
      * @return an {@link Optional} {@link Long} representation of the parameter.
+     *         If the value is missing the {@link Optional} is empty.
+     * @exception NumberFormatException
+     *                if the value cannot be parsed as a Long.
      */
     public Optional<Long> getLong(String parameterName) {
         final String value = getValue(parameterName);
@@ -127,9 +161,9 @@ public class UrlParameters implements Serializable {
      * @param parameterName
      *            the name of the parameter.
      * @return an {@link Optional} {@link Boolean} representation of the
-     *         parameter.
+     *         parameter. If the value is missing the {@link Optional} is empty.
      */
-    public Optional<Boolean> getBool(String parameterName) {
+    public Optional<Boolean> getBoolean(String parameterName) {
         final String value = getValue(parameterName);
         if (value == null) {
             return Optional.empty();
@@ -146,7 +180,7 @@ public class UrlParameters implements Serializable {
      * @param parameterName
      *            the name of the parameter.
      * @return a {@link List} representing the wildcard value of a parameter, or
-     *         an empty {@link List} is the wildcard is missing.
+     *         an empty {@link List} is the value is missing.
      */
     public List<String> getWildcard(String parameterName) {
         final String value = getValue(parameterName);
@@ -164,6 +198,9 @@ public class UrlParameters implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj instanceof UrlParameters) {
             UrlParameters urlParameters = (UrlParameters) obj;
             return params.equals(urlParameters.params);

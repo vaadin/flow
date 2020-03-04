@@ -44,13 +44,13 @@ public class NavigationStateBuilder {
     }
 
     /**
-     * Assigns the given navigation target with the given url parameter to the
+     * Assigns the given navigation target with the given url parameters to the
      * navigation state being built.
      *
      * @param navigationTarget
      *            the navigation target
      * @param urlParameters
-     *            the url parameter of the navigation target
+     *            the url parameters of the navigation target
      * @return this builder, for chaining
      * @deprecated use {@link #withTarget(Class, UrlParameters)} instead.
      */
@@ -82,13 +82,13 @@ public class NavigationStateBuilder {
     }
 
     /**
-     * Assigns the given route target with the given url parameter to the
+     * Assigns the given route target with the given url parameters to the
      * navigation state being built.
      *
      * @param routeTarget
      *            the route target
      * @param urlParameters
-     *            the url parameter of the navigation target
+     *            the url parameters of the navigation target
      * @return this builder, for chaining
      */
     public NavigationStateBuilder withTarget(RouteTarget routeTarget,

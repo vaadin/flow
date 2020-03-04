@@ -33,19 +33,24 @@ public class RouteData extends RouteBaseData<RouteData> {
     private final List<RouteAliasData> routeAliases;
 
     /**
-     * RouteData constructor.
-     *
+     * RouteData constructor. This constructor doesn't support parameters. When
+     * a non empty List is provided {@link IllegalArgumentException} is raised.
+     * 
      * @param parentLayouts
-     *         route parent layout class chain
+     *            route parent layout class chain
      * @param urlTemplate
-     *         full route urlTemplate
+     *            full route urlTemplate
      * @param parameters
-     *         navigation target path parameters
+     *            supports only null or empty list. If a non empty list is
+     *            passed and {@link IllegalArgumentException} is raised.
      * @param navigationTarget
-     *         route navigation target
+     *            route navigation target
      * @param routeAliases
-     *         list of aliases for this route
-     * @deprecated use {@link #RouteData(List, String, Map, Class, List)} instead
+     *            list of aliases for this route
+     * @throws IllegalArgumentException
+     *             if parameters is not empty.
+     * @deprecated use {@link #RouteData(List, String, Map, Class, List)}
+     *             instead
      */
     @Deprecated
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,

@@ -27,13 +27,12 @@ import java.util.List;
 public class PathUtil implements Serializable {
 
     /**
-     * Returns a unmodifiable list containing the segments of the specified
+     * Returns an unmodifiable list containing the segments of the specified
      * path.
      *
      * @param path
-     *            url path to get splitted into segments. The path may also
-     *            start with a slash `/` but it may not contain the url
-     *            protocol.
+     *            url path to get split into segments. The path may also start
+     *            with a slash `/` but it may not contain the url protocol.
      * @return a List containing the segments of the path.
      */
     public static List<String> getSegmentsList(String path) {
@@ -64,19 +63,29 @@ public class PathUtil implements Serializable {
     /**
      * Join the segments into a url path.
      *
-     * @param path
+     * @param pathPrefix
      *            path prefix.
      * @param segments
-     *            path segments.
-     * @return path form from input segments.
+     *            path segments following the prefix.
+     * @return pathPrefix form from input segments.
      */
-    public static String getPath(String path, List<String> segments) {
-        path = trimPath(path);
+    public static String getPath(String pathPrefix, List<String> segments) {
+        pathPrefix = trimPath(pathPrefix);
 
-        return trimPath(path + ((segments == null || segments.isEmpty()) ? ""
-                : ("/" + String.join("/", segments))));
+        return trimPath(
+                pathPrefix + ((segments == null || segments.isEmpty()) ? ""
+                        : ("/" + String.join("/", segments))));
     }
 
+    /**
+     * Trim the path by removing any leading and trailing whitespaces and
+     * slashes.
+     * 
+     * @param path
+     *            url path to trim.
+     * @return a String representing the input path without any leading and
+     *         trailing whitespaces and slashes.
+     */
     static String trimPath(String path) {
         if (path == null) {
             return "";
@@ -85,7 +94,7 @@ public class PathUtil implements Serializable {
         path = path.trim();
 
         if (path.startsWith("/")) {
-            path = path.substring(1, path.length());
+            path = path.substring(1);
         }
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);

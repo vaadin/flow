@@ -110,7 +110,7 @@ public class HasUrlParameterFormat implements Serializable {
      */
     public static <T> UrlParameters getParameters(T parameter) {
         if (parameter == null) {
-            return new UrlParameters();
+            return UrlParameters.empty();
 
         } else if (parameter instanceof String) {
             final List<String> segments = PathUtil
@@ -208,10 +208,7 @@ public class HasUrlParameterFormat implements Serializable {
                         || !parameters.get(HasUrlParameterFormat.PARAMETER_NAME)
                                 .isPresent())) {
             throw new IllegalArgumentException(String.format(
-                    "Navigation target '%s' requires a parameter and can not be resolved. "
-                            + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
-                            + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
-                            + "instead",
+                    "Navigation target '%s' requires a parameter.",
                     navigationTarget.getName()));
         }
     }

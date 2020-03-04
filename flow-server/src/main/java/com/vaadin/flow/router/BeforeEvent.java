@@ -55,14 +55,14 @@ public abstract class BeforeEvent extends EventObject {
     private String forwardToUrl = null;
 
     /**
-     * Construct event from a NavigationEvent.
+     * Constructs event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on-going
+     *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
-     *            Navigation target
+     *            navigation target, not <code>null</code>
      * @param layouts
-     *            Navigation layout chain
+     *            Navigation layout chain, not <code>null</code>
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
                        List<Class<? extends RouterLayout>> layouts) {
@@ -71,16 +71,16 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Construct event from a NavigationEvent.
+     * Constructs event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on-going
+     *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
-     *            Navigation target
+     *            navigation target, not <code>null</code>
      * @param urlParameters
-     *            url parameters
+     *            url parameters, not <code>null</code>
      * @param layouts
-     *            Navigation layout chain
+     *            Navigation layout chain, not <code>null</code>
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
             UrlParameters urlParameters,
@@ -91,47 +91,49 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Constructs a new BeforeNavigation Event.
+     * Constructs a new BeforeEvent.
      *
      * @param router
-     *            the router that triggered the change, not {@code null}
+     *            the router that triggered the change, not <code>null</code>
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
      * @param location
-     *            the new location, not {@code null}
+     *            the new location, not <code>null</code>
      * @param navigationTarget
-     *            navigation target class
+     *            navigation target class, not <code>null</code>
      * @param ui
-     *            the UI related to the navigation
+     *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
-        this(router, trigger, location, navigationTarget, new UrlParameters(),
+        this(router, trigger, location, navigationTarget, UrlParameters.empty(),
                 ui, layouts);
     }
 
     /**
-     * Constructs a new BeforeNavigation Event.
+     * Constructs a new BeforeEvent.
      *
      * @param router
-     *            the router that triggered the change, not {@code null}
+     *            the router that triggered the change, not <code>null</code>
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
      * @param location
-     *            the new location, not {@code null}
+     *            the new location, not <code>null</code>
      * @param navigationTarget
-     *            navigation target class
+     *            navigation target class, not <code>null</code>
      * @param urlParameters
-     *            url parameters
+     *            url parameters, not <code>null</code>
      * @param ui
-     *            the UI related to the navigation
+     *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget,
@@ -490,6 +492,9 @@ public abstract class BeforeEvent extends EventObject {
      * Get the forward target type for forwarding.
      *
      * @return forward target type
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasForwardTarget()}
+     *             before accessing this method.
      */
     public Class<? extends Component> getForwardTargetType() {
         return forwardTargetState.getNavigationTarget();
@@ -499,6 +504,9 @@ public abstract class BeforeEvent extends EventObject {
      * Get the URL parameters of the forward target.
      *
      * @return URL parameters of forward target
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasForwardTarget()}
+     *             before accessing this method.
      * @deprecated use {@link #getForwardTargetUrlParameters()} instead.
      */
     @Deprecated
@@ -511,6 +519,9 @@ public abstract class BeforeEvent extends EventObject {
      * Get the URL parameters of the forward target.
      *
      * @return URL parameters of forward target
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasForwardTarget()}
+     *             before accessing this method.
      */
     public UrlParameters getForwardTargetUrlParameters() {
         return forwardTargetState.getParameters();
@@ -520,6 +531,9 @@ public abstract class BeforeEvent extends EventObject {
      * Gets the reroute url.
      *
      * @return the reroute url.
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasForwardTarget()}
+     *             before accessing this method.
      */
     public String getForwardUrl() {
         return forwardTargetState.getResolvedPath();
@@ -541,6 +555,9 @@ public abstract class BeforeEvent extends EventObject {
      * Get the route target type for rerouting.
      *
      * @return route target type
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             before accessing this method.
      */
     public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
@@ -550,6 +567,9 @@ public abstract class BeforeEvent extends EventObject {
      * Get the URL parameters of the reroute target.
      *
      * @return URL parameters of reroute target
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             before accessing this method.
      * @deprecated use {@link #getRerouteTargetUrlParameters()} instead.
      */
     @Deprecated
@@ -562,6 +582,9 @@ public abstract class BeforeEvent extends EventObject {
      * Get the URL parameters of the reroute target.
      *
      * @return URL parameters of reroute target
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             before accessing this method.
      */
     public UrlParameters getRerouteTargetUrlParameters() {
         return rerouteTargetState.getParameters();
@@ -571,6 +594,9 @@ public abstract class BeforeEvent extends EventObject {
      * Gets the reroute url.
      * 
      * @return the reroute url.
+     * @throws NullPointerException
+     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             before accessing this method.
      */
     public String getRerouteUrl() {
         return rerouteTargetState.getResolvedPath();
