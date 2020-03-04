@@ -23,8 +23,12 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for handling internal errors and session expiration
@@ -36,12 +40,10 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     private static final String UPDATE = "update";
     private static final String CLOSE_SESSION = "close-session";
-    private int count;
 
     @Override
     public void setup() throws Exception {
         super.setup();
-
         open();
         // make sure system message provider is resets
         clickButton("reset-system-messages");
@@ -49,32 +51,26 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @Test
     public void sessionExpired_refreshByDefault() {
+        // Put a flag in the current window
+        executeScript("window.foo = true");
+        assertTrue((boolean)executeScript("return !!window.foo;"));
+
+        // Click on a button that should update the UI
         clickButton(UPDATE);
+        waitUntil(driver -> isMessageUpdated());
+
+        // Expire the session
         clickButton(CLOSE_SESSION);
 
-        // Just click on any button to make a request after killing the session
-        clickButton(CLOSE_SESSION);
+        // Wait until the UI does not have the updated message
+        waitUntil(driver -> !isMessageUpdated());
 
-        try {
-            waitUntil(driver -> {
-                if (!isMessageUpdated()) {
-                    return true;
-                }
-                if (count % 2 == 0) {
-                    clickButton(UPDATE);
-                } else {
-                    clickButton(CLOSE_SESSION);
-                }
-                count++;
-                return false;
-            });
-        } catch (TimeoutException e) {
-            Assert.fail(
-                    "After killing the session, the page should be refreshed, "
-                            + "resetting the state of the UI.");
-        }
+        // window has been reloaded, thus, the flag must not be
+        // in the new window
+        assertFalse((boolean)executeScript("return !!window.foo;"));
 
-        Assert.assertFalse(
+        // Check that there is no notification about session expired
+        assertFalse(
                 "By default, the 'Session Expired' notification "
                         + "should not be used",
                 isSessionExpiredNotificationPresent());
@@ -154,6 +150,8 @@ public class InternalErrorIT extends ChromeBrowserTest {
 
     @After
     public void resetSystemMessages() {
+        waitUntil(ExpectedConditions
+                .presenceOfElementLocated(By.id("reset-system-messages")));
         clickButton("reset-system-messages");
     }
 
