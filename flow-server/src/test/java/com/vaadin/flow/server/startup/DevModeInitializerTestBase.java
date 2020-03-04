@@ -71,8 +71,9 @@ public class DevModeInitializerTestBase {
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
 
+        VaadinServlet vaadinServlet = Mockito.mock(VaadinServlet.class);
         Mockito.when(vaadinServletRegistration.getClassName())
-                .thenReturn(VaadinServlet.class.getName());
+                .thenReturn(vaadinServlet.getClass().getName());
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
