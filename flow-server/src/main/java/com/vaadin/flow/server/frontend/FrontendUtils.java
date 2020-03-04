@@ -504,7 +504,7 @@ public class FrontendUtils {
         if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
         }
-        
+
         String httpsProxyUrl = getNonNull(
                 System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getProperty(
@@ -1179,6 +1179,9 @@ public class FrontendUtils {
                             exception);
                 }
                 tempFile.delete();
+            } else {
+                // do not pollute the folder by leaving the temporary file
+                packageJson.delete();
             }
         }
     }
