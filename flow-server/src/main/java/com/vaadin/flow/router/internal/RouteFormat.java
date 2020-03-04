@@ -16,8 +16,6 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.router.RouteParameterFormat;

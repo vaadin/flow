@@ -91,6 +91,8 @@ public final class UrlParameters implements Serializable {
 
     /**
      * Creates an empty UrlParameters instance.
+     * 
+     * @return an empty instance of UrlParameters.
      */
     public static UrlParameters empty() {
         return EMPTY;

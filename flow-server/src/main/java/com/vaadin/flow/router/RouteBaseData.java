@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 /**
  * Abstract base class for route and route alias data.
