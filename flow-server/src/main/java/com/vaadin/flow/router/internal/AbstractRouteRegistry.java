@@ -316,11 +316,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void removeRoute(Class<? extends Component> routeTarget) {
-        if (!getConfiguration().hasRouteTarget(routeTarget)) {
+    public void removeRoute(Class<? extends Component> navigationTarget) {
+        if (!getConfiguration().hasRouteTarget(navigationTarget)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(routeTarget));
+        configure(configuration -> configuration.removeRoute(navigationTarget));
     }
 
     @Override
@@ -337,7 +337,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasUrlTemplate(urlTemplate)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(navigationTarget));
+        configure(configuration -> configuration.removeRoute(urlTemplate));
     }
 
     @Override

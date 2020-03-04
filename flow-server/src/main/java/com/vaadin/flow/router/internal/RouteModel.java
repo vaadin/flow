@@ -256,10 +256,10 @@ class RouteModel implements Serializable {
          * template already exists and exception is thrown.
          *
          * @param urlTemplate
-         *            a path template where parameters are defined by their ids
+         *            a url template where parameters are defined by their ids
          *            and details.
          * @param target
-         *            target to set for the given path template
+         *            target to set for the given url template
          */
         void addSubRoute(String urlTemplate, RouteTarget target) {
             addSubRoute(PathUtil.getSegmentsList(urlTemplate), target);
@@ -291,10 +291,10 @@ class RouteModel implements Serializable {
          * Gets a simple representation of the path tamplate.
          * 
          * @param urlTemplate
-         *            the full path template.
+         *            the full url template.
          * @param parameterFormat
          *            the parameter format function.
-         * @return the simple path template.
+         * @return the simple url template.
          */
         String getUrlTemplate(String urlTemplate,
                 Function<RouteSegment, String> parameterFormat) {
@@ -587,7 +587,7 @@ class RouteModel implements Serializable {
 
             if (routeSegment == null) {
                 throw new IllegalArgumentException(
-                        "Unregistered path template specified `"
+                        "Unregistered url template specified `"
                                 + PathUtil.getPath(segmentTemplates) + "`");
             }
 
@@ -771,10 +771,10 @@ class RouteModel implements Serializable {
      * already exists an exception is thrown.
      *
      * @param urlTemplate
-     *            a path template where parameters are defined by their ids and
+     *            a url template where parameters are defined by their ids and
      *            details.
      * @param target
-     *            target to set for the given path template.
+     *            target to set for the given url template.
      * @throws InvalidRouteConfigurationException
      *             if the combination of urlTemplate and target doesn't make
      *             sense within the current state of the model.
@@ -788,14 +788,14 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Finds a route target for the given url.
+     * Search for a route target using given navigation <code>url</code>
+     * argument.
      *
      * @param url
-     *            navigation url where the parameters are provided with their
-     *            real value. The method is looking to map the value provided in
-     *            the url with the ids found in the stored templates.
-     * @return a route result containing the target and parameter values mapped
-     *         by their ids.
+     *            the navigation url used to search a route target.
+     * @return a {@link NavigationRouteTarget} instance containing the
+     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         <code>url</code> argument according with the route configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url) {
         return root.getNavigationRouteTarget(url);
@@ -805,7 +805,7 @@ class RouteModel implements Serializable {
      * Finds a route target for the given urlTemplate and parameters.
      *
      * @param urlTemplate
-     *            the full path template.
+     *            the full url template.
      * @param parameters
      *            the parameters to use or null if no parameters specified.
      * @return a route result containing the target and parameter values mapped
@@ -822,14 +822,14 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Gets a url path by replacing into the path template the url parameters.
+     * Gets a url path by replacing into the url template the url parameters.
      * <p>
      * In case all parameters defined in the urlTemplate are optional or
      * varargs, parameter arguments can be null and the path will be provided
      * without any parameters.
      * 
      * @param urlTemplate
-     *            the full path template.
+     *            the full url template.
      * @param urlParameters
      *            the parameters to use or null if no parameters specified.
      * @return the url.

@@ -1098,7 +1098,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals("Not all registered routes were returned", 7,
                 registeredRoutes.size());
 
-        // RouteData should be sorted by path template
+        // RouteData should be sorted by url template
         Assert.assertEquals("Sort order was not the one expected", "",
                 registeredRoutes.get(0).getUrlTemplate());
         Assert.assertEquals("Sort order was not the one expected", "absolute",

@@ -38,7 +38,7 @@ class RouteFormat implements Serializable {
      * Returns whether the specified urlTemplate contains url parameters.
      *
      * @param urlTemplate
-     *            a path template.
+     *            a url template.
      * @return true if the specified urlTemplate contains url parameters,
      *         otherwise false.
      */

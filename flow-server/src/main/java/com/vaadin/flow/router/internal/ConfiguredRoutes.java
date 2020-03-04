@@ -129,10 +129,10 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * See if configuration contains a registered route for given path template.
+     * See if configuration contains a registered route for given url template.
      *
      * @param urlTemplate
-     *            path template to check
+     *            url template to check
      * @return true if configuration contains route
      * @deprecated use {@link #hasUrlTemplate(String)} instead.
      */
@@ -142,7 +142,7 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * See if configuration contains a registered route for given path template.
+     * See if configuration contains a registered route for given url template.
      *
      * @param urlTemplate
      *            url template to check
@@ -185,9 +185,10 @@ public class ConfiguredRoutes implements Serializable {
      * argument.
      *
      * @param url
-     *            the navigation url used as input for searching a route target.
-     * @return the result containing a valid target is found, and the url
-     *         parameter values found in the <code>url</code> argument.
+     *            the navigation url used to search a route target.
+     * @return a {@link NavigationRouteTarget} instance containing the
+     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         <code>url</code> argument according with the route configuration.
      */
     public NavigationRouteTarget getNavigationRouteTarget(String url) {
         return getRouteModel().getNavigationRouteTarget(url);

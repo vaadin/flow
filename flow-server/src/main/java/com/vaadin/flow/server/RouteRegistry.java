@@ -27,6 +27,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedListener;
@@ -47,12 +48,12 @@ import com.vaadin.flow.shared.Registration;
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Register a navigation target with specified path template and given
+     * Register a navigation target with specified url template and given
      * parent layout chain. Any {@link ParentLayout}, {@link Route} or
      * {@link RouteAlias} will be ignored in route handling.
      *
      * @param urlTemplate
-     *            path template to register navigation target to
+     *            url template to register navigation target to
      * @param navigationTarget
      *            navigation target to register into session scope
      * @param parentChain
@@ -103,14 +104,14 @@ public interface RouteRegistry extends Serializable {
     List<RouteData> getRegisteredRoutes();
 
     /**
-     * Search for a route navigation target and extract the necessary url
-     * parameters from the <code>url</code> argument.
+     * Search for a route target using given navigation <code>url</code>
+     * argument.
      *
      * @param url
-     *            the navigation url to search for navigation targets with.
-     * @return a {@link NavigationRouteTarget} instance containing the navigation
-     *         target and parameter values extracted from the <code>url</code>
-     *         argument according with the route configuration.
+     *            the navigation url used to search a route target.
+     * @return a {@link NavigationRouteTarget} instance containing the
+     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         <code>url</code> argument according with the route configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url);
 
@@ -155,56 +156,60 @@ public interface RouteRegistry extends Serializable {
 
     /**
      * Get the url string for given navigation target.
-     * <p>
-     * Will return Optional.empty is navigation target was not found.
      *
      * @param navigationTarget
      *            navigation target to get registered route for, not
      *            {@code null}
-     * @return optional navigation target url string
+     * @return {@link Optional} navigation target url string or
+     *         {@link Optional#empty()} if navigation target was not found
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget);
 
     /**
      * Get the url string for given navigation target.
-     * <p>
-     * Will return Optional.empty is navigation target was not found.
      *
      * @param navigationTarget
      *            navigation target to get registered route for, not
      *            {@code null}
      * @param parameters
      *            parameters for the target url.
-     * @return optional navigation target url string
+     * @return {@link Optional} navigation target url string or
+     *         {@link Optional#empty()} if navigation target was not found
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
             UrlParameters parameters);
 
     /**
-     * Get a route representation for given navigation target.
+     * Get the main url template for given navigation target.
      * <p>
-     * Will return Optional.empty is navigation target was not found.
+     * In case of annotated target the main url template is composed of the
+     * {@link Route} annotation value prefixed by all {@link RoutePrefix} values
+     * of the parent {@link RouterLayout}s chain.
      *
      * @param navigationTarget
      *            navigation target to get route definition for, not
      *            {@code null}
-     * @return optional navigation target url string
+     * @return {@link Optional} navigation target url template string or
+     *         {@link Optional#empty()} if navigation target was not found
      */
     Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget);
 
     /**
-     * Get a url template for given navigation target with parameters formatted
+     * Get the main url template for given navigation target with parameters formatted
      * according to the given format.
      * <p>
-     * Will return Optional.empty is navigation target was not found.
+     * In case of annotated target the main url template is composed of the
+     * {@link Route} annotation value prefixed by all {@link RoutePrefix} values
+     * of the parent {@link RouterLayout}s chain.
      *
      * @param navigationTarget
      *            navigation target to get route definition for, not
      *            {@code null}
      * @param format
      *            settings used to format the result parameters.
-     * @return optional navigation target url string
+     * @return {@link Optional} navigation target url template string or
+     *         {@link Optional#empty()} if navigation target was not found
      */
     Optional<String> getUrlTemplate(Class<? extends Component> navigationTarget,
             Set<RouteParameterFormat> format);

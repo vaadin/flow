@@ -141,7 +141,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Note! this will override any previous value.
      *
      * @param urlTemplate
-     *         path template for which to set route target for
+     *         url template for which to set route target for
      * @param navigationTarget
      *         navigation target to add
      */
@@ -156,7 +156,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Note! this will override any previous value.
      *
      * @param urlTemplate
-     *            path template for which to set route target for
+     *            url template for which to set route target for
      * @param navigationTarget
      *            navigation target to add
      * @param parentChain
