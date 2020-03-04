@@ -180,15 +180,38 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
 
-        if (registrations.isEmpty()) {
-            return;
+        ServletRegistration vaadinServletRegistration = null;
+        for (ServletRegistration registration : registrations) {
+            try {
+                if (registration.getClassName() != null
+                        && isVaadinServletSubClass(
+                                registration.getClassName())) {
+                    vaadinServletRegistration = registration;
+                    break;
+                }
+            } catch (ClassNotFoundException e) {
+                throw new ServletException(
+                        String.format("Servlet class name (%s) can't be found!",
+                                registration.getClassName()),
+                        e);
+            }
         }
 
-        DeploymentConfiguration config = StubServletConfig
-                .createDeploymentConfiguration(context,
-                        registrations.iterator().next(), VaadinServlet.class);
+        DeploymentConfiguration config;
+        if (vaadinServletRegistration != null) {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    vaadinServletRegistration, VaadinServlet.class);
+        } else {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    VaadinServlet.class);
+        }
 
         initDevModeHandler(classes, context, config);
+    }
+
+    private boolean isVaadinServletSubClass(String className)
+            throws ClassNotFoundException {
+        return VaadinServlet.class.isAssignableFrom(Class.forName(className));
     }
 
     /**

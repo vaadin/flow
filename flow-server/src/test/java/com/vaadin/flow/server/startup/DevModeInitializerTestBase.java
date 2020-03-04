@@ -21,6 +21,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -55,6 +56,10 @@ public class DevModeInitializerTestBase {
 
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    public static class VaadinServletSubClass extends VaadinServlet {
+
+    }
+
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
@@ -65,20 +70,29 @@ public class DevModeInitializerTestBase {
         createStubWebpackServer("Compiled", 0, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
-        ServletRegistration registration = Mockito
+        ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
+
+        Mockito.when(vaadinServletRegistration.getClassName())
+                .thenReturn(VaadinServletSubClass.class.getName());
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
         initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, "true");
 
-        Mockito.when(registration.getInitParameters()).thenReturn(initParams);
+        Mockito.when(vaadinServletRegistration.getInitParameters())
+                .thenReturn(initParams);
 
         classes = new HashSet<>();
         classes.add(this.getClass());
 
         Map registry = new HashMap();
-        registry.put("foo", registration);
+
+        // Adding extra registrations to make sure that DevModeInitializer picks
+        // the correct registration which is a VaadinServlet registration.
+        registry.put("extra1", Mockito.mock(ServletRegistration.class));
+        registry.put("foo", vaadinServletRegistration);
+        registry.put("extra2", Mockito.mock(ServletRegistration.class));
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(registry);
         Mockito.when(servletContext.getInitParameterNames())
@@ -90,7 +104,8 @@ public class DevModeInitializerTestBase {
         webpackFile = new File(baseDir, WEBPACK_CONFIG);
 
         // Not this needs to update according to dependencies in
-        // NodeUpdater.getDefaultDependencies and NodeUpdater.getDefaultDevDependencies
+        // NodeUpdater.getDefaultDependencies and
+        // NodeUpdater.getDefaultDevDependencies
         FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(),
                 "UTF-8");
         webpackFile.createNewFile();

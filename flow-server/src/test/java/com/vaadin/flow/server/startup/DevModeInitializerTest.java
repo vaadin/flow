@@ -30,9 +30,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
@@ -212,6 +209,16 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 Mockito.any(FallbackChunk.class));
     }
 
+    @Test
+    public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
+            throws Exception {
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        Mockito.when(servletContext.getServletRegistrations())
+                .thenReturn(Collections.emptyMap());
+        devModeInitializer.onStartup(classes, servletContext);
+        assertNotNull(DevModeHandler.getDevModeHandler());
+    }
+
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
         loadingJarsWithProtocol_allFilesExist(resourcesFolder, s -> {
@@ -294,5 +301,4 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertTrue("Resource doesn't load from given path",
                 locations.get(0).exists());
     }
-
 }
