@@ -20,9 +20,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.IPAddress;
+import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunLocally;
@@ -30,8 +32,8 @@ import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
-import static com.vaadin.flow.testutil.ChromeBrowserTest.createHeadlessChromeDriver;
 import static com.vaadin.flow.testutil.ChromeBrowserTest.isJavaInDebugMode;
+
 /**
  * Abstract base class for parallel flow TestBench tests.
  *
@@ -66,10 +68,12 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     @Before
     @Override
     public void setup() throws Exception {
-        if(USE_HUB) {
+        if (USE_HUB) {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
-        } else if (Browser.CHROME == getRunLocallyBrowser() && !isJavaInDebugMode()) {
-            setDriver(createHeadlessChromeDriver());
+        } else if (Browser.CHROME == getRunLocallyBrowser()
+                && !isJavaInDebugMode()) {
+            setDriver(TestBench.createDriver(new ChromeDriver(
+                    ChromeBrowserTest.createHeadlessChromeOptions())));
             return;
         }
         super.setup();
