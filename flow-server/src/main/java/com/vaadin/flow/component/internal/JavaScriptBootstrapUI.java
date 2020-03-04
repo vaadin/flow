@@ -121,18 +121,13 @@ public class JavaScriptBootstrapUI extends UI {
                     NodeProperties.INJECT_BY_ID, clientElementId);
         }
         // Render the flow view that the user wants to navigate to.
-        boolean couldNavigate = renderViewForRoute(
+        renderViewForRoute(
                 new Location(removeLastSlash(removeFirstSlash(flowRoute))));
 
         // true if the target is client-view and the push mode is disable
         if(isUnknownRoute && !getPushConfiguration().getPushMode().isEnabled()) {
-            // check the target could not navigate
-            if (!couldNavigate) {
-                wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
-                        false, forwardToUrl);
-            } else {
-                wrapperElement.executeJs(SERVER_CONNECTED, false);
-            }
+            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
+                    false, forwardToUrl);
         } else {
             navigationInProgress = false;
             // Update browser URL
