@@ -56,6 +56,10 @@ public class DevModeInitializerTestBase {
 
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    public static class VaadinServletSubClass extends VaadinServlet {
+
+    }
+
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
@@ -71,9 +75,8 @@ public class DevModeInitializerTestBase {
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
 
-        VaadinServlet vaadinServlet = Mockito.mock(VaadinServlet.class);
         Mockito.when(vaadinServletRegistration.getClassName())
-                .thenReturn(vaadinServlet.getClass().getName());
+                .thenReturn(VaadinServletSubClass.class.getName());
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
