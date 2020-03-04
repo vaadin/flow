@@ -190,8 +190,8 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 .getServletRegistrations().values();
 
         Optional<? extends ServletRegistration> vaadinServletRegistration = registrations
-                .stream().filter(registration -> VaadinServlet.class.getName()
-                        .equals(registration.getClassName()))
+                .stream().filter(registration -> isVaadinServletSubClass(
+                        registration.getClassName()))
                 .findAny();
         DeploymentConfiguration config;
         if (vaadinServletRegistration.isPresent()) {
@@ -203,6 +203,15 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         initDevModeHandler(classes, context, config);
+    }
+
+    private boolean isVaadinServletSubClass(String className) {
+        try {
+            return VaadinServlet.class
+                    .isAssignableFrom(Class.forName(className));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
