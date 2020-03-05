@@ -47,6 +47,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
@@ -63,7 +64,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private static final String THEME_PREPARE = "const div = document.createElement('div');";
     private static final String THEME_LINE_TPL = "div.innerHTML = '%s';%n"
             + "document.head.insertBefore(div.firstElementChild, document.head.firstChild);";
-    private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
+    private static final String THEME_VARIANT_TPL = "document.documentElement.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
@@ -372,7 +373,8 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
-                frontendDirectory, npmFolder, generatedFolder, fallBack, tokenFile);
+                frontendDirectory, npmFolder, generatedFolder, fallBack,
+                tokenFile);
         mainUpdate.run();
     }
 

@@ -26,7 +26,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 @Tag("explicit-lumo-themed-template")
 @HtmlImport("frontend://bower_components/themed-template/src/LumoThemedTemplate.html")
 @Route(value = "com.vaadin.flow.uitest.ui.lumo.ExplicitLumoTemplateView")
-@Theme(Lumo.class)
+@Theme(value = Lumo.class, variant = Lumo.DARK)
 public class ExplicitLumoTemplateView extends PolymerTemplate<TemplateModel> {
 
 }
