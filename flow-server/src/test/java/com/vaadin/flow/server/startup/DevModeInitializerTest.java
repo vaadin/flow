@@ -30,6 +30,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -270,12 +271,24 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
             throws Exception {
+        System.setProperty(
+                Constants.VAADIN_PREFIX + FrontendUtils.PROJECT_BASEDIR,
+                initParams.get(FrontendUtils.PROJECT_BASEDIR));
+
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
+
+    @Override
+    public void teardown() throws Exception, SecurityException {
+        super.teardown();
+        System.clearProperty(
+                Constants.VAADIN_PREFIX + FrontendUtils.PROJECT_BASEDIR);
+    }
+
 
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
