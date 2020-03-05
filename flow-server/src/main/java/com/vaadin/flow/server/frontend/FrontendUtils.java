@@ -237,6 +237,11 @@ public class FrontendUtils {
             + "flow-build-info.json";
 
     /**
+     * The entry-point key used for the exported bundle.
+     */
+    public static final String EXPORT_CHUNK = "export";
+
+    /**
      * A key in a Json object for chunks list.
      */
     public static final String CHUNKS = "chunks";
