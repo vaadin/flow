@@ -41,6 +41,8 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     private static final PropertyDescriptor<String, Optional<String>> targetDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("target", "");
 
+    private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
+
     /**
      * Creates a new empty anchor component.
      */
@@ -112,6 +114,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public void setHref(String href) {
         set(hrefDescriptor, href);
+        getElement().removeAttribute(ROUTER_IGNORE_ATTRIBUTE);
     }
 
     /**
@@ -122,6 +125,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public void removeHref() {
         getElement().removeAttribute("href");
+        getElement().removeAttribute(ROUTER_IGNORE_ATTRIBUTE);
     }
 
     /**
@@ -133,6 +137,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public void setHref(AbstractStreamResource href) {
         getElement().setAttribute("href", href);
+        getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
     }
 
     /**
