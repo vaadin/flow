@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.frontend.TestUtils;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -36,6 +37,8 @@ public class DevModeInitializerClassLoaderTest {
         Class<?> clz = customLoader
                 .loadClass(DevModeInitializerTestBase.class.getName());
         Object initializer = clz.newInstance();
+        customLoader
+                .loadClass(DevModeHandlerTest.class.getName());
 
         // Since base class was created using a different classLoader,
         // its methods and fields need to be called using reflection
@@ -67,6 +70,8 @@ public class DevModeInitializerClassLoaderTest {
         Assert.assertTrue(
                 "Js resource should have been copied from resource folder",
                 files.contains("resourceInFolder.js"));
-    }
 
+        method = clz.getMethod("teardown");
+        method.invoke(initializer);
+    }
 }
