@@ -309,7 +309,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private String removeHashInRpc(JsonArray rpc) {
-        if (rpc.length() < 4 || !rpc.get(3).getType().equals(JsonType.ARRAY)) {
+        if (rpc.length() != 4 || !rpc.get(1).getType().equals(JsonType.STRING)
+                || !rpc.get(2).getType().equals(JsonType.STRING)
+                || !rpc.get(3).getType().equals(JsonType.ARRAY)
+                || !"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc"
+                        .equals(rpc.getString(1))
+                || !"executeJavaScript".equals(rpc.getString(2))) {
             return null;
         }
         JsonArray scripts = rpc.getArray(3);
