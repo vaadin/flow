@@ -1,7 +1,6 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -29,6 +28,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -78,7 +78,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void loadingZipProtocolJars_useModernResourcesFolder_allFilesExist()
             throws IOException, ServletException {
-        loadingZipProtocolJars_allFilesExist(Constants.RESOURCES_FRONTEND_DEFAULT);
+        loadingZipProtocolJars_allFilesExist(
+                Constants.RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
@@ -212,11 +213,22 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
             throws Exception {
+        System.setProperty(
+                Constants.VAADIN_PREFIX + FrontendUtils.PROJECT_BASEDIR,
+                initParams.get(FrontendUtils.PROJECT_BASEDIR));
+
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Override
+    public void teardown() throws Exception, SecurityException {
+        super.teardown();
+        System.clearProperty(
+                Constants.VAADIN_PREFIX + FrontendUtils.PROJECT_BASEDIR);
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
