@@ -265,7 +265,8 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
+        Assert.assertEquals(
+                "{\"bundle\": \"build/vaadin-bundle-1111.cache.js\",\"export\": \"build/vaadin-export-2222.cache.js\"}",
                 statsAssetsByChunkName);
     }
 
@@ -277,7 +278,8 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\"}",
+        Assert.assertEquals(
+                "{\"bundle\": \"build/vaadin-bundle-1111.cache.js\"}",
                 statsAssetsByChunkName);
     }
 
