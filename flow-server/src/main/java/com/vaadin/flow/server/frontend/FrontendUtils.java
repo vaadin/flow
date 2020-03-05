@@ -255,6 +255,11 @@ public class FrontendUtils {
     public static final String FALLBACK = "fallback";
 
     /**
+     * The entry-point key used for the exported bundle.
+     */
+    public static final String EXPORT_CHUNK = "export";
+
+    /**
      * A key in a Json object for css imports data.
      */
     public static final String CSS_IMPORTS = "cssImports";
@@ -470,7 +475,7 @@ public class FrontendUtils {
             return Collections.emptyList();
         }
 
-        try (FileReader fileReader = new FileReader(npmrc)) {
+        try (FileReader fileReader = new FileReader(npmrc)) { // NOSONAR
             List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
             Properties properties = new Properties();
             properties.load(fileReader);
@@ -504,7 +509,7 @@ public class FrontendUtils {
         if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
         }
-        
+
         String httpsProxyUrl = getNonNull(
                 System.getProperty(SYSTEM_HTTPS_PROXY_PROPERTY_KEY),
                 System.getProperty(
@@ -711,7 +716,7 @@ public class FrontendUtils {
                 return new File(installNode(baseDir, vaadinHome,
                         DEFAULT_NODE_VERSION, null));
             }
-        } catch (FileNotFoundException exception) {
+        } catch (FileNotFoundException exception) { // NOSONAR
             Throwable cause = exception.getCause();
             assert cause != null;
             throw new IllegalStateException(cause);
@@ -1555,7 +1560,7 @@ public class FrontendUtils {
             }
 
             return returnCommand;
-        } catch (FileNotFoundException exception) {
+        } catch (FileNotFoundException exception) { // NOSONAR
             assert exception.getCause() != null;
             throw new IllegalStateException(exception.getCause());
         }
