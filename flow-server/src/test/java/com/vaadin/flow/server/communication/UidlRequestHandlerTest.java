@@ -254,11 +254,15 @@ public class UidlRequestHandlerTest {
             "\"hierarchy\": {" +
             "}," +
             "\"rpc\": [" +
-            "  [],[" +
+            " [],[" +
             "  \"11\"," +
             "  \"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc\"," +
             "  \"executeJavaScript\", [ \"___PLACE_FOR_HASH_RPC___\" ]" +
-            "  ],[]" +
+            " ],[" +
+            "  \"12\"," +
+            "  \"com.example.FooRpc\"," +
+            "  \"barMethod\", [{}, {}]" +
+            " ],[]" +
             "]," +
             "\"meta\": {}, \"resources\": {},\"typeMappings\": {},\"typeInheritanceMap\": {}, \"timings\": []";
 
