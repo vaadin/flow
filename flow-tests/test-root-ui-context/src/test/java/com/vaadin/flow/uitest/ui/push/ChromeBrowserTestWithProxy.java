@@ -1,23 +1,16 @@
 package com.vaadin.flow.uitest.ui.push;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.experimental.categories.Category;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @Category(PushTests.class)
-public abstract class ChromeBrowserTestWithProxy extends ChromeBrowserTest {
+public abstract class ChromeBrowserTestWithProxy
+        extends AbstractBrowserConsoleTest {
 
     private static AtomicInteger availablePort = new AtomicInteger(2000);
     private SimpleProxy proxySession;
@@ -44,29 +37,6 @@ public abstract class ChromeBrowserTestWithProxy extends ChromeBrowserTest {
         } finally {
             rootUrl = null;
         }
-    }
-
-    @Override
-    protected ChromeOptions customizeChromeOptions(ChromeOptions options) {
-        ChromeOptions opts = super.customizeChromeOptions(options);
-
-        LoggingPreferences logPrefs = new LoggingPreferences();
-        logPrefs.enable(LogType.BROWSER, Level.ALL);
-
-        opts.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-        return opts;
-    }
-
-    @Override
-    protected List<DesiredCapabilities> customizeCapabilities(
-            List<DesiredCapabilities> capabilities) {
-        List<DesiredCapabilities> caps = super.customizeCapabilities(
-                capabilities);
-        LoggingPreferences logPrefs = new LoggingPreferences();
-        logPrefs.enable(LogType.BROWSER, Level.ALL);
-        caps.forEach(cap -> cap.setCapability(CapabilityType.LOGGING_PREFS,
-                logPrefs));
-        return caps;
     }
 
     protected Integer getProxyPort() {
