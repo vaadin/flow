@@ -31,8 +31,10 @@ public abstract class AbstractTestUIWithLog extends UI {
          */
         Push push = getClass().getAnnotation(Push.class);
 
-        getPushConfiguration().setPushMode(push.value());
-        getPushConfiguration().setTransport(push.transport());
+        if (push != null) {
+            getPushConfiguration().setPushMode(push.value());
+            getPushConfiguration().setTransport(push.transport());
+        }
 
         add(log);
     }
