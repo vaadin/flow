@@ -116,9 +116,9 @@ public class FrontendVersion
     public FrontendVersion(String version) {
         Objects.requireNonNull(version);
         if (!Character.isDigit(version.charAt(0))) {
-            this.version = version.substring(1);
+            this.version = version.substring(1).trim();
         } else {
-            this.version = version;
+            this.version = version.trim();
         }
 
         final String[] digits = this.version.split("[-.]", 4);
@@ -254,7 +254,7 @@ public class FrontendVersion
      * Where this version is older, equals, newer than given version.
      *
      * @param other
-     *         version to compare agains this version
+     *         version to compare against this version
      * @return -1 this is older, 0 versions equal, 1 this is newer
      */
     @Override

@@ -29,7 +29,7 @@ import com.vaadin.flow.shared.Registration;
  * binding.
  * <p>
  * Example:
- * 
+ *
  * <pre>
  * Label label = new Label();
  * ReadOnlyHasValue&lt;String&gt; hasValue = new ReadOnlyHasValue&lt;&gt;(label::setText);
@@ -99,9 +99,7 @@ public class ReadOnlyHasValue<V>
         if (listenerList == null) {
             listenerList = new LinkedHashSet<>();
         }
-        listenerList.add(listener);
-
-        return () -> listenerList.remove(listener);
+        return Registration.addAndRemove(listenerList, listener);
     }
 
     @Override

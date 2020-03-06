@@ -132,8 +132,7 @@ public class VaadinSessionTest {
         session = new VaadinSession(mockService);
         mockService.storeSession(session, mockWrappedSession);
 
-        MockDeploymentConfiguration configuration =new MockDeploymentConfiguration();
-        configuration.setCompatibilityMode(true);
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
         session.lock();
         session.setConfiguration(configuration);
         session.unlock();
@@ -370,5 +369,25 @@ public class VaadinSessionTest {
         Iterator<UI> uis = session.getUIs().iterator();
         Assert.assertEquals(expectedlocale, uis.next().getLocale());
         Assert.assertEquals(expectedlocale, uis.next().getLocale());
+    }
+
+    @Test
+    public void csrfToken_different_sessions_shouldBeUnique() {
+        String token1 = new VaadinSession(mockService).getCsrfToken();
+        String token2 = new VaadinSession(mockService).getCsrfToken();
+
+        Assert.assertNotEquals("Each session should have a unique CSRF token",
+                token1, token2);
+    }
+
+    @Test
+    public void csrfToken_same_session_shouldBeSame() {
+        VaadinSession vaadinSession = new VaadinSession(mockService);
+        String token1 = vaadinSession.getCsrfToken();
+        String token2 = vaadinSession.getCsrfToken();
+
+        Assert.assertEquals(
+                "getCsrfToken() should always return the same value for the same session",
+                token1, token2);
     }
 }

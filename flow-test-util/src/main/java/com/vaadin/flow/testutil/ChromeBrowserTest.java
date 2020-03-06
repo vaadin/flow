@@ -66,12 +66,12 @@ public class ChromeBrowserTest extends ViewOrUITest {
         }
     }
 
-    private boolean isJavaInDebugMode() {
+    static boolean isJavaInDebugMode() {
         return ManagementFactory.getRuntimeMXBean().getInputArguments()
                 .toString().contains("jdwp");
     }
 
-    private WebDriver createHeadlessChromeDriver() {
+    static WebDriver createHeadlessChromeDriver() {
         return TestBench
             .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
     }
@@ -103,7 +103,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
         return capabilities;
     }
 
-    protected ChromeOptions createHeadlessChromeOptions() {
+    static ChromeOptions createHeadlessChromeOptions() {
         final ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless", "--disable-gpu");
         return options;

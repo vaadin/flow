@@ -58,9 +58,6 @@ public class MessageHandler {
     public static final String JSON_COMMUNICATION_PREFIX = "for(;;);[";
     public static final String JSON_COMMUNICATION_SUFFIX = "]";
 
-    /** The max timeout that response handling may be suspended. */
-    private static final int MAX_SUSPENDED_TIMEOUT = 5000;
-
     /**
      * The value of an undefined sync id.
      * <p>
@@ -229,6 +226,9 @@ public class MessageHandler {
                     + " while waiting for " + getExpectedServerId());
             lastSeenServerSyncId = serverId - 1;
             removeOldPendingMessages();
+
+            // Unregister all nodes and rebuild the state tree
+            registry.getStateTree().prepareForResync();
         }
 
         boolean locked = !responseHandlingLocks.isEmpty();
@@ -260,7 +260,9 @@ public class MessageHandler {
             }
             pendingUIDLMessages.push(new PendingUIDLMessage(valueMap));
             if (!forceHandleMessage.isRunning()) {
-                forceHandleMessage.schedule(MAX_SUSPENDED_TIMEOUT);
+                int timeout = registry.getApplicationConfiguration()
+                        .getMaxMessageSuspendTimeout();
+                forceHandleMessage.schedule(timeout);
             }
             return;
         }
@@ -549,6 +551,11 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
+        // Clear previous request if it exists. Otherwise resyncrhonize can trigger
+        // "Trying to start a new request while another is active" exception and fail.
+        if (registry.getRequestResponseTracker().hasActiveRequest()) {
+            registry.getRequestResponseTracker().endRequest();
+        }
         if (!responseHandlingLocks.isEmpty()) {
             // Lock which was never release -> bug in locker or things just
             // too slow

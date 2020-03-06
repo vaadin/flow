@@ -31,6 +31,8 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+
 public class FrontendResourcesAreCopiedAfterCleaningTest {
 
     @Rule
@@ -51,18 +53,19 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
     public void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
             throws IOException, ExecutionFailedException {
         copyResources();
-        assertCopiedFrontendFileAmount(2);
+        assertCopiedFrontendFileAmount(3);
 
         performPackageClean();
-        assertCopiedFrontendFileAmount(0);
+        // Should keep the `package.json` file
+        assertCopiedFrontendFileAmount(1);
 
         copyResources();
-        assertCopiedFrontendFileAmount(2);
+        assertCopiedFrontendFileAmount(3);
     }
 
     private void assertCopiedFrontendFileAmount(int fileCount)
             throws IOException {
-        File dir = new File(npmFolder, "node_modules/@vaadin/flow-frontend");
+        File dir = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
         FileUtils.forceMkdir(dir);
         List<String> files = TestUtils.listFilesRecursively(dir);
 
@@ -76,9 +79,11 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
+        File resourcesFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
+                .withFlowResourcesFolder(resourcesFolder)
                 .copyResources(Collections.singleton(testJar)).build()
                 .execute();
     }
@@ -89,9 +94,12 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
+        File resourcesFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)
+                .withFlowResourcesFolder(resourcesFolder)
+                .copyResources(Collections.emptySet())
                 .enablePackagesUpdate(true).build().execute();
     }
 }

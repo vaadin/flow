@@ -55,24 +55,12 @@ public class TreeChangeProcessor {
                 .isUpdateInProgress() : "Previous tree change processing has not completed";
         try {
             tree.setUpdateInProgress(true);
-            int length = changes.length();
-
-            JsSet<StateNode> nodes = JsCollections.set();
 
             // Attach all nodes before doing anything else
-            for (int i = 0; i < length; i++) {
-                JsonObject change = changes.getObject(i);
-                if (isAttach(change)) {
-                    int nodeId = (int) change
-                            .getNumber(JsonConstants.CHANGE_NODE);
-
-                    StateNode node = new StateNode(nodeId, tree);
-                    tree.registerNode(node);
-                    nodes.add(node);
-                }
-            }
+            JsSet<StateNode> nodes = processAttachChanges(tree, changes);
 
             // Then process all non-attach changes
+            int length = changes.length();
             for (int i = 0; i < length; i++) {
                 JsonObject change = changes.getObject(i);
                 if (!isAttach(change)) {
@@ -83,7 +71,25 @@ public class TreeChangeProcessor {
         } finally {
             tree.setUpdateInProgress(false);
         }
+    }
 
+    private static JsSet<StateNode> processAttachChanges(StateTree tree,
+            JsonArray changes) {
+        JsSet<StateNode> nodes = JsCollections.set();
+        int length = changes.length();
+        for (int i = 0; i < length; i++) {
+            JsonObject change = changes.getObject(i);
+            if (isAttach(change)) {
+                int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
+
+                if (nodeId != tree.getRootNode().getId()) {
+                    StateNode node = new StateNode(nodeId, tree);
+                    tree.registerNode(node);
+                    nodes.add(node);
+                }
+            }
+        }
+        return nodes;
     }
 
     private static boolean isAttach(JsonObject change) {

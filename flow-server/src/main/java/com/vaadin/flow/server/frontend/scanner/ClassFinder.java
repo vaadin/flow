@@ -102,6 +102,11 @@ public interface ClassFinder extends Serializable {
                             && !type.equals(cl))
                     .map(cl -> (Class<T>) cl).collect(Collectors.toSet());
         }
+
+        @Override
+        public ClassLoader getClassLoader() {
+            return this.classLoader;
+        }
     }
 
     /**
@@ -144,6 +149,11 @@ public interface ClassFinder extends Serializable {
         @Override
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return classFinder.getSubTypesOf(type);
+        }
+
+        @Override
+        public ClassLoader getClassLoader() {
+            return classFinder.getClassLoader();
         }
     }
 
@@ -200,6 +210,13 @@ public interface ClassFinder extends Serializable {
      * @return set of the subtypes of the given class
      */
     <T> Set<Class<? extends T>> getSubTypesOf(final Class<T> type);
+
+    /**
+     * Get class loader which is used to find classes.
+     *
+     * @return the class loader which is used to find classes..
+     */
+    ClassLoader getClassLoader();
 
     /**
      * Gets all subtypes in hierarchy of a given type, using FQN string.

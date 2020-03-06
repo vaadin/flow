@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -212,15 +213,6 @@ public class StaticFileServer implements StaticFileHandler {
      * @return true if we are ok to try serving the file
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
-        if (deploymentConfiguration.isCompatibilityMode()) {
-            getLogger().trace(
-                    "Serving from the classpath in legacy "
-                            + "mode is not accepted. "
-                            + "Letting request for '{}' go to servlet context.",
-                    filenameWithPath);
-            return false;
-        }
-
         // Check that we target VAADIN/build
         return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH);
     }

@@ -29,11 +29,11 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 public class ApplicationConfiguration {
     private String applicationId;
     private String contextRootUrl;
-    private String frontendRootUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage sessionExpiredError;
     private int heartbeatInterval;
+    private int maxMessageSuspendTimeout;
 
     private boolean productionMode;
     private boolean requestTiming;
@@ -166,6 +166,27 @@ public class ApplicationConfiguration {
     }
 
     /**
+     * Gets the maximum message suspension delay.
+     *
+     * @return The maximum time, in milliseconds, to suspend out-of-order
+     *         messages waiting for their predecessor before resynchronizing.
+     */
+    public int getMaxMessageSuspendTimeout() {
+        return maxMessageSuspendTimeout;
+    }
+
+    /**
+     * Sets the maximum message suspension delay.
+     *
+     * @param maxMessageSuspendTimeout
+     *            The maximum time, in milliseconds, to suspend out-of-order
+     *            messages waiting for their predecessor before resynchronizing.
+     */
+    public void setMaxMessageSuspendTimeout(int maxMessageSuspendTimeout) {
+        this.maxMessageSuspendTimeout = maxMessageSuspendTimeout;
+    }
+
+    /**
      * Gets the message used when a session expiration error occurs.
      *
      * @return the session expiration error message
@@ -292,27 +313,6 @@ public class ApplicationConfiguration {
      */
     public void setRequestTiming(boolean requestTiming) {
         this.requestTiming = requestTiming;
-    }
-
-    /**
-     * Gets the base URL of the frontend components on the server.
-     *
-     * @return the base URL on the server for the {@literal frontend://}
-     *         protocol.
-     */
-    public String getFrontendRootUrl() {
-        return frontendRootUrl;
-    }
-
-    /**
-     * Sets the base URL of the frontend components on the server.
-     *
-     * @param frontendRootUrl
-     *            the base URL on the server for the {@literal frontend://}
-     *            protocol.
-     */
-    public void setFrontendRootUrl(String frontendRootUrl) {
-        this.frontendRootUrl = frontendRootUrl;
     }
 
     /**

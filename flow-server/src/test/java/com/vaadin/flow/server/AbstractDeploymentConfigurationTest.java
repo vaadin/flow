@@ -74,11 +74,6 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public boolean isBowerMode() {
-            return false;
-        }
-
-        @Override
         public boolean isRequestTiming() {
             return !isProductionMode();
         }
@@ -95,6 +90,11 @@ public class AbstractDeploymentConfigurationTest {
 
         @Override
         public int getHeartbeatInterval() {
+            return 0;
+        }
+
+        @Override
+        public int getMaxMessageSuspendTimeout() {
             return 0;
         }
 

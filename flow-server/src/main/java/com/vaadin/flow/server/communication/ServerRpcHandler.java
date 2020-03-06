@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.MessageDigestUtil;
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -279,7 +278,6 @@ public class ServerRpcHandler implements Serializable {
             // it would only get an empty response (because the dirty flags have
             // been cleared on the server) and would be out of sync
 
-            String message;
             if (requestId == expectedId - 1 && Arrays.equals(messageHash,
                     ui.getInternals().getLastProcessedMessageHash())) {
                 /*
@@ -287,28 +285,31 @@ public class ServerRpcHandler implements Serializable {
                  * situation is most likely triggered by a timeout or such
                  * causing a message to be resent.
                  */
-                message = "Confirmed duplicate message from the client.";
+                getLogger().info(
+                        "Ignoring old duplicate message from the client. Expected: "
+                                + expectedId + ", got: " + requestId);
             } else {
-                message = "Unexpected message id from the client.";
+                /*
+                 * If the reason for ending up here is intermittent, then we
+                 * should just issue a full resync since we cannot know the
+                 * state of the client engine.
+                 *
+                 * There are reasons to believe that there are deterministic
+                 * issues that trigger this condition, and we'd like to collect
+                 * more data to uncover anything such before actually
+                 * implementing the resync that would thus hide most symptoms of
+                 * the actual root cause bugs.
+                 */
+                String messageStart = changeMessage;
+                if (messageStart.length() > 1000) {
+                    messageStart = messageStart.substring(0, 1000);
+                }
+                throw new UnsupportedOperationException(
+                        "Unexpected message id from the client."
+                                + " Expected sync id: " + expectedId + ", got "
+                                + requestId + ". Message start: "
+                                + messageStart);
             }
-
-            /*
-             * If the reason for ending up here is intermittent, then we should
-             * just issue a full resync since we cannot know the state of the
-             * client engine.
-             *
-             * There are reasons to believe that there are deterministic issues
-             * that trigger this condition, and we'd like to collect more data
-             * to uncover anything such before actually implementing the resync
-             * that would thus hide most symptoms of the actual root cause bugs.
-             */
-            String messageStart = changeMessage;
-            if (messageStart.length() > 1000) {
-                messageStart = messageStart.substring(0, 1000);
-            }
-            throw new UnsupportedOperationException(
-                    message + " Expected sync id: " + expectedId + ", got "
-                            + requestId + ". Message start: " + messageStart);
         } else {
             // Message id ok, process RPCs
             ui.getInternals().setLastProcessedClientToServerId(expectedId,
@@ -322,8 +323,16 @@ public class ServerRpcHandler implements Serializable {
                     + "indicate a bug in Vaadin platform. If you see this "
                     + "message regularly please open a bug report at "
                     + "https://github.com/vaadin/flow/issues");
-            ui.getInternals().getStateTree().getRootNode()
-                    .visitNodeTree(StateNode::markAsDirty);
+
+            // Run detach listeners and re-attach all nodes again to the
+            // state tree, in order to send changes for a full re-build of
+            // the client-side state tree in the response
+            ui.getInternals().getStateTree().prepareForResync();
+
+            // At this point, make no assumptions about which dependencies have
+            // been accepted by the client
+            ui.getInternals().getDependencyList().clearPendingSendToClient();
+
             // Signal by exception instead of return value to keep the method
             // signature for source and binary compatibility
             throw new ResynchronizationRequiredException();

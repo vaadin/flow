@@ -1,9 +1,10 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ForwardToIT extends ChromeBrowserTest {
 

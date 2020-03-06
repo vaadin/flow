@@ -33,14 +33,16 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
-import com.vaadin.flow.server.FrontendVaadinServlet;
+import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinConfigurationException;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletConfig;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 /**
@@ -52,11 +54,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * The servlet won't be registered, if any {@link VaadinServlet} is registered
  * already or if there are no classes annotated with {@link Route}
  * annotation.</li>
- * <li>Frontend files servlet, mapped to '/frontend/*' <br>
- * The servlet is registered when the application is started in the development
- * mode or has
- * {@link com.vaadin.flow.server.Constants#USE_ORIGINAL_FRONTEND_RESOURCES}
- * parameter set to {@code true}.</li>
  * <li>Static files servlet, mapped to '/VAADIN/static' responsible to resolve
  * files placed in the '[webcontext]/VAADIN/static' folder or in the
  * '[classpath]/META-INF/static' location. It prevents sensible files like
@@ -80,6 +77,48 @@ public class ServletDeployer implements ServletContextListener {
 
     private enum VaadinServletCreation {
         NO_CREATION, SERVLET_EXISTS, SERVLET_CREATED;
+    }
+
+    /**
+     * An implementation of {@link VaadinConfig} which provides a
+     * {@link VaadinContext} but no config parameter.
+     */
+    private static class VaadinServletContextConfig implements VaadinConfig {
+        private transient ServletContext servletContext;
+
+        private VaadinServletContextConfig(ServletContext servletContext) {
+            this.servletContext = servletContext;
+        }
+
+        /**
+         * Ensures there is a valid instance of {@link ServletContext}.
+         */
+        private void ensureServletContext() {
+            if (servletContext == null && VaadinService
+                    .getCurrent() instanceof VaadinServletService) {
+                servletContext = ((VaadinServletService) VaadinService.getCurrent())
+                        .getServlet().getServletContext();
+            } else if (servletContext == null) {
+                throw new IllegalStateException(
+                        "The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");
+            }
+        }
+
+        @Override
+        public VaadinContext getVaadinContext() {
+            ensureServletContext();
+            return new VaadinServletContext(servletContext);
+        }
+
+        @Override
+        public Enumeration<String> getConfigParameterNames() {
+            return Collections.emptyEnumeration();
+        }
+
+        @Override
+        public String getConfigParameter(String name) {
+            return null;
+        }
     }
 
     /**
@@ -150,6 +189,28 @@ public class ServletDeployer implements ServletContextListener {
                         registration.getName(), servletClass), e);
             }
         }
+
+        /**
+         * Creates a DeploymentConfiguration.
+         *
+         * @param context
+         *            the ServletContext
+         * @param servletClass
+         *            the class to look for properties defined with annotations
+         * @return a DeploymentConfiguration instance
+         */
+        public static DeploymentConfiguration createDeploymentConfiguration(
+                ServletContext context, Class<?> servletClass) {
+            try {
+                return DeploymentConfigurationFactory
+                        .createPropertyDeploymentConfiguration(servletClass,
+                                new VaadinServletContextConfig(context));
+            } catch (VaadinConfigurationException e) {
+                throw new IllegalStateException(String.format(
+                        "Failed to get deployment configuration data for servlet class '%s'",
+                        servletClass), e);
+            }
+        }
     }
 
     @Override
@@ -159,36 +220,13 @@ public class ServletDeployer implements ServletContextListener {
                 context);
 
         boolean enableServlets = true;
-        boolean hasDevelopmentMode = servletConfigurations.isEmpty();
-        boolean isCompatibilityMode = false;
         for (DeploymentConfiguration configuration : servletConfigurations) {
             enableServlets = enableServlets
                     && !configuration.disableAutomaticServletRegistration();
-            boolean devMode = !configuration.useCompiledFrontendResources();
-            hasDevelopmentMode = hasDevelopmentMode || devMode;
-            if (devMode) {
-                isCompatibilityMode = isCompatibilityMode
-                        || configuration.isCompatibilityMode();
-            }
         }
 
-        /*
-         * The default servlet is created using root mapping, in that case no
-         * need to register extra servlet. We should register frontend servlet
-         * only if there is a registered servlet.
-         *
-         * Also we don't need a frontend servlet at all in non compatibility
-         * mode.
-         */
-        if (enableServlets
-                && createAppServlet(
-                        context) == VaadinServletCreation.SERVLET_EXISTS
-                && hasDevelopmentMode && isCompatibilityMode) {
-            createServletIfNotExists(context, "frontendFilesServlet",
-                    FrontendVaadinServlet.class, "/frontend/*",
-                    Collections.singletonMap(
-                            Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                            Boolean.TRUE.toString()));
+        if (enableServlets) {
+            createAppServlet(context);
         }
     }
 
@@ -207,7 +245,8 @@ public class ServletDeployer implements ServletContextListener {
         return result;
     }
 
-    private VaadinServletCreation createAppServlet(ServletContext servletContext) {
+    private VaadinServletCreation createAppServlet(
+            ServletContext servletContext) {
         VaadinServletContext context = new VaadinServletContext(servletContext);
         boolean createServlet = ApplicationRouteRegistry.getInstance(context)
                 .hasNavigationTargets();

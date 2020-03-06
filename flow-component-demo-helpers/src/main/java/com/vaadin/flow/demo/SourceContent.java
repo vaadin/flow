@@ -27,8 +27,8 @@ import com.vaadin.flow.dom.Element;
  * @author Vaadin Ltd
  * @since 1.0
  */
-@StyleSheet("src/css/sources.css")
-@JavaScript("src/script/prism.js")
+@StyleSheet("frontend/src/css/sources.css")
+@JavaScript("./src/script/prism.js")
 public class SourceContent extends Div {
 
     /**

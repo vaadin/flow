@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-npm-dev-mode</artifactId>
     <name>Flow tests in npm and development mode</name>
@@ -48,17 +48,7 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <!-- only need prepare-frontend because we run tests in dev mode -->
-                            <goal>prepare-frontend</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
-                    <compatibilityMode>false</compatibilityMode>
                     <productionMode>false</productionMode>
                 </configuration>
             </plugin>
@@ -81,8 +71,8 @@
                         </systemProperty>
                         <systemProperty>
                             <!-- disable PNPM -->
-                            <name>vaadin.disable.pnpm</name>
-                            <value>true</value>
+                            <name>vaadin.pnpm.enable</name>
+                            <value>false</value>
                         </systemProperty>
                     </systemProperties>
                     <webApp>

@@ -15,7 +15,22 @@
  */
 package com.vaadin.flow.uitest.ui.lumo;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.theme.lumo.Lumo;
+
 public class ExplicitLumoTemplateIT extends AbstractThemedTemplateIT {
+
+    @Test
+    public void darkVariantIsUsed_htmlElementHasThemeAttribute() {
+        open();
+
+        WebElement html = findElement(By.tagName("html"));
+        Assert.assertEquals(Lumo.DARK, html.getAttribute("theme"));
+    }
 
     @Override
     protected String getTagName() {
@@ -24,7 +39,7 @@ public class ExplicitLumoTemplateIT extends AbstractThemedTemplateIT {
 
     @Override
     protected String getThemedTemplate() {
-        return "theme/lumo/LumoThemedTemplate.html";
+        return "theme/lumo/LumoThemedTemplate.js";
     }
 
 }

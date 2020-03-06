@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-dev-mode</artifactId>
     <name>Flow tests for dev mode</name>
@@ -36,33 +36,21 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-compatibility-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-       <dependency>
-            <groupId>org.webjars.bowergithub.polymer</groupId>
-            <artifactId>polymer</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <configuration>
+                    <productionMode>false</productionMode>
+                </configuration>
+            </plugin>
             <!-- This module is mapped to default web context -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <!--  re-use the test resources already present in es6 folder -->
-                            <name>vaadin.frontend.url.es5</name>
-                            <value>context://frontend-es6/</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
             </plugin>
         </plugins>
     </build>

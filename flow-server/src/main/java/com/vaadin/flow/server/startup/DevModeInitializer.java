@@ -23,7 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +36,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -83,9 +83,17 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_APPLICATION_PROPERTIES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -152,6 +160,12 @@ public class DevModeInitializer implements ServletContainerInitializer,
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
+    // Path of jar files in a URL with zip protocol doesn't start with "zip:"
+    // nor "file:". It contains only the path of the file.
+    // Weblogic uses zip protocol.
+    private static final Pattern ZIP_PROTOCOL_JAR_FILE_REGEX = Pattern
+            .compile("(.+\\.jar).*");
+
     private static final Pattern VFS_FILE_REGEX = Pattern
             .compile("(vfs:/.+\\.jar).*");
 
@@ -174,15 +188,38 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
 
-        if (registrations.isEmpty()) {
-            return;
+        ServletRegistration vaadinServletRegistration = null;
+        for (ServletRegistration registration : registrations) {
+            try {
+                if (registration.getClassName() != null
+                        && isVaadinServletSubClass(
+                                registration.getClassName())) {
+                    vaadinServletRegistration = registration;
+                    break;
+                }
+            } catch (ClassNotFoundException e) {
+                throw new ServletException(
+                        String.format("Servlet class name (%s) can't be found!",
+                                registration.getClassName()),
+                        e);
+            }
         }
 
-        DeploymentConfiguration config = StubServletConfig
-                .createDeploymentConfiguration(context,
-                        registrations.iterator().next(), VaadinServlet.class);
+        DeploymentConfiguration config;
+        if (vaadinServletRegistration != null) {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    vaadinServletRegistration, VaadinServlet.class);
+        } else {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    VaadinServlet.class);
+        }
 
         initDevModeHandler(classes, context, config);
+    }
+
+    private boolean isVaadinServletSubClass(String className)
+            throws ClassNotFoundException {
+        return VaadinServlet.class.isAssignableFrom(Class.forName(className));
     }
 
     /**
@@ -206,10 +243,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
-        if (config.isCompatibilityMode()) {
-            log().debug("Skipping DEV MODE because BOWER MODE is set.");
-            return;
-        }
         if (!config.enableDevServer()) {
             log().debug(
                     "Skipping DEV MODE because dev server shouldn't be enabled.");
@@ -218,10 +251,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 System.getProperty("user.dir", "."));
+
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 DEFAULT_GENERATED_DIR);
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
+
+        File flowResourcesFolder = new File(baseDir,
+                DEAULT_FLOW_RESOURCES_FOLDER);
 
         Builder builder = new NodeTasks.Builder(new DevModeClassFinder(classes),
                 new File(baseDir), new File(generatedDir),
@@ -251,6 +288,36 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     FrontendUtils.WEBPACK_GENERATED);
         }
 
+        builder.useV14Bootstrap(config.useV14Bootstrap());
+
+        if (!config.useV14Bootstrap()) {
+            String connectJavaSourceFolder = config.getStringProperty(
+                    CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER)
+                            .toString());
+            String connectApplicationProperties = config.getStringProperty(
+                    CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_APPLICATION_PROPERTIES)
+                            .toString());
+            String connectOpenApiJsonFile = config.getStringProperty(
+                    CONNECT_OPEN_API_FILE_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                            .toString());
+
+            String connectTsFolder = config.getStringProperty(
+                    CONNECT_GENERATED_TS_DIR_TOKEN,
+                    Paths.get(baseDir, DEFAULT_CONNECT_GENERATED_TS_DIR)
+                            .toString());
+
+            builder.withConnectJavaSourceFolder(
+                    new File(connectJavaSourceFolder))
+                    .withConnectApplicationProperties(
+                            new File(connectApplicationProperties))
+                    .withConnectGeneratedOpenApiJson(
+                            new File(connectOpenApiJsonFile))
+                    .withConnectClientTsApiFolder(new File(connectTsFolder));
+        }
+
         // If we are missing either the base or generated package json files
         // generate those
         if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
@@ -267,21 +334,26 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
-        boolean disablePnpm = config.getBooleanProperty(
-                Constants.SERVLET_PARAMETER_DISABLE_PNPM, false);
+        boolean enablePnpm = config.getBooleanProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+
+        boolean useHomeNodeExec = config.getBooleanProperty(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         try {
             builder.enablePackagesUpdate(true)
                     .useByteCodeScanner(useByteCodeScanner)
+                    .withFlowResourcesFolder(flowResourcesFolder)
                     .copyResources(frontendLocations)
                     .copyLocalResources(new File(baseDir,
                             Constants.LOCAL_FRONTEND_RESOURCES_PATH))
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .populateTokenFileData(tokenFileData)
-                    .withEmbeddableWebComponents(true).disablePnpm(disablePnpm)
-                    .build().execute();
+                    .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                    .withHomeNodeExecRequired(useHomeNodeExec).build()
+                    .execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);
@@ -353,12 +425,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 String path = URLDecoder.decode(url.getPath(),
                         StandardCharsets.UTF_8.name());
                 Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
+                Matcher zipProtocolJarMatcher = ZIP_PROTOCOL_JAR_FILE_REGEX
+                        .matcher(path);
                 Matcher dirMatcher = DIR_REGEX_FRONTEND_DEFAULT.matcher(path);
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
                 if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
+                } else if ("zip".equalsIgnoreCase(url.getProtocol())
+                        && zipProtocolJarMatcher.find()) {
+                    frontendFiles.add(new File(zipProtocolJarMatcher.group(1)));
                 } else if (dirMatcher.find()) {
                     frontendFiles.add(new File(dirMatcher.group(1)));
                 } else if (dirCompatibilityMatcher.find()) {

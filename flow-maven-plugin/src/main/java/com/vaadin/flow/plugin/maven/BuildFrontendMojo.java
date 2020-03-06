@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,9 +52,7 @@ import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFind
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -81,26 +81,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private MavenProject project;
 
     /**
-     * The folder where `package.json` file is located. Default is project root
-     * dir.
-     */
-    @Parameter(defaultValue = "${project.basedir}")
-    private File npmFolder;
-
-    /**
-     * The JavaScript file used as entry point of the application, and which is
-     * automatically updated by flow by reading java annotations.
-     */
-    @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
-    private File generatedFolder;
-
-    /**
-     * A directory with project's frontend source files.
-     */
-    @Parameter(defaultValue = "${project.basedir}/frontend")
-    private File frontendDirectory;
-
-    /**
      * Whether to generate a bundle from the project frontend sources or not.
      */
     @Parameter(defaultValue = "true")
@@ -127,27 +107,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
 
-    /**
-     * Whether to use byte code scanner strategy to discover frontend
-     * components.
-     */
-    @Parameter(defaultValue = "true")
-    private boolean optimizeBundle;
-
-    @Parameter(property = "disable.pnpm", defaultValue = "false")
-    private boolean disablePnpm;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        super.execute();
-
-        // Do nothing when compatibility mode
-        if (compatibility) {
-            getLog().info(
-                    "Skipped 'build-frontend' goal because compatibility mode is set to true.");
-            return;
-        }
-
         updateBuildFile();
 
         long start = System.nanoTime();
@@ -177,17 +138,28 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
-        new NodeTasks.Builder(getClassFinder(project), npmFolder,
-                generatedFolder, frontendDirectory).runNpmInstall(runNpmInstall)
+        // @formatter:off
+        new NodeTasks.Builder(getClassFinder(project),
+                npmFolder, generatedFolder, frontendDirectory)
+                        .runNpmInstall(runNpmInstall)
+                        .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
+                        .withFlowResourcesFolder(flowResourcesFolder)
                         .copyResources(jarFiles)
                         .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)
                         .withEmbeddableWebComponents(
                                 generateEmbeddableWebComponents)
-                        .withTokenFile(getTokenFile()).disablePnpm(disablePnpm)
-                        .build().execute();
+                        .withTokenFile(getTokenFile()).enablePnpm(pnpmEnable)
+                        .withConnectApplicationProperties(
+                                applicationProperties)
+                        .withConnectJavaSourceFolder(javaSourceFolder)
+                        .withConnectGeneratedOpenApiJson(openApiJsonFile)
+                        .withConnectClientTsApiFolder(generatedTsFolder)
+                        .withHomeNodeExecRequired(requireHomeNodeExec)
+                        .build()
+                        .execute();
     }
 
     private void runWebpack() {
@@ -201,17 +173,27 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        String nodePath = FrontendUtils
-                .getNodeExecutable(npmFolder.getAbsolutePath());
+        String nodePath;
+        if (requireHomeNodeExec) {
+            nodePath = FrontendUtils
+                    .ensureNodeExecutableInHome(npmFolder.getAbsolutePath());
+        } else {
+            nodePath = FrontendUtils
+                    .getNodeExecutable(npmFolder.getAbsolutePath());
+        }
+
+        List<String> command = Arrays.asList(nodePath,
+                webpackExecutable.getAbsolutePath(), "--progress");
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
+                .directory(project.getBasedir()).inheritIO();
+        getLog().info("Running webpack ...");
+        FrontendUtils.console(FrontendUtils.YELLOW,
+                FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
+                        command));
 
         Process webpackLaunch = null;
         try {
-            getLog().info("Running webpack ...");
-            webpackLaunch = new ProcessBuilder(nodePath,
-                    webpackExecutable.getAbsolutePath())
-                            .directory(project.getBasedir())
-                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                            .start();
+            webpackLaunch = builder.start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);
@@ -265,33 +247,16 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
+
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             getLog().warn("Unable to read token file", e);
-        }
-    }
-
-    @Override
-    boolean isDefaultCompatibility() {
-        File tokenFile = getTokenFile();
-        if (!tokenFile.exists()) {
-            getLog().warn("'build-frontend' goal was called without previously "
-                    + "calling 'prepare-frontend'");
-            return true;
-        }
-        try {
-            String json = FileUtils.readFileToString(tokenFile,
-                    StandardCharsets.UTF_8.name());
-            JsonObject buildInfo = JsonUtil.parse(json);
-            return buildInfo.hasKey(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    ? buildInfo.getBoolean(SERVLET_PARAMETER_COMPATIBILITY_MODE)
-                    : true;
-        } catch (IOException e) {
-            getLog().warn("Unable to read token file", e);
-            return true;
         }
     }
 

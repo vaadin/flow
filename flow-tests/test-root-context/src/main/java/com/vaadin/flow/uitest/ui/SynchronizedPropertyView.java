@@ -33,7 +33,8 @@ public class SynchronizedPropertyView extends AbstractDivView {
             getElement().setAttribute("placeholder", "Enter text here");
             label.setText("Server value on create: "
                     + getElement().getProperty("value"));
-            getElement().synchronizeProperty("value", event);
+            getElement().addPropertyChangeListener("value", event, e -> {
+            });
             getElement().addEventListener(event, e -> {
                 label.setText(
                         "Server value: " + getElement().getProperty("value"));
@@ -73,7 +74,9 @@ public class SynchronizedPropertyView extends AbstractDivView {
         syncOnChangeInitialValueLabel.setText("Server value on create: "
                 + syncOnChangeInitialValue.getProperty("value"));
         syncOnChangeInitialValue.setAttribute("id", "syncOnChangeInitialValue");
-        syncOnChangeInitialValue.synchronizeProperty("value", "change");
+        syncOnChangeInitialValue.addPropertyChangeListener("value", "change",
+                event -> {
+                });
         syncOnChangeInitialValue.addEventListener("change", e -> {
             syncOnChangeInitialValueLabel
                     .setText("Server value in change listener: "
@@ -106,8 +109,10 @@ public class SynchronizedPropertyView extends AbstractDivView {
 
         Element multiSync = ElementFactory.createInput("number");
         multiSync.setAttribute("id", "multiSyncValue");
-        multiSync.synchronizeProperty("valueAsNumber", "blur");
-        multiSync.synchronizeProperty("value", "input");
+        multiSync.addPropertyChangeListener("valueAsNumber", "blur", event -> {
+        });
+        multiSync.addPropertyChangeListener("value", "input", event -> {
+        });
 
         multiSync.addEventListener("input", e -> {
             valueLabel

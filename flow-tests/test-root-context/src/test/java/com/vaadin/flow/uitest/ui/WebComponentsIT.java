@@ -21,7 +21,6 @@ import java.util.stream.StreamSupport;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 
@@ -33,10 +32,6 @@ public class WebComponentsIT extends ChromeBrowserTest {
     @Test
     public void testPolyfillLoaded() {
         open();
-
-        Assert.assertTrue(driver.findElements(By.tagName("script")).stream()
-                .anyMatch(element -> element.getAttribute("src")
-                        .endsWith("webcomponents-loader.js")));
 
         if (BrowserUtil.isIE(getDesiredCapabilities())) {
             // Console logs are not available from IE11

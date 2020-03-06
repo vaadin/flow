@@ -133,8 +133,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                     key -> new ArrayList<>(1));
         }
 
-        propertyListeners.add(listener);
-        return () -> propertyListeners.remove(listener);
+        return Registration.addAndRemove(propertyListeners, listener);
     }
 
     @Override
@@ -241,11 +240,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         }
         StateNode node = getNode();
 
-        if (node.hasFeature(SynchronizedPropertiesList.class)
-                && node.getFeature(SynchronizedPropertiesList.class)
-                        .getSynchronizedProperties().contains(property)) {
-            return AllowUpdate.EXPLICITLY_ALLOW;
-        } else if (node.hasFeature(ElementListenerMap.class)
+        if (node.hasFeature(ElementListenerMap.class)
                 && node.getFeature(ElementListenerMap.class)
                         .getPropertySynchronizationMode(property) != null) {
             return AllowUpdate.EXPLICITLY_ALLOW;
@@ -501,9 +496,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                           |                 |                         |        |                      |
                           |                 |                         |        | NO_EXPLICIT_STATUS   |
     +-----------------+   |                 |                         |        |                      |
-    |                 |   |                 v                         +----&gt;   |   The proeprty is    |
+    |                 |   |                 v                         +----&gt;   |   The property is    |
     |  DISALLOW       |&lt;--        +----------------------------------+         |not forbidden and     |
-    |                 |           |           ALLOW                  |         |it is not synhronized |
+    |                 |           |           ALLOW                  |         |it is not synchronized |
     | The property is |           | The property is explicitly       |         |  Check whether       |
     | forbidden and   |           | synchronized and should allow    |         |updateFromClientFilter|
     |  filter is not  |           |       update                     |         | exists and disallows |

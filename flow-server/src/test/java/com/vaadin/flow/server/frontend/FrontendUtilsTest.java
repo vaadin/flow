@@ -18,33 +18,46 @@ package com.vaadin.flow.server.frontend;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.installer.Platform;
+import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -58,7 +71,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@NotThreadSafe
 public class FrontendUtilsTest {
+
+    private static final String USER_HOME = "user.home";
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
@@ -69,7 +85,7 @@ public class FrontendUtilsTest {
             .collect(Collectors.joining(File.separator));
 
     public static final String PNPM_INSTALL_LOCATION = Stream
-            .of("node_modules","pnpm","bin","pnpm.js")
+            .of("node_modules", "pnpm", "bin", "pnpm.js")
             .collect(Collectors.joining(File.separator));
 
     @Rule
@@ -77,6 +93,9 @@ public class FrontendUtilsTest {
 
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
+
+    @Rule
+    public final TemporaryFolder tmpDirWithNpmrc = new TemporaryFolder();
 
     private String baseDir;
 
@@ -86,39 +105,130 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void should_useProjectNodeFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+    public synchronized void should_useProjectNodeFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(true, true, baseDir);
 
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(0),
-                containsString(DEFAULT_NODE));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
-                containsString(NPM_CLI_STRING));
+        assertNodeCommand(() -> baseDir);
     }
 
     @Test
-    public void should_useProjectNpmFirst() throws Exception {
-        if (FrontendUtils.isWindows()) {
-            LoggerFactory.getLogger(FrontendUtilsTest.class).info(
-                    "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.");
-            return;
-        }
+    public synchronized void should_useHomeFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNodeCommand(() -> getVaadinHomeDir());
+    }
+
+    @Test
+    public synchronized void should_useProjectNpmFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
         createStubNode(false, true, baseDir);
 
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                containsString("node"));
-        assertThat(FrontendUtils.getNodeExecutable(baseDir),
-                not(containsString(DEFAULT_NODE)));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(0),
-                containsString("node"));
-        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
-                containsString(NPM_CLI_STRING));
+        assertNpmCommand(() -> baseDir);
+    }
+
+    @Test
+    public synchronized void should_useHomeNpmFirst() throws Exception {
+        Assume.assumeFalse(
+                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
+                FrontendUtils.isWindows());
+        assertNpmCommand(() -> getVaadinHomeDir());
+    }
+
+    @Test
+    @Ignore("Ignored to lessen PRs hitting the server too often")
+    public void installNode_NodeIsInstalledToTargetDirectory()
+            throws FrontendUtils.UnknownVersionException {
+        File targetDir = new File(baseDir + "/installation");
+
+        Assert.assertFalse(
+                "Clean test should not contain a installation folder",
+                targetDir.exists());
+
+        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir,
+                "v12.16.0", null);
+        Assert.assertNotNull(nodeExecutable);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(nodeExecutable);
+        nodeVersionCommand.add("--version");
+        FrontendVersion node = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
+        Assert.assertEquals("12.16.0", node.getFullVersion());
+
+        List<String> npmVersionCommand = new ArrayList<>(
+                FrontendUtils.getNpmExecutable(targetDir.getPath()));
+        npmVersionCommand.add("--version");
+        FrontendVersion npm = FrontendUtils.getVersion("npm",
+                npmVersionCommand);
+        Assert.assertEquals("6.13.4", npm.getFullVersion());
+
+    }
+
+    @Test
+    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
+            throws IOException {
+        Platform platform = Platform.guess();
+        String nodeExec = platform.isWindows() ? "node.exe" : "node";
+        String prefix = "node-v12.16.0-" + platform.getNodeClassifier();
+
+        File targetDir = new File(baseDir + "/installation");
+
+        Assert.assertFalse(
+                "Clean test should not contain a installation folder",
+                targetDir.exists());
+        File downloadDir = tmpDir.newFolder("v12.16.0");
+        File archiveFile = new File(downloadDir,
+                prefix + "." + platform.getArchiveExtension());
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        if (platform.getArchiveExtension().equals("zip")) {
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                    Files.newOutputStream(tempArchive))) {
+                zipOutputStream
+                        .putNextEntry(new ZipEntry(prefix + "/" + nodeExec));
+                zipOutputStream.closeEntry();
+                zipOutputStream.putNextEntry(
+                        new ZipEntry(prefix + "/node_modules/npm/bin/npm"));
+                zipOutputStream.closeEntry();
+                zipOutputStream.putNextEntry(
+                        new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
+                zipOutputStream.closeEntry();
+            }
+        } else {
+            try (OutputStream fo = Files.newOutputStream(tempArchive);
+                    OutputStream gzo = new GzipCompressorOutputStream(fo);
+                    ArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/" + nodeExec),
+                        prefix + "/bin/" + nodeExec));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/bin/npm"), prefix + "/bin/npm"));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/lib/node_modules/npm/bin/npm"),
+                        prefix + "/lib/node_modules/npm/bin/npm"));
+                o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/lib/node_modules/npm/bin/npm.cmd"),
+                        prefix + "/lib/node_modules/npm/bin/npm.cmd"));
+                o.closeArchiveEntry();
+            }
+        }
+
+        String nodeExecutable = FrontendUtils.installNode(baseDir, targetDir,
+                "v12.16.0", new File(baseDir).toPath().toUri());
+        Assert.assertNotNull(nodeExecutable);
+
+        Assert.assertTrue("npm should have been copied to node_modules",
+                new File(targetDir, "node/node_modules/npm/bin/npm").exists());
     }
 
     @Test
@@ -130,11 +240,23 @@ public class FrontendUtilsTest {
         assertThat(FrontendUtils.getNodeExecutable(baseDir),
                 not(containsString(NPM_CLI_STRING)));
 
-        assertEquals(2, FrontendUtils.getNpmExecutable(baseDir).size());
+        assertEquals(3, FrontendUtils.getNpmExecutable(baseDir).size());
         assertThat(FrontendUtils.getNpmExecutable(baseDir).get(0),
                 containsString("npm"));
         assertThat(FrontendUtils.getNpmExecutable(baseDir).get(1),
                 containsString("--no-update-notifier"));
+        assertThat(FrontendUtils.getNpmExecutable(baseDir).get(2),
+                containsString("--no-audit"));
+    }
+
+    @Test
+    public void getNpmExecutable_removesPnpmLock() throws IOException {
+        File file = new File(baseDir, "pnpm-lock.yaml");
+        file.createNewFile();
+
+        FrontendUtils.getNpmExecutable(baseDir);
+
+        Assert.assertFalse(file.exists());
     }
 
     @Test
@@ -253,8 +375,8 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\","
-                + "\"index.es5\": \"build/index.es5-2222.cache.js\"" + "}",
+        Assert.assertEquals(
+                "{\"bundle\": \"build/vaadin-bundle-1111.cache.js\",\"export\": \"build/vaadin-export-2222.cache.js\"}",
                 statsAssetsByChunkName);
     }
 
@@ -266,9 +388,42 @@ public class FrontendUtilsTest {
         String statsAssetsByChunkName = FrontendUtils
                 .getStatsAssetsByChunkName(service);
 
-        Assert.assertEquals("{" + "\"index\": \"build/index-1111.cache.js\","
-                + "\"index.es5\": \"build/index.es5-2222.cache.js\"" + "}",
+        Assert.assertEquals(
+                "{\"bundle\": \"build/vaadin-bundle-1111.cache.js\"}",
                 statsAssetsByChunkName);
+    }
+
+    @Test
+    public void noStatsFile_assetsByChunkReturnsNull() throws IOException {
+        VaadinService service = getServiceWithResource(null);
+
+        String statsAssetsByChunkName = FrontendUtils
+                .getStatsAssetsByChunkName(service);
+
+        Assert.assertNull(statsAssetsByChunkName);
+    }
+
+    @Test
+    public void should_getUnixRelativePath_when_givenTwoPaths() {
+        Path sourcePath = Mockito.mock(Path.class);
+        Path relativePath = Mockito.mock(Path.class);
+        Mockito.when(sourcePath.relativize(Mockito.any()))
+                .thenReturn(relativePath);
+        Mockito.when(relativePath.toString())
+                .thenReturn("this\\is\\windows\\path");
+
+        String relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should replace windows path separator with unix path separator",
+                "this/is/windows/path", relativeUnixPath);
+        Mockito.when(relativePath.toString()).thenReturn("this/is/unix/path");
+
+        relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
+                tmpDir.getRoot().toPath());
+        Assert.assertEquals(
+                "Should keep the same path when it uses unix path separator",
+                "this/is/unix/path", relativeUnixPath);
     }
 
     @Test
@@ -288,11 +443,10 @@ public class FrontendUtilsTest {
     @Test
     public void ensurePnpm_requestInstall_keepPackageJson_removePackageLock_ignoredPnpmExists_localPnpmIsRemoved()
             throws IOException {
-        Assume.assumeTrue(FrontendUtils.getPnpmExecutable(baseDir,
-                false).isEmpty());
+        Assume.assumeTrue(
+                FrontendUtils.getPnpmExecutable(baseDir, false).isEmpty());
         File packageJson = new File(baseDir, "package.json");
-        FileUtils.writeStringToFile(packageJson, "{}",
-                StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(packageJson, "{}", StandardCharsets.UTF_8);
 
         File packageLockJson = new File(baseDir, "package-lock.json");
         FileUtils.writeStringToFile(packageLockJson, "{}",
@@ -319,11 +473,163 @@ public class FrontendUtilsTest {
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
     }
 
+    @Test
+    public synchronized void getVaadinHomeDirectory_noVaadinFolder_folderIsCreated()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            File vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertTrue(vaadinHomeDirectory.exists());
+            Assert.assertTrue(vaadinHomeDirectory.isDirectory());
+
+            // access it one more time
+            vaadinHomeDirectory = FrontendUtils.getVaadinHomeDirectory();
+            Assert.assertEquals(".vaadin", vaadinDir.getName());
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    @Test(expected = FileNotFoundException.class)
+    public synchronized void getVaadinHomeDirectory_vaadinFolderIsAFile_throws()
+            throws IOException {
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File vaadinDir = new File(home, ".vaadin");
+            if (vaadinDir.exists()) {
+                FileUtils.deleteDirectory(vaadinDir);
+            }
+            vaadinDir.createNewFile();
+            FrontendUtils.getVaadinHomeDirectory();
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    @Test
+    public void commandToString_longCommand_resultIsWrapped() {
+        List<String> command = Arrays.asList("./node/node",
+                "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
+                "--config", "./webpack.config.js", "--port 57799",
+                "--watchDogPort=57798", "-d", "--inline=false",
+                "--progress", "--colors");
+        String wrappedCommand = FrontendUtils.commandToString(".", command);
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
+                + "    --config ./webpack.config.js --port 57799 \\ \n"
+                + "    --watchDogPort=57798 -d --inline=false --progress \\ \n"
+                + "    --colors \n", wrappedCommand);
+    }
+
+    @Test
+    public void commandToString_commandContainsBaseDir_baseDirIsReplaced() {
+        List<String> command = Arrays.asList("./node/node",
+                "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
+        String wrappedCommand = FrontendUtils.commandToString("/somewhere/not/disclosable", command);
+        Assert.assertEquals("\n" + "./node/node \\ \n"
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n", wrappedCommand);
+    }
+
+    @Test
+    public void validateNodeAndNpmVersion_pnpmLockIsNotRemoved()
+            throws IOException {
+        File file = new File(baseDir, "pnpm-lock.yaml");
+        file.createNewFile();
+
+        FrontendUtils.validateNodeAndNpmVersion(baseDir);
+
+        Assert.assertTrue(file.exists());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public synchronized void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
+            throws IOException {
+            String originalHome = System.getProperty(USER_HOME);
+            File home = tmpDir.newFolder();
+            System.setProperty(USER_HOME, home.getPath());
+            try {
+                File homeDir = FrontendUtils.getVaadinHomeDirectory();
+                File node = new File(homeDir,
+                        FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+                FileUtils.forceMkdir(node);
+
+            FrontendUtils.ensureNodeExecutableInHome(baseDir);
+
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
     private VaadinService setupStatsAssetMocks(String statsFile)
             throws IOException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()
                 .getResourceAsStream(statsFile), StandardCharsets.UTF_8);
 
+        return getServiceWithResource(
+                new ByteArrayInputStream(stats.getBytes()));
+    }
+
+    private void assertNodeCommand(Supplier<String> path) throws IOException {
+        String home = tmpDir.newFolder().getAbsolutePath();
+        String originalHome = System.getProperty(USER_HOME);
+        System.setProperty(USER_HOME, home);
+        try {
+            createStubNode(true, true,
+                    FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString(DEFAULT_NODE));
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString(path.get()));
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            assertThat(npmExecutable.get(0), containsString(path.get()));
+            assertThat(npmExecutable.get(0), containsString(DEFAULT_NODE));
+            assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private void assertNpmCommand(Supplier<String> path) throws IOException {
+        String home = tmpDir.newFolder().getAbsolutePath();
+        String originalHome = System.getProperty(USER_HOME);
+        System.setProperty(USER_HOME, home);
+        try {
+            createStubNode(false, true,
+                    FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    containsString("node"));
+            assertThat(FrontendUtils.getNodeExecutable(baseDir),
+                    not(containsString(DEFAULT_NODE)));
+            List<String> npmExecutable = FrontendUtils
+                    .getNpmExecutable(baseDir);
+            assertThat(npmExecutable.get(0), containsString("node"));
+            assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+            assertThat(npmExecutable.get(1), containsString(path.get()));
+        } finally {
+            System.setProperty(USER_HOME, originalHome);
+        }
+    }
+
+    private String getVaadinHomeDir() {
+        try {
+            return FrontendUtils.getVaadinHomeDirectory().getAbsolutePath();
+        } catch (FileNotFoundException exception) {
+            throw new IllegalStateException(exception);
+        }
+    }
+
+    private VaadinService getServiceWithResource(InputStream stats) {
         VaadinService service = Mockito.mock(VaadinService.class);
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         DeploymentConfiguration deploymentConfiguration = Mockito
@@ -338,7 +644,172 @@ public class FrontendUtilsTest {
                 .thenReturn(VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT);
         Mockito.when(classLoader.getResourceAsStream(
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(new ByteArrayInputStream(stats.getBytes()));
+                .thenReturn(stats);
         return service;
+    }
+
+    @Test
+    public void getProxies_npmrcWithProxySetting_shouldReturnProxiesList()
+            throws IOException {
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
+        Properties properties = new Properties();
+        properties.put(FrontendUtils.NPMRC_PROXY_PROPERTY_KEY,
+                "http://httpuser:httppassword@httphost:8080");
+        properties.put(FrontendUtils.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+                "http://httpsuser:httpspassword@httpshost:8081");
+        properties.put(FrontendUtils.NPMRC_NOPROXY_PROPERTY_KEY,
+                "192.168.1.1,vaadin.com,mycompany.com");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
+            properties.store(fileOutputStream, null);
+        }
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
+                tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test1");
+        Assert.assertEquals(2, proxyList.size());
+        ProxyConfig.Proxy httpsProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(0) : proxyList.get(1);
+        ProxyConfig.Proxy httpProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(1) : proxyList.get(0);
+
+        Assert.assertEquals("http", httpProxy.protocol);
+        Assert.assertEquals("httpuser", httpProxy.username);
+        Assert.assertEquals("httppassword", httpProxy.password);
+        Assert.assertEquals("httphost", httpProxy.host);
+        Assert.assertEquals(8080, httpProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                httpProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", httpsProxy.protocol);
+        Assert.assertEquals("httpsuser", httpsProxy.username);
+        Assert.assertEquals("httpspassword", httpsProxy.password);
+        Assert.assertEquals("httpshost", httpsProxy.host);
+        Assert.assertEquals(8081, httpsProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                httpsProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_npmrcWithProxySettingNoNoproxy_shouldReturnNullNoproxy()
+            throws IOException {
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test1"), ".npmrc");
+        Properties properties = new Properties();
+        properties.put(FrontendUtils.NPMRC_PROXY_PROPERTY_KEY,
+                "http://httpuser:httppassword@httphost:8080");
+        properties.put(FrontendUtils.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+                "http://httpsuser:httpspassword@httpshost:8081");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
+            properties.store(fileOutputStream, null);
+        }
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(
+                tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test1");
+        Assert.assertEquals(2, proxyList.size());
+        ProxyConfig.Proxy httpsProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(0) : proxyList.get(1);
+        ProxyConfig.Proxy httpProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(1) : proxyList.get(0);
+
+        Assert.assertEquals("http", httpProxy.protocol);
+        Assert.assertEquals("httpuser", httpProxy.username);
+        Assert.assertEquals("httppassword", httpProxy.password);
+        Assert.assertEquals("httphost", httpProxy.host);
+        Assert.assertEquals(8080, httpProxy.port);
+        Assert.assertNull(httpProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", httpsProxy.protocol);
+        Assert.assertEquals("httpsuser", httpsProxy.username);
+        Assert.assertEquals("httpspassword", httpsProxy.password);
+        Assert.assertEquals("httpshost", httpsProxy.host);
+        Assert.assertEquals(8081, httpsProxy.port);
+        Assert.assertNull(httpsProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_systemPropertiesAndNpmrcWithProxySetting_shouldReturnAllProxies()
+            throws IOException {
+        File npmrc = new File(tmpDirWithNpmrc.newFolder("test2"), ".npmrc");
+        Properties properties = new Properties();
+        properties.put(FrontendUtils.NPMRC_PROXY_PROPERTY_KEY,
+                "http://httpuser:httppassword@httphost:8080");
+        properties.put(FrontendUtils.NPMRC_HTTPS_PROXY_PROPERTY_KEY,
+                "http://httpsuser:httpspassword@httpshost:8081");
+        properties.put(FrontendUtils.NPMRC_NOPROXY_PROPERTY_KEY,
+                "192.168.1.1,vaadin.com,mycompany.com");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(npmrc)) {
+            properties.store(fileOutputStream, null);
+        }
+
+        List<ProxyConfig.Proxy> proxyList = null;
+        try {
+            System.setProperty(FrontendUtils.SYSTEM_NOPROXY_PROPERTY_KEY,
+                    "somethingelse,someotherip,75.41.41.33");
+            System.setProperty(FrontendUtils.SYSTEM_HTTP_PROXY_PROPERTY_KEY,
+                    "http://anotheruser:anotherpassword@aanotherhost:9090");
+            System.setProperty(FrontendUtils.SYSTEM_HTTPS_PROXY_PROPERTY_KEY,
+                    "http://anotherusers:anotherpasswords@aanotherhosts:9091");
+
+            proxyList = FrontendUtils.getProxies(
+                    tmpDirWithNpmrc.getRoot().getAbsolutePath() + "/test2");
+        } finally {
+            System.clearProperty(FrontendUtils.SYSTEM_NOPROXY_PROPERTY_KEY);
+            System.clearProperty(FrontendUtils.SYSTEM_HTTP_PROXY_PROPERTY_KEY);
+            System.clearProperty(FrontendUtils.SYSTEM_HTTPS_PROXY_PROPERTY_KEY);
+        }
+
+        Assert.assertEquals(4, proxyList.size());
+
+        // The first two items should be system proxies
+        ProxyConfig.Proxy systemHttpsProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(0) : proxyList.get(1);
+        ProxyConfig.Proxy systemProxy = proxyList.get(0).id.startsWith(
+                "https-proxy") ? proxyList.get(1) : proxyList.get(0);
+
+        // Items 2 and 3 should be npmrc proxies
+        ProxyConfig.Proxy npmrcHttpsProxy = proxyList.get(2).id.startsWith(
+                "https-proxy") ? proxyList.get(2) : proxyList.get(3);
+        ProxyConfig.Proxy npmrcProxy = proxyList.get(2).id.startsWith(
+                "https-proxy") ? proxyList.get(3) : proxyList.get(2);
+
+        Assert.assertEquals("http", systemProxy.protocol);
+        Assert.assertEquals("anotheruser", systemProxy.username);
+        Assert.assertEquals("anotherpassword", systemProxy.password);
+        Assert.assertEquals("aanotherhost", systemProxy.host);
+        Assert.assertEquals(9090, systemProxy.port);
+        Assert.assertEquals("somethingelse|someotherip|75.41.41.33",
+                systemProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", systemHttpsProxy.protocol);
+        Assert.assertEquals("anotherusers", systemHttpsProxy.username);
+        Assert.assertEquals("anotherpasswords", systemHttpsProxy.password);
+        Assert.assertEquals("aanotherhosts", systemHttpsProxy.host);
+        Assert.assertEquals(9091, systemHttpsProxy.port);
+        Assert.assertEquals("somethingelse|someotherip|75.41.41.33",
+                systemHttpsProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", npmrcHttpsProxy.protocol);
+        Assert.assertEquals("httpsuser", npmrcHttpsProxy.username);
+        Assert.assertEquals("httpspassword", npmrcHttpsProxy.password);
+        Assert.assertEquals("httpshost", npmrcHttpsProxy.host);
+        Assert.assertEquals(8081, npmrcHttpsProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                npmrcHttpsProxy.nonProxyHosts);
+
+        Assert.assertEquals("http", npmrcProxy.protocol);
+        Assert.assertEquals("httpuser", npmrcProxy.username);
+        Assert.assertEquals("httppassword", npmrcProxy.password);
+        Assert.assertEquals("httphost", npmrcProxy.host);
+        Assert.assertEquals(8080, npmrcProxy.port);
+        Assert.assertEquals("192.168.1.1|vaadin.com|mycompany.com",
+                npmrcProxy.nonProxyHosts);
+    }
+
+    @Test
+    public void getProxies_noNpmrc_shouldReturnEmptyList() {
+        File npmrc = new File(baseDir + "/.npmrc");
+        if (npmrc.exists())
+            npmrc.delete();
+
+        List<ProxyConfig.Proxy> proxyList = FrontendUtils.getProxies(baseDir);
+        Assert.assertTrue(proxyList.isEmpty());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,6 +39,11 @@ public class HandlerHelper implements Serializable {
      * Framework internal enum for tracking the type of a request.
      */
     public enum RequestType {
+
+        /**
+         * INIT requests.
+         */
+        INIT(ApplicationConstants.REQUEST_TYPE_INIT),
 
         /**
          * UIDL requests.

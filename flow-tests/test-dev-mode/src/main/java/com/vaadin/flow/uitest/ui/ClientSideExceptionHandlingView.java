@@ -22,7 +22,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ClientSideExceptionHandlingView", layout = ViewTestLayout.class)
-@JavaScript("externalErrorTrigger.js")
+@JavaScript("/externalErrorTrigger.js")
 public class ClientSideExceptionHandlingView extends Div {
 
     static final String CAUSE_EXCEPTION_ID = "causeException";
@@ -30,7 +30,7 @@ public class ClientSideExceptionHandlingView extends Div {
 
     public ClientSideExceptionHandlingView() {
         causeException = new NativeButton("Cause client side exception", e -> {
-            getUI().get().getPage().executeJavaScript("null.foo");
+            getUI().get().getPage().executeJs("null.foo");
         });
         causeException.setId(CAUSE_EXCEPTION_ID);
 
@@ -41,7 +41,7 @@ public class ClientSideExceptionHandlingView extends Div {
         NativeButton causeExternalException = new NativeButton(
                 "Cause external client side exception", e -> {
                     getUI().get().getPage()
-                            .executeJavaScript("externalErrorTrigger()");
+                            .executeJs("externalErrorTrigger()");
                 });
 
         add(causeException, causeExternalException);

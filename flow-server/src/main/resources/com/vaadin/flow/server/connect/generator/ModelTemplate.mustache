@@ -1,0 +1,30 @@
+{{#each imports}}
+import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/importAs}} from '{{importPath}}';
+{{/each}}
+
+{{#models}}
+{{#model}}
+/**
+{{#unescapedDescription}}{{!
+}}{{#multiplelines unescapedDescription}}
+ * {{{@line}}}
+{{/multiplelines}}{{!
+}}{{/unescapedDescription}}
+ * This module is generated from {{classname}}.
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.{{!
+ }}{{#vendorExtensions.x-vaadin-file-path}}
+ * @see {@link file://{{vendorExtensions.x-vaadin-file-path}}{{!}}}{{!
+ }}{{/vendorExtensions.x-vaadin-file-path}}
+ */
+export default interface {{{getClassNameFromImports classname ../../imports}}} {{~#parentSchema}} extends {{{getClassNameFromImports parentSchema ../../imports}}}{{/parentSchema}} {
+{{#vars}}
+{{#unescapedDescription}}
+  /**{{#multiplelines unescapedDescription}}
+   * {{{@line}}}{{/multiplelines}}
+   */
+{{/unescapedDescription}}
+  {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports datatype ../../../imports}}};
+{{/vars}}
+}
+{{/model}}
+{{/models}}

@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-subcontext</artifactId>
     <name>Flow tests mapped for /context</name>
@@ -15,7 +15,8 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <server.port>9999</server.port>
         <server.stop.port>9998</server.stop.port>
-
+        <!-- please remove after https://github.com/vaadin/flow/issues/7575 is fixed -->
+        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
         <jetty.skip>${maven.test.skip}</jetty.skip>
     </properties>
 
@@ -26,15 +27,14 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-compatibility-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+            </plugin>
             <!-- The Jetty plugin allows us to easily test the development
                 build by running jetty:run -->
             <plugin>

@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>2.2-SNAPSHOT</version>
+        <version>3.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-pnpm-production</artifactId>
     <name>Flow tests in pnpm and production mode</name>
@@ -49,7 +49,6 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -59,7 +58,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <bowerMode>false</bowerMode>
                     <productionMode>true</productionMode>
                 </configuration>
             </plugin>

@@ -17,7 +17,10 @@ package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
-import java.awt.*;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -71,7 +74,17 @@ public class PwaRegistry implements Serializable {
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
-    private PwaRegistry(PWA pwa, ServletContext servletContext)
+    /**
+     * Creates a new PwaRegistry instance.
+     *
+     * @param pwa
+     *            the pwa annotation
+     * @param servletContext
+     *            the context
+     * @throws IOException
+     *             when icon or offline resources are not found.
+     */
+    public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
@@ -269,13 +282,22 @@ public class PwaRegistry implements Serializable {
                     .getAttribute(PwaRegistry.class.getName());
 
             if (attribute == null) {
-                ApplicationRouteRegistry reg = ApplicationRouteRegistry
-                        .getInstance(new VaadinServletContext(servletContext));
+                VaadinServletContext context = new VaadinServletContext(
+                        servletContext);
+
+                // Try first if there is an AppShell for the project
+                Class<?> clazz = AppShellRegistry.getInstance(context)
+                        .getShell();
+
+                // Otherwise use the class reported by router
+                if (clazz == null) {
+                    clazz = ApplicationRouteRegistry.getInstance(context)
+                            .getPwaConfigurationClass();
+                }
 
                 // Initialize PwaRegistry with found PWA settings
-                PWA pwa = reg.getPwaConfigurationClass() != null ? reg
-                        .getPwaConfigurationClass().getAnnotation(PWA.class)
-                        : null;
+                PWA pwa = clazz != null ? clazz.getAnnotation(PWA.class) : null;
+
                 // will fall back to defaults, if no PWA annotation available
                 try {
                     attribute = new PwaRegistry(pwa, servletContext);
@@ -285,7 +307,6 @@ public class PwaRegistry implements Serializable {
                     throw new UncheckedIOException(
                             "Failed to initialize the PWA registry", ioe);
                 }
-
             }
         }
 

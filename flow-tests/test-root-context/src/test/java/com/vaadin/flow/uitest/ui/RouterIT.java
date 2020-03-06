@@ -5,14 +5,14 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.ChildNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooBarNavigationTarget;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet.FooNavigationTarget;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
 
 public class RouterIT extends ChromeBrowserTest {
 

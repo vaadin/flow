@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -28,6 +29,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class InfoIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore
     public void productionModeServlet() {
         openProduction();
         Assert.assertEquals("true", getInfoValue("Production mode"));

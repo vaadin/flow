@@ -22,7 +22,6 @@ import java.util.function.Function;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_BOWER_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -149,21 +148,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public boolean isBowerMode() {
-        return getBooleanProperty(SERVLET_PARAMETER_BOWER_MODE, false);
-    }
-
-    @Override
-    public boolean isCompatibilityMode() {
-        String bower = getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null);
-        if (bower == null) {
-            return getBooleanProperty(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
-        }
-        return isBowerMode();
-    }
-
-    @Override
     public boolean isRequestTiming() {
         return getBooleanProperty(SERVLET_PARAMETER_REQUEST_TIMING,
                 !isProductionMode());
@@ -183,6 +167,11 @@ public class PropertyDeploymentConfiguration
     @Override
     public int getHeartbeatInterval() {
         return DefaultDeploymentConfiguration.DEFAULT_HEARTBEAT_INTERVAL;
+    }
+
+    @Override
+    public int getMaxMessageSuspendTimeout() {
+        return DefaultDeploymentConfiguration.DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT;
     }
 
     @Override

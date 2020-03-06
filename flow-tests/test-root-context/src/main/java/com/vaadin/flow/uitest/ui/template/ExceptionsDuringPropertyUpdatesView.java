@@ -19,7 +19,6 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -30,7 +29,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.template.ExceptionsDuringPropertyUpdatesView.ExceptionsDuringPropertyUpdatesModel;
 
 @Tag("exceptions-property-update")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/ExceptionsDuringPropertyUpdates.html")
 @Route(value = "com.vaadin.flow.uitest.ui.template.ExceptionsDuringPropertyUpdatesView", layout = ViewTestLayout.class)
 @JsModule("ExceptionsDuringPropertyUpdates.js")
 public class ExceptionsDuringPropertyUpdatesView

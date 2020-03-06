@@ -39,7 +39,7 @@ public class Select extends AbstractSinglePropertyField<Select, String> {
      */
     public Select() {
         super(VALUE_PROPERTY, "", false);
-        getElement().synchronizeProperty(VALUE_PROPERTY, "change");
+        getElement().addPropertyChangeListener(VALUE_PROPERTY, "change", event -> {});
     }
 
     public void addItem(Object item, String name) {

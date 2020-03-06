@@ -49,12 +49,13 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -78,10 +79,13 @@ public class BuildFrontendMojoTest {
     private File importsFile;
     private File generatedFolder;
     private File nodeModulesPath;
-    private File flowPackagPath;
+    private File flowResourcesFolder;
     private File projectFrontendResourcesDirectory;
     private String packageJson;
     private String webpackConfig;
+    private File defaultJavaSource;
+    private String openApiJsonFile;
+    private File generatedTsFolder;
 
     private File tokenFile;
 
@@ -100,7 +104,7 @@ public class BuildFrontendMojoTest {
         generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        flowPackagPath = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        flowResourcesFolder = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
@@ -108,6 +112,11 @@ public class BuildFrontendMojoTest {
 
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
+
+        defaultJavaSource = new File(".", "src/test/java");
+        openApiJsonFile = new File(npmFolder,
+                "target/generated-resources/openapi.json").getAbsolutePath();
+        generatedTsFolder = new File(npmFolder, "frontend/generated");
 
         Assert.assertTrue("Failed to create a test project resources",
                 projectFrontendResourcesDirectory.mkdirs());
@@ -129,11 +138,21 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", npmFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "generateBundle", false);
         ReflectionUtils.setVariableValueInObject(mojo, "runNpmInstall", false);
-        ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
-                "false");
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
-        flowPackagPath.mkdirs();
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                new File(npmFolder, "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+                new File(npmFolder,
+                        "src/main/resources/application.properties"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+                defaultJavaSource);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+                generatedTsFolder);
+        ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
+                flowResourcesFolder);
+
+        flowResourcesFolder.mkdirs();
         generatedFolder.mkdirs();
 
         setProject(mojo, npmFolder);
@@ -196,10 +215,14 @@ public class BuildFrontendMojoTest {
         Assert.assertFalse(importsFile.exists());
 
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "const div = document.createElement('div');",
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                "document.body.setAttribute('theme', 'dark');"));
+                "export const addCssBlock = function(block, before = false) {",
+                " const tpl = document.createElement('template');",
+                " tpl.innerHTML = block;",
+                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
+                "};",
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
+                "document.documentElement.setAttribute('theme', 'dark');"));
+
         expectedLines.addAll(getExpectedImports());
 
         mojo.execute();
@@ -207,7 +230,7 @@ public class BuildFrontendMojoTest {
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
         Assert.assertTrue(
-                new File(flowPackagPath, "ExampleConnector.js").exists());
+                new File(flowResourcesFolder, "/ExampleConnector.js").exists());
     }
 
     @Test
@@ -306,7 +329,8 @@ public class BuildFrontendMojoTest {
         assertContainsPackage(dependencies, "@vaadin/vaadin-button",
                 "@vaadin/vaadin-element-mixin");
 
-        Assert.assertFalse("Foo should have been removed", dependencies.hasKey("foo"));
+        Assert.assertFalse("Foo should have been removed",
+                dependencies.hasKey("foo"));
         Assert.assertTrue("Bar should remain", dependencies.hasKey("bar"));
     }
 
@@ -325,11 +349,16 @@ public class BuildFrontendMojoTest {
                 webpackOutputDirectory);
 
         JsonObject initialBuildInfo = Json.createObject();
-        initialBuildInfo.put(SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        initialBuildInfo.put("npmFolder", "npm");
-        initialBuildInfo.put("generatedFolder", "generated");
-        initialBuildInfo.put("frontendFolder", "frontend");
+        initialBuildInfo.put(Constants.NPM_TOKEN, "npm");
+        initialBuildInfo.put(Constants.GENERATED_TOKEN, "generated");
+        initialBuildInfo.put(Constants.FRONTEND_TOKEN, "frontend");
+
+        initialBuildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, true);
+        initialBuildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE, true);
+        initialBuildInfo
+                .put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
+
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
@@ -341,16 +370,28 @@ public class BuildFrontendMojoTest {
         JsonObject buildInfo = JsonUtil.parse(json);
         Assert.assertNotNull("devMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-        Assert.assertNotNull("compatibilityMode token should be available",
-                buildInfo.get(SERVLET_PARAMETER_COMPATIBILITY_MODE));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
         Assert.assertNull("npmFolder should have been removed",
-                buildInfo.get("npmFolder"));
+                buildInfo.get(Constants.NPM_TOKEN));
         Assert.assertNull("generatedFolder should have been removed",
-                buildInfo.get("generatedFolder"));
+                buildInfo.get(Constants.GENERATED_TOKEN));
         Assert.assertNull("frontendFolder should have been removed",
-                buildInfo.get("frontendFolder"));
+                buildInfo.get(Constants.FRONTEND_TOKEN));
+
+        Assert.assertNull(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM
+                        + "should have been removed",
+                buildInfo.get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertNull(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE
+                        + "should have been removed",
+                buildInfo.get(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertNull(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
+                        + "should have been removed",
+                buildInfo.get(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
@@ -359,6 +400,37 @@ public class BuildFrontendMojoTest {
         mojo.execute();
 
         Assert.assertFalse(tokenFile.exists());
+    }
+
+    @Test
+    public void mavenGoal_generateOpenApiJson_when_itIsInClientSideMode()
+            throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
+            throws Exception {
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "useDeprecatedV14Bootstrapping", "true");
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+        mojo.execute();
+        Assert.assertFalse(FileUtils.fileExists(openApiJsonFile));
+    }
+
+    @Test
+    public void mavenGoal_generateTsFiles_when_enabled() throws Exception {
+        File connectClientApi = new File(generatedTsFolder,
+                "connect-client.default.ts");
+        File endpointClientApi = new File(generatedTsFolder, "MyEndpoint.ts");
+
+        Assert.assertFalse(connectClientApi.exists());
+        Assert.assertFalse(endpointClientApi.exists());
+        mojo.execute();
+        Assert.assertTrue(connectClientApi.exists());
+        Assert.assertTrue(endpointClientApi.exists());
     }
 
     static void assertContainsPackage(JsonObject dependencies,
@@ -436,8 +508,7 @@ public class BuildFrontendMojoTest {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "@vaadin/flow-frontend/ExampleConnector.js",
-                "./frontend-p3-template.js", "./local-p3-template.js",
-                "./foo.js",
+                "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js");
     }

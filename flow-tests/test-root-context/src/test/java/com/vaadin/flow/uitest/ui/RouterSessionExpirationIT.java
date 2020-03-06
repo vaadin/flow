@@ -18,10 +18,13 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class RouterSessionExpirationIT extends ChromeBrowserTest {
+
+
 
     @Override
     protected String getTestPath() {
@@ -36,6 +39,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
         String sessionId = getSessionId();
         navigateToFirstView();
         Assert.assertEquals(sessionId, getSessionId());
+
         navigateToSesssionExpireView();
         // expired session causes page reload, after the page reload there will
         // be a new session
@@ -83,8 +87,6 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
 
     private void navigateTo(String linkText) {
         findElement(By.linkText(linkText)).click();
-        Assert.assertNotNull(
-                findElement(By.xpath("//strong[text()='" + linkText + "']")));
-
+        waitForElementPresent(By.xpath("//strong[text()='" + linkText + "']"));
     }
 }

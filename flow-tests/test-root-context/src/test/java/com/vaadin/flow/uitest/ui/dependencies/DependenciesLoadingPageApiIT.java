@@ -1,8 +1,6 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import org.junit.experimental.categories.Category;
-
-import com.vaadin.flow.testcategory.IgnoreNPM;
+import org.junit.Ignore;
 
 /**
  * See {@link DependenciesLoadingAnnotationsIT} for more details about the test.
@@ -14,7 +12,12 @@ import com.vaadin.flow.testcategory.IgnoreNPM;
  * @since 1.0.
  * @see DependenciesLoadingAnnotationsIT
  */
-@Category(IgnoreNPM.class)
+@Ignore("Doesn't work ccdm, see https://github.com/vaadin/flow/issues/7328")
 public class DependenciesLoadingPageApiIT
         extends DependenciesLoadingAnnotationsIT {
+
+    @Override
+    protected String getCssSuffix() {
+        return "WebRes";
+    }
 }

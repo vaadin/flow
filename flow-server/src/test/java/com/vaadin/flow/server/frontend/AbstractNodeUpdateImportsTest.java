@@ -134,10 +134,13 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
     public void generateImportsFile_fileContainsThemeLinesAndExpectedImportsAndCssImportLinesAndLogReports()
             throws Exception {
         List<String> expectedLines = new ArrayList<>(Arrays.asList(
-                "const div = document.createElement('div');",
-                "div.innerHTML = '<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>';",
-                "document.head.insertBefore(div.firstElementChild, document.head.firstChild);",
-                "document.body.setAttribute('theme', 'dark');"));
+                "export const addCssBlock = function(block, before = false) {",
+                " const tpl = document.createElement('template');",
+                " tpl.innerHTML = block;",
+                " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);",
+                "};",
+                "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);",
+                "document.documentElement.setAttribute('theme', 'dark');"));
         expectedLines.addAll(getExpectedImports());
 
         // An import without `.js` extension
@@ -183,7 +186,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 // fix for windows
                 .replace("\r", "");
         assertContains(output, true,
-                "changing 'frontend://frontend-p3-template.js' to './frontend-p3-template.js'",
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
                 "Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
@@ -192,9 +194,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Using regex match because of the ➜ character in TC
         assertContains(output, true,
                 "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
-
-        assertContains(output, false,
-                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'");
     }
 
     @Test

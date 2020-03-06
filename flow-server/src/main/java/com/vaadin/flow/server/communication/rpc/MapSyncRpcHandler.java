@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -32,8 +30,8 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
-import com.vaadin.flow.internal.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.shared.JsonConstants;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonObject;
 
@@ -73,15 +71,6 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
 
-        if (node.hasFeature(SynchronizedPropertiesList.class)) {
-            DisabledUpdateMode syncMode = node
-                    .getFeature(SynchronizedPropertiesList.class)
-                    .getDisabledUpdateMode(property);
-
-            if (syncMode != null) {
-                seenUpdateModes.add(syncMode);
-            }
-        }
         if (node.hasFeature(ElementListenerMap.class)) {
             DisabledUpdateMode eventMode = node
                     .getFeature(ElementListenerMap.class)

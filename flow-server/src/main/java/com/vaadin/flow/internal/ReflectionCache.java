@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -45,6 +46,12 @@ public class ReflectionCache<C, T> {
 
     private final SerializableFunction<Class<? extends C>, T> valueProvider;
 
+    /*
+     * Capture the action in a field to prevent garbage collection. This is
+     * necessary because the actions are stored with weak references.
+     */
+    private final SerializableRunnable clearAction = this::clear;
+
     /**
      * Creates a new reflection cache with the given value provider. The value
      * provider will be used to produce a new cached value whenever there is a
@@ -62,7 +69,7 @@ public class ReflectionCache<C, T> {
         }
         this.valueProvider = wrapValueProvider(valueProvider);
 
-        addClearAllAction(this::clear);
+        addClearAllAction(clearAction);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -134,8 +141,7 @@ public class ReflectionCache<C, T> {
      * @return a registration for removing the action
      */
     public static Registration addClearAllAction(Runnable action) {
-        clearAllActions.add(action);
-        return () -> clearAllActions.remove(action);
+        return Registration.addAndRemove(clearAllActions, action);
     }
 
     /**

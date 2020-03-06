@@ -23,6 +23,8 @@ import java.lang.annotation.Annotation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -46,12 +48,12 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -85,15 +87,16 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         }
 
         @Override
-        protected Optional<ThemeDefinition> getTheme() {
-            Optional<Theme> optionalTheme = getPageConfigurationAnnotation(
-                    Theme.class);
-            return optionalTheme.map(ThemeDefinition::new);
-        }
-
-        @Override
         protected Optional<PwaRegistry> getPwaRegistry() {
             return Optional.empty();
+        }
+    }
+
+    private static class WebComponentBootstrapPageBuilder
+            extends BootstrapPageBuilder {
+        @Override
+        protected List<String> getChunkKeys(JsonObject chunks) {
+            return Collections.singletonList(EXPORT_CHUNK);
         }
     }
 
@@ -101,7 +104,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * Creates a new bootstrap handler with default page builder.
      */
     public WebComponentBootstrapHandler() {
-        super();
+        super(new WebComponentBootstrapPageBuilder());
     }
 
     /**
@@ -195,25 +198,20 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        if (session.getService().getDeploymentConfiguration()
-                .isCompatibilityMode()) {
-            return super.synchronizedHandleRequest(session, request, response);
-        } else {
-            // Find UI class
-            Class<? extends UI> uiClass = getUIClass(request);
+        // Find UI class
+        Class<? extends UI> uiClass = getUIClass(request);
 
-            BootstrapContext context = createAndInitUI(uiClass, request,
-                    response, session);
+        BootstrapContext context = createAndInitUI(uiClass, request, response,
+                session);
 
-            HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
-                    response::setDateHeader);
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
 
-            String serviceUrl = getServiceUrl(request, response);
+        String serviceUrl = getServiceUrl(request, response);
 
-            Document document = getPageBuilder().getBootstrapPage(context);
-            writeBootstrapPage(response, document.head(), serviceUrl);
-            return true;
-        }
+        Document document = getPageBuilder().getBootstrapPage(context);
+        writeBootstrapPage(response, document.head(), serviceUrl);
+        return true;
     }
 
     /**
@@ -269,7 +267,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
          */
         response.setContentType(contentType);
         /*
-         * Collection of Elements that should be transferred to the web 
+         * Collection of Elements that should be transferred to the web
          * component shadow DOMs rather than the page head
          */
         ArrayList<com.vaadin.flow.dom.Element> elementsForShadows = new ArrayList<>();
@@ -311,13 +309,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 || "style".equals(element.tagName())) {
             return true;
         } else {
-            // embedding context should not provide polyfill, it is left to the
-            // end-user
+            // embedding context should not provide polyfill, it is left
+            // to the end-user
             return "script".equals(element.tagName())
                     && element.attr("src").contains("webcomponents-loader.js");
         }
     }
-    
+
     private static Optional<com.vaadin.flow.dom.Element> getElementForShadowDom(
             Element element) {
         if ("style".equals(element.tagName())) {

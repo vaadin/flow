@@ -32,6 +32,9 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
     @Test
     public void dynamicDependencyIsExecutedBeforeOtherMessageProcessing() {
         open();
+        if (hasClientUnknownIssue()) {
+            return;
+        }
 
         WebElement depElement = findElement(By.id("dep"));
         // true means that the added component (a new one) is not yet in the DOM
@@ -57,6 +60,9 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
 
     private void testErrorCase(String caseName, String errorMessageSnippet) {
         open();
+        if (hasClientUnknownIssue()) {
+            return;
+        }
 
         findElement(By.id(caseName)).click();
 

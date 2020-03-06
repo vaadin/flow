@@ -95,7 +95,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         createImport("./src/client-side-no-themed-template.js", "");
         createImport("./src/main-template.js",
                 "import 'xx' from './client-side-template.js';"
-                        + "import \"./client-side-no-themed-template.js\"';"
+                        + "import \"./client-side-no-themed-template.js\";"
                         + "import './src/wrong-themed-template.js';"
                         + "import '@vaadin/vaadin-button/src/vaadin-button.js'");
 

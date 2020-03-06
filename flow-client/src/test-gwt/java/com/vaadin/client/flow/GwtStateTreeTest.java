@@ -22,9 +22,14 @@ import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
+import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.reactive.Reactive;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
+import elemental.client.Browser;
+import elemental.dom.Element;
+import elemental.html.DivElement;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -123,6 +128,50 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         Reactive.flush();
     }
 
+    public void testPrepareForResync_unregistersDescendantsAndClearsRootChildren() {
+        // given
+        StateNode root = tree.getRootNode();
+        StateNode child = new StateNode(2, tree);
+        child.setParent(root);
+        tree.registerNode(child);
+        root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0,child);
+
+        StateNode grandChild = new StateNode(3, tree);
+        grandChild.setParent(child);
+        tree.registerNode(grandChild);
+        child.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, grandChild);
+
+        // when
+        tree.prepareForResync();
+
+        // then
+        assertTrue(!root.isUnregistered());
+        assertEquals(0, root.getList(NodeFeatures.VIRTUAL_CHILDREN).length());
+        assertTrue(child.isUnregistered());
+        assertEquals(0, child.getList(NodeFeatures.ELEMENT_CHILDREN).length());
+        assertTrue(grandChild.isUnregistered());
+    }
+
+    public void testPrepareForResync_rejectsPendingPromise() {
+        // given
+        StateNode root = tree.getRootNode();
+        StateNode child = new StateNode(2, tree);
+        child.setParent(root);
+        tree.registerNode(child);
+        root.getList(NodeFeatures.VIRTUAL_CHILDREN).add(0,child);
+
+        final DivElement element = Browser.getDocument().createDivElement();
+        child.setDomNode(element);
+        ServerEventObject.get(element);
+        createMockPromise(element);
+
+        // when
+        tree.prepareForResync();
+
+        // then
+        assertFalse(getMockPromiseResult(element));
+    }
+
     private native JsArray<JavaScriptObject> getArgArray()
     /*-{
         return [ true, "bar", 46.2];
@@ -132,4 +181,20 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
     /*-{
         return [ "item" ];
      }-*/;
+
+    private static native boolean createMockPromise(Element element)
+    /*-{
+       var eventObject = element.$server["}p"];
+       eventObject.promiseResult = null;
+       eventObject.promises[0] = [function() {
+           eventObject.promiseResult = true;
+       },function() {
+           eventObject.promiseResult = false;
+       }];
+    }-*/;
+
+    private static native boolean getMockPromiseResult(Element element)
+    /*-{
+        return element.$server["}p"].promiseResult;
+    }-*/;
 }

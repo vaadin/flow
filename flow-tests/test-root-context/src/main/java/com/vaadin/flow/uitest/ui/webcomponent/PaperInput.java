@@ -20,12 +20,10 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
 @Tag("paper-input")
-@HtmlImport("frontend://bower_components/paper-input/paper-input.html")
 @NpmPackage(value = "@polymer/paper-input", version = "3.0.2")
 @JsModule("@polymer/paper-input/paper-input.js")
 public class PaperInput extends Component {
