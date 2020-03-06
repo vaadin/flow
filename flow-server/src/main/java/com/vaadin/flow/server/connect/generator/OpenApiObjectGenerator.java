@@ -331,14 +331,20 @@ public class OpenApiObjectGenerator {
 
     private String getEndpointName(ClassOrInterfaceDeclaration classDeclaration,
             AnnotationExpr endpointAnnotation) {
-        String endpointName = Optional.ofNullable(endpointAnnotation)
-                .filter(Expression::isSingleMemberAnnotationExpr)
-                .map(Expression::asSingleMemberAnnotationExpr)
-                .map(SingleMemberAnnotationExpr::getMemberValue)
-                .map(Expression::asStringLiteralExpr)
-                .map(LiteralStringValueExpr::getValue)
-                .filter(GeneratorUtils::isNotBlank)
-                .orElse(classDeclaration.getNameAsString());
+        String endpointName;
+        if (endpointAnnotation.getChildNodes().size() > 1) {
+            endpointName = endpointAnnotation.getChildNodes().get(1).getTokenRange().get().getEnd().asString();
+            endpointName = endpointName.substring(1, endpointName.length() - 1);
+        } else {
+            endpointName = Optional.ofNullable(endpointAnnotation)
+                    .filter(Expression::isSingleMemberAnnotationExpr)
+                    .map(Expression::asSingleMemberAnnotationExpr)
+                    .map(SingleMemberAnnotationExpr::getMemberValue)
+                    .map(Expression::asStringLiteralExpr)
+                    .map(LiteralStringValueExpr::getValue)
+                    .filter(GeneratorUtils::isNotBlank)
+                    .orElse(classDeclaration.getNameAsString());
+        }
 
         String validationError = endpointNameChecker.check(endpointName);
         if (validationError != null) {
