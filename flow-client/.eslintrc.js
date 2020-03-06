@@ -47,7 +47,8 @@ module.exports = {
             "space-before-function-paren": "off",
             "space-infix-ops": "off",
             "no-trailing-spaces": "off",
-            "func-call-spacing": "off"
+            "func-call-spacing": "off",
+            "no-array-constructor": "off"
         }
     }]
 };
