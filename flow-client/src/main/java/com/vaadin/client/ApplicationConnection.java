@@ -93,10 +93,43 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
+            registerLiveRefreshIndicator();
         }
 
         registry.getLoadingIndicator().show();
     }
+
+    private native void registerLiveRefreshIndicator()
+    /*-{
+    // console.log("Registering LiveReload channel listener");
+    var ws = new WebSocket("ws://localhost:35729");
+    function getOrCreateLiveRefreshIndicator() {
+        var indicator = document.getElementById("vaadin-live-refresh-indicator");
+        if (indicator === null) {
+            var indicator = document.createElement("div");
+            indicator.id = "vaadin-live-refresh-indicator";
+            indicator.style.position = "fixed";
+            indicator.style.padding = "10px 10px 10px 10px";
+            indicator.style.margin = "10px 10px 10px 10px";
+            indicator.style.left = "0";
+            indicator.style.top = "0";
+            indicator.style.border = "1px solid";
+            indicator.style.zIndex = "10000";
+            document.body.appendChild(indicator);
+        }
+        return indicator;
+    }
+    ws.onmessage = function (msg) {
+        var data = JSON.parse(msg.data);
+        if (data.command === "hello") {
+            getOrCreateLiveRefreshIndicator().innerHTML = "⚡️ Live refresh active";
+        }
+        if (data.command === "reload") {
+            getOrCreateLiveRefreshIndicator().innerHTML = "⚡ Refresh in progress...";
+            location.reload();
+        }
+    }
+    }-*/;
 
     /**
      * Starts this application.
