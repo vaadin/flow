@@ -132,6 +132,8 @@ public class VaadinConnectController {
      * @param context
      *            Spring context to extract beans annotated with {@link Endpoint}
      *            from
+     * @param servletContext
+     *            The servlet context for the controller.
      */
     public VaadinConnectController(
             @Autowired(required = false) @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
