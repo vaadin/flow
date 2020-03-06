@@ -271,24 +271,18 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
             throws Exception {
-        System.setProperty(
-                Constants.VAADIN_PREFIX + FrontendUtils.PROJECT_BASEDIR,
-                initParams.get(FrontendUtils.PROJECT_BASEDIR));
-
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
+        Mockito.when(servletContext.getInitParameterNames())
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PROJECT_BASEDIR)));
+        Mockito.when(
+                servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
+                .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
-
-    @Override
-    public void teardown() throws Exception, SecurityException {
-        super.teardown();
-        System.clearProperty(
-                Constants.VAADIN_PREFIX + FrontendUtils.PROJECT_BASEDIR);
-    }
-
 
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
