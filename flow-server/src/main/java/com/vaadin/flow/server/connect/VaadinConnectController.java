@@ -96,8 +96,7 @@ public class VaadinConnectController {
      *      EndpointNameChecker, ExplicitNullableTypeChecker,
      *      ApplicationContext)
      */
-    public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER =
-            "vaadinEndpointMapper";
+    public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER = "vaadinEndpointMapper";
 
     final Map<String, VaadinEndpointData> vaadinEndpoints = new HashMap<>();
 
@@ -126,8 +125,8 @@ public class VaadinConnectController {
      *            the method parameter and return value type checker to verify
      *            that null values are explicit
      * @param context
-     *            Spring context to extract beans annotated with {@link Endpoint}
-     *            from
+     *            Spring context to extract beans annotated with
+     *            {@link Endpoint} from
      */
     public VaadinConnectController(
             @Autowired(required = false) @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
@@ -141,9 +140,9 @@ public class VaadinConnectController {
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
-        context.getBeansWithAnnotation(Endpoint.class).forEach(
-                (name, endpointBean) -> validateEndpointBean(endpointNameChecker,
-                        name, endpointBean));
+        context.getBeansWithAnnotation(Endpoint.class)
+                .forEach((name, endpointBean) -> validateEndpointBean(
+                        endpointNameChecker, name, endpointBean));
     }
 
     private static Logger getLogger() {
@@ -167,8 +166,8 @@ public class VaadinConnectController {
                     name, beanType, Endpoint.class)
                     + String.format(
                             "Either modify the bean declaration so that it is not an "
-                                    + "anonymous class or specify an endpoint " +
-                                    "name in the '%s' annotation",
+                                    + "anonymous class or specify an endpoint "
+                                    + "name in the '%s' annotation",
                             Endpoint.class));
         }
         String validationError = endpointNameChecker.check(endpointName);
@@ -225,8 +224,7 @@ public class VaadinConnectController {
      *            the current request which triggers the endpoint call
      * @return execution result as a JSON string or an error message string
      */
-    @PostMapping(path = "/{endpoint}/{method}", produces =
-            MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(path = "/{endpoint}/{method}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<String> serveEndpoint(
             @PathVariable("endpoint") String endpointName,
             @PathVariable("method") String methodName,
@@ -254,9 +252,11 @@ public class VaadinConnectController {
 
             // Put a VaadinRequest in the instances object so as the request is
             // available in the end-point method
-            VaadinServletService service = (VaadinServletService)VaadinService.getCurrent();
+            VaadinServletService service = (VaadinServletService) VaadinService
+                    .getCurrent();
             if (service != null) {
-                service.setCurrentInstances(new VaadinServletRequest(request, service), null);
+                service.setCurrentInstances(
+                        new VaadinServletRequest(request, service), null);
             }
 
             return invokeVaadinEndpointMethod(endpointName, methodName,
@@ -280,10 +280,10 @@ public class VaadinConnectController {
         }
     }
 
-    private ResponseEntity<String> invokeVaadinEndpointMethod(String endpointName,
-            String methodName, Method methodToInvoke, ObjectNode body,
-            VaadinEndpointData vaadinEndpointData, HttpServletRequest request)
-            throws JsonProcessingException {
+    private ResponseEntity<String> invokeVaadinEndpointMethod(
+            String endpointName, String methodName, Method methodToInvoke,
+            ObjectNode body, VaadinEndpointData vaadinEndpointData,
+            HttpServletRequest request) throws JsonProcessingException {
         String checkError = accessChecker.check(methodToInvoke, request);
         if (checkError != null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -306,7 +306,8 @@ public class VaadinConnectController {
         Object[] vaadinEndpointParameters;
         try {
             vaadinEndpointParameters = getVaadinEndpointParameters(
-                    requestParameters, javaParameters, methodName, endpointName);
+                    requestParameters, javaParameters, methodName,
+                    endpointName);
         } catch (EndpointValidationException e) {
             getLogger().debug(
                     "Endpoint '{}' method '{}' received invalid response",
@@ -385,8 +386,7 @@ public class VaadinConnectController {
     private ResponseEntity<String> handleMethodExecutionError(
             String endpointName, String methodName, InvocationTargetException e)
             throws JsonProcessingException {
-        if (EndpointException.class
-                .isAssignableFrom(e.getCause().getClass())) {
+        if (EndpointException.class.isAssignableFrom(e.getCause().getClass())) {
             EndpointException endpointException = ((EndpointException) e
                     .getCause());
             getLogger().debug("Endpoint '{}' method '{}' aborted the execution",
@@ -477,8 +477,7 @@ public class VaadinConnectController {
         String message = String.format(
                 "Validation error in endpoint '%s' method '%s'", endpointName,
                 methodName);
-        return new EndpointValidationException(message,
-                validationErrorData);
+        return new EndpointValidationException(message, validationErrorData);
     }
 
     private List<ValidationErrorData> createBeanValidationErrors(

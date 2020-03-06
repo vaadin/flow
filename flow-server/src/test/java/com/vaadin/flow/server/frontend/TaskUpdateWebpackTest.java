@@ -168,28 +168,25 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "useClientSideIndexFileForBootstrapping should be false by "
                         + "default",
-                webpackGeneratedContents
-                        .contains(
-                                "const useClientSideIndexFileForBootstrapping = false;"));
+                webpackGeneratedContents.contains(
+                        "const useClientSideIndexFileForBootstrapping = false;"));
 
     }
 
     @Test
     public void should_setClientSideBootstrapMode_when_runningV15Bootsrapping()
             throws IOException {
-        webpackUpdater = new TaskUpdateWebpack(
-                frontendFolder, baseDir,
-                new File(baseDir, TARGET + "classes"),
-                WEBPACK_CONFIG, WEBPACK_GENERATED,
+        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
+                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
+                WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false);
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue(
                 "useClientSideIndexFileForBootstrapping should be true",
-                webpackGeneratedContents
-                        .contains(
-                                "const useClientSideIndexFileForBootstrapping = true;"));
+                webpackGeneratedContents.contains(
+                        "const useClientSideIndexFileForBootstrapping = true;"));
 
     }
 

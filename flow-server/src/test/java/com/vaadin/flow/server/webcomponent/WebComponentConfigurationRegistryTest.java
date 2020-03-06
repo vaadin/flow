@@ -255,9 +255,8 @@ public class WebComponentConfigurationRegistryTest {
 
         Set<WebComponentConfiguration<? extends Component>> configurations = new HashSet<>();
         for (Class<? extends WebComponentExporter<? extends Component>> exporter : exporters)
-            configurations.add(factory
-                    .create(new DefaultWebComponentExporterFactory(exporter)
-                            .create()));
+            configurations.add(factory.create(
+                    new DefaultWebComponentExporterFactory(exporter).create()));
         return configurations;
     }
 

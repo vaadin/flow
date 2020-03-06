@@ -74,7 +74,6 @@ public abstract class AbstractNodeUpdatePackagesTest
     private File packageLock;
     private File appNodeModules;
 
-
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
@@ -85,11 +84,13 @@ public abstract class AbstractNodeUpdatePackagesTest
         NodeUpdateTestUtil.createStubNode(true, true,
                 baseDir.getAbsolutePath());
 
-        packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir, resourcesDir);
+        packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir,
+                resourcesDir);
 
         classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, resourcesDir, false, false);
+                getScanner(classFinder), baseDir, generatedDir, resourcesDir,
+                false, false);
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -170,13 +171,15 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, false);
+                getScanner(classFinder), baseDir, generatedDir, null, false,
+                false);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, true);
+                getScanner(classFinder), baseDir, generatedDir, null, false,
+                true);
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -187,7 +190,8 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, false);
+                getScanner(classFinder), baseDir, generatedDir, null, false,
+                false);
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -195,7 +199,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         Files.write(packageLock.toPath(), Collections.singletonList("{}"));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false, true);
+                getScanner(classFinder), baseDir, generatedDir, null, false,
+                true);
         packageUpdater.execute();
         Assert.assertFalse(packageLock.exists());
     }
@@ -344,7 +349,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         ClassFinder classFinder = getClassFinder();
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, true, false);
+                getScanner(classFinder), baseDir, generatedDir, null, true,
+                false);
         packageUpdater.execute();
 
         // clean up happened

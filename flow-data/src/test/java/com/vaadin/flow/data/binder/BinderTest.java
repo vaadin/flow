@@ -340,15 +340,13 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     private void do_test_save_bound_beanAsDraft(boolean setBean) {
         Binder<Person> binder = new Binder<>();
-        binder.forField(nameField)
-            .withValidator((value,context) -> {
-                if (value.equals("Mike")) {
-                    return ValidationResult.ok();
-                } else {
-                    return ValidationResult.error("value must be Mike");
-                }
-            })
-            .bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(nameField).withValidator((value, context) -> {
+            if (value.equals("Mike")) {
+                return ValidationResult.ok();
+            } else {
+                return ValidationResult.error("value must be Mike");
+            }
+        }).bind(Person::getFirstName, Person::setFirstName);
         binder.forField(ageField)
                 .withConverter(new StringToIntegerConverter(""))
                 .bind(Person::getAge, Person::setAge);
@@ -549,13 +547,15 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         TestTextField textField = new TestTextField();
         assertFalse(textField.isRequiredIndicatorVisible());
 
-        BindingBuilder<Person, String> bindingBuilder = binder.forField(textField);
+        BindingBuilder<Person, String> bindingBuilder = binder
+                .forField(textField);
         assertFalse(textField.isRequiredIndicatorVisible());
 
         bindingBuilder.asRequired("foobar");
         assertTrue(textField.isRequiredIndicatorVisible());
 
-        Binding<Person, String> binding = bindingBuilder.bind(Person::getFirstName, Person::setFirstName);
+        Binding<Person, String> binding = bindingBuilder
+                .bind(Person::getFirstName, Person::setFirstName);
         binder.setBean(item);
         assertThat(textField.getErrorMessage(), isEmptyString());
 
@@ -576,12 +576,15 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     public void settingAsRequiredEnabledFalseWhenNoAsRequired() {
         TestTextField textField = new TestTextField();
 
-        BindingBuilder<Person, String> bindingBuilder = binder.forField(textField);
-        Binding<Person, String> binding = bindingBuilder.bind(Person::getFirstName, Person::setFirstName);
+        BindingBuilder<Person, String> bindingBuilder = binder
+                .forField(textField);
+        Binding<Person, String> binding = bindingBuilder
+                .bind(Person::getFirstName, Person::setFirstName);
 
         binder.readBean(item);
 
-        // TextField input is not set required, this should trigger IllegalStateExceptipon
+        // TextField input is not set required, this should trigger
+        // IllegalStateExceptipon
         binding.setAsRequiredEnabled(false);
     }
 

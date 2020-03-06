@@ -280,25 +280,28 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
-            if(!routeDataList.isEmpty()) {
+            List<RouteData> routeDataList = getRouteRegistry()
+                    .getRegisteredRoutes();
+            if (!routeDataList.isEmpty()) {
                 addUsageStatistics();
             }
-            routeDataList.stream()
-                    .map(Object::toString).forEach(logger::debug);
+            routeDataList.stream().map(Object::toString).forEach(logger::debug);
         }
 
         initialized = true;
     }
 
     private void addUsageStatistics() {
-        if(UsageStatistics.getEntries().anyMatch(
+        if (UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
             UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID, Version.getFullVersion());
-        } else if(UsageStatistics.getEntries().noneMatch(
-                e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER.equals(e.getName()))) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER, Version.getFullVersion());
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
+                    Version.getFullVersion());
+        } else if (UsageStatistics.getEntries()
+                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
+                        .equals(e.getName()))) {
+            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
+                    Version.getFullVersion());
         }
     }
 
@@ -2097,7 +2100,8 @@ public abstract class VaadinService implements Serializable {
             WrappedSession wrappedSession) {
         assert VaadinSession.hasLock(this, wrappedSession);
         writeToHttpSession(wrappedSession, session);
-        wrappedSession.setAttribute(getCsrfTokenAttributeName(), session.getCsrfToken());
+        wrappedSession.setAttribute(getCsrfTokenAttributeName(),
+                session.getCsrfToken());
         session.refreshTransients(wrappedSession, this);
     }
 
@@ -2363,6 +2367,7 @@ public abstract class VaadinService implements Serializable {
      * @return the attribute name string
      */
     public static String getCsrfTokenAttributeName() {
-        return VaadinSession.class.getName() + "." + ApplicationConstants.CSRF_TOKEN;
+        return VaadinSession.class.getName() + "."
+                + ApplicationConstants.CSRF_TOKEN;
     }
 }

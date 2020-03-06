@@ -43,9 +43,7 @@ public class CaseUtilTest {
     public void capitalize() {
         assertNull(CaseUtil.capitalize(null));
         assertEquals("", CaseUtil.capitalize(""));
-        assertEquals("Great",
-                CaseUtil.capitalize("great"));
-        assertEquals("WONDERFUL",
-                CaseUtil.capitalize("WONDERFUL"));
+        assertEquals("Great", CaseUtil.capitalize("great"));
+        assertEquals("WONDERFUL", CaseUtil.capitalize("WONDERFUL"));
     }
 }

@@ -85,11 +85,11 @@ public final class ServerEventObject extends JavaScriptObject {
         Object.defineProperty(this, name, {
             value: function(promiseId, success, value) {
                 var promise = this[name].promises[promiseId];
-
+    
                 // undefined if client-side node was recreated after execution was scheduled
                 if (promise !== undefined) {
                     delete this[name].promises[promiseId];
-
+    
                     if (success) {
                         // Resolve
                         promise[0](value);

@@ -149,10 +149,10 @@ public class HasThemeTest {
         assertThemes(component, "baz1", "bar1");
     }
 
-    private void assertThemes(HasThemeTest.HasThemeComponent c, String... expectedThemes) {
+    private void assertThemes(HasThemeTest.HasThemeComponent c,
+            String... expectedThemes) {
         Set<String> actual = c.getThemeNames();
-        Set<String> expected = new HashSet<>(
-                Arrays.asList(expectedThemes));
+        Set<String> expected = new HashSet<>(Arrays.asList(expectedThemes));
         Assert.assertEquals(expected, actual);
     }
 

@@ -48,23 +48,26 @@ public class NodeTasksTest {
     }
 
     @Test
-    public void should_UseDefaultFolders()throws Exception {
+    public void should_UseDefaultFolders() throws Exception {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
 
-
-        Assert.assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME)
+                        .exists());
     }
 
     @Test
@@ -74,19 +77,24 @@ public class NodeTasksTest {
 
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
 
-        Assert.assertEquals(new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, "my/custom/generated/folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my/custom/generated/folder")
+                        .getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME)
+                        .exists());
     }
 
     @Test
@@ -113,15 +121,14 @@ public class NodeTasksTest {
 
     @Test
     public void should_Generate_Connect_Files() throws Exception {
-        File src = new File(getClass().getClassLoader().getResource("java").getFile());
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
         File dir = new File(userDir);
         File json = new File(dir, "api-file.json");
 
-        Builder builder = new Builder(
-                new DefaultClassFinder(
-                    Collections.singleton(ConnectEndpointsForTesting.class)), dir)
-                        .enablePackagesUpdate(false)
-                        .enableImportsUpdate(false)
+        Builder builder = new Builder(new DefaultClassFinder(
+                Collections.singleton(ConnectEndpointsForTesting.class)), dir)
+                        .enablePackagesUpdate(false).enableImportsUpdate(false)
                         .withEmbeddableWebComponents(false)
                         .withConnectJavaSourceFolder(src)
                         .withConnectGeneratedOpenApiJson(json)
@@ -131,14 +138,14 @@ public class NodeTasksTest {
 
         Arrays.asList(
                 // enableClientSide
-                "target/index.html",
-                "target/index.ts",
-                // withConnectJavaSourceFolder and withConnectGeneratedOpenApiJson
+                "target/index.html", "target/index.ts",
+                // withConnectJavaSourceFolder and
+                // withConnectGeneratedOpenApiJson
                 "api-file.json",
                 // withConnectClientTsApiFolder
-                "api/connect-client.default.ts",
-                "api/MyEndpoint.ts")
-                .forEach(name -> assertTrue(name + " not created.", new File(dir, name).exists()));
+                "api/connect-client.default.ts", "api/MyEndpoint.ts")
+                .forEach(name -> assertTrue(name + " not created.",
+                        new File(dir, name).exists()));
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {

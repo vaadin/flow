@@ -36,7 +36,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
      * Map for storing push parameters.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     public static class PushConfigurationParametersMap extends NodeMap {
 
@@ -122,7 +122,8 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
             return null;
         }
 
-        return Transport.getByIdentifier(getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
+        return Transport.getByIdentifier(
+                getParameters().get(FALLBACK_TRANSPORT_KEY).toString());
     }
 
     @Override
@@ -162,6 +163,7 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
 
     @Override
     public void setPushConnectionFactory(PushConnectionFactory factory) {
-        throw new UnsupportedOperationException("Setting push connection factory is not supported");
+        throw new UnsupportedOperationException(
+                "Setting push connection factory is not supported");
     }
 }

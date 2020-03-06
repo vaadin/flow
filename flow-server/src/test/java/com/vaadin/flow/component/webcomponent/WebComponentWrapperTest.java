@@ -59,9 +59,9 @@ public class WebComponentWrapperTest {
         exporter = new MyComponentExporter();
 
         // make component available and bind properties to it
-        binding = (WebComponentBinding<MyComponent>) new WebComponentExporter
-                .WebComponentConfigurationFactory().create(exporter)
-                .createWebComponentBinding(new MockInstantiator(), element, Json.createObject());
+        binding = (WebComponentBinding<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporter).createWebComponentBinding(
+                        new MockInstantiator(), element, Json.createObject());
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
     }
@@ -92,8 +92,8 @@ public class WebComponentWrapperTest {
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through", 3,
-                component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through",
+                3, component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
                 Arrays.asList("", "one", "three"), component.oldMessages);
@@ -105,8 +105,8 @@ public class WebComponentWrapperTest {
 
     @Test
     public void exportingExtendedComponent_inheritedFieldsAreAvailableAndOverridden() {
-        WebComponentBinding<MyExtension> binding =
-                constructWrapperAndGetBinding(new MyExtensionExporter(), null, null);
+        WebComponentBinding<MyExtension> binding = constructWrapperAndGetBinding(
+                new MyExtensionExporter(), null, null);
 
         MyExtension component = binding.getComponent();
 
@@ -120,8 +120,8 @@ public class WebComponentWrapperTest {
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through", 3,
-                component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through",
+                3, component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
                 Arrays.asList("Extended ", "Extended one", "Extended three"),
@@ -133,9 +133,8 @@ public class WebComponentWrapperTest {
 
     @Test
     public void extendedExporter_propertiesAreOverwrittenAndAvailable() {
-        WebComponentBinding<MyComponent> binding =
-                constructWrapperAndGetBinding(new ExtendedExporter(),
-                null, null);
+        WebComponentBinding<MyComponent> binding = constructWrapperAndGetBinding(
+                new ExtendedExporter(), null, null);
 
         MyComponent component = binding.getComponent();
 
@@ -150,8 +149,8 @@ public class WebComponentWrapperTest {
                 component.oldMessages.size());
 
         // 3, since creation sets the initial value
-        Assert.assertEquals("Three integer messages should have come through", 3,
-                component.oldIntegers.size());
+        Assert.assertEquals("Three integer messages should have come through",
+                3, component.oldIntegers.size());
 
         Assert.assertEquals("String messages arrived in correct order",
                 Arrays.asList("Default", "one", "three"),
@@ -209,13 +208,13 @@ public class WebComponentWrapperTest {
 
     /**
      * @param exporter
-     *         exporter of the correct type, defines C
+     *            exporter of the correct type, defines C
      * @param element
-     *         nullable root element
+     *            nullable root element
      * @param ui
-     *         nullable WebComponentUI
+     *            nullable WebComponentUI
      * @param <C>
-     *         type of the exported component
+     *            type of the exported component
      * @return web component wrapper
      */
     private <C extends Component> WebComponentBinding<C> constructWrapperAndGetBinding(
@@ -224,9 +223,9 @@ public class WebComponentWrapperTest {
         if (element == null) {
             element = new Element("tag");
         }
-        WebComponentBinding<C> binding = (WebComponentBinding<C>)
-                new WebComponentExporter.WebComponentConfigurationFactory().create(exporter)
-                        .createWebComponentBinding(new MockInstantiator(), element, Json.createObject());
+        WebComponentBinding<C> binding = (WebComponentBinding<C>) new WebComponentExporter.WebComponentConfigurationFactory()
+                .create(exporter).createWebComponentBinding(
+                        new MockInstantiator(), element, Json.createObject());
         wrapper = new WebComponentWrapper(element, binding) {
             @Override
             public Optional<UI> getUI() {
@@ -310,15 +309,13 @@ public class WebComponentWrapperTest {
         // extension point
         protected MyComponentExporter(String tag) {
             super(tag);
-            addProperty(MSG_PROPERTY, "")
-                    .onChange(MyComponent::setMessage);
-            addProperty(INT_PROPERTY, 0)
-                    .onChange(MyComponent::setIntegerValue);
+            addProperty(MSG_PROPERTY, "").onChange(MyComponent::setMessage);
+            addProperty(INT_PROPERTY, 0).onChange(MyComponent::setIntegerValue);
         }
 
         @Override
         public void configureInstance(WebComponent<MyComponent> webComponent,
-                                      MyComponent component) {
+                MyComponent component) {
         }
     }
 
@@ -327,15 +324,13 @@ public class WebComponentWrapperTest {
 
         public MyExtensionExporter() {
             super("extended-component");
-            addProperty(MSG_PROPERTY, "")
-                    .onChange(MyExtension::setMessage);
-            addProperty(INT_PROPERTY, 0)
-                    .onChange(MyExtension::setIntegerValue);
+            addProperty(MSG_PROPERTY, "").onChange(MyExtension::setMessage);
+            addProperty(INT_PROPERTY, 0).onChange(MyExtension::setIntegerValue);
         }
 
         @Override
         public void configureInstance(WebComponent<MyExtension> webComponent,
-                                      MyExtension component) {
+                MyExtension component) {
         }
     }
 
@@ -351,7 +346,8 @@ public class WebComponentWrapperTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
             super.configureInstance(webComponent, component);
         }
     }

@@ -26,14 +26,14 @@ import com.vaadin.flow.function.SerializableBiConsumer;
  * produced by {@link com.vaadin.flow.component.WebComponentExporter}.
  *
  * @param <C>
- *         type of the {@code component} exported as a web component
+ *            type of the {@code component} exported as a web component
  * @param <P>
- *         type of the property exposed on the web component
+ *            type of the property exposed on the web component
  * @author Vaadin Ltd.
  * @since 2.0
  */
-public interface PropertyConfiguration<C extends Component,
-        P extends Serializable> extends Serializable {
+public interface PropertyConfiguration<C extends Component, P extends Serializable>
+        extends Serializable {
 
     /**
      * Sets a Property change handler. {@code onChange} can only be called once
@@ -63,11 +63,12 @@ public interface PropertyConfiguration<C extends Component,
      * </pre>
      *
      * @param onChangeHandler
-     *         {@code component}'s method which is called with the property
-     *         value
+     *            {@code component}'s method which is called with the property
+     *            value
      * @return this {@code PropertyConfiguration}
      */
-    PropertyConfiguration<C, P> onChange(SerializableBiConsumer<C, P> onChangeHandler);
+    PropertyConfiguration<C, P> onChange(
+            SerializableBiConsumer<C, P> onChangeHandler);
 
     /**
      * Mark the property as read-only. It cannot be written to by the client.

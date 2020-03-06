@@ -62,7 +62,7 @@ public class InvalidUrlTest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-                               ArgumentCaptor<Integer> statusCodeCaptor)
+            ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
             VaadinServletRequest request = Mockito
@@ -100,7 +100,8 @@ public class InvalidUrlTest {
             routeConfiguration.update(() -> {
                 routeConfiguration.getHandledRegistry().clean();
                 Arrays.asList(UITest.RootNavigationTarget.class,
-                        UITest.FooBarNavigationTarget.class).forEach(routeConfiguration::setAnnotatedRoute);
+                        UITest.FooBarNavigationTarget.class)
+                        .forEach(routeConfiguration::setAnnotatedRoute);
             });
 
             ui.doInit(request, 0);

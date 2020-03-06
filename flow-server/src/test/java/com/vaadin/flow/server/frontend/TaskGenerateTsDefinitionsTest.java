@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-
 public class TaskGenerateTsDefinitionsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -43,8 +42,9 @@ public class TaskGenerateTsDefinitionsTest {
     @Test
     public void should_generateTsDefinitions_TsDefinitionsNotExistAndTsConfigExists()
             throws Exception {
-        Files.createFile(new File(outputFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
-                .toPath());
+        Files.createFile(
+                new File(outputFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
+                        .toPath());
         taskGenerateTsDefinitions.execute();
         Assert.assertFalse(
                 "Should generate types.d.ts when tsconfig.json exists and "

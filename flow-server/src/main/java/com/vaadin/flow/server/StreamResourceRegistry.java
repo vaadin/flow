@@ -132,7 +132,7 @@ public class StreamResourceRegistry implements Serializable {
      * registry (relevant in portlet context).
      *
      * @param resource
-     *              stream resource
+     *            stream resource
      * @return resource URI
      */
     public URI getTargetURI(AbstractStreamResource resource) {

@@ -400,8 +400,8 @@ public class AtmospherePushConnection implements PushConnection {
      *
      */
     public static void enableAtmosphereDebugLogging() {
-        getLogger()
-                .warn("Enable logging of 'org.atmosphere' through your slf4j implementation"
+        getLogger().warn(
+                "Enable logging of 'org.atmosphere' through your slf4j implementation"
                         + " instead (i.e.: logback, log4j, etc)");
     }
 

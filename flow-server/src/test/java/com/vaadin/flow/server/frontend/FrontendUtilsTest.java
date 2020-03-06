@@ -519,8 +519,8 @@ public class FrontendUtilsTest {
         List<String> command = Arrays.asList("./node/node",
                 "./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
                 "--config", "./webpack.config.js", "--port 57799",
-                "--watchDogPort=57798", "-d", "--inline=false",
-                "--progress", "--colors");
+                "--watchDogPort=57798", "-d", "--inline=false", "--progress",
+                "--colors");
         String wrappedCommand = FrontendUtils.commandToString(".", command);
         Assert.assertEquals("\n" + "./node/node \\ \n"
                 + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \\ \n"
@@ -533,9 +533,11 @@ public class FrontendUtilsTest {
     public void commandToString_commandContainsBaseDir_baseDirIsReplaced() {
         List<String> command = Arrays.asList("./node/node",
                 "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
-        String wrappedCommand = FrontendUtils.commandToString("/somewhere/not/disclosable", command);
+        String wrappedCommand = FrontendUtils
+                .commandToString("/somewhere/not/disclosable", command);
         Assert.assertEquals("\n" + "./node/node \\ \n"
-                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n", wrappedCommand);
+                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
+                wrappedCommand);
     }
 
     @Test
@@ -552,14 +554,14 @@ public class FrontendUtilsTest {
     @Test(expected = IllegalStateException.class)
     public synchronized void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
             throws IOException {
-            String originalHome = System.getProperty(USER_HOME);
-            File home = tmpDir.newFolder();
-            System.setProperty(USER_HOME, home.getPath());
-            try {
-                File homeDir = FrontendUtils.getVaadinHomeDirectory();
-                File node = new File(homeDir,
-                        FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
-                FileUtils.forceMkdir(node);
+        String originalHome = System.getProperty(USER_HOME);
+        File home = tmpDir.newFolder();
+        System.setProperty(USER_HOME, home.getPath());
+        try {
+            File homeDir = FrontendUtils.getVaadinHomeDirectory();
+            File node = new File(homeDir,
+                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+            FileUtils.forceMkdir(node);
 
             FrontendUtils.ensureNodeExecutableInHome(baseDir);
 

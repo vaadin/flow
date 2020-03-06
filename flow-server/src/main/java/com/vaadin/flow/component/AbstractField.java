@@ -69,7 +69,7 @@ public abstract class AbstractField<C extends AbstractField<C, T>, T>
      * Value change event fired by components.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      * @param <C>
      *            the source component type
      * @param <V>

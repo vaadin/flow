@@ -54,16 +54,15 @@ public class TaskGenerateOpenApiTest {
                 .newFile("application.properties");
         generatedOpenAPI = new File(temporaryFolder.newFolder(),
                 "generated-openapi.json");
-        javaSource = new File(getClass().getClassLoader().getResource("java").getFile());
+        javaSource = new File(
+                getClass().getClassLoader().getResource("java").getFile());
     }
 
     @Test
     public void should_UseDefaultProperties_when_applicationPropertiesIsEmpty()
             throws Exception {
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                javaSource,
-                this.getClass().getClassLoader(),
-                generatedOpenAPI);
+                javaSource, this.getClass().getClassLoader(), generatedOpenAPI);
         taskGenerateOpenApi.execute();
 
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
@@ -118,9 +117,7 @@ public class TaskGenerateOpenApiTest {
                 StandardCharsets.UTF_8);
 
         taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
-                javaSource,
-                this.getClass().getClassLoader(),
-                generatedOpenAPI);
+                javaSource, this.getClass().getClassLoader(), generatedOpenAPI);
         taskGenerateOpenApi.execute();
 
         OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
@@ -137,8 +134,7 @@ public class TaskGenerateOpenApiTest {
         Assert.assertEquals("Generated OpenAPI should a defined server", 1,
                 servers.size());
         Assert.assertEquals("Generated OpenAPI should use given url server",
-                applicationServer + applicationPrefix,
-                servers.get(0).getUrl());
+                applicationServer + applicationPrefix, servers.get(0).getUrl());
 
         Assert.assertEquals(
                 "Generated OpenAPI should use given server description",

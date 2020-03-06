@@ -62,8 +62,8 @@ public class PopStateHandler {
     public void bind() {
         // track the location and query string (#6107) after the latest response
         // from server
-        registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
-                event -> {
+        registry.getRequestResponseTracker()
+                .addResponseHandlingEndedHandler(event -> {
                     pathAfterPreviousResponse = Browser.getWindow()
                             .getLocation().getPathname();
                     queryAfterPreviousResponse = Browser.getWindow()
@@ -85,9 +85,9 @@ public class PopStateHandler {
         assert pathAfterPreviousResponse != null : "Initial response has not ended before pop state event was triggered";
 
         // don't visit server on pop state events caused by fragment change
-        boolean requiresServerSideRoundtrip =
-                !(Objects.equals(path, pathAfterPreviousResponse)
-                        && Objects.equals(query, queryAfterPreviousResponse));
+        boolean requiresServerSideRoundtrip = !(Objects.equals(path,
+                pathAfterPreviousResponse)
+                && Objects.equals(query, queryAfterPreviousResponse));
         registry.getScrollPositionHandler().onPopStateEvent((PopStateEvent) e,
                 requiresServerSideRoundtrip);
         if (!requiresServerSideRoundtrip) {

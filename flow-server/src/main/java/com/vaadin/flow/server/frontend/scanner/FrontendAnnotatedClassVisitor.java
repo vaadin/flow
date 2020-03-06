@@ -81,13 +81,14 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     // Executed for the class definition info.
     @Override
-    public void visit(int version, int access, String name, String signature, String superName,
-            String[] interfaces) {
+    public void visit(int version, int access, String name, String signature,
+            String superName, String[] interfaces) {
         visitClass(superName);
     }
 
     @Override
-    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+    public AnnotationVisitor visitAnnotation(String descriptor,
+            boolean visible) {
         String cname = descriptor.replace("/", ".");
         if (cname.contains(annotationName)) {
             return new RepeatedAnnotationVisitor() {
@@ -105,7 +106,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
                 // Only visited when annotation is repeated
                 @Override
-                public AnnotationVisitor visitAnnotation(String name, String descriptor) {
+                public AnnotationVisitor visitAnnotation(String name,
+                        String descriptor) {
                     // initialize in each repeated annotation occurrence
                     info = new HashMap<>();
                     return this;
@@ -136,10 +138,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      */
     @SuppressWarnings("unchecked")
     public <T> Set<T> getValues(String parameter) {
-        return (Set<T>)data.stream()
-                .filter(h -> h.containsKey(parameter))
-                .map(h -> h.get(parameter))
-                .collect(Collectors.toSet());
+        return (Set<T>) data.stream().filter(h -> h.containsKey(parameter))
+                .map(h -> h.get(parameter)).collect(Collectors.toSet());
     }
 
     /**
@@ -165,10 +165,10 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      * @return a set of all values found
      */
     @SuppressWarnings("unchecked")
-    public <T> Set<T> getValuesForKey(String key, String value, String property) {
-        return (Set<T>)data.stream()
+    public <T> Set<T> getValuesForKey(String key, String value,
+            String property) {
+        return (Set<T>) data.stream()
                 .filter(h -> h.containsKey(key) && h.get(key).equals(value))
-                .map(h -> h.get(property))
-                .collect(Collectors.toSet());
+                .map(h -> h.get(property)).collect(Collectors.toSet());
     }
 }

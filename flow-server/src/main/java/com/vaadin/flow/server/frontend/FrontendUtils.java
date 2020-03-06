@@ -534,8 +534,7 @@ public class FrontendUtils {
     private static List<ProxyConfig.Proxy> readProxySettingsFromEnvironmentVariables() {
         List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
 
-        String noproxy = getNonNull(
-                System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
+        String noproxy = getNonNull(System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY),
                 System.getenv(SYSTEM_NOPROXY_PROPERTY_KEY.toLowerCase()));
         if (noproxy != null) {
             noproxy = noproxy.replaceAll(",", "|");
@@ -564,7 +563,7 @@ public class FrontendUtils {
      * Get the first non null value from the given array.
      *
      * @param valueArray
-     *         array of values to get non null from
+     *            array of values to get non null from
      * @return first non null value or null if no values found
      */
     private static String getNonNull(String... valueArray) {
@@ -608,9 +607,8 @@ public class FrontendUtils {
                 }
                 return file.getAbsolutePath();
             } else {
-                getLogger()
-                        .info("Node not found in {}. Installing node {}.", home,
-                                DEFAULT_NODE_VERSION);
+                getLogger().info("Node not found in {}. Installing node {}.",
+                        home, DEFAULT_NODE_VERSION);
                 return installNode(baseDir, getVaadinHomeDirectory(),
                         DEFAULT_NODE_VERSION, null);
             }
@@ -710,9 +708,9 @@ public class FrontendUtils {
             }
             if (file == null && installNode) {
                 File vaadinHome = getVaadinHomeDirectory();
-                getLogger()
-                        .info("Couldn't find {}. Installing Node and NPM to {}.",
-                                cmd, vaadinHome);
+                getLogger().info(
+                        "Couldn't find {}. Installing Node and NPM to {}.", cmd,
+                        vaadinHome);
                 return new File(installNode(baseDir, vaadinHome,
                         DEFAULT_NODE_VERSION, null));
             }
@@ -902,8 +900,8 @@ public class FrontendUtils {
                     .prepareConnection("/stats.hash", "GET");
             if (statsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(NO_CONNECTION,
-                        "getting the stats content hash."));
+                throw new WebpackConnectionException(String.format(
+                        NO_CONNECTION, "getting the stats content hash."));
             }
             return streamToString(statsConnection.getInputStream())
                     .replaceAll("\"", "");
@@ -1024,8 +1022,8 @@ public class FrontendUtils {
                     .prepareConnection("/assetsByChunkName", "GET");
             if (assetsConnection
                     .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(
-                        String.format(NO_CONNECTION, "getting assets by chunk name."));
+                throw new WebpackConnectionException(String.format(
+                        NO_CONNECTION, "getting assets by chunk name."));
             }
             return streamToString(assetsConnection.getInputStream());
         }
@@ -1269,8 +1267,8 @@ public class FrontendUtils {
 
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
-        return String.format(TOO_OLD, tool, version, supportedMajor, supportedMinor,
-                PARAM_IGNORE_VERSION_CHECKS);
+        return String.format(TOO_OLD, tool, version, supportedMajor,
+                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
     private static String buildShouldWorkString(String tool, String version,
@@ -1285,8 +1283,8 @@ public class FrontendUtils {
         for (String instruction : extraUpdateInstructions) {
             extraInstructions.append("%n  - or ").append(instruction);
         }
-        return String.format(BAD_VERSION, tool, version, extraInstructions.toString(),
-                PARAM_IGNORE_VERSION_CHECKS);
+        return String.format(BAD_VERSION, tool, version,
+                extraInstructions.toString(), PARAM_IGNORE_VERSION_CHECKS);
     }
 
     /**

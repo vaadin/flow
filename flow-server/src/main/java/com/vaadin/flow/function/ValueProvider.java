@@ -32,7 +32,7 @@ package com.vaadin.flow.function;
  */
 @FunctionalInterface
 public interface ValueProvider<SOURCE, TARGET>
-extends SerializableFunction<SOURCE, TARGET> {
+        extends SerializableFunction<SOURCE, TARGET> {
 
     /**
      * Returns a value provider that always returns its input argument.

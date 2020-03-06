@@ -37,59 +37,35 @@ public class LoadingIndicator {
 
     private static final String PRIMARY_STYLE_NAME = "v-loading-indicator";
 
-    private static final String DEFAULT_THEMING = "@-webkit-keyframes v-progress-start {" +
-            "0% {width: 0%;}" +
-            "100% {width: 50%;}}" +
-            "@-moz-keyframes v-progress-start {" +
-            "0% {width: 0%;}" +
-            "100% {width: 50%;}}" +
-            "@keyframes v-progress-start {" +
-            "0% {width: 0%;}" +
-            "100% {width: 50%;}}" +
-            "@keyframes v-progress-delay {" +
-            "0% {width: 50%;}" +
-            "100% {width: 90%;}}" +
-            "@keyframes v-progress-wait {" +
-            "0% {width: 90%;height: 4px;}" +
-            "3% {width: 91%;height: 7px;}" +
-            "100% {width: 96%;height: 7px;}}" +
-            "@-webkit-keyframes v-progress-wait-pulse {" +
-            "0% {opacity: 1;}" +
-            "50% {opacity: 0.1;}" +
-            "100% {opacity: 1;}}" +
-            "@-moz-keyframes v-progress-wait-pulse {" +
-            "0% {opacity: 1;}" +
-            "50% {opacity: 0.1;}" +
-            "100% {opacity: 1;}}" +
-            "@keyframes v-progress-wait-pulse {" +
-            "0% {opacity: 1;}" +
-            "50% {opacity: 0.1;}" +
-            "100% {opacity: 1;}}" +
-            ".v-loading-indicator {" +
-            "position: fixed !important;" +
-            "z-index: 99999;" +
-            "left: 0;" +
-            "right: auto;" +
-            "top: 0;" +
-            "width: 50%;" +
-            "opacity: 1;" +
-            "height: 4px;" +
-            "background-color: var(--lumo-primary-color, var(--material-primary-color, blue));" +
-            "pointer-events: none;" +
-            "transition: none;" +
-            "animation: v-progress-start 1000ms 200ms both;}" +
-            ".v-loading-indicator[style*=\"none\"] {" +
-            "display: block !important;" +
-            "width: 100% !important;" +
-            "opacity: 0;" +
-            "animation: none !important;" +
-            "transition: opacity 500ms 300ms, width 300ms;}" +
-            ".v-loading-indicator.second {" +
-            "width: 90%;" +
-            "animation: v-progress-delay 3.8s forwards;}" +
-            ".v-loading-indicator.third {" +
-            "width: 96%;" +
-            "animation: v-progress-wait 5s forwards, v-progress-wait-pulse 1s 4s infinite backwards;}";
+    private static final String DEFAULT_THEMING = "@-webkit-keyframes v-progress-start {"
+            + "0% {width: 0%;}" + "100% {width: 50%;}}"
+            + "@-moz-keyframes v-progress-start {" + "0% {width: 0%;}"
+            + "100% {width: 50%;}}" + "@keyframes v-progress-start {"
+            + "0% {width: 0%;}" + "100% {width: 50%;}}"
+            + "@keyframes v-progress-delay {" + "0% {width: 50%;}"
+            + "100% {width: 90%;}}" + "@keyframes v-progress-wait {"
+            + "0% {width: 90%;height: 4px;}" + "3% {width: 91%;height: 7px;}"
+            + "100% {width: 96%;height: 7px;}}"
+            + "@-webkit-keyframes v-progress-wait-pulse {" + "0% {opacity: 1;}"
+            + "50% {opacity: 0.1;}" + "100% {opacity: 1;}}"
+            + "@-moz-keyframes v-progress-wait-pulse {" + "0% {opacity: 1;}"
+            + "50% {opacity: 0.1;}" + "100% {opacity: 1;}}"
+            + "@keyframes v-progress-wait-pulse {" + "0% {opacity: 1;}"
+            + "50% {opacity: 0.1;}" + "100% {opacity: 1;}}"
+            + ".v-loading-indicator {" + "position: fixed !important;"
+            + "z-index: 99999;" + "left: 0;" + "right: auto;" + "top: 0;"
+            + "width: 50%;" + "opacity: 1;" + "height: 4px;"
+            + "background-color: var(--lumo-primary-color, var(--material-primary-color, blue));"
+            + "pointer-events: none;" + "transition: none;"
+            + "animation: v-progress-start 1000ms 200ms both;}"
+            + ".v-loading-indicator[style*=\"none\"] {"
+            + "display: block !important;" + "width: 100% !important;"
+            + "opacity: 0;" + "animation: none !important;"
+            + "transition: opacity 500ms 300ms, width 300ms;}"
+            + ".v-loading-indicator.second {" + "width: 90%;"
+            + "animation: v-progress-delay 3.8s forwards;}"
+            + ".v-loading-indicator.third {" + "width: 96%;"
+            + "animation: v-progress-wait 5s forwards, v-progress-wait-pulse 1s 4s infinite backwards;}";
 
     private int firstDelay = LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT;
     private int secondDelay = LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT;
@@ -126,7 +102,7 @@ public class LoadingIndicator {
      * moves into the "first" state and is shown to the user
      *
      * @return The delay (in ms) until moving into the "first" state. Counted
-     * from when {@link #trigger()} is called.
+     *         from when {@link #trigger()} is called.
      */
     public int getFirstDelay() {
         return firstDelay;
@@ -137,8 +113,8 @@ public class LoadingIndicator {
      * into the "first" state and is shown to the user
      *
      * @param firstDelay
-     *         The delay (in ms) until moving into the "first" state. Counted
-     *         from when {@link #trigger()} is called.
+     *            The delay (in ms) until moving into the "first" state. Counted
+     *            from when {@link #trigger()} is called.
      */
     public void setFirstDelay(int firstDelay) {
         this.firstDelay = firstDelay;
@@ -149,7 +125,7 @@ public class LoadingIndicator {
      * moves to its "second" state.
      *
      * @return The delay (in ms) until the loading indicator moves into its
-     * "second" state. Counted from when {@link #trigger()} is called.
+     *         "second" state. Counted from when {@link #trigger()} is called.
      */
     public int getSecondDelay() {
         return secondDelay;
@@ -160,9 +136,9 @@ public class LoadingIndicator {
      * to its "second" state.
      *
      * @param secondDelay
-     *         The delay (in ms) until the loading indicator moves into its
-     *         "second" state. Counted from when {@link #trigger()} is
-     *         called.
+     *            The delay (in ms) until the loading indicator moves into its
+     *            "second" state. Counted from when {@link #trigger()} is
+     *            called.
      */
     public void setSecondDelay(int secondDelay) {
         this.secondDelay = secondDelay;
@@ -173,7 +149,7 @@ public class LoadingIndicator {
      * moves to its "third" state.
      *
      * @return The delay (in ms) until the loading indicator moves into its
-     * "third" state. Counted from when {@link #trigger()} is called.
+     *         "third" state. Counted from when {@link #trigger()} is called.
      */
     public int getThirdDelay() {
         return thirdDelay;
@@ -184,9 +160,9 @@ public class LoadingIndicator {
      * to its "third" state.
      *
      * @param thirdDelay
-     *         The delay (in ms) from the event until changing the loading
-     *         indicator into its "third" state. Counted from when
-     *         {@link #trigger()} is called.
+     *            The delay (in ms) from the event until changing the loading
+     *            indicator into its "third" state. Counted from when
+     *            {@link #trigger()} is called.
      */
     public void setThirdDelay(int thirdDelay) {
         this.thirdDelay = thirdDelay;
@@ -295,12 +271,14 @@ public class LoadingIndicator {
     }
 
     /**
-     * Sets whether the default theming should be applied for the loading indicator or not.
+     * Sets whether the default theming should be applied for the loading
+     * indicator or not.
      * <p>
      * Default is {@code true}.
      *
      * @param applyDefaultTheme
-     *         {@code true} for applying the default theming, {@code false} for not
+     *            {@code true} for applying the default theming, {@code false}
+     *            for not
      */
     public void setApplyDefaultTheme(boolean applyDefaultTheme) {
         this.applyDefaultTheme = applyDefaultTheme;
@@ -308,11 +286,13 @@ public class LoadingIndicator {
     }
 
     /**
-     * Returns whether the default theming should be applied for the loading indicator or not.
+     * Returns whether the default theming should be applied for the loading
+     * indicator or not.
      * <p>
      * Default is {@code true}.
      *
-     * @return {@code true} for applying the default theming, {@code false} for not
+     * @return {@code true} for applying the default theming, {@code false} for
+     *         not
      */
     public boolean isApplyDefaultTheme() {
         return applyDefaultTheme;

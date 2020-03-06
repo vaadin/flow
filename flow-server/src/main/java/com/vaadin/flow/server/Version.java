@@ -64,8 +64,8 @@ public class Version implements Serializable {
                     Version.class.getResourceAsStream("version.properties"));
             flowVersion = properties.getProperty("flow.version");
         } catch (IOException e) {
-            LoggerFactory.getLogger(Version.class.getName()).warn(
-                    "Unable to determine Flow version number", e);
+            LoggerFactory.getLogger(Version.class.getName())
+                    .warn("Unable to determine Flow version number", e);
         }
 
         VERSION = flowVersion;

@@ -276,8 +276,8 @@ public class ReflectToolsTest {
     @Test
     public void findClosestCommonClassLoaderAncestor_findAncestor_whenBothArgumentsAreTheSame() {
         CustomClassLoader loader = new CustomClassLoader();
-        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(loader,
-                loader).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(loader, loader).get();
 
         Assert.assertEquals(loader, ret);
     }
@@ -286,9 +286,8 @@ public class ReflectToolsTest {
         CustomClassLoader loader1 = new CustomClassLoader();
         CustomClassLoader loader2 = new CustomClassLoader();
 
-        Optional<ClassLoader> ret =
-                ReflectTools.findClosestCommonClassLoaderAncestor(loader1,
-                        loader2);
+        Optional<ClassLoader> ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(loader1, loader2);
 
         Assert.assertFalse(ret.isPresent());
     }
@@ -297,8 +296,8 @@ public class ReflectToolsTest {
     public void findClosestCommonClassLoaderAncestor_findsAncestor_whenOneIsParentOfTheOther() {
         CustomClassLoader parent = new CustomClassLoader();
         CustomClassLoader child = new CustomClassLoader(parent);
-        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(parent,
-                child).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(parent, child).get();
 
         Assert.assertEquals(parent, ret);
     }
@@ -308,8 +307,8 @@ public class ReflectToolsTest {
         CustomClassLoader parent = new CustomClassLoader();
         CustomClassLoader childA = new CustomClassLoader(parent);
         CustomClassLoader childB = new CustomClassLoader(parent);
-        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(childA,
-                childB).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(childA, childB).get();
 
         Assert.assertEquals(parent, ret);
     }
@@ -321,9 +320,8 @@ public class ReflectToolsTest {
         CustomClassLoader childA = new CustomClassLoader(parent);
         CustomClassLoader childB = new CustomClassLoader(grandParent);
 
-        ClassLoader ret =
-                ReflectTools.findClosestCommonClassLoaderAncestor(childA,
-                        childB).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(childA, childB).get();
 
         Assert.assertEquals(grandParent, ret);
     }

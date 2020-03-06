@@ -51,11 +51,12 @@ public interface HasSize extends HasElement {
      * The width should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
      * <p>
-     * If the provided {@code minWidth} value is {@literal null} then min-width is
-     * removed.
+     * If the provided {@code minWidth} value is {@literal null} then min-width
+     * is removed.
      *
      * @param minWidth
-     *            the min-width value (if <code>null</code>, the property will be removed)
+     *            the min-width value (if <code>null</code>, the property will
+     *            be removed)
      */
     default void setMinWidth(String minWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MIN_WIDTH, minWidth);
@@ -67,11 +68,12 @@ public interface HasSize extends HasElement {
      * The width should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
      * <p>
-     * If the provided {@code maxWidth} value is {@literal null} then max-width is
-     * removed.
+     * If the provided {@code maxWidth} value is {@literal null} then max-width
+     * is removed.
      *
      * @param maxWidth
-     *            the max-width value (if <code>null</code>, the property will be removed)
+     *            the max-width value (if <code>null</code>, the property will
+     *            be removed)
      */
     default void setMaxWidth(String maxWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_WIDTH, maxWidth);
@@ -138,14 +140,16 @@ public interface HasSize extends HasElement {
      * The height should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
      * <p>
-     * If the provided {@code minHeight} value is {@literal null} then min-height is
-     * removed.
+     * If the provided {@code minHeight} value is {@literal null} then
+     * min-height is removed.
      *
      * @param minHeight
-     *            the min-height value (if <code>null</code>, the property will be removed)
+     *            the min-height value (if <code>null</code>, the property will
+     *            be removed)
      */
     default void setMinHeight(String minHeight) {
-        getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT, minHeight);
+        getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT,
+                minHeight);
     }
 
     /**
@@ -154,14 +158,16 @@ public interface HasSize extends HasElement {
      * The height should be in a format understood by the browser, e.g. "100px"
      * or "2.5em".
      * <p>
-     * If the provided {@code maxHeight} value is {@literal null} then max-height is
-     * removed.
+     * If the provided {@code maxHeight} value is {@literal null} then
+     * max-height is removed.
      *
      * @param maxHeight
-     *            the max-height value (if <code>null</code>, the property will be removed)
+     *            the max-height value (if <code>null</code>, the property will
+     *            be removed)
      */
     default void setMaxHeight(String maxHeight) {
-        getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT, maxHeight);
+        getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT,
+                maxHeight);
     }
 
     /**
@@ -216,8 +222,7 @@ public interface HasSize extends HasElement {
      * Sets the width of the component to "100%".
      * <p>
      * This is just a convenience method which delegates its call to the
-     * {@link #setWidth(String)} with
-     * {@literal "100%"} as the argument value
+     * {@link #setWidth(String)} with {@literal "100%"} as the argument value
      */
     default void setWidthFull() {
         setWidth("100%");
@@ -227,8 +232,7 @@ public interface HasSize extends HasElement {
      * Sets the height of the component to "100%".
      * <p>
      * This is just a convenience method which delegates its call to the
-     * {@link #setHeight(String)} with
-     * {@literal "100%"} as the argument value
+     * {@link #setHeight(String)} with {@literal "100%"} as the argument value
      */
     default void setHeightFull() {
         setHeight("100%");

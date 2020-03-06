@@ -68,7 +68,7 @@ public final class TestUtils {
      */
     public static File getTestFolder(String name) {
         File folder = new File(getTestResource(name).getFile());
-        assert(folder.isDirectory());
+        assert (folder.isDirectory());
         return folder;
     }
 

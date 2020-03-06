@@ -222,7 +222,6 @@ public class HierarchyMapper<T, F> implements Serializable {
         return removedRows;
     }
 
-
     /**
      * Gets the current in-memory sorting.
      *
@@ -371,10 +370,10 @@ public class HierarchyMapper<T, F> implements Serializable {
         Range actualRange = (range == null)
                 ? Range.withLength(0, Integer.MAX_VALUE)
                 : range;
-        return getDataProvider().fetchChildren(new HierarchicalQuery(
-                actualRange.getStart(), actualRange.length(),
-                getBackEndSorting(),
-                getInMemorySorting(), getFilter(), parent));
+        return getDataProvider()
+                .fetchChildren(new HierarchicalQuery(actualRange.getStart(),
+                        actualRange.length(), getBackEndSorting(),
+                        getInMemorySorting(), getFilter(), parent));
     }
 
     /**
@@ -570,11 +569,9 @@ public class HierarchyMapper<T, F> implements Serializable {
                 registerChildren(parent, childList);
             }
         }
-        return combineParentAndChildStreams(parent,
-                childList.stream(),
+        return combineParentAndChildStreams(parent, childList.stream(),
                 includeParent);
     }
-
 
     /**
      * Register parent and children items into inner structures. May be

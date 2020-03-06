@@ -25,13 +25,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
- * Configuration class for editing routes. After editing the class should
- * always
+ * Configuration class for editing routes. After editing the class should always
  * be set as a {@link ConfiguredRoutes} read only value object.
  * <p>
  * {@link ConfigureRoutes} is always mutable where as {@link ConfiguredRoutes}
- * is always
- * immutable.
+ * is always immutable.
  *
  * @since 1.3
  */
@@ -55,7 +53,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * information.
      *
      * @param original
-     *         original configuration to get data from
+     *            original configuration to get data from
      */
     public ConfigureRoutes(ConfiguredRoutes original) {
         Map<String, RouteTarget> routesMap = new HashMap<>();
@@ -106,7 +104,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /*-----------------------------------*/
-    /* Mutation functions                */
+    /* Mutation functions */
     /*-----------------------------------*/
 
     /**
@@ -123,9 +121,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Note! this will override any previous value.
      *
      * @param path
-     *         path for which to set route target for
+     *            path for which to set route target for
      * @param navigationTarget
-     *         navigation target to add
+     *            navigation target to add
      */
     public void setRoute(String path,
             Class<? extends Component> navigationTarget) {
@@ -144,9 +142,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * parameters, for the main route of this navigation target.
      *
      * @param navigationTarget
-     *         navigation target to map
+     *            navigation target to map
      * @param path
-     *         path for given navigation target
+     *            path for given navigation target
      */
     public void setTargetRoute(Class<? extends Component> navigationTarget,
             String path) {
@@ -160,9 +158,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * exception handler.
      *
      * @param exception
-     *         exception handled by error route
+     *            exception handled by error route
      * @param errorTarget
-     *         error navigation target
+     *            error navigation target
      */
     public void setErrorRoute(Class<? extends Exception> exception,
             Class<? extends Component> errorTarget) {
@@ -173,7 +171,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * Remove the targetRoute completely from the configuration.
      *
      * @param targetRoute
-     *         target registered route to remove
+     *            target registered route to remove
      */
     public void removeRoute(Class<? extends Component> targetRoute) {
         if (!hasRouteTarget(targetRoute)) {
@@ -205,7 +203,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * found.
      *
      * @param path
-     *         path from which to remove routes from
+     *            path from which to remove routes from
      */
     public void removeRoute(String path) {
         if (!hasRoute(path)) {
@@ -224,19 +222,18 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * exist if there is another target with different parameters registered to
      * it. If no targets remain the path will be removed completely.
      * <p>
-     * In case there exists another path mapping for the removed route
-     * target the main class-to-string mapping will be updated to the first
-     * found.
+     * In case there exists another path mapping for the removed route target
+     * the main class-to-string mapping will be updated to the first found.
      *
      * @param path
-     *         path to remove target from
+     *            path to remove target from
      * @param targetRoute
-     *         target route to remove from path
+     *            target route to remove from path
      */
     public void removeRoute(String path,
             Class<? extends Component> targetRoute) {
-        if (!hasRoute(path) || !getRoutesMap().get(path)
-                .containsTarget(targetRoute)) {
+        if (!hasRoute(path)
+                || !getRoutesMap().get(path).containsTarget(targetRoute)) {
             return;
         }
 
@@ -247,8 +244,8 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             getRoutesMap().remove(path);
         }
 
-        if (getTargetRoutes().containsKey(targetRoute) && getTargetRoutes()
-                .get(targetRoute).equals(path)) {
+        if (getTargetRoutes().containsKey(targetRoute)
+                && getTargetRoutes().get(targetRoute).equals(path)) {
             updateMainRouteTarget(targetRoute);
         }
     }
@@ -258,13 +255,14 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * for the class is found.
      *
      * @param navigationTarget
-     *         navigation target to update the main route for
+     *            navigation target to update the main route for
      */
     private void updateMainRouteTarget(
             Class<? extends Component> navigationTarget) {
         getTargetRoutes().remove(navigationTarget);
 
-        // Update Class-to-string map with a new mapping if removed route exists for another path
+        // Update Class-to-string map with a new mapping if removed route exists
+        // for another path
         for (Map.Entry<String, RouteTarget> entry : getRoutesMap().entrySet()) {
             if (entry.getValue().containsTarget(navigationTarget)) {
                 getTargetRoutes().put(navigationTarget, entry.getKey());

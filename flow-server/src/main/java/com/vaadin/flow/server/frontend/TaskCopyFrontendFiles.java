@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 
-
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
  *

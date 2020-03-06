@@ -274,8 +274,7 @@ public class JsonSerializerTest {
             return arrayListOfDoubles;
         }
 
-        public void setArrayListOfDoubles(
-                List<Double> arrayListOfDoubles) {
+        public void setArrayListOfDoubles(List<Double> arrayListOfDoubles) {
             this.arrayListOfDoubles = arrayListOfDoubles;
         }
     }

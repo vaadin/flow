@@ -88,17 +88,17 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else if (DisabledUpdateMode.ALWAYS.equals(updateMode)) {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class)
-                    .trace("Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class).trace(
+                    "Property update request for disabled element is received from the client side. "
                             + "Change will be applied since the property '{}' always allows its update.",
-                            property);
+                    property);
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class)
-                    .warn("Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class).warn(
+                    "Property update request for disabled element is received from the client side. "
                             + "The property is '{}'. Request is ignored.",
-                            property);
+                    property);
         }
         return Optional.empty();
     }

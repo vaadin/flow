@@ -77,15 +77,14 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
      *            composition session
      */
     public KeyboardEvent(Component source, boolean fromClient, String key,
-                         String code, int location, boolean ctrlKey,
-                         boolean shiftKey, boolean altKey, boolean metaKey,
-                         boolean repeat, boolean composing) {
+            String code, int location, boolean ctrlKey, boolean shiftKey,
+            boolean altKey, boolean metaKey, boolean repeat,
+            boolean composing) {
         super(source, fromClient);
         this.key = Key.of(key);
         // code might not be present for all keys for all browsers
         // it is quite implementation dependent
-        this.code = (code == null || code.isEmpty()) ?
-                null : Key.of(code);
+        this.code = (code == null || code.isEmpty()) ? null : Key.of(code);
         this.location = KeyLocation.of(location);
         this.repeat = repeat;
         this.composing = composing;
@@ -144,9 +143,12 @@ public abstract class KeyboardEvent extends ComponentEvent<Component> {
     /**
      * Gets the code of the event. If the event did not contain a valid code, a
      * <code>null</code> value will be given instead.
+     * 
      * @return the optional code of the event as a {@link Key}
      */
-    public Optional<Key> getCode() { return Optional.ofNullable(code); }
+    public Optional<Key> getCode() {
+        return Optional.ofNullable(code);
+    }
 
     /**
      * Gets the {@link KeyLocation} of the event.

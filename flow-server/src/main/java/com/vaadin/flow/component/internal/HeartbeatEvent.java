@@ -32,9 +32,9 @@ public class HeartbeatEvent extends EventObject {
      * Constructs a heartbeat Event.
      *
      * @param ui
-     *         UI for which the Event occurred
+     *            UI for which the Event occurred
      * @param heartbeatTime
-     *         value for the heartbeat
+     *            value for the heartbeat
      */
     public HeartbeatEvent(UI ui, long heartbeatTime) {
         super(ui);

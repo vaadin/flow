@@ -748,8 +748,9 @@ public class Element extends Node<Element> {
 
         String replacement = illegalPropertyReplacements.get(name);
         if (replacement != null) {
-            throw new IllegalArgumentException("Can't set or synchronize " + name
-                    + " as a property, use " + replacement + " instead.");
+            throw new IllegalArgumentException(
+                    "Can't set or synchronize " + name + " as a property, use "
+                            + replacement + " instead.");
         }
     }
 

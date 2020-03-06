@@ -61,8 +61,7 @@ public class ConnectEndpointsValidatorTest {
     }
 
     @Test
-    public void should_start_when_CDI_environment()
-            throws Exception {
+    public void should_start_when_CDI_environment() throws Exception {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         classes = null;
         validator.onStartup(classes, servletContext);

@@ -123,13 +123,16 @@ public class ElementListenersTest
         // due to fix to #5090, data3 won't be present after removal
         Assert.assertFalse(expressions.contains("data3"));
     }
-    
+
     @Test
     public void settingsAreOnlyUpdated_should_ListenersSharingTheTypeOfRemovedListenerExist() {
         ns = spy(createFeature());
-        DomEventListener del1 = event -> {};
-        DomEventListener del2 = event -> {};
-        DomEventListener del3 = event -> {};
+        DomEventListener del1 = event -> {
+        };
+        DomEventListener del2 = event -> {
+        };
+        DomEventListener del3 = event -> {
+        };
         Registration handle1 = ns.add("eventType", del1).addEventData("data1");
         Registration handle2 = ns.add("eventType", del2).addEventData("data2");
         Registration handle3 = ns.add("eventTypeOther", del3)
@@ -170,8 +173,10 @@ public class ElementListenersTest
 
     @Test
     public void addingRemovingAndAddingListenerOfTheSameType() {
-        DomEventListener del1 = event -> {};
-        DomEventListener del2 = event -> {};
+        DomEventListener del1 = event -> {
+        };
+        DomEventListener del2 = event -> {
+        };
         Registration handle = ns.add("eventType", del1).addEventData("data1");
 
         Set<String> expressions = getExpressions("eventType");

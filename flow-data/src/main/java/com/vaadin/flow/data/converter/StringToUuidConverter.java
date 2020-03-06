@@ -29,8 +29,8 @@ import java.util.UUID;
  * Leading and trailing white spaces are ignored when converting from a String.
  * </p>
  * <p>
- * The String representation uses the canonical format of 32-characters with a hyphen
- * to separate each of five groups of hexadecimal digits as defined in:
+ * The String representation uses the canonical format of 32-characters with a
+ * hyphen to separate each of five groups of hexadecimal digits as defined in:
  * RFC 4122: A Universally Unique IDentifier (UUID) URN Namespace
  * http://www.ietf.org/rfc/rfc4122.txt
  * </p>
@@ -44,17 +44,19 @@ public class StringToUuidConverter implements Converter<String, UUID> {
     /**
      * Constructs a converter for String to UUID and back.
      *
-     * @param errorMessage the error message to use if conversion fails
+     * @param errorMessage
+     *            the error message to use if conversion fails
      */
     public StringToUuidConverter(String errorMessage) {
         this(ctx -> errorMessage);
     }
 
     /**
-     * Constructs a new converter instance with the given error message provider.
-     * Empty strings are converted to <code>null</code>.
+     * Constructs a new converter instance with the given error message
+     * provider. Empty strings are converted to <code>null</code>.
      *
-     * @param errorMessageProvider the error message provider to use if conversion fails
+     * @param errorMessageProvider
+     *            the error message provider to use if conversion fails
      */
     public StringToUuidConverter(ErrorMessageProvider errorMessageProvider) {
         this.errorMessageProvider = errorMessageProvider;
@@ -74,11 +76,12 @@ public class StringToUuidConverter implements Converter<String, UUID> {
         try {
             uuid = UUID.fromString(value);
         } catch (java.lang.IllegalArgumentException e) {
-            LoggerFactory.getLogger(StringToUuidConverter.class.getName()).warn(
-                    "Unable to convert String to UUID: " + value, e);
+            LoggerFactory.getLogger(StringToUuidConverter.class.getName())
+                    .warn("Unable to convert String to UUID: " + value, e);
             return Result.error(this.errorMessageProvider.apply(context));
         }
-        return Result.ok(uuid); // Return the UUID object, converted from String.
+        return Result.ok(uuid); // Return the UUID object, converted from
+                                // String.
     }
 
     @Override
@@ -87,7 +90,8 @@ public class StringToUuidConverter implements Converter<String, UUID> {
             return null;
         }
         // `java.util.UUID::toString` generates a textual representation of a
-        // UUID’s 128-bits as in a  hexadecimal `String` in 32-character canonical
+        // UUID’s 128-bits as in a hexadecimal `String` in 32-character
+        // canonical
         // format with four hyphens separating groups of digits.
         // https://docs.oracle.com/javase/10/docs/api/java/util/UUID.html#toString()
         return value.toString();

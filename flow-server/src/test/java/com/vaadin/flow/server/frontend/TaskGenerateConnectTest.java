@@ -25,11 +25,10 @@ public class TaskGenerateConnectTest {
     @Before
     public void setUp() throws IOException {
         outputDirectory = temporaryFolder.newFolder();
-        properties = temporaryFolder
-                .newFile("application.properties");
-        openApiJson = new File(getClass().getResource(
-                "../connect/generator/openapi/esmodule-generator" +
-                        "-TwoEndpointsThreeMethods.json")
+        properties = temporaryFolder.newFile("application.properties");
+        openApiJson = new File(getClass()
+                .getResource("../connect/generator/openapi/esmodule-generator"
+                        + "-TwoEndpointsThreeMethods.json")
                 .getPath());
     }
 
@@ -43,8 +42,8 @@ public class TaskGenerateConnectTest {
         assertFalse(ts2.exists());
         assertFalse(client.exists());
 
-        taskGenerateConnectTs = new TaskGenerateConnect(properties,
-                openApiJson, outputDirectory);
+        taskGenerateConnectTs = new TaskGenerateConnect(properties, openApiJson,
+                outputDirectory);
 
         taskGenerateConnectTs.execute();
 
@@ -53,8 +52,8 @@ public class TaskGenerateConnectTest {
         assertTrue(client.exists());
 
         String output = FileUtils.readFileToString(client, "UTF-8");
-        assertTrue(output
-                .contains("import {ConnectClient} from '@vaadin/flow-frontend/Connect';"));
+        assertTrue(output.contains(
+                "import {ConnectClient} from '@vaadin/flow-frontend/Connect';"));
         assertTrue(output.contains(
                 "const client = new ConnectClient({prefix: 'connect'});"));
         assertTrue(output.contains("export default client;"));

@@ -47,7 +47,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // ensure there is a valid pnpm installed in the system
         FrontendUtils.ensurePnpm(getNodeUpdater().npmFolder.getAbsolutePath());
         // create an empty package.json so as pnpm can be run without error
-        FileUtils.write(new File(getNodeUpdater().npmFolder, PACKAGE_JSON), "{}", StandardCharsets.UTF_8);
+        FileUtils.write(new File(getNodeUpdater().npmFolder, PACKAGE_JSON),
+                "{}", StandardCharsets.UTF_8);
     }
 
     @Test

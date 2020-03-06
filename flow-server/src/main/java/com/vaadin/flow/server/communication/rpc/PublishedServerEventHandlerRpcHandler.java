@@ -177,16 +177,16 @@ public class PublishedServerEventHandlerRpcHandler
                 Serializable returnValue = (Serializable) invokeMethod(instance,
                         method, args);
 
-                instance.getElement().executeJs(
-                        "this.$server['"
+                instance.getElement()
+                        .executeJs("this.$server['"
                                 + JsonConstants.RPC_PROMISE_CALLBACK_NAME
                                 + "']($0, true, $1)",
-                        Integer.valueOf(promiseId), returnValue);
+                                Integer.valueOf(promiseId), returnValue);
             } catch (RuntimeException e) {
-                instance.getElement().executeJs("this.$server['"
-                        + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                        + "']($0, false)",
-                        Integer.valueOf(promiseId));
+                instance.getElement()
+                        .executeJs("this.$server['"
+                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                                + "']($0, false)", Integer.valueOf(promiseId));
 
                 throw e;
             }
@@ -306,9 +306,8 @@ public class PublishedServerEventHandlerRpcHandler
                     throw new IllegalArgumentException(exception);
                 }
             }
-            String msg = String.format(
-                    "Class '%s' has the method '%s' "
-                            + "whose parameter %d refers to unsupported type '%s'",
+            String msg = String.format("Class '%s' has the method '%s' "
+                    + "whose parameter %d refers to unsupported type '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName());
             throw new IllegalArgumentException(msg);
@@ -344,10 +343,9 @@ public class PublishedServerEventHandlerRpcHandler
     private static Object decodeArray(Method method, Class<?> type, int index,
             JsonValue argValue) {
         if (argValue.getType() != JsonType.ARRAY) {
-            String msg = String.format(
-                    "Class '%s' has the method '%s' "
-                            + "whose parameter %d refers to the array type '%s' "
-                            + "but received value is not an array, its type is '%s'",
+            String msg = String.format("Class '%s' has the method '%s' "
+                    + "whose parameter %d refers to the array type '%s' "
+                    + "but received value is not an array, its type is '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName(), argValue.getType().name());
             throw new IllegalArgumentException(msg);

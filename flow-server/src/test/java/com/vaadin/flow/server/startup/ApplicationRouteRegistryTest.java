@@ -369,7 +369,8 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertTrue("Error navigation target was not registered",
                 errorNavigationTarget.isPresent());
         Assert.assertEquals("Wrong errorNavigationTarget was registered",
-                ErrorView.class, errorNavigationTarget.get().getNavigationTarget());
+                ErrorView.class,
+                errorNavigationTarget.get().getNavigationTarget());
     }
 
     @Override

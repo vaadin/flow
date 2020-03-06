@@ -80,7 +80,8 @@ public class AttachTemplateChildRpcHandlerTest {
         Mockito.when(node.getOwner()).thenReturn(tree);
         Mockito.when(node.getParent()).thenReturn(parentNode);
         Mockito.when(tree.getNodeById(requestedId)).thenReturn(node);
-        Mockito.when(node.getChangeTracker(Mockito.any(),Mockito.any())).thenReturn(new HashMap<>());
+        Mockito.when(node.getChangeTracker(Mockito.any(), Mockito.any()))
+                .thenReturn(new HashMap<>());
 
         ElementData data = new ElementData(node);
         data.setTag("foo");

@@ -42,7 +42,8 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      *            folder where flow resources taken from jars will be placed.
      *            default)
      */
-    TaskGeneratePackageJson(File npmFolder, File generatedPath, File flowResourcesPath) {
+    TaskGeneratePackageJson(File npmFolder, File generatedPath,
+            File flowResourcesPath) {
         super(null, null, npmFolder, generatedPath, flowResourcesPath);
     }
 

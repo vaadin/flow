@@ -74,8 +74,7 @@ public class RouteTargetTest {
             implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event,
-                @OptionalParameter
-                        String parameter) {
+                @OptionalParameter String parameter) {
         }
     }
 
@@ -85,8 +84,7 @@ public class RouteTargetTest {
             implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event,
-                @OptionalParameter
-                        String parameter) {
+                @OptionalParameter String parameter) {
         }
     }
 
@@ -96,8 +94,7 @@ public class RouteTargetTest {
             implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event,
-                @WildcardParameter
-                        String parameter) {
+                @WildcardParameter String parameter) {
         }
     }
 
@@ -107,8 +104,7 @@ public class RouteTargetTest {
             implements HasUrlParameter<String> {
         @Override
         public void setParameter(BeforeEvent event,
-                @WildcardParameter
-                        String parameter) {
+                @WildcardParameter String parameter) {
         }
     }
 
@@ -518,9 +514,8 @@ public class RouteTargetTest {
 
         List<Class<? extends Component>> routes = target.getRoutes();
 
-        for (Class<? extends Component> component : Arrays
-                .asList(NormalRoute.class, HasUrlRoute.class,
-                        WildcardRoute.class)) {
+        for (Class<? extends Component> component : Arrays.asList(
+                NormalRoute.class, HasUrlRoute.class, WildcardRoute.class)) {
             Assert.assertTrue("Returned routes was missing " + component,
                     routes.contains(component));
         }
@@ -548,9 +543,8 @@ public class RouteTargetTest {
         Assert.assertEquals("All three routes should have been copied.", 3,
                 routes.size());
 
-        for (Class<? extends Component> component : Arrays
-                .asList(NormalRoute.class, HasUrlRoute.class,
-                        WildcardRoute.class)) {
+        for (Class<? extends Component> component : Arrays.asList(
+                NormalRoute.class, HasUrlRoute.class, WildcardRoute.class)) {
             Assert.assertTrue("Immutable routes didn't contain " + component,
                     routes.contains(component));
         }
@@ -561,9 +555,8 @@ public class RouteTargetTest {
         Assert.assertEquals("All three routes should have been copied.", 3,
                 routes.size());
 
-        for (Class<? extends Component> component : Arrays
-                .asList(NormalRoute.class, HasUrlRoute.class,
-                        WildcardRoute.class)) {
+        for (Class<? extends Component> component : Arrays.asList(
+                NormalRoute.class, HasUrlRoute.class, WildcardRoute.class)) {
             Assert.assertTrue("Immutable routes didn't contain " + component,
                     routes.contains(component));
         }

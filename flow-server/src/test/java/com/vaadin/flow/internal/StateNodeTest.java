@@ -1103,7 +1103,7 @@ public class StateNodeTest {
         Assert.assertNull(parent.getParent());
 
         // then parent and its descendants are reset
-        assertNodesReset(parent,child);
+        assertNodesReset(parent, child);
     }
 
     /**
@@ -1129,7 +1129,7 @@ public class StateNodeTest {
         parent.setParent(null);
 
         // then parent and its descendants are reset
-        assertNodesReset(parent,child);
+        assertNodesReset(parent, child);
     }
 
     private void assertNodesReset(StateNode... nodes) {

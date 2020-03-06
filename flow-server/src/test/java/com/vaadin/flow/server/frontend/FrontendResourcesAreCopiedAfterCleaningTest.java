@@ -79,7 +79,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
-        File resourcesFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
+        File resourcesFolder = new File(npmFolder,
+                DEAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
@@ -94,7 +95,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
-        File resourcesFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
+        File resourcesFolder = new File(npmFolder,
+                DEAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)

@@ -66,15 +66,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class UidlRequestHandler extends SynchronizedRequestHandler
         implements SessionExpiredHandler {
 
-
     private ServerRpcHandler rpcHandler;
 
-    public static final Pattern HASH_PATTERN = Pattern.compile("window.location.hash ?= ?'(.*?)'");
+    public static final Pattern HASH_PATTERN = Pattern
+            .compile("window.location.hash ?= ?'(.*?)'");
     public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
-    public static final String PUSH_STATE_HASH =
-            "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
-    public static final String PUSH_STATE_LOCATION =
-            "setTimeout(() => history.pushState(null, null, '%s'));";
+    public static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
+    public static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, null, '%s'));";
 
     private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
     private static final String RPC = RPC_INVOCATIONS;
@@ -141,8 +139,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         commitJsonResponse(response, json);
     }
 
-    void writeUidl(UI ui, Writer writer, boolean resync)
-            throws IOException {
+    void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
         JsonObject uidl = createUidl(ui, resync);
 
         if (ui instanceof JavaScriptBootstrapUI) {
@@ -330,4 +327,3 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return null;
     }
 }
-

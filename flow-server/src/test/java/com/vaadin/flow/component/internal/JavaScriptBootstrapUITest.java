@@ -41,7 +41,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class JavaScriptBootstrapUITest  {
+public class JavaScriptBootstrapUITest {
     private MockServletServiceSessionSetup mocks;
     private JavaScriptBootstrapUI ui;
 
@@ -50,7 +50,8 @@ public class JavaScriptBootstrapUITest  {
     }
 
     @Tag(Tag.H2)
-    public static class CleanChild extends Component implements BeforeLeaveObserver {
+    public static class CleanChild extends Component
+            implements BeforeLeaveObserver {
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
         }
@@ -58,14 +59,15 @@ public class JavaScriptBootstrapUITest  {
 
     @Route("clean")
     @Tag(Tag.HEADER)
-    public static class Clean extends Component implements HasComponents{
+    public static class Clean extends Component implements HasComponents {
         public Clean() {
             add(new CleanChild());
         }
     }
 
     @Tag(Tag.H1)
-    public static class DirtyChild extends Component implements BeforeLeaveObserver {
+    public static class DirtyChild extends Component
+            implements BeforeLeaveObserver {
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
             event.postpone();
@@ -104,7 +106,8 @@ public class JavaScriptBootstrapUITest  {
 
     @Route("forwardToClientSideViewOnBeforeEnter")
     @Tag(Tag.DIV)
-    public static class ForwardToClientSideViewOnBeforeEnter extends Component implements BeforeEnterObserver {
+    public static class ForwardToClientSideViewOnBeforeEnter extends Component
+            implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -114,7 +117,8 @@ public class JavaScriptBootstrapUITest  {
 
     @Route("forwardToServerSideViewOnBeforeEnter")
     @Tag(Tag.DIV)
-    public static class ForwardToServerViewOnBeforeEnter extends Component implements BeforeEnterObserver {
+    public static class ForwardToServerViewOnBeforeEnter extends Component
+            implements BeforeEnterObserver {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
@@ -125,17 +129,24 @@ public class JavaScriptBootstrapUITest  {
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
-        mocks.getService().getRouter().getRegistry().setRoute("clean", Clean.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("clean/1", Clean.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("dirty", Dirty.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("clean",
+                Clean.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("clean/1",
+                Clean.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("dirty",
+                Dirty.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("exception",
                 FailOnException.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("forwardToClientSideViewOnBeforeEnter",
-                ForwardToClientSideViewOnBeforeEnter.class, Collections.emptyList());
-        mocks.getService().getRouter().getRegistry().setRoute("forwardToServerSideViewOnBeforeEnter",
-                ForwardToServerViewOnBeforeEnter.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "forwardToClientSideViewOnBeforeEnter",
+                ForwardToClientSideViewOnBeforeEnter.class,
+                Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "forwardToServerSideViewOnBeforeEnter",
+                ForwardToServerViewOnBeforeEnter.class,
+                Collections.emptyList());
         ui = new JavaScriptBootstrapUI();
         ui.getInternals().setSession(mocks.getSession());
 
@@ -149,19 +160,22 @@ public class JavaScriptBootstrapUITest  {
     public void should_allow_navigation() {
         ui.connectClient("foo", "bar", "/clean");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H2,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // Dirty view is allowed after clean view
         ui.connectClient("foo", "bar", "/dirty");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
     public void should_navigate_when_endingSlash() {
         ui.connectClient("foo", "bar", "/clean/");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H2,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
@@ -174,22 +188,26 @@ public class JavaScriptBootstrapUITest  {
     public void should_prevent_navigation_on_dirty() {
         ui.connectClient("foo", "bar", "/dirty");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // clean view cannot be rendered after dirty
         ui.connectClient("foo", "bar", "/clean");
-        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // an error route cannot be rendered after dirty
         ui.connectClient("foo", "bar", "/errr");
-        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
     public void should_remove_content_on_leaveNavigation() {
         ui.connectClient("foo", "bar", "/clean");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H2,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         ui.leaveNavigation("/client-view");
 
@@ -200,11 +218,13 @@ public class JavaScriptBootstrapUITest  {
     public void should_keep_content_on_leaveNavigation_postpone() {
         ui.connectClient("foo", "bar", "/dirty");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         ui.leaveNavigation("/client-view");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
@@ -219,7 +239,8 @@ public class JavaScriptBootstrapUITest  {
         ui.connectClient("foo", "bar", "/forwardToServerSideViewOnBeforeEnter");
 
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H2,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         ui.navigate("product");
         assertEquals("my-product", ui.getInternals().getTitle());
@@ -228,7 +249,8 @@ public class JavaScriptBootstrapUITest  {
 
         ui.navigate("forwardToServerSideViewOnBeforeEnter");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H2,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
@@ -251,15 +273,16 @@ public class JavaScriptBootstrapUITest  {
     public void should_navigate_when_server_routing() {
         ui.connectClient("foo", "bar", "/clean");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
-
+        assertEquals(Tag.H2,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
                 .thenReturn(Boolean.TRUE);
 
         ui.navigate("dirty");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
@@ -314,12 +337,14 @@ public class JavaScriptBootstrapUITest  {
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
-        Mockito.when(internals.getLastHandledLocation()).thenReturn(lastLocation);
+        Mockito.when(internals.getLastHandledLocation())
+                .thenReturn(lastLocation);
         StateTree stateTree = Mockito.mock(StateTree.class);
         Mockito.when(internals.getStateTree()).thenReturn(stateTree);
         Mockito.when(internals.getTitle()).thenReturn("");
 
-        StateNode stateNode = BasicElementStateProvider.createStateNode("foo-element");
+        StateNode stateNode = BasicElementStateProvider
+                .createStateNode("foo-element");
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
@@ -343,17 +368,20 @@ public class JavaScriptBootstrapUITest  {
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
-        Mockito.when(internals.getLastHandledLocation()).thenReturn(lastLocation);
+        Mockito.when(internals.getLastHandledLocation())
+                .thenReturn(lastLocation);
 
         ui.navigate("clean/");
-        Mockito.verify(page, Mockito.never()).executeJs(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(page, Mockito.never()).executeJs(Mockito.anyString(),
+                Mockito.anyString());
     }
 
     @Test
     public void server_should_not_doClientRoute_when_navigatingToServer() {
         ui.connectClient("foo", "bar", "/clean");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H2,
+                ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         ui = Mockito.spy(ui);
         Page page = Mockito.mock(Page.class);
@@ -437,7 +465,7 @@ public class JavaScriptBootstrapUITest  {
     }
 
     private void assertExceptionComponent(Class<?> errorClass,
-                                          String... exceptionTexts) {
+            String... exceptionTexts) {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 

@@ -154,8 +154,8 @@ public class RouteUtil {
         return list;
     }
 
-    static Optional<RouteAlias> getMatchingRouteAlias(
-            Class<?> component, String path, List<RouteAlias> routeAliases) {
+    static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component,
+            String path, List<RouteAlias> routeAliases) {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))

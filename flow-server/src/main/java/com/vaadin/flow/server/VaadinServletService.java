@@ -104,7 +104,9 @@ public class VaadinServletService extends VaadinService {
             handlers.add(0, new BootstrapHandler());
             getLogger().debug("Using '{}' in deprecated V14 bootstrapping",
                     BootstrapHandler.class.getName());
-            UsageStatistics.markAsUsed(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER, Version.getFullVersion());
+            UsageStatistics.markAsUsed(
+                    Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER,
+                    Version.getFullVersion());
         } else {
             handlers.add(0, new IndexHtmlRequestHandler());
             getLogger().debug("Using '{}' in client mode bootstrapping",

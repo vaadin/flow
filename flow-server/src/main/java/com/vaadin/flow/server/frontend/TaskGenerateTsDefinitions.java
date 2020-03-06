@@ -57,6 +57,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     protected boolean shouldGenerate() {
         File tsDefinitionsFile = new File(npmFolder, TS_DEFINITIONS);
         return !tsDefinitionsFile.exists()
-                && new File(npmFolder, TaskGenerateTsConfig.TSCONFIG_JSON).exists();
+                && new File(npmFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
+                        .exists();
     }
 }

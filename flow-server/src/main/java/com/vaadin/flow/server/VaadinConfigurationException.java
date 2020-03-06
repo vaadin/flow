@@ -25,9 +25,9 @@ public class VaadinConfigurationException extends Exception {
      * Exception constructor.
      *
      * @param message
-     *         exception message
+     *            exception message
      * @param exception
-     *         exception cause
+     *            exception cause
      */
     public VaadinConfigurationException(String message, Exception exception) {
         super(message, exception);

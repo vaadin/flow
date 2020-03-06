@@ -63,7 +63,7 @@ public abstract class BeforeEvent extends EventObject {
      *            Navigation layout chain
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
-                       List<Class<? extends RouterLayout>> layouts) {
+            List<Class<? extends RouterLayout>> layouts) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, event.getUI(), layouts);
 
@@ -87,8 +87,8 @@ public abstract class BeforeEvent extends EventObject {
      *            the layout chain for the navigation target
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
-                       Location location, Class<?> navigationTarget, UI ui,
-                       List<Class<? extends RouterLayout>> layouts) {
+            Location location, Class<?> navigationTarget, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
         super(router);
 
         assert trigger != null;
@@ -195,7 +195,7 @@ public abstract class BeforeEvent extends EventObject {
      *            the target navigation state of the rerouting
      */
     public void forwardTo(NavigationHandler forwardTarget,
-                          NavigationState targetState) {
+            NavigationState targetState) {
         this.forwardTargetState = targetState;
         this.forwardTarget = forwardTarget;
     }
@@ -233,8 +233,10 @@ public abstract class BeforeEvent extends EventObject {
      *            forward target location string
      */
     public void forwardTo(String location) {
-        if(getSource().getRegistry().getNavigationTarget(location).isPresent()) {
-            getSource().getRegistry().getNavigationTarget(location).ifPresent(this::forwardTo);
+        if (getSource().getRegistry().getNavigationTarget(location)
+                .isPresent()) {
+            getSource().getRegistry().getNavigationTarget(location)
+                    .ifPresent(this::forwardTo);
         } else {
             // inform that forward target location is client-side view
             isUnknownRoute = true;
@@ -283,7 +285,7 @@ public abstract class BeforeEvent extends EventObject {
      *            the target navigation state of the rerouting
      */
     public void rerouteTo(NavigationHandler rerouteTarget,
-                          NavigationState targetState) {
+            NavigationState targetState) {
         rerouteTargetState = targetState;
         this.rerouteTarget = rerouteTarget;
     }
@@ -356,7 +358,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     private Class<? extends Component> getTargetOrThrow(String route,
-                                                        List<String> segments) {
+            List<String> segments) {
         Optional<Class<? extends Component>> target = getSource().getRegistry()
                 .getNavigationTarget(route, segments);
 
@@ -369,7 +371,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     private <T> void checkUrlParameterType(T routeParam,
-                                           Class<? extends Component> target) {
+            Class<? extends Component> target) {
         Class<?> genericInterfaceType = ReflectTools
                 .getGenericInterfaceType(target, HasUrlParameter.class);
         if (!genericInterfaceType.isAssignableFrom(routeParam.getClass())) {
@@ -380,7 +382,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     private <T> NavigationState getNavigationState(String route,
-                                                   List<T> routeParams) {
+            List<T> routeParams) {
         List<String> segments = routeParams.stream().map(Object::toString)
                 .collect(Collectors.toList());
         Class<? extends Component> target = getTargetOrThrow(route, segments);
@@ -487,7 +489,7 @@ public abstract class BeforeEvent extends EventObject {
      * @see BeforeLeaveEvent#rerouteToError(Exception, String)
      */
     public void rerouteToError(Class<? extends Exception> exception,
-                               String customMessage) {
+            String customMessage) {
         Exception instance = ReflectTools.createInstance(exception);
         rerouteToError(instance, customMessage);
     }

@@ -36,8 +36,8 @@ import com.vaadin.flow.server.connect.VaadinConnectController;
  * failure on the client side, this exception or any of its subclasses can be
  * used.
  *
- * Refer to the {@link EndpointException#getSerializationData()} method to
- * see the information on the data being sent to the client.
+ * Refer to the {@link EndpointException#getSerializationData()} method to see
+ * the information on the data being sent to the client.
  *
  * Refer to {@code VaadinConnectException} in the client library for more
  * information about the client side of the implementation.
@@ -125,8 +125,7 @@ public class EndpointException extends RuntimeException {
      *            a detail object that will be serialized into JSON and sent to
      *            the client, when the exception is thrown
      */
-    public EndpointException(String message, Throwable cause,
-            Object detail) {
+    public EndpointException(String message, Throwable cause, Object detail) {
         super(message, cause);
         this.detail = detail;
     }

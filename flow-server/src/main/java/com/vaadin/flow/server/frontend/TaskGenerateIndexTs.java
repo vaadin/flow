@@ -104,8 +104,9 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         return relativePath;
     }
 
-    private void compareActualIndexTsOrJsWithIndexTempalate(File indexTs, File indexJs) {
-        if(indexTs.exists() || indexJs.exists()) {
+    private void compareActualIndexTsOrJsWithIndexTempalate(File indexTs,
+            File indexJs) {
+        if (indexTs.exists() || indexJs.exists()) {
             File indexFileExist = indexTs.exists() ? indexTs : indexJs;
             String indexContent = null;
             String indexTemplate = null;
@@ -115,8 +116,9 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
             } catch (IOException e) {
                 log().warn("Failed to read file content", e);
             }
-            if(indexContent != null && !indexContent.equals(indexTemplate)) {
-                UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
+            if (indexContent != null && !indexContent.equals(indexTemplate)) {
+                UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
+                        Version.getFullVersion());
             }
         }
     }

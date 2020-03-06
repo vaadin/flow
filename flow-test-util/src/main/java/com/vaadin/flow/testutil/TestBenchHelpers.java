@@ -418,7 +418,8 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     private static class LazyDndSimulationLoad {
-        private static final String DND_SCRIPT = loadDndScript("/dnd-simulation.js");
+        private static final String DND_SCRIPT = loadDndScript(
+                "/dnd-simulation.js");
 
         private static String loadDndScript(String scriptLocation) {
             InputStream stream = TestBenchHelpers.class

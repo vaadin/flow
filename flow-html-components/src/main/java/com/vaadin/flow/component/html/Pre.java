@@ -26,8 +26,7 @@ import com.vaadin.flow.component.Tag;
  * @author Vaadin Ltd
  */
 @Tag(Tag.PRE)
-public class Pre extends HtmlContainer
-        implements ClickNotifier<Pre> {
+public class Pre extends HtmlContainer implements ClickNotifier<Pre> {
 
     /**
      * Creates a new empty preformatted text block.

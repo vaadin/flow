@@ -225,8 +225,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(allowed)) {
                 // This condition means there is a filter which explicitly
                 // allows or disallows the property
-                assert AllowUpdate.EXPLICITLY_DISALLOW
-                        .equals(allowed) : "Implementation error. If update for a property is allowed before the "
+                assert AllowUpdate.EXPLICITLY_DISALLOW.equals(
+                        allowed) : "Implementation error. If update for a property is allowed before the "
                                 + "filter it's expected that the filter disallow it";
                 return true;
             }
@@ -256,10 +256,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             if (propertyMap.updateFromClientFilter != null) {
                 boolean allow = propertyMap.updateFromClientFilter.test(key);
                 if (!allow && log) {
-                    getLogger().warn(
-                            "Ignoring model update for {}. "
-                                    + "For security reasons, the property must have a "
-                                    + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
+                    getLogger().warn("Ignoring model update for {}. "
+                            + "For security reasons, the property must have a "
+                            + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
                             key, AllowClientUpdates.class.getSimpleName());
                 }
                 return allow ? AllowUpdate.EXPLICITLY_ALLOW
@@ -477,9 +476,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * Here is the logic flow:
      *
      * <pre>
-
-
-
+    
+    
+    
                              +--------------------------------+
                              |                                |
                              | allowUpdateFromClient  is false|

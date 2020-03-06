@@ -163,7 +163,8 @@ public class AppShellSettings implements Serializable {
      *            title
      */
     public void setPageTitle(String title) {
-        ListIterator<Element> iter = getHeadElements(Position.APPEND).listIterator();
+        ListIterator<Element> iter = getHeadElements(Position.APPEND)
+                .listIterator();
         while (iter.hasNext()) {
             if ("title".equals(iter.next().normalName())) {
                 iter.remove();
@@ -211,8 +212,8 @@ public class AppShellSettings implements Serializable {
      * @param type
      *            dependency type
      */
-    public void addInlineFromFile(TargetElement target, Position position, String file,
-            Wrapping type) {
+    public void addInlineFromFile(TargetElement target, Position position,
+            String file, Wrapping type) {
         addInline(target, position, type, file, null);
     }
 
@@ -455,8 +456,8 @@ public class AppShellSettings implements Serializable {
      *            position in the target
      * @return the list of dom elements to add.
      */
-    List<Element> getInlineElements(VaadinRequest request,
-            TargetElement target, Position position) {
+    List<Element> getInlineElements(VaadinRequest request, TargetElement target,
+            Position position) {
         return inlines.stream()
                 .filter(inline -> inline.target == target
                         && inline.position == position)

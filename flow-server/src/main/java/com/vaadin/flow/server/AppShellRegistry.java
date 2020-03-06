@@ -48,28 +48,22 @@ import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidA
  */
 public class AppShellRegistry implements Serializable {
 
-    public static final String ERROR_HEADER_NO_SHELL =
-            "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
+    public static final String ERROR_HEADER_NO_SHELL = "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
             + "%nPlease create a custom class implementing `AppShellConfigurator` and move the following annotations to it:%n  %s%n";
 
-    public static final String ERROR_HEADER_OFFENDING =
-            "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
+    public static final String ERROR_HEADER_OFFENDING = "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
             + "%nThe following annotations must be either removed or moved to the '%s' class:%n  %s%n";
 
-    public static final String ERROR_HEADER_NO_APP_CONFIGURATOR =
-            "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
+    public static final String ERROR_HEADER_NO_APP_CONFIGURATOR = "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
             + "%nPlease, create a class implementing `AppShellConfigurator`, and remove `PageConfigurator` from: %n  - %s%n";
 
-    public static final String ERROR_HEADER_OFFENDING_CONFIGURATOR =
-            "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
+    public static final String ERROR_HEADER_OFFENDING_CONFIGURATOR = "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
             + "%nPlease, configure the page in %s, and remove the `PageConfigurator` from: %n - %s%n";
 
     private static final String ERROR_LINE = "  - %s from %s";
-    private static final String ERROR_MULTIPLE_SHELL =
-            "%n%nUnable to find a single class implementing `AppShellConfigurator` from the following candidates:%n  %s%n  %s%n";
+    private static final String ERROR_MULTIPLE_SHELL = "%n%nUnable to find a single class implementing `AppShellConfigurator` from the following candidates:%n  %s%n  %s%n";
 
-    private static final String ERROR_MULTIPLE_ANNOTATION =
-            "%n%s is not a repeatable annotation type.%n";
+    private static final String ERROR_MULTIPLE_ANNOTATION = "%n%s is not a repeatable annotation type.%n";
 
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
@@ -80,8 +74,8 @@ public class AppShellRegistry implements Serializable {
     private String title = "";
 
     /**
-     * A wrapper class for storing the {@link AppShellRegistry} instance
-     * in the servlet context.
+     * A wrapper class for storing the {@link AppShellRegistry} instance in the
+     * servlet context.
      */
     public static class AppShellRegistryWrapper implements Serializable {
         private final AppShellRegistry registry;
@@ -110,8 +104,7 @@ public class AppShellRegistry implements Serializable {
             AppShellRegistryWrapper attribute = context
                     .getAttribute(AppShellRegistryWrapper.class);
             if (attribute == null) {
-                attribute = new AppShellRegistryWrapper(
-                        new AppShellRegistry());
+                attribute = new AppShellRegistryWrapper(new AppShellRegistry());
                 context.setAttribute(attribute);
             }
             return attribute.registry;
@@ -127,8 +120,8 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Sets the {@link AppShellConfigurator} class in the application. Pass a null to
-     * reset the previous one when reusing the instance.
+     * Sets the {@link AppShellConfigurator} class in the application. Pass a
+     * null to reset the previous one when reusing the instance.
      *
      * @param shell
      *            the class extending VaadinAppShell class.
@@ -210,25 +203,28 @@ public class AppShellRegistry implements Serializable {
                 meta -> settings.addMetaTag(meta.name(), meta.content()));
 
         List<Viewport> viewPorts = getAnnotations(Viewport.class);
-        if(viewPorts.size() > 1) {
+        if (viewPorts.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, Viewport.class.getSimpleName()));
-        } else if(!viewPorts.isEmpty()) {
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
+                            Viewport.class.getSimpleName()));
+        } else if (!viewPorts.isEmpty()) {
             settings.setViewport(viewPorts.get(0).value());
         }
         List<BodySize> bodySizes = getAnnotations(BodySize.class);
-        if(bodySizes.size() > 1) {
+        if (bodySizes.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, BodySize.class.getSimpleName()));
-        } else if(!bodySizes.isEmpty()) {
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
+                            BodySize.class.getSimpleName()));
+        } else if (!bodySizes.isEmpty()) {
             settings.setBodySize(bodySizes.get(0).width(),
                     bodySizes.get(0).height());
         }
         List<PageTitle> pageTitles = getAnnotations(PageTitle.class);
-        if(pageTitles.size() > 1) {
+        if (pageTitles.size() > 1) {
             throw new InvalidApplicationConfigurationException(
-                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION, PageTitle.class.getSimpleName()));
-        } else if(!pageTitles.isEmpty()) {
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
+                            PageTitle.class.getSimpleName()));
+        } else if (!pageTitles.isEmpty()) {
             settings.setPageTitle(pageTitles.get(0).value());
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
@@ -236,8 +232,9 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Modifies the `index.html` document based on the {@link AppShellConfigurator}
-     * annotations or {@link AppShellConfigurator#configurePage(AppShellSettings)} method.
+     * Modifies the `index.html` document based on the
+     * {@link AppShellConfigurator} annotations or
+     * {@link AppShellConfigurator#configurePage(AppShellSettings)} method.
      *
      * @param document
      *            a JSoup document for the index.html page
@@ -247,8 +244,7 @@ public class AppShellRegistry implements Serializable {
     public void modifyIndexHtml(Document document, VaadinRequest request) {
         AppShellSettings settings = createSettings();
         if (appShellClass != null) {
-            ReflectTools.createInstance(appShellClass)
-                    .configurePage(settings);
+            ReflectTools.createInstance(appShellClass).configurePage(settings);
         }
 
         settings.getHeadElements(Position.PREPEND).forEach(
@@ -278,17 +274,18 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Modifies PushConfiguration instance based on the {@link Push}
-     * annotation on {@link AppShellConfigurator}.
+     * Modifies PushConfiguration instance based on the {@link Push} annotation
+     * on {@link AppShellConfigurator}.
      *
-     * @param pushConfiguration the PushConfigration instance to modify
+     * @param pushConfiguration
+     *            the PushConfigration instance to modify
      */
     public void modifyPushConfiguration(PushConfiguration pushConfiguration) {
         List<Push> pushAnnotations = getAnnotations(Push.class);
         if (pushAnnotations.size() > 1) {
-            throw new InvalidApplicationConfigurationException(String.format(
-                    AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
-                    Push.class.getSimpleName()));
+            throw new InvalidApplicationConfigurationException(
+                    String.format(AppShellRegistry.ERROR_MULTIPLE_ANNOTATION,
+                            Push.class.getSimpleName()));
         } else if (!pushAnnotations.isEmpty()) {
             Push push = pushAnnotations.get(0);
             pushConfiguration.setPushMode(push.value());
@@ -322,7 +319,8 @@ public class AppShellRegistry implements Serializable {
 
     @Override
     public String toString() {
-        return "Shell: " + appShellClass + " metas: " + getAnnotations(Meta.class);
+        return "Shell: " + appShellClass + " metas: "
+                + getAnnotations(Meta.class);
     }
 
     private <T extends Annotation> List<T> getAnnotations(Class<T> annotation) {

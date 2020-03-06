@@ -155,8 +155,7 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_spepe()
-            throws Exception {
+    public void writeBootstrapPage_spepe() throws Exception {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -168,12 +167,12 @@ public class WebComponentBootstrapHandlerTest {
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
 
-
         System.err.println(resultingScript);
 
     }
 
-    private VaadinResponse getMockResponse(ByteArrayOutputStream stream) throws IOException {
+    private VaadinResponse getMockResponse(ByteArrayOutputStream stream)
+            throws IOException {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinContext context = Mockito.mock(VaadinContext.class);
@@ -182,7 +181,7 @@ public class WebComponentBootstrapHandlerTest {
         Mockito.when(service.getContext()).thenReturn(context);
         Mockito.when(context.getAttribute(
                 eq(WebComponentConfigurationRegistry.class), any())).thenReturn(
-                Mockito.mock(WebComponentConfigurationRegistry.class));
+                        Mockito.mock(WebComponentConfigurationRegistry.class));
         return response;
     }
 

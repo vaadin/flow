@@ -113,8 +113,8 @@ public class AnnotationValidatorTest {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
                 NON_PARENT, FailingMultiAnnotation.class.getName(),
-                "@" + BodySize.class.getSimpleName() + ", "
-                        + "@" + Inline.class.getSimpleName()));
+                "@" + BodySize.class.getSimpleName() + ", " + "@"
+                        + Inline.class.getSimpleName()));
 
         annotationValidator.onStartup(Stream.of(FailingMultiAnnotation.class)
                 .collect(Collectors.toSet()), servletContext);

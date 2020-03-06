@@ -49,14 +49,18 @@ public @interface Route {
     /**
      * Gets the route path value of the annotated class.
      *
-     * <p>If no value is provided, the path will be derived from the class
-     * name of the component. The derived name will be in lower case and
-     * trailing "View" will be removed. Also, MainView or Main names will be
-     * mapped to root (value will be "").</p>
+     * <p>
+     * If no value is provided, the path will be derived from the class name of
+     * the component. The derived name will be in lower case and trailing "View"
+     * will be removed. Also, MainView or Main names will be mapped to root
+     * (value will be "").
+     * </p>
      *
-     * <p>Note for framework developers: do not use the value directly, but
-     * use the helper method {@link RouteUtil#resolve(Class, Route)}, so that
-     * naming convention based values are dealt correctly.</p>
+     * <p>
+     * Note for framework developers: do not use the value directly, but use the
+     * helper method {@link RouteUtil#resolve(Class, Route)}, so that naming
+     * convention based values are dealt correctly.
+     * </p>
      *
      * @return the explicit path value of this route
      */
@@ -67,13 +71,13 @@ public @interface Route {
      * <p>
      * When navigating between components that use the same layout, the same
      * component instance is reused. Default layout target is the {@link UI},
-     * but the layout should not be a custom {@code UI} as {@code UI} is a special
-     * class used to know where the route stack ends and no parent layouts should
-     * be involved.
+     * but the layout should not be a custom {@code UI} as {@code UI} is a
+     * special class used to know where the route stack ends and no parent
+     * layouts should be involved.
      *
      * <p>
-     * All layout stacks will be appended to the {@code UI} as it represents
-     * the Body element.
+     * All layout stacks will be appended to the {@code UI} as it represents the
+     * Body element.
      *
      * @return the layout component class used by the route target component.
      * @see RouterLayout

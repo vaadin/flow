@@ -31,17 +31,16 @@ interface FileDownloader {
      * Download to destination from url using username and password.
      *
      * @param downloadTarget
-     *         uri string from where to download
+     *            uri string from where to download
      * @param destination
-     *         file target directory
+     *            file target directory
      * @param userName
-     *         user name, {@code null} accepted
+     *            user name, {@code null} accepted
      * @param password
-     *         password, {@code null} accepted
+     *            password, {@code null} accepted
      * @throws DownloadException
-     *         exception thrown when download fails
+     *             exception thrown when download fails
      */
     void download(URI downloadTarget, File destination, String userName,
             String password) throws DownloadException;
 }
-

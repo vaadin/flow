@@ -943,13 +943,14 @@ public class ComponentTest {
         }
     }
 
-    private void assertSynchronizedProperties(String domEventName, Element element,
-            String... properties) {
+    private void assertSynchronizedProperties(String domEventName,
+            Element element, String... properties) {
         Set<String> expected = Stream.of(properties)
                 .collect(Collectors.toSet());
 
         Set<String> expressions = element.getNode()
-                .getFeature(ElementListenerMap.class).getExpressions(domEventName);
+                .getFeature(ElementListenerMap.class)
+                .getExpressions(domEventName);
 
         Assert.assertEquals(expected, expressions);
     }
@@ -1109,7 +1110,8 @@ public class ComponentTest {
     public void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
         TestDiv div = new TestDiv();
 
-        ElementListenerMap feature = div.getElement().getNode().getFeature(ElementListenerMap.class);
+        ElementListenerMap feature = div.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
 
         Set<String> props = feature.getExpressions("bar");
         Assert.assertEquals(1, props.size());

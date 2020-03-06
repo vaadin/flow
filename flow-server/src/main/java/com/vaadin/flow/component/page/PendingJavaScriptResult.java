@@ -64,8 +64,8 @@ public interface PendingJavaScriptResult
     }
 
     /**
-     * Cancel the javascript execution, if it was not yet sent to the
-     * browser for execution.
+     * Cancel the javascript execution, if it was not yet sent to the browser
+     * for execution.
      *
      * @return <code>true</code> if the execution was canceled,
      *         <code>false</code> if not

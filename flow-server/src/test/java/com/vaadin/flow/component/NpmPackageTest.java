@@ -40,7 +40,8 @@ public class NpmPackageTest {
     public void testDummy() {
         Annotation[] annotations = TestComponent.class.getAnnotations();
 
-        Assert.assertEquals("NpmPackage is missing", annotations[1].annotationType(), NpmPackage.class);
+        Assert.assertEquals("NpmPackage is missing",
+                annotations[1].annotationType(), NpmPackage.class);
     }
 
 }

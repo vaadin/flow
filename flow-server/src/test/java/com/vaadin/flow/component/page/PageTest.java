@@ -170,8 +170,8 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                                                     Serializable... params) {
-                super.executeJs(expression,params);
+                    Serializable... params) {
+                super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
 
@@ -186,21 +186,22 @@ public class PageTest {
                     }
 
                     @Override
-                    public void then(SerializableConsumer<JsonValue> resultHandler,
-                                     SerializableConsumer<String> errorHandler) {
-                        final HashMap<String,String> params = new HashMap<>();
-                        params.put("v-sw","2560");
-                        params.put("v-sh","1450");
-                        params.put("v-tzo","-270");
-                        params.put("v-rtzo","-210");
-                        params.put("v-dstd","60");
-                        params.put("v-dston","true");
-                        params.put("v-tzid","Asia/Tehran");
-                        params.put("v-curdate","1555000000000");
-                        params.put("v-td","false");
-                        params.put("v-wn","ROOT-1234567-0.1234567");
-                        resultHandler.accept(JsonUtils.createObject(
-                                params, Json::create));
+                    public void then(
+                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<String> errorHandler) {
+                        final HashMap<String, String> params = new HashMap<>();
+                        params.put("v-sw", "2560");
+                        params.put("v-sh", "1450");
+                        params.put("v-tzo", "-270");
+                        params.put("v-rtzo", "-210");
+                        params.put("v-dstd", "60");
+                        params.put("v-dston", "true");
+                        params.put("v-tzid", "Asia/Tehran");
+                        params.put("v-curdate", "1555000000000");
+                        params.put("v-td", "false");
+                        params.put("v-wn", "ROOT-1234567-0.1234567");
+                        resultHandler.accept(
+                                JsonUtils.createObject(params, Json::create));
                     }
                 };
             }
@@ -215,8 +216,8 @@ public class PageTest {
         page.retrieveExtendedClientDetails(receiver);
 
         // then
-        final int jsInvocations =
-                mockUI.getInternals().dumpPendingJavaScriptInvocations().size();
+        final int jsInvocations = mockUI.getInternals()
+                .dumpPendingJavaScriptInvocations().size();
         Assert.assertEquals(1, jsInvocations);
         Assert.assertEquals(2, callbackInvocations.get());
     }
@@ -229,7 +230,7 @@ public class PageTest {
         urls.add("//sample.com/mod.js");
         urls.add("/mod.js");
 
-        for (String url: urls) {
+        for (String url : urls) {
             page.addJsModule(url);
         }
 

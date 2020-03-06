@@ -35,7 +35,8 @@ public class UsageStatisticsExporter implements Serializable {
      * Export {@link UsageStatistics} entries to a document. It appends a
      * {@code <script>} element to the {@code <body>} element.
      *
-     * @param document the document where the statistic entries to be exported to.
+     * @param document
+     *            the document where the statistic entries to be exported to.
      */
     public static void exportUsageStatisticsToDocument(Document document) {
         String entries = UsageStatistics.getEntries()
@@ -45,16 +46,15 @@ public class UsageStatisticsExporter implements Serializable {
         if (!entries.isEmpty()) {
             // Registers the entries in a way that is picked up as a Vaadin
             // WebComponent by the usage stats gatherer
-            String builder = "window.Vaadin = window.Vaadin || {};\n" +
-                    "window.Vaadin.registrations = window.Vaadin.registrations || [];\n" +
-                    "window.Vaadin.registrations.push(" +
-                    entries +
-                    ");";
+            String builder = "window.Vaadin = window.Vaadin || {};\n"
+                    + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                    + "window.Vaadin.registrations.push(" + entries + ");";
             document.body().appendElement("script").text(builder);
         }
     }
 
-    private static String createUsageStatisticsJson(UsageStatistics.UsageEntry entry) {
+    private static String createUsageStatisticsJson(
+            UsageStatistics.UsageEntry entry) {
         JsonObject json = Json.createObject();
 
         json.put("is", entry.getName());

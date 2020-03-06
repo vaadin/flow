@@ -18,12 +18,11 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.server.Command;
 
-
 /**
  * Collections of methods for configuring more complex Shortcut interactions.
  * <p>
- * Unlike the shortcut methods offered by {@link Focusable} and {@link
- * ClickNotifier}, these methods allow for configuring the {@code
+ * Unlike the shortcut methods offered by {@link Focusable} and
+ * {@link ClickNotifier}, these methods allow for configuring the {@code
  * lifecycleOwner} directly, making it possible to added the shortcut onto any
  * component. The {@code lifecycleOwner} denotes the component to which the
  * shortcut is bound to. If the lifecycle owner is not attached, visible, or
@@ -33,9 +32,9 @@ import com.vaadin.flow.server.Command;
  * @since 1.3
  *
  * @see Focusable#addFocusShortcut(Key, KeyModifier...) for adding a shortcut
- *         for focusing the component
+ *      for focusing the component
  * @see ClickNotifier#addClickShortcut(Key, KeyModifier...) for adding a
- *         shortcut which performs the click-action
+ *      shortcut which performs the click-action
  */
 public final class Shortcuts {
     static final String NULL = "Parameter '%s' must not be null!";
@@ -50,21 +49,22 @@ public final class Shortcuts {
      * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component...)}.
+     * component can be changed by calling
+     * {@link ShortcutRegistration#listenOn(Component...)}.
      *
      * @param lifecycleOwner
-     *         the component that controls, when the shortcut is active. If the
-     *         component is either invisible or detached, the shortcut won't
-     *         work. Cannot be {@code null}
+     *            the component that controls, when the shortcut is active. If
+     *            the component is either invisible or detached, the shortcut
+     *            won't work. Cannot be {@code null}
      * @param command
-     *         code to execute when the shortcut is invoked. Cannot be {@code
+     *            code to execute when the shortcut is invoked. Cannot be {@code
      *         null}
      * @param key
-     *         primary {@link Key} used to trigger the shortcut. Cannot be
-     *         {@code null}
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            {@code null}
      * @param keyModifiers
-     *         {@link KeyModifier KeyModifiers} which also need to be pressed
-     *         for the shortcut to trigger
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring and removing the
      *         shortcut
      */
@@ -72,8 +72,8 @@ public final class Shortcuts {
             Component lifecycleOwner, Command command, Key key,
             KeyModifier... keyModifiers) {
         if (lifecycleOwner == null) {
-            throw new IllegalArgumentException(String.format(NULL,
-                    "lifecycleOwner"));
+            throw new IllegalArgumentException(
+                    String.format(NULL, "lifecycleOwner"));
         }
         if (command == null) {
             throw new IllegalArgumentException(String.format(NULL, "command"));
@@ -81,7 +81,8 @@ public final class Shortcuts {
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
+        return new ShortcutRegistration(lifecycleOwner,
+                () -> new Component[] { lifecycleOwner.getUI().get() },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -92,21 +93,22 @@ public final class Shortcuts {
      * lifecycleOwner} and the shortcut is available in the global scope.
      * <p>
      * By default, the shortcut's listener is bound to {@link UI}. The listening
-     * component can be changed by calling {@link ShortcutRegistration#listenOn(Component...)}.
+     * component can be changed by calling
+     * {@link ShortcutRegistration#listenOn(Component...)}.
      *
      * @param lifecycleOwner
-     *         the component that controls, when the shortcut is active. If the
-     *         component is either invisible or detached, the shortcut won't
-     *         work. Cannot be {@code null}
+     *            the component that controls, when the shortcut is active. If
+     *            the component is either invisible or detached, the shortcut
+     *            won't work. Cannot be {@code null}
      * @param listener
-     *         listener to execute when the shortcut is invoked. Receives a
-     *         {@link ShortcutEvent}. Cannot be {@code null}
+     *            listener to execute when the shortcut is invoked. Receives a
+     *            {@link ShortcutEvent}. Cannot be {@code null}
      * @param key
-     *         primary {@link Key} used to trigger the shortcut. Cannot be
-     *         {@code null}
+     *            primary {@link Key} used to trigger the shortcut. Cannot be
+     *            {@code null}
      * @param keyModifiers
-     *         {@link KeyModifier KeyModifiers} which also need to be pressed
-     *         for the shortcut to trigger
+     *            {@link KeyModifier KeyModifiers} which also need to be pressed
+     *            for the shortcut to trigger
      * @return {@link ShortcutRegistration} for configuring and removing the
      *         shortcut
      */
@@ -115,17 +117,17 @@ public final class Shortcuts {
             KeyModifier... keyModifiers) {
 
         if (lifecycleOwner == null) {
-            throw new IllegalArgumentException(String.format(NULL,
-                    "lifecycleOwner"));
+            throw new IllegalArgumentException(
+                    String.format(NULL, "lifecycleOwner"));
         }
         if (listener == null) {
-            throw new IllegalArgumentException(String.format(NULL,
-                    "listener"));
+            throw new IllegalArgumentException(String.format(NULL, "listener"));
         }
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
+        return new ShortcutRegistration(lifecycleOwner,
+                () -> new Component[] { lifecycleOwner.getUI().get() },
                 listener, key).withModifiers(keyModifiers);
     }
 }

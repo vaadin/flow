@@ -61,8 +61,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Creates a new empty router link.
      */
     public RouterLink() {
-        getElement()
-                .setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "");
+        getElement().setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE,
+                "");
     }
 
     /**
@@ -70,9 +70,9 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * text.
      *
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
     public RouterLink(String text,
             Class<? extends Component> navigationTarget) {
@@ -86,15 +86,15 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * text and parameter.
      *
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(String text,
             Class<? extends C> navigationTarget, T parameter) {
@@ -108,11 +108,11 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * text.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
     public RouterLink(Router router, String text,
             Class<? extends Component> navigationTarget) {
@@ -126,17 +126,17 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * text and parameter.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param text
-     *         link text
+     *            link text
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             Router router, String text, Class<? extends C> navigationTarget,
@@ -150,9 +150,9 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Set the navigation target for this link.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
@@ -166,15 +166,15 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Set the navigation target for this link.
      *
      * @param router
-     *         router used for navigation
+     *            router used for navigation
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Router router, Class<? extends C> navigationTarget, T parameter) {
@@ -188,7 +188,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Set the navigation target for this link.
      *
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      */
     public void setRoute(Class<? extends Component> navigationTarget) {
         validateRouteParameters(getRouter(), navigationTarget);
@@ -201,13 +201,13 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Set the navigation target for this link.
      *
      * @param navigationTarget
-     *         navigation target
+     *            navigation target
      * @param parameter
-     *         url parameter for navigation target
+     *            url parameter for navigation target
      * @param <T>
-     *         url parameter type
+     *            url parameter type
      * @param <C>
-     *         navigation target type
+     *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Class<? extends C> navigationTarget, T parameter) {
@@ -243,7 +243,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Gets the {@link QueryParameters} of this link.
      *
      * @return an optional of {@link QueryParameters}, or an empty optional if
-     * there are no query parameters set
+     *         there are no query parameters set
      * @see #setQueryParameters(QueryParameters)
      */
     public Optional<QueryParameters> getQueryParameters() {
@@ -258,8 +258,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * {@code href} attribute of this link.
      *
      * @param queryParameters
-     *         the query parameters object, or {@code null} to remove
-     *         existing query parameters
+     *            the query parameters object, or {@code null} to remove
+     *            existing query parameters
      */
     public void setQueryParameters(QueryParameters queryParameters) {
         this.queryParameters = queryParameters;
@@ -316,7 +316,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * {@link HighlightAction}.
      *
      * @param highlightCondition
-     *         the highlight condition, not {@code null}
+     *            the highlight condition, not {@code null}
      * @see #setHighlightAction(HighlightAction)
      * @see HighlightConditions
      */
@@ -350,7 +350,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * highlight state.
      *
      * @param highlightAction
-     *         the highlight action, not {@code null}
+     *            the highlight action, not {@code null}
      * @see #setHighlightCondition(HighlightCondition)
      * @see HighlightActions
      */

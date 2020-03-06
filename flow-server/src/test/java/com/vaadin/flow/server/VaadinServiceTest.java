@@ -96,7 +96,8 @@ public class VaadinServiceTest {
             RouteConfiguration.forApplicationScope().setRoute("test",
                     TestView.class);
         };
-        UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT, Version.getFullVersion());
+        UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_CLIENT,
+                Version.getFullVersion());
         MockInstantiator instantiator = new MockInstantiator(initListener);
 
         MockVaadinServletService service = new MockVaadinServletService();

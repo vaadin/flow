@@ -243,9 +243,8 @@ public abstract class ComponentTest {
     private void testEmptyStringForOptionalStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, "");
-            Assert.assertEquals(
-                    "The getter for '" + p.name
-                            + "' should return an empty optional after setting \"\"",
+            Assert.assertEquals("The getter for '" + p.name
+                    + "' should return an empty optional after setting \"\"",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(e);
@@ -255,9 +254,8 @@ public abstract class ComponentTest {
     private void testNullForOptionalNonStringProperty(ComponentProperty p) {
         try {
             p.setUsingSetter(component, null);
-            Assert.assertEquals(
-                    "Setting the property " + p.name
-                            + " to null should cause an empty optional to be returned by the getter",
+            Assert.assertEquals("Setting the property " + p.name
+                    + " to null should cause an empty optional to be returned by the getter",
                     Optional.empty(), p.getUsingGetter(component));
         } catch (Exception e) {
             throw new AssertionError(

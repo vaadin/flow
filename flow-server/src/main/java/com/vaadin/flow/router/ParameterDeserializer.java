@@ -195,20 +195,22 @@ public final class ParameterDeserializer {
 
         // Raw method has no parameter annotations if compiled by Eclipse
         Type parameterType = GenericTypeReflector.getTypeParameter(
-                navigationTarget,
-                HasUrlParameter.class.getTypeParameters()[0]);
+                navigationTarget, HasUrlParameter.class.getTypeParameters()[0]);
         Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
-
 
         return Stream.of(navigationTarget.getMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasValidParameterTypes(method, parameterClass))
-                .anyMatch(method -> method.getParameters()[1].isAnnotationPresent(parameterAnnotation));
+                .filter(method -> hasValidParameterTypes(method,
+                        parameterClass))
+                .anyMatch(method -> method.getParameters()[1]
+                        .isAnnotationPresent(parameterAnnotation));
     }
 
-    private static boolean hasValidParameterTypes(Method method, Class<?> parameterClass) {
+    private static boolean hasValidParameterTypes(Method method,
+            Class<?> parameterClass) {
         return method.getParameterCount() == 2
                 && method.getParameterTypes()[0] == BeforeEvent.class
-                && method.getParameterTypes()[1].isAssignableFrom(parameterClass);
+                && method.getParameterTypes()[1]
+                        .isAssignableFrom(parameterClass);
     }
 }

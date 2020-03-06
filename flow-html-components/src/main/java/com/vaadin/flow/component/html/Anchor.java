@@ -84,8 +84,8 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     }
 
     /**
-     * Creates an anchor component with the given href and components
-     * as children of this component.
+     * Creates an anchor component with the given href and components as
+     * children of this component.
      *
      * @see #setHref(AbstractStreamResource)
      * @see #add(Component...)

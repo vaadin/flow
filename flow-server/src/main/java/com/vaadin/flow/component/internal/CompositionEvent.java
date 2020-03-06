@@ -47,8 +47,8 @@ public abstract class CompositionEvent extends ComponentEvent<Component> {
      *            language code for the composition event, if available;
      *            otherwise, the empty string
      */
-    public CompositionEvent(Component source, boolean fromClient,
-            String data, String locale) {
+    public CompositionEvent(Component source, boolean fromClient, String data,
+            String locale) {
         super(source, fromClient);
         this.data = data;
         this.locale = locale == null ? null : Locale.forLanguageTag(locale);

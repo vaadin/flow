@@ -44,8 +44,8 @@ public enum ValueChangeMode {
     LAZY,
 
     /**
-     * Syncs the value at defined intervals
-     * as long as the value changes from one event to the next.
+     * Syncs the value at defined intervals as long as the value changes from
+     * one event to the next.
      */
     TIMEOUT,
 
@@ -72,8 +72,8 @@ public enum ValueChangeMode {
     /**
      * Gets the name of the event associated with the given mode. If the mode is
      * <code>null</code>, then null is returned. If the mode is {@link #EAGER},
-     * {@link #LAZY}, or {@link #TIMEOUT},
-     * then the provided immediate event name is returned.
+     * {@link #LAZY}, or {@link #TIMEOUT}, then the provided immediate event
+     * name is returned.
      *
      * @see HasValueChangeMode#setValueChangeMode(ValueChangeMode)
      * @see AbstractSinglePropertyField#setSynchronizedEvent(String)
@@ -81,11 +81,12 @@ public enum ValueChangeMode {
      * @param mode
      *            the value change mode
      * @param immediateEventName
-     *            the name of the event that is fired immediately on value change
+     *            the name of the event that is fired immediately on value
+     *            change
      * @return the event name
      */
     public static String eventForMode(ValueChangeMode mode,
-                                      String immediateEventName) {
+            String immediateEventName) {
         if (mode == null) {
             return null;
         }
@@ -106,41 +107,41 @@ public enum ValueChangeMode {
     }
 
     /**
-     * Applies the value change timeout of the given mode on the registration
-     * of the DOM event listener that synchronizes.
-     * It has any effect only for {@link #LAZY}, or {@link #TIMEOUT}.
-
+     * Applies the value change timeout of the given mode on the registration of
+     * the DOM event listener that synchronizes. It has any effect only for
+     * {@link #LAZY}, or {@link #TIMEOUT}.
+     * 
      * @see HasValueChangeMode#getValueChangeTimeout()
      * @see AbstractSinglePropertyField#getSynchronizationRegistration()
      *
      * @param mode
      *            the value change mode
      * @param timeout
-     *            Value change timeout in milliseconds.
-     *            <code>0</code> means timeout is disabled,
-     *            so the change mode will behave like {@link #EAGER}
+     *            Value change timeout in milliseconds. <code>0</code> means
+     *            timeout is disabled, so the change mode will behave like
+     *            {@link #EAGER}
      * @param registration
      *            The registration of the DOM event listener that synchronizes.
      */
     public static void applyChangeTimeout(ValueChangeMode mode, int timeout,
-                                          DomListenerRegistration registration) {
+            DomListenerRegistration registration) {
         if (mode == null || registration == null) {
             return;
         }
 
         switch (mode) {
-            case LAZY:
-                registration.debounce(timeout);
-                break;
-            case TIMEOUT:
-                registration.throttle(timeout);
-                break;
-            case EAGER:
-            case ON_BLUR:
-            case ON_CHANGE:
-                break;
-            default:
-                throwModeNotSupported(mode);
+        case LAZY:
+            registration.debounce(timeout);
+            break;
+        case TIMEOUT:
+            registration.throttle(timeout);
+            break;
+        case EAGER:
+        case ON_BLUR:
+        case ON_CHANGE:
+            break;
+        default:
+            throwModeNotSupported(mode);
         }
     }
 

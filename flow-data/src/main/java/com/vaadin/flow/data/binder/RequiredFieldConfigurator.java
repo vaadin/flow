@@ -56,8 +56,8 @@ public interface RequiredFieldConfigurator
      */
     RequiredFieldConfigurator NOT_EMPTY = (annotation,
             binding) -> (annotation.annotationType().equals(NotEmpty.class)
-                    || annotation.annotationType().getName()
-                            .equals("org.hibernate.validator.constraints.NotEmpty"))
+                    || annotation.annotationType().getName().equals(
+                            "org.hibernate.validator.constraints.NotEmpty"))
                     && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
                             binding,
                             RequiredFieldConfiguratorUtil::hasZeroSize);

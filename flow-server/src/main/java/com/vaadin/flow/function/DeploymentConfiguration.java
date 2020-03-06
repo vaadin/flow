@@ -300,9 +300,10 @@ public interface DeploymentConfiguration extends Serializable {
      * @return polyfills to load
      */
     default List<String> getPolyfills() {
-        return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
-                POLYFILLS_DEFAULT_VALUE).split("[, ]+")).stream()
-                .filter(polyfill -> !polyfill.isEmpty())
+        return Arrays
+                .asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
+                        POLYFILLS_DEFAULT_VALUE).split("[, ]+"))
+                .stream().filter(polyfill -> !polyfill.isEmpty())
                 .collect(Collectors.toList());
     }
 

@@ -143,7 +143,8 @@ public class ScrollPositionHandler {
                 jsonString = Browser.getWindow().getSessionStorage()
                         .getItem(createSessionStorageKey(historyResetToken));
             } catch (JavaScriptException e) {
-                Console.error("Failed to get session storage: " + e.getMessage());
+                Console.error(
+                        "Failed to get session storage: " + e.getMessage());
             }
             if (jsonString != null) {
                 JsonObject jsonObject = Json.parse(jsonString);
@@ -187,9 +188,9 @@ public class ScrollPositionHandler {
         Browser.getWindow().getHistory().replaceState(stateObject, "",
                 Browser.getWindow().getLocation().getHref());
         try {
-            Browser.getWindow().getSessionStorage()
-                    .setItem(createSessionStorageKey(historyResetToken),
-                            sessionStorageObject.toJson());
+            Browser.getWindow().getSessionStorage().setItem(
+                    createSessionStorageKey(historyResetToken),
+                    sessionStorageObject.toJson());
         } catch (JavaScriptException e) {
             Console.error("Failed to get session storage: " + e.getMessage());
         }

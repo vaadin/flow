@@ -31,7 +31,8 @@ import com.vaadin.flow.shared.Registration;
 
 public class MultiSelectTest {
 
-    private static class MultiSelectMock implements MultiSelect<TestLabel, String> {
+    private static class MultiSelectMock
+            implements MultiSelect<TestLabel, String> {
 
         private final TestLabel component = new TestLabel();
         private final Set<String> selectedItems = new LinkedHashSet<>();

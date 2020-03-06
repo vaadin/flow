@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Intended to be used by Maven  to specify fragments.
+ * Intended to be used by Maven to specify fragments.
  *
  * @author Vaadin Ltd
  * @since 1.0.
@@ -48,9 +48,6 @@ public class Fragment {
 
     @Override
     public String toString() {
-        return "Fragment{" +
-                "name='" + name + '\'' +
-                ", files=" + files +
-                '}';
+        return "Fragment{" + "name='" + name + '\'' + ", files=" + files + '}';
     }
 }

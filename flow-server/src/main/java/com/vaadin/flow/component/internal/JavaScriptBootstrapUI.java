@@ -110,7 +110,7 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-                              String flowRoute) {
+            String flowRoute) {
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -125,13 +125,16 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeLastSlash(removeFirstSlash(flowRoute))));
 
         // true if the target is client-view and the push mode is disable
-        if(isUnknownRoute && !getPushConfiguration().getPushMode().isEnabled()) {
-            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
+        if (isUnknownRoute
+                && !getPushConfiguration().getPushMode().isEnabled()) {
+            wrapperElement.executeJs(
+                    "this.serverConnected($0, new URL($1, document.baseURI))",
                     false, forwardToUrl);
         } else {
             navigationInProgress = false;
             // Update browser URL
-            getPage().executeJs(CLIENT_REPLACESTATE_TO, getInternals().getActiveViewLocation().getPathWithQueryParameters());
+            getPage().executeJs(CLIENT_REPLACESTATE_TO, getInternals()
+                    .getActiveViewLocation().getPathWithQueryParameters());
             wrapperElement.executeJs(SERVER_CONNECTED, false);
         }
 
@@ -156,7 +159,8 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeFirstSlash(route)));
 
         if (postponed && !isUnknownRoute) {
-            getPage().executeJs(CLIENT_PUSHSTATE_TO, getInternals().getActiveViewLocation().getPathWithQueryParameters());
+            getPage().executeJs(CLIENT_PUSHSTATE_TO, getInternals()
+                    .getActiveViewLocation().getPathWithQueryParameters());
         }
         // Inform the client whether the navigation should be postponed
         wrapperElement.executeJs(SERVER_CONNECTED, postponed);
@@ -166,7 +170,7 @@ public class JavaScriptBootstrapUI extends UI {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     this.getRouter()).withTarget(ClientViewPlaceholder.class)
-                    .build();
+                            .build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
@@ -208,7 +212,7 @@ public class JavaScriptBootstrapUI extends UI {
     private boolean shouldHandleNavigation(Location location) {
         return !getInternals().hasLastHandledLocation()
                 || !sameLocation(getInternals().getLastHandledLocation(),
-                location);
+                        location);
     }
 
     private boolean sameLocation(Location oldLocation, Location newLocation) {
@@ -225,7 +229,7 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean handleNavigation(Location location,
-                                     NavigationState navigationState) {
+            NavigationState navigationState) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
 
@@ -238,15 +242,21 @@ public class JavaScriptBootstrapUI extends UI {
         hasForwardTo = false;
         // true if has forwardTo in server-views
         if (!getInternals().getActiveRouterTargetsChain().isEmpty()
-                && getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class) != null
-                && !getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class)
-                .value().contains(getInternals().getActiveViewLocation().getPathWithQueryParameters())) {
+                && getInternals().getActiveRouterTargetsChain().get(0)
+                        .getClass().getAnnotation(Route.class) != null
+                && !getInternals().getActiveRouterTargetsChain().get(0)
+                        .getClass().getAnnotation(Route.class).value()
+                        .contains(getInternals().getActiveViewLocation()
+                                .getPathWithQueryParameters())) {
             // true if the forwardTo target is client-view
             isUnknownRoute = !this.getRouter()
-                    .resolveNavigationTarget(new Location(removeFirstSlash(this.getInternals()
-                            .getActiveViewLocation().getPathWithQueryParameters()))).isPresent();
+                    .resolveNavigationTarget(new Location(removeFirstSlash(
+                            this.getInternals().getActiveViewLocation()
+                                    .getPathWithQueryParameters())))
+                    .isPresent();
             if (isUnknownRoute) {
-                forwardToUrl =  this.getInternals().getActiveViewLocation().getPathWithQueryParameters();
+                forwardToUrl = this.getInternals().getActiveViewLocation()
+                        .getPathWithQueryParameters();
             }
             hasForwardTo = true;
         }
@@ -255,9 +265,10 @@ public class JavaScriptBootstrapUI extends UI {
         return getInternals().getContinueNavigationAction() != null;
     }
 
-    private boolean handleExceptionNavigation(Location location, Exception exception) {
-        Optional<ErrorTargetEntry> maybeLookupResult = this.getRouter().getErrorNavigationTarget(
-                exception);
+    private boolean handleExceptionNavigation(Location location,
+            Exception exception) {
+        Optional<ErrorTargetEntry> maybeLookupResult = this.getRouter()
+                .getErrorNavigationTarget(exception);
         if (maybeLookupResult.isPresent()) {
             ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
@@ -270,7 +281,8 @@ public class JavaScriptBootstrapUI extends UI {
                             .build());
 
             ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                    this.getRouter(), location, this, NavigationTrigger.CLIENT_SIDE, errorParameter);
+                    this.getRouter(), location, this,
+                    NavigationTrigger.CLIENT_SIDE, errorParameter);
 
             errorStateRenderer.handle(errorNavigationEvent);
         } else {
@@ -327,7 +339,7 @@ public class JavaScriptBootstrapUI extends UI {
             // prevent looping
             if (navigationInProgress || getInternals().hasLastHandledLocation()
                     && sameLocation(getInternals().getLastHandledLocation(),
-                    location)) {
+                            location)) {
                 return;
             }
 
@@ -358,16 +370,20 @@ public class JavaScriptBootstrapUI extends UI {
             }
             navigationInProgress = false;
 
-            // if hasForwardTo, url should be a new one, if has postpone, url should not update
-            String url = urlPathShouldBeDisplayed(hasForwardTo, postpone, location);
+            // if hasForwardTo, url should be a new one, if has postpone, url
+            // should not update
+            String url = urlPathShouldBeDisplayed(hasForwardTo, postpone,
+                    location);
 
             getPage().executeJs(execJs, url);
         }
     }
 
-    private String urlPathShouldBeDisplayed(boolean hasForwardTo, boolean postpone, Location location) {
+    private String urlPathShouldBeDisplayed(boolean hasForwardTo,
+            boolean postpone, Location location) {
         return hasForwardTo || postpone
-                ? getInternals().getActiveViewLocation().getPathWithQueryParameters()
+                ? getInternals().getActiveViewLocation()
+                        .getPathWithQueryParameters()
                 : location.getPathWithQueryParameters();
     }
 

@@ -43,8 +43,9 @@ public class PropertyConfigurationImplTest {
 
         intPropertyConf.getOnChangeHandler().accept(myComponent, 5);
 
-        Assert.assertEquals("onChangeHandler should have been set and value " +
-                "updated", 5, myComponent.value);
+        Assert.assertEquals(
+                "onChangeHandler should have been set and value " + "updated",
+                5, myComponent.value);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -61,7 +62,7 @@ public class PropertyConfigurationImplTest {
 
         // verify default value for completeness
         Assert.assertEquals("default value is 1", 1,
-                (int)data.getDefaultValue());
+                (int) data.getDefaultValue());
 
         Assert.assertTrue("read-only flag should have been set to true",
                 data.isReadOnly());

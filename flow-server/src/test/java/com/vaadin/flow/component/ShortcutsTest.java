@@ -36,8 +36,7 @@ public class ShortcutsTest {
                         method.getName(),
                         Stream.of(method.getParameterTypes())
                                 .map(Class::getSimpleName)
-                                .collect(Collectors.joining(", "))
-                ));
+                                .collect(Collectors.joining(", "))));
             }
         }
     }

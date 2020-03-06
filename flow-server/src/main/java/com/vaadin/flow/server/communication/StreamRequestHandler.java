@@ -51,8 +51,7 @@ public class StreamRequestHandler implements RequestHandler {
      */
     static final String DYN_RES_PREFIX = "VAADIN/dynamic/resource/";
 
-    private final StreamResourceHandler resourceHandler =
-            new StreamResourceHandler();
+    private final StreamResourceHandler resourceHandler = new StreamResourceHandler();
     private final StreamReceiverHandler receiverHandler;
 
     /**
@@ -116,8 +115,8 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     /**
-     * Parse the pathInfo for id data.
-  s   * <p>
+     * Parse the pathInfo for id data. s *
+     * <p>
      * URI pattern: VAADIN/dynamic/resource/[UIID]/[SECKEY]/[NAME]
      *
      * @see #generateURI
@@ -176,7 +175,9 @@ public class StreamRequestHandler implements RequestHandler {
             // UTF8 has to be supported
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
-            getLogger().info("Path '{}' is not correct URI (it violates RFC 2396)", path, e);
+            getLogger().info(
+                    "Path '{}' is not correct URI (it violates RFC 2396)", path,
+                    e);
             return Optional.empty();
         }
     }

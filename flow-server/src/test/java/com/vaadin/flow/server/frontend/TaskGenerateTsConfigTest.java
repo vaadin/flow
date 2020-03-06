@@ -42,8 +42,7 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void should_generateTsConfig_TsConfigNotExist()
-            throws Exception {
+    public void should_generateTsConfig_TsConfigNotExist() throws Exception {
         taskGenerateTsConfig.execute();
         Assert.assertFalse(
                 "Should generate tsconfig.json when "
@@ -60,8 +59,7 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
-    public void should_notGenerateTsConfig_TsConfigExist()
-            throws Exception {
+    public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
         Files.createFile(new File(npmFolder, "tsconfig.json").toPath());
         taskGenerateTsConfig.execute();
         Assert.assertFalse(

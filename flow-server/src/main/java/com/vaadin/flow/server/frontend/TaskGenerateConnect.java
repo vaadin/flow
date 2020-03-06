@@ -43,7 +43,8 @@ public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
      * @param output
      *            the output folder.
      */
-    TaskGenerateConnect(File applicationProperties, File openApi, File outputFolder) {
+    TaskGenerateConnect(File applicationProperties, File openApi,
+            File outputFolder) {
         super(applicationProperties);
         Objects.requireNonNull(openApi,
                 "Connect OpenAPI file should not be null.");
@@ -58,7 +59,8 @@ public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
     public void execute() throws ExecutionFailedException {
         if (VaadinConnectTsGenerator.launch(openApi, outputFolder)) {
             new VaadinConnectClientGenerator(readApplicationProperties())
-                    .generateVaadinConnectClientFile(connectClientFile.toPath());
+                    .generateVaadinConnectClientFile(
+                            connectClientFile.toPath());
         }
     }
 }

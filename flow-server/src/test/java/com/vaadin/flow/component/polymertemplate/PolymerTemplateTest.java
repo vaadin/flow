@@ -100,7 +100,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     private static class SimpleTemplateParser extends TestTemplateParser {
 
         SimpleTemplateParser() {
-            super(tag -> "<dom-module id='" + tag + "' someattrtibute></dom-module>");
+            super(tag -> "<dom-module id='" + tag
+                    + "' someattrtibute></dom-module>");
         }
 
     }
@@ -422,8 +423,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @SuppressWarnings("serial")
     @Before
-    public void setUp() throws SecurityException,
-            IllegalArgumentException {
+    public void setUp() throws SecurityException, IllegalArgumentException {
         executionOrder.clear();
         executionParams.clear();
 
@@ -474,8 +474,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getTemplateParser())
                 .thenReturn(NpmTemplateParser.getInstance());
-        Mockito.when(service.getInstantiator())
-                .thenReturn(instantiator);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         return service;
     }
 
@@ -796,7 +795,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     private void attachComponentAndVerifyChild(PolymerTemplate<?> template,
-                                               CustomComponent templateChild) {
+            CustomComponent templateChild) {
         VirtualChildrenList feature = template.getStateNode()
                 .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();

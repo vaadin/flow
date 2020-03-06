@@ -106,9 +106,11 @@ public class PwaRegistry implements Serializable {
             BufferedImage baseImage = getBaseImage(logo);
 
             if (baseImage == null) {
-                LoggerFactory.getLogger(PwaRegistry.class).error("Image is not found or can't be loaded: " + logo);
+                LoggerFactory.getLogger(PwaRegistry.class).error(
+                        "Image is not found or can't be loaded: " + logo);
             } else {
-                // Pick top-left pixel as fill color if needed for image resizing
+                // Pick top-left pixel as fill color if needed for image
+                // resizing
                 int bgColor = baseImage.getRGB(0, 0);
 
                 // initialize icons

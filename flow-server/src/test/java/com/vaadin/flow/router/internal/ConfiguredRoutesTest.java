@@ -21,21 +21,20 @@ public class ConfiguredRoutesTest {
                 configuration.hasRoute(""));
         Assert.assertFalse("No routes should be configured",
                 configuration.hasRoute("", Collections.emptyList()));
-        Assert.assertFalse("No routes should be configured",
-                configuration.getRoute("", Collections.emptyList())
-                        .isPresent());
+        Assert.assertFalse("No routes should be configured", configuration
+                .getRoute("", Collections.emptyList()).isPresent());
         Assert.assertTrue("Configuration should be empty",
                 configuration.getRoutes().isEmpty());
         Assert.assertTrue("Configuration should be empty",
                 configuration.getTargetRoutes().isEmpty());
         Assert.assertNull("No exception handler should be found.", configuration
                 .getExceptionHandlerByClass(RuntimeException.class));
-        Assert.assertNull("No target route should be found", configuration
-                .getTargetRoute(BaseTarget.class));
+        Assert.assertNull("No target route should be found",
+                configuration.getTargetRoute(BaseTarget.class));
         Assert.assertTrue("Configuration should be empty",
                 configuration.getExceptionHandlers().isEmpty());
-        Assert.assertFalse("No route should be found", configuration
-                .hasRouteTarget(BaseTarget.class));
+        Assert.assertFalse("No route should be found",
+                configuration.hasRouteTarget(BaseTarget.class));
     }
 
     @Test

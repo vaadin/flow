@@ -69,8 +69,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder where flow generated files will be placed.
      * @param flowResourcesPath
      *            folder where flow dependencies taken from resources files will
-     *            be placed.
-     *         folder where flow generated files will be placed.
+     *            be placed. folder where flow generated files will be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
@@ -80,8 +79,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, boolean forceCleanUp, boolean enablePnpm) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, flowResourcesPath);
+            File generatedPath, File flowResourcesPath, boolean forceCleanUp,
+            boolean enablePnpm) {
+        super(finder, frontendDependencies, npmFolder, generatedPath,
+                flowResourcesPath);
         this.forceCleanUp = forceCleanUp;
         this.enablePnpm = enablePnpm;
     }
@@ -92,7 +93,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> deps = frontDeps.getPackages();
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson, deps);
-
 
             if (modified) {
                 writePackageFile(packageJson);
@@ -160,7 +160,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         return added > 0 || removed > 0 || !oldHash.equals(newHash);
     }
 
-
     private int updateFrontendDependency(JsonObject json) {
         if (flowResourcesFolder != null
                 // Skip if deps are copied directly to `node_modules` folder
@@ -169,7 +168,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),
                     flowResourcesFolder.getAbsoluteFile().toPath());
-            if (!json.hasKey(DEP_NAME_FLOW_JARS) || !depsPkg.equals(json.getString(DEP_NAME_FLOW_JARS))) {
+            if (!json.hasKey(DEP_NAME_FLOW_JARS)
+                    || !depsPkg.equals(json.getString(DEP_NAME_FLOW_JARS))) {
                 json.put(DEP_NAME_FLOW_JARS, depsPkg);
                 return 1;
             }
@@ -244,7 +244,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
             // Clean all files but `package.json`
-            for (File file: flowResourcesFolder.listFiles()) {
+            for (File file : flowResourcesFolder.listFiles()) {
                 if (!file.getName().equals(PACKAGE_JSON)) {
                     file.delete();
                 }

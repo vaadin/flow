@@ -14,9 +14,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 
-
 public class ConfigureRoutesTest {
-
 
     @Test
     public void mutableConfiguration_canSetRouteTarget() {
@@ -144,7 +142,7 @@ public class ConfigureRoutesTest {
         mutable.setRoute("", BaseTarget.class);
         mutable.setTargetRoute(BaseTarget.class, "");
 
-        mutable.setRoute("",ParamTarget.class);
+        mutable.setRoute("", ParamTarget.class);
         mutable.setTargetRoute(ParamTarget.class, "");
 
         Assert.assertEquals(
@@ -183,13 +181,16 @@ public class ConfigureRoutesTest {
 
         mutable.setRoute("Another", BaseTarget.class);
 
-        Assert.assertNotNull("Expected a RouteTarget to be returned for 'Another'",
+        Assert.assertNotNull(
+                "Expected a RouteTarget to be returned for 'Another'",
                 mutable.getRouteTarget("Another"));
 
         mutable.setRoute("Another", ParamTarget.class);
 
-        Assert.assertEquals("Expected single target for route 'MyPath'", 1, mutable.getRouteTarget("MyPath").getRoutes().size());
-        Assert.assertEquals("Expected 2 targets for route 'Another'", 2, mutable.getRouteTarget("Another").getRoutes().size());
+        Assert.assertEquals("Expected single target for route 'MyPath'", 1,
+                mutable.getRouteTarget("MyPath").getRoutes().size());
+        Assert.assertEquals("Expected 2 targets for route 'Another'", 2,
+                mutable.getRouteTarget("Another").getRoutes().size());
     }
 
     @Tag("div")

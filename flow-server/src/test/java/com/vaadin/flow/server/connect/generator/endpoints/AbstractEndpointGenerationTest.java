@@ -123,7 +123,8 @@ public abstract class AbstractEndpointGenerationTest {
     private final Package testPackage;
 
     public AbstractEndpointGenerationTest(List<Class<?>> testClasses) {
-        collectEndpointClasses(endpointClasses, nonEndpointClasses, testClasses);
+        collectEndpointClasses(endpointClasses, nonEndpointClasses,
+                testClasses);
         testPackage = getClass().getPackage();
     }
 
@@ -178,8 +179,7 @@ public abstract class AbstractEndpointGenerationTest {
                 ? new Properties()
                 : TestUtils
                         .readProperties(customApplicationProperties.getPath());
-        new OpenApiSpecGenerator(applicationProperties).
-                generateOpenApiSpec(
+        new OpenApiSpecGenerator(applicationProperties).generateOpenApiSpec(
                 Collections
                         .singletonList(java.nio.file.Paths.get("src/test/java",
                                 testPackage.getName().replace('.',
@@ -254,7 +254,8 @@ public abstract class AbstractEndpointGenerationTest {
                         "Expected to find a path '%s' for the endpoint method '%s' in the class '%s'",
                         expectedEndpointUrl, expectedEndpointMethod,
                         testEndpointClass), actualPath);
-                assertPath(testEndpointClass, expectedEndpointMethod, actualPath);
+                assertPath(testEndpointClass, expectedEndpointMethod,
+                        actualPath);
             }
         }
         assertEquals("Unexpected number of OpenAPI paths found", pathCount,
@@ -331,12 +332,13 @@ public abstract class AbstractEndpointGenerationTest {
                 .entrySet()) {
             assertSchema(stringSchemaEntry.getValue(), parameterTypes[index]);
             List requiredList = requestSchema.getRequired();
-            if (parameters[index].isAnnotationPresent(Nullable.class) ||
-                    Optional.class.isAssignableFrom(parameters[index].getType())) {
-                boolean notRequired = requiredList == null ||
-                        !requiredList.contains(stringSchemaEntry.getKey());
-                assertTrue("@Nullable or Optional request parameter " +
-                        "should not be required", notRequired);
+            if (parameters[index].isAnnotationPresent(Nullable.class)
+                    || Optional.class
+                            .isAssignableFrom(parameters[index].getType())) {
+                boolean notRequired = requiredList == null
+                        || !requiredList.contains(stringSchemaEntry.getKey());
+                assertTrue("@Nullable or Optional request parameter "
+                        + "should not be required", notRequired);
 
             } else {
                 assertTrue(requiredList.contains(stringSchemaEntry.getKey()));
@@ -471,12 +473,11 @@ public abstract class AbstractEndpointGenerationTest {
             assertNotNull(String.format("Property schema is not found %s",
                     expectedSchemaField.getName()), propertySchema);
             assertSchema(propertySchema, expectedSchemaField.getType());
-            if (Optional.class
-                    .isAssignableFrom(expectedSchemaField.getType()) ||
-                    expectedSchemaField.isAnnotationPresent(Nullable.class)) {
-                boolean notRequired = schema.getRequired() == null ||
-                        !schema.getRequired()
-                                .contains(expectedSchemaField.getName());
+            if (Optional.class.isAssignableFrom(expectedSchemaField.getType())
+                    || expectedSchemaField
+                            .isAnnotationPresent(Nullable.class)) {
+                boolean notRequired = schema.getRequired() == null || !schema
+                        .getRequired().contains(expectedSchemaField.getName());
                 assertTrue(notRequired);
             } else {
                 assertTrue(schema.getRequired()
@@ -503,8 +504,8 @@ public abstract class AbstractEndpointGenerationTest {
                 .read(openApiJsonOutput.toAbsolutePath().toString());
         try {
             OpenAPI expected = parser
-                    .read(new File(expectedOpenApiJsonResourceUrl.toURI()).toPath()
-                            .toAbsolutePath().toString());
+                    .read(new File(expectedOpenApiJsonResourceUrl.toURI())
+                            .toPath().toAbsolutePath().toString());
 
             removeAndCompareFilePathExtensionInTags(generated, expected);
             removeAndCompareFilePathExtensionInSchemas(generated, expected);
@@ -583,9 +584,8 @@ public abstract class AbstractEndpointGenerationTest {
             String key = generatedEntrySet.getKey();
             boolean isBothNull = value == null
                     && expectedFilePath.get(key) == null;
-            String errorMessage = String.format(
-                    "File path doesn't match for tag '%s'",
-                    key);
+            String errorMessage = String
+                    .format("File path doesn't match for tag '%s'", key);
             String ending = expectedFilePath.get(key).replace('/',
                     File.separatorChar);
             Assert.assertTrue(errorMessage,
@@ -696,7 +696,8 @@ public abstract class AbstractEndpointGenerationTest {
             declaringClass = declaringClass.getDeclaringClass();
         }
         String expectedEndingJavaFilePath = StringUtils.replaceChars(
-                declaringClass.getCanonicalName(), '.', File.separatorChar) + ".java";
+                declaringClass.getCanonicalName(), '.', File.separatorChar)
+                + ".java";
         String wrongPathMessage = String.format(
                 "The generated model class '%s' refers to Java path '%s'. The path should end with '%s'",
                 expectedClass, actualJavaFileReference,

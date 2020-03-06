@@ -66,8 +66,9 @@ public class NpmTemplateParser implements TemplateParser {
     private JsonObject jsonStats;
 
     /**
-     * The default constructor. Protected in order to prevent direct instantiation,
-     * but not private in order to allow mocking/overrides for testing purposes.
+     * The default constructor. Protected in order to prevent direct
+     * instantiation, but not private in order to allow mocking/overrides for
+     * testing purposes.
      */
     protected NpmTemplateParser() {
     }
@@ -84,8 +85,8 @@ public class NpmTemplateParser implements TemplateParser {
         List<Dependency> dependencies = AnnotationReader
                 .getAnnotationsFor(clazz, JsModule.class).stream()
                 .map(jsModule -> new Dependency(Dependency.Type.JS_MODULE,
-                        jsModule.value(),
-                        LoadMode.EAGER)) // load mode doesn't matter here
+                        jsModule.value(), LoadMode.EAGER)) // load mode doesn't
+                                                           // matter here
                 .collect(Collectors.toList());
 
         for (DependencyFilter filter : service.getDependencyFilters()) {
@@ -159,10 +160,14 @@ public class NpmTemplateParser implements TemplateParser {
     /**
      * Finds the JavaScript sources for given tag.
      *
-     * @param tag the value of the {@link com.vaadin.flow.component.Tag} annotation,
-     *            e.g. `my-component`
-     * @param url the URL resolved according to the {@link com.vaadin.flow.component.dependency.JsModule}
-     *            spec, for example {@code ./view/my-view.js} or {@code @vaadin/vaadin-button.js}.
+     * @param tag
+     *            the value of the {@link com.vaadin.flow.component.Tag}
+     *            annotation, e.g. `my-component`
+     * @param url
+     *            the URL resolved according to the
+     *            {@link com.vaadin.flow.component.dependency.JsModule} spec,
+     *            for example {@code ./view/my-view.js} or
+     *            {@code @vaadin/vaadin-button.js}.
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */

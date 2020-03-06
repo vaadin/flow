@@ -78,12 +78,12 @@ public class ResponseWriterTest {
                 createFileURLWithDataAndLength(PATH_BR, fileJsBrotliContents));
         pathToUrl.put(CLASS_PATH_JS,
                 createFileURLWithDataAndLength(CLASS_PATH_JS, fileJsContents));
-        pathToUrl.put(CLASS_PATH_GZ,
-                createFileURLWithDataAndLength(CLASS_PATH_GZ, fileJsGzippedContents));
-        pathToUrl.put(FAULTY_CLASS_PATH_JS,
-                createFileURLWithDataAndLength(FAULTY_CLASS_PATH_JS, fileJsContents));
-        pathToUrl.put(FAULTY_CLASS_PATH_GZ,
-                createFileURLWithDataAndLength(FAULTY_CLASS_PATH_GZ, fileJsGzippedContents));
+        pathToUrl.put(CLASS_PATH_GZ, createFileURLWithDataAndLength(
+                CLASS_PATH_GZ, fileJsGzippedContents));
+        pathToUrl.put(FAULTY_CLASS_PATH_JS, createFileURLWithDataAndLength(
+                FAULTY_CLASS_PATH_JS, fileJsContents));
+        pathToUrl.put(FAULTY_CLASS_PATH_GZ, createFileURLWithDataAndLength(
+                FAULTY_CLASS_PATH_GZ, fileJsGzippedContents));
     }
 
     private ServletContext servletContext;
@@ -269,7 +269,8 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataNotGzippedClassPathNotAcceptedPath() throws IOException {
+    public void writeDataNotGzippedClassPathNotAcceptedPath()
+            throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
 
         makePathsAvailable(FAULTY_CLASS_PATH_JS);
@@ -346,11 +347,12 @@ public class ResponseWriterTest {
         assertResponse(PATH_JS, expectedResponse);
     }
 
-    private void assertResponse(String path, byte[] expectedResponse) throws IOException {
+    private void assertResponse(String path, byte[] expectedResponse)
+            throws IOException {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents(path, pathToUrl.get(path),
-                request, response);
+        responseWriter.writeResponseContents(path, pathToUrl.get(path), request,
+                response);
 
         Assert.assertArrayEquals(expectedResponse, out.getOutput());
         Assert.assertEquals(expectedResponse.length,
@@ -367,6 +369,7 @@ public class ResponseWriterTest {
             Mockito.when(servletContext.getResource(path)).thenReturn(url);
         }
     }
+
     private void makeClassPathAvailable(String... paths) {
         for (String path : paths) {
             URL url = pathToUrl.get(path);
@@ -374,8 +377,10 @@ public class ResponseWriterTest {
                 throw new IllegalArgumentException("Unsupported path: " + path);
             }
             ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-            Mockito.when(servletContext.getClassLoader()).thenReturn(classLoader);
-            Mockito.when(classLoader.getResource("META-INF" + path)).thenReturn(url);
+            Mockito.when(servletContext.getClassLoader())
+                    .thenReturn(classLoader);
+            Mockito.when(classLoader.getResource("META-INF" + path))
+                    .thenReturn(url);
         }
     }
 

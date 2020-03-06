@@ -162,7 +162,8 @@ public class BeanPropertySetTest {
         PropertyDefinition<com.vaadin.flow.tests.data.bean.Person, ?> definition = BeanPropertySet
                 .get(com.vaadin.flow.tests.data.bean.Person.class, true,
                         PropertyFilterDefinition.getDefaultFilter())
-                .getProperty("address.postalCode").orElseThrow(AssertionFailedError::new);
+                .getProperty("address.postalCode")
+                .orElseThrow(AssertionFailedError::new);
 
         PropertyDefinition<com.vaadin.flow.tests.data.bean.Person, ?> deserializedDefinition = ClassesSerializableUtils
                 .serializeAndDeserialize(definition);

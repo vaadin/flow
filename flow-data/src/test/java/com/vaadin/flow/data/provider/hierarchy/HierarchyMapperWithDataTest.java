@@ -214,8 +214,8 @@ public class HierarchyMapperWithDataTest {
         // Root nodes plus children of expanded nodes 0 and 4 that match the
         // filter
         List<Node> expectedResult = IntStream
-            .of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
-            .collect(Collectors.toList());
+                .of(0, 1, 4, 6, 7, 10, 13, 26, 39, 52).mapToObj(testData::get)
+                .collect(Collectors.toList());
 
         mapper.setFilter(filter);
 

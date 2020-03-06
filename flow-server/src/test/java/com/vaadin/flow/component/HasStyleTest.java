@@ -168,8 +168,7 @@ public class HasStyleTest {
 
     private void assertClasses(HasStyleComponent c, String... expectedClasses) {
         Set<String> actual = c.getClassNames();
-        Set<String> expected = new HashSet<>(
-                Arrays.asList(expectedClasses));
+        Set<String> expected = new HashSet<>(Arrays.asList(expectedClasses));
         Assert.assertEquals(expected, actual);
     }
 }

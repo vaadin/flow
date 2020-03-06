@@ -174,8 +174,7 @@ public final class BeanUtil implements Serializable {
                         exception);
                 // handle next descriptor
             } catch (IntrospectionException e) {
-                LoggerFactory.getLogger(BeanUtil.class.getName()).info(null,
-                        e);
+                LoggerFactory.getLogger(BeanUtil.class.getName()).info(null, e);
                 result.add(descriptor);
             }
         }
@@ -243,9 +242,9 @@ public final class BeanUtil implements Serializable {
                 return true;
             } catch (ClassNotFoundException | NoSuchMethodException
                     | InvocationTargetException e) {
-                LoggerFactory.getLogger("com.vaadin.validator.BeanValidator").info(
-                        "A JSR-303 bean validation implementation not found on the classpath or could not be initialized. BeanValidator cannot be used.",
-                        e);
+                LoggerFactory.getLogger("com.vaadin.validator.BeanValidator")
+                        .info("A JSR-303 bean validation implementation not found on the classpath or could not be initialized. BeanValidator cannot be used.",
+                                e);
                 return false;
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 throw new RuntimeException(

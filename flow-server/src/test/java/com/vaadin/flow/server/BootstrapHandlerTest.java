@@ -1358,8 +1358,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void getBootstrapPage_removesExportScript()
-            throws ServiceException {
+    public void getBootstrapPage_removesExportScript() throws ServiceException {
         initUI(testUI);
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,

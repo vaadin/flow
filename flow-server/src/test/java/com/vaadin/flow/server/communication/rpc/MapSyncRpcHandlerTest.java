@@ -180,7 +180,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ONLY_WHEN_ENABLED);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ONLY_WHEN_ENABLED);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -196,7 +197,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -228,7 +230,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         ui.setEnabled(false);
-        element.addPropertyChangeListener(TEST_PROPERTY,DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 

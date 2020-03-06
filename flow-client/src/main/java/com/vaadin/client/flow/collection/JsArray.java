@@ -236,15 +236,15 @@ class JsniHelper {
 
     static native <T> int pushArray(JsArray<T> array,
             JsArray<? extends T> values)
-            /*-{
-                return array.push.apply(array, values);
-            }-*/;
+    /*-{
+        return array.push.apply(array, values);
+    }-*/;
 
     static native <T> JsArray<T> spliceArray(JsArray<T> array, int index,
             int remove, JsArray<? extends T> add)
-            /*-{
-                return array.splice.apply(array, [index, remove].concat(add));
-            }-*/;
+    /*-{
+        return array.splice.apply(array, [index, remove].concat(add));
+    }-*/;
 
     static native void clear(JsArray<?> array)
     /*-{

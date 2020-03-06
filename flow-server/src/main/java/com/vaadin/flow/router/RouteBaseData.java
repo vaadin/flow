@@ -28,7 +28,7 @@ import com.vaadin.flow.component.Component;
  * Only for read as data is immutable.
  *
  * @param <T>
- *         base data implementation
+ *            base data implementation
  * @since 1.3
  */
 public abstract class RouteBaseData<T extends RouteBaseData>
@@ -43,13 +43,13 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * RouteBaseData constructor.
      *
      * @param parentLayouts
-     *         route parent layout class chain
+     *            route parent layout class chain
      * @param url
-     *         full route url
+     *            full route url
      * @param parameters
-     *         navigation target path parameters
+     *            navigation target path parameters
      * @param navigationTarget
-     *         route navigation target
+     *            route navigation target
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
@@ -117,9 +117,9 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     public boolean equals(Object obj) {
         if (obj instanceof RouteBaseData<?>) {
             RouteBaseData<?> other = (RouteBaseData<?>) obj;
-            return other.parentLayouts.equals(this.parentLayouts) && other.url
-                    .equals(this.url) && other.navigationTarget
-                    .equals(navigationTarget);
+            return other.parentLayouts.equals(this.parentLayouts)
+                    && other.url.equals(this.url)
+                    && other.navigationTarget.equals(navigationTarget);
         }
         return false;
     }

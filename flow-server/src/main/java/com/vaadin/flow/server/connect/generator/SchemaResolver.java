@@ -106,7 +106,8 @@ class SchemaResolver {
         } else {
             ComposedSchema nullableSchema = new ComposedSchema();
             nullableSchema.setNullable(true);
-            nullableSchema.setAllOf(Collections.singletonList(nestedTypeSchema));
+            nullableSchema
+                    .setAllOf(Collections.singletonList(nestedTypeSchema));
             return nullableSchema;
         }
     }

@@ -96,8 +96,8 @@ public class ServletDeployer implements ServletContextListener {
         private void ensureServletContext() {
             if (servletContext == null && VaadinService
                     .getCurrent() instanceof VaadinServletService) {
-                servletContext = ((VaadinServletService) VaadinService.getCurrent())
-                        .getServlet().getServletContext();
+                servletContext = ((VaadinServletService) VaadinService
+                        .getCurrent()).getServlet().getServletContext();
             } else if (servletContext == null) {
                 throw new IllegalStateException(
                         "The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");

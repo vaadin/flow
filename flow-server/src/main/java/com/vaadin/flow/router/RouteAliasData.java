@@ -35,13 +35,13 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      * AliasData constructor.
      *
      * @param parentLayouts
-     *         route parent layout class chain
+     *            route parent layout class chain
      * @param url
-     *         full route url
+     *            full route url
      * @param parameters
-     *         navigation target path parameters
+     *            navigation target path parameters
      * @param navigationTarget
-     *         route navigation target
+     *            route navigation target
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
@@ -54,8 +54,9 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
         if (obj instanceof RouteAliasData) {
             RouteAliasData other = (RouteAliasData) obj;
             return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrl().equals(this.getUrl()) && other
-                    .getNavigationTarget().equals(getNavigationTarget());
+                    && other.getUrl().equals(this.getUrl())
+                    && other.getNavigationTarget()
+                            .equals(getNavigationTarget());
         }
         return false;
     }
@@ -69,7 +70,7 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(getParentLayouts(), getUrl(), getNavigationTarget());
+        return Objects.hash(getParentLayouts(), getUrl(),
+                getNavigationTarget());
     }
 }

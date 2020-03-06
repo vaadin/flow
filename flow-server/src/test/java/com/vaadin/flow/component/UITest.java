@@ -272,9 +272,8 @@ public class UITest {
                 .dumpPendingJsInvocations();
 
         Assert.assertEquals(1, pendingJavaScriptInvocations.size());
-        Assert.assertEquals("rtl",
-                pendingJavaScriptInvocations.get(0).
-                        getInvocation().getParameters().get(0));
+        Assert.assertEquals("rtl", pendingJavaScriptInvocations.get(0)
+                .getInvocation().getParameters().get(0));
     }
 
     @Test

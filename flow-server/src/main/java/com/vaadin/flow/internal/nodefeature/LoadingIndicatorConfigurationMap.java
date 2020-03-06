@@ -39,7 +39,7 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
      * Creates a new map for the given node.
      *
      * @param node
-     *         the node that the map belongs to
+     *            the node that the map belongs to
      */
     public LoadingIndicatorConfigurationMap(StateNode node) {
         super(node);
@@ -77,7 +77,8 @@ public class LoadingIndicatorConfigurationMap extends NodeMap
 
     @Override
     public boolean isApplyDefaultTheme() {
-        return getOrDefault(DEFAULT_THEME_APPLIED_KEY, DEFAULT_THEME_APPLIED_DEFAULT);
+        return getOrDefault(DEFAULT_THEME_APPLIED_KEY,
+                DEFAULT_THEME_APPLIED_DEFAULT);
     }
 
     @Override

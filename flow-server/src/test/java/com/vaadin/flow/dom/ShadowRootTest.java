@@ -301,7 +301,8 @@ public class ShadowRootTest extends AbstractNodeTest {
         Assert.assertEquals(1, visitor.getVisited().size());
         Assert.assertEquals(subject,
                 visitor.getVisited().keySet().iterator().next());
-        Assert.assertEquals(null, visitor.getVisited().values().iterator().next());
+        Assert.assertEquals(null,
+                visitor.getVisited().values().iterator().next());
     }
 
     @Test

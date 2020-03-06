@@ -35,15 +35,15 @@ public class RouteData extends RouteBaseData<RouteData> {
      * RouteData constructor.
      *
      * @param parentLayouts
-     *         route parent layout class chain
+     *            route parent layout class chain
      * @param url
-     *         full route url
+     *            full route url
      * @param parameters
-     *         navigation target path parameters
+     *            navigation target path parameters
      * @param navigationTarget
-     *         route navigation target
+     *            route navigation target
      * @param routeAliases
-     *         list of aliases for this route
+     *            list of aliases for this route
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String url, List<Class<?>> parameters,
@@ -77,8 +77,8 @@ public class RouteData extends RouteBaseData<RouteData> {
         if (obj instanceof RouteData) {
             RouteData other = (RouteData) obj;
             return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrl().equals(this.getUrl()) && other
-                    .getNavigationTarget().equals(getNavigationTarget())
+                    && other.getUrl().equals(this.getUrl())
+                    && other.getNavigationTarget().equals(getNavigationTarget())
                     && routeAliases.containsAll(other.routeAliases);
         }
         return false;

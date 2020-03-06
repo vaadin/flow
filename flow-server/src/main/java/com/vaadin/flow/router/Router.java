@@ -104,7 +104,6 @@ public class Router implements Serializable {
         }
     }
 
-
     private Location getLocationForRequest(String pathInfo,
             Map<String, String[]> parameterMap) {
         final String path;

@@ -81,17 +81,16 @@ public abstract class BasicRenderer<SOURCE, TARGET>
 
     private void setupTemplate(Element owner, SimpleValueRendering rendering,
             DataKeyMapper<SOURCE> keyMapper) {
-    /*
-     * setupTemplateWhenAttached does some setup that will be needed by
-     * generateData. To ensure the setup has completed before it is needed,
-     * we forego the general convention of using beforeClientResponse to
-     * guard the action against duplicate invocation. This is not a big
-     * problem in this case since setupTemplateWhenAttached only sets
-     * properties but doesn't execute any JS.
-     */
-        owner.getNode()
-                .runWhenAttached(ui -> setupTemplateWhenAttached(owner,
-                         rendering, keyMapper));
+        /*
+         * setupTemplateWhenAttached does some setup that will be needed by
+         * generateData. To ensure the setup has completed before it is needed,
+         * we forego the general convention of using beforeClientResponse to
+         * guard the action against duplicate invocation. This is not a big
+         * problem in this case since setupTemplateWhenAttached only sets
+         * properties but doesn't execute any JS.
+         */
+        owner.getNode().runWhenAttached(
+                ui -> setupTemplateWhenAttached(owner, rendering, keyMapper));
     }
 
     private void setupTemplateWhenAttached(Element owner,

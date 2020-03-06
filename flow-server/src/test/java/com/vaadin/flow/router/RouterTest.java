@@ -1400,8 +1400,7 @@ public class RouterTest extends RoutingTestBase {
     /**
      * Navigating to this target will reroute from
      * <code>ProcessEventsRotten</code> which is a class on the parent layout
-     * chain. So this class shouldn't even be initialized when navigating to
-     * it.
+     * chain. So this class shouldn't even be initialized when navigating to it.
      */
     @Route(value = "event/twig", layout = ProcessEventsStick.class)
     public static class ProcessEventsTwig extends ProcessEventsBase {
@@ -1433,7 +1432,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route(value = "security/login", layout = SecurityParent.class)
-    public static class SecurityLogin extends ProcessEventsBase  {
+    public static class SecurityLogin extends ProcessEventsBase {
 
     }
 
@@ -3213,8 +3212,7 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("security/document"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertEventOrder(expectedInitially, null, expectedInitially,
-                expected);
+        assertEventOrder(expectedInitially, null, expectedInitially, expected);
 
         ProcessEventsBase.clear();
 
@@ -3251,7 +3249,8 @@ public class RouterTest extends RoutingTestBase {
                 .getExtendedClientDetails();
 
         // Used with PreserveOnRefresh.
-        ExtendedClientDetails clientDetails = Mockito.mock(ExtendedClientDetails.class);
+        ExtendedClientDetails clientDetails = Mockito
+                .mock(ExtendedClientDetails.class);
         ui.getInternals().setExtendedClientDetails(clientDetails);
 
         Mockito.when(clientDetails.getWindowName()).thenReturn("mock");
@@ -3283,17 +3282,19 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("event/flower"),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         ProcessEventsBase.clear();
 
         final String parameter = "green";
         router.navigate(ui, new Location("event/leaf/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         assertEventOrder(Arrays.asList("ProcessEventsLeaf", "leafChild"),
                 getProcessEventsBranchChainNames("ProcessEventsFlower"),
-                getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf", "leafChild"),
-                getProcessEventsBranchChainNames("ProcessEventsLeaf", "leafChild"));
+                getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf",
+                        "leafChild"),
+                getProcessEventsBranchChainNames("ProcessEventsLeaf",
+                        "leafChild"));
     }
 
     @Test // #4595
@@ -3310,8 +3311,9 @@ public class RouterTest extends RoutingTestBase {
         // This is expected after reroute.
         final List<String> expectedOnReroute = getProcessEventsBranchChainNames(
                 "ProcessEventsFlower");
-        
-        // This is expected on init and BeforeEnter since the ProcessEventsRotten
+
+        // This is expected on init and BeforeEnter since the
+        // ProcessEventsRotten
         // parent of ProcessEventsTwig will reroute, so ProcessEventsTwig and
         // ProcessEventsStick won't be created.
         final List<String> expected = Stream
@@ -3352,8 +3354,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "BeforeEnter events aren't triggered in correct order",
-                getProcessEventsBranchChainNames(parameter,
-                        "needleChild"),
+                getProcessEventsBranchChainNames(parameter, "needleChild"),
                 ProcessEventsBase.beforeEnter);
 
     }

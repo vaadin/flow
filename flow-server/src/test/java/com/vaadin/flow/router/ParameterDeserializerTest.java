@@ -24,20 +24,26 @@ public class ParameterDeserializerTest {
 
     @Test
     public void testSimple() {
-        assertFalse(ParameterDeserializer.isAnnotatedParameter(Simple.class, OptionalParameter.class));
-        assertTrue(ParameterDeserializer.isAnnotatedParameter(SimpleAnnotated.class, OptionalParameter.class));
+        assertFalse(ParameterDeserializer.isAnnotatedParameter(Simple.class,
+                OptionalParameter.class));
+        assertTrue(ParameterDeserializer.isAnnotatedParameter(
+                SimpleAnnotated.class, OptionalParameter.class));
     }
 
     @Test
     public void testInterface() {
-        assertFalse(ParameterDeserializer.isAnnotatedParameter(Normal.class, OptionalParameter.class));
-        assertTrue(ParameterDeserializer.isAnnotatedParameter(NormalAnnotated.class, OptionalParameter.class));
+        assertFalse(ParameterDeserializer.isAnnotatedParameter(Normal.class,
+                OptionalParameter.class));
+        assertTrue(ParameterDeserializer.isAnnotatedParameter(
+                NormalAnnotated.class, OptionalParameter.class));
     }
 
     @Test
     public void testGenericInterface() {
-        assertFalse(ParameterDeserializer.isAnnotatedParameter(Generic.class, OptionalParameter.class));
-        assertTrue(ParameterDeserializer.isAnnotatedParameter(GenericAnnotated.class, OptionalParameter.class));
+        assertFalse(ParameterDeserializer.isAnnotatedParameter(Generic.class,
+                OptionalParameter.class));
+        assertTrue(ParameterDeserializer.isAnnotatedParameter(
+                GenericAnnotated.class, OptionalParameter.class));
     }
 
     public static class Simple implements HasUrlParameter<String> {
@@ -50,7 +56,8 @@ public class ParameterDeserializerTest {
     public static class SimpleAnnotated implements HasUrlParameter<String> {
 
         @Override
-        public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+        public void setParameter(BeforeEvent event,
+                @OptionalParameter String parameter) {
         }
     }
 
@@ -65,7 +72,8 @@ public class ParameterDeserializerTest {
 
     public interface NormalInterfaceAnnotated extends HasUrlParameter<String> {
         @Override
-        default void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+        default void setParameter(BeforeEvent event,
+                @OptionalParameter String parameter) {
         }
     }
 
@@ -83,12 +91,13 @@ public class ParameterDeserializerTest {
 
     public interface GenericInterfaceAnnotated<T> extends HasUrlParameter<T> {
         @Override
-        default void setParameter(BeforeEvent event, @OptionalParameter T parameter) {
+        default void setParameter(BeforeEvent event,
+                @OptionalParameter T parameter) {
         }
     }
 
-    public static class GenericAnnotated implements GenericInterfaceAnnotated<String> {
+    public static class GenericAnnotated
+            implements GenericInterfaceAnnotated<String> {
     }
-
 
 }

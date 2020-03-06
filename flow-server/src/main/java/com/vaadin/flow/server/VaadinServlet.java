@@ -472,4 +472,3 @@ public class VaadinServlet extends HttpServlet {
         getService().destroy();
     }
 }
-

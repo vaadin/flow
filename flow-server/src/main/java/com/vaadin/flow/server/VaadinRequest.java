@@ -461,7 +461,6 @@ public interface VaadinRequest {
      */
     Enumeration<String> getHeaders(String name);
 
-
     /**
      * Gets the currently processed Vaadin request. The current request is
      * automatically defined when the request is started. The current request

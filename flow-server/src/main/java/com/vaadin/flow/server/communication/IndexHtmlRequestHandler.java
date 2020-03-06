@@ -46,8 +46,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for serving the <code>index.html</code> according
- * to the template provided in the frontend folder. The handler will calculate and
- * inject baseHref as well as the bundle scripts into the template.
+ * to the template provided in the frontend folder. The handler will calculate
+ * and inject baseHref as well as the bundle scripts into the template.
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
@@ -66,13 +66,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
 
-            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument, UI.getCurrent());
+            indexHtmlResponse = new IndexHtmlResponse(request, response,
+                    indexDocument, UI.getCurrent());
 
             // App might be using classic server-routing, which is true
             // unless we detect a call to JavaScriptBootstrapUI.connectClient
             session.setAttribute(SERVER_ROUTING, Boolean.TRUE);
         } else {
-            indexHtmlResponse = new IndexHtmlResponse(request, response, indexDocument);
+            indexHtmlResponse = new IndexHtmlResponse(request, response,
+                    indexDocument);
         }
 
         addInitialFlow(initialJson, indexDocument, session);
@@ -88,13 +90,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         DeploymentConfiguration config = session.getConfiguration();
         if (!config.isProductionMode()) {
-            UsageStatisticsExporter.exportUsageStatisticsToDocument(indexDocument);
+            UsageStatisticsExporter
+                    .exportUsageStatisticsToDocument(indexDocument);
         }
 
         // modify the page based on the @PWA annotation
         setupPwa(indexDocument, session.getService());
 
-        // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline annotations
+        // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline
+        // annotations
         // and on the AppShellConfigurator
         registry.modifyIndexHtml(indexDocument, request);
 
@@ -112,7 +116,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,
-                                VaadinSession session) {
+            VaadinSession session) {
         String csrfToken = session.getCsrfToken();
         if (csrfToken != null) {
             initialJson.put(CSRF_TOKEN, csrfToken);
@@ -120,15 +124,14 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         Element elm = new Element("script");
         elm.attr("initial", "");
-        elm.appendChild(new DataNode(
-                "window.Vaadin = {TypeScript: " + JsonUtil.stringify(initialJson) + "};"
-        ));
+        elm.appendChild(new DataNode("window.Vaadin = {TypeScript: "
+                + JsonUtil.stringify(initialJson) + "};"));
         indexDocument.head().insertChildren(0, elm);
     }
 
-    private void includeInitialUidl(
-            JsonObject initialJson, VaadinSession session,
-            VaadinRequest request, VaadinResponse response) {
+    private void includeInitialUidl(JsonObject initialJson,
+            VaadinSession session, VaadinRequest request,
+            VaadinResponse response) {
         JsonObject initial = getInitialJson(request, response, session);
         initialJson.put("initial", initial);
     }

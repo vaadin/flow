@@ -60,11 +60,15 @@ public class HtmlComponentSmokeTest {
         testValues.put(NumberingType.class, NumberingType.LOWERCASE_ROMAN);
         testValues.put(int.class, 42);
         testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
-        testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(IFrame.SandboxType[].class,
+                new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS,
+                        IFrame.SandboxType.ALLOW_MODALS });
     }
 
-    // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
-    // element is the constructor argument. However, for some HTMLComponents this test is not valid.
+    // For classes registered here testStringConstructor will be ignored. This
+    // test checks whether the content of the
+    // element is the constructor argument. However, for some HTMLComponents
+    // this test is not valid.
     private static final Set<Class<?>> ignoredStringConstructors = new HashSet<>();
     static {
         ignoredStringConstructors.add(IFrame.class);

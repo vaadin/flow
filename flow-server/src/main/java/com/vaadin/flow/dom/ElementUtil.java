@@ -253,7 +253,7 @@ public class ElementUtil {
         if (node instanceof TextNode) {
             return Optional.of(Element.createText(((TextNode) node).text()));
         } else if (node instanceof org.jsoup.nodes.Element) {
-            ret = new Element(((org.jsoup.nodes.Element)node).tagName());
+            ret = new Element(((org.jsoup.nodes.Element) node).tagName());
         } else {
             LoggerFactory.getLogger(ElementUtil.class).error(
                     "Could not convert a {}, '{}' into {}!",

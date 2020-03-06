@@ -22,7 +22,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.commons.io.IOUtils;
 
-
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.
  * 
@@ -49,8 +48,8 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils
-                .toString(getClass().getResourceAsStream(INDEX_HTML), UTF_8);
+        return IOUtils.toString(getClass().getResourceAsStream(INDEX_HTML),
+                UTF_8);
     }
 
     @Override

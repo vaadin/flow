@@ -20,8 +20,8 @@ import java.io.Serializable;
 import com.vaadin.flow.server.RouteRegistry;
 
 /**
- * Listener that gets notified when the registered routes for a {@link
- * RouteRegistry} are changed in some way.
+ * Listener that gets notified when the registered routes for a
+ * {@link RouteRegistry} are changed in some way.
  *
  * @since 1.3
  *
@@ -34,7 +34,7 @@ public interface RoutesChangedListener extends Serializable {
      * RouteRegistry.
      *
      * @param event
-     *         event containing change data, not null
+     *            event containing change data, not null
      */
     void routesChanged(RoutesChangedEvent event);
 

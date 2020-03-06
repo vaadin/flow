@@ -48,7 +48,7 @@ public class PushConfigurationMapTest
     public void fallbackTransportLongPolling() {
         ns.setFallbackTransport(Transport.LONG_POLLING);
         Assert.assertEquals(Transport.LONG_POLLING.getIdentifier(),
-            ns.getParameter("fallbackTransport"));
+                ns.getParameter("fallbackTransport"));
         Assert.assertEquals(Transport.LONG_POLLING, ns.getFallbackTransport());
     }
 
@@ -56,7 +56,7 @@ public class PushConfigurationMapTest
     public void fallbackTransportWebsocket() {
         ns.setFallbackTransport(Transport.WEBSOCKET);
         Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
-            ns.getParameter("fallbackTransport"));
+                ns.getParameter("fallbackTransport"));
         Assert.assertEquals(Transport.WEBSOCKET, ns.getFallbackTransport());
     }
 

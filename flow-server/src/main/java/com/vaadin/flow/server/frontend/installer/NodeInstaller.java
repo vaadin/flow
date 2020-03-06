@@ -46,8 +46,8 @@ public class NodeInstaller {
 
     public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
 
-    private static final String NODE_WINDOWS =
-            INSTALL_PATH.replaceAll("/", "\\\\") + "\\node.exe";
+    private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
+            "\\\\") + "\\node.exe";
     private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
 
     public static final String PROVIDED_VERSION = "provided";
@@ -72,9 +72,9 @@ public class NodeInstaller {
      * platform.
      *
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param proxies
-     *         list of proxies
+     *            list of proxies
      */
     public NodeInstaller(File installDirectory,
             List<ProxyConfig.Proxy> proxies) {
@@ -85,11 +85,11 @@ public class NodeInstaller {
      * Create NoodeInstaller with default extractor and downloader.
      *
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param platform
-     *         platform information
+     *            platform information
      * @param proxies
-     *         list of proxies
+     *            list of proxies
      */
     public NodeInstaller(File installDirectory, Platform platform,
             List<ProxyConfig.Proxy> proxies) {
@@ -101,13 +101,13 @@ public class NodeInstaller {
      * Initialize a new NodeInstaller.
      *
      * @param installDirectory
-     *         installation directory
+     *            installation directory
      * @param platform
-     *         platform information
+     *            platform information
      * @param archiveExtractor
-     *         archive extractor
+     *            archive extractor
      * @param fileDownloader
-     *         file downloader
+     *            file downloader
      */
     public NodeInstaller(File installDirectory, Platform platform,
             ArchiveExtractor archiveExtractor, FileDownloader fileDownloader) {
@@ -121,7 +121,7 @@ public class NodeInstaller {
      * Set the node version to install. (given as "v12.16.0")
      *
      * @param nodeVersion
-     *         version string
+     *            version string
      * @return this
      */
     public NodeInstaller setNodeVersion(String nodeVersion) {
@@ -134,15 +134,13 @@ public class NodeInstaller {
      * <p>
      * This should be a url or directory under which we can find a directory
      * {@link #nodeVersion} and there should then exist the archived node
-     * packages.
-     * For instance for v12.16.0 we should have under nodeDownloadRoot:
-     * ./v12.6.0/node-v12.16.0-linux-x64.tar.xz
+     * packages. For instance for v12.16.0 we should have under
+     * nodeDownloadRoot: ./v12.6.0/node-v12.16.0-linux-x64.tar.xz
      * ./v12.6.0/node-v12.16.0-darwin-x64.tar.gz
-     * ./v12.6.0/node-v12.16.0-win-x64.zip
-     * ./v12.6.0/node-v12.16.0-win-x86.zip
+     * ./v12.6.0/node-v12.16.0-win-x64.zip ./v12.6.0/node-v12.16.0-win-x86.zip
      *
      * @param nodeDownloadRoot
-     *         custom download root
+     *            custom download root
      * @return this
      */
     public NodeInstaller setNodeDownloadRoot(URI nodeDownloadRoot) {
@@ -154,7 +152,7 @@ public class NodeInstaller {
      * Set user name to use.
      *
      * @param userName
-     *         user name
+     *            user name
      * @return this
      */
     public NodeInstaller setUserName(String userName) {
@@ -166,7 +164,7 @@ public class NodeInstaller {
      * Set password to use.
      *
      * @param password
-     *         password
+     *            password
      * @return this
      */
     public NodeInstaller setPassword(String password) {
@@ -176,8 +174,8 @@ public class NodeInstaller {
 
     private boolean npmProvided() throws InstallationException {
         if (PROVIDED_VERSION.equals(npmVersion)) {
-            if (Integer.parseInt(nodeVersion.replace("v", "").split("[.]")[0])
-                    < 4) {
+            if (Integer.parseInt(
+                    nodeVersion.replace("v", "").split("[.]")[0]) < 4) {
                 throw new InstallationException("NPM version is '" + npmVersion
                         + "' but Node didn't include NPM prior to v4.0.0");
             }
@@ -190,7 +188,7 @@ public class NodeInstaller {
      * Install node and NPM.
      *
      * @throws InstallationException
-     *         exception thrown when installation fails
+     *             exception thrown when installation fails
      */
     public void install() throws InstallationException {
         // use lock object for a synchronized block
@@ -206,8 +204,8 @@ public class NodeInstaller {
 
             getLogger().info("Installing node version {}", nodeVersion);
             if (!nodeVersion.startsWith("v")) {
-                getLogger()
-                        .warn("Node version does not start with naming convention 'v'. "
+                getLogger().warn(
+                        "Node version does not start with naming convention 'v'. "
                                 + "If download fails please add 'v' to the version string.");
             }
             InstallData data = new InstallData(nodeVersion, nodeDownloadRoot,
@@ -231,9 +229,9 @@ public class NodeInstaller {
                 getLogger().info("Node {} is already installed.", version);
                 return true;
             } else {
-                getLogger()
-                        .info("Node {} was installed, but we need version {}",
-                                version, nodeVersion);
+                getLogger().info(
+                        "Node {} was installed, but we need version {}",
+                        version, nodeVersion);
                 return false;
             }
         }
@@ -329,8 +327,8 @@ public class NodeInstaller {
             throws InstallationException, IOException {
         // Search for the node binary
         File nodeBinary = new File(data.getTmpDirectory(),
-                data.getNodeFilename() + File.separator + data
-                        .getNodeExecutable());
+                data.getNodeFilename() + File.separator
+                        + data.getNodeExecutable());
         if (!nodeBinary.exists()) {
             throw new FileNotFoundException(
                     "Could not find the downloaded Node.js binary in "
@@ -347,7 +345,8 @@ public class NodeInstaller {
         if (npmProvided()) {
             getLogger().info("Extracting NPM");
             File tmpNodeModulesDir = new File(data.getTmpDirectory(),
-                    data.getNodeFilename() + File.separator + FrontendUtils.NODE_MODULES);
+                    data.getNodeFilename() + File.separator
+                            + FrontendUtils.NODE_MODULES);
             File nodeModulesDirectory = new File(destinationDirectory,
                     FrontendUtils.NODE_MODULES);
             FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
@@ -408,16 +407,17 @@ public class NodeInstaller {
         } catch (ArchiveExtractionException e) {
             if (e.getCause() instanceof EOFException) {
                 // https://github.com/eirslett/frontend-maven-plugin/issues/794
-                // The downloading was probably interrupted and archive file is incomplete:
+                // The downloading was probably interrupted and archive file is
+                // incomplete:
                 // delete it to retry from scratch
-                getLogger()
-                        .error("The archive file {} is corrupted and will be deleted. "
-                                        + "Please run the application again.",
-                                archive.getPath());
+                getLogger().error(
+                        "The archive file {} is corrupted and will be deleted. "
+                                + "Please run the application again.",
+                        archive.getPath());
                 boolean deleted = archive.delete();
                 if (!deleted) {
                     getLogger().error("Failed to remove archive file {}. "
-                                    + "Please remove it manually and run the application.",
+                            + "Please remove it manually and run the application.",
                             archive.getPath());
                 }
                 try {
@@ -436,8 +436,8 @@ public class NodeInstaller {
             String userName, String password) throws DownloadException {
         if (!destination.exists()) {
             getLogger().info("Downloading {} to {}", downloadUrl, destination);
-            fileDownloader
-                    .download(downloadUrl, destination, userName, password);
+            fileDownloader.download(downloadUrl, destination, userName,
+                    password);
         }
     }
 
@@ -447,12 +447,10 @@ public class NodeInstaller {
      * @return node executable
      */
     private File getNodeExecutable() {
-        String nodeExecutable = platform.isWindows() ?
-                NODE_WINDOWS :
-                NODE_DEFAULT;
+        String nodeExecutable = platform.isWindows() ? NODE_WINDOWS
+                : NODE_DEFAULT;
         return new File(installDirectory + nodeExecutable);
     }
-
 
     private static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws InstallationException {
@@ -461,17 +459,15 @@ public class NodeInstaller {
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new IOException(
-                        "Process exited with non 0 exit code. (" + exitCode
-                                + ")");
+                throw new IOException("Process exited with non 0 exit code. ("
+                        + exitCode + ")");
             }
             return FrontendUtils.parseFrontendVersion(
                     FrontendUtils.streamToString(process.getInputStream()));
         } catch (InterruptedException | IOException e) {
-            throw new InstallationException(
-                    String.format("Unable to detect version of %s. %s", tool,
-                            "Using command " + String
-                                    .join(" ", versionCommand)), e);
+            throw new InstallationException(String.format(
+                    "Unable to detect version of %s. %s", tool,
+                    "Using command " + String.join(" ", versionCommand)), e);
         }
     }
 
@@ -519,10 +515,11 @@ public class NodeInstaller {
         }
 
         private File getTempDirectory() {
-            File temporaryDirectory = new File(getNodeInstallDirectory(), "tmp");
+            File temporaryDirectory = new File(getNodeInstallDirectory(),
+                    "tmp");
             if (!temporaryDirectory.exists()) {
-                getLogger()
-                        .debug("Creating temporary directory {}", temporaryDirectory);
+                getLogger().debug("Creating temporary directory {}",
+                        temporaryDirectory);
                 boolean success = temporaryDirectory.mkdirs();
                 if (!success) {
                     getLogger().debug("Failed to create temporary directory");
@@ -544,13 +541,13 @@ public class NodeInstaller {
          * Build archive file name and return archive file target location.
          *
          * @param name
-         *         archive name
+         *            archive name
          * @param nodeVersion
-         *         node version
+         *            node version
          * @param classifier
-         *         optional classifier
+         *            optional classifier
          * @param archiveExtension
-         *         archive extension
+         *            archive extension
          * @return archive {@link File} for archive
          */
         private File resolveArchive(String name, String nodeVersion,
@@ -559,8 +556,8 @@ public class NodeInstaller {
                 installDirectory.mkdirs();
             }
 
-            StringBuilder filename = new StringBuilder().append(name).append("-")
-                    .append(nodeVersion);
+            StringBuilder filename = new StringBuilder().append(name)
+                    .append("-").append(nodeVersion);
             if (classifier != null) {
                 filename.append("-").append(classifier);
             }

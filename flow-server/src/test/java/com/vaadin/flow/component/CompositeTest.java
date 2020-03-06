@@ -414,7 +414,8 @@ public class CompositeTest {
     /*
      * This is just a test for #1181.
      */
-    @Test @Ignore("Failing after adding connect client generators")
+    @Test
+    @Ignore("Failing after adding connect client generators")
     public void templateInsideComposite_compositeCanBeAdded() {
         class MyComponent extends Composite<MyTemplate> {
 

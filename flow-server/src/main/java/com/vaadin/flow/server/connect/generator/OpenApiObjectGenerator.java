@@ -97,8 +97,8 @@ import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
 /**
- * Java parser class which scans for all {@link Endpoint} classes and
- * produces OpenApi json.
+ * Java parser class which scans for all {@link Endpoint} classes and produces
+ * OpenApi json.
  */
 public class OpenApiObjectGenerator {
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
@@ -432,8 +432,8 @@ public class OpenApiObjectGenerator {
                 Schema propertySchema = parseTypeToSchema(
                         variableDeclarator.getType(),
                         fieldDescription.orElse(""));
-                if (field.isAnnotationPresent(Nullable.class)
-                        || GeneratorUtils.isTrue(propertySchema.getNullable())) {
+                if (field.isAnnotationPresent(Nullable.class) || GeneratorUtils
+                        .isTrue(propertySchema.getNullable())) {
                     // Temporarily set nullable to indicate this property is
                     // not required
                     propertySchema.setNullable(true);
@@ -472,9 +472,9 @@ public class OpenApiObjectGenerator {
                     (Schema) schema.getAdditionalProperties()));
         } else if (schema instanceof ComposedSchema
                 && ((ComposedSchema) schema).getAllOf() != null) {
-                for (Schema child : ((ComposedSchema) schema).getAllOf()) {
-                    map.putAll(collectUsedTypesFromSchema(child));
-                }
+            for (Schema child : ((ComposedSchema) schema).getAllOf()) {
+                map.putAll(collectUsedTypesFromSchema(child));
+            }
         }
         if (schema.getProperties() != null) {
             schema.getProperties().values().forEach(
@@ -484,9 +484,8 @@ public class OpenApiObjectGenerator {
     }
 
     private boolean isReservedWord(String word) {
-        return word != null
-                && EndpointNameChecker.ECMA_SCRIPT_RESERVED_WORDS
-                        .contains(word.toLowerCase());
+        return word != null && EndpointNameChecker.ECMA_SCRIPT_RESERVED_WORDS
+                .contains(word.toLowerCase());
     }
 
     private Map<String, PathItem> createPathItems(String endpointName,

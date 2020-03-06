@@ -28,7 +28,7 @@ public class WebpackConnectionException extends RuntimeException {
      * Constructs a new exception with the specified detail message.
      *
      * @param message
-     *         the detailed message on the problem.
+     *            the detailed message on the problem.
      */
     public WebpackConnectionException(String message) {
         super(message);

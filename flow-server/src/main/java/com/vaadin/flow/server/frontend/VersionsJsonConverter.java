@@ -72,8 +72,7 @@ class VersionsJsonConverter {
         } else {
             throw new IllegalStateException("Vaadin code versions file "
                     + "contains unexpected data: dependency '" + npmName
-                    + "' has"
-                    + " no 'npmVersion'/'jsVersion' . "
+                    + "' has" + " no 'npmVersion'/'jsVersion' . "
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
     }

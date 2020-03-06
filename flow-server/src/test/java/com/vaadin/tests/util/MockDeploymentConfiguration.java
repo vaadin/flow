@@ -168,7 +168,8 @@ public class MockDeploymentConfiguration
         return useDeprecatedV14Bootstrapping;
     }
 
-    public void useDeprecatedV14Bootstrapping(boolean useDeprecatedV14Bootstrapping) {
+    public void useDeprecatedV14Bootstrapping(
+            boolean useDeprecatedV14Bootstrapping) {
         this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
     }
 

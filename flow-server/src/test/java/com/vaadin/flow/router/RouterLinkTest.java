@@ -133,7 +133,8 @@ public class RouterLinkTest extends HasCurrentService {
 
         Assert.assertTrue(link.getElement().hasAttribute("href"));
 
-        Assert.assertEquals("greeting/foo", link.getElement().getAttribute("href"));
+        Assert.assertEquals("greeting/foo",
+                link.getElement().getAttribute("href"));
     }
 
     @Test

@@ -324,11 +324,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 + getThemesList(themes));
             }
             if (!themes.isEmpty() && !notThemeClasses.isEmpty()) {
-                throw new IllegalStateException("@"
-                        + Theme.class.getSimpleName() + " ("
-                        + getThemesList(themes) + ") and @"
-                        + NoTheme.class.getSimpleName()
-                        + " annotations can't be used simultaneously.");
+                throw new IllegalStateException(
+                        "@" + Theme.class.getSimpleName() + " ("
+                                + getThemesList(themes) + ") and @"
+                                + NoTheme.class.getSimpleName()
+                                + " annotations can't be used simultaneously.");
             }
             if (!notThemeClasses.isEmpty()) {
                 return ThemeData.createNoTheme();
@@ -342,9 +342,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private String getThemesList(Collection<ThemeData> themes) {
-        return themes
-                .stream().map(theme -> "name = '" + theme.getName()
-                        + "' and variant = '" + theme.getVariant() + "'")
+        return themes.stream()
+                .map(theme -> "name = '" + theme.getName() + "' and variant = '"
+                        + theme.getVariant() + "'")
                 .collect(Collectors.joining(", "));
     }
 

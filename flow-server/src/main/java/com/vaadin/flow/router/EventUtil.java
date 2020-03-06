@@ -156,8 +156,7 @@ public final class EventUtil {
     }
 
     private static Stream<? extends BeforeEnterObserver> collectBeforeEnterObserversStream(
-            Element element,
-            Collection<Element> childrenExclusions) {
+            Element element, Collection<Element> childrenExclusions) {
 
         Predicate<Element> currentRootAndNonRoots = input -> input
                 .equals(element) || !childrenExclusions.contains(input);
@@ -166,7 +165,7 @@ public final class EventUtil {
                 flattenDescendants(element, currentRootAndNonRoots),
                 BeforeEnterObserver.class);
     }
-    
+
     private static Collection<Element> getElements(
             Collection<? extends HasElement> components) {
         return components.stream().map(HasElement::getElement)

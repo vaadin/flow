@@ -28,11 +28,12 @@ import org.springframework.stereotype.Component;
  * becomes a Spring {@link Component} bean.
  *
  * After the class is annotated and processed, it becomes available as a Vaadin
- * endpoint. This means that the class name and all its public methods (including
- * the ones inherited from a super classes that are not {@link Object}) can be
- * executed via the post call with the correct parameters sent in a request JSON
- * body. The methods' return values will be returned back as a response to the
- * calls. Refer to {@link VaadinConnectController} for more details.
+ * endpoint. This means that the class name and all its public methods
+ * (including the ones inherited from a super classes that are not
+ * {@link Object}) can be executed via the post call with the correct parameters
+ * sent in a request JSON body. The methods' return values will be returned back
+ * as a response to the calls. Refer to {@link VaadinConnectController} for more
+ * details.
  *
  * @see VaadinConnectController
  * @see Component

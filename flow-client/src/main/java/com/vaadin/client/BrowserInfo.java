@@ -209,8 +209,6 @@ public class BrowserInfo {
         return $wnd.navigator.userAgent;
     }-*/;
 
-
-
     private static native boolean isIos()
     /*-{
         return (/iPad|iPhone|iPod/.test(navigator.platform) ||

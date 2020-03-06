@@ -35,194 +35,195 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  */
 @Endpoint
 public class JsonTestEndpoint {
-  /**
-   * Get all users
-   *
-   * @return list of users
-   */
-  public List<User> getAllUsers() {
-    return Collections.emptyList();
-  }
-
-  /**
-   * Get the map of user and roles
-   *
-   * @return map of user and roles
-   */
-  public Map<String, User> getAllUserRolesMap() {
-    return Collections.emptyMap();
-  }
-
-  /**
-   * Update a user
-   *
-   * @param user
-   *          User to be updated
-   */
-  public void updateUser(User user) {
-    // NO implementation
-  }
-
-  /**
-   * Get number of users
-   *
-   * @return number of user
-   */
-  public int countUser() {
-    return 0;
-  }
-
-  /**
-   * Get user by id
-   *
-   * @param id
-   *          id of user
-   * @return user with given id
-   */
-  @AnonymousAllowed
-  @RolesAllowed("overridden_by_anonymous")
-  public User getUserById(int id) {
-    return null;
-  }
-
-  /**
-   * Get array int
-   *
-   * @param input
-   *          input string array
-   * @return array of int
-   */
-  @AnonymousAllowed
-  @PermitAll
-  public int[] getArrayInt(String[] input) {
-    return new int[] { 1, 2 };
-  }
-
-  /**
-   * Get boolean value
-   *
-   * @param input
-   *          input map
-   * @return boolean value
-   */
-  public boolean getBooleanValue(Map<String, User> input) {
-    return false;
-  }
-
-  /**
-   * The method won't be generated because {@link DenyAll} annotation is present
-   * on it.
-   *
-   * @param input
-   *          input map
-   * @return boolean value
-   */
-  @AnonymousAllowed
-  @DenyAll
-  public boolean restrictedGetBooleanValue(Map<String, User> input) {
-    return false;
-  }
-
-  /**
-   * Two parameters input method
-   *
-   * @param input
-   *          first input description
-   * @param secondInput
-   *          second input description
-   * @return boolean value
-   */
-  @AnonymousAllowed
-  public boolean getTwoParameters(String input, int secondInput) {
-    return false;
-  }
-
-  /**
-   * Get instant nano
-   *
-   * @param input
-   *          input parameter
-   * @return current time as an Instant
-   */
-  public Instant fullFQNMethod(Integer input) {
-    return Instant.now();
-  }
-
-  protected void hiddenMethod() {
-    // No implementation
-  }
-
-  public void reservedWordInParameter(boolean delete) {
-    // No implementation
-  }
-
-  public void inputBeanTypeDependency(Version input) {
-    // No implementation
-  }
-
-  public void inputBeanTypeLocal(Status input) {
-    // No implementation
-  }
-
-  public Optional<User> optionalReturn() {
-    return Optional.empty();
-  }
-
-  public void optionalParameter(Optional<List<String>> parameter, String requiredParameter) {
-    // No implementation
-  }
-
-  public static class User {
-    private String name;
-    private String password;
-    private transient int hiddenField;
-    private Map<String, Role> roles;
-    Optional<String> optionalField;
-  }
-
-  /**
-   * Role bean
-   */
-  public static class Role {
     /**
-     * Description for roleName.
+     * Get all users
+     *
+     * @return list of users
      */
-    private String roleName;
-  }
+    public List<User> getAllUsers() {
+        return Collections.emptyList();
+    }
 
-  /**
-   * Status bean. Used only in request parameters to verify that request
-   * parameter type descriptions are generated.
-   */
-  public static class Status {
-    private Instant createdAt;
     /**
-     * Multiple line description should work.This is very very very very very
-     * very very very long.
+     * Get the map of user and roles
+     *
+     * @return map of user and roles
      */
-    private String text;
-  }
-
-  /**
-   * This nested class is also used in the OpenApi generator test
-   */
-  @Endpoint("customName")
-  @AnonymousAllowed
-  public static class GeneratorAnonymousAllowedTestClass {
-    public void anonymousAllowed() {
+    public Map<String, User> getAllUserRolesMap() {
+        return Collections.emptyMap();
     }
 
-    @DenyAll
-    public void restricted() {
+    /**
+     * Update a user
+     *
+     * @param user
+     *            User to be updated
+     */
+    public void updateUser(User user) {
+        // NO implementation
     }
 
-    @RolesAllowed("whatever")
-    public void permissionAltered1() {
+    /**
+     * Get number of users
+     *
+     * @return number of user
+     */
+    public int countUser() {
+        return 0;
     }
 
+    /**
+     * Get user by id
+     *
+     * @param id
+     *            id of user
+     * @return user with given id
+     */
+    @AnonymousAllowed
+    @RolesAllowed("overridden_by_anonymous")
+    public User getUserById(int id) {
+        return null;
+    }
+
+    /**
+     * Get array int
+     *
+     * @param input
+     *            input string array
+     * @return array of int
+     */
+    @AnonymousAllowed
     @PermitAll
-    public void permissionAltered2() {
+    public int[] getArrayInt(String[] input) {
+        return new int[] { 1, 2 };
     }
-  }
+
+    /**
+     * Get boolean value
+     *
+     * @param input
+     *            input map
+     * @return boolean value
+     */
+    public boolean getBooleanValue(Map<String, User> input) {
+        return false;
+    }
+
+    /**
+     * The method won't be generated because {@link DenyAll} annotation is
+     * present on it.
+     *
+     * @param input
+     *            input map
+     * @return boolean value
+     */
+    @AnonymousAllowed
+    @DenyAll
+    public boolean restrictedGetBooleanValue(Map<String, User> input) {
+        return false;
+    }
+
+    /**
+     * Two parameters input method
+     *
+     * @param input
+     *            first input description
+     * @param secondInput
+     *            second input description
+     * @return boolean value
+     */
+    @AnonymousAllowed
+    public boolean getTwoParameters(String input, int secondInput) {
+        return false;
+    }
+
+    /**
+     * Get instant nano
+     *
+     * @param input
+     *            input parameter
+     * @return current time as an Instant
+     */
+    public Instant fullFQNMethod(Integer input) {
+        return Instant.now();
+    }
+
+    protected void hiddenMethod() {
+        // No implementation
+    }
+
+    public void reservedWordInParameter(boolean delete) {
+        // No implementation
+    }
+
+    public void inputBeanTypeDependency(Version input) {
+        // No implementation
+    }
+
+    public void inputBeanTypeLocal(Status input) {
+        // No implementation
+    }
+
+    public Optional<User> optionalReturn() {
+        return Optional.empty();
+    }
+
+    public void optionalParameter(Optional<List<String>> parameter,
+            String requiredParameter) {
+        // No implementation
+    }
+
+    public static class User {
+        private String name;
+        private String password;
+        private transient int hiddenField;
+        private Map<String, Role> roles;
+        Optional<String> optionalField;
+    }
+
+    /**
+     * Role bean
+     */
+    public static class Role {
+        /**
+         * Description for roleName.
+         */
+        private String roleName;
+    }
+
+    /**
+     * Status bean. Used only in request parameters to verify that request
+     * parameter type descriptions are generated.
+     */
+    public static class Status {
+        private Instant createdAt;
+        /**
+         * Multiple line description should work.This is very very very very
+         * very very very very long.
+         */
+        private String text;
+    }
+
+    /**
+     * This nested class is also used in the OpenApi generator test
+     */
+    @Endpoint("customName")
+    @AnonymousAllowed
+    public static class GeneratorAnonymousAllowedTestClass {
+        public void anonymousAllowed() {
+        }
+
+        @DenyAll
+        public void restricted() {
+        }
+
+        @RolesAllowed("whatever")
+        public void permissionAltered1() {
+        }
+
+        @PermitAll
+        public void permissionAltered2() {
+        }
+    }
 
 }

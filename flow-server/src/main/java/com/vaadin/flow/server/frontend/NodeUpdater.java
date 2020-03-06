@@ -228,18 +228,16 @@ public abstract class NodeUpdater implements FallibleCommand {
         JsonObject vaadinPackages = computeIfAbsent(json, VAADIN_DEP_KEY,
                 Json::createObject);
 
-        computeIfAbsent(vaadinPackages, DEPENDENCIES,
-                () -> {
-                    final JsonObject dependencies = Json.createObject();
-                    getDefaultDependencies().forEach(dependencies::put);
-                    return dependencies;
-                });
-        computeIfAbsent(vaadinPackages, DEV_DEPENDENCIES,
-                () -> {
-                    final JsonObject devDependencies = Json.createObject();
-                    getDefaultDevDependencies().forEach(devDependencies::put);
-                    return devDependencies;
-                });
+        computeIfAbsent(vaadinPackages, DEPENDENCIES, () -> {
+            final JsonObject dependencies = Json.createObject();
+            getDefaultDependencies().forEach(dependencies::put);
+            return dependencies;
+        });
+        computeIfAbsent(vaadinPackages, DEV_DEPENDENCIES, () -> {
+            final JsonObject devDependencies = Json.createObject();
+            getDefaultDevDependencies().forEach(devDependencies::put);
+            return devDependencies;
+        });
         computeIfAbsent(vaadinPackages, HASH_KEY, () -> Json.create(""));
     }
 

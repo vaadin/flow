@@ -33,27 +33,34 @@ public final class CssData implements Serializable {
 
     /**
      * The value getter.
+     * 
      * @return value
      */
     public String getValue() {
         return value;
     }
+
     /**
      * The id getter.
+     * 
      * @return id
      */
     public String getId() {
         return id;
     }
+
     /**
      * The include getter.
+     * 
      * @return include
      */
     public String getInclude() {
         return include;
     }
+
     /**
      * The themefor getter.
+     * 
      * @return themefor
      */
     public String getThemefor() {
@@ -66,8 +73,7 @@ public final class CssData implements Serializable {
             return false;
         }
         CssData that = (CssData) other;
-        return Objects.equals(value, that.value)
-                && Objects.equals(id, that.id)
+        return Objects.equals(value, that.value) && Objects.equals(id, that.id)
                 && Objects.equals(include, that.include)
                 && Objects.equals(themefor, that.themefor);
     }
@@ -79,8 +85,7 @@ public final class CssData implements Serializable {
 
     @Override
     public String toString() {
-        return "value: " + value
-                + (id != null ? " id:" + id : "")
+        return "value: " + value + (id != null ? " id:" + id : "")
                 + (include != null ? " include:" + include : "")
                 + (themefor != null ? " themefor:" + themefor : "");
     }

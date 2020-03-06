@@ -129,20 +129,23 @@ public interface HasStyle extends HasElement {
     }
 
     /**
-     * Adds one or more CSS class names to this component. Multiple class names can be
-     * specified by using multiple parameters.
+     * Adds one or more CSS class names to this component. Multiple class names
+     * can be specified by using multiple parameters.
      *
-     * @param classNames the CSS class name or class names to be added to the component
+     * @param classNames
+     *            the CSS class name or class names to be added to the component
      */
     default void addClassNames(String... classNames) {
         getClassNames().addAll(Arrays.asList(classNames));
     }
 
     /**
-     * Removes one or more CSS class names from component. Multiple class names can be
-     * specified by using multiple parameters.
+     * Removes one or more CSS class names from component. Multiple class names
+     * can be specified by using multiple parameters.
      *
-     * @param classNames the CSS class name or class names to be removed from the component
+     * @param classNames
+     *            the CSS class name or class names to be removed from the
+     *            component
      */
     default void removeClassNames(String... classNames) {
         getClassNames().removeAll(Arrays.asList(classNames));

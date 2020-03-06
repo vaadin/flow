@@ -24,7 +24,6 @@ import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
-
 /**
  * An in-memory data provider for listing components that display hierarchical
  * data. Uses an instance of {@link TreeData} as its source of data.
@@ -89,8 +88,8 @@ public class TreeDataProvider<T>
             items = treeData.getRootItems().stream();
         }
 
-        return (int) getFilteredStream(items,
-                query.getFilter()).skip(query.getOffset()).limit(query.getLimit()).count();
+        return (int) getFilteredStream(items, query.getFilter())
+                .skip(query.getOffset()).limit(query.getLimit()).count();
     }
 
     @Override
@@ -143,17 +142,16 @@ public class TreeDataProvider<T>
 
     private Stream<T> getFilteredStream(Stream<T> stream,
             Optional<SerializablePredicate<T>> queryFilter) {
-        final Optional<SerializablePredicate<T>> combinedFilter =
-            filter != null ?
-                Optional.of(queryFilter.map(filter::and).orElse(filter)) :
-                queryFilter;
-        return combinedFilter
-            .map(f -> stream.filter(element -> flatten(element).anyMatch(f)))
-            .orElse(stream);
+        final Optional<SerializablePredicate<T>> combinedFilter = filter != null
+                ? Optional.of(queryFilter.map(filter::and).orElse(filter))
+                : queryFilter;
+        return combinedFilter.map(
+                f -> stream.filter(element -> flatten(element).anyMatch(f)))
+                .orElse(stream);
     }
 
     private Stream<T> flatten(T element) {
-        return Stream.concat(Stream.of(element),
-            getTreeData().getChildren(element).stream().flatMap(this::flatten));
+        return Stream.concat(Stream.of(element), getTreeData()
+                .getChildren(element).stream().flatMap(this::flatten));
     }
 }

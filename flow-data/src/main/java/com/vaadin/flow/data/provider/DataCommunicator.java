@@ -404,7 +404,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
-        refresh (event.getItem());
+        refresh(event.getItem());
     }
 
     private void handleDetach() {

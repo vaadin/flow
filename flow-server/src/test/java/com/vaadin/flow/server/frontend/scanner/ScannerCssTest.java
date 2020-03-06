@@ -19,15 +19,16 @@ public class ScannerCssTest {
 
     @Test
     public void should_visitCssImports() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(CssClass1.class, CssClass2.class);
+        FrontendDependencies deps = getFrontendDependencies(CssClass1.class,
+                CssClass2.class);
         assertEquals(2, deps.getEndPoints().size());
         deps.getEndPoints().forEach(endPoint -> {
             assertEquals(4, endPoint.getCss().size());
 
-            assertThat(endPoint.getCss().stream()
-                    .map(CssData::toString).collect(Collectors.toList()),
-                        containsInAnyOrder(
-                            "value: ./foo.css",
+            assertThat(
+                    endPoint.getCss().stream().map(CssData::toString)
+                            .collect(Collectors.toList()),
+                    containsInAnyOrder("value: ./foo.css",
                             "value: ./foo.css include:bar",
                             "value: ./foo.css id:bar",
                             "value: ./foo.css themefor:bar"));
@@ -42,18 +43,18 @@ public class ScannerCssTest {
             assertEquals(4, endPoint.getCss().size());
 
             // verifies #6523 as sufficiently complex names can get mixed up
-            assertThat(endPoint.getCss().stream()
-                            .map(CssData::toString).collect(Collectors.toList()),
-                    contains("value: ./foo.css",
-                            "value: ./bar.css",
-                            "value: ./foofoo.css",
-                            "value: ./foobar.css"));
+            assertThat(
+                    endPoint.getCss().stream().map(CssData::toString)
+                            .collect(Collectors.toList()),
+                    contains("value: ./foo.css", "value: ./bar.css",
+                            "value: ./foofoo.css", "value: ./foobar.css"));
         });
     }
 
     @Test
     public void should_sumarizeCssImports() throws Exception {
-        FrontendDependencies deps = getFrontendDependencies(CssClass1.class, CssClass2.class);
+        FrontendDependencies deps = getFrontendDependencies(CssClass1.class,
+                CssClass2.class);
         assertEquals(4, deps.getCss().size());
     }
 

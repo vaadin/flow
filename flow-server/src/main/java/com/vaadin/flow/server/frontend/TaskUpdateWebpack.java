@@ -71,7 +71,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
-     *            whether the application running with deprecated V14 bootstrapping
+     *            whether the application running with deprecated V14
+     *            bootstrapping
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
@@ -157,7 +158,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
             if (lines.get(i).startsWith("const frontendFolder")) {
                 lines.set(i, frontendLine);
             }
-            if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
+            if (lines.get(i).startsWith(
+                    "const useClientSideIndexFileForBootstrapping")) {
                 lines.set(i, isClientSideBootstrapModeLine);
             }
             if (lines.get(i).startsWith("const clientSideIndexHTML")) {
@@ -184,13 +186,12 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     getEscapedRelativeWebpackPath(path));
             return String.format(declaration, relativePath);
         } else {
-            return String.format(declaration, "'./" + INDEX_HTML +"'");
+            return String.format(declaration, "'./" + INDEX_HTML + "'");
         }
     }
 
     private String getClientEntryPoint() {
-        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS)
-                .exists()
+        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS).exists()
                 || new File(frontendDirectory.toFile(), INDEX_JS).exists();
         String declaration = "const clientSideIndexEntryPoint = %s;";
         if (!exists) {
@@ -199,7 +200,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     INDEX_TS);
             String relativePath = String.format(
                     "require('path').resolve(__dirname, '%s')",
-                    getEscapedRelativeWebpackPath(path).replaceFirst("\\.[tj]s$", ""));
+                    getEscapedRelativeWebpackPath(path)
+                            .replaceFirst("\\.[tj]s$", ""));
             return String.format(declaration, relativePath);
         } else {
             return String.format(declaration, "'./index'");

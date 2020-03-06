@@ -138,8 +138,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
          * Reserved words copied from
          * https://www.w3schools.com/js/js_reserved.asp
          */
-        reservedWords
-                .addAll(EndpointNameChecker.ECMA_SCRIPT_RESERVED_WORDS);
+        reservedWords.addAll(EndpointNameChecker.ECMA_SCRIPT_RESERVED_WORDS);
         reservedWords.addAll(languageSpecificPrimitives);
         typeMapping.put("BigDecimal", "number");
         typeMapping.put("map", "Map");
@@ -242,7 +241,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             throw getUnexpectedOpenAPIException(configurator.getInputSpecURL(),
                     error);
         }
-        
+
     }
 
     private static void cleanGeneratedFolder(String outputDir,
@@ -472,7 +471,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     public String getSchemaType(Schema schema) {
-        if (isNullableWrapperSchema(schema) && schema instanceof ComposedSchema) {
+        if (isNullableWrapperSchema(schema)
+                && schema instanceof ComposedSchema) {
             Schema wrappedSchema = ((ComposedSchema) schema).getAllOf().get(0);
             return super.getSchemaType(wrappedSchema);
         }
@@ -701,7 +701,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private String getUniqueNameFromQualifiedName(Set<String> usedNames,
             String qualifiedName) {
-        String[] packageSegments = qualifiedName == null ? null : qualifiedName.split("\\.");
+        String[] packageSegments = qualifiedName == null ? null
+                : qualifiedName.split("\\.");
         StringBuilder classNameBuilder = new StringBuilder();
         String newClassName = "";
         if (packageSegments != null && packageSegments.length > 1) {

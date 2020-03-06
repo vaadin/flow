@@ -38,8 +38,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A checker for TypeScript null compatibility in Vaadin Connect endpoint methods
- * parameter and return types.
+ * A checker for TypeScript null compatibility in Vaadin Connect endpoint
+ * methods parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
     private static Logger getLogger() {

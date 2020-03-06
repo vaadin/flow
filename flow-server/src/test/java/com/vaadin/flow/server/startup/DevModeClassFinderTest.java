@@ -54,26 +54,18 @@ public class DevModeClassFinderTest {
     public void applicableClasses_knownClasses() {
         Collection<Class<?>> classes = getApplicableClasses();
 
-        List<Class<?>> knownClasses = Arrays.asList(
-            Route.class,
-            UIInitListener.class,
-            VaadinServiceInitListener.class,
-            WebComponentExporter.class,
-            WebComponentExporterFactory.class,
-            NpmPackage.class,
-            NpmPackage.Container.class,
-            JsModule.class,
-            JsModule.Container.class,
-            JavaScript.class,
-            JavaScript.Container.class,
-            CssImport.class,
-            CssImport.Container.class,
-            Theme.class,
-            NoTheme.class,
-            HasErrorParameter.class);
+        List<Class<?>> knownClasses = Arrays.asList(Route.class,
+                UIInitListener.class, VaadinServiceInitListener.class,
+                WebComponentExporter.class, WebComponentExporterFactory.class,
+                NpmPackage.class, NpmPackage.Container.class, JsModule.class,
+                JsModule.Container.class, JavaScript.class,
+                JavaScript.Container.class, CssImport.class,
+                CssImport.Container.class, Theme.class, NoTheme.class,
+                HasErrorParameter.class);
 
         for (Class<?> clz : classes) {
-            assertTrue("should be a known class " + clz.getName(), knownClasses.contains(clz));
+            assertTrue("should be a known class " + clz.getName(),
+                    knownClasses.contains(clz));
         }
         Assert.assertEquals(knownClasses.size(), classes.size());
     }

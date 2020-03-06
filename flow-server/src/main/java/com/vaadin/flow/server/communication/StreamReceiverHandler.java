@@ -229,9 +229,9 @@ public class StreamReceiverHandler implements Serializable {
         return success;
     }
 
-    private boolean handleMultipartFileUploadFromInputStream(VaadinSession session,
-            VaadinRequest request, StreamReceiver streamReceiver,
-            StateNode owner) throws IOException {
+    private boolean handleMultipartFileUploadFromInputStream(
+            VaadinSession session, VaadinRequest request,
+            StreamReceiver streamReceiver, StateNode owner) throws IOException {
         boolean success = true;
         long contentLength = request.getContentLength();
         // Parse the request
