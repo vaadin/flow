@@ -93,6 +93,8 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
+
+            Console.log("Adding LiveRefresh listener");
             registerLiveRefreshIndicator();
         }
 
@@ -101,31 +103,79 @@ public class ApplicationConnection {
 
     private native void registerLiveRefreshIndicator()
     /*-{
-    // console.log("Registering LiveReload channel listener");
-    var ws = new WebSocket("ws://localhost:35729");
+    var ws = new WebSocket('ws://' + window.location.hostname + ':35729');
+
     function getOrCreateLiveRefreshIndicator() {
-        var indicator = document.getElementById("vaadin-live-refresh-indicator");
+        var indicator = document.getElementById('vaadin-live-refresh-indicator');
         if (indicator === null) {
-            var indicator = document.createElement("div");
-            indicator.id = "vaadin-live-refresh-indicator";
-            indicator.style.position = "fixed";
-            indicator.style.padding = "10px 10px 10px 10px";
-            indicator.style.margin = "10px 10px 10px 10px";
-            indicator.style.left = "0";
-            indicator.style.top = "0";
-            indicator.style.border = "1px solid";
-            indicator.style.zIndex = "10000";
+            var flash = document.createElement('span');
+            flash.style.position = 'fixed';
+            flash.style.left = '0';
+            flash.style.top = '0';
+            flash.style.margin = '10px 10px 10px 10px';
+            flash.style.zIndex = '10000';
+            flash.innerHTML = '⚡';
+            flash.onmouseenter = function() { expand(); };
+            document.body.appendChild(flash);
+
+            var indicator = document.createElement('div');
+            indicator.id = 'vaadin-live-refresh-indicator';
+            indicator.style.position = 'fixed';
+            indicator.style.margin = '10px 10px 10px 10px';
+            indicator.style.left = '25px';
+            indicator.style.top = '0';
+            indicator.style.zIndex = '10000';
+            indicator.style.backgroundColor = "#FEA";
+
+            var label = document.createElement('span');
+            indicator.appendChild(label);
+
+            var disable = document.createElement('button');
+            disable.innerText = 'Disable';
+            disable.onclick = function() {
+                ws.close();
+                document.body.removeChild(indicator);
+                document.body.removeChild(flash);
+            };
+            indicator.appendChild(disable);
+
             document.body.appendChild(indicator);
         }
+
         return indicator;
     }
+
+    function expand() {
+        var indicator = document.getElementById('vaadin-live-refresh-indicator');
+        if (indicator) {
+            indicator.style.visibility = 'visible';
+            setTimeout(function () {
+                collapse()
+            }, 5000);
+        }
+    }
+
+    function collapse() {
+        var indicator = document.getElementById('vaadin-live-refresh-indicator');
+        if (indicator) {
+            indicator.style.visibility = 'hidden';
+        }
+    }
+
+    function showMessage(msg, showDisable) {
+        var indicator = getOrCreateLiveRefreshIndicator();
+        indicator.children[0].innerText = msg;
+        indicator.children[1].style.visibility = showDisable ? 'inherit' : 'hidden';
+        expand();
+    }
+
     ws.onmessage = function (msg) {
         var data = JSON.parse(msg.data);
-        if (data.command === "hello") {
-            getOrCreateLiveRefreshIndicator().innerHTML = "⚡️ Live refresh active";
+        if (data.command === 'hello') {
+            showMessage('Live refresh active.', true);
         }
-        if (data.command === "reload") {
-            getOrCreateLiveRefreshIndicator().innerHTML = "⚡ Refresh in progress...";
+        if (data.command === 'reload') {
+            showMessage('Refresh in progress', false);
             location.reload();
         }
     }
