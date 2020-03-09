@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.IPAddress;
@@ -72,8 +71,8 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
             setDesiredCapabilities(Browser.CHROME.getDesiredCapabilities());
         } else if (Browser.CHROME == getRunLocallyBrowser()
                 && !isJavaInDebugMode()) {
-            setDriver(TestBench.createDriver(new ChromeDriver(
-                    ChromeBrowserTest.createHeadlessChromeOptions())));
+            setDriver(TestBench.createDriver(
+                    ChromeBrowserTest.createHeadlessChromeDriver()));
             return;
         }
         super.setup();

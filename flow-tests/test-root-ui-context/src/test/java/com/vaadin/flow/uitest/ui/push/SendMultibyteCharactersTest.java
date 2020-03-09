@@ -2,7 +2,6 @@ package com.vaadin.flow.uitest.ui.push;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,27 +28,26 @@ public abstract class SendMultibyteCharactersTest
         }
 
         /*
-         * clean up log up to the current method: yes, getter cleans up the
-         * logger, it's a nice Selenium API.
+         * clean up logs up to the current state
          */
-        getLogEntries(Level.ALL);
+        getBrowserLogs(true);
 
         textArea.sendKeys(text.toString());
         textArea.sendKeys(Keys.TAB);
 
         findElement(By.id("label")).click();
         List<String> messages = new ArrayList<>();
-        waitUntil(
-                driver -> getLogEntries(Level.ALL).stream().anyMatch(entry -> {
-                    messages.add(entry.getMessage());
-                    return entry.getMessage()
-                            .contains("Handling message from server");
+        waitUntil(driver -> getBrowserLogs(true).stream()
+                .filter(String.class::isInstance).anyMatch(msg -> {
+                    messages.add(msg.toString());
+                    return msg.equals("Handling message from server");
                 }), 15);
 
         checkLogsForErrors();
 
-        Assert.assertTrue(messages.stream().anyMatch(
-                msg -> msg.contains("Received ") && msg.contains("message:")));
+        Assert.assertTrue(
+                messages.stream().anyMatch(msg -> msg.startsWith("Received ")
+                        && msg.contains("message:")));
     }
 
 }

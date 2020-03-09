@@ -1,7 +1,6 @@
 package com.vaadin.flow.uitest.ui.push;
 
 import java.io.IOException;
-import java.util.logging.Level;
 
 import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
@@ -66,10 +65,9 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
     }
 
     private void waitForNextReconnectionAttempt() {
-        waitUntil(driver -> {
-            return getLogEntries(Level.ALL).stream().anyMatch(entry -> entry
-                    .getMessage().contains("Reopening push connection"));
-        });
+        waitUntil(driver -> getBrowserLogs(true).stream()
+                .filter(String.class::isInstance)
+                .anyMatch("Reopening push connection"::equals));
     }
 
     private void connectAndVerifyConnectionEstablished() throws IOException {

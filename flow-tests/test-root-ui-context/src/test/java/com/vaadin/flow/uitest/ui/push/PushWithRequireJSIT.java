@@ -13,7 +13,7 @@ public class PushWithRequireJSIT extends ChromeBrowserTest {
     public void pushWithRequireJS() {
         open();
 
-        checkLogsForErrors();
+        checkLogsForErrors(msg -> msg.contains("sockks-node"));
     }
 
 }

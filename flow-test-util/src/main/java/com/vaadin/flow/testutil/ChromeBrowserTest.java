@@ -71,8 +71,9 @@ public class ChromeBrowserTest extends ViewOrUITest {
                 .toString().contains("jdwp");
     }
 
-    protected ChromeOptions customizeChromeOptions(ChromeOptions options) {
-        return options;
+    static WebDriver createHeadlessChromeDriver() {
+        return TestBench
+                .createDriver(new ChromeDriver(createHeadlessChromeOptions()));
     }
 
     @Override
@@ -100,11 +101,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
                         createHeadlessChromeOptions()));
 
         return capabilities;
-    }
-
-    private WebDriver createHeadlessChromeDriver() {
-        return TestBench.createDriver(new ChromeDriver(
-                customizeChromeOptions(createHeadlessChromeOptions())));
     }
 
     static ChromeOptions createHeadlessChromeOptions() {

@@ -16,39 +16,33 @@
 package com.vaadin.flow.uitest.ui.push;
 
 import java.util.List;
-import java.util.logging.Level;
-
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.logging.LoggingPreferences;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public abstract class AbstractBrowserConsoleTest extends ChromeBrowserTest {
 
     @Override
-    protected ChromeOptions customizeChromeOptions(ChromeOptions options) {
-        ChromeOptions opts = super.customizeChromeOptions(options);
+    protected void open() {
+        super.open();
 
-        LoggingPreferences logPrefs = new LoggingPreferences();
-        logPrefs.enable(LogType.BROWSER, Level.ALL);
-
-        opts.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
-        return opts;
+        getCommandExecutor().executeScript("window.logs = [];"
+                + "var origConsole = window.console; window.console = {"
+                + " debug:function(msg){ origConsole.debug(msg); window.logs.push(msg);},"
+                + " log:function(msg){ origConsole.log(msg); window.logs.push(msg);},"
+                + " error:function(msg){ origConsole.error(msg); window.logs.push(msg);},"
+                + " info:function(msg){ origConsole.info(msg); window.logs.push(msg);},"
+                + " warn:function(msg){ origConsole.warn(msg); window.logs.push(msg);}"
+                + "};");
     }
 
-    @Override
-    protected List<DesiredCapabilities> customizeCapabilities(
-            List<DesiredCapabilities> capabilities) {
-        List<DesiredCapabilities> caps = super.customizeCapabilities(
-                capabilities);
-        LoggingPreferences logPrefs = new LoggingPreferences();
-        logPrefs.enable(LogType.BROWSER, Level.ALL);
-        caps.forEach(cap -> cap.setCapability(CapabilityType.LOGGING_PREFS,
-                logPrefs));
-        return caps;
+    protected List<?> getBrowserLogs(boolean reset) {
+        if (reset) {
+            return (List<?>) getCommandExecutor().executeScript(
+                    "var result = window.logs; window.logs=[]; return result;");
+        } else {
+            return (List<?>) getCommandExecutor()
+                    .executeScript("return window.logs;");
+        }
     }
 
 }

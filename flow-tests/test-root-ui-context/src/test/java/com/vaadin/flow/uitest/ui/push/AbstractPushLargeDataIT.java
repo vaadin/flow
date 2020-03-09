@@ -22,7 +22,7 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.testcategory.PushTests;
 
 @Category(PushTests.class)
-public class AbstractPushLargeDataIT extends AbstractLogTest {
+public abstract class AbstractPushLargeDataIT extends AbstractLogTest {
 
     @Test
     public void pushLargeData() throws Exception {
