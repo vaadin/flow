@@ -145,6 +145,23 @@ public class TaskGenerateOpenApiTest {
                 applicationServerDescription, servers.get(0).getDescription());
     }
 
+    @Test
+    public void should_UseCustomEndpointName_InsteadOf_UsingClassName()
+            throws Exception {
+        taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
+                javaSource,
+                this.getClass().getClassLoader(),
+                generatedOpenAPI);
+        taskGenerateOpenApi.execute();
+
+        OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
+
+        Assert.assertTrue(generatedOpenAPI.getPaths().containsKey("/CustomEndpointName/bar"));
+        Assert.assertFalse(generatedOpenAPI.getPaths().containsKey("/CustomEndpoint/bar"));
+        Assert.assertTrue(generatedOpenAPI.getPaths().containsKey("/CustomEndpointName/foo"));
+        Assert.assertFalse(generatedOpenAPI.getPaths().containsKey("/CustomEndpoint/foo"));
+    }
+
     private OpenAPI getGeneratedOpenAPI() throws IOException {
         OpenAPIV3Parser parser = new OpenAPIV3Parser();
         return parser.read(generatedOpenAPI.getAbsolutePath());
