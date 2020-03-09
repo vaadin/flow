@@ -2,7 +2,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;

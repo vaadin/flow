@@ -30,6 +30,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -226,8 +227,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        Assert.assertTrue(
-                "Should generate OpenAPI spec if Endpoint is used.",
+        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
 
@@ -266,6 +266,22 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         devModeInitializer.onStartup(classes, servletContext);
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
+    }
+
+    @Test
+    public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
+            throws Exception {
+        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        Mockito.when(servletContext.getServletRegistrations())
+                .thenReturn(Collections.emptyMap());
+        Mockito.when(servletContext.getInitParameterNames())
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PROJECT_BASEDIR)));
+        Mockito.when(
+                servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
+                .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
+        devModeInitializer.onStartup(classes, servletContext);
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
@@ -350,5 +366,4 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertTrue("Resource doesn't load from given path",
                 locations.get(0).exists());
     }
-
 }
