@@ -26,6 +26,7 @@ public class MakeComponentVisibleWithPushIT extends ChromeBrowserTest {
                 "foobarbar", $(TestBenchElement.class).id("input")
                         .getPropertyString("value"));
 
-        checkLogsForErrors(msg -> msg.contains("sockjs-node"));
+        checkLogsForErrors(
+                msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
     }
 }
