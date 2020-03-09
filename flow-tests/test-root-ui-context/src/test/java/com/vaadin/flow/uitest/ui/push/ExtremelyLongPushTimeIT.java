@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
+import com.vaadin.flow.testcategory.ExtremelySlowTest;
 import com.vaadin.testbench.parallel.ExcludeFromSuite;
 
 @ExcludeFromSuite
+@Category(ExtremelySlowTest.class)
+@Ignore
 public class ExtremelyLongPushTimeIT extends AbstractLogTest {
 
     private static final int ONE_HOUR_IN_MS = 20 * 1000;

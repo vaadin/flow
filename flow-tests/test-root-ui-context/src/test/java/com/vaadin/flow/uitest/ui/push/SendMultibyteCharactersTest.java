@@ -43,7 +43,7 @@ public abstract class SendMultibyteCharactersTest
                     return msg.equals("Handling message from server");
                 }), 15);
 
-        checkLogsForErrors();
+        checkLogsForErrors(msg -> msg.contains("sockjs-node"));
 
         Assert.assertTrue(
                 messages.stream().anyMatch(msg -> msg.startsWith("Received ")
