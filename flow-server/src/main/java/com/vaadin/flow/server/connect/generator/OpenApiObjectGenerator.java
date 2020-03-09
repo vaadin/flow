@@ -331,22 +331,20 @@ public class OpenApiObjectGenerator {
 
     private String getEndpointName(ClassOrInterfaceDeclaration classDeclaration,
             AnnotationExpr endpointAnnotation) {
-        String endpointName;
-        if (Optional.ofNullable(endpointAnnotation).isPresent()
-                && endpointAnnotation.getChildNodes().size() > 1
-                && endpointAnnotation.getChildNodes().get(1).getTokenRange().isPresent()) {
-            endpointName = endpointAnnotation.getChildNodes().get(1).getTokenRange().get().getEnd().getText();
-            endpointName = endpointName.substring(1, endpointName.length() - 1);
-        } else {
-            endpointName = Optional.ofNullable(endpointAnnotation)
-                    .filter(Expression::isSingleMemberAnnotationExpr)
-                    .map(Expression::asSingleMemberAnnotationExpr)
-                    .map(SingleMemberAnnotationExpr::getMemberValue)
-                    .map(Expression::asStringLiteralExpr)
-                    .map(LiteralStringValueExpr::getValue)
-                    .filter(GeneratorUtils::isNotBlank)
-                    .orElse(classDeclaration.getNameAsString());
-        }
+        String endpointName = Optional.ofNullable(endpointAnnotation)
+                .filter(Expression::isSingleMemberAnnotationExpr)
+                .map(Expression::asSingleMemberAnnotationExpr)
+                .map(SingleMemberAnnotationExpr::getMemberValue)
+                .map(Expression::asStringLiteralExpr)
+                .map(LiteralStringValueExpr::getValue)
+                .filter(GeneratorUtils::isNotBlank)
+                .orElse(classDeclaration.getNameAsString());
+//        if (endpointName.equals(classDeclaration.getNameAsString()) && endpointAnnotation != null) {
+//            String endpointValueName = getEndpointValueName(endpointAnnotation);
+//            if (endpointValueName != null) {
+//                endpointName = endpointValueName.substring(1, endpointValueName.length() - 1);
+//            }
+//        }
 
         String validationError = endpointNameChecker.check(endpointName);
         if (validationError != null) {
@@ -355,6 +353,17 @@ public class OpenApiObjectGenerator {
                             endpointName, validationError));
         }
         return endpointName;
+    }
+
+    private String getEndpointValueName(AnnotationExpr endpointAnnotation) {
+        for(int i = 0; i < endpointAnnotation.getChildNodes().size(); i++) {
+            if (endpointAnnotation.getChildNodes().get(i).getTokenRange().isPresent()
+                    && endpointAnnotation.getChildNodes().get(i)
+                    .getTokenRange().get().getBegin().getText().equals("value")) {
+                return endpointAnnotation.getChildNodes().get(i).getTokenRange().get().getEnd().getText();
+            }
+        }
+        return null;
     }
 
     private List<Schema> parseNonEndpointClassAsSchema(
