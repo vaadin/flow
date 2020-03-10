@@ -21,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -44,7 +43,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -65,6 +68,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @NotThreadSafe
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({System.class, DevModeHandler.class, FileUtils.class})
 @SuppressWarnings("restriction")
 public class DevModeHandlerTest {
 
@@ -319,22 +324,20 @@ public class DevModeHandlerTest {
     public void startDevModeHandler_vaadinHomeNodeIsAFolder_throws()
             throws IOException {
         String userHome = "user.home";
-        String originalHome = System.getProperty(userHome);
         File home = temporaryFolder.newFolder();
-        System.setProperty(userHome, home.getPath());
-        try {
-            File homeDir = new File(home, ".vaadin");
-            File node = new File(homeDir,
-                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
-            FileUtils.forceMkdir(node);
+        PowerMockito.mockStatic(System.class, Mockito.CALLS_REAL_METHODS);
+        PowerMockito.when(System.getProperty(userHome))
+                .thenReturn(home.getPath());
 
-            configuration.setApplicationOrSystemProperty(
-                    Constants.REQUIRE_HOME_NODE_EXECUTABLE,
-                    Boolean.TRUE.toString());
-            DevModeHandler.start(configuration, npmFolder);
-        } finally {
-            System.setProperty(userHome, originalHome);
-        }
+        File homeDir = new File(home, ".vaadin");
+        File node = new File(homeDir,
+                FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+        FileUtils.forceMkdir(node);
+
+        configuration.setApplicationOrSystemProperty(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                Boolean.TRUE.toString());
+        DevModeHandler.start(configuration, npmFolder);
     }
 
     private VaadinServlet prepareServlet(int port)
