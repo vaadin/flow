@@ -163,7 +163,7 @@ public class NodeUpdaterTest {
                 "3.3.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("4.30.0", packageJson
+        Assert.assertEquals("4.42.0", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
