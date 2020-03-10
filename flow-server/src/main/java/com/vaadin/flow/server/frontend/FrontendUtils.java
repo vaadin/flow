@@ -479,8 +479,6 @@ public class FrontendUtils {
         Properties properties = new Properties();
 
         try (FileReader fileReader = new FileReader(npmrc)) { // NOSONAR
-            List<ProxyConfig.Proxy> proxyList = new ArrayList<>(2);
-            Properties properties = new Properties();
             properties.load(fileReader);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
