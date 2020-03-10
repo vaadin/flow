@@ -158,12 +158,6 @@ public class ApplicationConnection {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
         client.productionMode = productionMode;
-        if ( !productionMode ){
-            client.debug = $entry(function() {
-                var registry = ap.@ApplicationConnection::registry;
-                return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
-            });
-        }
         client.poll = $entry(function() {
                 var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
                 poller.@com.vaadin.client.communication.Poller::poll()();
@@ -227,6 +221,10 @@ public class ApplicationConnection {
         });
         client.getVersionInfo = $entry(function(parameter) {
             return { "flow": servletVersion};
+        });
+        client.debug = $entry(function() {
+            var registry = ap.@ApplicationConnection::registry;
+            return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
         });
     
     }-*/;

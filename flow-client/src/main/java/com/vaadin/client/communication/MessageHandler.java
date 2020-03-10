@@ -420,7 +420,8 @@ public class MessageHandler {
                     registry.getSystemErrorHandler().handleUnrecoverableError(
                             error.getString("caption"),
                             error.getString("message"),
-                            error.getString("details"), error.getString("url"),
+                            error.getString("details"),
+                            error.getString("url"),
                             error.getString("querySelector"));
 
                     registry.getUILifecycle().setState(UIState.TERMINATED);
@@ -550,10 +551,8 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
-        // Clear previous request if it exists. Otherwise resyncrhonize can
-        // trigger
-        // "Trying to start a new request while another is active" exception and
-        // fail.
+        // Clear previous request if it exists. Otherwise resyncrhonize can trigger
+        // "Trying to start a new request while another is active" exception and fail.
         if (registry.getRequestResponseTracker().hasActiveRequest()) {
             registry.getRequestResponseTracker().endRequest();
         }

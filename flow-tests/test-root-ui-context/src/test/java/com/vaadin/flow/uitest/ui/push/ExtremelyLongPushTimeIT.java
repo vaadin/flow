@@ -28,7 +28,7 @@ import com.vaadin.testbench.parallel.ExcludeFromSuite;
 @Ignore
 public class ExtremelyLongPushTimeIT extends AbstractLogTest {
 
-    private static final int ONE_HOUR_IN_MS = 20 * 1000;
+    private static final int ONE_HOUR_IN_MS = 60 * 60 * 1000;
 
     @Test
     public void test24HourPush() throws Exception {
