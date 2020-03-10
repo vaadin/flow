@@ -112,6 +112,16 @@ public class JavaScriptBootstrapUITest  {
         }
     }
 
+    @Route("forwardToServerSideViewOnBeforeEnter")
+    @Tag(Tag.DIV)
+    public static class ForwardToServerViewOnBeforeEnter extends Component implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.forwardTo("clean");
+        }
+    }
+
     @Before
     public void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -124,6 +134,8 @@ public class JavaScriptBootstrapUITest  {
                 FailOnException.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("forwardToClientSideViewOnBeforeEnter",
                 ForwardToClientSideViewOnBeforeEnter.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("forwardToServerSideViewOnBeforeEnter",
+                ForwardToServerViewOnBeforeEnter.class, Collections.emptyList());
         ui = new JavaScriptBootstrapUI();
         ui.getInternals().setSession(mocks.getSession());
 
@@ -200,6 +212,23 @@ public class JavaScriptBootstrapUITest  {
         ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeEnter");
 
         assertEquals("client-view", ui.getForwardToUrl());
+    }
+
+    @Test
+    public void should_handle_forward_to_server_side_view_on_beforeEnter_and_update_url() {
+        ui.connectClient("foo", "bar", "/forwardToServerSideViewOnBeforeEnter");
+
+        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
+
+        ui.navigate("product");
+        assertEquals("my-product", ui.getInternals().getTitle());
+        assertEquals("productView",
+                ui.getChildren().findFirst().get().getId().get());
+
+        ui.navigate("forwardToServerSideViewOnBeforeEnter");
+        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test

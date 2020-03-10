@@ -154,6 +154,25 @@ public class WebComponentBootstrapHandlerTest {
                 CoreMatchers.not(CoreMatchers.containsString("baz")));
     }
 
+    @Test
+    public void writeBootstrapPage_spepe()
+            throws Exception {
+        WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+        Element head = new Document("").normalise().head();
+
+        VaadinResponse response = getMockResponse(stream);
+        handler.writeBootstrapPage("", response, head, "");
+
+        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
+
+
+        System.err.println(resultingScript);
+
+    }
+
     private VaadinResponse getMockResponse(ByteArrayOutputStream stream) throws IOException {
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         VaadinService service = Mockito.mock(VaadinService.class);

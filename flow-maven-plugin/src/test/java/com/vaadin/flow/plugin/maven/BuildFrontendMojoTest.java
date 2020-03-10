@@ -49,6 +49,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
+import com.vaadin.flow.server.Constants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -349,9 +350,15 @@ public class BuildFrontendMojoTest {
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        initialBuildInfo.put("npmFolder", "npm");
-        initialBuildInfo.put("generatedFolder", "generated");
-        initialBuildInfo.put("frontendFolder", "frontend");
+        initialBuildInfo.put(Constants.NPM_TOKEN, "npm");
+        initialBuildInfo.put(Constants.GENERATED_TOKEN, "generated");
+        initialBuildInfo.put(Constants.FRONTEND_TOKEN, "frontend");
+
+        initialBuildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, true);
+        initialBuildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE, true);
+        initialBuildInfo
+                .put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
+
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
                 JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
@@ -366,11 +373,25 @@ public class BuildFrontendMojoTest {
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
         Assert.assertNull("npmFolder should have been removed",
-                buildInfo.get("npmFolder"));
+                buildInfo.get(Constants.NPM_TOKEN));
         Assert.assertNull("generatedFolder should have been removed",
-                buildInfo.get("generatedFolder"));
+                buildInfo.get(Constants.GENERATED_TOKEN));
         Assert.assertNull("frontendFolder should have been removed",
-                buildInfo.get("frontendFolder"));
+                buildInfo.get(Constants.FRONTEND_TOKEN));
+
+        Assert.assertNull(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM
+                        + "should have been removed",
+                buildInfo.get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertNull(
+                Constants.REQUIRE_HOME_NODE_EXECUTABLE
+                        + "should have been removed",
+                buildInfo.get(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertNull(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
+                        + "should have been removed",
+                buildInfo.get(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test

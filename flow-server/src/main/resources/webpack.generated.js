@@ -26,7 +26,7 @@ const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
 const config = 'config';
-// folder for outputting index.[ts/js] bundle, etc.
+// folder for outputting vaadin-bundle and other fragments
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 // folder for outputting stats.json
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
@@ -40,34 +40,43 @@ mkdirp(confFolder);
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
 let stats;
 
+// Open a connection with the Java dev-mode handler in order to finish
+// webpack-dev-mode when it exits or crashes.
 const watchDogPrefix = '--watchDogPort=';
-let watchDogPort = process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
-if (watchDogPort){
-    watchDogPort = watchDogPort.substr(watchDogPrefix.length);
-}
+let watchDogPort = devMode && process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
+if (watchDogPort) {
+  watchDogPort = watchDogPort.substr(watchDogPrefix.length);
+  const runWatchDog = () => {
+    var client = new require('net').Socket();
 
-const net = require('net');
+    client.on('error', function () {
+      console.log("Watchdog connection error. Terminating webpack process...");
+      client.destroy();
+      process.exit(0);
+    });
+    client.on('close', function () {
+      client.destroy();
+      runWatchDog();
+    });
 
-function setupWatchDog(){
-    var client = new net.Socket();
     client.connect(watchDogPort, 'localhost');
-
-    client.on('error', function(){
-        console.log("Watchdog connection error. Terminating webpack process...");
-        client.destroy();
-        process.exit(0);
-    });
-
-    client.on('close', function() {
-        client.destroy();
-        setupWatchDog();
-    });
+  }
+  runWatchDog();
 }
 
-if (watchDogPort){
-    setupWatchDog();
+// Compute the entries that webpack have to visit
+const webPackEntries = {};
+if (useClientSideIndexFileForBootstrapping) {
+  webPackEntries.bundle = clientSideIndexEntryPoint;
+  const dirName = path.dirname(fileNameOfTheFlowGeneratedMainEntryPoint);
+  const baseName = path.basename(fileNameOfTheFlowGeneratedMainEntryPoint, '.js');
+  if (fs.readdirSync(dirName).filter(fileName => !fileName.startsWith(baseName)).length) {
+    // if there are vaadin exported views, add a second entry
+    webPackEntries.export = fileNameOfTheFlowGeneratedMainEntryPoint;
+  }
+} else {
+  webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
-
 
 exports = {
   frontendFolder: `${frontendFolder}`,
@@ -78,9 +87,7 @@ exports = {
 module.exports = {
   mode: 'production',
   context: frontendFolder,
-  entry: {
-    bundle: useClientSideIndexFileForBootstrapping ? clientSideIndexEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
-  },
+  entry: webPackEntries,
 
   output: {
     filename: `${build}/vaadin-[name]-[contenthash].cache.js`,
@@ -179,7 +186,8 @@ module.exports = {
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
       template: clientSideIndexHTML,
-      inject: 'head'
+      inject: 'head',
+      chunks: ['bundle']
     }),
     useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
       defaultAttribute: 'defer'

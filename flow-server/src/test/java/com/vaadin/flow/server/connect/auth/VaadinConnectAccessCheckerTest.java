@@ -80,6 +80,17 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
+    public void should_pass_When_csrf_disabled() throws Exception {
+        class Test {
+            public void test() {
+            }
+        }
+        createNullTokenContextInHeaderRequest();
+        checker.enableCsrf(false);
+        shouldPass(Test.class);
+    }
+
+    @Test
     public void should_fail_When_having_different_token_between_session_and_headerRequest() throws Exception {
         class Test {
             public void test() {

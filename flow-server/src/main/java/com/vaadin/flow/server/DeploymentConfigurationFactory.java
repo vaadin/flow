@@ -54,11 +54,11 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
@@ -173,97 +173,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         // already set.
         if (json != null) {
             JsonObject buildInfo = JsonUtil.parse(json);
-            if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
-                initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
-                        String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_PRODUCTION_MODE)));
-            }
-            if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
-                    || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
-                // If external stats file is flagged then
-                // dev server should be false - only variable that can
-                // be configured, in addition to stats variables, is
-                // production mode
-                initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                        Boolean.toString(false));
-                initParameters.setProperty(EXTERNAL_STATS_FILE,
-                        Boolean.toString(true));
-                if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
-                    initParameters.setProperty(EXTERNAL_STATS_URL,
-                            buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
-                }
-                // NO OTHER CONFIGURATION:
-                return;
-            }
-            if (buildInfo.hasKey(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
-                initParameters.setProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                        String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
-                // Need to be sure that we remove the system property,
-                // because it has priority in the configuration getter
-                System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_USE_V14_BOOTSTRAP);
-            }
-            if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
-                initParameters.setProperty(SERVLET_PARAMETER_INITIAL_UIDL,
-                        String.valueOf(buildInfo
-                                .getBoolean(SERVLET_PARAMETER_INITIAL_UIDL)));
-                // Need to be sure that we remove the system property,
-                // because it has priority in the configuration getter
-                System.clearProperty(
-                        VAADIN_PREFIX + SERVLET_PARAMETER_INITIAL_UIDL);
-            }
-
-            if (buildInfo.hasKey(NPM_TOKEN)) {
-                initParameters.setProperty(PROJECT_BASEDIR,
-                        buildInfo.getString(NPM_TOKEN));
-                verifyFolderExists(initParameters,
-                        buildInfo.getString(NPM_TOKEN));
-            }
-
-            if (buildInfo.hasKey(FRONTEND_TOKEN)) {
-                initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
-                        buildInfo.getString(FRONTEND_TOKEN));
-                // Only verify frontend folder if it's not a subfolder of the
-                // npm folder.
-                if (!buildInfo.hasKey(NPM_TOKEN)
-                        || !buildInfo.getString(FRONTEND_TOKEN)
-                                .startsWith(buildInfo.getString(NPM_TOKEN))) {
-                    verifyFolderExists(initParameters,
-                            buildInfo.getString(FRONTEND_TOKEN));
-                }
-            }
-
-            // These should be internal only so if there is a System
-            // property override then the user probably knows what
-            // they are doing.
-            if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-                initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                        String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
-            }
-            if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
-                initParameters.setProperty(SERVLET_PARAMETER_REUSE_DEV_SERVER,
-                        String.valueOf(buildInfo.getBoolean(
-                                SERVLET_PARAMETER_REUSE_DEV_SERVER)));
-            }
-            if (buildInfo.hasKey(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
-                initParameters.setProperty(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
-                        buildInfo.getString(CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
-            }
-            if (buildInfo.hasKey(CONNECT_OPEN_API_FILE_TOKEN)) {
-                initParameters.setProperty(CONNECT_OPEN_API_FILE_TOKEN,
-                        buildInfo.getString(CONNECT_OPEN_API_FILE_TOKEN));
-            }
-            if (buildInfo.hasKey(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
-                initParameters.setProperty(CONNECT_APPLICATION_PROPERTIES_TOKEN,
-                        buildInfo.getString(
-                                CONNECT_APPLICATION_PROPERTIES_TOKEN));
-            }
-            if (buildInfo.hasKey(CONNECT_GENERATED_TS_DIR_TOKEN)) {
-                initParameters.setProperty(CONNECT_GENERATED_TS_DIR_TOKEN,
-                        buildInfo.getString(CONNECT_GENERATED_TS_DIR_TOKEN));
-            }
+            setInitParametersUsingTokenData(initParameters, buildInfo);
 
             FallbackChunk fallbackChunk = FrontendUtils
                     .readFallbackChunk(buildInfo);
@@ -278,6 +188,130 @@ public final class DeploymentConfigurationFactory implements Serializable {
             throw new UncheckedIOException(e);
         }
 
+    }
+
+    private static void setInitParametersUsingTokenData(
+            Properties initParameters, JsonObject buildInfo) {
+        if (buildInfo.hasKey(SERVLET_PARAMETER_PRODUCTION_MODE)) {
+            initParameters.setProperty(SERVLET_PARAMETER_PRODUCTION_MODE,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_PRODUCTION_MODE)));
+        }
+        if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
+                || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+            // If external stats file is flagged then
+            // dev server should be false - only variable that can
+            // be configured, in addition to stats variables, is
+            // production mode
+            initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                    Boolean.toString(false));
+            initParameters.setProperty(EXTERNAL_STATS_FILE,
+                    Boolean.toString(true));
+            if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
+                initParameters.setProperty(EXTERNAL_STATS_URL,
+                        buildInfo.getString(EXTERNAL_STATS_URL_TOKEN));
+            }
+            // NO OTHER CONFIGURATION:
+            return;
+        }
+        if (buildInfo.hasKey(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
+            initParameters.setProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
+            // Need to be sure that we remove the system property,
+            // because it has priority in the configuration getter
+            System.clearProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_USE_V14_BOOTSTRAP);
+        }
+        if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
+            initParameters.setProperty(SERVLET_PARAMETER_INITIAL_UIDL,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_INITIAL_UIDL)));
+            // Need to be sure that we remove the system property,
+            // because it has priority in the configuration getter
+            System.clearProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_INITIAL_UIDL);
+        }
+
+        if (buildInfo.hasKey(NPM_TOKEN)) {
+            initParameters.setProperty(PROJECT_BASEDIR,
+                    buildInfo.getString(NPM_TOKEN));
+            verifyFolderExists(initParameters, buildInfo.getString(NPM_TOKEN));
+        }
+
+        if (buildInfo.hasKey(FRONTEND_TOKEN)) {
+            initParameters.setProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                    buildInfo.getString(FRONTEND_TOKEN));
+            // Only verify frontend folder if it's not a subfolder of the
+            // npm folder.
+            if (!buildInfo.hasKey(NPM_TOKEN)
+                    || !buildInfo.getString(FRONTEND_TOKEN)
+                            .startsWith(buildInfo.getString(NPM_TOKEN))) {
+                verifyFolderExists(initParameters,
+                        buildInfo.getString(FRONTEND_TOKEN));
+            }
+        }
+
+        // These should be internal only so if there is a System
+        // property override then the user probably knows what
+        // they are doing.
+        if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
+            initParameters.setProperty(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
+        }
+        if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            initParameters.setProperty(SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                    String.valueOf(buildInfo
+                            .getBoolean(SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+        }
+        if (buildInfo.hasKey(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
+            initParameters.setProperty(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    buildInfo.getString(CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
+        }
+        if (buildInfo.hasKey(CONNECT_OPEN_API_FILE_TOKEN)) {
+            initParameters.setProperty(CONNECT_OPEN_API_FILE_TOKEN,
+                    buildInfo.getString(CONNECT_OPEN_API_FILE_TOKEN));
+        }
+        if (buildInfo.hasKey(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
+            initParameters.setProperty(CONNECT_APPLICATION_PROPERTIES_TOKEN,
+                    buildInfo.getString(CONNECT_APPLICATION_PROPERTIES_TOKEN));
+        }
+        if (buildInfo.hasKey(CONNECT_GENERATED_TS_DIR_TOKEN)) {
+            initParameters.setProperty(CONNECT_GENERATED_TS_DIR_TOKEN,
+                    buildInfo.getString(CONNECT_GENERATED_TS_DIR_TOKEN));
+        }
+
+        setDevModePropertiesUsingTokenData(initParameters, buildInfo);
+    }
+
+    private static void setDevModePropertiesUsingTokenData(
+            Properties initParameters, JsonObject buildInfo) {
+        // read dev mode properties from the token and set init parameter only
+        // if it's not yet set
+        if (initParameters
+                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM) == null
+                && buildInfo.hasKey(Constants.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            initParameters.setProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.SERVLET_PARAMETER_ENABLE_PNPM)));
+        }
+        if (initParameters
+                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE) == null
+                && buildInfo.hasKey(Constants.REQUIRE_HOME_NODE_EXECUTABLE)) {
+            initParameters.setProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.REQUIRE_HOME_NODE_EXECUTABLE)));
+        }
+        if (initParameters.getProperty(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE) == null
+                && buildInfo.hasKey(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)) {
+            initParameters.setProperty(
+                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                    String.valueOf(buildInfo.getBoolean(
+                            Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)));
+        }
     }
 
     private static String getTokenFileContents(Properties initParameters) {
@@ -347,7 +381,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
     private static String getPossibleJarResource(List<URL> resources)
             throws IOException {
         Objects.requireNonNull(resources);
-        assert !resources.isEmpty() : "Possible jar resource requires resources to be available.";
+        assert !resources
+                .isEmpty() : "Possible jar resource requires resources to be available.";
         URL webpackGenerated = DeploymentConfiguration.class.getClassLoader()
                 .getResource(FrontendUtils.WEBPACK_GENERATED);
         // If jar!/ exists 2 times for webpack.generated.json then we are
@@ -363,16 +398,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
         }
         URL firstResource = resources.get(0);
         if (resources.size() > 1) {
-            String warningMessage = String
-                    .format("Unable to fully determine correct flow-build-info.%n"
-                                    + "Accepting file '%s' first match of '%s' possible.%n"
-                                    + "Please verify flow-build-info file content.",
-                            firstResource.getPath(), resources.size());
+            String warningMessage = String.format(
+                    "Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s' first match of '%s' possible.%n"
+                            + "Please verify flow-build-info file content.",
+                    firstResource.getPath(), resources.size());
             logger.warn(warningMessage);
         } else {
-            String debugMessage = String
-                    .format("Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'", firstResource.getPath());
+            String debugMessage = String.format(
+                    "Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s'",
+                    firstResource.getPath());
             logger.debug(debugMessage);
         }
         return FrontendUtils.streamToString(firstResource.openStream());

@@ -170,6 +170,11 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public int getMaxMessageSuspendTimeout() {
+        return DefaultDeploymentConfiguration.DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT;
+    }
+
+    @Override
     public int getWebComponentDisconnect() {
         return DefaultDeploymentConfiguration.DEFAULT_WEB_COMPONENT_DISCONNECT;
     }

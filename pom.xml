@@ -302,14 +302,14 @@
 
         <plugins>
             <plugin>
-                <groupId>com.marvinformatics.formatter</groupId>
+                <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>1.8.1</version>
+                <version>2.11.0</version>
                 <configuration>
-                    <configFile>classpath:/eclipse/VaadinJavaConventions.xml
+                    <configFile>eclipse/VaadinJavaConventions.xml
                     </configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>classpath:/eclipse/VaadinJavaConventions.xml
+                    <configJsFile>eclipse/VaadinJavaConventions.xml
                     </configJsFile>
                 </configuration>
                 <dependencies>
