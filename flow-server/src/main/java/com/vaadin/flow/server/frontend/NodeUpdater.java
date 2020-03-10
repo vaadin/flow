@@ -239,7 +239,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             throw iae;
         }
         added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack",
-                "4.30.0");
+                "4.42.0");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "webpack-cli",
                 "3.3.10");
         added += addDependency(packageJson, DEV_DEPENDENCIES,
