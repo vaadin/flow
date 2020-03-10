@@ -27,16 +27,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -228,18 +230,16 @@ public abstract class NodeUpdater implements FallibleCommand {
         JsonObject vaadinPackages = computeIfAbsent(json, VAADIN_DEP_KEY,
                 Json::createObject);
 
-        computeIfAbsent(vaadinPackages, DEPENDENCIES,
-                () -> {
-                    final JsonObject dependencies = Json.createObject();
-                    getDefaultDependencies().forEach(dependencies::put);
-                    return dependencies;
-                });
-        computeIfAbsent(vaadinPackages, DEV_DEPENDENCIES,
-                () -> {
-                    final JsonObject devDependencies = Json.createObject();
-                    getDefaultDevDependencies().forEach(devDependencies::put);
-                    return devDependencies;
-                });
+        computeIfAbsent(vaadinPackages, DEPENDENCIES, () -> {
+            final JsonObject dependencies = Json.createObject();
+            getDefaultDependencies().forEach(dependencies::put);
+            return dependencies;
+        });
+        computeIfAbsent(vaadinPackages, DEV_DEPENDENCIES, () -> {
+            final JsonObject devDependencies = Json.createObject();
+            getDefaultDevDependencies().forEach(devDependencies::put);
+            return devDependencies;
+        });
         computeIfAbsent(vaadinPackages, HASH_KEY, () -> Json.create(""));
     }
 
@@ -268,16 +268,16 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("html-webpack-plugin", "3.2.0");
         defaults.put("script-ext-html-webpack-plugin", "2.1.4");
-        defaults.put("typescript", "3.7.3");
+        defaults.put("typescript", "3.8.3");
         defaults.put("awesome-typescript-loader", "5.2.1");
 
-        defaults.put("webpack", "4.30.0");
-        defaults.put("webpack-cli", "3.3.10");
-        defaults.put("webpack-dev-server", "3.9.0");
-        defaults.put("copy-webpack-plugin", "5.1.0");
-        defaults.put("compression-webpack-plugin", "3.0.1");
+        defaults.put("webpack", "4.42.0");
+        defaults.put("webpack-cli", "3.3.11");
+        defaults.put("webpack-dev-server", "3.10.3");
+        defaults.put("copy-webpack-plugin", "5.1.1");
+        defaults.put("compression-webpack-plugin", "3.1.0");
         defaults.put("webpack-merge", "4.2.2");
-        defaults.put("raw-loader", "3.0.0");
+        defaults.put("raw-loader", "4.0.0");
 
         return defaults;
     }
