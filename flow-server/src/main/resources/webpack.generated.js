@@ -68,9 +68,10 @@ if (watchDogPort) {
 const webPackEntries = {};
 if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = clientSideIndexEntryPoint;
-  // if there are vaadin exported views, add a second entry
-  const [_, dir, prefix] = /^(.*)\/(.+)\.js/.exec(fileNameOfTheFlowGeneratedMainEntryPoint);
-  if (fs.readdirSync(dir).filter(fileName => !fileName.startsWith(prefix)).length) {
+  const dirName = path.dirname(fileNameOfTheFlowGeneratedMainEntryPoint);
+  const baseName = path.basename(fileNameOfTheFlowGeneratedMainEntryPoint, '.js');
+  if (fs.readdirSync(dirName).filter(fileName => !fileName.startsWith(baseName)).length) {
+    // if there are vaadin exported views, add a second entry
     webPackEntries.export = fileNameOfTheFlowGeneratedMainEntryPoint;
   }
 } else {
