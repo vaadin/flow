@@ -78,6 +78,13 @@ public class PushHandler {
         resource.getResponse().setContentType("text/plain; charset=UTF-8");
 
         VaadinSession session = ui.getSession();
+
+        if (resource.getRequest().getParameter("refresh_connection") != null) {
+            suspend(resource);
+            ui.getInternals().initAutoRefreshPushConnection(resource);
+            return;
+        }
+
         String requestToken = resource.getRequest()
                 .getParameter(ApplicationConstants.PUSH_ID_PARAMETER);
         if (!isPushIdValid(session, requestToken)) {

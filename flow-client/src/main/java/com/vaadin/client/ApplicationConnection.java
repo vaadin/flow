@@ -95,22 +95,26 @@ public class ApplicationConnection {
                     "Vaadin application servlet version: " + servletVersion);
 
             Console.log("Adding LiveRefresh listener");
-            registerLiveRefreshIndicator();
+            registerLiveRefreshIndicator(applicationConfiguration.getUIId());
         }
 
         registry.getLoadingIndicator().show();
     }
 
-    private native void registerLiveRefreshIndicator()
+    void resynchronize() {
+        registry.getMessageSender().resynchronize();
+    }
+
+    private native void registerLiveRefreshIndicator(int uiId)
     /*-{
-    var ws = new WebSocket('ws://' + window.location.hostname + ':35729');
+    var ws = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '?v-uiId=' + uiId + '&refresh_connection');
 
     function getOrCreateLiveRefreshIndicator() {
         var indicator = document.getElementById('vaadin-live-refresh-indicator');
         if (indicator === null) {
             var flash = document.createElement('span');
             flash.style.position = 'fixed';
-            flash.style.left = '0';
+            flash.style.right = '0';
             flash.style.top = '0';
             flash.style.margin = '10px 10px 10px 10px';
             flash.style.zIndex = '10000';
@@ -122,7 +126,7 @@ public class ApplicationConnection {
             indicator.id = 'vaadin-live-refresh-indicator';
             indicator.style.position = 'fixed';
             indicator.style.margin = '10px 10px 10px 10px';
-            indicator.style.left = '25px';
+            indicator.style.right = '25px';
             indicator.style.top = '0';
             indicator.style.zIndex = '10000';
             indicator.style.backgroundColor = "#FEA";

@@ -15,7 +15,7 @@
     <properties>
         <gwt.module>com.vaadin.ClientEngine</gwt.module>
         <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
-        <gwt.module.style>OBF</gwt.module.style>
+        <gwt.module.style>DETAILED</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
     </properties>
 

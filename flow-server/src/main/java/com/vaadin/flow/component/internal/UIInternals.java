@@ -27,6 +27,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.atmosphere.cpr.AtmosphereResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
@@ -67,8 +71,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -192,6 +194,8 @@ public class UIInternals implements Serializable {
     private ExtendedClientDetails extendedClientDetails = null;
 
     private boolean isFallbackChunkLoaded;
+
+    private AtmosphereResource autoRefreshPushConnection;
 
     /**
      * Creates a new instance for the given UI.
@@ -1046,4 +1050,17 @@ public class UIInternals implements Serializable {
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
     }
+
+    public void initAutoRefreshPushConnection(AtmosphereResource autoRefreshPushConnection) {
+        this.autoRefreshPushConnection = autoRefreshPushConnection;
+        autoRefreshPushConnection.getBroadcaster().broadcast("{\"command\": \"hello\"}");
+    }
+
+    public void refreshBrowser() {
+        if (autoRefreshPushConnection!=null) {
+            autoRefreshPushConnection.getBroadcaster().broadcast("{\"command\": \"reload\"}",
+                    autoRefreshPushConnection);
+        }
+    }
+
 }
