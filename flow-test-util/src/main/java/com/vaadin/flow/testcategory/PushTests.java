@@ -7,6 +7,6 @@ package com.vaadin.flow.testcategory;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public interface PushTests {
+public interface PushTests extends TestCategory {
 
 }
