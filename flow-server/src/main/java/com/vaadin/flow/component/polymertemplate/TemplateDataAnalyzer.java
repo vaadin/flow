@@ -15,6 +15,18 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.VaadinService;
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+import org.jsoup.select.NodeVisitor;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,20 +39,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
-import org.jsoup.select.NodeVisitor;
-
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.VaadinService;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
 
 /**
  * Template data analyzer which produces immutable data required for template
@@ -75,7 +73,7 @@ public class TemplateDataAnalyzer {
      *
      */
     @FunctionalInterface
-    public interface InjectableFieldCunsumer {
+    public interface InjectableFieldConsumer {
 
         /**
          * Performs this operation on the given arguments.
@@ -91,7 +89,7 @@ public class TemplateDataAnalyzer {
          * @param tag
          *            the element tag
          */
-        void apply(Field field, String id, String tag);
+        void apply(Field field, String id, Element tag);
     }
 
     /**
@@ -99,7 +97,7 @@ public class TemplateDataAnalyzer {
      */
     public static class ParserData {
 
-        private final Map<String, String> tagById;
+        private final Map<String, Element> elementById;
         private final Map<Field, String> idByField;
 
         private final Set<String> twoWayBindingPaths;
@@ -118,10 +116,10 @@ public class TemplateDataAnalyzer {
          * @param subTemplates
          *            data for sub templates
          */
-        public ParserData(Map<Field, String> fields, Map<String, String> tags,
+        public ParserData(Map<Field, String> fields, Map<String, Element> tags,
                 Set<String> twoWayBindings,
                 Collection<SubTemplateData> subTemplates) {
-            tagById = Collections.unmodifiableMap(tags);
+            elementById = Collections.unmodifiableMap(tags);
             idByField = Collections.unmodifiableMap(fields);
             twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
             this.subTemplates = Collections
@@ -134,9 +132,9 @@ public class TemplateDataAnalyzer {
          * @param consumer
          *            the consumer to call for each mapped field
          */
-        public void forEachInjectedField(InjectableFieldCunsumer consumer) {
+        public void forEachInjectedField(InjectableFieldConsumer consumer) {
             idByField.forEach(
-                    (field, id) -> consumer.apply(field, id, tagById.get(id)));
+                    (field, id) -> consumer.apply(field, id, elementById.get(id)));
         }
 
         Set<String> getTwoWayBindingPaths() {

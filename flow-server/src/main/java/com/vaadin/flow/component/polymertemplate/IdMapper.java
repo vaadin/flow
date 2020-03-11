@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.Consumer;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
@@ -29,12 +23,24 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+
 /**
  * Creates or maps Element instances to fields mapped using {@link Id @Id}.
  *
  * @since 2.0
  */
 public class IdMapper implements Serializable {
+
+    public static final Set<String> ATTRIBUTE_BASED = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("class", "theme", "tabIndex")));
 
     private final HashMap<String, Element> registeredElementIdToInjected = new HashMap<>();
 
@@ -71,7 +77,7 @@ public class IdMapper implements Serializable {
      *            a callback invoked before assigning the element/component to
      *            the field
      */
-    public void mapComponentOrElement(Field field, String id, String tag,
+    public void mapComponentOrElement(Field field, String id, org.jsoup.nodes.Element tag,
             Consumer<Element> beforeComponentInject) {
         injectClientSideElement(tag, id, field, beforeComponentInject);
     }
@@ -80,9 +86,11 @@ public class IdMapper implements Serializable {
         return template.getClass();
     }
 
-    private void injectClientSideElement(String tagName, String id, Field field,
+    private void injectClientSideElement(org.jsoup.nodes.Element element, String id, Field field,
             Consumer<Element> beforeComponentInject) {
         Class<?> fieldType = field.getType();
+
+        String tagName = element.tagName();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
         if (tag != null && !tagName.equalsIgnoreCase(tag.value())) {
@@ -94,7 +102,7 @@ public class IdMapper implements Serializable {
                     fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
         }
-        attachExistingElementById(tagName, id, field, beforeComponentInject);
+        attachExistingElementById(element, id, field, beforeComponentInject);
     }
 
     /**
@@ -114,30 +122,42 @@ public class IdMapper implements Serializable {
     }
 
     /**
-     * Attaches a child element with the given {@code tagName} and {@code id} to
+     * Attaches a child element with given {@code id} to
      * an existing dom element on the client side with matching data.
      *
-     * @param tagName
-     *            tag name of element, not {@code null}
+     * @param clientElement
+     *            element from the client side, not {@code null}
      * @param id
      *            id of element to attach to
      * @param field
      *            field to attach {@code Element} or {@code Component} to
      * @param beforeComponentInject
+     *            callback invoked before component is injected
      */
-    private void attachExistingElementById(String tagName, String id,
+    private void attachExistingElementById(org.jsoup.nodes.Element clientElement, String id,
             Field field, Consumer<Element> beforeComponentInject) {
-        if (tagName == null) {
+        if (clientElement == null || clientElement.tagName() == null || clientElement.tagName().isEmpty()) {
             throw new IllegalArgumentException(
                     "Tag name parameter cannot be null");
         }
 
         Element element = registeredElementIdToInjected.get(id);
         if (element == null) {
-            element = new Element(tagName);
+            final Element newElement = new Element(clientElement.tagName());
             VirtualChildrenList list = getElement().getNode()
                     .getFeature(VirtualChildrenList.class);
-            list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
+            list.append(newElement.getNode(), NodeProperties.INJECT_BY_ID, id);
+            clientElement.attributes().forEach(attribute -> {
+                if(ATTRIBUTE_BASED.contains(attribute.getKey())) {
+                    newElement.setAttribute(attribute.getKey(), attribute.getValue());
+                }
+                else {
+                    newElement.setProperty(attribute.getKey(), attribute.getValue());
+                }
+            });
+            if(clientElement.hasText())
+                newElement.setText(clientElement.text());
+            element = newElement;
             registeredElementIdToInjected.put(id, element);
         }
         injectTemplateElement(element, field, beforeComponentInject);

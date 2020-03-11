@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import com.vaadin.flow.internal.AnnotationReader;
+import org.jsoup.nodes.Element;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,17 +25,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.jsoup.nodes.Element;
-
-import com.vaadin.flow.internal.AnnotationReader;
-
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
  *
  * @since 2.0
  */
 public class IdCollector {
-    private final Map<String, String> tagById = new HashMap<>();
+    private final Map<String, Element> elementById = new HashMap<>();
     private final Map<Field, String> idByField = new HashMap<>();
     private Element templateRoot;
     private Class<?> templateClass;
@@ -125,14 +124,11 @@ public class IdCollector {
         if (templateRoot != null) {
             // The template is available for parsing so check up front if the id
             // exists
-            Optional<String> tagName = Optional
-                    .ofNullable(templateRoot.getElementById(id))
-                    .map(org.jsoup.nodes.Element::tagName);
-            if (tagName.isPresent()) {
-                tagById.put(id, tagName.get());
-            }
+            final Optional<Element> perhapsElement = Optional.ofNullable(templateRoot.getElementById(id));
 
-            return tagName.isPresent();
+            perhapsElement.ifPresent(element -> this.elementById.put(id, element));
+
+            return perhapsElement.isPresent();
         }
 
         return true;
@@ -152,8 +148,8 @@ public class IdCollector {
      *
      * @return a map from field ids to their component tags
      */
-    public Map<String, String> getTagById() {
-        return tagById;
+    public Map<String, Element> getTagById() {
+        return elementById;
     }
 
 }
