@@ -31,25 +31,28 @@ public class PushWithPreserveOnRefreshIT extends ChromeBrowserTest {
     public void ensurePushWorksAfterRefresh() {
         open();
 
-        TestBenchElement button = $(TestBenchElement.class).first();
+        WebElement loadingIndicator = findElement(
+                By.className("v-loading-indicator"));
+
+        waitUntil(driver -> !loadingIndicator.isDisplayed());
+
+        TestBenchElement button = $(TestBenchElement.class).id("click");
         button.click();
         button.click();
-        Assert.assertEquals("Button has been clicked 2 times",
-                getLastLog().getText());
+        Assert.assertEquals("Button has been clicked 2 times", getLastLog());
 
         open();
-        Assert.assertEquals("Button has been clicked 2 times",
-                getLastLog().getText());
+        Assert.assertEquals("Button has been clicked 2 times", getLastLog());
+        button = $(TestBenchElement.class).id("click");
         button.click();
-        Assert.assertEquals("Button has been clicked 3 times",
-                getLastLog().getText());
+        Assert.assertEquals("Button has been clicked 3 times", getLastLog());
     }
 
-    private WebElement getLastLog() {
+    private String getLastLog() {
         List<WebElement> logs = findElements(By.className("log"));
         if (logs.isEmpty()) {
             return null;
         }
-        return logs.get(logs.size() - 1);
+        return logs.get(logs.size() - 1).getText();
     }
 }
