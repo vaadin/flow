@@ -16,6 +16,7 @@ public class PushWithPreserveOnRefreshView extends Div {
     public PushWithPreserveOnRefreshView() {
         NativeButton button = new NativeButton("click me", event -> log(
                 "Button has been clicked " + (++times) + " times"));
+        button.setId("click");
         add(button);
     }
 
