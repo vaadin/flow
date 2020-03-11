@@ -22,7 +22,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
-import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.dom.Element;
@@ -41,7 +40,6 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 2.0
  */
-@JavaScript(DndUtil.DND_CONNECTOR_COMPATIBILITY)
 @JsModule(DndUtil.DND_CONNECTOR)
 public interface DropTarget<T extends Component> extends HasElement {
 
