@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
+import com.vaadin.client.ElementUtil;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.PolymerUtils;
@@ -812,8 +813,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 return;
             }
 
-            Element existingElement = PolymerUtils
-                    .getDomElementById(context.htmlNode, id);
+            Element existingElement = ElementUtil
+                    .getElementById(context.htmlNode, id);
             if (verifyAttachedElement(existingElement, node, id, address,
                     context)) {
                 if (!reactivePhase) {
@@ -870,7 +871,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             failure = true;
             Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                     + " is not found. The requested tag name is '" + tag + "'");
-        } else if (!PolymerUtils.hasTag(element, tag)) {
+        } else if (!ElementUtil.hasTag(element, tag)) {
             failure = true;
             Console.warn(ELEMENT_ATTACH_ERROR_PREFIX + address
                     + " has the wrong tag name '" + element.getTagName()
