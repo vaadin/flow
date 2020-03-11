@@ -19,10 +19,6 @@ public class RefreshCloseConnectionIT extends ChromeBrowserTest {
         String param = UUID.randomUUID().toString();
         open(param);
 
-        if (hasClientIssue("7587")) {
-            return;
-        }
-
         waitUntil(driver -> getLastLog() != null);
         Assert.assertEquals("Init", getLastLog());
 
