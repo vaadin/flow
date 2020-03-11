@@ -195,7 +195,7 @@ public class BootstrapHandlerTest {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineWithContents(
-                    "body {width: 100vw; height:100vh; margin:0;}",
+                    "body {width: 100%; height:100vh; margin:0;}",
                     InitialPageSettings.WrapMode.STYLESHEET);
         }
     }
@@ -711,7 +711,7 @@ public class BootstrapHandlerTest {
         Elements allElements = page.head().getAllElements();
 
         Assert.assertEquals(
-                "<style type=\"text/css\">body {width: 100vw; height:100vh; margin:0;}</style>",
+                "<style type=\"text/css\">body {width: 100%; height:100vh; margin:0;}</style>",
                 allElements.get(allElements.size() - 1).toString());
     }
 
@@ -800,7 +800,7 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 "The first style tag should start with body style containing default body size and margin",
                 styleTag.get().toString().startsWith(
-                        "<style type=\"text/css\">body {height:100vh;width:100vw;margin:0;}"));
+                        "<style type=\"text/css\">body {height:100vh;width:100%;margin:0;}"));
     }
 
     @Test // 3749
@@ -1358,8 +1358,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void getBootstrapPage_removesExportScript()
-            throws ServiceException {
+    public void getBootstrapPage_removesExportScript() throws ServiceException {
         initUI(testUI);
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
