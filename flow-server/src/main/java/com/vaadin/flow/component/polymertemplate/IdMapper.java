@@ -38,7 +38,7 @@ public class IdMapper implements Serializable {
 
     private final HashMap<String, Element> registeredElementIdToInjected = new HashMap<>();
 
-    private AbstractTemplate<?> template;
+    private Component template;
 
     /**
      * Creates a mapper for the given template.
@@ -46,7 +46,7 @@ public class IdMapper implements Serializable {
      * @param template
      *            a template instance
      */
-    public IdMapper(AbstractTemplate<?> template) {
+    public IdMapper(Component template) {
         this.template = template;
     }
 
@@ -85,7 +85,7 @@ public class IdMapper implements Serializable {
         Class<?> fieldType = field.getType();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
-        if (tag != null && !tagName.equalsIgnoreCase(tag.value())) {
+        if (tag != null && tagName != null && !tagName.equalsIgnoreCase(tag.value())) {
             String msg = String.format(
                     "Class '%s' has field '%s' whose type '%s' is annotated with "
                             + "tag '%s' but the element defined in the HTML "
@@ -93,6 +93,12 @@ public class IdMapper implements Serializable {
                     getContainerClass().getName(), field.getName(),
                     fieldType.getName(), tag.value(), id, tagName);
             throw new IllegalStateException(msg);
+        }
+        if (tag != null) {
+            // tag can be null if injecting Element
+            // tagName is the tag parsed from the template and it is null for Lit templates,
+            // which are not parsed
+            tagName = tag.value();
         }
         attachExistingElementById(tagName, id, field, beforeComponentInject);
     }
