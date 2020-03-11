@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.spring;
 
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Configuration properties for Vaadin Spring Boot.
@@ -42,6 +43,11 @@ public class VaadinConfigurationProperties {
     private boolean asyncSupported = true;
 
     /**
+     * Whetcher pnpm support is enabled
+     **/
+    private boolean pnpmEnabled = false;
+
+    /**
      * Custom package blacklist that should be skipped in scanning.
      */
     private List<String> blacklistedPackages = new ArrayList<>();
@@ -61,15 +67,6 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Returns if asynchronous operations are supported.
-     *
-     * @return if async is supported
-     */
-    public boolean isAsyncSupported() {
-        return asyncSupported;
-    }
-
-    /**
      * Sets {@code urlMapping} property value.
      *
      * @param urlMapping the {@code urlMapping} property value
@@ -79,12 +76,39 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Returns if asynchronous operations are supported.
+     *
+     * @return if async is supported
+     */
+    public boolean isAsyncSupported() {
+        return asyncSupported;
+    }
+
+    /**
      * Sets {@code asyncSupported} property value.
      *
      * @param asyncSupported the {@code asyncSupported} property value
      */
     public void setAsyncSupported(boolean asyncSupported) {
         this.asyncSupported = asyncSupported;
+    }
+
+    /**
+     * Returns if pnpm support is enabled.
+     *
+     * @return if pnpm is enabled
+     */
+    public boolean isPnpmEnabled() {
+        return pnpmEnabled;
+    }
+
+    /**
+     * Sets {@code pnpmEnabled} property value.
+     *
+     * @param pnpmEnabled the {@code pnpmEnabled} property value
+     */
+    public void setPnpmEnabled(boolean pnpmEnabled) {
+        this.pnpmEnabled = pnpmEnabled;
     }
 
     /**
