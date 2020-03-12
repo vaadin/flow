@@ -313,4 +313,7 @@ public class Registry {
         return get(Poller.class);
     }
 
+    public LiveReload getLiveReload() {
+        return get(LiveReload.class);
+    }
 }

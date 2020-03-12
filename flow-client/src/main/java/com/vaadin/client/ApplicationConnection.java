@@ -96,6 +96,7 @@ public class ApplicationConnection {
         }
 
         registry.getLoadingIndicator().show();
+        registry.getLiveReload().show();
     }
 
     /**
