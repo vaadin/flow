@@ -18,7 +18,6 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
@@ -96,7 +95,8 @@ public class ApplicationConnection {
         }
 
         registry.getLoadingIndicator().show();
-        registry.getLiveReload().show();
+        if (!applicationConfiguration.isProductionMode())
+            registry.getLiveReload().show();
     }
 
     /**
