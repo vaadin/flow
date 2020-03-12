@@ -20,10 +20,13 @@ import java.util.HashSet;
 import org.hotswap.agent.logging.AgentLogger;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
@@ -65,7 +68,7 @@ public class FlowIntegration {
      *            returns classes that have been deleted
      */
     public void reload(HashSet<Class<?>> modifiedClasses,
-                       HashSet<Class<?>> deletedClasses) {
+            HashSet<Class<?>> deletedClasses) {
         assert (vaadinServlet != null);
 
         LOGGER.debug("The following classes were modified:");
@@ -74,15 +77,35 @@ public class FlowIntegration {
         LOGGER.debug("The following classes were deleted:");
         deletedClasses.forEach(cls -> LOGGER.debug("- {}", cls));
 
-        VaadinContext vaadinContext = vaadinServlet.getService().getContext();
+        VaadinService vaadinService = vaadinServlet.getService();
+
+        updateRouteRegistry(vaadinService, modifiedClasses, deletedClasses);
+
+        BrowserLiveReloadAccess access = vaadinService.getInstantiator()
+                .getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReload liveReload = access.getLiveReload(vaadinService);
+        if (liveReload != null) {
+            liveReload.reload();
+        } else {
+            LOGGER.debug("No live reload connection established, skipping");
+        }
+
+        // clear the modified classes for next reload
+        modifiedClasses.clear();
+        deletedClasses.clear();
+    }
+
+    private void updateRouteRegistry(VaadinService vaadinService,
+            HashSet<Class<?>> modifiedClasses,
+            HashSet<Class<?>> deletedClasses) {
+        VaadinContext vaadinContext = vaadinService.getContext();
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(vaadinContext);
         RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
 
         registry.getRegisteredRoutes().stream()
                 .map(RouteData::getNavigationTarget)
-                .filter(deletedClasses::contains)
-                .forEach(clazz -> {
+                .filter(deletedClasses::contains).forEach(clazz -> {
                     LOGGER.debug("Removing route to {}", clazz);
                     routeConf.removeRoute(clazz);
                 });
@@ -91,17 +114,11 @@ public class FlowIntegration {
                 .filter(clazz -> clazz.isAnnotationPresent(Route.class))
                 .forEach(clazz -> {
                     Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
-                    LOGGER.debug("Updating route {} to class {}",
+                    LOGGER.debug("Updating route {} to {}",
                             componentClass.getAnnotation(Route.class).value(),
                             clazz);
                     routeConf.removeRoute(componentClass);
                     routeConf.setAnnotatedRoute(componentClass);
                 });
-
-        // TODO: trigger a browser reload
-
-        // clear the modified classes for next reload
-        modifiedClasses.clear();
-        deletedClasses.clear();
     }
 }

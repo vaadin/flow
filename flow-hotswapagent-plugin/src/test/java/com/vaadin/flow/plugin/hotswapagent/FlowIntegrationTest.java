@@ -1,6 +1,5 @@
 package com.vaadin.flow.plugin.hotswapagent;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,6 +16,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
@@ -30,27 +32,50 @@ public class FlowIntegrationTest {
 
     private FlowIntegration flowIntegration;
 
-    private VaadinServlet vaadinServletMock;
-    private VaadinServletService vaadinServiceMock;
     private VaadinContext mockVaadinContext;
+
+    private BrowserLiveReload browserLiveReloadMock;
 
     @Before
     public void setup() throws ServletException {
-        vaadinServletMock = Mockito.mock(VaadinServlet.class);
-        vaadinServiceMock = Mockito.mock(VaadinServletService.class);
+        VaadinServlet vaadinServletMock = Mockito.mock(VaadinServlet.class);
+        VaadinServletService vaadinServiceMock = Mockito.mock(VaadinServletService.class);
         mockVaadinContext = new MockVaadinContext();
+        Instantiator instantiatorMock = Mockito.mock(Instantiator.class);
+        BrowserLiveReloadAccess browserLiveReloadAccesMock = Mockito
+                .mock(BrowserLiveReloadAccess.class);
+        browserLiveReloadMock = Mockito.mock(BrowserLiveReload.class);
+
         Mockito.when(vaadinServletMock.getService())
                 .thenReturn(vaadinServiceMock);
+
         Mockito.when(vaadinServiceMock.getContext())
                 .thenReturn(mockVaadinContext);
-        vaadinServletMock.init(Mockito.mock(ServletConfig.class));
+        Mockito.when(vaadinServiceMock.getInstantiator())
+                .thenReturn(instantiatorMock);
+
+        Mockito.when(
+                instantiatorMock.getOrCreate(BrowserLiveReloadAccess.class))
+                .thenReturn(browserLiveReloadAccesMock);
+
+        Mockito.when(browserLiveReloadAccesMock.getLiveReload(Mockito.any()))
+                .thenReturn(browserLiveReloadMock);
 
         flowIntegration = new FlowIntegration();
         flowIntegration.servletInitialized(vaadinServletMock);
     }
 
     @Test
-    public void newRouteAnnotatedClass_routeIsAddedToRegistry() {
+    public void newRouteAnnotatedClass_reload_browserReloadInvoked() {
+        // when
+        flowIntegration.reload(hashSet(), hashSet());
+
+        // then
+        Mockito.verify(browserLiveReloadMock).reload();
+    }
+
+    @Test
+    public void newRouteAnnotatedClass_reload_routeIsAddedToRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -66,7 +91,7 @@ public class FlowIntegrationTest {
     }
 
     @Test
-    public void deletedRouteAnnotatedClass_routeIsRemovedFromRegistry() {
+    public void deletedRouteAnnotatedClass_reload_routeIsRemovedFromRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -85,7 +110,7 @@ public class FlowIntegrationTest {
     }
 
     @Test
-    public void renamedRouteAnnotatedClass_routeIsUpdatedInRegistry() {
+    public void renamedRouteAnnotatedClass_reload_routeIsUpdatedInRegistry() {
         // given
         @Route("aa")
         class A extends Component {
@@ -104,7 +129,8 @@ public class FlowIntegrationTest {
     }
 
     private HashSet<Class<?>> hashSet(Class<?>... cls) {
-        return Arrays.stream(cls).collect(Collectors.toCollection(HashSet::new));
+        return Arrays.stream(cls)
+                .collect(Collectors.toCollection(HashSet::new));
     }
 
     private static class MockVaadinContext implements VaadinContext {

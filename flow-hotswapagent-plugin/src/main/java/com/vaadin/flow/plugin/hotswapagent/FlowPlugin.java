@@ -45,8 +45,6 @@ public class FlowPlugin {
     @Init
     ClassLoader appClassLoader;
 
-    private Object flowIntegration;
-
     private ReloadCommand reloadCommand;
 
     private ReflectionCommand clearReflectionCache = new ReflectionCommand(this,
@@ -78,19 +76,17 @@ public class FlowPlugin {
         try {
             Class<?> flowIntegrationClass = appClassLoader.loadClass(
                     "com.vaadin.flow.plugin.hotswapagent.FlowIntegration");
-            flowIntegration = flowIntegrationClass.getConstructor()
+            Object flowIntegration = flowIntegrationClass.getConstructor()
                     .newInstance();
+            scheduler.scheduleCommand(new ReflectionCommand(flowIntegration,
+                    "servletInitialized", vaadinServlet));
+            reloadCommand = new ReloadCommand(flowIntegration);
         } catch (ClassNotFoundException | NoSuchMethodException
                 | InstantiationException | IllegalAccessException
                 | InvocationTargetException ex) {
             LOGGER.error(null, ex);
             return;
         }
-
-        scheduler.scheduleCommand(new ReflectionCommand(flowIntegration,
-                "servletInitialized", vaadinServlet));
-
-        reloadCommand = new ReloadCommand(flowIntegration);
     }
 
     @OnClassLoadEvent(classNameRegexp = ".*", events = LoadEvent.REDEFINE)
