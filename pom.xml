@@ -21,6 +21,7 @@
         <module>flow-push</module>
         <module>flow-data</module>
         <module>flow-client</module>
+        <module>flow-hotswapagent-plugin</module>
         <module>flow-html-components</module>
         <module>flow-html-components-testbench</module>
         <module>flow-theme-integrations</module>
