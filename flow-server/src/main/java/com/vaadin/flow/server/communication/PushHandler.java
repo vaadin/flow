@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
@@ -466,7 +468,18 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
-        callWithUi(resource, establishCallback);
+        String refreshConnection = resource.getRequest()
+                .getParameter(ApplicationConstants.LIVE_REFRESH_CONNECTION);
+        if (!service.getDeploymentConfiguration().isProductionMode()
+                && refreshConnection != null
+                && TRANSPORT.WEBSOCKET.equals(resource.transport())) {
+            BrowserLiveReloadAccess access = service.getInstantiator()
+                    .getOrCreate(BrowserLiveReloadAccess.class);
+            BrowserLiveReload liveReload = access.getLiveReload(service);
+            liveReload.onConnect(resource);
+        } else {
+            callWithUi(resource, establishCallback);
+        }
     }
 
     /**
