@@ -33,13 +33,26 @@ public class LiveReload {
     private WebSocket webSocket;
     private Element indicator;
 
-    public void show() {
+    public void show(int uiId) {
         if (!isEnabled())
             return;
 
         String hostname = Browser.getWindow().getLocation().getHostname();
         webSocket = createWebSocket(
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
+
+        // It means Spring Dev Tools is not present. We should connect to Flow
+        // Live Reload server
+        if (webSocket == null) {
+            String port = Browser.getWindow().getLocation().getPort();
+            webSocket = createWebSocket("ws://" + hostname + ':' + port
+                    + "?v-uiId=" + uiId + "&refresh_connection");
+            if (webSocket == null) {
+                Console.warn("No Live Reload server is available!");
+                return;
+            }
+        }
+
         webSocket.setOnmessage(evt -> {
             MessageEvent messageEvent = (MessageEvent) evt;
             JsonObject data = Json.parse((String) messageEvent.getData());
@@ -122,6 +135,10 @@ public class LiveReload {
 
     private native WebSocket createWebSocket(String url)
     /*-{
-        return new WebSocket(url);
+        try {
+            return new WebSocket(url);
+        } catch(e) {
+            return null;
+        }
     }-*/;
 }
