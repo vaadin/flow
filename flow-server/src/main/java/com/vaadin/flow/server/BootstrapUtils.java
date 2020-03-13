@@ -230,7 +230,7 @@ class BootstrapUtils {
 
         // Set full size by default if @BodySize is not used
         String height = bodySize.map(BodySize::height).orElse("100vh");
-        String width = bodySize.map(BodySize::width).orElse("100vw");
+        String width = bodySize.map(BodySize::width).orElse("100%");
 
         StringBuilder bodyString = new StringBuilder();
 
