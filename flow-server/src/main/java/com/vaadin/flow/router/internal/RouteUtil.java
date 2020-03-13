@@ -55,14 +55,13 @@ public class RouteUtil {
             Class<?> component, String path) {
         final List<Class<? extends RouterLayout>> list = new ArrayList<>();
 
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
-                && !route.get().layout().equals(UI.class)) {
-            list.addAll(collectRouteParentLayouts(route.get().layout()));
+        Class<? extends RouterLayout> layoutClass = getParentLayoutClass(
+                component, path);
+
+        if (layoutClass != null) {
+            list.addAll(collectRouteParentLayouts(layoutClass));
         } else {
 
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
@@ -90,8 +89,16 @@ public class RouteUtil {
         if (route.absolute()) {
             return resolve(component, route);
         }
-        List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                route.layout(), resolve(component, route));
+        Class<? extends RouterLayout> layout = route.layout();
+        if (layout.equals(UI.class)) {
+            ParentLayout annotation = component
+                    .getAnnotation(ParentLayout.class);
+            if (annotation != null) {
+                layout = annotation.value();
+            }
+        }
+        List<String> parentRoutePrefixes = getRoutePrefixes(component, layout,
+                resolve(component, route));
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
@@ -154,8 +161,8 @@ public class RouteUtil {
         return list;
     }
 
-    static Optional<RouteAlias> getMatchingRouteAlias(
-            Class<?> component, String path, List<RouteAlias> routeAliases) {
+    static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component,
+            String path, List<RouteAlias> routeAliases) {
         return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
                         && !alias.layout().equals(UI.class))
@@ -222,14 +229,13 @@ public class RouteUtil {
             return null;
         }
 
-        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
-                Route.class);
         List<RouteAlias> routeAliases = AnnotationReader
                 .getAnnotationsFor(component, RouteAlias.class);
-        if (route.isPresent()
-                && path.equals(getRoutePath(component, route.get()))
-                && !route.get().layout().equals(UI.class)) {
-            return recurseToTopLayout(route.get().layout());
+
+        Class<? extends RouterLayout> layoutClass = getParentLayoutClass(
+                component, path);
+        if (layoutClass != null) {
+            return recurseToTopLayout(layoutClass);
         } else {
             Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
                     component, path, routeAliases);
@@ -276,5 +282,27 @@ public class RouteUtil {
             return simpleName.toLowerCase();
         }
         return route.value();
+    }
+
+    private static Class<? extends RouterLayout> getParentLayoutClass(
+            Class<?> component, String path) {
+        Optional<Route> route = AnnotationReader.getAnnotationFor(component,
+                Route.class);
+        if (!route.isPresent()) {
+            return null;
+        }
+        if (!path.equals(getRoutePath(component, route.get()))) {
+            return null;
+        }
+        Class<? extends RouterLayout> layout = route.get().layout();
+        if (!layout.equals(UI.class)) {
+            return layout;
+        }
+        Optional<ParentLayout> parentLayout = AnnotationReader
+                .getAnnotationFor(component, ParentLayout.class);
+        if (parentLayout.isPresent()) {
+            return parentLayout.get().value();
+        }
+        return null;
     }
 }
