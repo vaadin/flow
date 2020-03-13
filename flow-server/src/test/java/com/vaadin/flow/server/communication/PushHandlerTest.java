@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccessTest;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
@@ -87,14 +88,14 @@ public class PushHandlerTest {
         deploymentConfiguration.setProductionMode(false);
 
         VaadinContext context = service.getContext();
-        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
-        context.setAttribute(BrowserLiveReload.class, liveReload);
+        BrowserLiveReload liveReload = BrowserLiveReloadAccessTest
+                .mockBrowserLiveReloadImpl(context);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
             Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_REFRESH_CONNECTION))
+                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
                     .thenReturn("");
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
             handler.onConnect(resource);
@@ -116,7 +117,7 @@ public class PushHandlerTest {
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
             Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_REFRESH_CONNECTION))
+                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
                     .thenReturn("");
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
             handler.onConnect(resource);
@@ -135,7 +136,7 @@ public class PushHandlerTest {
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
             Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_REFRESH_CONNECTION))
+                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
                     .thenReturn(null);
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
             handler.onConnect(resource);
@@ -154,7 +155,7 @@ public class PushHandlerTest {
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
             Mockito.when(request
-                    .getParameter(ApplicationConstants.LIVE_REFRESH_CONNECTION))
+                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
                     .thenReturn("");
             Mockito.when(resource.transport()).thenReturn(TRANSPORT.AJAX);
             handler.onConnect(resource);

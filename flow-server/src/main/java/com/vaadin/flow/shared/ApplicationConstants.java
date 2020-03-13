@@ -187,6 +187,10 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String FRONTEND_URL_ES6 = "frontendUrlEs6";
 
-    public static final String LIVE_REFRESH_CONNECTION = "refresh_connection";
+    /**
+     * Web socket parameter which identifies connection as live reload
+     * connection.
+     */
+    public static final String LIVE_RELOAD_CONNECTION = "refresh_connection";
 
 }

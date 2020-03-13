@@ -469,7 +469,7 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         String refreshConnection = resource.getRequest()
-                .getParameter(ApplicationConstants.LIVE_REFRESH_CONNECTION);
+                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
         if (!service.getDeploymentConfiguration().isProductionMode()
                 && refreshConnection != null
                 && TRANSPORT.WEBSOCKET.equals(resource.transport())) {
