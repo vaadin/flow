@@ -14,6 +14,6 @@ public class PushWithRequireJSUI extends UI {
         getPushConfiguration().setTransport(push.transport());
 
         // https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.20/require.min.js
-        getPage().addJavaScript("require.min.js");
+        getPage().addJavaScript("/require.min.js");
     }
 }
