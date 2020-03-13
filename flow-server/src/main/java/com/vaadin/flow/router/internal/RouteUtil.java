@@ -308,16 +308,17 @@ public class RouteUtil {
         Logger logger = LoggerFactory.getLogger(RouteUtil.class);
 
         registry.update(() -> {
-
             // remove deleted classes from registry
-            registry.getRegisteredRoutes().stream()
-                    .map(RouteData::getNavigationTarget)
-                    .filter(deletedClasses::contains).forEach(clazz -> {
-                        logger.debug("Removing route to {}", clazz);
-                        routeConf.removeRoute(clazz);
+            deletedClasses.stream()
+                    .filter(Component.class::isAssignableFrom)
+                    .forEach(clazz -> {
+                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
+                        logger.debug("Removing route to {}", componentClass);
+                        routeConf.removeRoute(componentClass);
                     });
             // add new routes to registry
             Stream.concat(addedClasses.stream(), modifiedClasses.stream())
+                    .distinct()
                     .filter(Component.class::isAssignableFrom)
                     .filter(clazz -> clazz.isAnnotationPresent(Route.class))
                     .forEach(clazz -> {
