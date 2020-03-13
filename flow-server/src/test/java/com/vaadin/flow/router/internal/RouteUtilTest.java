@@ -114,6 +114,37 @@ public class RouteUtilTest {
     public static class SubLayout extends Component {
     }
 
+    @Route(value = "sub-via-parent")
+    @Tag(Tag.DIV)
+    @ParentLayout(MultiTarget.class)
+    public static class SubLayoutViaParentLayout extends Component {
+    }
+
+    @Route(value = "")
+    @ParentLayout(Parent.class)
+    public static class LayoutViaParentLayoutAnnotation extends Component {
+
+    }
+
+    @Route(value = "", layout = RoutePrefixParent.class, absolute = true)
+    @ParentLayout(Parent.class)
+    public static class LayoutViaExplicitRouteLayout extends Component {
+
+    }
+
+    @Route(value = "")
+    @ParentLayout(RoutePrefixParent.class)
+    public static class PrefixedViaParentLayoutAnnotation extends Component {
+
+    }
+
+    @Route(value = "foo")
+    @ParentLayout(RoutePrefixParent.class)
+    public static class PathWithPrefixFromParentLayoutAnnotation
+            extends Component {
+
+    }
+
     @Test
     public void route_path_should_contain_parent_prefix() {
         String routePath = RouteUtil.getRoutePath(
@@ -392,6 +423,12 @@ public class RouteUtilTest {
                 "SubLayout using MultiTarget as parent should have gotten RoutePrefixParent as top parent layout",
                 RoutePrefixParent.class, topParentLayout);
 
+        topParentLayout = RouteUtil.getTopParentLayout(
+                SubLayoutViaParentLayout.class, "parent/sub-via-parent");
+        Assert.assertEquals(
+                "SubLayoutViaParentLayout using MultiTarget as parent should have gotten RoutePrefixParent as top parent layout",
+                RoutePrefixParent.class, topParentLayout);
+
     }
 
     @Test // 3424
@@ -419,6 +456,73 @@ public class RouteUtilTest {
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {
                         MultiTarget.class, RoutePrefixParent.class }));
+    }
+
+    @Test
+    public void getParentLayouts_layoutIsDefinedViaParentLayoutAnnotation() {
+        List<Class<? extends RouterLayout>> layouts = RouteUtil
+                .getParentLayouts(LayoutViaParentLayoutAnnotation.class, "");
+        Assert.assertEquals(1, layouts.size());
+        Assert.assertEquals(Parent.class, layouts.get(0));
+    }
+
+    @Test
+    public void getParentLayouts_layoutIsDefinedViaParentLayoutAnnotation_layoutHasPrefix() {
+        List<Class<? extends RouterLayout>> layouts = RouteUtil
+                .getParentLayouts(PrefixedViaParentLayoutAnnotation.class,
+                        "parent");
+        Assert.assertEquals(1, layouts.size());
+        Assert.assertEquals(RoutePrefixParent.class, layouts.get(0));
+
+        Assert.assertEquals(0,
+                RouteUtil
+                        .getParentLayouts(
+                                PrefixedViaParentLayoutAnnotation.class, "")
+                        .size());
+    }
+
+    @Test
+    public void getTopParentLayout_layoutIsDefinedViaParentLayoutAnnotation() {
+        Class<? extends RouterLayout> layout = RouteUtil
+                .getTopParentLayout(LayoutViaParentLayoutAnnotation.class, "");
+        Assert.assertEquals(Parent.class, layout);
+    }
+
+    @Test
+    public void getParentLayouts_layoutIsDefinedLayoutValue() {
+        List<Class<? extends RouterLayout>> layouts = RouteUtil
+                .getParentLayouts(LayoutViaExplicitRouteLayout.class, "");
+        Assert.assertEquals(1, layouts.size());
+        Assert.assertEquals(RoutePrefixParent.class, layouts.get(0));
+    }
+
+    @Test
+    public void getTopParentLayout_layoutIsDefinedLayoutValue() {
+        Class<? extends RouterLayout> layout = RouteUtil
+                .getTopParentLayout(LayoutViaExplicitRouteLayout.class, "");
+        Assert.assertEquals(RoutePrefixParent.class, layout);
+    }
+
+    @Test
+    public void getRoutePath_componentHasParentLayout_pathIsCalculatedBasedOnParentLayout() {
+        String routePath = RouteUtil.getRoutePath(
+                PrefixedViaParentLayoutAnnotation.class,
+                PrefixedViaParentLayoutAnnotation.class
+                        .getAnnotation(Route.class));
+        Assert.assertEquals(
+                "Expected path should be calculated via ParentLayout annotation",
+                "parent", routePath);
+    }
+
+    @Test
+    public void getRoutePath_componentHasParentLayoutAndRoutePath_pathIsPrefixedWithParentLayout() {
+        String routePath = RouteUtil.getRoutePath(
+                PathWithPrefixFromParentLayoutAnnotation.class,
+                PathWithPrefixFromParentLayoutAnnotation.class
+                        .getAnnotation(Route.class));
+        Assert.assertEquals(
+                "Expected path should be calculated via ParentLayout annotation",
+                "parent/foo", routePath);
     }
 
 }
