@@ -58,9 +58,9 @@ public class FrontendVersion
      * Create a version of format "major.minor.0".
      *
      * @param major
-     *         major version
+     *            major version
      * @param minor
-     *         minor version
+     *            minor version
      */
     public FrontendVersion(int major, int minor) {
         this(major, minor, 0);
@@ -70,11 +70,11 @@ public class FrontendVersion
      * Create a version of format "major.minor.revision".
      *
      * @param major
-     *         major version
+     *            major version
      * @param minor
-     *         minor version
+     *            minor version
      * @param revision
-     *         revision number
+     *            revision number
      */
     public FrontendVersion(int major, int minor, int revision) {
         this(major, minor, revision, "");
@@ -84,16 +84,16 @@ public class FrontendVersion
      * Create a version of format "major.minor.revision.build"
      *
      * @param major
-     *         major version
+     *            major version
      * @param minor
-     *         minor version
+     *            minor version
      * @param revision
-     *         revision number
+     *            revision number
      * @param build
-     *         build identifier
+     *            build identifier
      */
     public FrontendVersion(int major, int minor, int revision, String build) {
-        if(build.isEmpty()) {
+        if (build.isEmpty()) {
             this.version = major + "." + minor + "." + revision;
         } else {
             this.version = major + "." + minor + "." + revision + "." + build;
@@ -111,10 +111,13 @@ public class FrontendVersion
      * Versions are normalized and any caret or tildes will not be considered.
      *
      * @param version
-     *         version string as "major.minor.revision[.build]"
+     *            version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String version) {
         Objects.requireNonNull(version);
+        if (version.isEmpty()) {
+            throw new NumberFormatException(getInvalidVersionMessage(version));
+        }
         if (!Character.isDigit(version.charAt(0))) {
             this.version = version.substring(1).trim();
         } else {
@@ -124,16 +127,24 @@ public class FrontendVersion
         final String[] digits = this.version.split("[-.]", 4);
         try {
             majorVersion = Integer.parseInt(digits[0]);
-            minorVersion = Integer.parseInt(digits[1]);
         } catch (NumberFormatException nfe) {
-            throw new NumberFormatException(
-                    String.format("'%s' is not a valid version!", version));
+            throw new NumberFormatException(getInvalidVersionMessage(version));
+        }
+        if (digits.length >= 2) {
+            try {
+                minorVersion = Integer.parseInt(digits[1]);
+            } catch (NumberFormatException nfe) {
+                throw new NumberFormatException(
+                        getInvalidVersionMessage(version));
+            }
+        } else {
+            minorVersion = 0;
         }
         int revisionNumber;
         String build = "";
         try {
-            revisionNumber =
-                    digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
+            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2])
+                    : 0;
             if (digits.length == 4) {
                 build = digits[3];
             }
@@ -196,11 +207,11 @@ public class FrontendVersion
     }
 
     /**
-     * Check if this version is older than given version.
-     * Will return false if equals or is newer.
+     * Check if this version is older than given version. Will return false if
+     * equals or is newer.
      *
      * @param otherVersion
-     *         version to check against
+     *            version to check against
      * @return true if this is older than otherVersion
      */
     public boolean isOlderThan(FrontendVersion otherVersion) {
@@ -208,11 +219,11 @@ public class FrontendVersion
     }
 
     /**
-     * Check if this version is newer than given version.
-     * Will return false if equals or is older.
+     * Check if this version is newer than given version. Will return false if
+     * equals or is older.
      *
      * @param otherVersion
-     *         version to check against
+     *            version to check against
      * @return true if this is newer than otherVersion
      */
     public boolean isNewerThan(FrontendVersion otherVersion) {
@@ -223,7 +234,7 @@ public class FrontendVersion
      * Check if this and the given version are equal to each other.
      *
      * @param otherVersion
-     *         version to test equals with
+     *            version to test equals with
      * @return true if parsed version parts are exactly the same
      */
     public boolean isEqualTo(FrontendVersion otherVersion) {
@@ -236,8 +247,8 @@ public class FrontendVersion
             FrontendVersion other = (FrontendVersion) obj;
             return majorVersion == other.getMajorVersion()
                     && minorVersion == other.getMinorVersion()
-                    && revision == other.getRevision() && buildIdentifier
-                    .equals(other.getBuildIdentifier());
+                    && revision == other.getRevision()
+                    && buildIdentifier.equals(other.getBuildIdentifier());
 
         }
         return false;
@@ -250,11 +261,11 @@ public class FrontendVersion
     }
 
     /**
-     * Compare version numbers and return order as -1, 0 and 1.
-     * Where this version is older, equals, newer than given version.
+     * Compare version numbers and return order as -1, 0 and 1. Where this
+     * version is older, equals, newer than given version.
      *
      * @param other
-     *         version to compare against this version
+     *            version to compare against this version
      * @return -1 this is older, 0 versions equal, 1 this is newer
      */
     @Override
@@ -271,12 +282,17 @@ public class FrontendVersion
         if (this.buildIdentifier != other.buildIdentifier) {
             if (buildIdentifier.isEmpty() && !other.buildIdentifier.isEmpty()) {
                 return 1;
-            } else if (!buildIdentifier.isEmpty() && other.buildIdentifier
-                    .isEmpty()) {
+            } else if (!buildIdentifier.isEmpty()
+                    && other.buildIdentifier.isEmpty()) {
                 return -1;
             }
             return buildIdentifier.compareToIgnoreCase(other.buildIdentifier);
         }
         return 0;
     }
+
+    private String getInvalidVersionMessage(String version) {
+        return String.format("'%s' is not a valid version!", version);
+    }
+
 }
