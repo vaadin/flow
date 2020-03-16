@@ -34,7 +34,7 @@ public class LiveReload {
     private WebSocket webSocket;
     private Element indicator;
 
-    public void show(int uiId) {
+    public void show() {
         if (!isEnabled())
             return;
 
