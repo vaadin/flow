@@ -42,9 +42,7 @@ import org.zeroturnaround.javarebel.integration.util.WeakUtil;
 public class JRebelInitializer implements ServletContainerInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> c, ServletContext ctx)
-            throws ServletException {
-
+    public void onStartup(Set<Class<?>> c, ServletContext ctx) {
         final VaadinContext vaadinContext = new VaadinServletContext(ctx);
 
         ClassEventListener listener = new ClassEventListenerImpl(vaadinContext);
@@ -81,8 +79,8 @@ public class JRebelInitializer implements ServletContainerInitializer {
             lock.lock();
 
             try {
-                getLogger().info("JRebel class event with type "
-                        + eventType + ", on class " + klass.getName());
+                getLogger().info("JRebel class event with type " + eventType
+                        + ", on class " + klass.getName());
 
                 if (command != null) {
                     command.cancel.set(true);
