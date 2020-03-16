@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.devmode;
+package com.vaadin.flow.internal;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import org.zeroturnaround.javarebel.ClassEventListener;
 import org.zeroturnaround.javarebel.ReloaderFactory;
@@ -43,13 +44,16 @@ public class JRebelInitializer implements ServletContainerInitializer {
     public void onStartup(Set<Class<?>> c, ServletContext ctx)
             throws ServletException {
 
-        ClassEventListener listener = new ClassEventListenerImpl(ctx);
+        System.err.println("JRebel.onStartup");
+
+        final VaadinContext vaadinContext = new VaadinServletContext(ctx);
+
+        ClassEventListener listener = new ClassEventListenerImpl(vaadinContext);
 
         ReloaderFactory.getInstance()
                 .addClassReloadListener(WeakUtil.weak(listener));
 
-        new VaadinServletContext(ctx)
-                .setAttribute(new JRebelListenerReference(listener));
+        vaadinContext.setAttribute(new JRebelListenerReference(listener));
     }
 
     private static class ClassEventListenerImpl
@@ -63,13 +67,13 @@ public class JRebelInitializer implements ServletContainerInitializer {
 
         Lock lock = new ReentrantLock(true);
 
-        ServletContext context;
+        VaadinContext context;
 
         Set<Class<?>> addedClasses = new HashSet<>();
         Set<Class<?>> modifiedClasses = new HashSet<>();
         Set<Class<?>> deletedClasses = new HashSet<>();
 
-        public ClassEventListenerImpl(ServletContext context) {
+        public ClassEventListenerImpl(VaadinContext context) {
             super(0);
 
             this.context = context;
@@ -82,6 +86,9 @@ public class JRebelInitializer implements ServletContainerInitializer {
             lock.lock();
 
             try {
+                System.err.println("JRebel.onClassEvent " + eventType + " on "
+                        + klass.getName());
+
                 switch (eventType) {
                     case ClassEventListener.EVENT_LOADED:
                         addedClasses.add(klass);
@@ -90,7 +97,7 @@ public class JRebelInitializer implements ServletContainerInitializer {
                         modifiedClasses.add(klass);
                         break;
 
-                        // TODO: EVENT_UNLOADED missing?
+                    // TODO: EVENT_UNLOADED missing?
                 }
 
                 if (command != null) {
@@ -121,7 +128,11 @@ public class JRebelInitializer implements ServletContainerInitializer {
                         return;
                     }
 
-                    // TODO access VaadinServlet for reload.
+                    // TODO access VaadinServlet
+
+                    final BrowserLiveReloadImpl liveReload = context.getAttribute(BrowserLiveReloadImpl.class);
+
+                    liveReload.reload();
 
                     addedClasses.clear();
                     modifiedClasses.clear();
