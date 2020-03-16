@@ -18,9 +18,7 @@ package com.vaadin.flow.server.devmode;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -28,18 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Stream;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.zeroturnaround.javarebel.ClassEventListener;
 import org.zeroturnaround.javarebel.ReloaderFactory;
 import org.zeroturnaround.javarebel.integration.generic.ClassEventListenerAdapter;
@@ -55,8 +43,6 @@ public class JRebelInitializer implements ServletContainerInitializer {
     public void onStartup(Set<Class<?>> c, ServletContext ctx)
             throws ServletException {
 
-        System.err.println("JRebel.onStartup");
-
         ClassEventListener listener = new ClassEventListenerImpl(ctx);
 
         ReloaderFactory.getInstance()
@@ -64,41 +50,6 @@ public class JRebelInitializer implements ServletContainerInitializer {
 
         new VaadinServletContext(ctx)
                 .setAttribute(new JRebelListenerReference(listener));
-    }
-
-    /*
-    TODO: This code will get replaced.
-     */
-    private static void updateRouteRegistry(RouteRegistry registry,
-                                            Set<Class<?>> addedClasses, Set<Class<?>> modifiedClasses,
-                                            Set<Class<?>> deletedClasses) {
-        RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
-
-        Logger logger = LoggerFactory.getLogger(RouteUtil.class);
-
-        registry.update(() -> {
-
-            // remove deleted classes from registry
-            registry.getRegisteredRoutes().stream()
-                    .map(RouteData::getNavigationTarget)
-                    .filter(deletedClasses::contains).forEach(clazz -> {
-                logger.debug("Removing route to {}", clazz);
-                routeConf.removeRoute(clazz);
-            });
-            // add new routes to registry
-            Stream.concat(addedClasses.stream(), modifiedClasses.stream())
-                    .filter(Component.class::isAssignableFrom)
-                    .filter(clazz -> clazz.isAnnotationPresent(Route.class))
-                    .forEach(clazz -> {
-                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
-                        logger.debug(
-                                "Updating route {} to {}", componentClass
-                                        .getAnnotation(Route.class).value(),
-                                clazz);
-                        routeConf.removeRoute(componentClass);
-                        routeConf.setAnnotatedRoute(componentClass);
-                    });
-        });
     }
 
     private static class ClassEventListenerImpl
@@ -131,9 +82,6 @@ public class JRebelInitializer implements ServletContainerInitializer {
             lock.lock();
 
             try {
-                System.err.println("JRebel.onClassEvent " + eventType + " on "
-                        + klass.getName());
-
                 switch (eventType) {
                     case ClassEventListener.EVENT_LOADED:
                         addedClasses.add(klass);
@@ -173,9 +121,7 @@ public class JRebelInitializer implements ServletContainerInitializer {
                         return;
                     }
 
-                    // TODO access VaadinServlet
-
-//                    updateRouteRegistry();
+                    // TODO access VaadinServlet for reload.
 
                     addedClasses.clear();
                     modifiedClasses.clear();
