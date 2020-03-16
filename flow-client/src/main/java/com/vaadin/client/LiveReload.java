@@ -20,6 +20,7 @@ import com.google.gwt.storage.client.Storage;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.events.Event;
 import elemental.events.MessageEvent;
 import elemental.html.WebSocket;
 import elemental.json.Json;
@@ -40,34 +41,35 @@ public class LiveReload {
         String hostname = Browser.getWindow().getLocation().getHostname();
         webSocket = createWebSocket(
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
-
-        // It means Spring Dev Tools is not present. We should connect to Flow
-        // Live Reload server
-        if (webSocket == null) {
+        webSocket.setOnmessage(this::handleMessageEvent);
+        webSocket.setOnerror(evt -> {
             String port = Browser.getWindow().getLocation().getPort();
             webSocket = createWebSocket("ws://" + hostname + ':' + port
                     + "?v-uiId=" + uiId + "&refresh_connection");
-            if (webSocket == null) {
-                Console.warn("No Live Reload server is available!");
-                return;
-            }
-        }
-
-        webSocket.setOnmessage(evt -> {
-            MessageEvent messageEvent = (MessageEvent) evt;
-            JsonObject data = Json.parse((String) messageEvent.getData());
-            indicator = getOrCreateIndicator();
-            Element indicatorMessage = Browser.getDocument()
-                    .getElementById("vaadin-live-reload-message");
-            if ("hello".equals(data.getString("command"))) {
-                indicatorMessage.setInnerHTML("Live Reload active");
-            } else if ("reload".equals(data.getString("command"))) {
-                indicatorMessage.setInnerHTML("Live Reload in progress...");
-                Browser.getWindow().getLocation().reload();
-            } else {
-                indicatorMessage.setHidden(true);
-            }
+            webSocket.setOnmessage(this::handleMessageEvent);
         });
+    }
+
+
+    private native WebSocket createWebSocket(String url)
+        /*-{
+            return new WebSocket(url);
+        }-*/;
+
+    private void handleMessageEvent(Event evt) {
+        MessageEvent messageEvent = (MessageEvent) evt;
+        JsonObject data = Json.parse((String) messageEvent.getData());
+        indicator = getOrCreateIndicator();
+        Element indicatorMessage = Browser.getDocument()
+                .getElementById("vaadin-live-reload-message");
+        if ("hello".equals(data.getString("command"))) {
+            indicatorMessage.setInnerHTML("Live Reload active");
+        } else if ("reload".equals(data.getString("command"))) {
+            indicatorMessage.setInnerHTML("Live Reload in progress...");
+            Browser.getWindow().getLocation().reload();
+        } else {
+            indicatorMessage.setHidden(true);
+        }
     }
 
     private Element getOrCreateIndicator() {
@@ -132,13 +134,4 @@ public class LiveReload {
 
         storage.setItem(ENABLED_KEY_IN_STORAGE, "false");
     }
-
-    private native WebSocket createWebSocket(String url)
-    /*-{
-        try {
-            return new WebSocket(url);
-        } catch(e) {
-            return null;
-        }
-    }-*/;
 }

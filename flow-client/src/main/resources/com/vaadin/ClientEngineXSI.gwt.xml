@@ -14,8 +14,9 @@
 
 	<inherits name="com.google.gwt.useragent.UserAgent" />
 	<inherits name="com.google.gwt.precompress.Precompress" />
+    <inherits name="com.google.gwt.storage.Storage"/>
 
-	<source path="client" />
+    <source path="client" />
 	<source path="flow/shared" />
 
 	<entry-point class="com.vaadin.client.bootstrap.Bootstrapper" />
