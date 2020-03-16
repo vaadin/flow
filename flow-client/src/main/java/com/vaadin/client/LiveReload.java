@@ -45,7 +45,7 @@ public class LiveReload {
         webSocket.setOnerror(evt -> {
             String port = Browser.getWindow().getLocation().getPort();
             webSocket = createWebSocket("ws://" + hostname + ':' + port
-                    + "?v-uiId=" + uiId + "&refresh_connection");
+                    + "?refresh_connection");
             webSocket.setOnmessage(this::handleMessageEvent);
         });
     }
