@@ -307,8 +307,10 @@ public class RouteUtil {
         Logger logger = LoggerFactory.getLogger(RouteUtil.class);
 
         registry.update(() -> {
-            // remove deleted classes from registry
-            deletedClasses.stream()
+            // remove deleted classes and classes that lost the annotation from registry
+            Stream.concat(deletedClasses.stream(),
+                    modifiedClasses.stream().filter(
+                            clazz -> !clazz.isAnnotationPresent(Route.class)))
                     .filter(Component.class::isAssignableFrom)
                     .forEach(clazz -> {
                         Class<? extends Component> componentClass = (Class<? extends Component>) clazz;

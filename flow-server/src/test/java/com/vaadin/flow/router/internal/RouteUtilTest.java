@@ -425,7 +425,7 @@ public class RouteUtilTest {
     }
 
     @Test
-    public void newRouteAnnotatedClass_reload_routeIsAddedToRegistry() {
+    public void newRouteAnnotatedClass_updateRouteRegistry_routeIsAddedToRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -442,7 +442,7 @@ public class RouteUtilTest {
     }
 
     @Test
-    public void deletedRouteAnnotatedClass_reload_routeIsRemovedFromRegistry() {
+    public void deletedRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
         // given
         @Route("a")
         class A extends Component {
@@ -461,7 +461,7 @@ public class RouteUtilTest {
     }
 
     @Test
-    public void renamedRouteAnnotatedClass_reload_routeIsUpdatedInRegistry() {
+    public void renamedRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
         // given
         @Route("aa")
         class A extends Component {
@@ -478,6 +478,24 @@ public class RouteUtilTest {
         // then
         Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
         Assert.assertTrue(registry.getConfiguration().hasRoute("aa"));
+    }
+
+    @Test
+    public void deannotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
+        // given
+        class A extends Component {
+        }
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(new MockVaadinServletService().getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
 }
