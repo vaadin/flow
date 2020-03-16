@@ -18,7 +18,6 @@ package com.vaadin.flow.internal;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -29,6 +28,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeroturnaround.javarebel.ClassEventListener;
 import org.zeroturnaround.javarebel.ReloaderFactory;
 import org.zeroturnaround.javarebel.integration.generic.ClassEventListenerAdapter;
@@ -44,8 +45,6 @@ public class JRebelInitializer implements ServletContainerInitializer {
     public void onStartup(Set<Class<?>> c, ServletContext ctx)
             throws ServletException {
 
-        System.err.println("JRebel.onStartup");
-
         final VaadinContext vaadinContext = new VaadinServletContext(ctx);
 
         ClassEventListener listener = new ClassEventListenerImpl(vaadinContext);
@@ -54,51 +53,36 @@ public class JRebelInitializer implements ServletContainerInitializer {
                 .addClassReloadListener(WeakUtil.weak(listener));
 
         vaadinContext.setAttribute(new JRebelListenerReference(listener));
+
+        getLogger().info("Started JRebel initializer");
     }
 
     private static class ClassEventListenerImpl
             extends ClassEventListenerAdapter {
 
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
+        private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
                 1);
 
-        ScheduledFuture<?> schedule;
-        ClassEventRunnable command;
+        private ScheduledFuture<?> schedule;
+        private ClassEventRunnable command;
 
-        Lock lock = new ReentrantLock(true);
+        private Lock lock = new ReentrantLock(true);
 
-        VaadinContext context;
+        private VaadinContext context;
 
-        Set<Class<?>> addedClasses = new HashSet<>();
-        Set<Class<?>> modifiedClasses = new HashSet<>();
-        Set<Class<?>> deletedClasses = new HashSet<>();
-
-        public ClassEventListenerImpl(VaadinContext context) {
+        private ClassEventListenerImpl(VaadinContext context) {
             super(0);
 
             this.context = context;
         }
 
         @Override
-        public void onClassEvent(int eventType, Class<?> klass)
-                throws Exception {
-
+        public void onClassEvent(int eventType, Class<?> klass) {
             lock.lock();
 
             try {
-                System.err.println("JRebel.onClassEvent " + eventType + " on "
-                        + klass.getName());
-
-                switch (eventType) {
-                    case ClassEventListener.EVENT_LOADED:
-                        addedClasses.add(klass);
-                        break;
-                    case ClassEventListener.EVENT_RELOADED:
-                        modifiedClasses.add(klass);
-                        break;
-
-                    // TODO: EVENT_UNLOADED missing?
-                }
+                getLogger().info("JRebel class event with type "
+                        + eventType + ", on class " + klass.getName());
 
                 if (command != null) {
                     command.cancel.set(true);
@@ -119,25 +103,18 @@ public class JRebelInitializer implements ServletContainerInitializer {
 
             @Override
             public void run() {
-
                 lock.lock();
 
                 try {
-
                     if (cancel.get()) {
                         return;
                     }
 
-                    // TODO access VaadinServlet
-
-                    final BrowserLiveReloadImpl liveReload = context.getAttribute(BrowserLiveReloadImpl.class);
-
-                    liveReload.reload();
-
-                    addedClasses.clear();
-                    modifiedClasses.clear();
-                    deletedClasses.clear();
-
+                    final BrowserLiveReloadImpl liveReload = context
+                            .getAttribute(BrowserLiveReloadImpl.class);
+                    if (liveReload != null) {
+                        liveReload.reload();
+                    }
                 } finally {
                     lock.unlock();
                 }
@@ -150,8 +127,13 @@ public class JRebelInitializer implements ServletContainerInitializer {
 
         private final ClassEventListener listener;
 
-        public JRebelListenerReference(ClassEventListener listener) {
+        private JRebelListenerReference(ClassEventListener listener) {
             this.listener = listener;
         }
     }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(JRebelInitializer.class.getName());
+    }
+
 }
