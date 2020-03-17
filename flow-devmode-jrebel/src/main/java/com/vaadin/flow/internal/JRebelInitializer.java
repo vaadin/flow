@@ -17,7 +17,6 @@ package com.vaadin.flow.internal;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -41,6 +40,8 @@ import org.zeroturnaround.javarebel.integration.util.WeakUtil;
  */
 public class JRebelInitializer implements ServletContainerInitializer {
 
+    static final int RELOAD_DELAY = 100;
+
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext ctx) {
         final VaadinContext vaadinContext = new VaadinServletContext(ctx);
@@ -53,6 +54,15 @@ public class JRebelInitializer implements ServletContainerInitializer {
         vaadinContext.setAttribute(new JRebelListenerReference(listener));
 
         getLogger().info("Started JRebel initializer");
+    }
+
+    static class JRebelListenerReference {
+
+        final ClassEventListener listener;
+
+        private JRebelListenerReference(ClassEventListener listener) {
+            this.listener = listener;
+        }
     }
 
     private static class ClassEventListenerImpl
@@ -88,7 +98,7 @@ public class JRebelInitializer implements ServletContainerInitializer {
                 }
 
                 command = new ClassEventRunnable();
-                schedule = executor.schedule(command, 100,
+                schedule = executor.schedule(command, RELOAD_DELAY,
                         TimeUnit.MILLISECONDS);
             } finally {
                 lock.unlock();
@@ -119,15 +129,6 @@ public class JRebelInitializer implements ServletContainerInitializer {
             }
         }
 
-    }
-
-    private static class JRebelListenerReference {
-
-        private final ClassEventListener listener;
-
-        private JRebelListenerReference(ClassEventListener listener) {
-            this.listener = listener;
-        }
     }
 
     private static Logger getLogger() {
