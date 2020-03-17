@@ -59,11 +59,19 @@ public class LiveReload {
         webSocket = createWebSocket(
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
         webSocket.setOnmessage(this::handleMessageEvent);
-        webSocket.setOnerror(evt -> {
+        webSocket.setOnerror(springWsEvent -> {
+            springWsEvent.setCancelBubble(true);
+            Console.debug(
+                    "Spring Dev Tools Live Reload server is not available. Trying to connect to Flow Live Reload server ...");
             webSocket = createWebSocket(
                     serviceUrl.replaceFirst("http://", "ws://")
                             + "?refresh_connection");
             webSocket.setOnmessage(this::handleMessageEvent);
+            webSocket.setOnerror(flowWsEvent -> {
+                flowWsEvent.setCancelBubble(true);
+                Console.debug(
+                        "Flow Live Reload server is not available either. Live Reload won't work automatically.");
+            });
         });
     }
 
