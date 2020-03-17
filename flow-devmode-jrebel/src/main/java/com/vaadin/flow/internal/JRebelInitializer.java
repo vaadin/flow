@@ -119,7 +119,7 @@ public class JRebelInitializer implements ServletContainerInitializer {
                         return;
                     }
 
-                    final BrowserLiveReloadImpl liveReload = context
+                    final BrowserLiveReload liveReload = context
                             .getAttribute(BrowserLiveReloadImpl.class);
                     if (liveReload != null) {
                         liveReload.reload();

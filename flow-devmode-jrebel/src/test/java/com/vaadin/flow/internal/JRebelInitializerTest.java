@@ -31,7 +31,7 @@ import org.zeroturnaround.javarebel.ClassEventListener;
 
 public class JRebelInitializerTest {
 
-    private BrowserLiveReloadImpl liveReload;
+    private BrowserLiveReload liveReload;
     private ClassEventListener listener;
 
     @Before
