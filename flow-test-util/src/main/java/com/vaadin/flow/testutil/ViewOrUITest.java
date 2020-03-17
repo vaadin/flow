@@ -101,7 +101,7 @@ public class ViewOrUITest extends AbstractTestBenchTest {
             }
         } catch (Exception e) {
             // Here only to please Sonar...
-            getLogger().error(
+            getLogger().debug(
                     " for {} not found", getClass().getName(), e);
         }
         return null;
