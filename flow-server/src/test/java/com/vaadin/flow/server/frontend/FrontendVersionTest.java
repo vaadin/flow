@@ -59,6 +59,11 @@ public class FrontendVersionTest {
         new FrontendVersion("12.0b.1");
     }
 
+    @Test
+    public void onlyMajorVersion_allVersoinNumbersAreCalculated() {
+        assertVersion(new FrontendVersion("3"), 3, 0, 0, "");
+    }
+
     private void assertVersion(FrontendVersion version, int major, int minor,
             int revision, String build) {
         Assert.assertEquals(

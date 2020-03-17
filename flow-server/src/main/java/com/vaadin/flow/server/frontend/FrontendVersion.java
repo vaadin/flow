@@ -56,9 +56,9 @@ public class FrontendVersion implements Serializable {
      * Create a version of format "major.minor.0".
      *
      * @param major
-     *         major version
+     *            major version
      * @param minor
-     *         minor version
+     *            minor version
      */
     public FrontendVersion(int major, int minor) {
         this(major, minor, 0);
@@ -68,11 +68,11 @@ public class FrontendVersion implements Serializable {
      * Create a version of format "major.minor.revision".
      *
      * @param major
-     *         major version
+     *            major version
      * @param minor
-     *         minor version
+     *            minor version
      * @param revision
-     *         revision number
+     *            revision number
      */
     public FrontendVersion(int major, int minor, int revision) {
         this(major, minor, revision, "");
@@ -82,13 +82,13 @@ public class FrontendVersion implements Serializable {
      * Create a version of format "major.minor.revision.build"
      *
      * @param major
-     *         major version
+     *            major version
      * @param minor
-     *         minor version
+     *            minor version
      * @param revision
-     *         revision number
+     *            revision number
      * @param build
-     *         build identifier
+     *            build identifier
      */
     public FrontendVersion(int major, int minor, int revision, String build) {
         this.version = major + "." + minor + "." + revision;
@@ -103,18 +103,23 @@ public class FrontendVersion implements Serializable {
      * "major.minor.revision[.build]". The build part is optional.
      *
      * @param version
-     *         version string as "major.minor.revision[.build]"
+     *            version string as "major.minor.revision[.build]"
      */
     public FrontendVersion(String version) {
         this.version = version;
 
         final String[] digits = version.split("[-.]", 4);
         majorVersion = Integer.parseInt(digits[0]);
-        minorVersion = Integer.parseInt(digits[1]);
+        if (digits.length > 1) {
+            minorVersion = Integer.parseInt(digits[1]);
+        } else {
+            minorVersion = 0;
+        }
         int revisionNumber;
         String build = "";
         try {
-            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2]) : 0;
+            revisionNumber = digits.length >= 3 ? Integer.parseInt(digits[2])
+                    : 0;
             if (digits.length == 4) {
                 build = digits[3];
             }
@@ -182,8 +187,8 @@ public class FrontendVersion implements Serializable {
             FrontendVersion other = (FrontendVersion) obj;
             return majorVersion == other.getMajorVersion()
                     && minorVersion == other.getMinorVersion()
-                    && revision == other.getRevision() && buildIdentifier
-                    .equals(other.getBuildIdentifier());
+                    && revision == other.getRevision()
+                    && buildIdentifier.equals(other.getBuildIdentifier());
         }
         return false;
     }
