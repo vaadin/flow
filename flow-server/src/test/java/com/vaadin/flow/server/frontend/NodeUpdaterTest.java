@@ -157,27 +157,36 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEPENDENCIES).put("@webcomponents/webcomponentsjs", "^2.1.1");
+        packageJson.getObject(NodeUpdater.DEPENDENCIES)
+                .put("@webcomponents/webcomponentsjs", "^2.1.1");
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
                 "3.3.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("^2.2.10", packageJson.getObject(NodeUpdater.DEPENDENCIES).getString("@webcomponents/webcomponentsjs"));
-        Assert.assertEquals("4.30.0", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("^2.2.10",
+                packageJson.getObject(NodeUpdater.DEPENDENCIES)
+                        .getString("@webcomponents/webcomponentsjs"));
+        Assert.assertEquals("4.42.0", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
-    @Test //#6907 test when user has set newer versions
-    public void updateDefaultDependencies_newerVersionsAreNotChanged() throws IOException {
+    @Test // #6907 test when user has set newer versions
+    public void updateDefaultDependencies_newerVersionsAreNotChanged()
+            throws IOException {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEPENDENCIES).put("@webcomponents/webcomponentsjs", "2.3.1");
+        packageJson.getObject(NodeUpdater.DEPENDENCIES)
+                .put("@webcomponents/webcomponentsjs", "2.3.1");
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
                 "5.0.1");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("2.3.1", packageJson.getObject(NodeUpdater.DEPENDENCIES).getString("@webcomponents/webcomponentsjs"));
-        Assert.assertEquals("5.0.1", packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("2.3.1",
+                packageJson.getObject(NodeUpdater.DEPENDENCIES)
+                        .getString("@webcomponents/webcomponentsjs"));
+        Assert.assertEquals("5.0.1", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
     private String getPolymerVersion(JsonObject object) {
