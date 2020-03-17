@@ -92,7 +92,7 @@ public class JRebelInitializer implements ServletContainerInitializer {
 
             try {
                 getLogger().info(
-                        "JRebel class event with type {0}, on class {1}",
+                        "JRebel class event with type {}, on class {}",
                         eventType, klass.getName());
 
                 if (command != null) {
@@ -125,6 +125,9 @@ public class JRebelInitializer implements ServletContainerInitializer {
                             .getAttribute(BrowserLiveReload.class);
                     if (liveReload != null) {
                         liveReload.reload();
+                        getLogger().info("Browser reloaded.");
+                    } else {
+                        getLogger().warn("BrowserLiveReload not loaded.");
                     }
                 } finally {
                     lock.unlock();
