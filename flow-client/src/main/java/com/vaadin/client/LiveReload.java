@@ -26,6 +26,14 @@ import elemental.html.WebSocket;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+/**
+ * Responsible for the client-side of the Live Reload. It refreshes the page
+ * when it receives a reload command from Loive Reload server (either Spring or
+ * Flow).
+ * 
+ * @author Vaadin Ltd
+ * @since
+ */
 public class LiveReload {
     // The default value is true meaning if the key doesn't exist in the local
     // storage Live Reload is enabled.
@@ -34,6 +42,15 @@ public class LiveReload {
     private WebSocket webSocket;
     private Element indicator;
 
+    /**
+     * Connects to either Spring Dev Tools Live Reload server or Flow Live
+     * Reload server and if the connection is successful shows an overlay on the
+     * page including the status of the Live Reload.
+     * 
+     * @param serviceUrl
+     *            The root URL of the application that should be used to connect
+     *            to Flow Live Reload server
+     */
     public void show(String serviceUrl) {
         if (!isEnabled())
             return;
@@ -72,27 +89,26 @@ public class LiveReload {
     }
 
     private Element getOrCreateIndicator() {
-        Element indicator = Browser.getDocument()
+        Element reloadIndicator = Browser.getDocument()
                 .getElementById("vaadin-live-reload-indicator");
-        if (indicator == null) {
-            indicator = Browser.getDocument().createElement("div");
-            indicator.setId("vaadin-live-reload-indicator");
-            indicator.getStyle().setPosition("fixed");
-            indicator.getStyle().setPadding("10px 10px 10px 10px");
-            indicator.getStyle().setMargin("10px 10px 10px 10px");
-            indicator.getStyle().setRight("0");
-            indicator.getStyle().setTop("0");
-            indicator.getStyle().setZIndex(10000);
+        if (reloadIndicator == null) {
+            reloadIndicator = Browser.getDocument().createElement("div");
+            reloadIndicator.setId("vaadin-live-reload-indicator");
+            reloadIndicator.getStyle().setPosition("fixed");
+            reloadIndicator.getStyle().setPadding("10px 10px 10px 10px");
+            reloadIndicator.getStyle().setMargin("10px 10px 10px 10px");
+            reloadIndicator.getStyle().setRight("0");
+            reloadIndicator.getStyle().setTop("0");
+            reloadIndicator.getStyle().setZIndex(10000);
             Element icon = Browser.getDocument().createElement("div");
             Element overlay = Browser.getDocument().createElement("div");
             overlay.setId("vaadin-live-reload-overlay");
             overlay.setHidden(true);
             icon.setId("vaadin-live-reload-icon");
             icon.getStyle().setProperty("text-align", "right");
-            // icon.getStyle().setProperty("transform", "rotate(90deg)");
             icon.setOnclick(evt -> overlay.setHidden(!overlay.isHidden()));
             icon.setInnerText("}>");
-            indicator.appendChild(icon);
+            reloadIndicator.appendChild(icon);
             Element message = Browser.getDocument().createElement("span");
             message.setId("vaadin-live-reload-message");
             message.setInnerText("Live Reload is active");
@@ -103,10 +119,10 @@ public class LiveReload {
             disableButton.setAttribute("value", "Disable");
             disableButton.setOnclick(evt -> disable());
             overlay.appendChild(disableButton);
-            indicator.appendChild(overlay);
-            Browser.getDocument().getBody().appendChild(indicator);
+            reloadIndicator.appendChild(overlay);
+            Browser.getDocument().getBody().appendChild(reloadIndicator);
         }
-        return indicator;
+        return reloadIndicator;
     }
 
     private boolean isEnabled() {
