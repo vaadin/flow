@@ -7,7 +7,7 @@
         <groupId>com.vaadin</groupId>
         <version>3.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-devmode-jrebel</artifactId>
+    <artifactId>flow-jrebel-plugin</artifactId>
     <name>Flow Devmode for JRebel</name>
     <packaging>jar</packaging>
 
