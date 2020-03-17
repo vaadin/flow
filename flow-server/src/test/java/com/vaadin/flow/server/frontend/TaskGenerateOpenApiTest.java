@@ -162,6 +162,23 @@ public class TaskGenerateOpenApiTest {
         Assert.assertFalse(generatedOpenAPI.getPaths().containsKey("/CustomEndpoint/foo"));
     }
 
+    @Test
+    public void should_UseCustomEndpointNameWithoutValueEqual_InsteadOf_UsingClassName()
+            throws Exception {
+        taskGenerateOpenApi = new TaskGenerateOpenApi(applicationPropertiesFile,
+                javaSource,
+                this.getClass().getClassLoader(),
+                generatedOpenAPI);
+        taskGenerateOpenApi.execute();
+
+        OpenAPI generatedOpenAPI = getGeneratedOpenAPI();
+
+        Assert.assertTrue(generatedOpenAPI.getPaths().containsKey("/WithoutValueEqual/bar"));
+        Assert.assertFalse(generatedOpenAPI.getPaths().containsKey("/EndpointNoValue/bar"));
+        Assert.assertTrue(generatedOpenAPI.getPaths().containsKey("/WithoutValueEqual/foo"));
+        Assert.assertFalse(generatedOpenAPI.getPaths().containsKey("/EndpointNoValue/foo"));
+    }
+
     private OpenAPI getGeneratedOpenAPI() throws IOException {
         OpenAPIV3Parser parser = new OpenAPIV3Parser();
         return parser.read(generatedOpenAPI.getAbsolutePath());

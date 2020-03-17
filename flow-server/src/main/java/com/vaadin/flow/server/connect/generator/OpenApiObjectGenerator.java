@@ -37,11 +37,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -358,14 +360,10 @@ public class OpenApiObjectGenerator {
     }
 
     private String getEndpointValueName(AnnotationExpr endpointAnnotation) {
-        for(int i = 0; i < endpointAnnotation.getChildNodes().size(); i++) {
-            if (endpointAnnotation.getChildNodes().get(i).getTokenRange().isPresent()
-                    && "value".equals(endpointAnnotation.getChildNodes().get(i)
-                    .getTokenRange().get().getBegin().getText())) {
-                return endpointAnnotation.getChildNodes().get(i).getTokenRange().get().getEnd().getText();
-            }
-        }
-        return null;
+        return endpointAnnotation.getChildNodes().stream().filter(node ->
+                node.getTokenRange().isPresent() &&
+                        "value".equals(node.getTokenRange().get().getBegin().getText()))
+                .map(node -> node.getTokenRange().get().getEnd().getText()).findFirst().orElse(null);
     }
 
     private List<Schema> parseNonEndpointClassAsSchema(
