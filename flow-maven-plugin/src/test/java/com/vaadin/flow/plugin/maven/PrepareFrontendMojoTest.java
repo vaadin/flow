@@ -174,6 +174,9 @@ public class PrepareFrontendMojoTest {
                 Constants.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written",
                 buildInfo.getBoolean(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+
+        Assert.assertFalse(buildInfo
+                .hasKey(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
