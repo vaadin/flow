@@ -16,9 +16,6 @@
  */
 package com.vaadin.flow.server.jrebel;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -27,8 +24,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeroturnaround.javarebel.ClassEventListener;
@@ -40,19 +40,19 @@ import org.zeroturnaround.javarebel.integration.util.WeakUtil;
  * Initialize and maintain JRebel {@link ClassEventListener} which receives
  * class change events.
  */
-public class JRebelInitializer implements ServletContainerInitializer {
+public class JRebelInitializer implements VaadinServiceInitListener {
 
     static final int RELOAD_DELAY = 100;
 
     @Override
-    public void onStartup(Set<Class<?>> c, ServletContext ctx) {
-        final VaadinContext vaadinContext = new VaadinServletContext(ctx);
+    public void serviceInit(ServiceInitEvent event) {
+        VaadinService vaadinService = event.getSource();
 
-        ClassEventListener listener = new ClassEventListenerImpl(vaadinContext);
-
+        ClassEventListener listener = new ClassEventListenerImpl(vaadinService);
         ReloaderFactory.getInstance()
                 .addClassReloadListener(WeakUtil.weak(listener));
 
+        VaadinContext vaadinContext = vaadinService.getContext();
         vaadinContext.setAttribute(new JRebelListenerReference(listener));
 
         getLogger().info("Started JRebel initializer");
@@ -78,12 +78,12 @@ public class JRebelInitializer implements ServletContainerInitializer {
 
         private Lock lock = new ReentrantLock(true);
 
-        private VaadinContext context;
+        private VaadinService vaadinService;
 
-        private ClassEventListenerImpl(VaadinContext context) {
+        private ClassEventListenerImpl(VaadinService vaadinService) {
             super(0);
 
-            this.context = context;
+            this.vaadinService = vaadinService;
         }
 
         @Override
@@ -121,8 +121,11 @@ public class JRebelInitializer implements ServletContainerInitializer {
                         return;
                     }
 
-                    final BrowserLiveReload liveReload = context
-                            .getAttribute(BrowserLiveReload.class);
+                    BrowserLiveReloadAccess liveReloadAccess = vaadinService
+                            .getInstantiator()
+                            .getOrCreate(BrowserLiveReloadAccess.class);
+                    BrowserLiveReload liveReload = liveReloadAccess
+                            .getLiveReload(vaadinService);
                     if (liveReload != null) {
                         liveReload.reload();
                         getLogger().info("Browser reloaded.");
