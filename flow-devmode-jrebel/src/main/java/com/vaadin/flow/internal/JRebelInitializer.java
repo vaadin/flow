@@ -89,8 +89,9 @@ public class JRebelInitializer implements ServletContainerInitializer {
             lock.lock();
 
             try {
-                getLogger().info("JRebel class event with type " + eventType
-                        + ", on class " + klass.getName());
+                getLogger().info(
+                        "JRebel class event with type {0}, on class {1}",
+                        eventType, klass.getName());
 
                 if (command != null) {
                     command.cancel.set(true);
