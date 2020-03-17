@@ -96,7 +96,8 @@ public class ApplicationConnection {
 
         registry.getLoadingIndicator().show();
         if (!applicationConfiguration.isProductionMode())
-            registry.getLiveReload().show();
+            registry.getLiveReload()
+                    .show(applicationConfiguration.getServiceUrl());
     }
 
     /**

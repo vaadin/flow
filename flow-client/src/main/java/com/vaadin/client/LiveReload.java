@@ -34,7 +34,7 @@ public class LiveReload {
     private WebSocket webSocket;
     private Element indicator;
 
-    public void show() {
+    public void show(String serviceUrl) {
         if (!isEnabled())
             return;
 
@@ -43,18 +43,17 @@ public class LiveReload {
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
         webSocket.setOnmessage(this::handleMessageEvent);
         webSocket.setOnerror(evt -> {
-            String port = Browser.getWindow().getLocation().getPort();
-            webSocket = createWebSocket("ws://" + hostname + ':' + port
-                    + "?refresh_connection");
+            webSocket = createWebSocket(
+                    serviceUrl.replaceFirst("http://", "ws://")
+                            + "?refresh_connection");
             webSocket.setOnmessage(this::handleMessageEvent);
         });
     }
 
-
     private native WebSocket createWebSocket(String url)
-        /*-{
-            return new WebSocket(url);
-        }-*/;
+    /*-{
+        return new WebSocket(url);
+    }-*/;
 
     private void handleMessageEvent(Event evt) {
         MessageEvent messageEvent = (MessageEvent) evt;
