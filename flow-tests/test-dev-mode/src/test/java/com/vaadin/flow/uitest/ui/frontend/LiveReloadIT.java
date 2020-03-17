@@ -32,39 +32,35 @@ public class LiveReloadIT extends ChromeBrowserTest {
         // Upon opening, the LiveReloadUI should show the indicator but not the
         // message
         Assert.assertEquals(1,
-                findElements(By.className("vaadin-live-reload-indicator"))
-                        .size());
-        Assert.assertEquals(0,
-                findElements(By.className("vaadin-live-reload-message"))
-                        .size());
+                findElements(By.id("vaadin-live-reload-indicator")).size());
+        WebElement reloadOverlay = findElement(
+                By.id("vaadin-live-reload-overlay"));
+        Assert.assertNotNull(reloadOverlay.getAttribute("hidden"));
 
-        // After clicking in the indicator, the Live Reload message should
-        // appear
-        WebElement reloadIndicator = findElement(
-                By.className("vaadin-live-reload-indicator"));
-        reloadIndicator.click();
-        Assert.assertEquals(1,
-                findElements(By.className("vaadin-live-reload-message")));
+        // After clicking the icon in the indicator, the Live Reload message
+        // should appear
+        WebElement liveReloadIcon = findElement(
+                By.id("vaadin-live-reload-icon"));
+        liveReloadIcon.click();
+        Assert.assertNotEquals("true", reloadOverlay.getAttribute("hidden"));
     }
 
     @Test
     public void overlayShouldNotBeRenderedAfterDisable() {
         open();
 
-        WebElement reloadIndicator = findElement(
-                By.className("vaadin-live-reload-indicator"));
-        reloadIndicator.click();
+        WebElement liveReloadIcon = findElement(
+                By.id("vaadin-live-reload-icon"));
+        liveReloadIcon.click();
         WebElement button = findElement(By.tagName("input"));
         button.click();
 
         Assert.assertEquals(0,
-                findElements(By.className("vaadin-live-reload-indicator"))
-                        .size());
+                findElements(By.id("vaadin-live-reload-indicator")).size());
 
         driver.navigate().refresh();
 
         Assert.assertEquals(0,
-                findElements(By.className("vaadin-live-reload-indicator"))
-                        .size());
+                findElements(By.id("vaadin-live-reload-indicator")).size());
     }
 }

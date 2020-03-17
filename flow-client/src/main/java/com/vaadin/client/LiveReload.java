@@ -86,6 +86,7 @@ public class LiveReload {
             Element icon = Browser.getDocument().createElement("div");
             Element overlay = Browser.getDocument().createElement("div");
             overlay.setId("vaadin-live-reload-overlay");
+            overlay.setHidden(true);
             icon.setId("vaadin-live-reload-icon");
             icon.getStyle().setProperty("text-align", "right");
             // icon.getStyle().setProperty("transform", "rotate(90deg)");
