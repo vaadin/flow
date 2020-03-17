@@ -12,8 +12,9 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package com.vaadin.flow.internal;
+package com.vaadin.flow.server.jrebel;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
@@ -25,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import org.slf4j.Logger;
@@ -120,7 +122,7 @@ public class JRebelInitializer implements ServletContainerInitializer {
                     }
 
                     final BrowserLiveReload liveReload = context
-                            .getAttribute(BrowserLiveReloadImpl.class);
+                            .getAttribute(BrowserLiveReload.class);
                     if (liveReload != null) {
                         liveReload.reload();
                     }

@@ -15,13 +15,14 @@
  *
  */
 
-package com.vaadin.flow.internal;
+package com.vaadin.flow.server.jrebel;
 
 import javax.servlet.ServletContext;
 import java.util.Collections;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.JRebelInitializer.JRebelListenerReference;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.jrebel.JRebelInitializer.JRebelListenerReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -39,9 +40,9 @@ public class JRebelInitializerTest {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
 
         // Provide the liveReload.
-        liveReload = Mockito.mock(BrowserLiveReloadImpl.class);
+        liveReload = Mockito.mock(BrowserLiveReload.class);
         Mockito.when(servletContext
-                .getAttribute(BrowserLiveReloadImpl.class.getName()))
+                .getAttribute(BrowserLiveReload.class.getName()))
                 .thenReturn(liveReload);
 
         // Capture JRebel listener instance.

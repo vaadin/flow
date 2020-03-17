@@ -47,12 +47,12 @@ public class BrowserLiveReloadAccess {
             return null;
         }
         VaadinContext context = service.getContext();
-        BrowserLiveReloadImpl liveReload;
+        BrowserLiveReload liveReload;
         synchronized (this) {
-            liveReload = context.getAttribute(BrowserLiveReloadImpl.class);
+            liveReload = context.getAttribute(BrowserLiveReload.class);
             if (liveReload == null) {
                 liveReload = new BrowserLiveReloadImpl(service);
-                context.setAttribute(BrowserLiveReloadImpl.class, liveReload);
+                context.setAttribute(BrowserLiveReload.class, liveReload);
             }
         }
         return liveReload;
