@@ -63,13 +63,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File javaSourceFolder;
 
     /**
-     * Whether to use byte code scanner strategy to discover frontend
-     * components.
-     */
-    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
-    protected boolean optimizeBundle;
-
-    /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")

@@ -195,8 +195,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
         buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                 requireHomeNodeExec);
-        buildInfo.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                optimizeBundle);
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
