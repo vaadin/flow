@@ -59,7 +59,6 @@ public class LiveReload {
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
         webSocket.setOnmessage(this::handleMessageEvent);
         webSocket.setOnerror(springWsEvent -> {
-            springWsEvent.setCancelBubble(true);
             if(!serviceUrl.startsWith("http://")) {
                 Console.debug(
                         "The protocol of the url should be http for Live Reload to work.");
@@ -71,7 +70,6 @@ public class LiveReload {
                             + "?refresh_connection");
             webSocket.setOnmessage(this::handleMessageEvent);
             webSocket.setOnerror(flowWsEvent -> {
-                flowWsEvent.setCancelBubble(true);
                 Console.debug(
                         "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically.");
             });
