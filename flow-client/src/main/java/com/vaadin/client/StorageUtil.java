@@ -16,12 +16,30 @@
 
 package com.vaadin.client;
 
+/**
+ * Includes utility methods to interact with HTML storage API.
+ */
 public class StorageUtil {
+    /**
+     * Gets an item value from the local storage.
+     * 
+     * @param key
+     *            the item key
+     * @return the value of the item
+     */
     public static native String getLocalItem(String key)
     /*-{
         return window.localStorage.getItem(key);
     }-*/;
 
+    /**
+     * Sets an item value in the local storage.
+     *
+     * @param key
+     *            the item key
+     * @param value
+     *            the item value
+     */
     public static native void setLocalItem(String key, String value)
     /*-{
         window.localStorage.setItem(key, value);

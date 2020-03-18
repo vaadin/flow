@@ -92,13 +92,11 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
-        }
-
-        registry.getLoadingIndicator().show();
-        if (!productionMode) {
             registry.getLiveReload()
                     .show(applicationConfiguration.getServiceUrl());
         }
+
+        registry.getLoadingIndicator().show();
     }
 
     /**
