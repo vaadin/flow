@@ -394,7 +394,10 @@ public final class PolymerUtils {
      *            HTML element to check
      * @return {@code true} if the {@code htmlNode} can become a polymer 2
      *         element
+     * 
+     * @deprecated This is not in use anywhere and can be removed
      */
+    @Deprecated
     public static native boolean mayBePolymerElement(Element htmlNode)
     /*-{
         return $wnd.customElements && htmlNode.localName.indexOf('-') > -1;
@@ -411,7 +414,10 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM">https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM</a>
+     * 
+     * @deprecated This is not in use anywhere and can be removed
      */
+    @Deprecated
     public static native Node searchForElementInShadowRoot(
             ShadowRoot shadowRoot, String cssQuery)
     /*-{
@@ -429,7 +435,10 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html">http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html</a>
+     * 
+     * @deprecated This is not in use anywhere and can be removed
      */
+    @Deprecated
     public static native Node getElementInShadowRootById(ShadowRoot shadowRoot,
             String id)
     /*-{
@@ -446,7 +455,11 @@ public final class PolymerUtils {
      *            the identifier of the element to search for
      * @return the element with the given {@code id} inside the shadow root of
      *         the parent
+     * @deprecated This is Polymer specific. Use
+     *             {@link ElementUtil#getElementById(Node, String)} for the
+     *             generic version
      */
+    @Deprecated
     public static native Element getDomElementById(Node shadowRootParent,
             String id)
     /*-{
@@ -475,7 +488,11 @@ public final class PolymerUtils {
      * @param tag
      *            the required tag name
      * @return {@code true} if the node has required tag name
+     * 
+     * @deprecated Use the generic {@link ElementUtil#hasTag(Node, String)}
+     *             instead
      */
+    @Deprecated
     public static boolean hasTag(Node node, String tag) {
         return node instanceof Element
                 && tag.equalsIgnoreCase(((Element) node).getTagName());
