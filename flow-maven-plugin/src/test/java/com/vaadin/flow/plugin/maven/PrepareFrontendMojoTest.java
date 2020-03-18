@@ -107,7 +107,6 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
         ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
                 true);
-        ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
 
         Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
@@ -175,11 +174,9 @@ public class PrepareFrontendMojoTest {
                 Constants.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written",
                 buildInfo.getBoolean(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
-        Assert.assertTrue(
-                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
-                        + "should have been written",
-                buildInfo.getBoolean(
-                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+
+        Assert.assertFalse(buildInfo
+                .hasKey(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
