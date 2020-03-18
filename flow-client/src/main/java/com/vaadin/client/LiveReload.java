@@ -16,8 +16,6 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.storage.client.Storage;
-
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
@@ -52,8 +50,9 @@ public class LiveReload {
      *            to Flow Live Reload server
      */
     public void show(String serviceUrl) {
-        if (!isEnabled())
+        if (!isEnabled()) {
             return;
+        }
 
         String hostname = Browser.getWindow().getLocation().getHostname();
         webSocket = createWebSocket(
@@ -61,8 +60,6 @@ public class LiveReload {
         webSocket.setOnmessage(this::handleMessageEvent);
         webSocket.setOnerror(springWsEvent -> {
             springWsEvent.setCancelBubble(true);
-            Console.debug(
-                    "Spring Dev Tools Live Reload server is not available. Trying to connect to Flow Live Reload server ...");
             webSocket = createWebSocket(
                     serviceUrl.replaceFirst("http://", "ws://")
                             + "?refresh_connection");
@@ -70,7 +67,7 @@ public class LiveReload {
             webSocket.setOnerror(flowWsEvent -> {
                 flowWsEvent.setCancelBubble(true);
                 Console.debug(
-                        "Flow Live Reload server is not available either. Live Reload won't work automatically.");
+                        "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically.");
             });
         });
     }
@@ -134,12 +131,7 @@ public class LiveReload {
     }
 
     private boolean isEnabled() {
-        Storage storage = Storage.getLocalStorageIfSupported();
-        if (storage == null) {
-            return true;
-        }
-
-        String enabled = storage.getItem(ENABLED_KEY_IN_STORAGE);
+        String enabled = StorageUtil.getLocalItem(ENABLED_KEY_IN_STORAGE);
         return enabled == null || Boolean.parseBoolean(enabled);
     }
 
@@ -149,13 +141,6 @@ public class LiveReload {
 
         webSocket.close();
         Browser.getDocument().getBody().removeChild(indicator);
-        Storage storage = Storage.getLocalStorageIfSupported();
-        if (storage == null) {
-            Console.warn(
-                    "Your browser does not support local storage. Live Reload can't be disabled permanently.");
-            return;
-        }
-
-        storage.setItem(ENABLED_KEY_IN_STORAGE, "false");
+        StorageUtil.setLocalItem(ENABLED_KEY_IN_STORAGE, "false");
     }
 }
