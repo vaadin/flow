@@ -60,6 +60,12 @@ public class LiveReload {
         webSocket.setOnmessage(this::handleMessageEvent);
         webSocket.setOnerror(springWsEvent -> {
             springWsEvent.setCancelBubble(true);
+            if(!serviceUrl.startsWith("http://")) {
+                Console.debug(
+                        "The protocol of the url should be http for Live Reload to work.");
+                return;
+            }
+
             webSocket = createWebSocket(
                     serviceUrl.replaceFirst("http://", "ws://")
                             + "?refresh_connection");
