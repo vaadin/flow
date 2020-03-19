@@ -44,12 +44,14 @@ public class LiveReload {
      * Connects to either Spring Dev Tools Live Reload server or Flow Live
      * Reload server and if the connection is successful shows an overlay on the
      * page including the status of the Live Reload.
-     * 
+     *
      * @param serviceUrl
      *            The root URL of the application that should be used to connect
      *            to Flow Live Reload server
+     * @param uiId
+     *            The UI id
      */
-    public void show(String serviceUrl) {
+    public void show(String serviceUrl, int uiId) {
         if (!isEnabled()) {
             return;
         }
@@ -59,15 +61,15 @@ public class LiveReload {
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
         webSocket.setOnmessage(this::handleMessageEvent);
         webSocket.setOnerror(springWsEvent -> {
-            if(!serviceUrl.startsWith("http://")) {
+            if (!serviceUrl.startsWith("http://")) {
                 Console.debug(
                         "The protocol of the url should be http for Live Reload to work.");
                 return;
             }
 
             webSocket = createWebSocket(
-                    serviceUrl.replaceFirst("http://", "ws://")
-                            + "?refresh_connection");
+                    serviceUrl.replaceFirst("http://", "ws://") + "?v-uiId="
+                            + uiId + "&refresh_connection");
             webSocket.setOnmessage(this::handleMessageEvent);
             webSocket.setOnerror(flowWsEvent -> {
                 Console.debug(
