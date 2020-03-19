@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -908,8 +907,7 @@ public class FrontendUtils {
      * <p>
      * The directory is created if it's doesn't exist.
      *
-     * @return
-     * @throws FileNotFoundException
+     * @return a vaadin home directory
      */
     public static File getVaadinHomeDirectory() {
         File home = FileUtils.getUserDirectory();

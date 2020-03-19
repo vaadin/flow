@@ -59,22 +59,24 @@ public class FrontendTools {
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
 
-    private static final String NODE_NOT_FOUND = "%n%n======================================================================================================"
+    private static final String MSG_PREFIX = "%n%n======================================================================================================";
+    private static final String MSG_SUFFIX = "%n======================================================================================================%n";
+
+    private static final String NODE_NOT_FOUND = MSG_PREFIX
             + "%nVaadin requires node.js & npm to be installed. Please install the latest LTS version of node.js (with npm) either by:"
             + "%n  1) following the https://nodejs.org/en/download/ guide to install it globally. This is the recommended way."
             + "%n  2) running the following Maven plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY
             + "%n%nNote that in case you don't install it globally, you'll need to install it again for another Vaadin project."
             + "%nIn case you have just installed node.js globally, it was not discovered, so you need to restart your system to get the path variables updated."
-            + "%n======================================================================================================%n";
+            + MSG_SUFFIX;
 
-    private static final String LOCAL_NODE_NOT_FOUND = "%n%n======================================================================================================"
+    private static final String LOCAL_NODE_NOT_FOUND = MSG_PREFIX
             + "%nVaadin requires node.js & npm to be installed. The %s directory already contains 'node' but it's either not a file "
             + "or not a 'node' executable. Please check %s directory and clean up it: remove '%s'."
-            + "%n then please run the app or maven goal again."
-            + "%n======================================================================================================%n";
+            + "%n then please run the app or maven goal again." + MSG_SUFFIX;
 
-    private static final String BAD_VERSION = "%n%n======================================================================================================"
+    private static final String BAD_VERSION = MSG_PREFIX
             + "%nYour installed '%s' version (%s) is known to have problems." //
             + "%nPlease update to a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
@@ -82,7 +84,7 @@ public class FrontendTools {
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
             + INSTALL_NODE_LOCALLY + "%n" //
             + FrontendUtils.DISABLE_CHECK //
-            + "%n======================================================================================================%n";
+            + MSG_SUFFIX;
 
     private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
             .asList(new FrontendVersion("6.11.0"),
@@ -215,7 +217,7 @@ public class FrontendTools {
      *
      * @return the list of all commands in sequence that need to be executed to
      *         have pnpm running
-     * @see #getPnpmExecutable( boolean)
+     * @see #getPnpmExecutable(String, boolean)
      */
     public List<String> getPnpmExecutable() {
         ensurePnpm();
@@ -290,9 +292,6 @@ public class FrontendTools {
     /**
      * Validate that the found node and npm versions are new enough. Throws an
      * exception with a descriptive message if a version is too old.
-     *
-     * @param baseDir
-     *            project root folder.
      */
     public void validateNodeAndNpmVersion() {
         try {
@@ -329,8 +328,8 @@ public class FrontendTools {
      * thrown or an empty list is returned depending on {@code failOnAbsence}
      * value.
      *
-     * @param the
-     *            directory to search local pnpm script
+     * @param dir
+     *            the directory to search local pnpm script
      *
      * @param failOnAbsence
      *            if {@code true} throws IllegalStateException if tool is not
@@ -397,8 +396,6 @@ public class FrontendTools {
      * file in the project root folder, .npmrc file in user root folder and
      * system environment variables.
      *
-     * @param baseDir
-     *            project root folder.
      * @return list of configured proxies
      */
     // Not private because of test
