@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +50,6 @@ import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
@@ -172,7 +172,10 @@ public final class DevModeHandler {
                 .split(" +")));
 
         console(GREEN, START);
-        console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(
+                    commandToString(npmFolder.getAbsolutePath(), command));
+        }
 
         processBuilder.command(command);
         try {
