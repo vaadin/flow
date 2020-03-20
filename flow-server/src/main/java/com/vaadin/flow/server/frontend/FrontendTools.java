@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.Pair;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -57,6 +56,10 @@ import elemental.json.JsonObject;
  *
  */
 public class FrontendTools {
+
+    private static final String DEFAULT_NODE_VERSION = "v12.16.0";
+
+    public static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
 
@@ -97,19 +100,27 @@ public class FrontendTools {
     private static final String PNMP_INSTALLED_BY_NPM = PNMP_INSTALLED_BY_NPM_FOLDER
             + "bin/pnpm.js";
 
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
+    private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
+    private static final int SUPPORTED_NPM_MAJOR_VERSION = 5;
+    private static final int SUPPORTED_NPM_MINOR_VERSION = 6;
+    private static final int SHOULD_WORK_NODE_MAJOR_VERSION = 8;
+    private static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
+    private static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
+    private static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
+
+    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
+    public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
+
     private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
-            Constants.SUPPORTED_NODE_MAJOR_VERSION,
-            Constants.SUPPORTED_NODE_MINOR_VERSION);
+            SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
     private static final FrontendVersion SHOULD_WORK_NODE_VERSION = new FrontendVersion(
-            Constants.SHOULD_WORK_NODE_MAJOR_VERSION,
-            Constants.SHOULD_WORK_NODE_MINOR_VERSION);
+            SHOULD_WORK_NODE_MAJOR_VERSION, SHOULD_WORK_NODE_MINOR_VERSION);
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
-            Constants.SUPPORTED_NPM_MAJOR_VERSION,
-            Constants.SUPPORTED_NPM_MINOR_VERSION);
+            SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
     private static final FrontendVersion SHOULD_WORK_NPM_VERSION = new FrontendVersion(
-            Constants.SHOULD_WORK_NPM_MAJOR_VERSION,
-            Constants.SHOULD_WORK_NPM_MINOR_VERSION);
+            SHOULD_WORK_NPM_MAJOR_VERSION, SHOULD_WORK_NPM_MINOR_VERSION);
 
     static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";
     static final String NPMRC_HTTPS_PROXY_PROPERTY_KEY = "https-proxy";
@@ -122,8 +133,7 @@ public class FrontendTools {
     static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
-            Constants.SUPPORTED_PNPM_MAJOR_VERSION,
-            Constants.SUPPORTED_PNPM_MINOR_VERSION);
+            SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
 
     private final String baseDir;
     private final Supplier<String> alternativeDirGetter;
@@ -192,8 +202,8 @@ public class FrontendTools {
             return file.getAbsolutePath();
         } else {
             getLogger().info("Node not found in {}. Installing node {}.", dir,
-                    Constants.DEFAULT_NODE_VERSION);
-            return installNode(Constants.DEFAULT_NODE_VERSION, null);
+                    DEFAULT_NODE_VERSION);
+            return installNode(DEFAULT_NODE_VERSION, null);
         }
     }
 
@@ -265,8 +275,7 @@ public class FrontendTools {
             }
             LoggerFactory.getLogger("dev-updater").info(
                     "Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
-                    Constants.DEFAULT_PNPM_VERSION,
-                    Constants.DEFAULT_PNPM_VERSION);
+                    DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
             // install pnpm locally using npm
             installPnpm(getNpmExecutable(false));
 
@@ -439,8 +448,7 @@ public class FrontendTools {
                 getLogger().info(
                         "Couldn't find {}. Installing Node and NPM to {}.", cmd,
                         installNode);
-                return new File(
-                        installNode(Constants.DEFAULT_NODE_VERSION, null));
+                return new File(installNode(DEFAULT_NODE_VERSION, null));
             }
         } catch (Exception e) { // NOSONAR
             // There are IOException coming from process fork
@@ -586,8 +594,10 @@ public class FrontendTools {
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.
-            new File(baseDir, "pnpm-lock.yaml").delete();
-            getLogger().debug("pnpm-lock.yaml file is removed from " + baseDir);
+            if (new File(baseDir, "pnpm-lock.yaml").delete()) {
+                getLogger().debug(
+                        "pnpm-lock.yaml file is removed from " + baseDir);
+            }
         }
 
         return returnCommand;
@@ -638,7 +648,7 @@ public class FrontendTools {
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
-        command.add("pnpm@" + Constants.DEFAULT_PNPM_VERSION);
+        command.add("pnpm@" + DEFAULT_PNPM_VERSION);
 
         FrontendUtils.console(FrontendUtils.YELLOW,
                 FrontendUtils.commandToString(baseDir, command));
