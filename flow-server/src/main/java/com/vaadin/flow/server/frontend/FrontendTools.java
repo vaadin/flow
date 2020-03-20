@@ -48,7 +48,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Provides access to frontend tools (node.js & npm, pnpm) and optionally
+ * Provides access to frontend tools (node.js and npm, pnpm) and optionally
  * installs the tools if needed.
  * <p>
  * <b>WARNING:</b> This class is intended for internal usage only.
