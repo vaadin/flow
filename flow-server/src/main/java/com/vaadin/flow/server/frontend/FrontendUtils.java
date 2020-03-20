@@ -65,8 +65,6 @@ import static java.lang.String.format;
  */
 public class FrontendUtils {
 
-    protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
-
     public static final String PROJECT_BASEDIR = "project.basedir";
 
     /**

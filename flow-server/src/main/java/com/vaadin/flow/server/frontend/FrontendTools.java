@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Supplier;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +48,15 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Provides access to frontend tools executables.
+ * Provides access to frontend tools (node.js & npm, pnpm) and optionally
+ * installs the tools if needed.
+ * <p>
+ * <b>WARNING:</b> This class is intended for internal usage only.
  *
  * @author Vaadin Ltd
  *
  */
 public class FrontendTools {
-
-    private static final String DEFAULT_NODE_VERSION = "v12.16.0";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
 
@@ -124,10 +125,6 @@ public class FrontendTools {
             Constants.SUPPORTED_PNPM_MAJOR_VERSION,
             Constants.SUPPORTED_PNPM_MINOR_VERSION);
 
-    protected static final String DEFAULT_PNPM_VERSION = "4.5.0";
-
-    public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
-
     private final String baseDir;
     private final Supplier<String> alternativeDirGetter;
 
@@ -167,7 +164,7 @@ public class FrontendTools {
     }
 
     /**
-     * Locate <code>node</code> executable in the alternative dir of this class.
+     * Locate <code>node</code> executable from the alternative directory given.
      *
      * <p>
      * The difference between {@link #getNodeExecutable()} and this method in a
@@ -195,8 +192,8 @@ public class FrontendTools {
             return file.getAbsolutePath();
         } else {
             getLogger().info("Node not found in {}. Installing node {}.", dir,
-                    DEFAULT_NODE_VERSION);
-            return installNode(DEFAULT_NODE_VERSION, null);
+                    Constants.DEFAULT_NODE_VERSION);
+            return installNode(Constants.DEFAULT_NODE_VERSION, null);
         }
     }
 
@@ -268,7 +265,8 @@ public class FrontendTools {
             }
             LoggerFactory.getLogger("dev-updater").info(
                     "Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
-                    DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
+                    Constants.DEFAULT_PNPM_VERSION,
+                    Constants.DEFAULT_PNPM_VERSION);
             // install pnpm locally using npm
             installPnpm(getNpmExecutable(false));
 
@@ -441,7 +439,8 @@ public class FrontendTools {
                 getLogger().info(
                         "Couldn't find {}. Installing Node and NPM to {}.", cmd,
                         installNode);
-                return new File(installNode(DEFAULT_NODE_VERSION, null));
+                return new File(
+                        installNode(Constants.DEFAULT_NODE_VERSION, null));
             }
         } catch (Exception e) { // NOSONAR
             // There are IOException coming from process fork
@@ -588,6 +587,7 @@ public class FrontendTools {
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.
             new File(baseDir, "pnpm-lock.yaml").delete();
+            getLogger().debug("pnpm-lock.yaml file is removed from " + baseDir);
         }
 
         return returnCommand;
@@ -638,9 +638,9 @@ public class FrontendTools {
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
-        command.add("pnpm@" + DEFAULT_PNPM_VERSION);
+        command.add("pnpm@" + Constants.DEFAULT_PNPM_VERSION);
 
-        FrontendUtils.console(YELLOW,
+        FrontendUtils.console(FrontendUtils.YELLOW,
                 FrontendUtils.commandToString(baseDir, command));
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);

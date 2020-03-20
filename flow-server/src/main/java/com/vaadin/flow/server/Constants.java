@@ -287,6 +287,16 @@ public final class Constants implements Serializable {
      */
     public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
+    /**
+     * The default node version value.
+     */
+    public static final String DEFAULT_NODE_VERSION = "v12.16.0";
+
+    /**
+     * The default pnpm version value.
+     */
+    public static final String DEFAULT_PNPM_VERSION = "4.5.0";
+
     private Constants() {
         // prevent instantiation constants class only
     }
