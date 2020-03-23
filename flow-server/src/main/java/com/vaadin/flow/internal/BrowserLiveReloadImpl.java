@@ -42,7 +42,8 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     public void onConnect(AtmosphereResource resource) {
         resource.suspend(-1);
         resourceRef.set(resource);
-        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}");
+        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
+                resource);
     }
 
     @Override
