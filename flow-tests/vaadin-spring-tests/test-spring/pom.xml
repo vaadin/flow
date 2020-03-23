@@ -12,6 +12,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <spring.profiles.active>enabled</spring.profiles.active>
     </properties>
 
     <dependencies>
