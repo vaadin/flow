@@ -38,7 +38,8 @@ public class BrowserLiveReloadImplTest {
 
         Mockito.verify(resource).suspend(-1);
 
-        Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}");
+        Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}",
+                resource);
     }
 
     @Test
