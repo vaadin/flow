@@ -55,6 +55,7 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -114,7 +115,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .withWebpack(webpackOutputDirectory,
                                     webpackTemplate, webpackGeneratedTemplate)
                             .useV14Bootstrap(useDeprecatedV14Bootstrapping())
-                            .withFlowResourcesFolder(flowResourcesFolder)
+                            .withFlowResourcesFolder(getFlowResourcesFolder())
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false);
@@ -144,6 +145,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
                 useDeprecatedV14Bootstrapping());
+        buildInfo.put(SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER,
+                getFlowResourcesFolder().getAbsolutePath());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL, eagerServerLoad);
         buildInfo.put(NPM_TOKEN, npmFolder.getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN, generatedFolder.getAbsolutePath());
