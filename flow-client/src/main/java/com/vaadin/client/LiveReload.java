@@ -90,9 +90,9 @@ public class LiveReload {
         Element indicatorMessage = Browser.getDocument()
                 .getElementById("vaadin-live-reload-message");
         if ("hello".equals(data.getString("command"))) {
-            indicatorMessage.setInnerHTML("Live Reload active");
+            indicatorMessage.setInnerHTML("Live reload: enabled");
         } else if ("reload".equals(data.getString("command"))) {
-            indicatorMessage.setInnerHTML("Live Reload in progress...");
+            indicatorMessage.setInnerHTML("Live reload: in progress ...");
             Browser.getWindow().getLocation().reload();
         } else {
             indicatorMessage.setHidden(true);

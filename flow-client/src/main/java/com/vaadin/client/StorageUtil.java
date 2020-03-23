@@ -20,6 +20,10 @@ package com.vaadin.client;
  * Includes utility methods to interact with HTML storage API.
  */
 public class StorageUtil {
+
+    private StorageUtil() {
+    }
+
     /**
      * Gets an item value from the local storage.
      * 
