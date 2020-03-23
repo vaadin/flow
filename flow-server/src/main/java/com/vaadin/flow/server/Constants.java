@@ -52,6 +52,7 @@ public final class Constants implements Serializable {
      * Enable it if your project is using client-side bootstrapping (CCDM).
      */
     public static final String SERVLET_PARAMETER_USE_V14_BOOTSTRAP = "useDeprecatedV14Bootstrapping";
+    public static final String SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER = "flowResourcesFolder";
     public static final String SERVLET_PARAMETER_INITIAL_UIDL = "eagerServerLoad";
     public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";

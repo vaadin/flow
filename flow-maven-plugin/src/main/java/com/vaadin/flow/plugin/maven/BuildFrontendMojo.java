@@ -153,7 +153,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
-                        .withFlowResourcesFolder(flowResourcesFolder)
+                        .withFlowResourcesFolder(getFlowResourcesFolder())
                         .copyResources(jarFiles)
                         .copyLocalResources(frontendResourcesDirectory)
                         .enableImportsUpdate(true)

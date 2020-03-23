@@ -254,13 +254,8 @@ public final class BundleParser {
 
             // For polymer templates inside add-ons we will not find the sources
             // using ./ as the actual path contains
-            // "node_modules/@vaadin/flow-frontend/" instead of "./"
-            // "target/flow-frontend/" instead of "./"
-            if (name.contains(FLOW_NPM_PACKAGE_NAME) ||
-                    name.contains(DEAULT_FLOW_RESOURCES_FOLDER)) {
-                alternativeFileName = alternativeFileName.replaceFirst("\\./",
-                        "");
-            }
+            alternativeFileName = alternativeFileName.replaceFirst("\\./",
+                    "");
 
             // Remove query-string used by webpack modules like babel (e.g
             // ?babel-target=es6)

@@ -10,8 +10,12 @@
             "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
         },
         {
-          "name": "../target/flow-frontend/src/hello-world2.js",
-          "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
+            "name": "../target/flow-frontend/src/hello-world2.js",
+            "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
+        },
+        {
+            "name": "../tempFolder/hello-world3.js",
+            "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
         },
         {
           "name": "../target/flow-frontend/src/hello-world2.js",
