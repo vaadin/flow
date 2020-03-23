@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.internal;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.atmosphere.cpr.AtmosphereResource;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinService;
@@ -32,7 +33,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final VaadinService service;
 
-    private final AtomicReference<AtmosphereResource> resourceRef = new AtomicReference<>();
+    private final ConcurrentLinkedQueue<AtmosphereResource> atmosphereResources = new ConcurrentLinkedQueue<>();
 
     BrowserLiveReloadImpl(VaadinService service) {
         this.service = service;
@@ -41,21 +42,29 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     @Override
     public void onConnect(AtmosphereResource resource) {
         resource.suspend(-1);
-        resourceRef.set(resource);
-        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}");
+        atmosphereResources.add(resource);
+        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
+                resource);
+    }
+
+    @Override
+    public void onDisconnect(AtmosphereResource resource) {
+        if (!atmosphereResources.remove(resource)) {
+            getLogger().warn(
+                    "Push connection {} is not a live-reload connection or already closed",
+                    resource.uuid());
+        }
     }
 
     @Override
     public void reload() {
-        AtmosphereResource resource = resourceRef.get();
-        if (resource == null) {
-            // There is no yet any connection: nothing to reload
-            LoggerFactory.getLogger(BrowserLiveReloadImpl.class).debug(
-                    "Reload request is received but there is no yet WS connection");
-        } else {
+        atmosphereResources.forEach(resource -> {
             resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
                     resource);
-        }
+        });
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(BrowserLiveReloadImpl.class.getName());
+    }
 }

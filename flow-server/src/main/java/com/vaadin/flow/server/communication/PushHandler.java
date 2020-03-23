@@ -343,9 +343,21 @@ public class PushHandler {
             String id = resource.uuid();
 
             if (pushConnection == null) {
-                getLogger().warn(
-                        "Could not find push connection to close: {} with transport {}",
-                        id, resource.transport());
+                /*
+                 * In development mode we may have a live-reload push channel
+                 * that should be closed.
+                 */
+                if (!service.getDeploymentConfiguration().isProductionMode()) {
+                    BrowserLiveReloadAccess access = service.getInstantiator()
+                            .getOrCreate(BrowserLiveReloadAccess.class);
+                    BrowserLiveReload liveReload = access
+                            .getLiveReload(service);
+                    liveReload.onDisconnect(resource);
+                } else {
+                    getLogger().warn(
+                            "Could not find push connection to close: {} with transport {}",
+                            id, resource.transport());
+                }
             } else {
                 if (!pushMode.isEnabled()) {
                     /*

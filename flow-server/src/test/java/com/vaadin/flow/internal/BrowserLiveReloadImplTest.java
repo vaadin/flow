@@ -38,21 +38,27 @@ public class BrowserLiveReloadImplTest {
 
         Mockito.verify(resource).suspend(-1);
 
-        Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}");
+        Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}",
+                resource);
     }
 
     @Test
-    public void reload_resourceIsSet_sendReloadCommand() {
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+    public void reload_twoConnections_sendReloadCommand() {
+        AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
+        AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+        Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
+        Mockito.when(resource2.getBroadcaster()).thenReturn(broadcaster);
 
-        reload.onConnect(resource);
+        reload.onConnect(resource1);
+        reload.onConnect(resource2);
 
         reload.reload();
 
         Mockito.verify(broadcaster).broadcast("{\"command\": \"reload\"}",
-                resource);
+                resource1);
+        Mockito.verify(broadcaster).broadcast("{\"command\": \"reload\"}",
+                resource2);
     }
 
     @Test

@@ -35,8 +35,17 @@ public interface BrowserLiveReload {
     void onConnect(AtmosphereResource resource);
 
     /**
+     * Removes the web socket connection resource.
+     *
+     * @param resource
+     *            a web socket connection resource
+     */
+    void onDisconnect(AtmosphereResource resource);
+
+    /**
      * Requests reload via the resource provided via
      * {@link #onConnect(AtmosphereResource)} call.
      */
     void reload();
+
 }
