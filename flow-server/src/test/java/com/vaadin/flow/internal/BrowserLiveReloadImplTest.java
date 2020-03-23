@@ -71,4 +71,18 @@ public class BrowserLiveReloadImplTest {
 
         Mockito.verifyZeroInteractions(broadcaster);
     }
+
+    @Test
+    public void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+        reload.onConnect(resource);
+        Mockito.reset(broadcaster);
+        reload.onDisconnect(resource);
+
+        reload.reload();
+
+        Mockito.verifyZeroInteractions(broadcaster);
+    }
 }
