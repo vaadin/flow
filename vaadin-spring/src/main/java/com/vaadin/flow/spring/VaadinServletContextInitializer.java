@@ -124,10 +124,11 @@ public class VaadinServletContextInitializer
      */
     private static class ClassPathScanner
             extends ClassPathScanningCandidateComponentProvider {
-        private ClassPathScanner(ResourceLoader resourceLoader,
-                                 Collection<Class<? extends Annotation>> annotations,
-                                 Collection<Class<?>> types) {
-            super(false);
+        private ClassPathScanner(Environment environment,
+                ResourceLoader resourceLoader,
+                Collection<Class<? extends Annotation>> annotations,
+                Collection<Class<?>> types) {
+            super(false, environment);
             setResourceLoader(resourceLoader);
 
             annotations.stream().map(AnnotationTypeFilter::new)
@@ -144,7 +145,7 @@ public class VaadinServletContextInitializer
         }
     }
 
-     /*
+    /*
      * A wrapper interface for {@link ServletContextListener} that allows not
      * running more listeners when one fails. This allows that user does not
      * wait until the last listener has been run.
@@ -162,17 +163,20 @@ public class VaadinServletContextInitializer
                     failFastContextInitialized(event);
                 } catch (Exception e) {
                     event.getServletContext().setAttribute(ATTR, true);
-                    throw new RuntimeException("Unable to initialize "
-                            + this.getClass().getName(), e);
+                    throw new RuntimeException(
+                            "Unable to initialize " + this.getClass().getName(),
+                            e);
                 }
             }
         }
 
-        void failFastContextInitialized(ServletContextEvent event) throws ServletException;
+        void failFastContextInitialized(ServletContextEvent event)
+                throws ServletException;
     }
 
-    private class RouteServletContextListener extends
-            AbstractRouteRegistryInitializer implements FailFastServletContextListener {
+    private class RouteServletContextListener
+            extends AbstractRouteRegistryInitializer
+            implements FailFastServletContextListener {
 
         @SuppressWarnings("unchecked")
         @Override
@@ -261,7 +265,8 @@ public class VaadinServletContextInitializer
         @SuppressWarnings("unchecked")
         public void failFastContextInitialized(ServletContextEvent event) {
             ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                    .getInstance(new VaadinServletContext(event.getServletContext()));
+                    .getInstance(new VaadinServletContext(
+                            event.getServletContext()));
 
             Stream<Class<? extends Component>> hasErrorComponents = findBySuperType(
                     getErrorParameterPackages(), HasErrorParameter.class)
@@ -310,12 +315,14 @@ public class VaadinServletContextInitializer
             implements FailFastServletContextListener {
 
         @Override
-        public void failFastContextInitialized(ServletContextEvent event) throws ServletException {
+        public void failFastContextInitialized(ServletContextEvent event)
+                throws ServletException {
             DeploymentConfiguration config = SpringStubServletConfig
-                    .createDeploymentConfiguration(this.getClass(), event, appContext);
+                    .createDeploymentConfiguration(this.getClass(), event,
+                            appContext);
 
-            if (config == null || config.isProductionMode() || !config
-                    .enableDevServer()) {
+            if (config == null || config.isProductionMode()
+                    || !config.enableDevServer()) {
                 return;
             }
 
@@ -392,7 +399,8 @@ public class VaadinServletContextInitializer
             implements FailFastServletContextListener {
 
         @Override
-        public void failFastContextInitialized(ServletContextEvent event) throws ServletException {
+        public void failFastContextInitialized(ServletContextEvent event)
+                throws ServletException {
 
             WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                     .getInstance(new VaadinServletContext(
@@ -435,7 +443,8 @@ public class VaadinServletContextInitializer
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Search for VaadinAppShell took {} ms", ms);
 
-            VaadinAppShellInitializer.init(classes, event.getServletContext(), config);
+            VaadinAppShellInitializer.init(classes, event.getServletContext(),
+                    config);
         }
 
     }
@@ -549,8 +558,8 @@ public class VaadinServletContextInitializer
             Collection<String> packages, ResourceLoader loader,
             Collection<Class<? extends Annotation>> annotations,
             Collection<Class<?>> types) {
-        ClassPathScanner scanner = new ClassPathScanner(loader, annotations,
-                types);
+        ClassPathScanner scanner = new ClassPathScanner(
+                appContext.getEnvironment(), loader, annotations, types);
         return packages.stream().map(scanner::findCandidateComponents)
                 .flatMap(Collection::stream).map(this::getBeanClass);
     }
@@ -763,8 +772,7 @@ public class VaadinServletContextInitializer
                 return propertyValue;
             }
 
-            return ((Map<String, String>) registration.getInitParameters())
-                    .get(name);
+            return registration.getInitParameters().get(name);
         }
 
         @Override
@@ -819,11 +827,9 @@ public class VaadinServletContextInitializer
                         .createPropertyDeploymentConfiguration(servletClass,
                                 new VaadinServletConfig(servletConfig));
             } catch (VaadinConfigurationException e) {
-                throw new IllegalStateException(
-                        String.format(
-                                "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
-                                registration.getServletName(), servletClass),
-                        e);
+                throw new IllegalStateException(String.format(
+                        "Failed to get deployment configuration data for servlet with name '%s' and class '%s'",
+                        registration.getServletName(), servletClass), e);
             }
         }
     }
