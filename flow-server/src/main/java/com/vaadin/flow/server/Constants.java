@@ -282,16 +282,76 @@ public final class Constants implements Serializable {
      */
     public static final String LOCAL_FRONTEND_RESOURCES_PATH = "src/main/resources/META-INF/resources/frontend";
 
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SUPPORTED_NODE_MINOR_VERSION = 0;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SUPPORTED_NPM_MAJOR_VERSION = 5;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SUPPORTED_NPM_MINOR_VERSION = 6;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SHOULD_WORK_NODE_MAJOR_VERSION = 8;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
 
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
+    /**
+     * Internal constant.
+     *
+     * @deprecated this is an internal constant, don't use it
+     */
+    @Deprecated
     public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
 
     /**

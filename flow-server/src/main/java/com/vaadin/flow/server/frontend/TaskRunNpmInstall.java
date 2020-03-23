@@ -172,12 +172,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
+        FrontendTools tools = new FrontendTools(baseDir,
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         try {
             if (requireHomeNodeExec) {
-                FrontendUtils.ensureNodeExecutableInHome(baseDir);
+                tools.forceAlternativeNodeExecutable();
             }
-            executable = enablePnpm ? FrontendUtils.getPnpmExecutable(baseDir)
-                    : FrontendUtils.getNpmExecutable(baseDir);
+            executable = enablePnpm ? tools.getPnpmExecutable()
+                    : tools.getNpmExecutable();
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);

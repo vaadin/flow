@@ -495,7 +495,7 @@ public class TaskUpdateImports extends NodeUpdater {
         String note = "";
         if (!disablePnpm) {
             note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@"
-                    + FrontendUtils.DEFAULT_PNPM_VERSION + "`";
+                    + FrontendTools.DEFAULT_PNPM_VERSION + "`";
         }
         return String.format(
                 "If the build fails, check that npm packages are installed.\n\n"
