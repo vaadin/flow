@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.function;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +30,9 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 
 /**
  * A collection of properties configured at deploy time as well as a way of
@@ -54,6 +57,16 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean useV14Bootstrap() {
         return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+    }
+
+    /**
+     * Returns whether the plugin provides `flowResourcesFolder`.
+     *
+     * @return new folder if the `flowResourcesFolder` is provided.
+     */
+    default File flowResourcesFolder() {
+        return flowResourcesFolder(SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER,
+                "${project.basedir}/" + DEAULT_FLOW_RESOURCES_FOLDER);
     }
 
     /**
@@ -95,7 +108,7 @@ public interface DeploymentConfiguration extends Serializable {
      * the client will then wait for the predecessors of a received out-order
      * message, before considering them missing and requesting a full
      * resynchronization of the application state from the server.
-     * 
+     *
      * @return The maximum message suspension timeout
      */
     int getMaxMessageSuspendTimeout();
@@ -241,6 +254,28 @@ public interface DeploymentConfiguration extends Serializable {
                         propertyName, booleanString, parsedBoolean));
             }
         }
+    }
+
+    /**
+     * A shorthand of
+     * {@link DeploymentConfiguration#getApplicationOrSystemProperty(String, Object, Function)}
+     * for {@link String} type.
+     *
+     * @param propertyName
+     *            The simple of the property, in some contexts, lookup might be
+     *            performed using variations of the provided name.
+     * @param defaultValue
+     *            the default value that should be used if no value has been
+     *            defined
+     * @return the property value, or the passed default value if no property
+     *         value is found
+     */
+    default File flowResourcesFolder(String propertyName, String defaultValue) {
+        File flowFile = new File(getStringProperty(propertyName, defaultValue));
+        if (!flowFile.exists()) {
+            return new File(defaultValue);
+        }
+        return flowFile;
     }
 
     /**

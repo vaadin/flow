@@ -61,6 +61,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVE
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -223,6 +224,17 @@ public final class DeploymentConfigurationFactory implements Serializable {
             System.clearProperty(
                     VAADIN_PREFIX + SERVLET_PARAMETER_USE_V14_BOOTSTRAP);
         }
+
+        if (buildInfo.hasKey(SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER)) {
+            initParameters.setProperty(SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER,
+                    String.valueOf(buildInfo
+                            .getString(SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER)));
+            // Need to be sure that we remove the system property,
+            // because it has priority in the configuration getter
+            System.clearProperty(
+                    VAADIN_PREFIX + SERVLET_PARAMETER_FLOW_RESOURCES_FOLDER);
+        }
+
         if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
             initParameters.setProperty(SERVLET_PARAMETER_INITIAL_UIDL,
                     String.valueOf(buildInfo

@@ -55,8 +55,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     /**
      * The directory where flow resources from jars will be copied to.
      */
-    @Parameter(defaultValue = "${project.basedir}/"
-            + DEAULT_FLOW_RESOURCES_FOLDER)
+    @Parameter(defaultValue = "${vaadin.flowResourcesFolder}")
     public File flowResourcesFolder;
 
     /**
@@ -142,4 +141,16 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
     }
 
+    /**
+     * Check if the plugin provides `flowResourcesFolder` or not.
+     * Default: `target/flow-frontend` folder.
+     *
+     * @return new folder if the `flowResourcesFolder` is provided.
+     */
+    public File flowResourcesFolder() {
+        if (flowResourcesFolder == null) {
+            return new File(DEAULT_FLOW_RESOURCES_FOLDER);
+        }
+        return flowResourcesFolder;
+    }
 }

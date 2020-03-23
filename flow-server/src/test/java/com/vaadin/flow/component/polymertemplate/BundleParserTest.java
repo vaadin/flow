@@ -45,6 +45,13 @@ public class BundleParserTest {
     }
 
     @Test
+    public void nonLocalCustomTemplate_sourcesShouldBeFoundInTargetFolder() {
+        final String source = BundleParser.getSourceFromStatistics(
+                "./tempFolder/hello-world3.js", stats);
+        Assert.assertNotNull("Source expected in stats.json", source);
+    }
+
+    @Test
     public void frontendPrefix_sourcesShouldBeFound() {
         final String source = BundleParser.getSourceFromStatistics(
                 "./frontend/src/hello-world.js", stats);
