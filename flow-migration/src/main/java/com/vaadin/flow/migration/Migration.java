@@ -34,6 +34,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
@@ -58,6 +59,8 @@ public class Migration {
     private final File[] resourceDirectories;
 
     private final MigrationConfiguration configuration;
+
+    private FrontendTools tools;
 
     /**
      * Creates an instance with given {@code configuration} to migrate.
@@ -132,6 +135,9 @@ public class Migration {
             throw new IllegalArgumentException(
                     "Configuration does not provide a compiled class directory");
         }
+
+        tools = new FrontendTools(getTempMigrationFolder().getPath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
     }
 
     /**
@@ -146,16 +152,14 @@ public class Migration {
             throws MigrationToolsException, MigrationFailureException {
         prepareMigrationDirectory();
 
-        List<String> bowerCommands = FrontendUtils
-                .getBowerExecutable(getTempMigrationFolder().getPath());
+        List<String> bowerCommands = tools.getBowerExecutable();
         boolean needInstallBower = bowerCommands.isEmpty();
         if (!ensureTools(needInstallBower)) {
             throw new MigrationToolsException(
                     "Could not install tools required for migration (bower or modulizer)");
         }
         if (needInstallBower) {
-            bowerCommands = FrontendUtils
-                    .getBowerExecutable(getTempMigrationFolder().getPath());
+            bowerCommands = tools.getBowerExecutable();
         }
 
         if (bowerCommands.isEmpty()) {
@@ -311,13 +315,10 @@ public class Migration {
     private List<String> getFrontendInstallToolExec() {
         List<String> executable;
         if (configuration.isPnpmEnabled()) {
-            FrontendUtils
-                    .ensurePnpm(configuration.getBaseDirectory().getPath());
-            executable = FrontendUtils.getPnpmExecutable(
-                    configuration.getBaseDirectory().getPath());
+            tools.ensurePnpm();
+            executable = tools.getPnpmExecutable();
         } else {
-            executable = FrontendUtils.getNpmExecutable(
-                    configuration.getBaseDirectory().getPath());
+            executable = tools.getNpmExecutable();
         }
         return executable;
     }
@@ -326,8 +327,7 @@ public class Migration {
         Collection<String> depMapping = makeDependencyMapping();
 
         List<String> command = new ArrayList<>();
-        command.add(FrontendUtils
-                .getNodeExecutable(configuration.getBaseDirectory().getPath()));
+        command.add(tools.getNodeExecutable());
         command.add("node_modules/polymer-modulizer/bin/modulizer.js");
         command.add("--force");
         command.add("--out");

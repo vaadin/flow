@@ -44,7 +44,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Before
     public void setUp() throws IOException {
         super.setUp();
-        FrontendUtils.ensurePnpm(getNodeUpdater().npmFolder.getAbsolutePath());
+
+        File home = temporaryFolder.newFolder();
+        // ensure there is a valid pnpm installed in the system
+        new FrontendTools(getNodeUpdater().npmFolder.getAbsolutePath(),
+                () -> home.getAbsolutePath()).ensurePnpm();
         // create an empty package.json so as pnpm can be run without error
         FileUtils.write(new File(getNodeUpdater().npmFolder, PACKAGE_JSON),
                 "{}", StandardCharsets.UTF_8);
