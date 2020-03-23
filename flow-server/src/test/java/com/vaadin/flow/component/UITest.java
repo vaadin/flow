@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -20,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 import com.vaadin.flow.dom.Element;
@@ -36,8 +37,10 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveListener;
+import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
@@ -77,6 +80,18 @@ public class UITest {
     @Route("foo/bar")
     @Tag(Tag.DIV)
     public static class FooBarNavigationTarget extends Component {
+
+    }
+
+    @Route("foo-bar")
+    @Tag(Tag.DIV)
+    public static class Parameterized extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            System.out.println("xxxxxxxxxx");
+        }
 
     }
 
@@ -182,7 +197,7 @@ public class UITest {
             routeConfiguration.update(() -> {
                 routeConfiguration.getHandledRegistry().clean();
                 Arrays.asList(RootNavigationTarget.class,
-                        FooBarNavigationTarget.class)
+                        FooBarNavigationTarget.class, Parameterized.class)
                         .forEach(routeConfiguration::setAnnotatedRoute);
             });
 
@@ -272,9 +287,8 @@ public class UITest {
                 .dumpPendingJsInvocations();
 
         Assert.assertEquals(1, pendingJavaScriptInvocations.size());
-        Assert.assertEquals("rtl",
-                pendingJavaScriptInvocations.get(0).
-                        getInvocation().getParameters().get(0));
+        Assert.assertEquals("rtl", pendingJavaScriptInvocations.get(0)
+                .getInvocation().getParameters().get(0));
     }
 
     @Test
@@ -830,5 +844,20 @@ public class UITest {
         wrapped.accept(null);
 
         assertEquals("Handler should have run once", 1, runCount.get());
+    }
+
+    @Test
+    public void navigate_useParameterizedTarget_noOptionalAnnotation_navigationSucceded() {
+        AtomicReference<String> loc = new AtomicReference<>();
+        UI ui = new UI() {
+            @Override
+            public void navigate(String location) {
+                loc.set(location);
+            }
+        };
+        initUI(ui, "", null);
+
+        ui.navigate(Parameterized.class, "baz");
+        Assert.assertEquals("foo-bar/baz", loc.get());
     }
 }
