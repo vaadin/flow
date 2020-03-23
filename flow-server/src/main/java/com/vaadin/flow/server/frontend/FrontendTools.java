@@ -455,25 +455,20 @@ public class FrontendTools {
     private File getExecutable(String cmd, String defaultLocation,
             boolean installNode) {
         File file = null;
-        try {
-            if (defaultLocation == null) {
-                file = frontendToolsLocator.tryLocateTool(cmd).orElse(null);
-            } else {
-                file = Arrays.asList(() -> baseDir, alternativeDirGetter)
-                        .stream().map(Supplier::get)
-                        .map(dir -> new File(dir, defaultLocation))
-                        .filter(frontendToolsLocator::verifyTool).findFirst()
-                        .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
-                                .orElse(null));
-            }
-            if (file == null && installNode) {
-                getLogger().info(
-                        "Couldn't find {}. Installing Node and NPM to {}.", cmd,
-                        installNode);
-                return new File(installNode(DEFAULT_NODE_VERSION, null));
-            }
-        } catch (Exception e) { // NOSONAR
-            // There are IOException coming from process fork
+        if (defaultLocation == null) {
+            file = frontendToolsLocator.tryLocateTool(cmd).orElse(null);
+        } else {
+            file = Arrays.asList(() -> baseDir, alternativeDirGetter).stream()
+                    .map(Supplier::get)
+                    .map(dir -> new File(dir, defaultLocation))
+                    .filter(frontendToolsLocator::verifyTool).findFirst()
+                    .orElseGet(() -> frontendToolsLocator.tryLocateTool(cmd)
+                            .orElse(null));
+        }
+        if (file == null && installNode) {
+            getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
+                    cmd, installNode);
+            return new File(installNode(DEFAULT_NODE_VERSION, null));
         }
         if (file == null) {
             throw new IllegalStateException(String.format(NODE_NOT_FOUND));
