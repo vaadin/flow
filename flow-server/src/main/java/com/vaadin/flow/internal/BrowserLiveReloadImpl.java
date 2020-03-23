@@ -50,18 +50,17 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     @Override
     public void onDisconnect(AtmosphereResource resource) {
         if (!atmosphereResources.remove(resource)) {
+            String uuid = resource.uuid();
             getLogger().warn(
                     "Push connection {} is not a live-reload connection or already closed",
-                    resource.uuid());
+                    uuid);
         }
     }
 
     @Override
     public void reload() {
-        atmosphereResources.forEach(resource -> {
-            resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
-                    resource);
-        });
+        atmosphereResources.forEach(resource -> resource.getBroadcaster()
+                .broadcast("{\"command\": \"reload\"}", resource));
     }
 
     private static Logger getLogger() {
