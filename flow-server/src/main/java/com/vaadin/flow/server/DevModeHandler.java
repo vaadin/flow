@@ -168,7 +168,7 @@ public final class DevModeHandler {
         command.add("--watchDogPort=" + watchDog.getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false --progress --colors")
+                        "-d --inline=false")
                 .split(" +")));
 
         console(GREEN, START);
