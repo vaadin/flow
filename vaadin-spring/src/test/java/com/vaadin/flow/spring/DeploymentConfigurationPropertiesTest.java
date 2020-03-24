@@ -71,27 +71,11 @@ public class DeploymentConfigurationPropertiesTest {
 
         // Check that we have added all other constants as parameters (except
         // those we know)
-        Assert.assertEquals(46, constantsCopy.size());
+        Assert.assertEquals(39, constantsCopy.size());
 
         Assert.assertTrue(constantsCopy
                 .contains(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION));
         Assert.assertTrue(constantsCopy.contains(Constants.VAADIN_PREFIX));
-        Assert.assertTrue(
-                constantsCopy.contains(Constants.SUPPORTED_NODE_MAJOR_VERSION));
-        Assert.assertTrue(
-                constantsCopy.contains(Constants.SUPPORTED_NODE_MINOR_VERSION));
-        Assert.assertTrue(
-                constantsCopy.contains(Constants.SUPPORTED_NPM_MAJOR_VERSION));
-        Assert.assertTrue(
-                constantsCopy.contains(Constants.SUPPORTED_NPM_MINOR_VERSION));
-        Assert.assertTrue(constantsCopy
-                .contains(Constants.SHOULD_WORK_NODE_MAJOR_VERSION));
-        Assert.assertTrue(constantsCopy
-                .contains(Constants.SHOULD_WORK_NODE_MINOR_VERSION));
-        Assert.assertTrue(constantsCopy
-                .contains(Constants.SHOULD_WORK_NPM_MAJOR_VERSION));
-        Assert.assertTrue(constantsCopy
-                .contains(Constants.SHOULD_WORK_NPM_MINOR_VERSION));
         Assert.assertTrue(constantsCopy.contains(Constants.META_INF));
         Assert.assertTrue(
                 constantsCopy.contains(Constants.VAADIN_CONFIGURATION));
