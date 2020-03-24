@@ -210,6 +210,16 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             nodePath = tools.getNodeExecutable();
         }
 
+        List<String> command = Arrays.asList(nodePath,
+                webpackExecutable.getAbsolutePath(), "--progress");
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
+                .directory(project.getBasedir()).inheritIO();
+        getLog().info("Running webpack ...");
+        if ( getLog().isDebugEnabled()) {
+            getLog().debug(FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
+                    command));
+        }
+
         Process webpackLaunch = null;
         try {
             getLog().info("Running webpack ...");
