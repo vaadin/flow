@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -36,8 +37,8 @@ public class BrowserLiveReloadImplTest {
 
         reload.onConnect(resource);
 
+        Assert.assertTrue(reload.isLiveReload(resource));
         Mockito.verify(resource).suspend(-1);
-
         Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}",
                 resource);
     }
@@ -49,9 +50,10 @@ public class BrowserLiveReloadImplTest {
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
         Mockito.when(resource2.getBroadcaster()).thenReturn(broadcaster);
-
         reload.onConnect(resource1);
         reload.onConnect(resource2);
+        Assert.assertTrue(reload.isLiveReload(resource1));
+        Assert.assertTrue(reload.isLiveReload(resource2));
 
         reload.reload();
 
@@ -66,6 +68,7 @@ public class BrowserLiveReloadImplTest {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+        Assert.assertFalse(reload.isLiveReload(resource));
 
         reload.reload();
 
@@ -78,8 +81,10 @@ public class BrowserLiveReloadImplTest {
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
         reload.onConnect(resource);
+        Assert.assertTrue(reload.isLiveReload(resource));
         Mockito.reset(broadcaster);
         reload.onDisconnect(resource);
+        Assert.assertFalse(reload.isLiveReload(resource));
 
         reload.reload();
 

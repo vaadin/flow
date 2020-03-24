@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.atmosphere.cpr.AtmosphereResource;
@@ -33,7 +34,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final VaadinService service;
 
-    private final ConcurrentLinkedQueue<AtmosphereResource> atmosphereResources = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
     BrowserLiveReloadImpl(VaadinService service) {
         this.service = service;
@@ -42,14 +43,15 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     @Override
     public void onConnect(AtmosphereResource resource) {
         resource.suspend(-1);
-        atmosphereResources.add(resource);
+        atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
     }
 
     @Override
     public void onDisconnect(AtmosphereResource resource) {
-        if (!atmosphereResources.remove(resource)) {
+        if (!atmosphereResources
+                .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
             String uuid = resource.uuid();
             getLogger().warn(
                     "Push connection {} is not a live-reload connection or already closed",
@@ -58,9 +60,20 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     }
 
     @Override
+    public boolean isLiveReload(AtmosphereResource resource) {
+        return atmosphereResources.stream()
+                .anyMatch(resourceRef -> resource.equals(resourceRef.get()));
+    }
+
+    @Override
     public void reload() {
-        atmosphereResources.forEach(resource -> resource.getBroadcaster()
-                .broadcast("{\"command\": \"reload\"}", resource));
+        atmosphereResources.forEach(resourceRef -> {
+            AtmosphereResource resource = resourceRef.get();
+            if (resource != null) {
+                resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
+                        resource);
+            }
+        });
     }
 
     private static Logger getLogger() {

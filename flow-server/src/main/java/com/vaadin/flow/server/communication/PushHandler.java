@@ -288,6 +288,20 @@ public class PushHandler {
         if (resource == null) {
             return;
         }
+
+        //  In development mode we may have a live-reload push channel
+        //  that should be closed.
+
+        if (!service.getDeploymentConfiguration().isProductionMode()) {
+            BrowserLiveReloadAccess access = service.getInstantiator()
+                    .getOrCreate(BrowserLiveReloadAccess.class);
+            BrowserLiveReload liveReload = access.getLiveReload(service);
+            if (liveReload.isLiveReload(resource)) {
+                liveReload.onDisconnect(resource);
+                return;
+            }
+        }
+
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
         VaadinSession session;
@@ -343,21 +357,9 @@ public class PushHandler {
             String id = resource.uuid();
 
             if (pushConnection == null) {
-                /*
-                 * In development mode we may have a live-reload push channel
-                 * that should be closed.
-                 */
-                if (!service.getDeploymentConfiguration().isProductionMode()) {
-                    BrowserLiveReloadAccess access = service.getInstantiator()
-                            .getOrCreate(BrowserLiveReloadAccess.class);
-                    BrowserLiveReload liveReload = access
-                            .getLiveReload(service);
-                    liveReload.onDisconnect(resource);
-                } else {
-                    getLogger().warn(
-                            "Could not find push connection to close: {} with transport {}",
-                            id, resource.transport());
-                }
+                getLogger().warn(
+                        "Could not find push connection to close: {} with transport {}",
+                        id, resource.transport());
             } else {
                 if (!pushMode.isEnabled()) {
                     /*
