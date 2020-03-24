@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.annotation.HandlesTypes;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -23,12 +25,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.annotation.HandlesTypes;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
@@ -111,6 +112,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             }
         });
 
+        validateRouteParentLayout(route);
+
         /* Validate PageConfigurator usage */
         validateRouteImplementation(route, PageConfigurator.class);
 
@@ -174,6 +177,25 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);
+        }
+    }
+
+    private void validateRouteParentLayout(Class<?> route) {
+        Route annotation = route.getAnnotation(Route.class);
+        ParentLayout parentLayout = route.getAnnotation(ParentLayout.class);
+        if (annotation == null || parentLayout == null) {
+            return;
+        }
+        if (!RouterLayout.class.isAssignableFrom(route)) {
+            throw new InvalidRouteLayoutConfigurationException(String.format(
+                    "%s is not a '%s' but has both annotation '%s' and '%s'. "
+                            + "The class should not be either a navigation target or it "
+                            + "should be a '%s' to have '%s' annotation",
+                    route.getSimpleName(), RouterLayout.class.getSimpleName(),
+                    Route.class.getSimpleName(),
+                    ParentLayout.class.getSimpleName(),
+                    RouterLayout.class.getSimpleName(),
+                    ParentLayout.class.getSimpleName()));
         }
     }
 
