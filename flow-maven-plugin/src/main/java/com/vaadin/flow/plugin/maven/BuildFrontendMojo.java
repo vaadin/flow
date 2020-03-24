@@ -196,9 +196,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
                 .directory(project.getBasedir()).inheritIO();
         getLog().info("Running webpack ...");
-        FrontendUtils.console(FrontendUtils.YELLOW,
-                FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
-                        command));
+        if ( getLog().isDebugEnabled()) {
+            getLog().debug(FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
+                    command));
+        }
 
         Process webpackLaunch = null;
         try {
