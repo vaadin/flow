@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -36,24 +37,30 @@ public class BrowserLiveReloadImplTest {
 
         reload.onConnect(resource);
 
+        Assert.assertTrue(reload.isLiveReload(resource));
         Mockito.verify(resource).suspend(-1);
-
         Mockito.verify(broadcaster).broadcast("{\"command\": \"hello\"}",
                 resource);
     }
 
     @Test
-    public void reload_resourceIsSet_sendReloadCommand() {
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+    public void reload_twoConnections_sendReloadCommand() {
+        AtmosphereResource resource1 = Mockito.mock(AtmosphereResource.class);
+        AtmosphereResource resource2 = Mockito.mock(AtmosphereResource.class);
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-
-        reload.onConnect(resource);
+        Mockito.when(resource1.getBroadcaster()).thenReturn(broadcaster);
+        Mockito.when(resource2.getBroadcaster()).thenReturn(broadcaster);
+        reload.onConnect(resource1);
+        reload.onConnect(resource2);
+        Assert.assertTrue(reload.isLiveReload(resource1));
+        Assert.assertTrue(reload.isLiveReload(resource2));
 
         reload.reload();
 
         Mockito.verify(broadcaster).broadcast("{\"command\": \"reload\"}",
-                resource);
+                resource1);
+        Mockito.verify(broadcaster).broadcast("{\"command\": \"reload\"}",
+                resource2);
     }
 
     @Test
@@ -61,6 +68,23 @@ public class BrowserLiveReloadImplTest {
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+        Assert.assertFalse(reload.isLiveReload(resource));
+
+        reload.reload();
+
+        Mockito.verifyZeroInteractions(broadcaster);
+    }
+
+    @Test
+    public void reload_resourceIsDisconnected_reloadCommandIsNotSent() {
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
+        reload.onConnect(resource);
+        Assert.assertTrue(reload.isLiveReload(resource));
+        Mockito.reset(broadcaster);
+        reload.onDisconnect(resource);
+        Assert.assertFalse(reload.isLiveReload(resource));
 
         reload.reload();
 
