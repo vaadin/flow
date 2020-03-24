@@ -71,10 +71,8 @@ public class LiveReload {
                     serviceUrl.replaceFirst("http://", "ws://") + "?v-uiId="
                             + uiId + "&refresh_connection");
             webSocket.setOnmessage(this::handleMessageEvent);
-            webSocket.setOnerror(flowWsEvent -> {
-                Console.debug(
-                        "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically.");
-            });
+            webSocket.setOnerror(flowWsEvent -> Console.debug(
+                    "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically."));
         });
     }
 
@@ -122,7 +120,7 @@ public class LiveReload {
             reloadIndicator.appendChild(icon);
             Element message = Browser.getDocument().createElement("span");
             message.setId("vaadin-live-reload-message");
-            message.setInnerText("Live Reload is active");
+            message.setInnerText("Live reload: enabled");
             overlay.appendChild(message);
             Element disableButton = Browser.getDocument()
                     .createElement("input");
