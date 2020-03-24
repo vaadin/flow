@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.internal;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.lang.ref.WeakReference;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.atmosphere.cpr.AtmosphereResource;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.VaadinService;
@@ -32,7 +34,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final VaadinService service;
 
-    private final AtomicReference<AtmosphereResource> resourceRef = new AtomicReference<>();
+    private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
     BrowserLiveReloadImpl(VaadinService service) {
         this.service = service;
@@ -41,21 +43,40 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     @Override
     public void onConnect(AtmosphereResource resource) {
         resource.suspend(-1);
-        resourceRef.set(resource);
-        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}");
+        atmosphereResources.add(new WeakReference<>(resource));
+        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
+                resource);
+    }
+
+    @Override
+    public void onDisconnect(AtmosphereResource resource) {
+        if (!atmosphereResources
+                .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
+            String uuid = resource.uuid();
+            getLogger().warn(
+                    "Push connection {} is not a live-reload connection or already closed",
+                    uuid);
+        }
+    }
+
+    @Override
+    public boolean isLiveReload(AtmosphereResource resource) {
+        return atmosphereResources.stream()
+                .anyMatch(resourceRef -> resource.equals(resourceRef.get()));
     }
 
     @Override
     public void reload() {
-        AtmosphereResource resource = resourceRef.get();
-        if (resource == null) {
-            // There is no yet any connection: nothing to reload
-            LoggerFactory.getLogger(BrowserLiveReloadImpl.class).debug(
-                    "Reload request is received but there is no yet WS connection");
-        } else {
-            resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
-                    resource);
-        }
+        atmosphereResources.forEach(resourceRef -> {
+            AtmosphereResource resource = resourceRef.get();
+            if (resource != null) {
+                resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
+                        resource);
+            }
+        });
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(BrowserLiveReloadImpl.class.getName());
+    }
 }
