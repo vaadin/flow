@@ -340,6 +340,14 @@ public class OpenApiObjectGenerator {
                 .filter(GeneratorUtils::isNotBlank)
                 .orElse(classDeclaration.getNameAsString());
 
+        // detect the endpoint value name
+        if (endpointName.equals(classDeclaration.getNameAsString()) && endpointAnnotation != null) {
+            String endpointValueName = getEndpointValueName(endpointAnnotation);
+            if (endpointValueName != null) {
+                endpointName = endpointValueName.substring(1, endpointValueName.length() - 1);
+            }
+        }
+
         String validationError = endpointNameChecker.check(endpointName);
         if (validationError != null) {
             throw new IllegalStateException(
@@ -347,6 +355,13 @@ public class OpenApiObjectGenerator {
                             endpointName, validationError));
         }
         return endpointName;
+    }
+
+    private String getEndpointValueName(AnnotationExpr endpointAnnotation) {
+        return endpointAnnotation.getChildNodes().stream().filter(node ->
+                node.getTokenRange().isPresent() &&
+                        "value".equals(node.getTokenRange().get().getBegin().getText()))
+                .map(node -> node.getTokenRange().get().getEnd().getText()).findFirst().orElse(null);
     }
 
     private List<Schema> parseNonEndpointClassAsSchema(
