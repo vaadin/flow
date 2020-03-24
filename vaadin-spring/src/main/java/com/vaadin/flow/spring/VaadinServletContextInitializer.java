@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.server.startup.ServletDeployer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -355,6 +356,8 @@ public class VaadinServletContextInitializer
                 throw new RuntimeException(
                         "Unable to initialize Vaadin DevModeHandler", e);
             }
+            // to make sure the user knows the application is ready, show notification to the user
+            ServletDeployer.logAppStartupToConsole(event.getServletContext(), true);
         }
 
         @Override
