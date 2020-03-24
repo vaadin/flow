@@ -24,6 +24,8 @@ import elemental.html.WebSocket;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import java.util.Date;
+
 /**
  * Responsible for the client-side of the Live Reload. It refreshes the page
  * when it receives a reload command from Loive Reload server (either Spring or
@@ -36,9 +38,13 @@ public class LiveReload {
     // The default value is true meaning if the key doesn't exist in the local
     // storage Live Reload is enabled.
     private static final String ENABLED_KEY_IN_STORAGE = "vaadin.live-reload.enabled";
+    private static final String LAST_RELOAD_TEXT = "Last reload happened at ";
+    //private static final DateTimeFormat RELOAD_TIME_FORMATTER = DateTimeFormat.getFormat("HH:mm:ss");
     private static final int SPRING_DEV_TOOLS_PORT = 35729;
     private WebSocket webSocket;
     private Element indicator;
+    private Element reloadNotification;
+    private Date lastReloadDateTime;
 
     /**
      * Connects to either Spring Dev Tools Live Reload server or Flow Live
@@ -87,12 +93,16 @@ public class LiveReload {
         MessageEvent messageEvent = (MessageEvent) evt;
         JsonObject data = Json.parse((String) messageEvent.getData());
         indicator = getOrCreateIndicator();
+        if (lastReloadDateTime != null) {
+            reloadNotification = getOrCreateReloadNotification();
+        }
         Element indicatorMessage = Browser.getDocument()
                 .getElementById("vaadin-live-reload-message");
         if ("hello".equals(data.getString("command"))) {
             indicatorMessage.setInnerHTML("Live reload: enabled");
         } else if ("reload".equals(data.getString("command"))) {
             indicatorMessage.setInnerHTML("Live reload: in progress ...");
+            lastReloadDateTime = new Date();
             Browser.getWindow().getLocation().reload();
         } else {
             indicatorMessage.setHidden(true);
@@ -136,6 +146,28 @@ public class LiveReload {
         return reloadIndicator;
     }
 
+    private Element getOrCreateReloadNotification() {
+        Element reloadNotification = Browser.getDocument()
+                .getElementById("vaadin-live-reload-notification");
+        if (reloadNotification == null) {
+            reloadNotification = Browser.getDocument().createElement("div");
+            reloadNotification.setId("vaadin-live-reload-notification");
+            Element message = Browser.getDocument().createElement("span");
+            message.setId("vaadin-live-reload-timestamp");
+            lastReloadDateTime = new Date();
+            message.setInnerText(LAST_RELOAD_TEXT + lastReloadDateTime.getHours() +":"+ lastReloadDateTime.getMinutes()+":"+ lastReloadDateTime.getSeconds());
+            reloadNotification.appendChild(message);
+            Element liveReloadOverlay = Browser.getDocument()
+                    .getElementById("vaadin-live-reload-overlay");
+            liveReloadOverlay.appendChild(reloadNotification);
+        } else {
+            Element message = Browser.getDocument()
+                    .getElementById("vaadin-live-reload-timestamp");
+            message.setInnerText(LAST_RELOAD_TEXT + lastReloadDateTime.getHours() +":"+ lastReloadDateTime.getMinutes()+":"+ lastReloadDateTime.getSeconds());
+        }
+        return reloadNotification;
+    }
+
     private boolean isEnabled() {
         String enabled = StorageUtil.getLocalItem(ENABLED_KEY_IN_STORAGE);
         return enabled == null || Boolean.parseBoolean(enabled);
@@ -144,6 +176,7 @@ public class LiveReload {
     private void disable() {
         assert webSocket != null;
         assert indicator != null;
+        assert reloadNotification != null;
 
         webSocket.close();
         Browser.getDocument().getBody().removeChild(indicator);
