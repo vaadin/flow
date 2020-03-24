@@ -174,7 +174,10 @@ public final class DevModeHandler {
                 .split(" +")));
 
         console(GREEN, START);
-        console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(
+                    commandToString(npmFolder.getAbsolutePath(), command));
+        }
 
         long start = System.currentTimeMillis();
         processBuilder.command(command);

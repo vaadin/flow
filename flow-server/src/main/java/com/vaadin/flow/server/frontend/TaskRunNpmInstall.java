@@ -39,9 +39,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 import elemental.json.Json;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static elemental.json.impl.JsonUtil.stringify;
 
 /**
@@ -188,8 +186,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> command = new ArrayList<>(executable);
         command.add("install");
 
-        console(YELLOW, commandToString(
-                packageUpdater.npmFolder.getAbsolutePath(), command));
+        if (packageUpdater.log().isDebugEnabled()) {
+            packageUpdater.log().debug(commandToString(
+                    packageUpdater.npmFolder.getAbsolutePath(), command));
+        }
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");

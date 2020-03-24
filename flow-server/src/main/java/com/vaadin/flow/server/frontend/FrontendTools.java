@@ -686,8 +686,9 @@ public class FrontendTools {
         command.add("install");
         command.add("pnpm@" + DEFAULT_PNPM_VERSION);
 
-        FrontendUtils.console(FrontendUtils.YELLOW,
-                FrontendUtils.commandToString(dir, command));
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(FrontendUtils.commandToString(baseDir, command));
+        }
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
