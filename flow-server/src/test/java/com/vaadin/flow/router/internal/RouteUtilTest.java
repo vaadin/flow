@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -28,6 +29,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 /**
  * Test that {@link RouteUtil} route resolving works as intended for both simple
@@ -419,6 +422,80 @@ public class RouteUtilTest {
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {
                         MultiTarget.class, RoutePrefixParent.class }));
+    }
+
+    @Test
+    public void newRouteAnnotatedClass_updateRouteRegistry_routeIsAddedToRegistry() {
+        // given
+        @Route("a")
+        class A extends Component {
+        }
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(new MockVaadinServletService().getContext());
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.singleton(A.class),
+                Collections.emptySet(), Collections.emptySet());
+
+        // then
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void deletedRouteAnnotatedClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
+        // given
+        @Route("a")
+        class A extends Component {
+        }
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(new MockVaadinServletService().getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.emptySet(), Collections.singleton(A.class));
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+    }
+
+    @Test
+    public void renamedRouteAnnotatedClass_updateRouteRegistry_routeIsUpdatedInRegistry() {
+        // given
+        @Route("aa")
+        class A extends Component {
+        }
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(new MockVaadinServletService().getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
+        Assert.assertTrue(registry.getConfiguration().hasRoute("aa"));
+    }
+
+    @Test
+    public void deannotatedRouteClass_updateRouteRegistry_routeIsRemovedFromRegistry() {
+        // given
+        class A extends Component {
+        }
+        ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                .getInstance(new MockVaadinServletService().getContext());
+        registry.setRoute("a", A.class, Collections.emptyList());
+        Assert.assertTrue(registry.getConfiguration().hasRoute("a"));
+
+        // when
+        RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
+                Collections.singleton(A.class), Collections.emptySet());
+
+        // then
+        Assert.assertFalse(registry.getConfiguration().hasRoute("a"));
     }
 
 }

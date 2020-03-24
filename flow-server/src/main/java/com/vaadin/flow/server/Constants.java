@@ -221,18 +221,6 @@ public final class Constants implements Serializable {
      */
     public static final String LOCAL_FRONTEND_RESOURCES_PATH = "src/main/resources/META-INF/resources/frontend";
 
-    public static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
-    public static final int SUPPORTED_NODE_MINOR_VERSION = 0;
-    public static final int SUPPORTED_NPM_MAJOR_VERSION = 5;
-    public static final int SUPPORTED_NPM_MINOR_VERSION = 6;
-    public static final int SHOULD_WORK_NODE_MAJOR_VERSION = 8;
-    public static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
-    public static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
-    public static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
-
-    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
-    public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
-
     /**
      * Property boolean for marking stats.json to be fetched from external
      * location.

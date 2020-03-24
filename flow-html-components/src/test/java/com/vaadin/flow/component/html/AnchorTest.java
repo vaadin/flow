@@ -38,6 +38,28 @@ public class AnchorTest extends ComponentTest {
         Assert.assertEquals(anchor.getElement().getText(), "Home");
     }
 
+    @Test
+    public void shouldNotRemoveRouterIgnoreAttributeWhenRemoveHref() {
+        Anchor anchor = new Anchor();
+        anchor.getElement().setAttribute("router-ignore", true);
+        anchor.removeHref();
+
+        Assert.assertEquals("Anchor element should have router-ignore " +
+                        "attribute", "",
+                anchor.getElement().getAttribute("router-ignore"));
+    }
+
+    @Test
+    public void shouldNotBreakBehaviorIfSetHrefWhenHavingRouterIgnoreAttributeBefore() {
+        Anchor anchor = new Anchor();
+        anchor.getElement().setAttribute("router-ignore", true);
+        anchor.setHref("/logout");
+
+        Assert.assertEquals("Anchor element should have router-ignore " +
+                        "attribute", "",
+                anchor.getElement().getAttribute("router-ignore"));
+    }
+
     // Other test methods in super class
 
     @Override

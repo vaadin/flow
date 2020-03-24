@@ -114,7 +114,6 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public void setHref(String href) {
         set(hrefDescriptor, href);
-        getElement().removeAttribute(ROUTER_IGNORE_ATTRIBUTE);
     }
 
     /**
@@ -125,7 +124,6 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public void removeHref() {
         getElement().removeAttribute("href");
-        getElement().removeAttribute(ROUTER_IGNORE_ATTRIBUTE);
     }
 
     /**

@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
@@ -106,6 +107,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project.basedir}/"
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
     protected File frontendResourcesDirectory;
+
+    /**
+     * Whether to use byte code scanner strategy to discover frontend
+     * components.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
+    private boolean optimizeBundle;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -174,12 +182,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         }
 
         String nodePath;
+        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
+                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         if (requireHomeNodeExec) {
-            nodePath = FrontendUtils
-                    .ensureNodeExecutableInHome(npmFolder.getAbsolutePath());
+            nodePath = tools
+                    .forceAlternativeNodeExecutable();
         } else {
-            nodePath = FrontendUtils
-                    .getNodeExecutable(npmFolder.getAbsolutePath());
+            nodePath = tools.getNodeExecutable();
         }
 
         List<String> command = Arrays.asList(nodePath,

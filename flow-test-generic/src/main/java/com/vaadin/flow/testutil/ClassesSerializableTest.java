@@ -178,6 +178,7 @@ public abstract class ClassesSerializableTest {
                 // Frontend tasks classes which are not stored anywhere but used
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
                 // connect is stateless

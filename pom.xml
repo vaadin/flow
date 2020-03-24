@@ -29,6 +29,7 @@
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
+        <module>flow-jrebel-plugin</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
@@ -105,7 +106,7 @@
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>6.2.1</testbench.version>
-        <jetty.version>9.4.11.v20180605</jetty.version>
+        <jetty.version>9.4.27.v20200227</jetty.version>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
