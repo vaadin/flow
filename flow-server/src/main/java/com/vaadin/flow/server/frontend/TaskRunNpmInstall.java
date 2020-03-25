@@ -145,6 +145,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
+        // Do possible cleaning before generating any new files.
         try {
             cleanUp();
         } catch (IOException exception) {
