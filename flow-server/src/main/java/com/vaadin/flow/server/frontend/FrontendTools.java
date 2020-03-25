@@ -419,9 +419,6 @@ public class FrontendTools {
             } catch (IOException e) {
                 getLogger().warn("Couldn't create temporary package.json");
             }
-            LoggerFactory.getLogger("dev-updater").info(
-                    "Installing pnpm v{} in {}. It is suggested to install it globally using 'npm add -g pnpm@{}'",
-                    DEFAULT_PNPM_VERSION, dir, DEFAULT_PNPM_VERSION);
             // install pnpm locally using npm
             installPnpm(dir, getNpmExecutable(false));
 
@@ -460,7 +457,7 @@ public class FrontendTools {
         }
         if (file == null && installNode) {
             getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
-                    cmd, installNode);
+                    cmd, getAlternativeDir());
             return new File(installNode(DEFAULT_NODE_VERSION, null));
         }
         if (file == null) {
