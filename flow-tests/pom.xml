@@ -318,7 +318,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests</test.excludegroup>
+                <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests, com.vaadin.flow.testcategory.PushTests</test.excludegroup>
             </properties>
         </profile>
         <profile>
@@ -340,7 +340,7 @@
                 </property>
             </activation>
             <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11</test.excludegroup>
+                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11, com.vaadin.flow.testcategory.PushTests</test.excludegroup>
             </properties>
         </profile>
     </profiles>

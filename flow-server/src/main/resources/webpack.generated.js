@@ -26,7 +26,7 @@ const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
 const config = 'config';
-// folder for outputting index.[ts/js] bundle, etc.
+// folder for outputting vaadin-bundle and other fragments
 const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 // folder for outputting stats.json
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
@@ -64,6 +64,20 @@ if (watchDogPort) {
   runWatchDog();
 }
 
+// Compute the entries that webpack have to visit
+const webPackEntries = {};
+if (useClientSideIndexFileForBootstrapping) {
+  webPackEntries.bundle = clientSideIndexEntryPoint;
+  const dirName = path.dirname(fileNameOfTheFlowGeneratedMainEntryPoint);
+  const baseName = path.basename(fileNameOfTheFlowGeneratedMainEntryPoint, '.js');
+  if (fs.readdirSync(dirName).filter(fileName => !fileName.startsWith(baseName)).length) {
+    // if there are vaadin exported views, add a second entry
+    webPackEntries.export = fileNameOfTheFlowGeneratedMainEntryPoint;
+  }
+} else {
+  webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
+}
+
 exports = {
   frontendFolder: `${frontendFolder}`,
   buildFolder: `${buildFolder}`,
@@ -73,9 +87,7 @@ exports = {
 module.exports = {
   mode: 'production',
   context: frontendFolder,
-  entry: {
-    bundle: useClientSideIndexFileForBootstrapping ? clientSideIndexEntryPoint : fileNameOfTheFlowGeneratedMainEntryPoint
-  },
+  entry: webPackEntries,
 
   output: {
     filename: `${build}/vaadin-[name]-[contenthash].cache.js`,
@@ -174,7 +186,8 @@ module.exports = {
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
       template: clientSideIndexHTML,
-      inject: 'head'
+      inject: 'head',
+      chunks: ['bundle']
     }),
     useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
       defaultAttribute: 'defer'

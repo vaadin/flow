@@ -195,7 +195,7 @@ public class BootstrapHandlerTest {
         @Override
         public void configurePage(InitialPageSettings settings) {
             settings.addInlineWithContents(
-                    "body {width: 100vw; height:100vh; margin:0;}",
+                    "body {width: 100%; height:100vh; margin:0;}",
                     InitialPageSettings.WrapMode.STYLESHEET);
         }
     }
@@ -711,7 +711,7 @@ public class BootstrapHandlerTest {
         Elements allElements = page.head().getAllElements();
 
         Assert.assertEquals(
-                "<style type=\"text/css\">body {width: 100vw; height:100vh; margin:0;}</style>",
+                "<style type=\"text/css\">body {width: 100%; height:100vh; margin:0;}</style>",
                 allElements.get(allElements.size() - 1).toString());
     }
 
@@ -800,7 +800,7 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 "The first style tag should start with body style containing default body size and margin",
                 styleTag.get().toString().startsWith(
-                        "<style type=\"text/css\">body {height:100vh;width:100vw;margin:0;}"));
+                        "<style type=\"text/css\">body {height:100vh;width:100%;margin:0;}"));
     }
 
     @Test // 3749
@@ -996,7 +996,7 @@ public class BootstrapHandlerTest {
                         .anyMatch(element -> element
                                 .equals("<script type=\"module\" src=\"./"
                                         + VAADIN_MAPPING
-                                        + "build/index-1111.cache.js\" data-app-id=\""
+                                        + "build/vaadin-bundle-1111.cache.js\" data-app-id=\""
                                         + testUI.getInternals().getAppId()
                                         + "\" crossorigin></script>")));
     }
@@ -1231,6 +1231,7 @@ public class BootstrapHandlerTest {
                 .setContextRoot(contextRootRelativePath(request));
 
         Document page = pageBuilder.getBootstrapPage(bootstrapContext);
+
         Element head = page.head();
         Assert.assertTrue(
                 head.outerHtml().contains("mode = " + productionMode));
@@ -1342,6 +1343,8 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(bootstrapContext);
 
         Elements scripts = page.head().getElementsByTag("script");
+        scripts.forEach(s -> System.err.println(s.outerHtml()));
+
         Element element = scripts.stream()
                 .filter(elem -> elem.attr("src").equals("//module.js"))
                 .findFirst().get();
@@ -1349,9 +1352,29 @@ public class BootstrapHandlerTest {
 
         Element bundle = scripts.stream()
                 .filter(el -> el.attr("src")
-                        .equals("./VAADIN/build/index-1111.cache.js"))
+                        .equals("./VAADIN/build/vaadin-bundle-1111.cache.js"))
                 .findFirst().get();
         Assert.assertFalse(bundle.hasAttr("defer"));
+    }
+
+    @Test
+    public void getBootstrapPage_removesExportScript() throws ServiceException {
+        initUI(testUI);
+
+        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
+                session, testUI, this::contextRootRelativePath);
+        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
+
+        Elements scripts = page.head().getElementsByTag("script");
+
+        Assert.assertTrue(scripts.stream()
+                .filter(el -> el.attr("src")
+                        .equals("./VAADIN/build/vaadin-bundle-1111.cache.js"))
+                .findFirst().isPresent());
+        Assert.assertFalse(scripts.stream()
+                .filter(el -> el.attr("src")
+                        .equals("./VAADIN/build/vaadin-export-2222.cache.js"))
+                .findFirst().isPresent());
     }
 
     @Test // #7158

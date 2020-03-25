@@ -1023,7 +1023,7 @@ class RouteModel implements Serializable {
     /**
      * Used when process matching parameter values inside a urlTemplate.
      */
-    private static class RouteSegmentValue {
+    private static class RouteSegmentValue implements Serializable {
 
         final RouteSegment segment;
 

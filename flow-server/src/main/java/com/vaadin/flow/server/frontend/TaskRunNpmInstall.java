@@ -36,9 +36,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 import elemental.json.Json;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static elemental.json.impl.JsonUtil.stringify;
 
 /**
@@ -169,12 +167,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
+        FrontendTools tools = new FrontendTools(baseDir,
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         try {
             if (requireHomeNodeExec) {
-                FrontendUtils.ensureNodeExecutableInHome(baseDir);
+                tools.forceAlternativeNodeExecutable();
             }
-            executable = enablePnpm ? FrontendUtils.getPnpmExecutable(baseDir)
-                    : FrontendUtils.getNpmExecutable(baseDir);
+            executable = enablePnpm ? tools.getPnpmExecutable()
+                    : tools.getNpmExecutable();
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
@@ -182,8 +182,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> command = new ArrayList<>(executable);
         command.add("install");
 
-        console(YELLOW, commandToString(
-                packageUpdater.npmFolder.getAbsolutePath(), command));
+        if (packageUpdater.log().isDebugEnabled()) {
+            packageUpdater.log().debug(commandToString(
+                    packageUpdater.npmFolder.getAbsolutePath(), command));
+        }
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");

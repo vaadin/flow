@@ -30,6 +30,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -273,6 +274,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
+        Mockito.when(servletContext.getInitParameterNames())
+                .thenReturn(Collections.enumeration(
+                        Collections.singleton(FrontendUtils.PROJECT_BASEDIR)));
+        Mockito.when(
+                servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
+                .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }

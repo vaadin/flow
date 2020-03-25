@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -49,11 +51,8 @@ import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.FrontendUtils.console;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getNodeExecutable;
-import static com.vaadin.flow.server.frontend.FrontendUtils.validateNodeAndNpmVersion;
 import static java.lang.String.format;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -145,17 +144,18 @@ public final class DevModeHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        tools.validateNodeAndNpmVersion();
 
         boolean useHomeNodeExec = config.getBooleanProperty(
                 Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
         String nodeExec = null;
         if (useHomeNodeExec) {
-            nodeExec = FrontendUtils
-                    .ensureNodeExecutableInHome(npmFolder.getAbsolutePath());
+            nodeExec = tools.forceAlternativeNodeExecutable();
         } else {
-            nodeExec = getNodeExecutable(npmFolder.getAbsolutePath());
+            nodeExec = tools.getNodeExecutable();
         }
 
         List<String> command = new ArrayList<>();
@@ -172,7 +172,10 @@ public final class DevModeHandler {
                 .split(" +")));
 
         console(GREEN, START);
-        console(YELLOW, commandToString(npmFolder.getAbsolutePath(), command));
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(
+                    commandToString(npmFolder.getAbsolutePath(), command));
+        }
 
         processBuilder.command(command);
         try {

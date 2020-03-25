@@ -19,16 +19,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.RouteRegistry;
 
 /**
  * Utility class with methods for route handling.
@@ -276,5 +284,53 @@ public class RouteUtil {
             return simpleName.toLowerCase();
         }
         return route.value();
+    }
+
+    /**
+     * Updates route registry as necessary when classes have been added /
+     * modified / deleted.
+     * 
+     * @param registry
+     *            route registry
+     * @param addedClasses
+     *            added classes
+     * @param modifiedClasses
+     *            modified classes
+     * @param deletedClasses
+     *            deleted classes
+     */
+    public static void updateRouteRegistry(RouteRegistry registry,
+            Set<Class<?>> addedClasses, Set<Class<?>> modifiedClasses,
+            Set<Class<?>> deletedClasses) {
+        RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
+
+        Logger logger = LoggerFactory.getLogger(RouteUtil.class);
+
+        registry.update(() -> {
+            // remove deleted classes and classes that lost the annotation from registry
+            Stream.concat(deletedClasses.stream(),
+                    modifiedClasses.stream().filter(
+                            clazz -> !clazz.isAnnotationPresent(Route.class)))
+                    .filter(Component.class::isAssignableFrom)
+                    .forEach(clazz -> {
+                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
+                        logger.debug("Removing route to {}", componentClass);
+                        routeConf.removeRoute(componentClass);
+                    });
+            // add new routes to registry
+            Stream.concat(addedClasses.stream(), modifiedClasses.stream())
+                    .distinct()
+                    .filter(Component.class::isAssignableFrom)
+                    .filter(clazz -> clazz.isAnnotationPresent(Route.class))
+                    .forEach(clazz -> {
+                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
+                        logger.debug(
+                                "Updating route {} to {}", componentClass
+                                        .getAnnotation(Route.class).value(),
+                                clazz);
+                        routeConf.removeRoute(componentClass);
+                        routeConf.setAnnotatedRoute(componentClass);
+                    });
+        });
     }
 }

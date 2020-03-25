@@ -95,6 +95,9 @@ public abstract class ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
+                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadAccess",
+                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReload",
+                "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadImpl",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.UsageStatistics(\\$.*)?",
@@ -175,6 +178,7 @@ public abstract class ClassesSerializableTest {
                 // Frontend tasks classes which are not stored anywhere but used
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
                 // connect is stateless

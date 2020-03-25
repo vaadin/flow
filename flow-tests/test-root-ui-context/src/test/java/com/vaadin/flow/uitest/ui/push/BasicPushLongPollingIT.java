@@ -4,7 +4,7 @@ import org.junit.experimental.categories.Category;
 
 import com.vaadin.flow.testcategory.PushTests;
 
-@Category({ PushTests.class })
+@Category(PushTests.class)
 public class BasicPushLongPollingIT extends AbstractClientServerCounterIT {
 
 }

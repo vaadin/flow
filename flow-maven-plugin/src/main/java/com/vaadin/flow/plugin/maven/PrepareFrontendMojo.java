@@ -37,6 +37,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 
@@ -95,8 +96,10 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         propagateBuildInfo();
 
         try {
-            FrontendUtils
-                    .validateNodeAndNpmVersion(npmFolder.getAbsolutePath());
+            FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
+                    () -> FrontendUtils.getVaadinHomeDirectory()
+                            .getAbsolutePath());
+            tools.validateNodeAndNpmVersion();
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
         }
@@ -160,8 +163,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
         buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                 requireHomeNodeExec);
-        buildInfo.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                optimizeBundle);
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
