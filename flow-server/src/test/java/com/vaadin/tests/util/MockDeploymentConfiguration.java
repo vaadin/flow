@@ -180,7 +180,7 @@ public class MockDeploymentConfiguration
 
     @Override
     public boolean isLiveReloadEnabled() {
-        return false;
+        return liveReloadEnabled;
     }
 
     public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
