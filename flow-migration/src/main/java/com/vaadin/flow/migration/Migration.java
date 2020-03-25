@@ -136,7 +136,7 @@ public class Migration {
                     "Configuration does not provide a compiled class directory");
         }
 
-        tools = new FrontendTools(getTempMigrationFolder().getPath(),
+        tools = new FrontendTools(configuration.getBaseDirectory().getPath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
     }
 
@@ -152,14 +152,17 @@ public class Migration {
             throws MigrationToolsException, MigrationFailureException {
         prepareMigrationDirectory();
 
-        List<String> bowerCommands = tools.getBowerExecutable();
+        FrontendTools bowerTools = new FrontendTools(
+                getTempMigrationFolder().getPath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        List<String> bowerCommands = bowerTools.getBowerExecutable();
         boolean needInstallBower = bowerCommands.isEmpty();
         if (!ensureTools(needInstallBower)) {
             throw new MigrationToolsException(
                     "Could not install tools required for migration (bower or modulizer)");
         }
         if (needInstallBower) {
-            bowerCommands = tools.getBowerExecutable();
+            bowerCommands = bowerTools.getBowerExecutable();
         }
 
         if (bowerCommands.isEmpty()) {
