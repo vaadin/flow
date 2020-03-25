@@ -36,7 +36,10 @@ public class LiveReload {
     // The default value is true meaning if the key doesn't exist in the local
     // storage Live Reload is enabled.
     private static final String ENABLED_KEY_IN_STORAGE = "vaadin.live-reload.enabled";
+    private static final String ACTIVE_KEY_IN_SESSION_STORAGE = "vaadin.live-reload.active";
     private static final int SPRING_DEV_TOOLS_PORT = 35729;
+    private String serviceUrl;
+    private int uiId;
     private WebSocket webSocket;
     private Element indicator;
 
@@ -52,10 +55,18 @@ public class LiveReload {
      *            The UI id
      */
     public void show(String serviceUrl, int uiId) {
-        if (!isEnabled()) {
-            return;
+        this.serviceUrl = serviceUrl;
+        this.uiId = uiId;
+        if (isEnabled()) {
+            indicator = getOrCreateIndicator();
+            openWebSocketConnection();
         }
+    }
 
+    private void openWebSocketConnection() {
+        if (webSocket != null) {
+            webSocket.close();
+        }
         String hostname = Browser.getWindow().getLocation().getHostname();
         webSocket = createWebSocket(
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
@@ -76,6 +87,13 @@ public class LiveReload {
         });
     }
 
+    private void closeWebSocketConnection() {
+        if (webSocket!=null) {
+            webSocket.close();
+            webSocket = null;
+        }
+    }
+
     private native WebSocket createWebSocket(String url)
     /*-{
         return new WebSocket(url);
@@ -88,10 +106,13 @@ public class LiveReload {
         Element indicatorMessage = Browser.getDocument()
                 .getElementById("vaadin-live-reload-message");
         if ("hello".equals(data.getString("command"))) {
-            indicatorMessage.setInnerHTML("Live reload: enabled");
+            updateActiveIndicator();
+            indicatorMessage.setInnerHTML("Live reload: available");
         } else if ("reload".equals(data.getString("command"))) {
-            indicatorMessage.setInnerHTML("Live reload: in progress ...");
-            Browser.getWindow().getLocation().reload();
+            if (isActive()) {
+                indicatorMessage.setInnerHTML("Live reload: in progress ...");
+                Browser.getWindow().getLocation().reload();
+            }
         } else {
             indicatorMessage.setHidden(true);
         }
@@ -109,29 +130,71 @@ public class LiveReload {
             reloadIndicator.getStyle().setRight("0");
             reloadIndicator.getStyle().setTop("0");
             reloadIndicator.getStyle().setZIndex(10000);
-            Element icon = Browser.getDocument().createElement("div");
+
             Element overlay = Browser.getDocument().createElement("div");
             overlay.setId("vaadin-live-reload-overlay");
             overlay.setHidden(true);
+
+            Element icon = Browser.getDocument().createElement("div");
             icon.setId("vaadin-live-reload-icon");
             icon.getStyle().setProperty("text-align", "right");
             icon.setOnclick(evt -> overlay.setHidden(!overlay.isHidden()));
             icon.setInnerText("}>");
             reloadIndicator.appendChild(icon);
+
             Element message = Browser.getDocument().createElement("span");
             message.setId("vaadin-live-reload-message");
             message.setInnerText("Live reload: enabled");
             overlay.appendChild(message);
+
+            Element activeButton = Browser.getDocument().createElement("div");
+            activeButton.setId("vaadin-live-reload-active");
+            activeButton.setOnclick(e -> setActive(!isActive()));
+            activeButton.getStyle().setVisibility("hidden");
+            activeButton.getStyle().setTextDecoration("underline");
+            activeButton.getStyle().setCursor("pointer");
+            overlay.appendChild(activeButton);
+
             Element disableButton = Browser.getDocument()
-                    .createElement("input");
-            disableButton.setAttribute("type", "button");
-            disableButton.setAttribute("value", "Disable");
-            disableButton.setOnclick(evt -> disable());
+                    .createElement("div");
+            disableButton.setInnerText("Disable");
             overlay.appendChild(disableButton);
+            disableButton.getStyle().setTextDecoration("underline");
+            disableButton.getStyle().setCursor("pointer");
+            disableButton.setOnclick(e -> disable());
+
             reloadIndicator.appendChild(overlay);
             Browser.getDocument().getBody().appendChild(reloadIndicator);
         }
         return reloadIndicator;
+    }
+
+    private boolean isActive() {
+        String active = StorageUtil.getSessionItem(ACTIVE_KEY_IN_SESSION_STORAGE);
+        return active == null || Boolean.parseBoolean(active);
+    }
+
+    private void setActive(boolean active) {
+        StorageUtil.setSessionItem(ACTIVE_KEY_IN_SESSION_STORAGE,
+                Boolean.toString(active));
+        updateActiveIndicator();
+    }
+
+    private void updateActiveIndicator() {
+        assert indicator != null;
+
+        Element icon = Browser.getDocument()
+                .getElementById("vaadin-live-reload-icon");
+        Element toggle = Browser.getDocument()
+                .getElementById("vaadin-live-reload-active");
+        toggle.getStyle().setVisibility("visible");
+        if (isActive()) {
+            icon.setInnerHTML("}&gt;<sup style='color: green'>●</sup>");
+            toggle.setInnerText("Deactivate in this window");
+        } else {
+            icon.setInnerHTML("}&gt;<sup style='color: brown'>●</sup>");
+            toggle.setInnerText("Activate in this window");
+        }
     }
 
     private boolean isEnabled() {
