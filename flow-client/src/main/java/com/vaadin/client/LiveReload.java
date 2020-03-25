@@ -52,7 +52,7 @@ public class LiveReload {
      *            The UI id
      */
     public void show(String serviceUrl, int uiId) {
-        if (!isEnabled()) {
+        if (!isEnabledOnThisBrowser()) {
             return;
         }
 
@@ -134,7 +134,7 @@ public class LiveReload {
         return reloadIndicator;
     }
 
-    private boolean isEnabled() {
+    private boolean isEnabledOnThisBrowser() {
         String enabled = StorageUtil.getLocalItem(ENABLED_KEY_IN_STORAGE);
         return enabled == null || Boolean.parseBoolean(enabled);
     }

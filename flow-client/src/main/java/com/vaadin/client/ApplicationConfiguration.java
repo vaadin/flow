@@ -38,6 +38,7 @@ public class ApplicationConfiguration {
     private boolean productionMode;
     private boolean requestTiming;
     private boolean webComponentMode;
+    private boolean liveReloadEnabled;
 
     private String servletVersion;
     private String atmosphereVersion;
@@ -332,5 +333,13 @@ public class ApplicationConfiguration {
      */
     public String[] getExportedWebComponents() {
         return exportedWebComponents;
+    }
+
+    public boolean isLiveReloadEnabled() {
+        return liveReloadEnabled;
+    }
+
+    public void setLiveReloadEnabled(boolean liveReloadEnabled) {
+        this.liveReloadEnabled = liveReloadEnabled;
     }
 }

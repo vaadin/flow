@@ -24,6 +24,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REQUEST_TIMING;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
@@ -205,4 +206,9 @@ public class PropertyDeploymentConfiguration
         return initParameters;
     }
 
+    @Override
+    public boolean isLiveReloadEnabled() {
+        return !isProductionMode() && getBooleanProperty(
+                SERVLET_PARAMETER_ENABLE_LIVE_RELOAD, true);
+    }
 }

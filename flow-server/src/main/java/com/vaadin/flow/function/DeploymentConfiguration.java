@@ -371,4 +371,6 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(Constants.SERVLET_PARAMETER_INITIAL_UIDL,
                 false);
     }
+
+    boolean isLiveReloadEnabled();
 }

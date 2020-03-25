@@ -289,10 +289,10 @@ public class PushHandler {
             return;
         }
 
-        //  In development mode we may have a live-reload push channel
-        //  that should be closed.
+        // In development mode we may have a live-reload push channel
+        // that should be closed.
 
-        if (!service.getDeploymentConfiguration().isProductionMode()) {
+        if (service.getDeploymentConfiguration().isLiveReloadEnabled()) {
             BrowserLiveReloadAccess access = service.getInstantiator()
                     .getOrCreate(BrowserLiveReloadAccess.class);
             BrowserLiveReload liveReload = access.getLiveReload(service);
@@ -484,7 +484,7 @@ public class PushHandler {
     void onConnect(AtmosphereResource resource) {
         String refreshConnection = resource.getRequest()
                 .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
-        if (!service.getDeploymentConfiguration().isProductionMode()
+        if (service.getDeploymentConfiguration().isLiveReloadEnabled()
                 && refreshConnection != null
                 && TRANSPORT.WEBSOCKET.equals(resource.transport())) {
             BrowserLiveReloadAccess access = service.getInstantiator()

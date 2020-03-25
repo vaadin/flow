@@ -131,6 +131,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public boolean isLiveReloadEnabled() {
+            return false;
+        }
+
+        @Override
         public boolean isSendUrlsAsParameters() {
             return DefaultDeploymentConfiguration.DEFAULT_SEND_URLS_AS_PARAMETERS;
         }
