@@ -142,6 +142,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
+        // Do possible cleaning before generating any new files.
+        try {
+            cleanUp();
+        } catch (IOException exception) {
+            throw new ExecutionFailedException("Couldn't remove "
+                    + packageUpdater.nodeModulesFolder + " directory",
+                    exception);
+        }
+
         if (enablePnpm) {
             try {
                 createPnpmFile(generateVersionsJson());
@@ -153,14 +162,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
                         exception);
             }
-        }
-
-        try {
-            cleanUp();
-        } catch (IOException exception) {
-            throw new ExecutionFailedException("Couldn't remove "
-                    + packageUpdater.nodeModulesFolder + " directory",
-                    exception);
         }
 
         List<String> executable;
