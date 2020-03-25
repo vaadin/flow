@@ -16,6 +16,8 @@
 
 package com.vaadin.client;
 
+import java.util.Date;
+
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
@@ -23,8 +25,6 @@ import elemental.events.MessageEvent;
 import elemental.html.WebSocket;
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
-import java.util.Date;
 
 /**
  * Responsible for the client-side of the Live Reload. It refreshes the page
@@ -40,7 +40,6 @@ public class LiveReload {
     private static final String ENABLED_KEY_IN_STORAGE = "vaadin.live-reload.enabled";
     private static final String LAST_RELOAD_KEY_IN_STORAGE = "vaadin.live-reload.last-reload";
     private static final String LAST_RELOAD_TEXT = "Last reload happened at ";
-    //private static final DateTimeFormat RELOAD_TIME_FORMATTER = DateTimeFormat.getFormat("HH:mm:ss");
     private static final int SPRING_DEV_TOOLS_PORT = 35729;
     private WebSocket webSocket;
     private Element indicator;
@@ -155,8 +154,6 @@ public class LiveReload {
             reloadNotification.setId("vaadin-live-reload-notification");
             Element message = Browser.getDocument().createElement("span");
             message.setId("vaadin-live-reload-timestamp");
-            //Date now = new Date();
-            //saveLastReloadInStorage(now.getHours(), now.getMinutes(), now.getSeconds());
             message.setInnerText(LAST_RELOAD_TEXT + getLastReloadInStorage());
             reloadNotification.appendChild(message);
             Element liveReloadOverlay = Browser.getDocument()
@@ -171,7 +168,8 @@ public class LiveReload {
     }
 
     private void saveLastReloadInStorage(Date date) {
-        StorageUtil.setLocalItem(LAST_RELOAD_KEY_IN_STORAGE, date.getHours() +":"+ date.getMinutes() +":"+ date.getSeconds());
+        StorageUtil.setLocalItem(LAST_RELOAD_KEY_IN_STORAGE, date.getHours()
+                + ":" + date.getMinutes() + ":" + date.getSeconds());
     }
 
     private String getLastReloadInStorage(){
