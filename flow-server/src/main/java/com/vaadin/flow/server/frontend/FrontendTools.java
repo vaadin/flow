@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -228,14 +227,8 @@ public class FrontendTools {
      * @see #getPnpmExecutable(String, boolean)
      */
     public List<String> getPnpmExecutable() {
-        Pair<String, String[]> result = doEnsurePnpm();
-        List<String> pnpmCommand;
-        if (result.getSecond().length == 0) {
-            pnpmCommand = getPnpmExecutable(result.getFirst(), true);
-        } else {
-            pnpmCommand = new ArrayList<>(result.getSecond().length + 1);
-            Stream.of(result.getSecond()).forEach(pnpmCommand::add);
-        }
+        Supplier<List<String>> result = doEnsurePnpm();
+        List<String> pnpmCommand = result.get();
         if (!pnpmCommand.isEmpty()) {
             pnpmCommand.add("--shamefully-hoist=true");
         }
@@ -384,9 +377,9 @@ public class FrontendTools {
         }
     }
 
-    private String[] ensurePnpm(String dir) {
-        Pair<Boolean, String[]> pair = isPnpmTooOldOrAbsent(dir);
-        if (pair.getFirst()) {
+    private List<String> ensurePnpm(String dir) {
+        List<String> pnpm = getSuitablePnpm(dir);
+        if (pnpm.isEmpty()) {
             // copy the current content of package.json file to a temporary
             // location
             File packageJson = new File(dir, "package.json");
@@ -436,9 +429,9 @@ public class FrontendTools {
                 }
                 tempFile.delete();
             }
-            return new String[0];
+            return Collections.emptyList();
         } else {
-            return pair.getSecond();
+            return pnpm;
         }
     }
 
@@ -584,13 +577,17 @@ public class FrontendTools {
         return null;
     }
 
-    private Pair<String, String[]> doEnsurePnpm() {
-        Pair<Boolean, String[]> pair = isPnpmTooOldOrAbsent(baseDir);
-        if (pair.getFirst()) {
-            String dir = getAlternativeDir();
-            return new Pair<>(dir, ensurePnpm(dir));
+    private Supplier<List<String>> doEnsurePnpm() {
+        List<String> path = getSuitablePnpm(baseDir);
+        if (!path.isEmpty()) {
+            return () -> path;
+        }
+        String alternativeDir = getAlternativeDir();
+        List<String> pnpm = ensurePnpm(alternativeDir);
+        if (pnpm.isEmpty()) {
+            return () -> getPnpmExecutable(alternativeDir, true);
         } else {
-            return new Pair<>(baseDir, pair.getSecond());
+            return () -> pnpm;
         }
     }
 
@@ -634,7 +631,7 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private Pair<Boolean, String[]> isPnpmTooOldOrAbsent(String dir) {
+    private List<String> getSuitablePnpm(String dir) {
         final List<String> pnpmCommand = getPnpmExecutable(dir, false);
         if (!pnpmCommand.isEmpty()) {
             // check whether globally or locally installed pnpm is new enough
@@ -645,8 +642,7 @@ public class FrontendTools {
                         versionCmd);
                 if (FrontendUtils.isVersionAtLeast(pnpmVersion,
                         SUPPORTED_PNPM_VERSION)) {
-                    return new Pair<>(false, pnpmCommand
-                            .toArray(new String[pnpmCommand.size()]));
+                    return pnpmCommand;
                 } else {
                     getLogger().warn(String.format(
                             "installed pnpm ('%s', version %s) is too old, installing supported version locally",
@@ -659,7 +655,7 @@ public class FrontendTools {
                         e);
             }
         }
-        return new Pair<>(true, new String[0]);
+        return Collections.emptyList();
     }
 
     private void installPnpm(String dir, List<String> installCommand) {
