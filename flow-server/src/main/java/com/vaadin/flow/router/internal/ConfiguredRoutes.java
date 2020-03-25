@@ -359,8 +359,13 @@ public class ConfiguredRoutes implements Serializable {
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget,
             UrlParameters parameters) {
-        return iterateUrlTemplates(navigationTarget,
-                urlTemplate -> getRouteModel().getUrl(urlTemplate, parameters));
+        return iterateUrlTemplates(navigationTarget, urlTemplate -> {
+            try {
+                return getRouteModel().getUrl(urlTemplate, parameters);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        });
     }
 
     /**

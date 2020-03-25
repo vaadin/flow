@@ -1462,7 +1462,6 @@ public class RouterTest extends RoutingTestBase {
     @RoutePrefix(":parentID")
     public static class ParentWithParameter extends UrlParametersBase
             implements RouterLayout {
-
     }
 
     @Route(value = "", layout = ParentWithParameter.class)
@@ -1470,17 +1469,14 @@ public class RouterTest extends RoutingTestBase {
     @ParentLayout(ParentWithParameter.class)
     public static class ChainLinkWithParameter extends UrlParametersBase
             implements RouterLayout {
-
     }
 
     @Route(value = "target/:targetChainLinkID/bar", layout = ChainLinkWithParameter.class)
     public static class TargetWithParameter extends UrlParametersBase {
-
     }
 
     @Route(value = ":optional?/:anotherOptional?", layout = ChainLinkWithParameter.class)
     public static class TargetWithOptionalParameters extends UrlParametersBase {
-
     }
 
     @Route(value = ":targetChainLinkID", layout = ParentWithParameter.class)
@@ -1488,35 +1484,31 @@ public class RouterTest extends RoutingTestBase {
     @ParentLayout(ParentWithParameter.class)
     public static class ChainLinkWithParameterAndTarget
             extends UrlParametersBase implements RouterLayout {
-
     }
 
     @Route(value = ":anotherTargetID/:yetAnotherID/foo/:varargsFoo*", layout = ChainLinkWithParameterAndTarget.class)
     public static class AnotherTargetWithParameter extends UrlParametersBase {
-
     }
 
-    @Route(":intType(" + RouteParameterRegex.INT + ")")
+    @Route(":intType(" + RouteParameterRegex.INTEGER + ")")
     @RouteAlias(":longType(" + RouteParameterRegex.LONG + ")")
-    @RouteAlias(":boolType(" + RouteParameterRegex.BOOL + ")")
+    @RouteAlias(":boolType(" + RouteParameterRegex.BOOLEAN + ")")
     @RouteAlias(":stringType")
-    @RouteAlias(":intType?(" + RouteParameterRegex.INT + ")"
+    @RouteAlias(":intType?(" + RouteParameterRegex.INTEGER + ")"
             + "/:longType?(" + RouteParameterRegex.LONG + ")"
-            + "/:boolType?(" + RouteParameterRegex.BOOL + ")"
+            + "/:boolType?(" + RouteParameterRegex.BOOLEAN + ")"
             + "/:stringType?/:varargs*(thinking|of|U|and|I)")
     @RoutePrefix("param/types")
     public static class ParameterTypesView extends UrlParametersBase
             implements RouterLayout {
-
     }
 
-    @Route(":messageID(" + RouteParameterRegex.INT + ")")
+    @Route(":something?")
+    @RouteAlias(":messageID(" + RouteParameterRegex.INTEGER + ")")
     @RouteAlias("last")
-    @RouteAlias(":something?")
-    @RoutePrefix("forum/thread/:threadID(" + RouteParameterRegex.INT + ")")
+    @RoutePrefix("forum/thread/:threadID(" + RouteParameterRegex.INTEGER + ")")
     public static class ParametersForumThreadView extends UrlParametersBase
             implements RouterLayout {
-
     }
 
     @Route(":alias(framework|platform|vaadin-spring|vaadin-spring-boot)/:version?(v?\\d.*)/:path*")
@@ -1525,7 +1517,6 @@ public class RouterTest extends RoutingTestBase {
     @RoutePrefix("api")
     public static class ParametersApiView extends UrlParametersBase
             implements RouterLayout {
-
     }
 
     @Route(":tabIdentifier?(api)/:apiPath*")
@@ -1533,7 +1524,26 @@ public class RouterTest extends RoutingTestBase {
     @RoutePrefix("directory/component/:urlIdentifier/:versionIdentifier?(v?\\d.*)")
     public static class DetailsView extends UrlParametersBase
             implements RouterLayout {
+    }
 
+    @Route("")
+    @RouteAlias("param/:regex?([0-9]*)")
+    @RouteAlias("param/:regex?([0-9]*)/edit")
+    public static class ParametersRegexView extends UrlParametersBase {
+    }
+
+    @Route("")
+    @RouteAlias(":search?")
+    @RoutePrefix("search")
+    public static class SearchView extends UrlParametersBase {
+    }
+
+    @Route("show")
+    public static class ShowAllView extends UrlParametersBase {
+    }
+
+    @Route("show/:filter?")
+    public static class FilterView extends UrlParametersBase {
     }
 
     @Override
@@ -3664,6 +3674,38 @@ public class RouterTest extends RoutingTestBase {
 
         // Assert url failure
         assertUrlParameters("directory/component", null);
+    }
+
+    @Test // #2740 #4213
+    public void url_parameters_are_extracted_for_regex_view() {
+        setNavigationTargets(ParametersRegexView.class);
+
+        assertUrlParameters("param/123", parameters("regex", "123"));
+        assertUrlParameters("param/abc", null);
+        assertUrlParameters("param/-123", null);
+
+        assertUrlParameters("param/123/edit", parameters("regex", "123"));
+        assertUrlParameters("param/abc/edit", null);
+        assertUrlParameters("param/-123/edit", null);
+
+        assertUrlParameters("param", parameters());
+        assertUrlParameters("param/edit", parameters());
+    }
+
+    @Test // #2740 #4213
+    public void routes_fail_to_register_with_alternate_optional_parameter() {
+        assertFailingRouteConfiguration(SearchView.class);
+        assertFailingRouteConfiguration(ShowAllView.class, FilterView.class);
+        assertFailingRouteConfiguration(FilterView.class, ShowAllView.class);
+    }
+
+    private void assertFailingRouteConfiguration(
+            Class<? extends Component>... navigationTargets) {
+        try {
+            setNavigationTargets(navigationTargets);
+            Assert.fail("Route configuration should fail");
+        } catch (InvalidRouteConfigurationException e) {
+        }
     }
 
     private void assertUrlParameters(String url, UrlParameters parameters) {

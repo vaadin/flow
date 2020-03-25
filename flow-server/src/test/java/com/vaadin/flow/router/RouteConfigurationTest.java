@@ -63,8 +63,7 @@ public class RouteConfigurationTest {
     /**
      * Get registry by handing the session lock correctly.
      *
-     * @param session
-     *            target vaadin session
+     * @param session target vaadin session
      * @return session route registry for session if exists or new.
      */
     private SessionRouteRegistry getRegistry(VaadinSession session) {
@@ -189,15 +188,15 @@ public class RouteConfigurationTest {
                                 "12345678900")));
 
         Assert.assertEquals("Missing or incorrect url template",
-                "double/:int(" + RouteParameterRegex.INT + ")/float/:long("
+                "double/:int(" + RouteParameterRegex.INTEGER + ")/float/:long("
                         + RouteParameterRegex.LONG + ")",
                 routeConfiguration.getUrlTemplate(ParameterView.class).get());
 
         Assert.assertTrue("Missing url template",
                 routeConfiguration.isUrlTemplateRegistered("double/:int("
-                        + RouteParameterRegex.INT + ")/float/:long("
+                        + RouteParameterRegex.INTEGER + ")/float/:long("
                         + RouteParameterRegex.LONG + ")"));
-        
+
         routeConfiguration.update(() -> {
             routeConfiguration.removeRoute("path");
             routeConfiguration.setRoute("url", Url.class);
@@ -225,6 +224,51 @@ public class RouteConfigurationTest {
                 urlRoute.isPresent());
         Assert.assertEquals("'url' registration should be Url", Url.class,
                 urlRoute.get());
+    }
+    @Test
+    public void routeConfiguration_routeTemplatesWorkCorrectly() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        routeConfiguration.update(() -> {
+            routeConfiguration.setAnnotatedRoute(ComponentView.class);
+        });
+
+        Assert.assertEquals("Incorrect URL template",
+                "component/:identifier/:path*",
+                routeConfiguration.getUrlTemplate(ComponentView.class).get());
+
+        Assert.assertEquals("Unexpected URL",
+                "component/button/api/com/vaadin/flow/button",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new UrlParameters("identifier", "button", "tab", "api",
+                                "path", "com/vaadin/flow/button")));
+
+        Assert.assertEquals("Unexpected URL",
+                "component/button/com/vaadin/flow/button",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new UrlParameters("identifier", "button", "path",
+                                "com/vaadin/flow/button")));
+
+        Assert.assertEquals("Unexpected URL",
+                "component/button/reviews",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new UrlParameters("identifier", "button", "tab",
+                                "reviews")));
+
+        Assert.assertEquals("Unexpected URL",
+                "component/button/overview",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new UrlParameters("identifier", "button", "tab",
+                                "overview")));
+
+        try {
+            routeConfiguration.getUrl(ComponentView.class,
+                    new UrlParameters("identifier", "button", "tab",
+                            "examples"));
+            Assert.fail("Valid URL returned instead of invalid.");
+        } catch (NotFoundException e) {
+        }
     }
 
     @Test
@@ -512,7 +556,7 @@ public class RouteConfigurationTest {
         }
     }
 
-    @RoutePrefix("double/:int(" + RouteParameterRegex.INT + ")")
+    @RoutePrefix("double/:int(" + RouteParameterRegex.INTEGER + ")")
     @Tag("div")
     private static class MainView extends Component implements RouterLayout {
     }
@@ -521,6 +565,14 @@ public class RouteConfigurationTest {
             + ")", layout = MainView.class)
     @Tag("div")
     private static class ParameterView extends Component {
+    }
+
+    @Route(value = ":path*")
+    @RouteAlias(value = ":tab(api)/:path*")
+    @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+    @RoutePrefix("component/:identifier")
+    @Tag("div")
+    public static class ComponentView extends Component {
     }
 
     /**

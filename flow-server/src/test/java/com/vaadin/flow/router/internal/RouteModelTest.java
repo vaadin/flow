@@ -87,19 +87,19 @@ public class RouteModelTest {
         root.addRoute("", routeTarget(Root.class));
         root.addRoute("trunk", routeTarget(Trunk.class));
         root.addRoute("trunk/branch", routeTarget(Branch.class));
-        root.addRoute("trunk/branch/:id(" + RouteParameterRegex.INT + ")",
+        root.addRoute("trunk/branch/:id(" + RouteParameterRegex.INTEGER + ")",
                 routeTarget(Branch.class));
         root.addRoute(
-                "trunk/branch/:id(" + RouteParameterRegex.INT
+                "trunk/branch/:id(" + RouteParameterRegex.INTEGER
                         + ")/:list*(" + RouteParameterRegex.LONG + ")",
                 routeTarget(BranchChildren.class));
         root.addRoute(
                 "trunk/:name?/:type?/branch/:id?("
-                        + RouteParameterRegex.INT + ")/edit",
+                        + RouteParameterRegex.INTEGER + ")/edit",
                 routeTarget(BranchEdit.class));
         root.addRoute("trunk/:name/:type?/branch/:id("
-                + RouteParameterRegex.INT + ")/flower/:open("
-                + RouteParameterRegex.BOOL + ")/edit",
+                + RouteParameterRegex.INTEGER + ")/flower/:open("
+                + RouteParameterRegex.BOOLEAN + ")/edit",
                 routeTarget(FlowerEdit.class));
         root.addRoute("trunk/twig/:leafs*", routeTarget(Twig.class));
 

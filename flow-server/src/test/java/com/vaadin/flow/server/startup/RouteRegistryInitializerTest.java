@@ -1189,7 +1189,7 @@ public class RouteRegistryInitializerTest {
                 registeredRoutes.get(6).getDefinedParameters().size());
 
         Assert.assertEquals("Unexpected parameter type encountered",
-                RouteParameterRegex.BOOL,
+                RouteParameterRegex.BOOLEAN,
                 registeredRoutes.get(3).getDefinedParameters()
                         .get(HasUrlParameterFormat.PARAMETER_NAME));
         Assert.assertEquals("Unexpected parameter type encountered", "",

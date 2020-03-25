@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,165 @@ class RouteModel implements Serializable {
      */
     static RouteModel copy(RouteModel original) {
         return new RouteModel(original.root.copy());
+    }
+
+
+    /**
+     * Remove a path by its url template.
+     *
+     * @param urlTemplate
+     *            the full url template.
+     */
+    void removeRoute(String urlTemplate) {
+        root.removeSubRoute(urlTemplate);
+    }
+
+    /**
+     * Add a urlTemplate template following this route segment. If the template
+     * already exists an exception is thrown.
+     *
+     * @param urlTemplate
+     *            a url template where parameters are defined by their ids and
+     *            details.
+     * @param target
+     *            target to set for the given url template.
+     * @throws InvalidRouteConfigurationException
+     *             if the combination of urlTemplate and target doesn't make
+     *             sense within the current state of the model.
+     * @throws IllegalArgumentException
+     *             in case the varargs are specified in the middle of the
+     *             urlTemplate. Varargs can be specified only as the last
+     *             segment definition.
+     */
+    void addRoute(String urlTemplate, RouteTarget target) {
+        root.addSubRoute(urlTemplate, target);
+    }
+
+    /**
+     * Search for a route target using given navigation <code>url</code>
+     * argument.
+     *
+     * @param url
+     *            the navigation url used to search a route target.
+     * @return a {@link NavigationRouteTarget} instance containing the
+     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         <code>url</code> argument according with the route configuration.
+     */
+    NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return root.getNavigationRouteTarget(url);
+    }
+
+    /**
+     * Finds a route target for the given urlTemplate and parameters.
+     *
+     * @param urlTemplate
+     *            the full url template.
+     * @param parameters
+     *            the parameters to use or null if no parameters specified.
+     * @return a route result containing the target and parameter values mapped
+     *         by their ids.
+     * @throws IllegalArgumentException
+     *             in case urlTemplate is not registered or the parameters do
+     *             not match with the template.
+     */
+    RouteTarget getRouteTarget(String urlTemplate, UrlParameters parameters) {
+        AtomicReference<RouteTarget> target = new AtomicReference<>();
+        root.matchSegmentTemplatesWithParameters(
+                PathUtil.getSegmentsList(urlTemplate), parameters, null,
+                routeSegment -> target.set(routeSegment.getTarget()));
+        return target.get();
+    }
+
+    /**
+     * Gets a url path by replacing into the url template the url parameters.
+     * <p>
+     * In case all parameters defined in the urlTemplate are optional or
+     * varargs, parameter arguments can be null and the path will be provided
+     * without any parameters.
+     * <p>
+     * In case not all values found in <code>parameters</code> are used to
+     * generate the final url, an <code>IllegalArgumentException</code>
+     * exception is raised. In this case, consider providing the
+     * <code>urlTemplate</code> containing the extra parameters found in
+     * <code>parameters</code>.
+     *
+     * @param urlTemplate
+     *            the full url template.
+     * @param parameters
+     *            the parameters to use or null if no parameters specified.
+     * @return the generated url.
+     * @throws IllegalArgumentException
+     *             in case urlTemplate is not registered or the parameters do
+     *             not match exactly with the template.
+     */
+    String getUrl(String urlTemplate, UrlParameters parameters) {
+        final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
+        final List<String> result = new ArrayList<>(segments.size());
+
+        root.matchSegmentTemplatesWithParameters(segments, parameters,
+                routeSegmentValue -> routeSegmentValue.value
+                        .ifPresent(result::add),
+                null);
+
+        if (result.isEmpty()) {
+            return "";
+        } else {
+            return String.join("/", result);
+        }
+    }
+
+    /**
+     * Format the url template using the given format settings.
+     *
+     * @param urlTemplate
+     *            the urlTemplate.
+     * @param format
+     *            the new format to use.
+     * @return a String representing the urlTemplate in the given format.
+     * @throws IllegalArgumentException
+     *             in case urlTemplate is not registered or the parameters do
+     *             not match with the template.
+     */
+    String formatUrlTemplate(String urlTemplate,
+                             Set<RouteParameterFormat> format) {
+
+        if (format.contains(RouteParameterFormat.NAME)
+                && format.contains(RouteParameterFormat.MODIFIER)
+                && format.contains(RouteParameterFormat.REGEX)) {
+            return urlTemplate;
+        }
+
+        return root.getUrlTemplate(urlTemplate,
+                segment -> RouteFormat.formatSegment(segment, format));
+    }
+
+    /**
+     * Gets the parameters found in the given urlTemplate. The result contains
+     * the names of the parameters as keys and the values represent the
+     * parameter template formatted accordingly to the given format.
+     *
+     * @param urlTemplate
+     *            the url template.
+     * @param format
+     *            format the values of the result {@link Map}
+     * @return a {@link Map} containing the names of the parameters mapped by
+     *         their formatted template using the given format.
+     * @throws IllegalArgumentException
+     *             in case urlTemplate is not registered or the parameters do
+     *             not match with the template.
+     */
+    Map<String, String> getParameters(String urlTemplate,
+                                      EnumSet<RouteParameterFormat> format) {
+        Map<String, String> result = new HashMap<>();
+
+        this.root.matchSegmentTemplates(PathUtil.getSegmentsList(urlTemplate),
+                segment -> {
+                    if (segment.isParameter()) {
+                        result.put(segment.getName(), RouteFormat
+                                .formatSegmentRegex(segment, format));
+                    }
+                }, null);
+        return result;
     }
 
     /**
@@ -610,6 +770,49 @@ class RouteModel implements Serializable {
             }
         }
 
+        void matchSegmentTemplatesWithParameters(List<String> segmentTemplates,
+                UrlParameters parameters,
+                Consumer<RouteSegmentValue> segmentProcessor,
+                Consumer<RouteSegment> targetSegmentProcessor) {
+
+            if (parameters == null) {
+                parameters = UrlParameters.empty();
+            }
+
+            if (segmentTemplates.isEmpty()
+                    && parameters.getParameterNames().isEmpty()) {
+                return;
+            }
+
+            final Set<String> parameterNames = new HashSet<>(
+                    parameters.getParameterNames());
+
+            UrlParameters finalParameters = parameters;
+            matchSegmentTemplates(segmentTemplates, routeSegment -> {
+                final Optional<String> segmentValue = getSegmentValue(
+                        routeSegment, finalParameters);
+
+                if (routeSegment.isParameter()) {
+                    parameterNames.remove(routeSegment.getName());
+                }
+
+                if (segmentProcessor != null) {
+                    segmentProcessor.accept(
+                            new RouteSegmentValue(routeSegment, segmentValue));
+                }
+            }, routeSegment -> {
+                // All parameter must be used.
+                if (!parameterNames.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "All provided UrlParameters must be used to process the urlTemplate. Provide the exact required UrlParameters or a urlTemplate that will use all UrlParameters");
+                }
+
+                if (targetSegmentProcessor != null) {
+                    targetSegmentProcessor.accept(routeSegment);
+                }
+            });
+        }
+
         /**
          * Returns any optional or varargs (since that's optional too) parameter
          * child with a target set so in case there's no target on a potential
@@ -754,230 +957,82 @@ class RouteModel implements Serializable {
             return allSegments;
         }
 
-    }
 
-    /**
-     * Remove a path by its url template.
-     * 
-     * @param urlTemplate
-     *            the full url template.
-     */
-    void removeRoute(String urlTemplate) {
-        root.removeSubRoute(urlTemplate);
-    }
+        private static Optional<String> getSegmentValue(RouteSegment routeSegment,
+                                                        UrlParameters parameters) {
 
-    /**
-     * Add a urlTemplate template following this route segment. If the template
-     * already exists an exception is thrown.
-     *
-     * @param urlTemplate
-     *            a url template where parameters are defined by their ids and
-     *            details.
-     * @param target
-     *            target to set for the given url template.
-     * @throws InvalidRouteConfigurationException
-     *             if the combination of urlTemplate and target doesn't make
-     *             sense within the current state of the model.
-     * @throws IllegalArgumentException
-     *             in case the varargs are specified in the middle of the
-     *             urlTemplate. Varargs can be specified only as the last
-     *             segment definition.
-     */
-    void addRoute(String urlTemplate, RouteTarget target) {
-        root.addSubRoute(urlTemplate, target);
-    }
+            if (routeSegment.isVarargs()) {
+                return getVarargsValue(routeSegment, parameters);
 
-    /**
-     * Search for a route target using given navigation <code>url</code>
-     * argument.
-     *
-     * @param url
-     *            the navigation url used to search a route target.
-     * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
-     *         <code>url</code> argument according with the route configuration.
-     */
-    NavigationRouteTarget getNavigationRouteTarget(String url) {
-        return root.getNavigationRouteTarget(url);
-    }
+            } else if (routeSegment.isParameter()) {
+                return getParameterValue(routeSegment, parameters);
 
-    /**
-     * Finds a route target for the given urlTemplate and parameters.
-     *
-     * @param urlTemplate
-     *            the full url template.
-     * @param parameters
-     *            the parameters to use or null if no parameters specified.
-     * @return a route result containing the target and parameter values mapped
-     *         by their ids.
-     * @throws IllegalArgumentException
-     *             in case urlTemplate is not registered or the parameters do
-     *             not match with the template.
-     */
-    RouteTarget getRouteTarget(String urlTemplate, UrlParameters parameters) {
-        AtomicReference<RouteTarget> target = new AtomicReference<>();
-        root.matchSegmentTemplates(PathUtil.getSegmentsList(urlTemplate), null,
-                routeSegment -> target.set(routeSegment.getTarget()));
-        return target.get();
-    }
-
-    /**
-     * Gets a url path by replacing into the url template the url parameters.
-     * <p>
-     * In case all parameters defined in the urlTemplate are optional or
-     * varargs, parameter arguments can be null and the path will be provided
-     * without any parameters.
-     * 
-     * @param urlTemplate
-     *            the full url template.
-     * @param urlParameters
-     *            the parameters to use or null if no parameters specified.
-     * @return the url.
-     * @throws IllegalArgumentException
-     *             in case urlTemplate is not registered or the parameters do
-     *             not match with the template.
-     */
-    String getUrl(String urlTemplate, UrlParameters urlParameters) {
-
-        if (urlTemplate == null) {
-            return null;
+            } else {
+                return Optional.of(routeSegment.getName());
+            }
         }
 
-        final UrlParameters parameters = urlParameters != null ? urlParameters
-                : UrlParameters.empty();
+        private static Optional<String> getVarargsValue(RouteSegment routeSegment,
+                                                        UrlParameters parameters) {
+            final String parameterName = routeSegment.getName();
 
-        final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
+            List<String> args = parameters.getWildcard(parameterName);
 
-        if (segments.isEmpty() && parameters.getParameterNames().isEmpty()) {
-            return "";
+            final List<String> result = new ArrayList<>(args.size());
+
+            for (String value : args) {
+                if (!routeSegment.isEligible(value)) {
+                    throw new IllegalArgumentException("Url varargs parameter `"
+                            + parameterName + "` has a specified value `" + value
+                            + "`, which is invalid according to the parameter definition `"
+                            + routeSegment.getTemplate() + "`");
+                }
+
+                result.add(value);
+            }
+
+            // Varargs are always last so no need to even try going
+            // forward.
+            final String path = PathUtil.getPath(result);
+            return path.isEmpty() ? Optional.empty() : Optional.of(path);
         }
 
-        final List<String> result = new ArrayList<>(segments.size());
+        private static Optional<String> getParameterValue(RouteSegment routeSegment,
+                                                          UrlParameters parameters) {
+            final String parameterName = routeSegment.getName();
 
-        root.matchSegmentTemplates(segments,
-                routeSegment -> getSegmentValue(routeSegment, parameters)
-                        .ifPresent(result::add),
-                null);
+            final Optional<String> value = parameters.get(parameterName);
 
-        if (result.isEmpty()) {
-            return "";
-        } else {
-            return String.join("/", result);
-        }
-    }
+            if (!value.isPresent() && routeSegment.isMandatory()) {
+                throw new IllegalArgumentException("Url parameter `" + parameterName
+                        + "` is mandatory but missing from the parameters argument.");
+            }
 
-    private Optional<String> getSegmentValue(RouteSegment routeSegment,
-            UrlParameters parameters) {
-
-        if (routeSegment.isVarargs()) {
-            return getVarargsValue(routeSegment, parameters);
-
-        } else if (routeSegment.isParameter()) {
-            return getParameterValue(routeSegment, parameters);
-
-        } else {
-            return Optional.of(routeSegment.getName());
-        }
-    }
-
-    private Optional<String> getVarargsValue(RouteSegment routeSegment,
-            UrlParameters parameters) {
-        final String parameterName = routeSegment.getName();
-
-        List<String> args = parameters.getWildcard(parameterName);
-
-        final List<String> result = new ArrayList<>(args.size());
-
-        for (String value : args) {
-            if (!routeSegment.isEligible(value)) {
-                throw new IllegalArgumentException("Url varargs parameter `"
-                        + parameterName + "` has a specified value `" + value
+            if (value.isPresent() && !routeSegment.isEligible(value.get())) {
+                throw new IllegalArgumentException("Url parameter `" + parameterName
+                        + "` has specified value `" + value
                         + "`, which is invalid according to the parameter definition `"
                         + routeSegment.getTemplate() + "`");
             }
 
-            result.add(value);
+            return value;
         }
 
-        // Varargs are always last so no need to even try going
-        // forward.
-        final String path = PathUtil.getPath(result);
-        return path.isEmpty() ? Optional.empty() : Optional.of(path);
-    }
-
-    private Optional<String> getParameterValue(RouteSegment routeSegment,
-            UrlParameters parameters) {
-        final String parameterName = routeSegment.getName();
-
-        final Optional<String> value = parameters.get(parameterName);
-
-        if (!value.isPresent() && routeSegment.isMandatory()) {
-            throw new IllegalArgumentException("Url parameter `" + parameterName
-                    + "` is mandatory but missing from the parameters argument.");
-        }
-
-        if (value.isPresent() && !routeSegment.isEligible(value.get())) {
-            throw new IllegalArgumentException("Url parameter `" + parameterName
-                    + "` has specified value `" + value
-                    + "`, which is invalid according to the parameter definition `"
-                    + routeSegment.getTemplate() + "`");
-        }
-
-        return value;
     }
 
     /**
-     * Format the url template using the given format settings.
-     * 
-     * @param urlTemplate
-     *            the urlTemplate.
-     * @param format
-     *            the new format to use.
-     * @return a String representing the urlTemplate in the given format.
-     * @throws IllegalArgumentException
-     *             in case urlTemplate is not registered or the parameters do
-     *             not match with the template.
+     * Used when process matching parameter values inside a urlTemplate.
      */
-    String formatUrlTemplate(String urlTemplate,
-            Set<RouteParameterFormat> format) {
+    private static class RouteSegmentValue {
 
-        if (format.contains(RouteParameterFormat.NAME)
-                && format.contains(RouteParameterFormat.MODIFIER)
-                && format.contains(RouteParameterFormat.REGEX)) {
-            return urlTemplate;
+        final RouteSegment segment;
+
+        final Optional<String> value;
+
+        public RouteSegmentValue(RouteSegment segment, Optional<String> value) {
+            this.segment = segment;
+            this.value = value;
         }
-
-        return root.getUrlTemplate(urlTemplate,
-                segment -> RouteFormat.formatSegment(segment, format));
-    }
-
-    /**
-     * Gets the parameters found in the given urlTemplate. The result contains
-     * the names of the parameters as keys and the values represent the
-     * parameter template formatted accordingly to the given format.
-     * 
-     * @param urlTemplate
-     *            the url template.
-     * @param format
-     *            format the values of the result {@link Map}
-     * @return a {@link Map} containing the names of the parameters mapped by
-     *         their formatted template using the given format.
-     * @throws IllegalArgumentException
-     *             in case urlTemplate is not registered or the parameters do
-     *             not match with the template.
-     */
-    Map<String, String> getParameters(String urlTemplate,
-            EnumSet<RouteParameterFormat> format) {
-        Map<String, String> result = new HashMap<>();
-
-        this.root.matchSegmentTemplates(PathUtil.getSegmentsList(urlTemplate),
-                segment -> {
-                    if (segment.isParameter()) {
-                        result.put(segment.getName(), RouteFormat
-                                .formatSegmentRegex(segment, format));
-                    }
-                }, null);
-        return result;
     }
 
 }

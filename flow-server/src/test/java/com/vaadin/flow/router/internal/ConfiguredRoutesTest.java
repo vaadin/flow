@@ -70,9 +70,9 @@ public class ConfiguredRoutesTest {
         ConfigureRoutes config = new ConfigureRoutes();
 
         final String urlTemplate = "/path/to" 
-                + "/:intType(" + RouteParameterRegex.INT + ")"
+                + "/:intType(" + RouteParameterRegex.INTEGER + ")"
                 + "/:longType?(" + RouteParameterRegex.LONG + ")"
-                + "/:boolType?(" + RouteParameterRegex.BOOL + ")"
+                + "/:boolType?(" + RouteParameterRegex.BOOLEAN + ")"
                 + "/:stringType?/:varargs*(thinking|of|U|and|I)";
         config.setRoute(urlTemplate, BaseTarget.class);
 
@@ -107,9 +107,9 @@ public class ConfiguredRoutesTest {
                                 RouteParameterFormat.REGEX_NAME)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
-                "path/to/:(" + RouteParameterRegex.INT + ")/:?("
+                "path/to/:(" + RouteParameterRegex.INTEGER + ")/:?("
                         + RouteParameterRegex.LONG + ")/:?("
-                        + RouteParameterRegex.BOOL
+                        + RouteParameterRegex.BOOLEAN
                         + ")/:?/:*(thinking|of|U|and|I)",
                 config.getUrlTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormat.MODIFIER,
@@ -125,9 +125,10 @@ public class ConfiguredRoutesTest {
                         EnumSet.of(RouteParameterFormat.MODIFIER)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
-                "path/to/:" + RouteParameterRegex.INT + "/:"
+                "path/to/:" + RouteParameterRegex.INTEGER + "/:"
                         + RouteParameterRegex.LONG + "/:"
-                        + RouteParameterRegex.BOOL + "/:/:thinking|of|U|and|I",
+                        + RouteParameterRegex.BOOLEAN
+                        + "/:/:thinking|of|U|and|I",
                 config.getUrlTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormat.REGEX)));
 
