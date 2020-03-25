@@ -18,7 +18,6 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
@@ -93,6 +92,9 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
+            registry.getLiveReload().show(
+                    applicationConfiguration.getServiceUrl(),
+                    applicationConfiguration.getUIId());
         }
 
         registry.getLoadingIndicator().show();

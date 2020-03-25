@@ -313,4 +313,12 @@ public class Registry {
         return get(Poller.class);
     }
 
+    /**
+     * Gets the {@link LiveReload} singleton.
+     * 
+     * @return the {@link LiveReload} singleton
+     */
+    public LiveReload getLiveReload() {
+        return get(LiveReload.class);
+    }
 }

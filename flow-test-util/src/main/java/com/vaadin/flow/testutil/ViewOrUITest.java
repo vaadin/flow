@@ -26,7 +26,6 @@ import com.vaadin.flow.component.UI;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-
 /**
  * Base class for TestBench tests which use a UI/View matched to the test name
  * according to the convention (remove {@code IT}, add {@code View} or
@@ -101,8 +100,8 @@ public class ViewOrUITest extends AbstractTestBenchTest {
             }
         } catch (Exception e) {
             // Here only to please Sonar...
-            getLogger().debug(
-                    " for {} not found", getClass().getName(), e);
+            getLogger().debug("{} for {} not found", typeToFind.getSimpleName(),
+                    getClass().getName());
         }
         return null;
     }
