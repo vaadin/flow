@@ -126,7 +126,7 @@ public class LiveReload {
                     .createElement("input");
             disableButton.setAttribute("type", "button");
             disableButton.setAttribute("value", "Disable");
-            disableButton.setOnclick(evt -> disable());
+            disableButton.setOnclick(evt -> disableOnThisBrowser());
             overlay.appendChild(disableButton);
             reloadIndicator.appendChild(overlay);
             Browser.getDocument().getBody().appendChild(reloadIndicator);
@@ -139,7 +139,7 @@ public class LiveReload {
         return enabled == null || Boolean.parseBoolean(enabled);
     }
 
-    private void disable() {
+    private void disableOnThisBrowser() {
         assert webSocket != null;
         assert indicator != null;
 

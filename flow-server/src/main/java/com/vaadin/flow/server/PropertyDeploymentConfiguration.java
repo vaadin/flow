@@ -206,6 +206,12 @@ public class PropertyDeploymentConfiguration
         return initParameters;
     }
 
+    /**
+     * Checks if Live Reload is enabled or not. It is always disabled in
+     * production mode. In development mode, it is enabled by default.
+     *
+     * @return {@code true} if Live reload is enabled, {@code false} otherwise
+     */
     @Override
     public boolean isLiveReloadEnabled() {
         return !isProductionMode() && getBooleanProperty(

@@ -28,8 +28,8 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
  * A collection of properties configured at deploy time as well as a way of
@@ -300,9 +300,10 @@ public interface DeploymentConfiguration extends Serializable {
      * @return polyfills to load
      */
     default List<String> getPolyfills() {
-        return Arrays.asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
-                POLYFILLS_DEFAULT_VALUE).split("[, ]+")).stream()
-                .filter(polyfill -> !polyfill.isEmpty())
+        return Arrays
+                .asList(getStringProperty(SERVLET_PARAMETER_POLYFILLS,
+                        POLYFILLS_DEFAULT_VALUE).split("[, ]+"))
+                .stream().filter(polyfill -> !polyfill.isEmpty())
                 .collect(Collectors.toList());
     }
 
@@ -372,5 +373,10 @@ public interface DeploymentConfiguration extends Serializable {
                 false);
     }
 
+    /**
+     * Checks if Live Reload is enabled or not.
+     *
+     * @return {@code true} if Live reload is enabled, {@code false} otherwise
+     */
     boolean isLiveReloadEnabled();
 }

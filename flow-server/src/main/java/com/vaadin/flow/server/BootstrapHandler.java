@@ -1078,7 +1078,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
-                appConfig.put("liveReload.enabled",
+                appConfig.put(Constants.SERVLET_PARAMETER_ENABLE_LIVE_RELOAD,
                         deploymentConfiguration.isLiveReloadEnabled());
             }
 
