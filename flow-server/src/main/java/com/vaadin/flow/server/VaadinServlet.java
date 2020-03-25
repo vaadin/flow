@@ -70,10 +70,11 @@ public class VaadinServlet extends HttpServlet {
             throw new ServletException("Could not initialize VaadinServlet", e);
         }
 
-        staticFileHandler = createStaticFileHandler(servletService);
-
-        // Sets current service even though there are no request and response
+        // Sets current service as it is needed in static file server even
+        // though there are no request and response.
         servletService.setCurrentInstances(null, null);
+
+        staticFileHandler = createStaticFileHandler(servletService);
 
         servletInitialized();
         CurrentInstance.clearAll();
@@ -472,4 +473,3 @@ public class VaadinServlet extends HttpServlet {
         getService().destroy();
     }
 }
-
