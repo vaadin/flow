@@ -157,6 +157,7 @@ public class LiveReload {
 
             Element disableButton = Browser.getDocument()
                     .createElement("div");
+            disableButton.setId("vaadin-live-reload-disable");
             disableButton.setInnerText("Disable");
             overlay.appendChild(disableButton);
             disableButton.getStyle().setTextDecoration("underline");
