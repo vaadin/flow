@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -35,11 +34,11 @@ import com.vaadin.flow.router.HasErrorParameter;
  */
 @HandlesTypes(HasErrorParameter.class)
 public class ErrorNavigationTargetInitializer
-        implements ServletContainerInitializer {
+        implements FixedServletContainerInitializer {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
+    public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         if (classSet == null) {
             classSet = new HashSet<>();
