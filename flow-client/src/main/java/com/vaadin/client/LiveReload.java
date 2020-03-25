@@ -64,9 +64,7 @@ public class LiveReload {
     }
 
     private void openWebSocketConnection() {
-        if (webSocket != null) {
-            webSocket.close();
-        }
+        closeWebSocketConnection();
         String hostname = Browser.getWindow().getLocation().getHostname();
         webSocket = createWebSocket(
                 "ws://" + hostname + ":" + SPRING_DEV_TOOLS_PORT);
@@ -88,7 +86,7 @@ public class LiveReload {
     }
 
     private void closeWebSocketConnection() {
-        if (webSocket!=null) {
+        if (webSocket != null) {
             webSocket.close();
             webSocket = null;
         }
@@ -155,8 +153,7 @@ public class LiveReload {
             activeButton.getStyle().setCursor("pointer");
             overlay.appendChild(activeButton);
 
-            Element disableButton = Browser.getDocument()
-                    .createElement("div");
+            Element disableButton = Browser.getDocument().createElement("div");
             disableButton.setId("vaadin-live-reload-disable");
             disableButton.setInnerText("Disable");
             overlay.appendChild(disableButton);
@@ -171,7 +168,8 @@ public class LiveReload {
     }
 
     private boolean isActive() {
-        String active = StorageUtil.getSessionItem(ACTIVE_KEY_IN_SESSION_STORAGE);
+        String active = StorageUtil
+                .getSessionItem(ACTIVE_KEY_IN_SESSION_STORAGE);
         return active == null || Boolean.parseBoolean(active);
     }
 
@@ -204,10 +202,9 @@ public class LiveReload {
     }
 
     private void disable() {
-        assert webSocket != null;
         assert indicator != null;
 
-        webSocket.close();
+        closeWebSocketConnection();
         Browser.getDocument().getBody().removeChild(indicator);
         StorageUtil.setLocalItem(ENABLED_KEY_IN_STORAGE, "false");
     }
