@@ -334,9 +334,6 @@ public class FrontendTools {
      * <p>
      * An empty list is returned if bower is not found
      *
-     * @param baseDir
-     *            project root folder.
-     *
      * @return the list of all commands in sequence that need to be executed to
      *         have bower running, an empty list if bower is not found
      */
