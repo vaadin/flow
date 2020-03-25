@@ -38,6 +38,7 @@ public class LiveReload {
     // The default value is true meaning if the key doesn't exist in the local
     // storage Live Reload is enabled.
     private static final String ENABLED_KEY_IN_STORAGE = "vaadin.live-reload.enabled";
+    private static final String LAST_RELOAD_KEY_IN_STORAGE = "vaadin.live-reload.last-reload";
     private static final String LAST_RELOAD_TEXT = "Last reload happened at ";
     //private static final DateTimeFormat RELOAD_TIME_FORMATTER = DateTimeFormat.getFormat("HH:mm:ss");
     private static final int SPRING_DEV_TOOLS_PORT = 35729;
@@ -93,7 +94,7 @@ public class LiveReload {
         MessageEvent messageEvent = (MessageEvent) evt;
         JsonObject data = Json.parse((String) messageEvent.getData());
         indicator = getOrCreateIndicator();
-        if (lastReloadDateTime != null) {
+        if (getLastReloadInStorage() != null) {
             reloadNotification = getOrCreateReloadNotification();
         }
         Element indicatorMessage = Browser.getDocument()
@@ -102,7 +103,7 @@ public class LiveReload {
             indicatorMessage.setInnerHTML("Live reload: enabled");
         } else if ("reload".equals(data.getString("command"))) {
             indicatorMessage.setInnerHTML("Live reload: in progress ...");
-            lastReloadDateTime = new Date();
+            saveLastReloadInStorage(new Date());
             Browser.getWindow().getLocation().reload();
         } else {
             indicatorMessage.setHidden(true);
@@ -154,8 +155,9 @@ public class LiveReload {
             reloadNotification.setId("vaadin-live-reload-notification");
             Element message = Browser.getDocument().createElement("span");
             message.setId("vaadin-live-reload-timestamp");
-            lastReloadDateTime = new Date();
-            message.setInnerText(LAST_RELOAD_TEXT + lastReloadDateTime.getHours() +":"+ lastReloadDateTime.getMinutes()+":"+ lastReloadDateTime.getSeconds());
+            //Date now = new Date();
+            //saveLastReloadInStorage(now.getHours(), now.getMinutes(), now.getSeconds());
+            message.setInnerText(LAST_RELOAD_TEXT + getLastReloadInStorage());
             reloadNotification.appendChild(message);
             Element liveReloadOverlay = Browser.getDocument()
                     .getElementById("vaadin-live-reload-overlay");
@@ -163,9 +165,17 @@ public class LiveReload {
         } else {
             Element message = Browser.getDocument()
                     .getElementById("vaadin-live-reload-timestamp");
-            message.setInnerText(LAST_RELOAD_TEXT + lastReloadDateTime.getHours() +":"+ lastReloadDateTime.getMinutes()+":"+ lastReloadDateTime.getSeconds());
+            message.setInnerText(LAST_RELOAD_TEXT + getLastReloadInStorage());
         }
         return reloadNotification;
+    }
+
+    private void saveLastReloadInStorage(Date date) {
+        StorageUtil.setLocalItem(LAST_RELOAD_KEY_IN_STORAGE, date.getHours() +":"+ date.getMinutes() +":"+ date.getSeconds());
+    }
+
+    private String getLastReloadInStorage(){
+        return StorageUtil.getLocalItem(LAST_RELOAD_KEY_IN_STORAGE);
     }
 
     private boolean isEnabled() {
