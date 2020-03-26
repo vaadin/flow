@@ -44,7 +44,6 @@ public class LiveReload {
     private WebSocket webSocket;
     private Element indicator;
     private Element reloadNotification;
-    private Date lastReloadDateTime;
 
     /**
      * Connects to either Spring Dev Tools Live Reload server or Flow Live
