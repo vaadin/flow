@@ -254,9 +254,12 @@ public class ServletDeployer implements ServletContextListener {
          * Also we don't need a frontend servlet at all in non compatibility
          * mode.
          */
-        if (enableServlets
-                && createAppServlet(
-                        context) == VaadinServletCreation.SERVLET_EXISTS
+        if (!enableServlets) {
+            return;
+        }
+        VaadinServletCreation servletCreation = createAppServlet(context);
+        logServletCreation(servletCreation, context, productionMode);
+        if (servletCreation == VaadinServletCreation.SERVLET_EXISTS
                 && hasDevelopmentMode && isCompatibilityMode) {
             createServletIfNotExists(context, "frontendFilesServlet",
                     FrontendVaadinServlet.class, "/frontend/*",
@@ -264,12 +267,6 @@ public class ServletDeployer implements ServletContextListener {
                             Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                             Boolean.TRUE.toString()));
         }
-
-        VaadinServletCreation servletCreation = enableServlets
-                ? createAppServlet(context)
-                : null;
-
-        logServletCreation(servletCreation, context, productionMode);
     }
 
     private void logServletCreation(VaadinServletCreation servletCreation,

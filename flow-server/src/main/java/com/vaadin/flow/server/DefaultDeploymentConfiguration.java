@@ -187,10 +187,9 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * <<<<<<< HEAD {@inheritDoc}
+     * {@inheritDoc}
      *
-     * The default is false. ======= {@inheritDoc} The default is true. >>>>>>>
-     * 1eb3b2a14c... Let user know when application is deployed (#7872)
+     * The default is false.
      */
     @Override
     public boolean isBowerMode() {
