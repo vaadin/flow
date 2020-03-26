@@ -481,7 +481,6 @@ public final class DevModeHandler {
         Consumer<String> warn = s -> getLogger()
                 .debug(String.format(YELLOW, "{}"), s);
         Consumer<String> log = info;
-        boolean storeOutput = false;
         for (String line; ((line = reader.readLine()) != null);) {
             String cleanLine = line
                     // remove color escape codes for console
@@ -490,22 +489,13 @@ public final class DevModeHandler {
                     .replaceAll("\\?babel-target=[\\w\\d]+", "");
 
             // write each line read to logger, but selecting its correct level
-            log = line.contains("WARNING") ? warn
-                    : line.contains("ERROR") ? error : log;
+            log = line.contains("WARNING") ? warn :
+                    line.contains("ERROR") ? error :
+                      isInfo(line, cleanLine) ? info : log;
             log.accept(cleanLine);
 
-            if (!storeOutput && log.equals(error)) {
-                // Begin storing output lines when encountering an error.
-                storeOutput = true;
-            } else if (storeOutput && (line.trim().isEmpty() || cleanLine.trim()
-                    .startsWith("i"))) {
-                // Empty line breaks error block or a 'i' marking for info
-                storeOutput = false;
-                output.append(System.lineSeparator());
-            }
-
             // Only store webpack errors to be shown in the browser.
-            if (storeOutput) {
+            if (log.equals(error)) {
                 // save output so as it can be used to alert user in browser.
                 output.append(cleanLine).append(System.lineSeparator());
             }
@@ -519,12 +509,15 @@ public final class DevModeHandler {
                 failedOutput = failed ? output.toString() : null;
                 // reset output and logger for the next compilation
                 output = getOutputBuilder();
-                storeOutput = false;
                 log = info;
                 // Notify DevModeHandler to continue
                 doNotify();
             }
         }
+    }
+
+    private boolean isInfo(String line, String cleanLine) {
+        return line.trim().isEmpty() || cleanLine.trim().startsWith("i");
     }
 
     private StringBuilder getOutputBuilder() {
