@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.server;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -35,14 +37,11 @@ import com.vaadin.flow.shared.communication.PushMode;
  */
 public class DefaultDeploymentConfiguration
         extends PropertyDeploymentConfiguration {
-    private static final String SEPARATOR = "\n====================================================================";
+    private static final String SEPARATOR = "\n=======================================================================";
+    private static final String HEADER = "\n=================== Vaadin DeploymentConfiguration ====================\n";
 
-    public static final String NOT_PRODUCTION_MODE_INFO = SEPARATOR
-            + "\nVaadin is running in DEBUG MODE.\n" +
-            "In order to run your application in production mode and disable debug features, " +
-            "you should enable it by setting the servlet init parameter productionMode to true.\n" +
-            "See https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html " +
-            "for more information about the production mode." + SEPARATOR;
+    public static final String NOT_PRODUCTION_MODE_INFO = " Vaadin is running in DEBUG MODE.\n"
+            + " When deploying application for production, remember to disable debug features. See more from https://vaadin.com/docs/";
 
     public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
             + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
@@ -50,19 +49,21 @@ public class DefaultDeploymentConfiguration
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
             + "See http://vaadin.com/docs for more information." + SEPARATOR;
 
-    public static final String WARNING_XSRF_PROTECTION_DISABLED = SEPARATOR
-            + "\nWARNING: Cross-site request forgery protection is disabled!"
-            + SEPARATOR;
+    public static final String NOT_PRODUCTION_MODE_WARNING = " WARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
+            + " When deploying application for production, disable debug features by enabling production mode!\n"
+            + " See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
-    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = SEPARATOR
-            + "\nWARNING: heartbeatInterval has been set to a non integer value "
-            + "in web.xml. The default of 5min will be used." + SEPARATOR;
+    private static final String DEPLOYMENT_WARNINGS = " Following issues were discovered with deployment configuration:";
 
-    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = SEPARATOR
-            + "\nWARNING: pushMode has been set to an unrecognized value\n"
-            + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
-            + "and \"automatic\". The default of \"disabled\" will be used."
-            + SEPARATOR;
+    public static final String WARNING_XSRF_PROTECTION_DISABLED = " WARNING: Cross-site request forgery protection is disabled!";
+
+    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = " WARNING: heartbeatInterval has been set to a non integer value."
+            + "\n The default of 5min will be used.";
+
+    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = " WARNING: pushMode has been set to an unrecognized value.\n"
+            + " The permitted values are \"disabled\", \"manual\",\n"
+            + " and \"automatic\". The default of \"disabled\" will be used.";
+
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -85,7 +86,6 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Default value for {@link #isSyncIdCheckEnabled()} = {@value} .
-     *
      */
     public static final boolean DEFAULT_SYNC_ID_CHECK = true;
 
@@ -104,7 +104,9 @@ public class DefaultDeploymentConfiguration
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
 
-    private static AtomicBoolean loggWarning = new AtomicBoolean(true);
+    private static AtomicBoolean logging = new AtomicBoolean(true);
+    private List<String> warnings = new ArrayList<>();
+    private List<String> info = new ArrayList<>();
 
     /**
      * Create a new deployment configuration instance.
@@ -120,7 +122,7 @@ public class DefaultDeploymentConfiguration
             Properties initParameters) {
         super(systemPropertyBaseClass, initParameters);
 
-        boolean log = loggWarning.getAndSet(false);
+        boolean log = logging.getAndSet(false);
 
         checkProductionMode(log);
         checkCompatibilityMode(log);
@@ -134,11 +136,37 @@ public class DefaultDeploymentConfiguration
         checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
+
+        if (log) {
+            logMessages();
+        }
+    }
+
+    private void logMessages() {
+        Logger logger = LoggerFactory.getLogger(getClass().getName());
+
+        if (!warnings.isEmpty()) {
+            warnings.add(0, HEADER);
+            warnings.add(1, DEPLOYMENT_WARNINGS);
+            warnings.add("\n");
+            // merging info messages to warnings for now
+            warnings.addAll(info);
+            warnings.add(SEPARATOR);
+            if (logger.isWarnEnabled()) {
+                logger.warn(String.join("\n", warnings));
+            }
+        } else if (!info.isEmpty()) {
+            info.add(0, HEADER);
+            info.add(SEPARATOR);
+            if (logger.isInfoEnabled()) {
+                logger.info(String.join("\n", info));
+            }
+        }
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * The default is false.
      */
     @Override
@@ -158,7 +186,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * The default is <code>true</code> when not in production and
      * <code>false</code> when in production mode.
      */
@@ -255,11 +283,19 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
-    private void checkProductionMode(boolean loggWarning) {
+    private void checkProductionMode(boolean log) {
         productionMode = getBooleanProperty(
                 Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        if (!productionMode && loggWarning) {
-            getLogger().warn(NOT_PRODUCTION_MODE_INFO);
+        if (log) {
+            if (productionMode) {
+                info.add("Vaadin is running in production mode.");
+            } else {
+                if (enableDevServer()) {
+                    info.add(NOT_PRODUCTION_MODE_INFO);
+                } else {
+                    warnings.add(NOT_PRODUCTION_MODE_WARNING);
+                }
+            }
         }
     }
 
@@ -294,7 +330,7 @@ public class DefaultDeploymentConfiguration
         }
 
         if (compatibilityMode && loggWarning) {
-            getLogger().warn(WARNING_COMPATIBILITY_MODE);
+            warnings.add(WARNING_COMPATIBILITY_MODE);
         }
     }
 
@@ -313,7 +349,7 @@ public class DefaultDeploymentConfiguration
         xsrfProtectionEnabled = !getBooleanProperty(
                 Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
         if (!xsrfProtectionEnabled && loggWarning) {
-            getLogger().warn(WARNING_XSRF_PROTECTION_DISABLED);
+            warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }
 
@@ -323,7 +359,7 @@ public class DefaultDeploymentConfiguration
                     Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                     DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
-            getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             heartbeatInterval = DEFAULT_HEARTBEAT_INTERVAL;
         }
     }
@@ -334,11 +370,10 @@ public class DefaultDeploymentConfiguration
                     Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                     DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT, Integer::parseInt);
         } catch (NumberFormatException e) {
-            String warning = SEPARATOR
-                    + "\nWARNING: maxMessageSuspendInterval has been set to an illegal value."
+            String warning = "WARNING: maxMessageSuspendInterval has been set to an illegal value."
                     + "The default of " + DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT
-                    + " ms will be used." + SEPARATOR;
-            getLogger().warn(warning);
+                    + " ms will be used.";
+            warnings.add(warning);
             maxMessageSuspendTimeout = DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT;
         }
     }
@@ -350,7 +385,7 @@ public class DefaultDeploymentConfiguration
                     DEFAULT_WEB_COMPONENT_DISCONNECT, Integer::parseInt);
 
         } catch (NumberFormatException e) {
-            getLogger().warn(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
+            warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
             webComponentDisconnect = DEFAULT_WEB_COMPONENT_DISCONNECT;
         }
     }
@@ -368,7 +403,7 @@ public class DefaultDeploymentConfiguration
                     stringMode -> Enum.valueOf(PushMode.class,
                             stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
-            getLogger().warn(WARNING_PUSH_MODE_NOT_RECOGNIZED);
+            warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
         }
     }
@@ -388,9 +423,4 @@ public class DefaultDeploymentConfiguration
                 Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
-
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass().getName());
-    }
-
 }

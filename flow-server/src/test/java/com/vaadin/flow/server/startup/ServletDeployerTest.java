@@ -335,6 +335,8 @@ public class ServletDeployerTest {
                 .andReturn(Collections.emptySet()).anyTimes();
 
         ServletContext contextMock = mock(ServletContext.class);
+
+        expect(contextMock.getContextPath()).andReturn("").once();
         expect(contextMock.getClassLoader())
                 .andReturn(this.getClass().getClassLoader()).anyTimes();
         expect(contextMock.addServlet(EasyMock.capture(servletNames),
