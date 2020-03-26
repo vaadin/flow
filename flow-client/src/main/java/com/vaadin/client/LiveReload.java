@@ -16,6 +16,8 @@
 
 package com.vaadin.client;
 
+import java.util.Date;
+
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
@@ -37,11 +39,14 @@ public class LiveReload {
     // storage Live Reload is enabled.
     private static final String ENABLED_KEY_IN_STORAGE = "vaadin.live-reload.enabled";
     private static final String ACTIVE_KEY_IN_SESSION_STORAGE = "vaadin.live-reload.active";
+    private static final String LAST_RELOAD_KEY_IN_STORAGE = "vaadin.live-reload.last-reload";
+    private static final String LAST_RELOAD_TEXT = "Last reload happened at ";
     private static final int SPRING_DEV_TOOLS_PORT = 35729;
     private String serviceUrl;
     private int uiId;
     private WebSocket webSocket;
     private Element indicator;
+    private Element reloadNotification;
 
     /**
      * Connects to either Spring Dev Tools Live Reload server or Flow Live
@@ -59,6 +64,9 @@ public class LiveReload {
         this.uiId = uiId;
         if (isEnabled()) {
             indicator = getOrCreateIndicator();
+            if (getLastReloadInStorage() != null) {
+                reloadNotification = getOrCreateReloadNotification();
+            }
             openWebSocketConnection();
         }
     }
@@ -110,6 +118,7 @@ public class LiveReload {
         } else if ("reload".equals(data.getString("command"))) {
             if (isActive()) {
                 showMessage("Live reload: in progress ...");
+                saveLastReloadInStorage(new Date());
                 Browser.getWindow().getLocation().reload();
             }
         } else {
@@ -187,6 +196,37 @@ public class LiveReload {
         return reloadIndicator;
     }
 
+    private Element getOrCreateReloadNotification() {
+        Element reloadNotificationElement = Browser.getDocument()
+                .getElementById("vaadin-live-reload-notification");
+        if (reloadNotificationElement == null) {
+            reloadNotificationElement = Browser.getDocument()
+                    .createElement("div");
+            reloadNotificationElement.setId("vaadin-live-reload-notification");
+            Element message = Browser.getDocument().createElement("span");
+            message.setId("vaadin-live-reload-timestamp");
+            message.setInnerText(LAST_RELOAD_TEXT + getLastReloadInStorage());
+            reloadNotificationElement.appendChild(message);
+            Element liveReloadOverlay = Browser.getDocument()
+                    .getElementById("vaadin-live-reload-overlay");
+            liveReloadOverlay.appendChild(reloadNotificationElement);
+        } else {
+            Element message = Browser.getDocument()
+                    .getElementById("vaadin-live-reload-timestamp");
+            message.setInnerText(LAST_RELOAD_TEXT + getLastReloadInStorage());
+        }
+        return reloadNotificationElement;
+    }
+
+    private void saveLastReloadInStorage(Date date) {
+        StorageUtil.setSessionItem(LAST_RELOAD_KEY_IN_STORAGE, date.getHours()
+                + ":" + date.getMinutes() + ":" + date.getSeconds());
+    }
+
+    private String getLastReloadInStorage(){
+        return StorageUtil.getSessionItem(LAST_RELOAD_KEY_IN_STORAGE);
+    }
+
     private boolean isActive() {
         String active = StorageUtil
                 .getSessionItem(ACTIVE_KEY_IN_SESSION_STORAGE);
@@ -234,6 +274,7 @@ public class LiveReload {
 
     private void disable() {
         assert indicator != null;
+        assert reloadNotification != null;
 
         closeWebSocketConnection();
         Browser.getDocument().getBody().removeChild(indicator);
