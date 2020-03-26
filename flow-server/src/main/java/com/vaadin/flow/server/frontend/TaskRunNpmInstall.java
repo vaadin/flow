@@ -148,6 +148,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
+        // Do possible cleaning before generating any new files.
+        try {
+            cleanUp();
+        } catch (IOException exception) {
+            throw new ExecutionFailedException("Couldn't remove "
+                    + packageUpdater.nodeModulesFolder + " directory",
+                    exception);
+        }
+
         if (enablePnpm) {
             try {
                 createPnpmFile(generateVersionsJson());
@@ -161,23 +170,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        try {
-            cleanUp();
-        } catch (IOException exception) {
-            throw new ExecutionFailedException("Couldn't remove "
-                    + packageUpdater.nodeModulesFolder + " directory",
-                    exception);
-        }
-
         List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
+        FrontendTools tools = new FrontendTools(baseDir,
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         try {
             if (requireHomeNodeExec) {
-                FrontendUtils.ensureNodeExecutableInHome(baseDir);
+                tools.forceAlternativeNodeExecutable();
             }
-            executable = enablePnpm ? FrontendUtils.getPnpmExecutable(baseDir)
-                    : FrontendUtils.getNpmExecutable(baseDir);
+            executable = enablePnpm ? tools.getPnpmExecutable()
+                    : tools.getNpmExecutable();
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
