@@ -1,10 +1,8 @@
-<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.8.0//EN"
-        "http://gwtproject.org/doctype/2.8.0/gwt-module.dtd">
+<!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.8.0//EN" "http://gwtproject.org/doctype/2.8.0/gwt-module.dtd">
 <module rename-to="client">
-    <inherits name="com.vaadin.ClientEngineXSI"/>
+	<inherits name="com.vaadin.ClientEngineXSI" />
 
-    <!-- Use custom single script linker without document.write, doens't work with SDM and GWT unit tests -->
-    <define-linker name="humlinker"
-                   class="com.vaadin.flow.linker.ClientEngineLinker"/>
-    <add-linker name="humlinker"/>
+	<!-- Use custom single script linker without document.write, doens't work with SDM and GWT unit tests -->
+	<define-linker name="humlinker" class="com.vaadin.flow.linker.ClientEngineLinker" />
+	<add-linker name="humlinker" />
 </module>
