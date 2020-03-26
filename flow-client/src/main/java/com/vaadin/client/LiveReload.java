@@ -121,7 +121,7 @@ public class LiveReload {
         Console.debug(
                 "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically.");
         showMessage(
-                "Live reload is not working correctly; check browser console for more details");
+                "Live reload: error; check browser console for more details");
     }
 
     private void showMessage(String msg) {
