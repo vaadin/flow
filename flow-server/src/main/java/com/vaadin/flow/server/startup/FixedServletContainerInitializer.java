@@ -79,7 +79,7 @@ public interface FixedServletContainerInitializer
         } catch (ClassNotFoundException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException
                 | InstantiationException e) {
-            new ServletException(e);
+            throw new ServletException(e);
         }
     }
 
@@ -102,7 +102,7 @@ public interface FixedServletContainerInitializer
      * @throws ServletException
      *             if an error has occurred
      *
-     * @see {@link #onStartup(Set, ServletContext)}
+     * @see #onStartup(Set, ServletContext)
      */
     public void process(Set<Class<?>> set, ServletContext ctx)
             throws ServletException;
