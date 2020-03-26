@@ -336,19 +336,19 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Checks if Live Reload is enabled or not.
+     * Checks if live reload is enabled or not.
      * 
-     * @return {@code true} if Live reload is enabled, {@code false} otherwise
+     * @return {@code true} if live reload is enabled, {@code false} otherwise
      */
     public boolean isLiveReloadEnabled() {
         return liveReloadEnabled;
     }
 
     /**
-     * Sets whether Live Reload should be enabled or not.
+     * Sets whether live reload should be enabled or not.
      *
      * @param liveReloadEnabled
-     *            {@code true} if Live Reload should be enabled, {@code false}
+     *            {@code true} if live reload should be enabled, {@code false}
      *            otherwise
      */
     public void setLiveReloadEnabled(boolean liveReloadEnabled) {

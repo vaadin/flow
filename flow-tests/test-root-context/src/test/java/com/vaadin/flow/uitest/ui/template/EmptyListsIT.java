@@ -56,7 +56,7 @@ public class EmptyListsIT extends ChromeBrowserTest {
                     .filter(entry -> !entry.getMessage()
                             .contains("[WDS] Disconnected!"))
                     // Web Socket error when trying to connect to Spring Dev
-                    // Tools Live Reload server.
+                    // Tools live-reload server.
                     .filter(entry -> !entry.getMessage()
                             .contains("WebSocket connection to 'ws://"))
                     .findAny();

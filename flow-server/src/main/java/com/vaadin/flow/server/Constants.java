@@ -276,7 +276,7 @@ public final class Constants implements Serializable {
     public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
     /**
-     * Configuration parameter name for enabling Live Reload.
+     * Configuration parameter name for enabling live reload.
      *
      * @since
      */

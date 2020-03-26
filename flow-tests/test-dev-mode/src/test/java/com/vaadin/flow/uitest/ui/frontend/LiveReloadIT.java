@@ -37,7 +37,7 @@ public class LiveReloadIT extends ChromeBrowserTest {
                 By.id("vaadin-live-reload-overlay"));
         Assert.assertNotNull(reloadOverlay.getAttribute("hidden"));
 
-        // After clicking the icon in the indicator, the Live Reload message
+        // After clicking the icon in the indicator, the live-reload message
         // should appear
         WebElement liveReloadIcon = findElement(
                 By.id("vaadin-live-reload-icon"));
