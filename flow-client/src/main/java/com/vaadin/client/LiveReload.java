@@ -30,7 +30,7 @@ import elemental.json.JsonObject;
  * Responsible for the client-side of the Live Reload. It refreshes the page
  * when it receives a reload command from Loive Reload server (either Spring or
  * Flow).
- * 
+ *
  * @author Vaadin Ltd
  * @since
  */

@@ -36,9 +36,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 import elemental.json.Json;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static elemental.json.impl.JsonUtil.stringify;
 
 /**
@@ -145,6 +143,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
+        // Do possible cleaning before generating any new files.
+        try {
+            cleanUp();
+        } catch (IOException exception) {
+            throw new ExecutionFailedException("Couldn't remove "
+                    + packageUpdater.nodeModulesFolder + " directory",
+                    exception);
+        }
+
         if (enablePnpm) {
             try {
                 createPnpmFile(generateVersionsJson());
@@ -156,14 +163,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
                         exception);
             }
-        }
-
-        try {
-            cleanUp();
-        } catch (IOException exception) {
-            throw new ExecutionFailedException("Couldn't remove "
-                    + packageUpdater.nodeModulesFolder + " directory",
-                    exception);
         }
 
         List<String> executable;
@@ -184,8 +183,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
         List<String> command = new ArrayList<>(executable);
         command.add("install");
 
-        console(YELLOW, commandToString(
-                packageUpdater.npmFolder.getAbsolutePath(), command));
+        if (packageUpdater.log().isDebugEnabled()) {
+            packageUpdater.log().debug(commandToString(
+                    packageUpdater.npmFolder.getAbsolutePath(), command));
+        }
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
