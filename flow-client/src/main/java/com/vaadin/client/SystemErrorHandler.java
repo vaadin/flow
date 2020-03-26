@@ -20,6 +20,8 @@ import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
 
+import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -56,8 +58,12 @@ public class SystemErrorHandler {
      *            message details or null if there are no details
      */
     public void handleSessionExpiredError(String details) {
-        handleUnrecoverableError(details, registry.getApplicationConfiguration()
-                .getSessionExpiredError());
+        // Run asynchronously to guarantee that all executions in the Uidl are
+        // done (#7581)
+        Scheduler.get()
+                .scheduleDeferred(() -> handleUnrecoverableError(details,
+                        registry.getApplicationConfiguration()
+                                .getSessionExpiredError()));
     }
 
     /**
