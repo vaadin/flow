@@ -48,4 +48,29 @@ public class StorageUtil {
     /*-{
         window.localStorage.setItem(key, value);
     }-*/;
+
+    /**
+     * Gets an item value from the session storage.
+     *
+     * @param key
+     *            the item key
+     * @return the value of the item
+     */
+    public static native String getSessionItem(String key)
+    /*-{
+        return window.sessionStorage.getItem(key);
+    }-*/;
+
+    /**
+     * Sets an item value in the session storage.
+     *
+     * @param key
+     *            the item key
+     * @param value
+     *            the item value
+     */
+    public static native void setSessionItem(String key, String value)
+    /*-{
+        window.sessionStorage.setItem(key, value);
+    }-*/;
 }
