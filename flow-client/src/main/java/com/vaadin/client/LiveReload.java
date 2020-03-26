@@ -40,7 +40,7 @@ public class LiveReload {
     private static final String ENABLED_KEY_IN_STORAGE = "vaadin.live-reload.enabled";
     private static final String ACTIVE_KEY_IN_SESSION_STORAGE = "vaadin.live-reload.active";
     private static final String LAST_RELOAD_KEY_IN_STORAGE = "vaadin.live-reload.last-reload";
-    private static final String LAST_RELOAD_TEXT = "Last reload happened at ";
+    private static final String LAST_RELOAD_TEXT = "Last automatic reload happened at ";
     private static final int SPRING_DEV_TOOLS_PORT = 35729;
     private String serviceUrl;
     private int uiId;
@@ -218,8 +218,11 @@ public class LiveReload {
     }
 
     private void saveLastReloadInStorage(Date date) {
-        StorageUtil.setSessionItem(LAST_RELOAD_KEY_IN_STORAGE, date.getHours()
-                + ":" + date.getMinutes() + ":" + date.getSeconds());
+
+        StorageUtil.setSessionItem(LAST_RELOAD_KEY_IN_STORAGE,
+                buildStringWith2LeadingZeroes(date.getHours()) + ":"
+                        + buildStringWith2LeadingZeroes(date.getMinutes()) + ":"
+                        + buildStringWith2LeadingZeroes(date.getSeconds()));
     }
 
     private String getLastReloadInStorage(){
@@ -277,5 +280,13 @@ public class LiveReload {
         closeWebSocketConnection();
         Browser.getDocument().getBody().removeChild(indicator);
         StorageUtil.setLocalItem(ENABLED_KEY_IN_STORAGE, "false");
+    }
+
+    private String buildStringWith2LeadingZeroes(int number) {
+        if (number < 10) {
+            return "0" + number;
+        } else {
+            return number + "";
+        }
     }
 }
