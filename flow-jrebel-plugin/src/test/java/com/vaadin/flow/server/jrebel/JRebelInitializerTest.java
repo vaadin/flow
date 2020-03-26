@@ -30,7 +30,6 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.jrebel.JRebelInitializer.JRebelListenerReference;
 
 public class JRebelInitializerTest {
 
@@ -64,7 +63,7 @@ public class JRebelInitializerTest {
         Mockito.when(serviceInitEvent.getSource()).thenReturn(service);
         initializer.serviceInit(serviceInitEvent);
 
-        JRebelListenerReference listenerReference = (JRebelListenerReference) contextAttributeCaptor
+        JRebelClassEventListener.JRebelListenerReference listenerReference = (JRebelClassEventListener.JRebelListenerReference) contextAttributeCaptor
                 .getValue();
         listener = listenerReference.listener;
     }
@@ -76,7 +75,7 @@ public class JRebelInitializerTest {
 
         // Wait for the reload task to be scheduled.
         Mockito.verify(liveReload,
-                Mockito.timeout(JRebelInitializer.RELOAD_DELAY * 3)).reload();
+                Mockito.timeout(JRebelClassEventListener.RELOAD_DELAY * 3)).reload();
     }
 
     private static class JRebelView extends Component {
