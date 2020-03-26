@@ -142,8 +142,9 @@ public class MigrationTest {
                         "foo", "node_modules", "pnpm", "bin"));
         new File(pnpmBin.toFile(), "pnpm.js").createNewFile();
 
-        FrontendTools tools = new FrontendTools(targetFolder.getAbsolutePath(),
-                () -> targetFolder.getAbsolutePath());
+        File baseDir = new File(targetFolder.getAbsolutePath(), "foo");
+        FrontendTools tools = new FrontendTools(baseDir.getAbsolutePath(),
+                () -> baseDir.getAbsolutePath());
         List<String> pnpmExecutable = tools.getPnpmExecutable();
 
         if (pnpmExecutable.get(0).contains("pnpm")) {
