@@ -23,6 +23,6 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 /**
  * For integration tests that need to be done on an empty page.
  */
-@Route(value = "com.vaadin.flow.uitest.ui.EmptyView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.EmptyPageView", layout = ViewTestLayout.class)
 public class EmptyPageView extends Div {
 }
