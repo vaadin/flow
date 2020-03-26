@@ -144,24 +144,25 @@ public class LiveReload {
     }
 
     private Element getOrCreateReloadNotification() {
-        Element reloadNotification = Browser.getDocument()
+        Element reloadNotificationElement = Browser.getDocument()
                 .getElementById("vaadin-live-reload-notification");
-        if (reloadNotification == null) {
-            reloadNotification = Browser.getDocument().createElement("div");
-            reloadNotification.setId("vaadin-live-reload-notification");
+        if (reloadNotificationElement == null) {
+            reloadNotificationElement = Browser.getDocument()
+                    .createElement("div");
+            reloadNotificationElement.setId("vaadin-live-reload-notification");
             Element message = Browser.getDocument().createElement("span");
             message.setId("vaadin-live-reload-timestamp");
             message.setInnerText(LAST_RELOAD_TEXT + getLastReloadInStorage());
-            reloadNotification.appendChild(message);
+            reloadNotificationElement.appendChild(message);
             Element liveReloadOverlay = Browser.getDocument()
                     .getElementById("vaadin-live-reload-overlay");
-            liveReloadOverlay.appendChild(reloadNotification);
+            liveReloadOverlay.appendChild(reloadNotificationElement);
         } else {
             Element message = Browser.getDocument()
                     .getElementById("vaadin-live-reload-timestamp");
             message.setInnerText(LAST_RELOAD_TEXT + getLastReloadInStorage());
         }
-        return reloadNotification;
+        return reloadNotificationElement;
     }
 
     private void saveLastReloadInStorage(Date date) {
