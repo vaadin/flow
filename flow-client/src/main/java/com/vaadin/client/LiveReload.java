@@ -46,7 +46,6 @@ public class LiveReload {
     private int uiId;
     private WebSocket webSocket;
     private Element indicator;
-    private Element reloadNotification;
 
     /**
      * Connects to either Spring Dev Tools Live Reload server or Flow Live
@@ -65,7 +64,7 @@ public class LiveReload {
         if (isEnabled()) {
             indicator = getOrCreateIndicator();
             if (getLastReloadInStorage() != null) {
-                reloadNotification = getOrCreateReloadNotification();
+                getOrCreateReloadNotification();
             }
             openWebSocketConnection();
         }
@@ -274,7 +273,6 @@ public class LiveReload {
 
     private void disable() {
         assert indicator != null;
-        assert reloadNotification != null;
 
         closeWebSocketConnection();
         Browser.getDocument().getBody().removeChild(indicator);
