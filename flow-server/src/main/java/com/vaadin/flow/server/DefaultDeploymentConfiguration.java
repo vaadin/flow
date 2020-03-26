@@ -53,14 +53,6 @@ public class DefaultDeploymentConfiguration
             + " When deploying application for production, disable debug features by enabling production mode!\n"
             + " See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
-    public static final String WARNING_V14_BOOTSTRAP = " Using deprecated Vaadin 14 bootstrap mode.\n"
-            + " Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"
-            + " See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information.";
-
-    // not a warning anymore, but keeping variable name to avoid breaking
-    // anything
-    public static final String WARNING_V15_BOOTSTRAP = "%n Using Vaadin 15+ bootstrap mode.%n %s%n %s";
-
     private static final String DEPLOYMENT_WARNINGS = " Following issues were discovered with deployment configuration:";
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = " WARNING: Cross-site request forgery protection is disabled!";
@@ -71,10 +63,6 @@ public class DefaultDeploymentConfiguration
     public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = " WARNING: pushMode has been set to an unrecognized value.\n"
             + " The permitted values are \"disabled\", \"manual\",\n"
             + " and \"automatic\". The default of \"disabled\" will be used.";
-
-    private static final String INDEX_NOT_FOUND = " '%s' is not found from '%s'.%n"
-            + " Generating a default one in '%s%s'. "
-            + " Move it to the '%s' folder if you want to customize it.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
