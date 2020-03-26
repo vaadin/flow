@@ -292,6 +292,8 @@ public class FrontendUtils {
 
     public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
+    public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
+
     /**
      * Only static stuff here.
      */

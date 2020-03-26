@@ -52,7 +52,7 @@ public class LiveReloadIT extends ChromeBrowserTest {
         WebElement liveReloadIcon = findElement(
                 By.id("vaadin-live-reload-icon"));
         liveReloadIcon.click();
-        WebElement button = findElement(By.tagName("input"));
+        WebElement button = findElement(By.id("vaadin-live-reload-disable"));
         button.click();
 
         Assert.assertEquals(0,

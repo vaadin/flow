@@ -227,8 +227,8 @@ public class FrontendTools {
      * @see #getPnpmExecutable(String, boolean)
      */
     public List<String> getPnpmExecutable() {
-        ensurePnpm();
-        List<String> pnpmCommand = getPnpmExecutable(baseDir, true);
+        Supplier<List<String>> result = doEnsurePnpm();
+        List<String> pnpmCommand = result.get();
         if (!pnpmCommand.isEmpty()) {
             pnpmCommand.add("--shamefully-hoist=true");
         }
@@ -240,60 +240,7 @@ public class FrontendTools {
      *
      */
     public void ensurePnpm() {
-        if (isPnpmTooOldOrAbsent(baseDir)) {
-            // copy the current content of package.json file to a temporary
-            // location
-            File packageJson = new File(baseDir, "package.json");
-            File tempFile = null;
-            boolean packageJsonExists = packageJson.canRead();
-            if (packageJsonExists) {
-                try {
-                    tempFile = File.createTempFile("package", "json");
-                    FileUtils.copyFile(packageJson, tempFile);
-                } catch (IOException exception) {
-                    throw new IllegalStateException(
-                            "Couldn't make a copy of package.json file",
-                            exception);
-                }
-                packageJson.delete();
-            }
-            try {
-                JsonObject pkgJson = Json.createObject();
-                pkgJson.put("name", "temp");
-                pkgJson.put("license", "UNLICENSED");
-                pkgJson.put("repository", "npm/npm");
-                pkgJson.put("description",
-                        "Temporary package for pnpm installation");
-                FileUtils.writeLines(packageJson,
-                        Collections.singletonList(pkgJson.toJson()));
-                JsonObject lockJson = Json.createObject();
-                lockJson.put("lockfileVersion", 1);
-                FileUtils.writeLines(new File(baseDir, "package-lock.json"),
-                        Collections.singletonList(lockJson.toJson()));
-            } catch (IOException e) {
-                getLogger().warn("Couldn't create temporary package.json");
-            }
-            LoggerFactory.getLogger("dev-updater").info(
-                    "Installing pnpm v{} locally. It is suggested to install it globally using 'npm add -g pnpm@{}'",
-                    DEFAULT_PNPM_VERSION, DEFAULT_PNPM_VERSION);
-            // install pnpm locally using npm
-            installPnpm(getNpmExecutable(false));
-
-            // remove package-lock.json which contains pnpm as a dependency.
-            new File(baseDir, "package-lock.json").delete();
-
-            if (packageJsonExists && tempFile != null) {
-                // return back the original package.json
-                try {
-                    FileUtils.copyFile(tempFile, packageJson);
-                } catch (IOException exception) {
-                    throw new IllegalStateException(
-                            "Couldn't restore package.json file back",
-                            exception);
-                }
-                tempFile.delete();
-            }
-        }
+        doEnsurePnpm();
     }
 
     /**
@@ -430,6 +377,64 @@ public class FrontendTools {
         }
     }
 
+    private List<String> ensurePnpm(String dir) {
+        List<String> pnpm = getSuitablePnpm(dir);
+        if (pnpm.isEmpty()) {
+            // copy the current content of package.json file to a temporary
+            // location
+            File packageJson = new File(dir, "package.json");
+            File tempFile = null;
+            boolean packageJsonExists = packageJson.canRead();
+            if (packageJsonExists) {
+                try {
+                    tempFile = File.createTempFile("package", "json");
+                    FileUtils.copyFile(packageJson, tempFile);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't make a copy of package.json file",
+                            exception);
+                }
+                packageJson.delete();
+            }
+            try {
+                JsonObject pkgJson = Json.createObject();
+                pkgJson.put("name", "temp");
+                pkgJson.put("license", "UNLICENSED");
+                pkgJson.put("repository", "npm/npm");
+                pkgJson.put("description",
+                        "Temporary package for pnpm installation");
+                FileUtils.writeLines(packageJson,
+                        Collections.singletonList(pkgJson.toJson()));
+                JsonObject lockJson = Json.createObject();
+                lockJson.put("lockfileVersion", 1);
+                FileUtils.writeLines(new File(baseDir, "package-lock.json"),
+                        Collections.singletonList(lockJson.toJson()));
+            } catch (IOException e) {
+                getLogger().warn("Couldn't create temporary package.json");
+            }
+            // install pnpm locally using npm
+            installPnpm(dir, getNpmExecutable(false));
+
+            // remove package-lock.json which contains pnpm as a dependency.
+            new File(dir, "package-lock.json").delete();
+
+            if (packageJsonExists && tempFile != null) {
+                // return back the original package.json
+                try {
+                    FileUtils.copyFile(tempFile, packageJson);
+                } catch (IOException exception) {
+                    throw new IllegalStateException(
+                            "Couldn't restore package.json file back",
+                            exception);
+                }
+                tempFile.delete();
+            }
+            return Collections.emptyList();
+        } else {
+            return pnpm;
+        }
+    }
+
     private File getExecutable(String cmd, String defaultLocation,
             boolean installNode) {
         File file = null;
@@ -445,7 +450,7 @@ public class FrontendTools {
         }
         if (file == null && installNode) {
             getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
-                    cmd, installNode);
+                    cmd, getAlternativeDir());
             return new File(installNode(DEFAULT_NODE_VERSION, null));
         }
         if (file == null) {
@@ -572,6 +577,20 @@ public class FrontendTools {
         return null;
     }
 
+    private Supplier<List<String>> doEnsurePnpm() {
+        List<String> path = getSuitablePnpm(baseDir);
+        if (!path.isEmpty()) {
+            return () -> path;
+        }
+        String alternativeDir = getAlternativeDir();
+        List<String> pnpm = ensurePnpm(alternativeDir);
+        if (pnpm.isEmpty()) {
+            return () -> getPnpmExecutable(alternativeDir, true);
+        } else {
+            return () -> pnpm;
+        }
+    }
+
     private List<String> getNpmExecutable(boolean removePnpmLock) {
         List<String> returnCommand = getNpmScriptCommand(baseDir);
         if (returnCommand.isEmpty()) {
@@ -612,7 +631,7 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private boolean isPnpmTooOldOrAbsent(String dir) {
+    private List<String> getSuitablePnpm(String dir) {
         final List<String> pnpmCommand = getPnpmExecutable(dir, false);
         if (!pnpmCommand.isEmpty()) {
             // check whether globally or locally installed pnpm is new enough
@@ -623,7 +642,7 @@ public class FrontendTools {
                         versionCmd);
                 if (FrontendUtils.isVersionAtLeast(pnpmVersion,
                         SUPPORTED_PNPM_VERSION)) {
-                    return false;
+                    return pnpmCommand;
                 } else {
                     getLogger().warn(String.format(
                             "installed pnpm ('%s', version %s) is too old, installing supported version locally",
@@ -636,10 +655,10 @@ public class FrontendTools {
                         e);
             }
         }
-        return true;
+        return Collections.emptyList();
     }
 
-    private void installPnpm(List<String> installCommand) {
+    private void installPnpm(String dir, List<String> installCommand) {
         List<String> command = new ArrayList<>();
         command.addAll(installCommand);
         command.add("install");
@@ -651,7 +670,7 @@ public class FrontendTools {
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.environment().put("ADBLOCK", "1");
-        builder.directory(new File(baseDir));
+        builder.directory(new File(dir));
 
         builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
         builder.redirectError(ProcessBuilder.Redirect.INHERIT);
