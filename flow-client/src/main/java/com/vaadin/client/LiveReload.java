@@ -80,8 +80,12 @@ public class LiveReload {
                     serviceUrl.replaceFirst("http://", "ws://") + "?v-uiId="
                             + uiId + "&refresh_connection");
             webSocket.setOnmessage(this::handleMessageEvent);
-            webSocket.setOnerror(flowWsEvent -> Console.debug(
-                    "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically."));
+            webSocket.setOnerror(this::handleErrorEvent);
+            webSocket.setOnclose(e -> {
+                if (indicator != null) {
+                    updateActiveIndicator();
+                }
+            });
         });
     }
 
@@ -100,19 +104,35 @@ public class LiveReload {
     private void handleMessageEvent(Event evt) {
         MessageEvent messageEvent = (MessageEvent) evt;
         JsonObject data = Json.parse((String) messageEvent.getData());
-        indicator = getOrCreateIndicator();
-        Element indicatorMessage = Browser.getDocument()
-                .getElementById("vaadin-live-reload-message");
         if ("hello".equals(data.getString("command"))) {
             updateActiveIndicator();
-            indicatorMessage.setInnerHTML("Live reload: available");
+            showMessage("Live reload: available");
         } else if ("reload".equals(data.getString("command"))) {
             if (isActive()) {
-                indicatorMessage.setInnerHTML("Live reload: in progress ...");
+                showMessage("Live reload: in progress ...");
                 Browser.getWindow().getLocation().reload();
             }
         } else {
-            indicatorMessage.setHidden(true);
+            showMessage(null);
+        }
+    }
+
+    private void handleErrorEvent(Event ev) {
+        Console.debug(
+                "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically.");
+        showMessage(
+                "Live reload is not working correctly; check browser console for more details");
+    }
+
+    private void showMessage(String msg) {
+        indicator = getOrCreateIndicator();
+        Element message = Browser.getDocument()
+                .getElementById("vaadin-live-reload-message");
+        if (msg == null) {
+            message.setHidden(true);
+        } else {
+            message.setHidden(false);
+            message.setInnerHTML(msg);
         }
     }
 
@@ -176,23 +196,34 @@ public class LiveReload {
     private void setActive(boolean active) {
         StorageUtil.setSessionItem(ACTIVE_KEY_IN_SESSION_STORAGE,
                 Boolean.toString(active));
+        if (active && (webSocket == null
+                || webSocket.getReadyState() != WebSocket.OPEN)) {
+            openWebSocketConnection();
+        }
         updateActiveIndicator();
     }
 
     private void updateActiveIndicator() {
-        assert indicator != null;
-
         Element icon = Browser.getDocument()
                 .getElementById("vaadin-live-reload-icon");
         Element toggle = Browser.getDocument()
                 .getElementById("vaadin-live-reload-active");
-        toggle.getStyle().setVisibility("visible");
-        if (isActive()) {
-            icon.setInnerHTML("}&gt;<sup style='color: green'>●</sup>");
-            toggle.setInnerText("Deactivate in this window");
-        } else {
-            icon.setInnerHTML("}&gt;<sup style='color: brown'>●</sup>");
-            toggle.setInnerText("Activate in this window");
+        if (icon != null && toggle !=null) {
+            toggle.getStyle().setVisibility("visible");
+            if (isActive()) {
+                if (webSocket != null
+                        && webSocket.getReadyState() == WebSocket.OPEN) {
+                    icon.setInnerHTML("}&gt;<sup style='color: green'>●</sup>");
+                } else {
+                    // Live-reload is active, but websocket connection is not
+                    // established. Show a red indicator.
+                    icon.setInnerHTML("}&gt;<sup style='color: red'>●</sup>");
+                }
+                toggle.setInnerText("Deactivate in this window");
+            } else {
+                icon.setInnerHTML("}&gt;<sup style='color: yellow'>●</sup>");
+                toggle.setInnerText("Activate in this window");
+            }
         }
     }
 
