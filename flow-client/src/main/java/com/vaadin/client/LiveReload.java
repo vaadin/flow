@@ -166,12 +166,12 @@ public class LiveReload {
     }
 
     private void saveLastReloadInStorage(Date date) {
-        StorageUtil.setLocalItem(LAST_RELOAD_KEY_IN_STORAGE, date.getHours()
+        StorageUtil.setSessionItem(LAST_RELOAD_KEY_IN_STORAGE, date.getHours()
                 + ":" + date.getMinutes() + ":" + date.getSeconds());
     }
 
     private String getLastReloadInStorage(){
-        return StorageUtil.getLocalItem(LAST_RELOAD_KEY_IN_STORAGE);
+        return StorageUtil.getSessionItem(LAST_RELOAD_KEY_IN_STORAGE);
     }
 
     private boolean isEnabled() {
