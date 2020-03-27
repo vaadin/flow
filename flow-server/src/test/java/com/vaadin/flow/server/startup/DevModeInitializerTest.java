@@ -100,7 +100,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters() throws Exception {
-        runOnStartup();
+        process();
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
@@ -109,7 +109,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         webpackFile.delete();
         mainPackageFile.delete();
         appPackageFile.delete();
-        runOnStartup();
+        process();
         assertNotNull(getDevModeHandler());
     }
 
@@ -123,14 +123,14 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
         appPackageFile.delete();
-        runOnStartup();
+        process();
         assertNotNull(getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
         webpackFile.delete();
-        runOnStartup();
+        process();
         assertNotNull(getDevModeHandler());
     }
 
@@ -156,7 +156,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Not_AddContextListener() throws Exception {
         ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor
                 .forClass(EventListener.class);
-        runOnStartup();
+        process();
         Mockito.verify(servletContext, Mockito.never())
                 .addListener(arg.capture());
     }
@@ -166,7 +166,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
-        runOnStartup();
+        process();
 
         assertNotNull(DevModeHandler.getDevModeHandler());
 
