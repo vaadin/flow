@@ -149,7 +149,7 @@ public class LiveReload {
         Element overlay = Browser.getDocument()
                 .getElementById("vaadin-live-reload-overlay");
         overlay.setHidden(!overlay.isHidden());
-        if (lastReloadNotification != null) {
+        if (lastReloadNotification == null) {
             return;
         }
         if (!overlay.isHidden()) {
