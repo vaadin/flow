@@ -463,12 +463,13 @@ public final class DevModeHandler implements Serializable {
                     .replaceAll("\\?babel-target=[\\w\\d]+", "");
 
             // write each line read to logger, but selecting its correct level
-            log = line.contains("WARNING") ? warn
-                    : line.contains("ERROR") ? error : log;
+            log = line.contains("WARNING") ? warn :
+                    line.contains("ERROR") ? error :
+                      isInfo(line, cleanLine) ? info : log;
             log.accept(cleanLine);
 
             // Only store webpack errors to be shown in the browser.
-            if(line.contains("ERROR")) {
+            if (log.equals(error)) {
                 // save output so as it can be used to alert user in browser.
                 output.append(cleanLine).append(System.lineSeparator());
             }
@@ -487,6 +488,10 @@ public final class DevModeHandler implements Serializable {
                 doNotify();
             }
         }
+    }
+
+    private boolean isInfo(String line, String cleanLine) {
+        return line.trim().isEmpty() || cleanLine.trim().startsWith("i");
     }
 
     private StringBuilder getOutputBuilder() {
