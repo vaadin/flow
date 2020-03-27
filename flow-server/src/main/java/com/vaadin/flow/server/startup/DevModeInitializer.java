@@ -334,8 +334,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
-        boolean enablePnpm = config.getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+        boolean enablePnpm = config.isPnpmEnabled();
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();

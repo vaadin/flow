@@ -282,16 +282,19 @@ public abstract class VaadinService implements Serializable {
             logger.debug("The application has the following routes: ");
             List<RouteData> routeDataList = getRouteRegistry().getRegisteredRoutes();
             if(!routeDataList.isEmpty()) {
-                addUsageStatistics();
+                addRouterUsageStatistics();
             }
             routeDataList.stream()
                     .map(Object::toString).forEach(logger::debug);
+        }
+        if (getDeploymentConfiguration().isPnpmEnabled()) {
+            UsageStatistics.markAsUsed("flow/pnpm",null);
         }
 
         initialized = true;
     }
 
-    private void addUsageStatistics() {
+    private void addRouterUsageStatistics() {
         if(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
             UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
