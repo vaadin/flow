@@ -432,4 +432,15 @@ public interface DeploymentConfiguration extends Serializable {
         return getStringProperty(Constants.EXTERNAL_STATS_URL,
                 Constants.DEFAULT_EXTERNAL_STATS_URL);
     }
+
+    /**
+     * Returns whether pnpm is enabled or not.
+     *
+     * @return {@code true} if enabled, {@code false} if not
+     * @since 2.2
+     */
+    default boolean isPnpmEnabled() {
+        return getBooleanProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+    }
 }

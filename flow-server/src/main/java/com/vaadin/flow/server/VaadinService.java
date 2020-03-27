@@ -301,6 +301,9 @@ public abstract class VaadinService implements Serializable {
                 UsageStatistics.markAsUsed("flow/npm", null);
             }
         }
+        if (getDeploymentConfiguration().isPnpmEnabled()) {
+            UsageStatistics.markAsUsed("flow/pnpm",null);
+        }
 
         htmlImportDependencyCache = new DependencyTreeCache<>(path -> {
             List<String> dependencies = new ArrayList<>();
