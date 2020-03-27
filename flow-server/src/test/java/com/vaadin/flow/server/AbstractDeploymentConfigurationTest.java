@@ -131,7 +131,7 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public boolean isLiveReloadEnabled() {
+        public boolean isDevModeLiveReloadEnabled() {
             return false;
         }
 

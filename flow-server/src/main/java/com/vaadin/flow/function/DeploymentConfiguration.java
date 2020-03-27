@@ -374,9 +374,9 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Checks if live reload is enabled or not.
+     * Checks if dev mode live reload is enabled or not.
      *
-     * @return {@code true} if live reload is enabled, {@code false} otherwise
+     * @return {@code true} if dev mode live reload is enabled, {@code false} otherwise
      */
-    boolean isLiveReloadEnabled();
+    boolean isDevModeLiveReloadEnabled();
 }

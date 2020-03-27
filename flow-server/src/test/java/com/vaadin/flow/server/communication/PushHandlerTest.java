@@ -86,7 +86,7 @@ public class PushHandlerTest {
         MockDeploymentConfiguration deploymentConfiguration = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
-        deploymentConfiguration.setLiveReloadEnabled(true);
+        deploymentConfiguration.setDevModeLiveReloadEnabled(true);
 
         VaadinContext context = service.getContext();
         BrowserLiveReload liveReload = BrowserLiveReloadAccessTest

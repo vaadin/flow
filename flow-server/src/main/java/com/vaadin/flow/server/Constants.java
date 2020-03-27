@@ -280,7 +280,7 @@ public final class Constants implements Serializable {
      *
      * @since
      */
-    public static final String SERVLET_PARAMETER_ENABLE_LIVE_RELOAD = "liveReload.enabled";
+    public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
 
     private Constants() {
         // prevent instantiation constants class only

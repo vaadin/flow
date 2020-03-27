@@ -220,7 +220,7 @@
                         <stopWait>5</stopWait>
                         <systemProperties>
                             <systemProperty>
-                                <name>vaadin.liveReload.enabled</name>
+                                <name>vaadin.devmode.liveReload.enabled</name>
                                 <value>false</value>
                             </systemProperty>
                             <systemProperty>

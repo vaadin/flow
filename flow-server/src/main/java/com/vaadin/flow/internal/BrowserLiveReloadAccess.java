@@ -46,7 +46,7 @@ public class BrowserLiveReloadAccess {
                     .debug("BrowserLiveReloadAccess::getLiveReload is called in production mode.");
             return null;
         }
-        if (!service.getDeploymentConfiguration().isLiveReloadEnabled()) {
+        if (!service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()) {
             LoggerFactory.getLogger(BrowserLiveReloadAccess.class)
                     .debug("BrowserLiveReloadAccess::getLiveReload is called when live reload is disabled.");
             return null;

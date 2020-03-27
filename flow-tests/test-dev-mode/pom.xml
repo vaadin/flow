@@ -54,7 +54,7 @@
                 <configuration>
                     <systemProperties>
                         <systemProperty>
-                            <name>vaadin.liveReload.enabled</name>
+                            <name>vaadin.devmode.liveReload.enabled</name>
                             <value>true</value>
                         </systemProperty>
                     </systemProperties>

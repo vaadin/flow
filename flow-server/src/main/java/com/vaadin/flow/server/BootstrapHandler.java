@@ -1078,8 +1078,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
-                appConfig.put(Constants.SERVLET_PARAMETER_ENABLE_LIVE_RELOAD,
-                        deploymentConfiguration.isLiveReloadEnabled());
+                appConfig.put(Constants.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD,
+                        deploymentConfiguration.isDevModeLiveReloadEnabled());
             }
 
             // Use locale from session if set, else from the request

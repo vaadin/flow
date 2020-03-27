@@ -28,7 +28,7 @@ public class MockDeploymentConfiguration
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
     private boolean eagerServerLoad = false;
-    private boolean liveReloadEnabled = false;
+    private boolean devModeLiveReloadEnabled = false;
 
     @Override
     public boolean isProductionMode() {
@@ -179,15 +179,15 @@ public class MockDeploymentConfiguration
     }
 
     @Override
-    public boolean isLiveReloadEnabled() {
-        return liveReloadEnabled;
+    public boolean isDevModeLiveReloadEnabled() {
+        return devModeLiveReloadEnabled;
     }
 
     public void setEagerServerLoad(boolean includeBootsrapInitialUidl) {
         this.eagerServerLoad = includeBootsrapInitialUidl;
     }
 
-    public void setLiveReloadEnabled(boolean liveReloadEnabled) {
-        this.liveReloadEnabled = liveReloadEnabled;
+    public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
+        this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
     }
 }
