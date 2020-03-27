@@ -2,6 +2,7 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -92,7 +93,8 @@ public class WebComponentExporterAwareValidatorTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<Component> webComponent, Component component) {
+        public void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
 
         }
     }
@@ -132,7 +134,7 @@ public class WebComponentExporterAwareValidatorTest {
     public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
             throws ServletException {
         annotationValidator
-                .onStartup(Stream.of(AbstractMain.class, WCExporter.class)
+                .process(Stream.of(AbstractMain.class, WCExporter.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -145,7 +147,7 @@ public class WebComponentExporterAwareValidatorTest {
                 ThemeViewportWithParent.class.getName(),
                 Theme.class.getSimpleName()));
 
-        annotationValidator.onStartup(Stream.of(ThemeViewportWithParent.class)
+        annotationValidator.process(Stream.of(ThemeViewportWithParent.class)
                 .collect(Collectors.toSet()), servletContext);
     }
 
@@ -153,7 +155,7 @@ public class WebComponentExporterAwareValidatorTest {
     public void onStartUp_all_failing_anotations_are_reported()
             throws ServletException {
         try {
-            annotationValidator.onStartup(
+            annotationValidator.process(
                     Collections.singleton(ThemeViewportWithParent.class),
                     servletContext);
             Assert.fail("No exception was thrown for faulty setup.");
@@ -175,7 +177,7 @@ public class WebComponentExporterAwareValidatorTest {
                 Theme.class.getSimpleName()));
 
         annotationValidator
-                .onStartup(Stream.of(ThemeViewportWithAliasParent.class)
+                .process(Stream.of(ThemeViewportWithAliasParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -197,7 +199,7 @@ public class WebComponentExporterAwareValidatorTest {
                 MiddleThemeLayout.class.getName(),
                 Theme.class.getSimpleName()));
 
-        annotationValidator.onStartup(
+        annotationValidator.process(
                 Stream.of(MiddleThemeLayout.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -212,7 +214,7 @@ public class WebComponentExporterAwareValidatorTest {
                         + "layout/top level route/web component.",
                 clazz.getName(), annotationType.getSimpleName()));
 
-        annotationValidator.onStartup(
+        annotationValidator.process(
                 Stream.of(clazz).collect(Collectors.toSet()), servletContext);
     }
 

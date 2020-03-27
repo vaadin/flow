@@ -16,15 +16,13 @@
 
 package com.vaadin.flow.server.startup;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.InvalidCustomElementNameException;
-import com.vaadin.flow.server.MockInstantiator;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
+import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -38,11 +36,15 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.InvalidCustomElementNameException;
+import com.vaadin.flow.server.MockInstantiator;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
@@ -68,8 +70,12 @@ public class WebComponentConfigurationRegistryInitializerTest {
     public void init() {
         MockitoAnnotations.initMocks(this);
         Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(WebComponentConfigurationRegistry.class)).thenReturn(registry);
-        Mockito.when(context.getAttribute(eq(WebComponentConfigurationRegistry.class), anyObject())).thenReturn(registry);
+        Mockito.when(
+                context.getAttribute(WebComponentConfigurationRegistry.class))
+                .thenReturn(registry);
+        Mockito.when(context.getAttribute(
+                eq(WebComponentConfigurationRegistry.class), anyObject()))
+                .thenReturn(registry);
 
         initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext.getAttribute(
@@ -87,8 +93,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp() throws ServletException {
-        initializer.onStartup(
+    public void process() throws ServletException {
+        initializer.process(
                 Stream.of(MyComponentExporter.class, UserBoxExporter.class)
                         .collect(Collectors.toSet()),
                 servletContext);
@@ -97,7 +103,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void onStartUp_noExceptionWithNullArguments() {
         try {
-            initializer.onStartup(null, servletContext);
+            initializer.process(null, servletContext);
         } catch (Exception e) {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with null argument");
@@ -110,7 +116,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void onStartUp_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
         try {
-            initializer.onStartup(
+            initializer.process(
                     Stream.of(MyComponentExporter.class, SiblingExporter.class)
                             .collect(Collectors.toSet()),
                     servletContext);
@@ -123,7 +129,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void emptySet_noExceptionAndWebComponentsSet() {
         try {
-            initializer.onStartup(Collections.emptySet(), servletContext);
+            initializer.process(Collections.emptySet(), servletContext);
         } catch (Exception e) {
             Assert.fail(
                     "WebComponentRegistryInitializer.onStartup should not throw with empty set");
@@ -135,10 +141,9 @@ public class WebComponentConfigurationRegistryInitializerTest {
     public void duplicateNamesFoundOnStartUp_exceptionIsThrown()
             throws ServletException {
         expectedEx.expect(ServletException.class);
-        expectedEx.expectCause(CauseMatcher
-                .ex(IllegalArgumentException.class)
+        expectedEx.expectCause(CauseMatcher.ex(IllegalArgumentException.class)
                 .msgStartsWith("Found two WebComponentExporter classes"));
-        initializer.onStartup(
+        initializer.process(
                 Stream.of(MyComponentExporter.class, DuplicateTagExporter.class)
                         .collect(Collectors.toSet()),
                 servletContext);
@@ -150,19 +155,20 @@ public class WebComponentConfigurationRegistryInitializerTest {
         expectedEx.expect(ServletException.class);
         expectedEx.expectCause(CauseMatcher
                 .ex(InvalidCustomElementNameException.class)
-        .msgEquals(String.format(
-                "Tag name '%s' given by '%s' is not a valid custom element "
-                        + "name.",
-                "invalid", InvalidNameExporter.class.getCanonicalName())));
+                .msgEquals(String.format(
+                        "Tag name '%s' given by '%s' is not a valid custom element "
+                                + "name.",
+                        "invalid",
+                        InvalidNameExporter.class.getCanonicalName())));
 
-        initializer.onStartup(Collections.singleton(InvalidNameExporter.class),
+        initializer.process(Collections.singleton(InvalidNameExporter.class),
                 servletContext);
     }
 
     @Test
     public void duplicatePropertyRegistration_doesNotCauseIssues()
             throws ServletException {
-        initializer.onStartup(
+        initializer.process(
                 Collections.singleton(DuplicatePropertyExporter.class),
                 servletContext);
     }
@@ -170,7 +176,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues()
             throws ServletException {
-        initializer.onStartup(Collections.singleton(ExtendingExporter.class),
+        initializer.process(Collections.singleton(ExtendingExporter.class),
                 servletContext);
     }
 
@@ -196,13 +202,13 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
 
         }
     }
 
-    public static class UserBoxExporter
-            extends WebComponentExporter<UserBox> {
+    public static class UserBoxExporter extends WebComponentExporter<UserBox> {
 
         public UserBoxExporter() {
             super("user-box");
@@ -210,7 +216,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<UserBox> webComponent, UserBox component) {
+        public void configureInstance(WebComponent<UserBox> webComponent,
+                UserBox component) {
 
         }
     }
@@ -223,7 +230,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<InvalidName> webComponent, InvalidName component) {
+        public void configureInstance(WebComponent<InvalidName> webComponent,
+                InvalidName component) {
 
         }
     }
@@ -245,7 +253,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
 
         }
     }
@@ -258,7 +267,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
 
         }
     }
@@ -273,7 +283,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
         }
 
         @Override
-        public void configureInstance(WebComponent<MyComponent> webComponent, MyComponent component) {
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
 
         }
     }
@@ -282,6 +293,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         private final Class<? extends Throwable> throwableType;
         private boolean startsWith = false;
         private String matchable = null;
+
         private CauseMatcher(Class<? extends Throwable> throwableType) {
             this.throwableType = throwableType;
         }
@@ -307,12 +319,12 @@ public class WebComponentConfigurationRegistryInitializerTest {
         @Override
         public void describeTo(Description description) {
             description.appendText(String.format("<%s: %s%s>",
-                    throwableType.getCanonicalName(),
-                    matchable,
+                    throwableType.getCanonicalName(), matchable,
                     (startsWith ? "..." : "")));
         }
 
-        public static CauseMatcher ex(Class<? extends Throwable> throwableType) {
+        public static CauseMatcher ex(
+                Class<? extends Throwable> throwableType) {
             return new CauseMatcher(throwableType);
         }
 
