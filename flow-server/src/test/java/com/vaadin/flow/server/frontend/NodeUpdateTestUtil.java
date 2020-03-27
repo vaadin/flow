@@ -88,7 +88,7 @@ public class NodeUpdateTestUtil {
             File ppmCli = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
             FileUtils.forceMkdirParent(ppmCli);
             FileUtils.writeStringToFile(ppmCli,
-                    "process.argv.includes('--version') && console.log('4.1.0');",
+                    "process.argv.includes('--version') && console.log('4.4.0');",
                     StandardCharsets.UTF_8);
 
             new File(baseDir, "node_modules/.modules.yaml").createNewFile();
