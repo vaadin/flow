@@ -68,7 +68,7 @@ public class DevModeInitializerTestBase {
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
 
-        createStubNode(false, true, baseDir);
+        createStubNode(false, false, baseDir);
         createStubWebpackServer("Compiled", 500, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
