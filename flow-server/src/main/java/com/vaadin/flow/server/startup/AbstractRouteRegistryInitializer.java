@@ -188,14 +188,10 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         }
         if (!RouterLayout.class.isAssignableFrom(route)) {
             throw new InvalidRouteLayoutConfigurationException(String.format(
-                    "%s is not a '%s' but has both annotation '%s' and '%s'. "
-                            + "The class should not be either a navigation target or it "
-                            + "should be a '%s' to have '%s' annotation",
+                    "The class '%s' should either be a '%s' or only a navigation target using"
+                            + " '%s.layout' to set the parent layout",
                     route.getSimpleName(), RouterLayout.class.getSimpleName(),
-                    Route.class.getSimpleName(),
-                    ParentLayout.class.getSimpleName(),
-                    RouterLayout.class.getSimpleName(),
-                    ParentLayout.class.getSimpleName()));
+                    Route.class.getSimpleName()));
         }
     }
 
