@@ -71,7 +71,7 @@ public class ErrorMessageEscKeyIT extends ChromeBrowserTest {
         Assert.assertEquals("Invalid error message", "Cookies disabled",
                 caption.getText());
 
-        button.click();
+        // button.click();
         assertLabelsCount(labelsCount);
     }
 
