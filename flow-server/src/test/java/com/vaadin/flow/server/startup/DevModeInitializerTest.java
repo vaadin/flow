@@ -9,6 +9,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
@@ -274,12 +275,16 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
-        Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.enumeration(
-                        Collections.singleton(FrontendUtils.PROJECT_BASEDIR)));
+        Mockito.when(servletContext.getInitParameterNames()).thenReturn(
+                Collections.enumeration(new HashSet<>(
+                        Arrays.asList(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                                FrontendUtils.PROJECT_BASEDIR))));
         Mockito.when(
                 servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
                 .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
+        Mockito.when(
+                servletContext.getInitParameter(Constants.SERVLET_PARAMETER_ENABLE_PNPM))
+                .thenReturn(initParams.get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
