@@ -34,10 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.testutil.ClassFinder.isFunctionalType;
 import static java.lang.reflect.Modifier.isStatic;
 import static org.junit.Assert.fail;
 
@@ -52,8 +49,6 @@ import static org.junit.Assert.fail;
  */
 
 public abstract class ClassesSerializableTest extends ClassFinder {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Class<?> COMPONENT_CLASS = loadComponent(
             "com.vaadin.flow.component.Component");

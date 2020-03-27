@@ -37,6 +37,12 @@ import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * Superclass for testing classes which need to scan project's classpath.
+ * 
+ * @author Vaadin Ltd
+ *
+ */
 public abstract class ClassFinder {
 
     private final Logger logger = LoggerFactory.getLogger(ClassFinder.class);
