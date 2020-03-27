@@ -296,8 +296,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
-        boolean enablePnpm = config.getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM, true);
+        boolean enablePnpm = config.isPnpmEnabled();
 
         boolean useHomeNodeExec = config.getBooleanProperty(
                 Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
