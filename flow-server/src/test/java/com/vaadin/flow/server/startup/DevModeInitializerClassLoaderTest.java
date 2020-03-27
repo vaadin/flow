@@ -42,7 +42,7 @@ public class DevModeInitializerClassLoaderTest {
         Method method = clz.getMethod("setup");
         method.invoke(initializer);
 
-        method = clz.getMethod("runOnStartup");
+        method = clz.getMethod("process");
         method.invoke(initializer);
 
         Field field = clz.getDeclaredField("baseDir");
