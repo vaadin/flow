@@ -392,7 +392,18 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
-                if (jarMatcher.find()) {
+                Matcher dirVfsMatcher = VFS_DIRECTORY_REGEX.matcher(urlString);
+                if (jarVfsMatcher.find()) {
+                    String vfsJar = jarVfsMatcher.group(1);
+                    if (vfsJars.add(vfsJar))
+                        frontendFiles.add(
+                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                } else if (dirVfsMatcher.find()) {
+                    URL vfsDirUrl = new URL(urlString.substring(0,
+                            urlString.lastIndexOf(resourcesFolder)));
+                    frontendFiles
+                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
+                } else if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if ("zip".equalsIgnoreCase(url.getProtocol())
                         && zipProtocolJarMatcher.find()) {
@@ -402,16 +413,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 } else if (dirCompatibilityMatcher.find()) {
                     frontendFiles
                             .add(new File(dirCompatibilityMatcher.group(1)));
-                } else if (jarVfsMatcher.find()) {
-                    String vfsJar = jarVfsMatcher.group(1);
-                    if (vfsJars.add(vfsJar))
-                        frontendFiles.add(
-                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
-                } else if (VFS_DIRECTORY_REGEX.matcher(urlString).find()) {
-                    URL vfsDirUrl = new URL(urlString.substring(0,
-                            urlString.lastIndexOf(resourcesFolder)));
-                    frontendFiles
-                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",
