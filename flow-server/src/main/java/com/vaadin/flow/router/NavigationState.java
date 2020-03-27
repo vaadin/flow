@@ -34,7 +34,7 @@ public class NavigationState implements Serializable {
 
     private Class<? extends Component> navigationTarget;
     private RouteTarget routeTarget;
-    private UrlParameters urlParameters;
+    private UrlParameters urlParameters = UrlParameters.empty();
     private String resolvedPath;
     private final Router router;
 
@@ -130,6 +130,8 @@ public class NavigationState implements Serializable {
      *            url parameters.
      */
     void setParameters(UrlParameters urlParameters) {
+        assert urlParameters != null;
+
         this.urlParameters = urlParameters;
     }
 
@@ -139,7 +141,7 @@ public class NavigationState implements Serializable {
      * @return url parameters.
      */
     public UrlParameters getParameters() {
-        return urlParameters != null ? urlParameters : UrlParameters.empty();
+        return urlParameters;
     }
 
     /**

@@ -409,7 +409,7 @@ public class RouteConfiguration implements Serializable {
      *         if the navigation target requires a parameter
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
-        return getUrl(navigationTarget, (UrlParameters) null);
+        return getUrl(navigationTarget, UrlParameters.empty());
     }
 
     /**

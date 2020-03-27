@@ -775,10 +775,6 @@ class RouteModel implements Serializable {
                 Consumer<RouteSegmentValue> segmentProcessor,
                 Consumer<RouteSegment> targetSegmentProcessor) {
 
-            if (parameters == null) {
-                parameters = UrlParameters.empty();
-            }
-
             if (segmentTemplates.isEmpty()
                     && parameters.getParameterNames().isEmpty()) {
                 return;

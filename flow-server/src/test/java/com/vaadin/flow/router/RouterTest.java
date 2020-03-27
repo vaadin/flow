@@ -1449,13 +1449,17 @@ public class RouterTest extends RoutingTestBase {
 
         static UrlParameters parameters;
 
+        static Class<? extends Component> target;
+
         static void clear() {
             parameters = null;
+            target = null;
         }
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             parameters = event.getUrlParameters();
+            target = getClass();
         }
     }
 
@@ -1544,6 +1548,53 @@ public class RouterTest extends RoutingTestBase {
 
     @Route("show/:filter?")
     public static class FilterView extends UrlParametersBase {
+
+        static boolean doForward = false;
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            super.beforeEnter(event);
+
+            event.getUrlParameters().get("filter").ifPresent(value -> {
+                
+                if (!value.equals("original")) {
+                    UrlParametersBase.clear();
+
+                    if (value.equals("all")) {
+                        redirect(event, FilterAllView.class);
+                    } else {
+                        redirect(event, FilterParamView.class, new UrlParameters("text", value));
+                    }
+                }
+            });
+        }
+
+        private void redirect(BeforeEnterEvent event,
+                Class<? extends Component> target) {
+            if (doForward) {
+                // These methods without parameters should be tested.
+                event.forwardTo(target);
+            } else {
+                event.rerouteTo(target);
+            }
+        }
+
+        private void redirect(BeforeEnterEvent event,
+                Class<? extends Component> target, UrlParameters parameters) {
+            if (doForward) {
+                event.forwardTo(target, parameters);
+            } else {
+                event.rerouteTo(target, parameters);
+            }
+        }
+    }
+
+    @Route("filter")
+    public static class FilterAllView extends UrlParametersBase {
+    }
+
+    @Route("filter/:text")
+    public static class FilterParamView extends UrlParametersBase {
     }
 
     @Override
@@ -3699,6 +3750,19 @@ public class RouterTest extends RoutingTestBase {
         assertFailingRouteConfiguration(FilterView.class, ShowAllView.class);
     }
 
+    @Test // #2740 #4213
+    public void reroute_with_url_parameters() {
+        setNavigationTargets(FilterView.class, FilterAllView.class,
+                FilterParamView.class);
+
+        assertUrlParameters("show/all", parameters(), FilterAllView.class);
+        assertUrlParameters("show/some", parameters("text", "some"),
+                FilterParamView.class);
+        assertUrlParameters("show", parameters(), FilterView.class);
+        assertUrlParameters("show/original", parameters("filter", "original"),
+                FilterView.class);
+    }
+
     private void assertFailingRouteConfiguration(
             Class<? extends Component>... navigationTargets) {
         try {
@@ -3709,12 +3773,22 @@ public class RouterTest extends RoutingTestBase {
     }
 
     private void assertUrlParameters(String url, UrlParameters parameters) {
+        assertUrlParameters(url, parameters, null);
+    }
+
+    private void assertUrlParameters(String url, UrlParameters parameters,
+            Class<? extends Component> target) {
         UrlParametersBase.clear();
 
         navigate(url);
 
         Assert.assertEquals("Incorrect parameters", parameters,
                 UrlParametersBase.parameters);
+        
+        if (target != null) {
+            Assert.assertEquals("Incorrect target", target,
+                    UrlParametersBase.target);
+        }
     }
 
     private List<String> getProcessEventsTrunkChainNames(String... leaf) {

@@ -205,6 +205,11 @@ public class RouterLinkTest extends HasCurrentService {
         new RouterLink("Show something", TestView.class);
     }
 
+    @Test
+    public void createRouterLink_withoutRouterWithUrlParameters() {
+//        RouterLink link = new RouterLink("Foo", ParameterNavigationTarget.class, new UrlParameters("barId", "barValue"));
+    }
+
     private void triggerNavigationEvent(com.vaadin.flow.router.Router router,
             RouterLink link, String location) {
         AfterNavigationEvent event = new AfterNavigationEvent(
@@ -347,6 +352,13 @@ public class RouterLinkTest extends HasCurrentService {
     @Route("foo")
     @Tag(Tag.DIV)
     public static class FooNavigationTarget extends Component {
+    }
+
+    @Route("foo/:barId/fooId?/bar")
+    @RouteAlias("foo/:barId(" + RouteParameterRegex.INTEGER + ")/bar")
+    @RouteAlias(":fooBar(" + RouteParameterRegex.BOOLEAN + ")/foo/bar")
+    @Tag(Tag.DIV)
+    public static class ParameterNavigationTarget extends Component {
     }
 
     @Route("greeting")

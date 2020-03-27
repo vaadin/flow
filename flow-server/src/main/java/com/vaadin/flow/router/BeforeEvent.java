@@ -273,7 +273,8 @@ public abstract class BeforeEvent extends EventObject {
     public void forwardTo(Class<? extends Component> forwardTargetComponent) {
         Objects.requireNonNull(forwardTargetComponent,
                 "forwardTargetComponent cannot be null");
-        forwardTo(getNavigationState(forwardTargetComponent, null, null));
+        forwardTo(getNavigationState(forwardTargetComponent,
+                UrlParameters.empty(), null));
     }
 
     /**
@@ -305,7 +306,8 @@ public abstract class BeforeEvent extends EventObject {
                 .getRegistry().getNavigationTarget(location);
 
         if (target.isPresent()) {
-            forwardTo(getNavigationState(target.get(), null, location));
+            forwardTo(getNavigationState(target.get(), UrlParameters.empty(),
+                    location));
         } else {
             // inform that forward target location is client-side view
             isUnknownRoute = true;
@@ -380,8 +382,8 @@ public abstract class BeforeEvent extends EventObject {
     public void rerouteTo(Class<? extends Component> routeTargetType) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
-
-        rerouteTo(getNavigationState(routeTargetType, null, null));
+        rerouteTo(getNavigationState(routeTargetType, UrlParameters.empty(),
+                null));
     }
 
     /**
@@ -397,7 +399,7 @@ public abstract class BeforeEvent extends EventObject {
             UrlParameters parameters) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
-        rerouteTo(getNavigationState(routeTargetType, null, null));
+        rerouteTo(getNavigationState(routeTargetType, parameters, null));
     }
 
     /**
@@ -408,8 +410,9 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      */
     public void rerouteTo(String route) {
-        getSource().getRegistry().getNavigationTarget(route).ifPresent(
-                target -> rerouteTo(getNavigationState(target, null, route)));
+        getSource().getRegistry().getNavigationTarget(route)
+                .ifPresent(target -> rerouteTo(getNavigationState(target,
+                        UrlParameters.empty(), route)));
     }
 
     /**
