@@ -2,12 +2,18 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.file.Paths;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
@@ -66,6 +72,41 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Visited b;
     }
 
+    public static class MockVirtualFile {
+        File file;
+
+        public List<MockVirtualFile> getChildrenRecursively() {
+            List<MockVirtualFile> files = new ArrayList<>();
+
+            File[] children = file.listFiles();
+            if (children != null) {
+                for(File child: children) {
+                    MockVirtualFile mvf = new MockVirtualFile();
+                    mvf.file = child;
+                    files.add(mvf);
+                    files.addAll(mvf.getChildrenRecursively());
+                }
+            }
+            return files;
+        }
+
+        public InputStream openStream() throws FileNotFoundException {
+            return new FileInputStream(file);
+        }
+
+        public File getPhysicalFile() {
+            return file;
+        }
+
+        public String getPathNameRelativeTo(MockVirtualFile other) {
+            return Paths.get(file.toURI()).relativize(Paths.get(other.file.toURI())).toString();
+        }
+
+        public boolean isFile() {
+            return file.isFile();
+        }
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -101,6 +142,33 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws IOException, ServletException {
         loadingFsResources_allFilesExist("/dir-with-frontend-resources/",
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
+    }
+
+    @Test
+    public void loadingFsResources_usesVfsProtocol_allFilesExist() throws Exception {
+        String path = Paths.get("/dir-with-modern-frontend",
+                Constants.RESOURCES_FRONTEND_DEFAULT).toString();
+        MockVirtualFile virtualFile = new MockVirtualFile();
+        virtualFile.file = new File(getClass().getResource(path).toURI());
+
+        URLConnection urlConnection =  Mockito.mock(URLConnection.class);
+        Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
+
+        URL.setURLStreamHandlerFactory(protocol -> {
+            if (protocol.equals("vfs")) {
+                return new URLStreamHandler() {
+                    @Override
+                    protected URLConnection openConnection(URL u) {
+                        return urlConnection;
+                    }
+                };
+            }
+            return null;
+        });
+        URL url = new URL(Paths.get("vfs://some-non-existent-place", path).toString());
+
+        loadingFsResources_allFilesExist(Collections.singletonList(url),
+                Constants.RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
@@ -290,7 +358,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             String resourcesFolder) throws IOException, ServletException {
         List<URL> urls = Collections.singletonList(
                 getClass().getResource(resourcesRoot + resourcesFolder));
+        loadingFsResources_allFilesExist(urls, resourcesFolder);
+    }
 
+    private void loadingFsResources_allFilesExist(Collection<URL> urls,
+            String resourcesFolder) throws IOException, ServletException {
         // Create mock loader with the single jar to be found
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(classLoader.getResources(resourcesFolder))
