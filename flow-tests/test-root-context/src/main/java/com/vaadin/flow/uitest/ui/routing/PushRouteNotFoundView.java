@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui.routing;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -30,18 +31,27 @@ public class PushRouteNotFoundView extends RouteNotFoundError {
 
     public static String PUSH_NON_EXISTENT_PATH = "push-no-route";
 
+    private boolean isPushPath;
+
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
         String path = event.getLocation().getPath();
         if (PUSH_NON_EXISTENT_PATH.equals(path)) {
-            Element div = ElementFactory.createDiv("Push mode: "
-                    + event.getUI().getPushConfiguration().getPushMode());
-            div.setAttribute("id", "push-mode");
-            getElement().appendChild(div);
+            isPushPath = true;
             return HttpServletResponse.SC_NOT_FOUND;
         } else {
             return super.setErrorParameter(event, parameter);
+        }
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        if (isPushPath) {
+            Element div = ElementFactory.createDiv("Push mode: "
+                    + attachEvent.getUI().getPushConfiguration().getPushMode());
+            div.setAttribute("id", "push-mode");
+            getElement().appendChild(div);
         }
     }
 }
