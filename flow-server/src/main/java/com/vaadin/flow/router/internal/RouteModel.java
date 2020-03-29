@@ -74,7 +74,6 @@ class RouteModel implements Serializable {
         return new RouteModel(original.root.copy());
     }
 
-
     /**
      * Remove a path by its url template.
      *
@@ -135,8 +134,7 @@ class RouteModel implements Serializable {
      */
     RouteTarget getRouteTarget(String urlTemplate, UrlParameters parameters) {
         AtomicReference<RouteTarget> target = new AtomicReference<>();
-        root.matchSegmentTemplatesWithParameters(
-                PathUtil.getSegmentsList(urlTemplate), parameters, null,
+        root.matchSegmentTemplatesWithParameters(urlTemplate, parameters, null,
                 routeSegment -> target.set(routeSegment.getTarget()));
         return target.get();
     }
@@ -164,10 +162,9 @@ class RouteModel implements Serializable {
      *             not match exactly with the template.
      */
     String getUrl(String urlTemplate, UrlParameters parameters) {
-        final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
-        final List<String> result = new ArrayList<>(segments.size());
+        final List<String> result = new ArrayList<>();
 
-        root.matchSegmentTemplatesWithParameters(segments, parameters,
+        root.matchSegmentTemplatesWithParameters(urlTemplate, parameters,
                 routeSegmentValue -> routeSegmentValue.value
                         .ifPresent(result::add),
                 null);
@@ -192,7 +189,7 @@ class RouteModel implements Serializable {
      *             not match with the template.
      */
     String formatUrlTemplate(String urlTemplate,
-                             Set<RouteParameterFormat> format) {
+            Set<RouteParameterFormat> format) {
 
         if (format.contains(RouteParameterFormat.NAME)
                 && format.contains(RouteParameterFormat.MODIFIER)
@@ -200,7 +197,7 @@ class RouteModel implements Serializable {
             return urlTemplate;
         }
 
-        return root.getUrlTemplate(urlTemplate,
+        return root.formatUrlTemplate(urlTemplate,
                 segment -> RouteFormat.formatSegment(segment, format));
     }
 
@@ -220,10 +217,10 @@ class RouteModel implements Serializable {
      *             not match with the template.
      */
     Map<String, String> getParameters(String urlTemplate,
-                                      EnumSet<RouteParameterFormat> format) {
+            EnumSet<RouteParameterFormat> format) {
         Map<String, String> result = new HashMap<>();
 
-        this.root.matchSegmentTemplates(PathUtil.getSegmentsList(urlTemplate),
+        this.root.matchSegmentTemplates(urlTemplate,
                 segment -> {
                     if (segment.isParameter()) {
                         result.put(segment.getName(), RouteFormat
@@ -456,16 +453,15 @@ class RouteModel implements Serializable {
          *            the parameter format function.
          * @return the simple url template.
          */
-        String getUrlTemplate(String urlTemplate,
+        String formatUrlTemplate(String urlTemplate,
                 Function<RouteSegment, String> parameterFormat) {
             if (urlTemplate == null) {
                 return null;
             }
 
-            final List<String> segments = PathUtil.getSegmentsList(urlTemplate);
-            final List<String> result = new ArrayList<>(segments.size());
+            final List<String> result = new ArrayList<>();
 
-            matchSegmentTemplates(segments,
+            matchSegmentTemplates(urlTemplate,
                     routeSegment -> result.add(routeSegment.isParameter()
                             ? parameterFormat.apply(routeSegment)
                             : routeSegment.getName()),
@@ -735,7 +731,16 @@ class RouteModel implements Serializable {
             return foundTarget;
         }
 
-        void matchSegmentTemplates(List<String> segmentTemplates,
+        void matchSegmentTemplates(String urlTemplate,
+                Consumer<RouteSegment> segmentProcessor,
+                Consumer<RouteSegment> targetSegmentProcessor) {
+            matchSegmentTemplates(urlTemplate,
+                    PathUtil.getSegmentsList(urlTemplate), segmentProcessor,
+                    targetSegmentProcessor);
+        }
+
+        private void matchSegmentTemplates(final String urlTemplate,
+                List<String> segmentTemplates,
                 Consumer<RouteSegment> segmentProcessor,
                 Consumer<RouteSegment> targetSegmentProcessor) {
             if (segmentTemplates.isEmpty()) {
@@ -747,8 +752,7 @@ class RouteModel implements Serializable {
 
             if (routeSegment == null) {
                 throw new IllegalArgumentException(
-                        "Unregistered url template specified `"
-                                + PathUtil.getPath(segmentTemplates) + "`");
+                        "Unregistered url template \"" + urlTemplate + "\"");
             }
 
             if (segmentProcessor != null) {
@@ -756,24 +760,26 @@ class RouteModel implements Serializable {
             }
 
             if (segmentTemplates.size() > 1) {
-                routeSegment.matchSegmentTemplates(
+                routeSegment.matchSegmentTemplates(urlTemplate,
                         segmentTemplates.subList(1, segmentTemplates.size()),
                         segmentProcessor, targetSegmentProcessor);
 
             } else if (routeSegment.getTarget() == null) {
                 throw new IllegalArgumentException(
-                        "Missing target at the end of the path `"
-                                + PathUtil.getPath(segmentTemplates) + "`");
+                        "Unregistered url template \"" + urlTemplate + "\"");
 
             } else if (targetSegmentProcessor != null) {
                 targetSegmentProcessor.accept(routeSegment);
             }
         }
 
-        void matchSegmentTemplatesWithParameters(List<String> segmentTemplates,
+        void matchSegmentTemplatesWithParameters(String urlTemplate,
                 UrlParameters parameters,
                 Consumer<RouteSegmentValue> segmentProcessor,
                 Consumer<RouteSegment> targetSegmentProcessor) {
+
+            final List<String> segmentTemplates = PathUtil
+                    .getSegmentsList(urlTemplate);
 
             if (segmentTemplates.isEmpty()
                     && parameters.getParameterNames().isEmpty()) {
@@ -784,29 +790,30 @@ class RouteModel implements Serializable {
                     parameters.getParameterNames());
 
             UrlParameters finalParameters = parameters;
-            matchSegmentTemplates(segmentTemplates, routeSegment -> {
-                final Optional<String> segmentValue = getSegmentValue(
-                        routeSegment, finalParameters);
+            matchSegmentTemplates(urlTemplate, segmentTemplates,
+                    routeSegment -> {
+                        final Optional<String> segmentValue = getSegmentValue(
+                                routeSegment, finalParameters);
 
-                if (routeSegment.isParameter()) {
-                    parameterNames.remove(routeSegment.getName());
-                }
+                        if (routeSegment.isParameter()) {
+                            parameterNames.remove(routeSegment.getName());
+                        }
 
-                if (segmentProcessor != null) {
-                    segmentProcessor.accept(
-                            new RouteSegmentValue(routeSegment, segmentValue));
-                }
-            }, routeSegment -> {
-                // All parameter must be used.
-                if (!parameterNames.isEmpty()) {
-                    throw new IllegalArgumentException(
-                            "All provided UrlParameters must be used to process the urlTemplate. Provide the exact required UrlParameters or a urlTemplate that will use all UrlParameters");
-                }
+                        if (segmentProcessor != null) {
+                            segmentProcessor.accept(new RouteSegmentValue(
+                                    routeSegment, segmentValue));
+                        }
+                    }, routeSegment -> {
+                        // All parameter must be used.
+                        if (!parameterNames.isEmpty()) {
+                            throw new IllegalArgumentException(
+                                    "All provided UrlParameters must be used to process the urlTemplate. Provide the exact required UrlParameters or a urlTemplate that will use all UrlParameters");
+                        }
 
-                if (targetSegmentProcessor != null) {
-                    targetSegmentProcessor.accept(routeSegment);
-                }
-            });
+                        if (targetSegmentProcessor != null) {
+                            targetSegmentProcessor.accept(routeSegment);
+                        }
+                    });
         }
 
         /**
@@ -953,9 +960,8 @@ class RouteModel implements Serializable {
             return allSegments;
         }
 
-
-        private static Optional<String> getSegmentValue(RouteSegment routeSegment,
-                                                        UrlParameters parameters) {
+        private static Optional<String> getSegmentValue(
+                RouteSegment routeSegment, UrlParameters parameters) {
 
             if (routeSegment.isVarargs()) {
                 return getVarargsValue(routeSegment, parameters);
@@ -968,8 +974,8 @@ class RouteModel implements Serializable {
             }
         }
 
-        private static Optional<String> getVarargsValue(RouteSegment routeSegment,
-                                                        UrlParameters parameters) {
+        private static Optional<String> getVarargsValue(
+                RouteSegment routeSegment, UrlParameters parameters) {
             final String parameterName = routeSegment.getName();
 
             List<String> args = parameters.getWildcard(parameterName);
@@ -979,7 +985,8 @@ class RouteModel implements Serializable {
             for (String value : args) {
                 if (!routeSegment.isEligible(value)) {
                     throw new IllegalArgumentException("Url varargs parameter `"
-                            + parameterName + "` has a specified value `" + value
+                            + parameterName + "` has a specified value `"
+                            + value
                             + "`, which is invalid according to the parameter definition `"
                             + routeSegment.getTemplate() + "`");
                 }
@@ -993,20 +1000,21 @@ class RouteModel implements Serializable {
             return path.isEmpty() ? Optional.empty() : Optional.of(path);
         }
 
-        private static Optional<String> getParameterValue(RouteSegment routeSegment,
-                                                          UrlParameters parameters) {
+        private static Optional<String> getParameterValue(
+                RouteSegment routeSegment, UrlParameters parameters) {
             final String parameterName = routeSegment.getName();
 
             final Optional<String> value = parameters.get(parameterName);
 
             if (!value.isPresent() && routeSegment.isMandatory()) {
-                throw new IllegalArgumentException("Url parameter `" + parameterName
+                throw new IllegalArgumentException("Url parameter `"
+                        + parameterName
                         + "` is mandatory but missing from the parameters argument.");
             }
 
             if (value.isPresent() && !routeSegment.isEligible(value.get())) {
-                throw new IllegalArgumentException("Url parameter `" + parameterName
-                        + "` has specified value `" + value
+                throw new IllegalArgumentException("Url parameter `"
+                        + parameterName + "` has specified value `" + value
                         + "`, which is invalid according to the parameter definition `"
                         + routeSegment.getTemplate() + "`");
             }

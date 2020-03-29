@@ -245,7 +245,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         final NavigationRouteTarget navigationRouteTarget = getConfiguration()
                 .getNavigationRouteTarget(url);
         if (navigationRouteTarget.hasTarget()) {
-            return navigationRouteTarget.getTarget().getParentLayouts();
+            return navigationRouteTarget.getRouteTarget().getParentLayouts();
         }
         return getParentRegistry().getRouteLayouts(url, navigationTarget);
     }

@@ -35,15 +35,15 @@ public class NavigationRouteTarget implements Serializable {
     private String url;
 
     // Target found for the specified path.
-    private RouteTarget target;
+    private RouteTarget routeTarget;
 
     // Parameters found in the path.
     private UrlParameters urlParameters;
 
-    NavigationRouteTarget(String url, RouteTarget target,
+    NavigationRouteTarget(String url, RouteTarget routeTarget,
             Map<String, String> urlParameters) {
         this.url = url;
-        this.target = target;
+        this.routeTarget = routeTarget;
         this.urlParameters = new UrlParameters(urlParameters);
     }
 
@@ -54,7 +54,7 @@ public class NavigationRouteTarget implements Serializable {
      *         otherwise false.
      */
     public boolean hasTarget() {
-        return target != null;
+        return routeTarget != null;
     }
 
     /**
@@ -67,12 +67,12 @@ public class NavigationRouteTarget implements Serializable {
     }
 
     /**
-     * Gets the navigation target.
+     * Gets the route target.
      * 
-     * @return the navigation target.
+     * @return the route target.
      */
-    public RouteTarget getTarget() {
-        return target;
+    public RouteTarget getRouteTarget() {
+        return routeTarget;
     }
 
     /**
@@ -87,7 +87,7 @@ public class NavigationRouteTarget implements Serializable {
     @Override
     public String toString() {
         return "[url: \"" + url + "\", target: "
-                + (target != null ? target.getTarget() : null)
+                + (routeTarget != null ? routeTarget.getTarget() : null)
                 + ", parameters: " + urlParameters + "]";
     }
 }

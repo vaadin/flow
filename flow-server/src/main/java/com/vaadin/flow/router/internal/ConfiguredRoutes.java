@@ -226,7 +226,7 @@ public class ConfiguredRoutes implements Serializable {
     public Optional<Class<? extends Component>> getTarget(String url) {
         final NavigationRouteTarget result = getNavigationRouteTarget(url);
         if (result.hasTarget()) {
-            final RouteTarget routeTarget = result.getTarget();
+            final RouteTarget routeTarget = result.getRouteTarget();
             return Optional.ofNullable(routeTarget.getTarget());
         } else {
             return Optional.empty();
@@ -406,7 +406,7 @@ public class ConfiguredRoutes implements Serializable {
         final NavigationRouteTarget result = getNavigationRouteTarget(url);
 
         if (result.hasTarget()) {
-            return result.getTarget().getParentLayouts();
+            return result.getRouteTarget().getParentLayouts();
         } else {
             return Collections.emptyList();
         }

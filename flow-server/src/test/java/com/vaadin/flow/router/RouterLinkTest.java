@@ -239,6 +239,7 @@ public class RouterLinkTest extends HasCurrentService {
         try {
             link.setRoute(ParameterNavigationTarget.class,
                     new UrlParameters("fooId", "qwe"));
+            Assert.fail("Route is not registered.");
         } catch (NotFoundException e) {
         }
     }

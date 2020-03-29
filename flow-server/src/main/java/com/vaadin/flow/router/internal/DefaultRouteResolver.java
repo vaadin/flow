@@ -45,7 +45,7 @@ public class DefaultRouteResolver implements RouteResolver {
         NavigationStateBuilder builder = new NavigationStateBuilder(
                 request.getRouter());
         try {
-            builder.withTarget(navigationResult.getTarget(),
+            builder.withTarget(navigationResult.getRouteTarget(),
                     navigationResult.getUrlParameters());
             builder.withPath(navigationResult.getUrl());
         } catch (NotFoundException nfe) {
