@@ -104,6 +104,24 @@ public class RouterLink extends Component implements HasText, HasComponents,
 
     /**
      * Creates a new router link for the given navigation target using the given
+     * text and parameters.
+     *
+     * @param text
+     *         link text
+     * @param navigationTarget
+     *         navigation target
+     * @param parameters
+     *         url parameters for navigation target
+     */
+    public RouterLink(String text, Class<? extends Component> navigationTarget,
+            UrlParameters parameters) {
+        this();
+        setText(text);
+        setRoute(getRouter(), navigationTarget, parameters);
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
      * text.
      *
      * @param router
@@ -143,6 +161,27 @@ public class RouterLink extends Component implements HasText, HasComponents,
         this();
         setText(text);
         setRoute(router, navigationTarget, parameter);
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * text and parameters.
+     *
+     * @param router
+     *            router used for navigation
+     * @param text
+     *            link text
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            url parameters for navigation target
+     */
+    public RouterLink(Router router, String text,
+            Class<? extends Component> navigationTarget,
+            UrlParameters parameters) {
+        this();
+        setText(text);
+        setRoute(router, navigationTarget, parameters);
     }
 
     /**
@@ -221,6 +260,19 @@ public class RouterLink extends Component implements HasText, HasComponents,
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Class<? extends C> navigationTarget, T parameter) {
         setRoute(getRouter(), navigationTarget, parameter);
+    }
+
+    /**
+     * Set the navigation target for this link.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            url parameters for navigation target
+     */
+    public void setRoute(Class<? extends Component> navigationTarget,
+                         UrlParameters parameters) {
+        setRoute(getRouter(), navigationTarget, parameters);
     }
 
     private void validateRouter(Router router) {
