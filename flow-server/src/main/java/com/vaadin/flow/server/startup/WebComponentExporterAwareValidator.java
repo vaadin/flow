@@ -41,7 +41,7 @@ import com.vaadin.flow.theme.Theme;
 @HandlesTypes({ Theme.class, Push.class })
 public class WebComponentExporterAwareValidator
         extends AbstractAnnotationValidator
-        implements FixedServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
     public void process(Set<Class<?>> classSet, ServletContext servletContext)

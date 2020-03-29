@@ -35,7 +35,7 @@ import com.vaadin.flow.component.page.Viewport;
  */
 @HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
 public class AnnotationValidator extends AbstractAnnotationValidator
-        implements FixedServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
     public void process(Set<Class<?>> classSet, ServletContext servletContext)

@@ -46,7 +46,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  */
 @HandlesTypes({ WebComponentExporter.class })
 public class WebComponentConfigurationRegistryInitializer
-        implements FixedServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
     @SuppressWarnings("unchecked")
