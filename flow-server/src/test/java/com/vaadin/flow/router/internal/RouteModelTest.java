@@ -29,57 +29,6 @@ import org.junit.Test;
 
 public class RouteModelTest {
 
-    @Tag(Tag.DIV)
-    public static class Root extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class Trunk extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class Branch extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class BranchChildren extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class Twig extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class BranchEdit extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class FlowerEdit extends Component {
-    }
-
-    /**
-     * Creates a parameters map where any even index argument is a key (starting
-     * with 0) and any odd index argument is a value (starting with 1)
-     *
-     * @param keysAndValues
-     *            the keys and values of the map.
-     * @return a Map containing the specified arguments.
-     */
-    public static UrlParameters parameters(String... keysAndValues) {
-        return new UrlParameters(keysAndValues);
-    }
-
-    /**
-     * Creates a List out of the specified arguments.
-     *
-     * @param varargs
-     *            an array of strings.
-     * @return a List containing the specified arguments.
-     */
-    public static String varargs(String... varargs) {
-        return PathUtil.getPath(Arrays.asList(varargs));
-    }
-
     private RouteModel getRouteModel() {
         RouteModel root = RouteModel.create();
         root.addRoute("", routeTarget(Root.class));
@@ -223,6 +172,8 @@ public class RouteModelTest {
         }
     }
 
+    // TODO: TBC format & parameters methods
+
     private void assertUrl(RouteModel root, String expectedUrl,
             String urlTemplate, UrlParameters parameters) {
         final String modelUrl = root.getUrl(urlTemplate, parameters);
@@ -249,7 +200,6 @@ public class RouteModelTest {
             Class<? extends Component> target, String urlTemplate,
             UrlParameters urlParameters) {
         assertTarget(target, model.getRouteTarget(urlTemplate, urlParameters));
-
     }
 
     private void assertTarget(Class<? extends Component> target,
@@ -267,6 +217,57 @@ public class RouteModelTest {
 
     private RouteTarget routeTarget(Class<? extends Component> target) {
         return new RouteTarget(target, null);
+    }
+
+    /**
+     * Creates a parameters map where any even index argument is a key (starting
+     * with 0) and any odd index argument is a value (starting with 1)
+     *
+     * @param keysAndValues
+     *            the keys and values of the map.
+     * @return a Map containing the specified arguments.
+     */
+    public static UrlParameters parameters(String... keysAndValues) {
+        return new UrlParameters(keysAndValues);
+    }
+
+    /**
+     * Creates a List out of the specified arguments.
+     *
+     * @param varargs
+     *            an array of strings.
+     * @return a List containing the specified arguments.
+     */
+    public static String varargs(String... varargs) {
+        return PathUtil.getPath(Arrays.asList(varargs));
+    }
+
+    @Tag(Tag.DIV)
+    public static class Root extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class Trunk extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class Branch extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class BranchChildren extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class Twig extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class BranchEdit extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class FlowerEdit extends Component {
     }
 
 }

@@ -48,7 +48,10 @@ public class ConfiguredRoutes implements Serializable {
 
     private final Map<String, RouteTarget> urlTemplate2RouteTarget;
     private final Map<Class<? extends Component>, String> target2UrlTemplate;
+
+    // TODO: use RouteModel instead of List<String>
     private final Map<Class<? extends Component>, List<String>> target2UrlTemplates;
+
     private final Map<Class<? extends Exception>, Class<? extends Component>> exception2Target;
 
     /**
