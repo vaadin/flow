@@ -57,7 +57,8 @@ public class ServletContainerInitializerTest extends ClassFinder {
         List<String> brokenInitializers = new ArrayList<>();
         for (String className : classes) {
             if (className
-                    .equals(FixedServletContainerInitializer.class.getName())) {
+                    .equals(ClassLoaderAwareServletContainerInitializer.class
+                            .getName())) {
                 continue;
             }
             try {
@@ -75,12 +76,16 @@ public class ServletContainerInitializerTest extends ClassFinder {
                 // ignore
             }
         }
-        Assert.assertTrue(brokenInitializers + " classes are subtypes of "
-                + ServletContainerInitializer.class
-                + " but either are not subtypes of "
-                + FixedServletContainerInitializer.class + " or override "
-                + FixedServletContainerInitializer.class.getName()
-                + ".onStartup method", brokenInitializers.isEmpty());
+        Assert.assertTrue(
+                brokenInitializers + " classes are subtypes of "
+                        + ServletContainerInitializer.class
+                        + " but either are not subtypes of "
+                        + ClassLoaderAwareServletContainerInitializer.class
+                        + " or override "
+                        + ClassLoaderAwareServletContainerInitializer.class
+                                .getName()
+                        + ".onStartup method",
+                brokenInitializers.isEmpty());
 
     }
 
@@ -89,7 +94,8 @@ public class ServletContainerInitializerTest extends ClassFinder {
     }
 
     private boolean isBadSubType(Class<?> clazz) {
-        if (!FixedServletContainerInitializer.class.isAssignableFrom(clazz)) {
+        if (!ClassLoaderAwareServletContainerInitializer.class
+                .isAssignableFrom(clazz)) {
             return true;
         }
         Method onStartUpMethod = Stream

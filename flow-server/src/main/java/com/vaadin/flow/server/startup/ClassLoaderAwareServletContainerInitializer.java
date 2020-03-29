@@ -34,11 +34,16 @@ import java.util.stream.Stream;
  * @author Vaadin Ltd
  *
  */
-public interface FixedServletContainerInitializer
+public interface ClassLoaderAwareServletContainerInitializer
         extends ServletContainerInitializer {
 
+    /**
+     * Overridden to use different classloaders if needed.
+     * <p>
+     * {@inheritDoc}
+     */
     @Override
-    public default void onStartup(Set<Class<?>> set, ServletContext ctx)
+    default void onStartup(Set<Class<?>> set, ServletContext ctx)
             throws ServletException {
         ClassLoader webClassLoader = ctx.getClassLoader();
         ClassLoader classLoader = getClass().getClassLoader();
@@ -48,14 +53,25 @@ public interface FixedServletContainerInitializer
          * with skinnywar See https://github.com/vaadin/flow/issues/7805
          */
         boolean noHack = false;
-        while (webClassLoader != null) {
-            if (webClassLoader.equals(classLoader)) {
+        while (classLoader != null) {
+            if (classLoader.equals(webClassLoader)) {
                 noHack = true;
                 break;
             } else {
-                webClassLoader = webClassLoader.getParent();
+                /*
+                 * The classloader which has loaded this class ({@code
+                 * classLoader}) should be either the {@code webClassLoader} or
+                 * its child: in this case it knows how to handle the classes
+                 * loaded by the {@code webClassLoader} : it either is able to
+                 * load them itself or delegate to its parent (which is the
+                 * {@code webClassLoader}): in this case hack is not needed and
+                 * the {@link #process(Set, ServletContext)} method can be
+                 * called directly.
+                 */
+                classLoader = classLoader.getParent();
             }
         }
+
         if (noHack) {
             process(set, ctx);
             return;
@@ -65,14 +81,15 @@ public interface FixedServletContainerInitializer
             Class<?> initializer = ctx.getClassLoader()
                     .loadClass(getClass().getName());
 
-            String processName = Stream
-                    .of(FixedServletContainerInitializer.class
+            String processMethodName = Stream
+                    .of(ClassLoaderAwareServletContainerInitializer.class
                             .getDeclaredMethods())
                     .filter(method -> !method.isDefault()
                             && !method.isSynthetic())
                     .findFirst().get().getName();
             Method operation = Stream.of(initializer.getDeclaredMethods())
-                    .filter(method -> method.getName().equals(processName))
+                    .filter(method -> method.getName()
+                            .equals(processMethodName))
                     .findFirst().get();
             operation.invoke(initializer.newInstance(),
                     new Object[] { set, ctx });
@@ -84,7 +101,8 @@ public interface FixedServletContainerInitializer
     }
 
     /**
-     * Implement this method instead of {@link #onStartup(Set, ServletContext)}.
+     * Implement this method instead of {@link #onStartup(Set, ServletContext)}
+     * to handle classes accessible by different classloaders.
      *
      * @param set
      *            the Set of application classes that extend, implement, or have
@@ -104,6 +122,5 @@ public interface FixedServletContainerInitializer
      *
      * @see #onStartup(Set, ServletContext)
      */
-    public void process(Set<Class<?>> set, ServletContext ctx)
-            throws ServletException;
+    void process(Set<Class<?>> set, ServletContext ctx) throws ServletException;
 }

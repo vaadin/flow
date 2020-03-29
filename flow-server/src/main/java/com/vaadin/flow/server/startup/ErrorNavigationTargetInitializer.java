@@ -34,7 +34,7 @@ import com.vaadin.flow.router.HasErrorParameter;
  */
 @HandlesTypes(HasErrorParameter.class)
 public class ErrorNavigationTargetInitializer
-        implements FixedServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @SuppressWarnings("unchecked")
     @Override

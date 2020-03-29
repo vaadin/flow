@@ -37,7 +37,7 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  */
 @HandlesTypes({ Route.class, RouteAlias.class })
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
-        implements FixedServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
     public void process(Set<Class<?>> classSet, ServletContext servletContext)

@@ -103,7 +103,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         JavaScript.class, JavaScript.Container.class, Theme.class,
         NoTheme.class, HasErrorParameter.class })
 @WebListener
-public class DevModeInitializer implements FixedServletContainerInitializer,
+public class DevModeInitializer implements ClassLoaderAwareServletContainerInitializer,
         Serializable, ServletContextListener {
 
     static class DevModeClassFinder extends DefaultClassFinder {

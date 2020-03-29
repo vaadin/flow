@@ -29,7 +29,7 @@ import java.util.Set;
  *
  * @since 1.0
  */
-public class ServletVerifier implements FixedServletContainerInitializer {
+public class ServletVerifier implements ClassLoaderAwareServletContainerInitializer {
     @Override
     public void process(Set<Class<?>> c, ServletContext ctx)
             throws ServletException {
