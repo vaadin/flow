@@ -18,7 +18,6 @@ package com.vaadin.client.bootstrap;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
@@ -27,6 +26,7 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -163,6 +163,8 @@ public class Bootstrapper implements EntryPoint {
                 jsoConfiguration.getConfigBoolean("requestTiming"));
         conf.setExportedWebComponents(
                 jsoConfiguration.getConfigStringArray("webcomponents"));
+        conf.setDevModeLiveReloadEnabled(jsoConfiguration.getConfigBoolean(
+                Constants.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD));
     }
 
     private static void doStartApplication(final String applicationId) {

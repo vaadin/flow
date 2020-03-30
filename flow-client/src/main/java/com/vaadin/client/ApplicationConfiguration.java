@@ -38,6 +38,7 @@ public class ApplicationConfiguration {
     private boolean productionMode;
     private boolean requestTiming;
     private boolean webComponentMode;
+    private boolean devModeLiveReloadEnabled;
 
     private String servletVersion;
     private String atmosphereVersion;
@@ -332,5 +333,25 @@ public class ApplicationConfiguration {
      */
     public String[] getExportedWebComponents() {
         return exportedWebComponents;
+    }
+
+    /**
+     * Checks if dev mode live reload is enabled or not.
+     * 
+     * @return {@code true} if dev mode live reload is enabled, {@code false} otherwise
+     */
+    public boolean isDevModeLiveReloadEnabled() {
+        return devModeLiveReloadEnabled;
+    }
+
+    /**
+     * Sets whether dev mode live reload should be enabled or not.
+     *
+     * @param devModeLiveReloadEnabled
+     *            {@code true} if dev mode live reload should be enabled, {@code false}
+     *            otherwise
+     */
+    public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
+        this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
     }
 }

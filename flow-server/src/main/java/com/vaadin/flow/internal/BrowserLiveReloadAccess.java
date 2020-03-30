@@ -43,7 +43,12 @@ public class BrowserLiveReloadAccess {
     public BrowserLiveReload getLiveReload(VaadinService service) {
         if (service.getDeploymentConfiguration().isProductionMode()) {
             LoggerFactory.getLogger(BrowserLiveReloadAccess.class)
-                    .debug("Live reload getter is called in production mode.");
+                    .debug("BrowserLiveReloadAccess::getLiveReload is called in production mode.");
+            return null;
+        }
+        if (!service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()) {
+            LoggerFactory.getLogger(BrowserLiveReloadAccess.class)
+                    .debug("BrowserLiveReloadAccess::getLiveReload is called when live reload is disabled.");
             return null;
         }
         VaadinContext context = service.getContext();

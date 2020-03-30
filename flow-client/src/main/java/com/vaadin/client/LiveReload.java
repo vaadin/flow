@@ -25,8 +25,8 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Responsible for the client-side of the Live Reload. It refreshes the page
- * when it receives a reload command from Loive Reload server (either Spring or
+ * Responsible for the client-side of the live reload. It refreshes the page
+ * when it receives a reload command from live-reload server (either Spring or
  * Flow).
  * 
  * @author Vaadin Ltd
@@ -34,7 +34,7 @@ import elemental.json.JsonObject;
  */
 public class LiveReload {
     // The default value is true meaning if the key doesn't exist in the local
-    // storage Live Reload is enabled.
+    // storage live reload is enabled.
     private static final String ENABLED_KEY_IN_STORAGE = "vaadin.live-reload.enabled";
     private static final String ACTIVE_KEY_IN_SESSION_STORAGE = "vaadin.live-reload.active";
     private static final int SPRING_DEV_TOOLS_PORT = 35729;
@@ -44,20 +44,20 @@ public class LiveReload {
     private Element indicator;
 
     /**
-     * Connects to either Spring Dev Tools Live Reload server or Flow Live
+     * Connects to either Spring Dev Tools live-reload server or Flow Live
      * Reload server and if the connection is successful shows an overlay on the
-     * page including the status of the Live Reload.
+     * page including the status of the live reload.
      *
      * @param serviceUrl
      *            The root URL of the application that should be used to connect
-     *            to Flow Live Reload server
+     *            to Flow live-reload server
      * @param uiId
      *            The UI id
      */
     public void show(String serviceUrl, int uiId) {
         this.serviceUrl = serviceUrl;
         this.uiId = uiId;
-        if (isEnabled()) {
+        if (isEnabledOnThisBrowser()) {
             indicator = getOrCreateIndicator();
             openWebSocketConnection();
         }
@@ -72,7 +72,7 @@ public class LiveReload {
         webSocket.setOnerror(springWsEvent -> {
             if (!serviceUrl.startsWith("http://")) {
                 Console.debug(
-                        "The protocol of the url should be http for Live Reload to work.");
+                        "The protocol of the url should be http for live reload to work.");
                 return;
             }
 
@@ -119,7 +119,7 @@ public class LiveReload {
 
     private void handleErrorEvent(Event ev) {
         Console.debug(
-                "Live Reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live Reload won't work automatically.");
+                "Live-reload server is not available, neither Spring Dev Tools nor the Flow built-in. Live reload won't work automatically.");
         showMessage(
                 "Live reload: error; check browser console for more details");
     }
@@ -179,7 +179,7 @@ public class LiveReload {
             overlay.appendChild(disableButton);
             disableButton.getStyle().setTextDecoration("underline");
             disableButton.getStyle().setCursor("pointer");
-            disableButton.setOnclick(e -> disable());
+            disableButton.setOnclick(e -> disableOnThisBrowser());
 
             reloadIndicator.appendChild(overlay);
             Browser.getDocument().getBody().appendChild(reloadIndicator);
@@ -227,12 +227,12 @@ public class LiveReload {
         }
     }
 
-    private boolean isEnabled() {
+    private boolean isEnabledOnThisBrowser() {
         String enabled = StorageUtil.getLocalItem(ENABLED_KEY_IN_STORAGE);
         return enabled == null || Boolean.parseBoolean(enabled);
     }
 
-    private void disable() {
+    private void disableOnThisBrowser() {
         assert indicator != null;
 
         closeWebSocketConnection();

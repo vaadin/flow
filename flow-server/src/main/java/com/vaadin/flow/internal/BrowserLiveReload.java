@@ -48,7 +48,7 @@ public interface BrowserLiveReload {
      * 
      * @param resource
      *            a web socket connection resource,  not <code>null</code>.
-     * @return whether the web socket connection is for live-reload
+     * @return whether the web socket connection is for live reload
      */
     boolean isLiveReload(AtmosphereResource resource);
 

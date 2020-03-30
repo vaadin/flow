@@ -1,6 +1,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,11 +14,22 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.PushConfiguration;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 public class UIInternalsTest {
@@ -28,6 +40,19 @@ public class UIInternalsTest {
     VaadinService vaadinService;
 
     UIInternals internals;
+
+    @Route
+    @Push
+    @Tag(Tag.DIV)
+    public static class RouteTarget extends Component implements RouterLayout {
+
+    }
+
+    @Route(value = "foo", layout = RouteTarget.class)
+    @Tag(Tag.DIV)
+    public static class RouteTarget1 extends Component {
+
+    }
 
     @Before
     public void init() {
@@ -85,6 +110,56 @@ public class UIInternalsTest {
         Assert.assertEquals(
                 "Listener should not have been run again since it was removed",
                 1, runCount.get());
+    }
+
+    @Test
+    public void showRouteTarget_usePushConfigFromComponent() {
+        PushConfiguration pushConfig = setUpInitialPush();
+        internals.showRouteTarget(Mockito.mock(Location.class), "",
+                new RouteTarget(), Collections.emptyList());
+
+        Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
+        Mockito.verify(pushConfig).setTransport(Transport.WEBSOCKET_XHR);
+    }
+
+    @Test
+    public void showRouteTarget_usePushConfigFromParentLayout() {
+        PushConfiguration pushConfig = setUpInitialPush();
+        internals.showRouteTarget(Mockito.mock(Location.class), "",
+                new RouteTarget1(),
+                Collections.singletonList(new RouteTarget()));
+
+        Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
+        Mockito.verify(pushConfig).setTransport(Transport.WEBSOCKET_XHR);
+    }
+
+    @Test
+    public void showRouteTarget_componentHasNoPush_pushIsDisabled() {
+        PushConfiguration pushConfig = setUpInitialPush();
+        DeploymentConfiguration deploymentConfiguration = vaadinService
+                .getDeploymentConfiguration();
+        Mockito.when(deploymentConfiguration.getPushMode())
+                .thenReturn(PushMode.AUTOMATIC);
+
+        internals.showRouteTarget(Mockito.mock(Location.class), "",
+                new Text(""), Collections.emptyList());
+
+        Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
+        Mockito.verify(pushConfig, Mockito.times(0))
+                .setTransport(Mockito.any());
+    }
+
+    private PushConfiguration setUpInitialPush() {
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(config);
+
+        PushConfiguration pushConfig = Mockito.mock(PushConfiguration.class);
+        Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfig);
+
+        Mockito.when(config.getPushMode()).thenReturn(PushMode.DISABLED);
+        return pushConfig;
     }
 
 }

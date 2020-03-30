@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -50,8 +50,8 @@
 
     <build>
         <plugins>
-           <!-- Auto run clean to remove previous mode compilation -->
-           <plugin>
+            <!-- Auto run clean to remove previous mode compilation -->
+            <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <!-- This is because we run multiple modes on the same module -->
                 <executions>
@@ -64,8 +64,8 @@
                     </execution>
                 </executions>
             </plugin>
-           <!-- Clean lib before running jetty -->
-           <plugin>
+            <!-- Clean lib before running jetty -->
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
             <!--  Run flow plugin to build frontend -->
@@ -103,13 +103,23 @@
                 <plugins>
                     <plugin>
                         <groupId>com.lazerycode.selenium</groupId>
-                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
-                        <version>${driver.binary.downloader.maven.plugin.version}</version>
+                        <artifactId>driver-binary-downloader-maven-plugin
+                        </artifactId>
+                        <version>
+                            ${driver.binary.downloader.maven.plugin.version}
+                        </version>
                         <configuration>
-                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
-                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
-                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
+                            <onlyGetDriversForHostOperatingSystem>true
+                            </onlyGetDriversForHostOperatingSystem>
+                            <rootStandaloneServerDirectory>
+                                ${project.rootdir}/driver
+                            </rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>
+                                ${project.rootdir}/driver_zips
+                            </downloadedZipFileDirectory>
+                            <customRepositoryMap>
+                                ${project.rootdir}/drivers.xml
+                            </customRepositoryMap>
                         </configuration>
                         <executions>
                             <execution>
