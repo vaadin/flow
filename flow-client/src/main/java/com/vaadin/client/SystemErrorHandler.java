@@ -89,7 +89,7 @@ public class SystemErrorHandler {
      *            {@code null} to refresh on click
      */
     public void handleUnrecoverableError(String caption, String message,
-                                         String details, String url) {
+            String details, String url) {
         handleUnrecoverableError(caption, message, details, url, null);
     }
 
@@ -118,14 +118,15 @@ public class SystemErrorHandler {
             return;
         }
 
-        Element systemErrorContainer =
-                handleError(caption, message, details, querySelector);
+        Element systemErrorContainer = handleError(caption, message, details,
+                querySelector);
         systemErrorContainer.addEventListener("click",
                 e -> WidgetUtil.redirect(url), false);
 
         Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
             int keyCode = ((KeyboardEvent) e).getKeyCode();
             if (keyCode == KeyCode.ESC) {
+                e.preventDefault();
                 WidgetUtil.redirect(url);
             }
         }, false);
@@ -167,8 +168,8 @@ public class SystemErrorHandler {
         }
     }
 
-    private Element handleError(String caption, String message,
-            String details, String querySelector) {
+    private Element handleError(String caption, String message, String details,
+            String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");
