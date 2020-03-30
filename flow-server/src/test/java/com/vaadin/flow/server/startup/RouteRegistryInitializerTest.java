@@ -400,7 +400,8 @@ public class RouteRegistryInitializerTest {
 
     @ParentLayout(RouteParentLayout.class)
     @Route(value = "middle_parent")
-    private static class MiddleParentWithRoute extends Component {
+    private static class MiddleParentWithRoute extends Component
+            implements RouterLayout {
     }
 
     @RouteAlias(value = "wrong")
