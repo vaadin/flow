@@ -21,6 +21,10 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class LiveReloadIT extends ChromeBrowserTest {
@@ -62,5 +66,27 @@ public class LiveReloadIT extends ChromeBrowserTest {
 
         Assert.assertEquals(0,
                 findElements(By.id("vaadin-live-reload-indicator")).size());
+    }
+
+    @Test
+    public void notificationShownOnAutoReload() {
+        open();
+
+        VaadinService service = VaadinService.getCurrent();
+        Instantiator liveReload = service
+                .getInstantiator();
+        BrowserLiveReloadAccess liveReloadAccess = liveReload
+                .getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReload browserLiveReload = liveReloadAccess
+                .getLiveReload(VaadinService.getCurrent());
+        browserLiveReload.reload();
+
+        WebElement reloadNotification = findElement(
+                By.id("vaadin-live-reload-notification"));
+        Assert.assertNotNull(reloadNotification);
+        Assert.assertNotNull(reloadNotification.getAttribute("hidden"));
+
+        findElement(By.tagName("body")).click();
+        Assert.assertNull(reloadNotification.getAttribute("null"));
     }
 }
