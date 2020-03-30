@@ -18,6 +18,7 @@ package com.vaadin.client;
 import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -100,6 +101,7 @@ public class SystemErrorHandler {
         Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
             int keyCode = ((KeyboardEvent) e).getKeyCode();
             if (keyCode == KeyCode.ESC) {
+                e.preventDefault();
                 WidgetUtil.redirect(url);
             }
         }, false);
