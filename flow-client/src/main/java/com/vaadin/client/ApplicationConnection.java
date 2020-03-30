@@ -18,6 +18,7 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
@@ -92,9 +93,9 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
-            registry.getLiveReload().show(
-                    applicationConfiguration.getServiceUrl(),
-                    applicationConfiguration.getUIId());
+            // registry.getLiveReload().show(
+            // applicationConfiguration.getServiceUrl(),
+            // applicationConfiguration.getUIId());
         }
 
         registry.getLoadingIndicator().show();
@@ -191,12 +192,12 @@ public class ApplicationConnection {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-    
+
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
-    
+
         client.initializing = false;
         client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
@@ -228,7 +229,7 @@ public class ApplicationConnection {
             var registry = ap.@ApplicationConnection::registry;
             return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
         });
-    
+
     }-*/;
 
     /**
