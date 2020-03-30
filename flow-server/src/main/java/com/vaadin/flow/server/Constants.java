@@ -67,7 +67,7 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
-
+    public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
     public static final String POLYFILLS_DEFAULT_VALUE = "";
@@ -220,18 +220,6 @@ public final class Constants implements Serializable {
      * Default path for local frontend resources packaged for jar add-ons.
      */
     public static final String LOCAL_FRONTEND_RESOURCES_PATH = "src/main/resources/META-INF/resources/frontend";
-
-    public static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
-    public static final int SUPPORTED_NODE_MINOR_VERSION = 0;
-    public static final int SUPPORTED_NPM_MAJOR_VERSION = 5;
-    public static final int SUPPORTED_NPM_MINOR_VERSION = 6;
-    public static final int SHOULD_WORK_NODE_MAJOR_VERSION = 8;
-    public static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
-    public static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
-    public static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
-
-    public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
-    public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
 
     /**
      * Property boolean for marking stats.json to be fetched from external

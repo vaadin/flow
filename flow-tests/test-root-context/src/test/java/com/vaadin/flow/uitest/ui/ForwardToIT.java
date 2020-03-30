@@ -13,10 +13,6 @@ public class ForwardToIT extends ChromeBrowserTest {
         String initUrl = getDriver().getCurrentUrl();
         open();
 
-        if (hasClientIssue("7578")) {
-            return;
-        }
-
         Assert.assertTrue("should forward to specified view",
                 findElement(By.id("root")).isDisplayed());
         Assert.assertTrue("should update update the URL",

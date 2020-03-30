@@ -47,7 +47,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
@@ -55,15 +54,14 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update Flow imports file
  * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
- * classes with {@link JsModule}  and {@link Theme}
- * annotations.
+ * classes with {@link JsModule} and {@link Theme} annotations.
  *
  * @since 2.0
  */
 public class TaskUpdateImports extends NodeUpdater {
 
     private static final String THEME_LINE_TPL = "addCssBlock('%s', true);";
-    private static final String THEME_VARIANT_TPL = "document.body.setAttribute('%s', '%s');";
+    private static final String THEME_VARIANT_TPL = "document.documentElement.setAttribute('%s', '%s');";
     // Trim and remove new lines.
     private static final Pattern NEW_LINE_TRIM = Pattern
             .compile("(?m)(^\\s+|\\s?\n)");
@@ -373,7 +371,8 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
-                frontendDirectory, npmFolder, generatedFolder, fallBack, tokenFile);
+                frontendDirectory, npmFolder, generatedFolder, fallBack,
+                tokenFile);
         mainUpdate.run();
     }
 
@@ -494,7 +493,7 @@ public class TaskUpdateImports extends NodeUpdater {
         String note = "";
         if (!disablePnpm) {
             note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@"
-                    + FrontendUtils.DEFAULT_PNPM_VERSION + "`";
+                    + FrontendTools.DEFAULT_PNPM_VERSION + "`";
         }
         return String.format(
                 "If the build fails, check that npm packages are installed.\n\n"

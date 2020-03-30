@@ -1341,9 +1341,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         addVirtualChild(node, childNode, NodeProperties.INJECT_BY_ID,
                 Json.create(childId));
 
-        Element shadowRoot = Browser.getDocument().createElement("div");
-
-        WidgetUtil.setJsProperty(element, "root", shadowRoot);
+        Element shadowRoot = addShadowRootElement(element);
 
         List<Integer> expectedAfterBindingFeatures = Arrays.asList(
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
@@ -1838,6 +1836,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         var shadowRoot = $doc.createElement("div");
         element.shadowRoot = shadowRoot;
         element.root = shadowRoot;
+        shadowRoot.getElementById = function (id) {
+            return shadowRoot.querySelector("#"+id.replace("@","\\@"));
+        };
         return shadowRoot;
     }-*/;
 

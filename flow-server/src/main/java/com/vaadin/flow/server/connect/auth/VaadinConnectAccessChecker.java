@@ -70,6 +70,8 @@ import java.lang.reflect.Modifier;
  */
 public class VaadinConnectAccessChecker {
 
+    private boolean xsrfProtectionEnabled = true;
+
     /**
      * Check that the endpoint is accessible for the current user.
      *
@@ -133,6 +135,9 @@ public class VaadinConnectAccessChecker {
     }
 
     private boolean requestForbidden(HttpServletRequest request) {
+        if (!xsrfProtectionEnabled) {
+            return false;
+        }
         String csrfToken = (String) request.getSession()
                 .getAttribute(VaadinService.getCsrfTokenAttributeName());
         return csrfToken != null && !csrfToken.equals(request.getHeader("X-CSRF-Token"));
@@ -166,5 +171,14 @@ public class VaadinConnectAccessChecker {
                 || method.isAnnotationPresent(PermitAll.class)
                 || method.isAnnotationPresent(DenyAll.class)
                 || method.isAnnotationPresent(RolesAllowed.class);
+    }
+
+    /**
+     * Enable or disable XSRF token checking in endpoints.
+     *
+     * @param xsrfProtectionEnabled enable or disable protection.
+     */
+    public void enableCsrf(boolean xsrfProtectionEnabled) {
+        this.xsrfProtectionEnabled = xsrfProtectionEnabled;
     }
 }

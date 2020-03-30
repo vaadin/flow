@@ -141,8 +141,7 @@ public class ReflectionCache<C, T> {
      * @return a registration for removing the action
      */
     public static Registration addClearAllAction(Runnable action) {
-        clearAllActions.add(action);
-        return () -> clearAllActions.remove(action);
+        return Registration.addAndRemove(clearAllActions, action);
     }
 
     /**

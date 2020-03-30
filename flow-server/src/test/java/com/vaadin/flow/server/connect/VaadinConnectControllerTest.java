@@ -3,6 +3,7 @@ package com.vaadin.flow.server.connect;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.constraints.Min;
@@ -678,7 +679,9 @@ public class VaadinConnectControllerTest {
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class), contextMock);
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
 
         int inputValue = 222;
         String expectedOutput = endpoint.testMethod(inputValue);
@@ -748,7 +751,9 @@ public class VaadinConnectControllerTest {
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class), contextMock);
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
         ResponseEntity<String> response = vaadinConnectController
                 .serveEndpoint("CustomEndpoint", "testMethod",
                         createRequestParameters(
@@ -772,7 +777,9 @@ public class VaadinConnectControllerTest {
         VaadinConnectController vaadinConnectController = new VaadinConnectController(
                 new ObjectMapper(), mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class), contextMock);
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
 
         int input = 111;
         String expectedOutput = endpoint.testMethod(input);
@@ -801,7 +808,9 @@ public class VaadinConnectControllerTest {
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class), contextMock);
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
 
         verify(contextMock, times(1)).getBean(ObjectMapper.class);
         verify(mockDefaultObjectMapper, times(1)).setVisibility(
@@ -824,7 +833,9 @@ public class VaadinConnectControllerTest {
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class), contextMock);
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
 
         verify(contextMock, times(1)).getBean(ObjectMapper.class);
         verify(mockDefaultObjectMapper, times(0)).setVisibility(
@@ -844,7 +855,9 @@ public class VaadinConnectControllerTest {
         new VaadinConnectController(null,
                 mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class), contextMock);
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
     }
 
     @Test
@@ -1110,7 +1123,9 @@ public class VaadinConnectControllerTest {
         }
 
         return new VaadinConnectController(vaadinEndpointMapper, accessChecker,
-                endpointNameChecker, explicitNullableTypeChecker, contextMock);
+                endpointNameChecker, explicitNullableTypeChecker,
+                contextMock,
+                mock(ServletContext.class));
     }
 
     private VaadinConnectController createVaadinControllerWithoutPrincipal() {

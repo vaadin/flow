@@ -118,5 +118,6 @@ public class DefaultRegistry extends Registry {
             set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
         }
         set(Poller.class, new Poller(this));
+        set(LiveReload.class, new LiveReload());
     }
 }

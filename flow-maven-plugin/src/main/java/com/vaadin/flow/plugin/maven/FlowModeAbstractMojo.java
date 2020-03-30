@@ -112,6 +112,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File generatedTsFolder;
 
     /**
+     * Instructs to use pnpm for installing npm frontend resources.
+     */
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
+    protected boolean pnpmEnable;
+
+    /**
      * Whether vaadin home node executable usage is forced. If it's set to
      * {@code true} then vaadin home 'node' is checked and installed if it's
      * absent. Then it will be used instead of globally 'node' or locally

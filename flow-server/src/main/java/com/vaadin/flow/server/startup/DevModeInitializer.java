@@ -23,7 +23,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,7 +83,6 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -190,15 +188,38 @@ public class DevModeInitializer implements ServletContainerInitializer,
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
 
-        if (registrations.isEmpty()) {
-            return;
+        ServletRegistration vaadinServletRegistration = null;
+        for (ServletRegistration registration : registrations) {
+            try {
+                if (registration.getClassName() != null
+                        && isVaadinServletSubClass(
+                                registration.getClassName())) {
+                    vaadinServletRegistration = registration;
+                    break;
+                }
+            } catch (ClassNotFoundException e) {
+                throw new ServletException(
+                        String.format("Servlet class name (%s) can't be found!",
+                                registration.getClassName()),
+                        e);
+            }
         }
 
-        DeploymentConfiguration config = StubServletConfig
-                .createDeploymentConfiguration(context,
-                        registrations.iterator().next(), VaadinServlet.class);
+        DeploymentConfiguration config;
+        if (vaadinServletRegistration != null) {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    vaadinServletRegistration, VaadinServlet.class);
+        } else {
+            config = StubServletConfig.createDeploymentConfiguration(context,
+                    VaadinServlet.class);
+        }
 
         initDevModeHandler(classes, context, config);
+    }
+
+    private boolean isVaadinServletSubClass(String className)
+            throws ClassNotFoundException {
+        return VaadinServlet.class.isAssignableFrom(Class.forName(className));
     }
 
     /**
@@ -313,8 +334,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
-        boolean enablePnpm = config.getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+        boolean enablePnpm = config.isPnpmEnabled();
 
         boolean useHomeNodeExec = config.getBooleanProperty(
                 Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
@@ -410,7 +430,18 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
-                if (jarMatcher.find()) {
+                Matcher dirVfsMatcher = VFS_DIRECTORY_REGEX.matcher(urlString);
+                if (jarVfsMatcher.find()) {
+                    String vfsJar = jarVfsMatcher.group(1);
+                    if (vfsJars.add(vfsJar))
+                        frontendFiles.add(
+                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                } else if (dirVfsMatcher.find()) {
+                    URL vfsDirUrl = new URL(urlString.substring(0,
+                            urlString.lastIndexOf(resourcesFolder)));
+                    frontendFiles
+                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
+                } else if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if ("zip".equalsIgnoreCase(url.getProtocol())
                         && zipProtocolJarMatcher.find()) {
@@ -420,16 +451,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 } else if (dirCompatibilityMatcher.find()) {
                     frontendFiles
                             .add(new File(dirCompatibilityMatcher.group(1)));
-                } else if (jarVfsMatcher.find()) {
-                    String vfsJar = jarVfsMatcher.group(1);
-                    if (vfsJars.add(vfsJar))
-                        frontendFiles.add(
-                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
-                } else if (VFS_DIRECTORY_REGEX.matcher(urlString).find()) {
-                    URL vfsDirUrl = new URL(urlString.substring(0,
-                            urlString.lastIndexOf(resourcesFolder)));
-                    frontendFiles
-                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",

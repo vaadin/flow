@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.theme.Theme;
@@ -111,11 +112,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
      * Whether to use byte code scanner strategy to discover frontend
      * components.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
     private boolean optimizeBundle;
-
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
-    private boolean pnpmEnable;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -184,12 +182,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         }
 
         String nodePath;
+        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
+                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         if (requireHomeNodeExec) {
-            nodePath = FrontendUtils
-                    .ensureNodeExecutableInHome(npmFolder.getAbsolutePath());
+            nodePath = tools
+                    .forceAlternativeNodeExecutable();
         } else {
-            nodePath = FrontendUtils
-                    .getNodeExecutable(npmFolder.getAbsolutePath());
+            nodePath = tools.getNodeExecutable();
         }
 
         List<String> command = Arrays.asList(nodePath,
@@ -197,9 +196,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
                 .directory(project.getBasedir()).inheritIO();
         getLog().info("Running webpack ...");
-        FrontendUtils.console(FrontendUtils.YELLOW,
-                FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
-                        command));
+        if ( getLog().isDebugEnabled()) {
+            getLog().debug(FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
+                    command));
+        }
 
         Process webpackLaunch = null;
         try {
@@ -257,6 +257,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
+
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

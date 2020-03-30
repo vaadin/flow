@@ -313,6 +313,8 @@ public class JarContentsManager {
                 if (!FileUtils.contentEquals(tempFile, target)) {
                     FileUtils.forceDelete(target);
                     FileUtils.moveFile(tempFile, target);
+                } else {
+                    tempFile.delete();
                 }
             } else {
                 FileUtils.copyInputStreamToFile(

@@ -6,15 +6,13 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>3.0-SNAPSHOT</version>
+        <version>3.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-multi-war</artifactId>
     <name>Flow tests with more than one war deployed at the same time</name>
     <packaging>pom</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <!-- please remove after https://github.com/vaadin/flow/issues/7559 is fixed -->
-        <vaadin.useDeprecatedV14Bootstrapping>true</vaadin.useDeprecatedV14Bootstrapping>
     </properties>
 
     <modules>

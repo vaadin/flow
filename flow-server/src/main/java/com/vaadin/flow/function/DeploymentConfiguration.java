@@ -89,6 +89,18 @@ public interface DeploymentConfiguration extends Serializable {
     int getHeartbeatInterval();
 
     /**
+     * In certain cases, such as when combining XmlHttpRequests and push over
+     * low bandwidth connections, messages may be received out of order by the
+     * client. This property specifies the maximum time (in milliseconds) that
+     * the client will then wait for the predecessors of a received out-order
+     * message, before considering them missing and requesting a full
+     * resynchronization of the application state from the server.
+     * 
+     * @return The maximum message suspension timeout
+     */
+    int getMaxMessageSuspendTimeout();
+
+    /**
      * Returns the number of seconds that a WebComponent will wait for a
      * reconnect before removing the server-side component from memory.
      *
@@ -358,5 +370,16 @@ public interface DeploymentConfiguration extends Serializable {
     default boolean isEagerServerLoad() {
         return getBooleanProperty(Constants.SERVLET_PARAMETER_INITIAL_UIDL,
                 false);
+    }
+
+    /**
+     * Returns whether pnpm is enabled or not.
+     *
+     * @return {@code true} if enabled, {@code false} if not
+     * @since 2.2
+     */
+    default boolean isPnpmEnabled() {
+        return getBooleanProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
     }
 }

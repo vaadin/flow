@@ -7,12 +7,12 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.1-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
-        <version>2.0.1</version>
+        <version>2.0.2</version>
     </parent>
 
     <modules>
@@ -29,6 +29,7 @@
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
+        <module>flow-jrebel-plugin</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
@@ -105,7 +106,7 @@
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>6.2.1</testbench.version>
-        <jetty.version>9.4.11.v20180605</jetty.version>
+        <jetty.version>9.4.27.v20200227</jetty.version>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
@@ -302,14 +303,14 @@
 
         <plugins>
             <plugin>
-                <groupId>com.marvinformatics.formatter</groupId>
+                <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>1.8.1</version>
+                <version>2.11.0</version>
                 <configuration>
-                    <configFile>classpath:/eclipse/VaadinJavaConventions.xml
+                    <configFile>eclipse/VaadinJavaConventions.xml
                     </configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>classpath:/eclipse/VaadinJavaConventions.xml
+                    <configJsFile>eclipse/VaadinJavaConventions.xml
                     </configJsFile>
                 </configuration>
                 <dependencies>

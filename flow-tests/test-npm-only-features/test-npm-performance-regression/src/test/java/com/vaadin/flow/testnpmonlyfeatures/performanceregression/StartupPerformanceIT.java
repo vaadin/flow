@@ -28,19 +28,21 @@ import org.junit.Test;
 
 public class StartupPerformanceIT {
     @Test
-    public void devModeInitializerToWebpackUpIsBelow5500ms() {
+    public void devModeInitializerToWebpackUpIsBelowThreshold() {
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
                 "- (Started|Reusing) webpack-dev-server", true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "- Running `pnpm install`",
-                "- Frontend dependencies resolved successfully",
-                false);
+                "- Frontend dependencies resolved successfully", false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
-        // please, rollback to 5500 when https://github.com/vaadin/flow/issues/7596 is fixed
-        final int thresholdMs = 9500;
+
+        // https://github.com/vaadin/flow/issues/7596
+        final int thresholdMs = Boolean.getBoolean(
+                "vaadin.useDeprecatedV14Bootstrapping") ? 5500 : 15000;
+
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",
                         thresholdMs, startupTimeWithoutNpmInstallTime),
