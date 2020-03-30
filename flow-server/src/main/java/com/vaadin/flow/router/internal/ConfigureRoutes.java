@@ -44,7 +44,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
     private final Map<String, RouteTarget> routeMap;
     private final Map<Class<? extends Component>, String> targetRouteMap;
-    private final Map<Class<? extends Component>, List<String>> target2UrlTemplates;
+    private final Map<Class<? extends Component>, RouteModel> target2UrlTemplates;
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
 
     /**
@@ -68,7 +68,6 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     public ConfigureRoutes(ConfiguredRoutes original) {
         Map<String, RouteTarget> routesMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-        Map<Class<? extends Component>, List<String>> target2UrlTemplatesMap = new HashMap<>();
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
@@ -76,8 +75,10 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             routesMap.put(route.getKey(), route.getValue().copy(true));
         }
         targetRoutesMap.putAll(original.getTargetRoutes());
-        target2UrlTemplatesMap.putAll(original.getTargetUrlTemplates());
         exceptionTargetsMap.putAll(original.getExceptionHandlers());
+
+        Map<Class<? extends Component>, RouteModel> target2UrlTemplatesMap = original
+                .copyTargetRouteModels();
 
         this.routeModel = RouteModel.copy(original.getRouteModel());
 
@@ -176,9 +177,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             setTargetRouteImpl(navigationTarget, urlTemplate);
         }
 
-        getTargetUrlTemplates().computeIfAbsent(navigationTarget,
-                aClass -> new ArrayList<String>());
-        getTargetUrlTemplates().get(navigationTarget).add(urlTemplate);
+        getTargetRouteModels().computeIfAbsent(navigationTarget,
+                aClass -> RouteModel.create());
+        getTargetRouteModels().get(navigationTarget).addRoute(urlTemplate, target);
 
         getRoutesMap().put(urlTemplate, target);
     }
@@ -233,10 +234,11 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         // Remove target route from class-to-string map
         getTargetRoutes().remove(target);
 
-        getTargetUrlTemplates().remove(target).forEach(urlTemplate -> {
-            getRouteModel().removeRoute(urlTemplate);
-            getRoutesMap().remove(urlTemplate);
-        });
+        getTargetRouteModels().remove(target).getRoutes().keySet()
+                .forEach(urlTemplate -> {
+                    getRouteModel().removeRoute(urlTemplate);
+                    getRoutesMap().remove(urlTemplate);
+                });
     }
 
     /**
@@ -259,20 +261,21 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         if (removedRoute != null) {
             final Class<? extends Component> target = removedRoute.getTarget();
 
-            final List<String> urlTemplates = getTargetUrlTemplates()
+            final RouteModel routeModel = getTargetRouteModels()
                     .get(target);
-            urlTemplates.remove(urlTemplate);
+            routeModel.removeRoute(urlTemplate);
 
-            if (urlTemplates.isEmpty()) {
-                getTargetUrlTemplates().remove(target);
+            if (routeModel.isEmpty()) {
+                getTargetRouteModels().remove(target);
             }
 
             final String mainUrlTemplate = getTargetRoutes().get(target);
             if (Objects.equals(urlTemplate, mainUrlTemplate)) {
-                if (urlTemplates.isEmpty()) {
+                if (routeModel.isEmpty()) {
                     getTargetRoutes().remove(target);
                 } else {
-                    getTargetRoutes().put(target, urlTemplates.get(0));
+                    getTargetRoutes().put(target,
+                            routeModel.getRoutes().keySet().iterator().next());
                 }
             }
         }
@@ -302,7 +305,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     @Override
-    Map<Class<? extends Component>, List<String>> getTargetUrlTemplates() {
+    Map<Class<? extends Component>, RouteModel> getTargetRouteModels() {
         return target2UrlTemplates;
     }
 

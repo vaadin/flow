@@ -78,7 +78,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            list of aliases for this route
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, Map<String, String> parameters,
+            String urlTemplate, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
         super(parentLayouts, urlTemplate, parameters, navigationTarget);

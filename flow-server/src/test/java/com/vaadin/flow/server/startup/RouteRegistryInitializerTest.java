@@ -316,7 +316,7 @@ public class RouteRegistryInitializerTest {
         final EnumSet<RouteParameterFormat> format = EnumSet
                 .of(RouteParameterFormat.REGEX_NAME);
 
-        Assert.assertEquals("parameter/:bool",
+        Assert.assertEquals("parameter/:boolean",
                 registry.getUrlTemplate(ParameterRoute.class, format).get());
         Assert.assertEquals("string/:string", registry
                 .getUrlTemplate(StringParameterRoute.class, format).get());
@@ -1189,12 +1189,16 @@ public class RouteRegistryInitializerTest {
                 registeredRoutes.get(6).getDefinedParameters().size());
 
         Assert.assertEquals("Unexpected parameter type encountered",
-                RouteParameterRegex.BOOLEAN,
+                ":" + HasUrlParameterFormat.PARAMETER_NAME + "("
+                        + RouteParameterRegex.BOOLEAN + ")",
                 registeredRoutes.get(3).getDefinedParameters()
-                        .get(HasUrlParameterFormat.PARAMETER_NAME));
-        Assert.assertEquals("Unexpected parameter type encountered", "",
+                        .get(HasUrlParameterFormat.PARAMETER_NAME)
+                        .getTemplate());
+        Assert.assertEquals("Unexpected parameter type encountered",
+                ":" + HasUrlParameterFormat.PARAMETER_NAME,
                 registeredRoutes.get(6).getDefinedParameters()
-                        .get(HasUrlParameterFormat.PARAMETER_NAME));
+                        .get(HasUrlParameterFormat.PARAMETER_NAME)
+                        .getTemplate());
     }
 
     @Test

@@ -33,6 +33,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
@@ -72,6 +73,26 @@ class RouteModel implements Serializable {
      */
     static RouteModel copy(RouteModel original) {
         return new RouteModel(original.root.copy());
+    }
+
+    /**
+     * Collects all routes mapping the url template with the
+     * {@link RouteTarget}.
+     *
+     * @return a {@link Map} containing all url templates and their specific
+     *         targets.
+     */
+    Map<String, RouteTarget> getRoutes() {
+        return root.getRoutes();
+    }
+
+    /**
+     * Gets whether this model is empty and no routes are registered.
+     * 
+     * @return true if this model is empty, otherwise false.
+     */
+    boolean isEmpty() {
+        return root.isEmpty();
     }
 
     /**
@@ -202,31 +223,27 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Gets the parameters found in the given urlTemplate. The result contains
-     * the names of the parameters as keys and the values represent the
-     * parameter template formatted accordingly to the given format.
+     * Gets the parameters found in the given urlTemplate. The result contains a
+     * mapping between the name of the parameters and {@link RouteParameterData}
+     * instances as values.
      *
      * @param urlTemplate
      *            the url template.
-     * @param format
-     *            format the values of the result {@link Map}
      * @return a {@link Map} containing the names of the parameters mapped by
      *         their formatted template using the given format.
      * @throws IllegalArgumentException
      *             in case urlTemplate is not registered or the parameters do
      *             not match with the template.
      */
-    Map<String, String> getParameters(String urlTemplate,
-            EnumSet<RouteParameterFormat> format) {
-        Map<String, String> result = new HashMap<>();
+    Map<String, RouteParameterData> getParameters(String urlTemplate) {
+        Map<String, RouteParameterData> result = new HashMap<>();
 
-        this.root.matchSegmentTemplates(urlTemplate,
-                segment -> {
-                    if (segment.isParameter()) {
-                        result.put(segment.getName(), RouteFormat
-                                .formatSegmentRegex(segment, format));
-                    }
-                }, null);
+        this.root.matchSegmentTemplates(urlTemplate, segment -> {
+            if (segment.isParameter()) {
+                result.put(segment.getName(),
+                        new RouteParameterData(segment.getTemplate()));
+            }
+        }, null);
         return result;
     }
 
@@ -236,7 +253,7 @@ class RouteModel implements Serializable {
      * <p>
      * A segment can contain a set of the next segment(s) in route(s) and also a
      * {@link RouteTarget} in case this segment is the last in the segments
-     * chain referring to its target.
+     * chain referring to its target.ConfiguredRoutes.java
      */
     static final class RouteSegment implements Serializable {
 
@@ -404,6 +421,32 @@ class RouteModel implements Serializable {
             return false;
         }
 
+        /**
+         * Collects all routes in an unmodifiable {@link Map}.
+         *
+         * @return a {@link Map} containing all url templates and their specific
+         *         targets.
+         */
+        Map<String, RouteTarget> getRoutes() {
+
+            Map<String, RouteTarget> result = new LinkedHashMap<>();
+
+            if (target != null) {
+                result.put("", target);
+            }
+
+            collectRoutes(result, getStaticSegments());
+            collectRoutes(result, getParameterSegments());
+            collectRoutes(result, getOptionalSegments());
+            collectRoutes(result, getVarargsSegments());
+
+            if (getTemplate().isEmpty()) {
+                return Collections.unmodifiableMap(result);
+            } else {
+                return result;
+            }
+        }
+
         void removeSubRoute(String urlTemplate) {
             removeSubRoute(PathUtil.getSegmentsList(urlTemplate));
         }
@@ -471,6 +514,23 @@ class RouteModel implements Serializable {
                 return "";
             } else {
                 return String.join("/", result);
+            }
+        }
+
+        private void collectRoutes(Map<String, RouteTarget> result,
+                Map<String, RouteSegment> children) {
+            for (Map.Entry<String, RouteSegment> segmentEntry : children
+                    .entrySet()) {
+
+                for (Map.Entry<String, RouteTarget> targetEntry : segmentEntry
+                        .getValue().getRoutes().entrySet()) {
+
+                    final String key = targetEntry.getKey();
+                    result.put(
+                            segmentEntry.getKey()
+                                    + (key.isEmpty() ? "" : ("/" + key)),
+                            targetEntry.getValue());
+                }
             }
         }
 
@@ -924,14 +984,17 @@ class RouteModel implements Serializable {
 
         private Map<String, RouteSegment> getStaticSegments() {
             if (staticSegments == null) {
-                staticSegments = new HashMap<>();
+                // We want to process the data according to the priority and
+                // registration order.
+                staticSegments = new LinkedHashMap<>();
             }
             return staticSegments;
         }
 
         private Map<String, RouteSegment> getParameterSegments() {
             if (parameterSegments == null) {
-                // Parameters iteration must be based on insertion.
+                // We want to process the data according to the priority and
+                // registration order.
                 parameterSegments = new LinkedHashMap<>();
             }
             return parameterSegments;
@@ -939,7 +1002,8 @@ class RouteModel implements Serializable {
 
         private Map<String, RouteSegment> getOptionalSegments() {
             if (optionalSegments == null) {
-                // Parameters iteration must be based on insertion.
+                // We want to process the data according to the priority and
+                // registration order.
                 optionalSegments = new LinkedHashMap<>();
             }
             return optionalSegments;
@@ -947,7 +1011,8 @@ class RouteModel implements Serializable {
 
         private Map<String, RouteSegment> getVarargsSegments() {
             if (varargsSegments == null) {
-                // Parameters iteration must be based on insertion.
+                // We want to process the data according to the priority and
+                // registration order.
                 varargsSegments = new LinkedHashMap<>();
             }
             return varargsSegments;

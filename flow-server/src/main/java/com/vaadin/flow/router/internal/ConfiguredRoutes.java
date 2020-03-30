@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
@@ -49,8 +51,7 @@ public class ConfiguredRoutes implements Serializable {
     private final Map<String, RouteTarget> urlTemplate2RouteTarget;
     private final Map<Class<? extends Component>, String> target2UrlTemplate;
 
-    // TODO: use RouteModel instead of List<String>
-    private final Map<Class<? extends Component>, List<String>> target2UrlTemplates;
+    private final Map<Class<? extends Component>, RouteModel> targetRouteModels;
 
     private final Map<Class<? extends Exception>, Class<? extends Component>> exception2Target;
 
@@ -61,7 +62,7 @@ public class ConfiguredRoutes implements Serializable {
         routeModel = RouteModel.create();
         urlTemplate2RouteTarget = Collections.emptyMap();
         target2UrlTemplate = Collections.emptyMap();
-        target2UrlTemplates = Collections.emptyMap();
+        targetRouteModels = Collections.emptyMap();
         exception2Target = Collections.emptyMap();
     }
 
@@ -75,7 +76,6 @@ public class ConfiguredRoutes implements Serializable {
     public ConfiguredRoutes(ConfigureRoutes original) {
         Map<String, RouteTarget> routeMap = new HashMap<>();
         Map<Class<? extends Component>, String> targetRouteMap = new HashMap<>();
-        Map<Class<? extends Component>, List<String>> target2UrlTemplatesMap = new HashMap<>();
         Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
@@ -83,8 +83,10 @@ public class ConfiguredRoutes implements Serializable {
             routeMap.put(route.getKey(), route.getValue().copy(false));
         }
         targetRouteMap.putAll(original.getTargetRoutes());
-        target2UrlTemplatesMap.putAll(original.getTargetUrlTemplates());
         exceptionTargetMap.putAll(original.getExceptionHandlers());
+
+        Map<Class<? extends Component>, RouteModel> target2UrlTemplatesMap = original
+                .copyTargetRouteModels();
 
         this.routeModel = RouteModel.copy(original.getRouteModel());
         this.urlTemplate2RouteTarget = routeMap.isEmpty()
@@ -93,7 +95,7 @@ public class ConfiguredRoutes implements Serializable {
         this.target2UrlTemplate = targetRouteMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(targetRouteMap);
-        this.target2UrlTemplates = targetRouteMap.isEmpty()
+        this.targetRouteModels = target2UrlTemplatesMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(target2UrlTemplatesMap);
         this.exception2Target = exceptionTargetMap.isEmpty()
@@ -262,7 +264,8 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get all registered target routes for this configuration.
+     * Get all registered target routes for this configuration mapping the main
+     * url template.
      *
      * @return component-to-path map of all target routes
      */
@@ -275,8 +278,20 @@ public class ConfiguredRoutes implements Serializable {
      *
      * @return component-to-path map of all target routes
      */
-    Map<Class<? extends Component>, List<String>> getTargetUrlTemplates() {
-        return target2UrlTemplates;
+    Map<Class<? extends Component>, RouteModel> getTargetRouteModels() {
+        return targetRouteModels;
+    }
+
+    /**
+     * Make a copy of the target and route models mapping.
+     * 
+     * @return a copy of the target and route models mapping.
+     */
+    protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels() {
+        Map<Class<? extends Component>, RouteModel> copyMap = new HashMap<>();
+        this.getTargetRouteModels().entrySet().forEach(entry -> copyMap
+                .put(entry.getKey(), RouteModel.copy(entry.getValue())));
+        return copyMap;
     }
 
     /**
@@ -443,11 +458,10 @@ public class ConfiguredRoutes implements Serializable {
      * 
      * @param urlTemplate
      *            url template to get parameters from.
-     * @return map parameter names with their defined regex.
+     * @return map parameter names with {@link com.vaadin.flow.router.RouteParameterData}.
      */
-    public Map<String, String> getParameters(String urlTemplate) {
-        return getRouteModel().getParameters(urlTemplate,
-                EnumSet.of(RouteParameterFormat.REGEX));
+    public Map<String, RouteParameterData> getParameters(String urlTemplate) {
+        return getRouteModel().getParameters(urlTemplate);
     }
 
     /**
@@ -466,12 +480,15 @@ public class ConfiguredRoutes implements Serializable {
             Class<? extends Component> navigationTarget,
             Function<String, T> urlTemplateOutput) {
 
-        final List<String> urlTemplates = getTargetUrlTemplates()
+        final RouteModel model = getTargetRouteModels()
                 .get(navigationTarget);
-        if (urlTemplates == null) {
+        if (model == null) {
             return null;
         }
 
+        final Collection<String> urlTemplates = model.getRoutes().keySet();
+        // This iteration may be moved inside the model in the form of recursion
+        // similar to what getRoutes() is doing.
         for (String urlTemplate : urlTemplates) {
             final T result = urlTemplateOutput.apply(urlTemplate);
             if (result != null) {

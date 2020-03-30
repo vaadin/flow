@@ -70,7 +70,7 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *            route navigation target
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, Map<String, String> parameters,
+            String urlTemplate, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget) {
         super(parentLayouts, urlTemplate, parameters, navigationTarget);
     }

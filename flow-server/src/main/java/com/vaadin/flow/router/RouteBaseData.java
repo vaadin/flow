@@ -37,7 +37,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
 
     private final List<Class<? extends RouterLayout>> parentLayouts;
     private final String urlTemplate;
-    private final Map<String, String> parameters;
+    private final Map<String, RouteParameterData> parameters;
     private final Class<? extends Component> navigationTarget;
 
     /**
@@ -86,7 +86,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *         route navigation target
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, Map<String, String> parameters,
+            String urlTemplate, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget) {
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
         this.urlTemplate = urlTemplate;
@@ -153,7 +153,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *
      * @return url parameters names mapped with their defined regex.
      */
-    public Map<String, String> getDefinedParameters() {
+    public Map<String, RouteParameterData> getDefinedParameters() {
         return parameters;
     }
 

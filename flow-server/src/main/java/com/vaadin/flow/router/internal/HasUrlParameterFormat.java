@@ -276,11 +276,11 @@ public class HasUrlParameterFormat implements Serializable {
     private static String getParameterType(Class<?> parameterType) {
         String type = null;
         if (parameterType.isAssignableFrom(Integer.class)) {
-            type = RouteFormat.INT_REGEX;
+            type = RouteFormat.INTEGER_REGEX;
         } else if (parameterType.isAssignableFrom(Long.class)) {
             type = RouteFormat.LONG_REGEX;
         } else if (parameterType.isAssignableFrom(Boolean.class)) {
-            type = RouteFormat.BOOL_REGEX;
+            type = RouteFormat.BOOLEAN_REGEX;
         } else {
             type = RouteFormat.STRING_REGEX;
         }
@@ -288,11 +288,11 @@ public class HasUrlParameterFormat implements Serializable {
     }
 
     private static Class<?> getType(String s) {
-        if (RouteFormat.INT_REGEX.equalsIgnoreCase(s)) {
+        if (RouteFormat.INTEGER_REGEX.equalsIgnoreCase(s)) {
             return Integer.class;
         } else if (RouteFormat.LONG_REGEX.equalsIgnoreCase(s)) {
             return Long.class;
-        } else if (RouteFormat.BOOL_REGEX.equalsIgnoreCase(s)) {
+        } else if (RouteFormat.BOOLEAN_REGEX.equalsIgnoreCase(s)) {
             return Boolean.class;
         } else {
             return String.class;

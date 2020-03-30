@@ -27,9 +27,9 @@ import com.vaadin.flow.router.RouteParameterRegex;
  */
 class RouteFormat implements Serializable {
 
-    static final String INT_REGEX = RouteParameterRegex.INTEGER;
+    static final String INTEGER_REGEX = RouteParameterRegex.INTEGER;
     static final String LONG_REGEX = RouteParameterRegex.LONG;
-    static final String BOOL_REGEX = RouteParameterRegex.BOOLEAN;
+    static final String BOOLEAN_REGEX = RouteParameterRegex.BOOLEAN;
     static final String STRING_REGEX = "";
 
     /**
@@ -69,12 +69,12 @@ class RouteFormat implements Serializable {
     }
 
     static String getRegexName(String regex) {
-        if (INT_REGEX.equals(regex)) {
-            return "int";
+        if (INTEGER_REGEX.equals(regex)) {
+            return "integer";
         } else if (LONG_REGEX.equals(regex)) {
             return "long";
-        } else if (BOOL_REGEX.equals(regex)) {
-            return "bool";
+        } else if (BOOLEAN_REGEX.equals(regex)) {
+            return "boolean";
         } else {
             return "string";
         }

@@ -83,7 +83,7 @@ public class ConfiguredRoutesTest {
                 config.getUrlTemplate(BaseTarget.class));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
-                "path/to/:intType(int)/:longType?(long)/:boolType?(bool)/:stringType?(string)/:varargs*(string)",
+                "path/to/:intType(integer)/:longType?(long)/:boolType?(boolean)/:stringType?(string)/:varargs*(string)",
                 config.getUrlTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormat.NAME,
                                 RouteParameterFormat.MODIFIER,
@@ -101,7 +101,7 @@ public class ConfiguredRoutesTest {
                         EnumSet.of(RouteParameterFormat.NAME)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
-                "path/to/:(int)/:?(long)/:?(bool)/:?(string)/:*(string)",
+                "path/to/:(integer)/:?(long)/:?(boolean)/:?(string)/:*(string)",
                 config.getUrlTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormat.MODIFIER,
                                 RouteParameterFormat.REGEX_NAME)));
@@ -116,7 +116,7 @@ public class ConfiguredRoutesTest {
                                 RouteParameterFormat.REGEX)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
-                "path/to/:int/:long/:bool/:string/:string",
+                "path/to/:integer/:long/:boolean/:string/:string",
                 config.getUrlTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormat.REGEX_NAME)));
 
