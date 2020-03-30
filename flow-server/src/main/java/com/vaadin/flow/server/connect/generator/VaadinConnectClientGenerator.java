@@ -45,6 +45,8 @@ public class VaadinConnectClientGenerator {
 
     private static final String CLIENT_FILE_NAME = "connect-client.default";
     public static final String CONNECT_CLIENT_NAME = CLIENT_FILE_NAME + TS;
+    private static final String CUSTOM_CLIENT_FILE_NAME = "connect-client";
+    public static final String CUSTOM_CONNECT_CLIENT_NAME = CUSTOM_CLIENT_FILE_NAME + TS;
     public static final String CONNECT_CLIENT_IMPORT_PATH = "./" + CLIENT_FILE_NAME;
 
     private final String endpointPrefix;
