@@ -564,7 +564,8 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateConnect taskGenerateConnectTs = new TaskGenerateConnect(
                     builder.connectApplicationProperties,
                     builder.connectGeneratedOpenApiFile,
-                    builder.connectClientTsApiFolder);
+                    builder.connectClientTsApiFolder,
+                    builder.frontendDirectory);
             commands.add(taskGenerateConnectTs);
         }
     }

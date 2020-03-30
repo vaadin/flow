@@ -55,6 +55,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 import static java.lang.String.format;
 
 /**
@@ -1039,4 +1040,28 @@ public class FrontendUtils {
         System.out.print(format(format, message));
     }
 
+    /**
+     * Get the custom endpoint prefix
+     *      in frontend folder.
+     *
+     * @return the string for endpoint name if exists
+     */
+    public static String getCustomEndpointPrefix() {
+        File customConnectClient = new File(System.getProperty("user.dir") + "/" + FRONTEND,
+                CUSTOM_CONNECT_CLIENT_NAME);
+        String contentFile = null;
+        if (customConnectClient.exists()) {
+            try {
+                contentFile = FileUtils.readFileToString(customConnectClient, "UTF-8");
+                String temp = contentFile.substring(
+                        contentFile.indexOf("{prefix:") + 8,
+                        contentFile.indexOf("})"))
+                        .trim();
+                contentFile = temp.substring(1, temp.length() - 1);
+            } catch (IOException e) {
+                getLogger().error("Failed to read file content", e);
+            }
+        }
+        return contentFile;
+    }
 }
