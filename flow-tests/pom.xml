@@ -86,6 +86,14 @@
         </plugins>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>flow-maven-plugin</artifactId>
+                    <version>${project.version}</version>
+                    <configuration>
+                        <pnpmEnable>true</pnpmEnable>
+                    </configuration>
+                </plugin>
                 <!-- Remove libs before ITs to avoid scan complaining about classes in multiple locations -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
