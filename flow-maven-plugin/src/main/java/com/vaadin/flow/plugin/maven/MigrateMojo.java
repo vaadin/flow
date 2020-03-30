@@ -83,7 +83,7 @@ public class MigrateMojo extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean ignoreModulizerErrors;
 
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "true")
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
     private boolean pnpmEnable;
 
     /**
