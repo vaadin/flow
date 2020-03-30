@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
@@ -111,6 +112,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             }
         });
 
+        validateRouteParentLayout(route);
+
         /* Validate PageConfigurator usage */
         validateRouteImplementation(route, PageConfigurator.class);
 
@@ -174,6 +177,21 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);
+        }
+    }
+
+    private void validateRouteParentLayout(Class<?> route) {
+        Route annotation = route.getAnnotation(Route.class);
+        ParentLayout parentLayout = route.getAnnotation(ParentLayout.class);
+        if (annotation == null || parentLayout == null) {
+            return;
+        }
+        if (!RouterLayout.class.isAssignableFrom(route)) {
+            throw new InvalidRouteLayoutConfigurationException(String.format(
+                    "The class '%s' should either be a '%s' or only a navigation target using"
+                            + " '%s.layout' to set the parent layout",
+                    route.getSimpleName(), RouterLayout.class.getSimpleName(),
+                    Route.class.getSimpleName()));
         }
     }
 
