@@ -261,21 +261,21 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         if (removedRoute != null) {
             final Class<? extends Component> target = removedRoute.getTarget();
 
-            final RouteModel routeModel = getTargetRouteModels()
+            final RouteModel targetRouteModel = getTargetRouteModels()
                     .get(target);
-            routeModel.removeRoute(urlTemplate);
+            targetRouteModel.removeRoute(urlTemplate);
 
-            if (routeModel.isEmpty()) {
+            if (targetRouteModel.isEmpty()) {
                 getTargetRouteModels().remove(target);
             }
 
             final String mainUrlTemplate = getTargetRoutes().get(target);
             if (Objects.equals(urlTemplate, mainUrlTemplate)) {
-                if (routeModel.isEmpty()) {
+                if (targetRouteModel.isEmpty()) {
                     getTargetRoutes().remove(target);
                 } else {
-                    getTargetRoutes().put(target,
-                            routeModel.getRoutes().keySet().iterator().next());
+                    getTargetRoutes().put(target, targetRouteModel.getRoutes()
+                            .keySet().iterator().next());
                 }
             }
         }
