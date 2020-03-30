@@ -387,7 +387,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 2.2
      */
     default boolean isPnpmEnabled() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+        return getBooleanProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                Boolean.valueOf(Constants.ENABLE_PNPM_DEFAULT_STRING));
     }
 }
