@@ -24,7 +24,6 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-@Ignore
 public class LiveReloadIT extends ChromeBrowserTest {
 
     @Test
