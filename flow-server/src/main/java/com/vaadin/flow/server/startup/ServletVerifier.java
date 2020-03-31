@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -29,16 +29,16 @@ import java.util.Set;
  *
  * @since 1.0
  */
-public class ServletVerifier implements ServletContainerInitializer {
+public class ServletVerifier implements ClassLoaderAwareServletContainerInitializer {
     @Override
-    public void onStartup(Set<Class<?>> c, ServletContext ctx)
+    public void process(Set<Class<?>> c, ServletContext ctx)
             throws ServletException {
         verifyServletVersion();
     }
 
     /**
      * Verify that the used servlet version is not too old.
-     * 
+     *
      * @throws ServletException
      *             thrown if the servlet version is not compatible
      */
