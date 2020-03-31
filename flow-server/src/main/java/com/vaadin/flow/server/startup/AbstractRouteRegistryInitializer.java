@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.annotation.HandlesTypes;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -22,8 +24,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;

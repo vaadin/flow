@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -102,9 +101,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.class, NpmPackage.Container.class, JsModule.class,
         JsModule.Container.class, CssImport.class, CssImport.Container.class,
         JavaScript.class, JavaScript.Container.class, Theme.class,
-        NoTheme.class, HasErrorParameter.class  })
+        NoTheme.class, HasErrorParameter.class })
 @WebListener
-public class DevModeInitializer implements ServletContainerInitializer,
+public class DevModeInitializer implements ClassLoaderAwareServletContainerInitializer,
         Serializable, ServletContextListener {
 
     static class DevModeClassFinder extends DefaultClassFinder {
@@ -167,7 +166,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     + "/?$");
 
     @Override
-    public void onStartup(Set<Class<?>> classes, ServletContext context)
+    public void process(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();

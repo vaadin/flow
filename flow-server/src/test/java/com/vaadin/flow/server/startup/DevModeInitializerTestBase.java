@@ -117,8 +117,8 @@ public class DevModeInitializerTestBase {
         DevModeHandlerTest.removeDevModeHandlerInstance();
     }
 
-    public void runOnStartup() throws Exception {
-        devModeInitializer.onStartup(classes, servletContext);
+    public void process() throws Exception {
+        devModeInitializer.process(classes, servletContext);
     }
 
     public void runDestroy() throws Exception {

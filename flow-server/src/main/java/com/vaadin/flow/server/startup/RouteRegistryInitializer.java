@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.server.startup;
 
-import java.util.Set;
-
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
+import java.util.Set;
+
 import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -37,10 +37,10 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
  */
 @HandlesTypes({ Route.class, RouteAlias.class })
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
-        implements ServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
+    public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         try {
             if (classSet == null) {
