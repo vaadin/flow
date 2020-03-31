@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -38,12 +38,13 @@ import com.vaadin.flow.theme.Theme;
  * @author Vaadin Ltd.
  * @since 2.0
  */
-@HandlesTypes({Theme.class, Push.class})
-public class WebComponentExporterAwareValidator extends
-        AbstractAnnotationValidator implements ServletContainerInitializer {
+@HandlesTypes({ Theme.class, Push.class })
+public class WebComponentExporterAwareValidator
+        extends AbstractAnnotationValidator
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
+    public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         validateClasses(classSet);
     }
