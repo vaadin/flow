@@ -303,15 +303,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     String.valueOf(buildInfo.getBoolean(
                             Constants.REQUIRE_HOME_NODE_EXECUTABLE)));
         }
-        if (initParameters.getProperty(
-                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE) == null
-                && buildInfo.hasKey(
-                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)) {
-            initParameters.setProperty(
-                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
-                    String.valueOf(buildInfo.getBoolean(
-                            Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE)));
-        }
     }
 
     private static String getTokenFileContents(Properties initParameters) {
