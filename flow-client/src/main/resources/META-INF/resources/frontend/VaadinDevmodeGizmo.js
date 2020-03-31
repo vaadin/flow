@@ -114,6 +114,10 @@ class VaadinDevmodeGizmo extends LitElement {
     return 'vaadin.live-reload.triggered';
   }
 
+  static get TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE() {
+    return 'vaadin.live-reload.triggeredCount';
+  }
+
   static get SPRING_DEV_TOOLS_PORT() {
     return 35729;
   }
@@ -189,11 +193,10 @@ class VaadinDevmodeGizmo extends LitElement {
       case 'reload':
         if (this.status === VaadinDevmodeGizmo.ACTIVE) {
           this.showNotification('Reloading...');
-          const now = new Date();
-          const reloaded = ('0' + now.getHours()).slice(-2) + ':'
-            + ('0' + now.getMinutes()).slice(-2) + ':'
-            + ('0' + now.getSeconds()).slice(-2);
-          window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE, reloaded);
+          const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
+          const nextReload = lastReload ? (parseInt(lastReload) + 1) : 1;
+          window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
+          window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
           window.location.reload();
         }
         break;
@@ -217,7 +220,12 @@ class VaadinDevmodeGizmo extends LitElement {
 
     const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
-      this.showNotification('Last automatic reload on ' + lastReload);
+      const count = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
+      const now = new Date();
+      const reloaded = ('0' + now.getHours()).slice(-2) + ':'
+        + ('0' + now.getMinutes()).slice(-2) + ':'
+        + ('0' + now.getSeconds()).slice(-2);
+      this.showNotification('Automatic reload #' + count + ' finished on ' + reloaded);
       window.sessionStorage.removeItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
   }
