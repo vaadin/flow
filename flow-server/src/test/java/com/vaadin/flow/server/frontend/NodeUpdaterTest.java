@@ -130,6 +130,14 @@ public class NodeUpdaterTest {
         Assert.assertEquals("foo", version);
     }
 
+    @Test
+    public void assertTerserVersion() throws IOException {
+        JsonObject packageJson = Json.createObject();
+        nodeUpdater.updateMainDefaultDependencies(packageJson, null);
+        Assert.assertEquals("4.6.7", packageJson
+                .getObject("devDependencies").getString("terser"));
+    }
+
     private String getPolymerVersion(JsonObject object) {
         JsonObject deps = object.get("dependencies");
         String version = deps.getString("@polymer/polymer");
