@@ -188,7 +188,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .directory(project.getBasedir()).inheritIO();
         getLog().info("Running webpack ...");
         FrontendUtils.console(FrontendUtils.YELLOW,
-                FrontendUtils.commandToString(npmFolder.getAbsolutePath(), 
+                FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
                         command));
 
         Process webpackLaunch = null;
@@ -248,7 +248,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
-            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
             buildInfo.remove(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
 
 

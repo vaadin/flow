@@ -355,7 +355,6 @@ public class BuildFrontendMojoTest {
         initialBuildInfo.put(Constants.FRONTEND_TOKEN, "frontend");
 
         initialBuildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, true);
-        initialBuildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE, true);
         initialBuildInfo
                 .put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
 
@@ -383,10 +382,6 @@ public class BuildFrontendMojoTest {
                 Constants.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been removed",
                 buildInfo.get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assert.assertNull(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE
-                        + "should have been removed",
-                buildInfo.get(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
         Assert.assertNull(
                 Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
                         + "should have been removed",

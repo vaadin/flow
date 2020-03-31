@@ -105,8 +105,6 @@ public class PrepareFrontendMojoTest {
                 flowResourcesFolder);
 
         ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
-        ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
-                true);
 
         Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
@@ -170,10 +168,6 @@ public class PrepareFrontendMojoTest {
                 Constants.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written",
                 buildInfo.getBoolean(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
-        Assert.assertTrue(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE
-                        + "should have been written",
-                buildInfo.getBoolean(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
 
         Assert.assertFalse(buildInfo
                 .hasKey(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));

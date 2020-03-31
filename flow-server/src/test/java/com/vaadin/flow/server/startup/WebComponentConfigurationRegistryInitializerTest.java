@@ -99,8 +99,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void process() throws ServletException {
         initializer.process(
-                Stream.of(MyComponentExporter.class, UserBoxExporter.class)
-                        .collect(Collectors.toSet()),
+                Stream.of(MyComponentExporter.class, UserBoxExporter.class,
+                        ExporterFactory.class).collect(Collectors.toSet()),
                 servletContext);
         ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
         Mockito.verify(registry).setConfigurations(captor.capture());
