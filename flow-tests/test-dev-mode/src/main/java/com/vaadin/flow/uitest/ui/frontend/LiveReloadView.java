@@ -16,9 +16,14 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.LiveReloadView", layout = ViewTestLayout.class)
@@ -26,6 +31,17 @@ public class LiveReloadView extends Div {
     public LiveReloadView() {
         Label label = new Label("Just a label");
         label.setId("elementId");
+        NativeButton reloadButton = new NativeButton("Trigger live reload");
+        reloadButton.addClickListener(this::handleClickLiveReload);
         add(label);
+        add(reloadButton);
+    }
+
+    private void handleClickLiveReload(ClickEvent event) {
+        BrowserLiveReloadAccess liveReload = VaadinService.getCurrent()
+                .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReload browserLiveReload = liveReload
+                .getLiveReload(VaadinService.getCurrent());
+        browserLiveReload.reload();
     }
 }
