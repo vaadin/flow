@@ -135,9 +135,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
-    private boolean pnpmEnable;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();

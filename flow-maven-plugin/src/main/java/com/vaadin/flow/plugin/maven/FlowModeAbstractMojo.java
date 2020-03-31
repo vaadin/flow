@@ -59,9 +59,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     protected boolean compatibility;
 
-    @Parameter(defaultValue = "${project.basedir}/src/main/java")
-    protected File javaSourceFolder;
-
     /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
