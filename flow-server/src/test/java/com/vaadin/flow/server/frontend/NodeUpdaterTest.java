@@ -182,8 +182,9 @@ public class NodeUpdaterTest {
 
     @Test
     public void assertTerserVersion() throws IOException {
-        nodeUpdater.updateDefaultDependencies(nodeUpdater.getPackageJson());
-        Assert.assertEquals("4.6.7", nodeUpdater.getPackageJson()
+        final JsonObject packageJson = nodeUpdater.getPackageJson();
+        nodeUpdater.updateDefaultDependencies(packageJson);
+        Assert.assertEquals("4.6.7", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("terser"));
     }
 
