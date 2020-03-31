@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -23,9 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -95,8 +95,8 @@ public class RouteRegistryInitializerTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
-    public void onStartUp() throws ServletException {
-        routeRegistryInitializer.onStartup(
+    public void process() throws ServletException {
+        routeRegistryInitializer.process(
                 Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
                         NavigationTargetBar.class).collect(Collectors.toSet()),
                 servletContext);
@@ -116,7 +116,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void onStartUp_no_exception_with_null_arguments() {
         try {
-            routeRegistryInitializer.onStartup(null, servletContext);
+            routeRegistryInitializer.process(null, servletContext);
         } catch (Exception e) {
             Assert.fail(
                     "RouteRegistryInitializer.onStartup should not throw with null arguments");
@@ -125,7 +125,7 @@ public class RouteRegistryInitializerTest {
 
     @Test(expected = ServletException.class)
     public void onStartUp_duplicate_routes_throws() throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(NavigationTargetFoo.class, NavigationTargetFoo2.class)
                         .collect(Collectors.toSet()),
                 servletContext);
@@ -134,7 +134,7 @@ public class RouteRegistryInitializerTest {
     @Test(expected = ServletException.class)
     public void onStartUp_duplicate_routesViaAlias_throws()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(NavigationTargetBar.class, NavigationTargetBar2.class)
                         .collect(Collectors.toSet()),
                 servletContext);
@@ -163,7 +163,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_registers_correctly_route_with_parentLayout()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream
+        routeRegistryInitializer.process(Stream
                 .of(NavigationTarget.class, NavigationTargetFoo.class,
                         MiddleParentWithRoute.class)
                 .collect(Collectors.toSet()), servletContext);
@@ -178,7 +178,7 @@ public class RouteRegistryInitializerTest {
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void routeRegistry_fails_on_aloneRouteAlias()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(NavigationTarget.class, NavigationTargetFoo.class,
                         RouteAliasAlone.class).collect(Collectors.toSet()),
                 servletContext);
@@ -187,7 +187,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_stores_whole_path_with_parent_route_prefix()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(ExtendingPrefix.class).collect(Collectors.toSet()),
                 servletContext);
 
@@ -204,7 +204,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_route_with_absolute_ignores_parent_route_prefix()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(AbsoluteRoute.class).collect(Collectors.toSet()),
                 servletContext);
 
@@ -220,7 +220,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_route_with_absolute_parent_prefix_ignores_remaining_parent_route_prefixes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(MultiLevelRoute.class).collect(Collectors.toSet()),
                 servletContext);
 
@@ -231,7 +231,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_routeWithAlias_parentRoutePrefix()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+        routeRegistryInitializer.process(Stream.of(MultiLevelRouteAlias.class)
                 .collect(Collectors.toSet()), servletContext);
 
         assertRouteTarget(MultiLevelRouteAlias.class, "absolute/levels",
@@ -251,7 +251,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_routeWithAlias_parent_prefix_ignores_remaining_parent_route_prefixes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+        routeRegistryInitializer.process(Stream.of(MultiLevelRouteAlias.class)
                 .collect(Collectors.toSet()), servletContext);
         assertRouteTarget(MultiLevelRouteAlias.class, "absolute/alias2",
                 "RouteAlias 'alias2' was not registered correctly");
@@ -260,7 +260,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_routeWithAlias_absoluteRoute()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+        routeRegistryInitializer.process(Stream.of(MultiLevelRouteAlias.class)
                 .collect(Collectors.toSet()), servletContext);
 
         assertRouteTarget(MultiLevelRouteAlias.class, "alias3",
@@ -270,7 +270,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_routeWithAlias_noParent()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+        routeRegistryInitializer.process(Stream.of(MultiLevelRouteAlias.class)
                 .collect(Collectors.toSet()), servletContext);
 
         assertRouteTarget(MultiLevelRouteAlias.class, "alias4",
@@ -280,7 +280,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_routeWithAlias_twoParentLevels()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+        routeRegistryInitializer.process(Stream.of(MultiLevelRouteAlias.class)
                 .collect(Collectors.toSet()), servletContext);
 
         assertRouteTarget(MultiLevelRouteAlias.class, "parent/middle/alias5",
@@ -290,7 +290,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_route_returns_registered_string_for_get_url()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream
+        routeRegistryInitializer.process(Stream
                 .of(NavigationTarget.class, NavigationTargetFoo.class,
                         AbsoluteRoute.class, ExtendingPrefix.class)
                 .collect(Collectors.toSet()), servletContext);
@@ -308,7 +308,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_routes_with_parameters_return_parameter_type_for_target_url()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(ParameterRoute.class, StringParameterRoute.class)
                         .collect(Collectors.toSet()),
                 servletContext);
@@ -322,7 +322,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeRegistry_route_returns_string_not_ending_in_dash()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream
+        routeRegistryInitializer.process(Stream
                 .of(NavigationRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
 
@@ -340,7 +340,7 @@ public class RouteRegistryInitializerTest {
                 "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
                 FaultyNavigationTargetWithTitle.class.getName()));
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Collections.singleton(FaultyNavigationTargetWithTitle.class),
                 servletContext);
     }
@@ -353,7 +353,7 @@ public class RouteRegistryInitializerTest {
                 "'%s' has a PageTitle annotation, but also implements HasDynamicTitle.",
                 FaultyChildWithDuplicateTitle.class.getName()));
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Collections.singleton(FaultyChildWithDuplicateTitle.class),
                 servletContext);
     }
@@ -361,7 +361,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void registration_succeeds_for_navigation_target_with_inherited_title_annotation()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Collections.singleton(ChildWithDynamicTitle.class),
                 servletContext);
 
@@ -592,7 +592,7 @@ public class RouteRegistryInitializerTest {
                 "Viewport annotation should be on the top most route layout '%s'. Offending class: '%s'",
                 Parent.class.getName(), MiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(RootWithParents.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -606,7 +606,7 @@ public class RouteRegistryInitializerTest {
                         + MultiMiddleParentLayout.class.getName() + ", "
                         + MiddleParentLayout.class.getName());
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(MultiViewport.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -620,15 +620,14 @@ public class RouteRegistryInitializerTest {
                 Parent.class.getName(),
                 RootViewportWithParent.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
-                .of(RootViewportWithParent.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.process(Stream.of(RootViewportWithParent.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_viewport_in_chain_and_one_for_route_passes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(SingleNavigationTarget.class, RootWithParent.class)
                         .collect(Collectors.toSet()),
                 servletContext);
@@ -642,14 +641,14 @@ public class RouteRegistryInitializerTest {
                 "Viewport annotation needs to be on the top parent layout '%s' not on '%s'",
                 Parent.class.getName(), FailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(FailingAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
 
     @Test
     public void onStartUp_valid_alias_does_not_throw() throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(AliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -723,7 +722,7 @@ public class RouteRegistryInitializerTest {
                 BodyParent.class.getName(),
                 BodyMiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream.of(BodyRootWithParents.class)
+        routeRegistryInitializer.process(Stream.of(BodyRootWithParents.class)
                 .collect(Collectors.toSet()), servletContext);
     }
 
@@ -736,7 +735,7 @@ public class RouteRegistryInitializerTest {
                         + BodyMultiMiddleParentLayout.class.getName() + ", "
                         + BodyMiddleParentLayout.class.getName());
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(BodyMultiViewport.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -751,14 +750,14 @@ public class RouteRegistryInitializerTest {
                 BodyRootViewportWithParent.class.getName()));
 
         routeRegistryInitializer
-                .onStartup(Stream.of(BodyRootViewportWithParent.class)
+                .process(Stream.of(BodyRootViewportWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_body_size_in_chain_and_one_for_route_passes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(BodySingleNavigationTarget.class,
                         BodyRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
@@ -773,14 +772,14 @@ public class RouteRegistryInitializerTest {
                 BodyParent.class.getName(),
                 BodyFailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream.of(BodyFailingAliasView.class)
+        routeRegistryInitializer.process(Stream.of(BodyFailingAliasView.class)
                 .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_valid_body_size_alias_does_not_throw()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(BodyAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -859,7 +858,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void onStartUp_valid_page_configurator_does_not_throw()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(SingleConfigurator.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -874,7 +873,7 @@ public class RouteRegistryInitializerTest {
                 MiddleParentConfigurator.class.getName()));
 
         routeRegistryInitializer
-                .onStartup(Stream.of(RootWithMultipleParentConfigurator.class)
+                .process(Stream.of(RootWithMultipleParentConfigurator.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
@@ -887,7 +886,7 @@ public class RouteRegistryInitializerTest {
                         + MultiMiddleParentConfigurator.class.getName() + ", "
                         + MiddleParentConfigurator.class.getName());
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(MultiConfigurator.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -902,14 +901,14 @@ public class RouteRegistryInitializerTest {
                 RootConfiguratorWithParent.class.getName()));
 
         routeRegistryInitializer
-                .onStartup(Stream.of(RootConfiguratorWithParent.class)
+                .process(Stream.of(RootConfiguratorWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_page_configurator_in_chain_and_one_for_route_passes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream
+        routeRegistryInitializer.process(Stream
                 .of(SingleConfigurator.class, RootWithParentConfigurator.class)
                 .collect(Collectors.toSet()), servletContext);
     }
@@ -923,7 +922,7 @@ public class RouteRegistryInitializerTest {
                 Parent.class.getName(),
                 FailingAliasConfigurator.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
+        routeRegistryInitializer.process(Stream
                 .of(FailingAliasConfigurator.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -998,9 +997,8 @@ public class RouteRegistryInitializerTest {
                 InlineParent.class.getName(),
                 InlineMiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
-                .of(InlineRootWithParents.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.process(Stream.of(InlineRootWithParents.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
@@ -1012,7 +1010,7 @@ public class RouteRegistryInitializerTest {
                         + InlineMultiMiddleParentLayout.class.getName() + ", "
                         + InlineMiddleParentLayout.class.getName());
 
-        routeRegistryInitializer.onStartup(Stream.of(InlineMultiViewport.class)
+        routeRegistryInitializer.process(Stream.of(InlineMultiViewport.class)
                 .collect(Collectors.toSet()), servletContext);
     }
 
@@ -1026,14 +1024,14 @@ public class RouteRegistryInitializerTest {
                 InlineRootViewportWithParent.class.getName()));
 
         routeRegistryInitializer
-                .onStartup(Stream.of(InlineRootViewportWithParent.class)
+                .process(Stream.of(InlineRootViewportWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_inline_in_chain_and_one_for_route_passes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(InlineSingleNavigationTarget.class,
                         InlineRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
@@ -1048,15 +1046,14 @@ public class RouteRegistryInitializerTest {
                 InlineParent.class.getName(),
                 InlineFailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
-                .of(InlineFailingAliasView.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.process(Stream.of(InlineFailingAliasView.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_valid_inline_alias_does_not_throw()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(InlineAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -1069,7 +1066,7 @@ public class RouteRegistryInitializerTest {
         Set<Class<?>> routes = Stream.of(NavigationTarget.class,
                 NavigationTargetFoo.class, NavigationTargetBar.class)
                 .collect(Collectors.toSet());
-        routeRegistryInitializer.onStartup(routes, servletContext);
+        routeRegistryInitializer.process(routes, servletContext);
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
 
         Assert.assertEquals("Not all registered routes were returned", 3,
@@ -1086,7 +1083,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeData_gets_correct_urls_for_targets()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(NavigationTarget.class,
+        routeRegistryInitializer.process(Stream.of(NavigationTarget.class,
                 NavigationRootWithParent.class, AbsoluteRoute.class,
                 ExtendingPrefix.class, StringParameterRoute.class,
                 ParameterRoute.class, MultiLevelRouteAlias.class)
@@ -1117,7 +1114,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeData_gets_correct_parents_for_targets()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(NavigationTarget.class,
+        routeRegistryInitializer.process(Stream.of(NavigationTarget.class,
                 NavigationRootWithParent.class, AbsoluteRoute.class,
                 ExtendingPrefix.class, StringParameterRoute.class,
                 ParameterRoute.class, MultiLevelRouteAlias.class)
@@ -1155,7 +1152,7 @@ public class RouteRegistryInitializerTest {
     @Test
     public void routeData_gets_correct_parameters_for_targets()
             throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(NavigationTarget.class,
+        routeRegistryInitializer.process(Stream.of(NavigationTarget.class,
                 NavigationRootWithParent.class, AbsoluteRoute.class,
                 ExtendingPrefix.class, StringParameterRoute.class,
                 ParameterRoute.class, MultiLevelRouteAlias.class)
@@ -1190,7 +1187,7 @@ public class RouteRegistryInitializerTest {
 
     @Test
     public void routeData_for_alias_data_is_correct() throws ServletException {
-        routeRegistryInitializer.onStartup(Stream.of(MultiLevelRouteAlias.class)
+        routeRegistryInitializer.process(Stream.of(MultiLevelRouteAlias.class)
                 .collect(Collectors.toSet()), servletContext);
 
         List<RouteData> registeredRoutes = registry.getRegisteredRoutes();
@@ -1312,7 +1309,7 @@ public class RouteRegistryInitializerTest {
                 ThemeParent.class.getName(),
                 ThemeMiddleParentLayout.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream.of(ThemeRootWithParents.class)
+        routeRegistryInitializer.process(Stream.of(ThemeRootWithParents.class)
                 .collect(Collectors.toSet()), servletContext);
     }
 
@@ -1325,7 +1322,7 @@ public class RouteRegistryInitializerTest {
                         + ThemeMultiMiddleParentLayout.class.getName() + ", "
                         + ThemeMiddleParentLayout.class.getName());
 
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(ThemeMultiViewport.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -1340,14 +1337,14 @@ public class RouteRegistryInitializerTest {
                 ThemeRootViewportWithParent.class.getName()));
 
         routeRegistryInitializer
-                .onStartup(Stream.of(ThemeRootViewportWithParent.class)
+                .process(Stream.of(ThemeRootViewportWithParent.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_one_theme_in_chain_and_one_for_route_passes()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(ThemeSingleNavigationTarget.class,
                         ThemeRootWithParent.class).collect(Collectors.toSet()),
                 servletContext);
@@ -1362,15 +1359,14 @@ public class RouteRegistryInitializerTest {
                 ThemeParent.class.getName(),
                 ThemeFailingAliasView.class.getName()));
 
-        routeRegistryInitializer.onStartup(Stream
-                .of(ThemeFailingAliasView.class).collect(Collectors.toSet()),
-                servletContext);
+        routeRegistryInitializer.process(Stream.of(ThemeFailingAliasView.class)
+                .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
     public void onStartUp_valid_theme_alias_does_not_throw()
             throws ServletException {
-        routeRegistryInitializer.onStartup(
+        routeRegistryInitializer.process(
                 Stream.of(ThemeAliasView.class).collect(Collectors.toSet()),
                 servletContext);
     }
@@ -1414,7 +1410,7 @@ public class RouteRegistryInitializerTest {
     public void routeFilter_ignoresRoutes()
             throws InvalidRouteConfigurationException, ServletException {
         routeRegistryInitializer
-                .onStartup(Stream.of(IgnoredView.class, NavigationTarget.class)
+                .process(Stream.of(IgnoredView.class, NavigationTarget.class)
                         .collect(Collectors.toSet()), servletContext);
 
         List<?> registeredTargets = registry.getRegisteredRoutes().stream()
@@ -1456,7 +1452,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(AbstractRouteTarget.class);
         classes.add(BaseRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
 
         Assert.assertEquals(BaseRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
@@ -1468,7 +1464,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(BaseRouteTarget.class);
         classes.add(AbstractRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
 
         Assert.assertEquals(BaseRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
@@ -1480,7 +1476,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(BaseRouteTarget.class);
         classes.add(SuperRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
 
         Assert.assertEquals(SuperRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
@@ -1492,7 +1488,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(SuperRouteTarget.class);
         classes.add(BaseRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
 
         Assert.assertEquals(SuperRouteTarget.class,
                 registry.getNavigationTarget("foo").get());
@@ -1504,7 +1500,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(AbstractRouteTarget.class);
         classes.add(OtherRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
     }
 
     @Test(expected = ServletException.class)
@@ -1513,7 +1509,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(OtherRouteTarget.class);
         classes.add(AbstractRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
     }
 
     @Test(expected = ServletException.class)
@@ -1522,7 +1518,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(BaseRouteTarget.class);
         classes.add(OtherRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
     }
 
     @Test(expected = ServletException.class)
@@ -1531,7 +1527,7 @@ public class RouteRegistryInitializerTest {
         LinkedHashSet<Class<?>> classes = new LinkedHashSet<>();
         classes.add(OtherRouteTarget.class);
         classes.add(BaseRouteTarget.class);
-        routeRegistryInitializer.onStartup(classes, servletContext);
+        routeRegistryInitializer.process(classes, servletContext);
     }
 
     @Tag(Tag.DIV)

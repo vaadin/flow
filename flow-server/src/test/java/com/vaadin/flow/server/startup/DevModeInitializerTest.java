@@ -1,6 +1,7 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,7 +12,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Paths;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -80,7 +80,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
             File[] children = file.listFiles();
             if (children != null) {
-                for(File child: children) {
+                for (File child : children) {
                     MockVirtualFile mvf = new MockVirtualFile();
                     mvf.file = child;
                     files.add(mvf);
@@ -99,7 +99,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         }
 
         public String getPathNameRelativeTo(MockVirtualFile other) {
-            return Paths.get(file.toURI()).relativize(Paths.get(other.file.toURI())).toString();
+            return Paths.get(file.toURI())
+                    .relativize(Paths.get(other.file.toURI())).toString();
         }
 
         public boolean isFile() {
@@ -145,13 +146,14 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void loadingFsResources_usesVfsProtocol_allFilesExist() throws Exception {
+    public void loadingFsResources_usesVfsProtocol_allFilesExist()
+            throws Exception {
         String path = Paths.get("/dir-with-modern-frontend",
                 Constants.RESOURCES_FRONTEND_DEFAULT).toString();
         MockVirtualFile virtualFile = new MockVirtualFile();
         virtualFile.file = new File(getClass().getResource(path).toURI());
 
-        URLConnection urlConnection =  Mockito.mock(URLConnection.class);
+        URLConnection urlConnection = Mockito.mock(URLConnection.class);
         Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
 
         URL.setURLStreamHandlerFactory(protocol -> {
@@ -165,7 +167,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             }
             return null;
         });
-        URL url = new URL(Paths.get("vfs://some-non-existent-place", path).toString());
+        URL url = new URL(
+                Paths.get("vfs://some-non-existent-place", path).toString());
 
         loadingFsResources_allFilesExist(Collections.singletonList(url),
                 Constants.RESOURCES_FRONTEND_DEFAULT);
@@ -173,7 +176,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters() throws Exception {
-        runOnStartup();
+        process();
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
@@ -181,7 +184,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
-        runOnStartup();
+        process();
         assertNotNull(getDevModeHandler());
     }
 
@@ -193,14 +196,14 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
-        runOnStartup();
+        process();
         assertNotNull(getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
         webpackFile.delete();
-        runOnStartup();
+        process();
         assertNotNull(getDevModeHandler());
     }
 
@@ -226,7 +229,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Not_AddContextListener() throws Exception {
         ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor
                 .forClass(EventListener.class);
-        runOnStartup();
+        process();
         Mockito.verify(servletContext, Mockito.never())
                 .addListener(arg.capture());
     }
@@ -236,7 +239,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
-        runOnStartup();
+        process();
 
         assertNotNull(DevModeHandler.getDevModeHandler());
 
