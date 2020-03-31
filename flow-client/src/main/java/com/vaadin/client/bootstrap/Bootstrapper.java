@@ -26,7 +26,6 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
