@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
@@ -49,11 +48,11 @@ import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
  */
 @HandlesTypes({ WebComponentExporter.class, WebComponentExporterFactory.class })
 public class WebComponentConfigurationRegistryInitializer
-        implements ServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void onStartup(Set<Class<?>> set, ServletContext servletContext)
+    public void process(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
         WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
                 .getInstance(new VaadinServletContext(servletContext));
