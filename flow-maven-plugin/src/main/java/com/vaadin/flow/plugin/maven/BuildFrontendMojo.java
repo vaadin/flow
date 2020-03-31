@@ -54,6 +54,7 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -146,6 +147,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
+        String baseDir = System.getProperty("user.dir");
+        File flowResourcesFolder = new File(baseDir,
+                DEAULT_FLOW_RESOURCES_FOLDER);
         // @formatter:off
         new NodeTasks.Builder(getClassFinder(project),
                 npmFolder, generatedFolder, frontendDirectory)

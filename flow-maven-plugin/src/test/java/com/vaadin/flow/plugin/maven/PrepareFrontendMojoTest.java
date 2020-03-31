@@ -47,8 +47,6 @@ public class PrepareFrontendMojoTest {
     public ExpectedException exception = ExpectedException.none();
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
-    private File nodeModulesPath;
-    private File flowResourcesFolder;
     private String webpackConfig;
     private String packageJson;
     private File projectBase;
@@ -69,8 +67,6 @@ public class PrepareFrontendMojoTest {
         project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
-        nodeModulesPath = new File(projectBase, NODE_MODULES);
-        flowResourcesFolder = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
@@ -101,14 +97,11 @@ public class PrepareFrontendMojoTest {
                 defaultJavaSource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
-                flowResourcesFolder);
 
         ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
         ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
                 true);
 
-        Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
     }
 

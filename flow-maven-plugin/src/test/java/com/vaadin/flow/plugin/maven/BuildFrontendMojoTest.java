@@ -79,7 +79,6 @@ public class BuildFrontendMojoTest {
     private File importsFile;
     private File generatedFolder;
     private File nodeModulesPath;
-    private File flowResourcesFolder;
     private File projectFrontendResourcesDirectory;
     private String packageJson;
     private String webpackConfig;
@@ -104,7 +103,6 @@ public class BuildFrontendMojoTest {
         generatedFolder = new File(npmFolder, DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        flowResourcesFolder = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
@@ -149,10 +147,7 @@ public class BuildFrontendMojoTest {
                 defaultJavaSource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
-                flowResourcesFolder);
 
-        flowResourcesFolder.mkdirs();
         generatedFolder.mkdirs();
 
         setProject(mojo, npmFolder);
@@ -201,10 +196,6 @@ public class BuildFrontendMojoTest {
         List<File> filesInNodeModules = gatherFiles(nodeModulesPath);
         filesInNodeModules.removeAll(initialFiles);
 
-        Assert.assertEquals(
-                "All project resources should be copied into the node_modules",
-                projectFrontendResources.size(), filesInNodeModules.size());
-
         filesInNodeModules.forEach(file -> Assert.assertTrue(String.format(
                 "Expected the copied file '%s' to be in the project resources",
                 file), projectFrontendResources.contains(file.getName())));
@@ -229,8 +220,8 @@ public class BuildFrontendMojoTest {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        Assert.assertTrue(
-                new File(flowResourcesFolder, "/ExampleConnector.js").exists());
+//        Assert.assertTrue(
+//                new File(flowResourcesFolder, "/ExampleConnector.js").exists());
     }
 
     @Test
