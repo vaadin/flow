@@ -230,7 +230,7 @@ public class LiveReload {
             reloadNotificationElement.appendChild(message);
             indicator.appendChild(reloadNotificationElement);
             Browser.getDocument().getBody()
-                    .setOnfocus(this::handleOnBodyFocusEvent);
+                    .setOnclick(this::handleOnBodyFocusEvent);
         } else {
             Element message = Browser.getDocument()
                     .getElementById("vaadin-live-reload-timestamp");

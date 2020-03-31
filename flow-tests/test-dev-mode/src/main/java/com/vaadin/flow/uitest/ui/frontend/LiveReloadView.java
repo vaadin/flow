@@ -33,14 +33,15 @@ public class LiveReloadView extends Div {
         label.setId("elementId");
         NativeButton reloadButton = new NativeButton("Trigger live reload");
         reloadButton.addClickListener(this::handleClickLiveReload);
+        reloadButton.setId("live-reload-trigger-button");
         add(label);
         add(reloadButton);
     }
 
     private void handleClickLiveReload(ClickEvent event) {
-        BrowserLiveReloadAccess liveReload = VaadinService.getCurrent()
+        BrowserLiveReloadAccess liveReloadAccess = VaadinService.getCurrent()
                 .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
-        BrowserLiveReload browserLiveReload = liveReload
+        BrowserLiveReload browserLiveReload = liveReloadAccess
                 .getLiveReload(VaadinService.getCurrent());
         browserLiveReload.reload();
     }
