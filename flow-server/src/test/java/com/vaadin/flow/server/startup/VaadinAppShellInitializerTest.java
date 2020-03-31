@@ -1,8 +1,11 @@
 package com.vaadin.flow.server.startup;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
+
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,7 +22,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.slf4j.ILoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.SimpleLoggerFactory;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -48,9 +57,12 @@ import com.vaadin.flow.shared.ui.Transport;
 import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+
+@NotThreadSafe
 public class VaadinAppShellInitializerTest {
 
     public static class MyAppShellWithoutAnnotations implements AppShellConfigurator {
@@ -58,7 +70,6 @@ public class VaadinAppShellInitializerTest {
 
     @Meta(name = "foo", content = "bar")
     @Meta(name = "lorem", content = "ipsum")
-    @PWA(name = "my-pwa", shortName = "pwa")
     @Inline("inline.html")
     @Inline(position = Position.PREPEND, value = "inline.css")
     @Inline(wrapping = Wrapping.JAVASCRIPT, position = Position.APPEND, target = TargetElement.BODY, value = "inline.js")
@@ -71,7 +82,6 @@ public class VaadinAppShellInitializerTest {
 
     @Meta(name = "foo", content = "bar")
     @Meta(name = "lorem", content = "ipsum")
-    @PWA(name = "my-pwa", shortName = "pwa")
     @Inline("inline.html")
     @Inline(position = Position.PREPEND, value = "inline.css")
     @Inline(wrapping = Wrapping.JAVASCRIPT, position = Position.APPEND, target = TargetElement.BODY, value = "inline.js")
@@ -135,6 +145,20 @@ public class VaadinAppShellInitializerTest {
         }
     }
 
+    @PWA(name = "name", shortName = "n")
+    @Viewport("my-viewport")
+    public static class OffendingPwaClass {
+    }
+
+    @Viewport("my-viewport")
+    public static class OffendingNonPwaClass {
+    }
+
+    @PWA(name = "name", shortName = "n")
+    @Viewport("my-viewport")
+    @BodySize(height = "my-height", width = "my-width")
+    public static class AppShellWithPWA implements AppShellConfigurator {
+    }
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -150,9 +174,11 @@ public class VaadinAppShellInitializerTest {
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private PushConfiguration pushConfiguration;
+    private Logger logger;
 
     @Before
     public void setup() throws Exception {
+        logger = mockLog(VaadinAppShellInitializer.class);
         assertNull(getDevModeHandler());
 
         servletContext = Mockito.mock(ServletContext.class);
@@ -189,6 +215,7 @@ public class VaadinAppShellInitializerTest {
     @After
     public void teardown() throws Exception {
         AppShellRegistry.getInstance(context).reset();
+        clearIlogger();
     }
 
     @Test
@@ -324,24 +351,11 @@ public class VaadinAppShellInitializerTest {
         exception.expectMessage(
                 containsString("Found app shell configuration annotations in non"));
         exception.expectMessage(containsString(
-                "- @Meta, @PWA, @Inline, @Viewport, @BodySize, @Push"
+                "- @Meta, @Inline, @Viewport, @BodySize, @Push"
                         + " from"));
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(OffendingClass.class);
         initializer.onStartup(classes, servletContext);
-    }
-
-    @Test
-    public void should_not_throw_when_noAppShell_and_offendingClass()
-            throws Exception {
-        classes.add(OffendingClass.class);
-        initializer.onStartup(classes, servletContext);
-
-        AppShellRegistry.getInstance(context)
-                .modifyIndexHtml(document, createVaadinRequest("/"));
-
-        List<Element> elements = document.head().children();
-        assertEquals(0, elements.size());
     }
 
     @Test
@@ -374,6 +388,40 @@ public class VaadinAppShellInitializerTest {
         initializer.onStartup(classes, servletContext);
     }
 
+    @Test
+    public void should_not_throw_when_noAppShell_and_offendingClass()
+            throws Exception {
+        classes.add(OffendingClass.class);
+        initializer.onStartup(classes, servletContext);
+
+        AppShellRegistry.getInstance(context)
+                .modifyIndexHtml(document, createVaadinRequest("/"));
+
+        List<Element> elements = document.head().children();
+        assertEquals(0, elements.size());
+    }
+
+    @Test
+    public void should_link_to_PWA_article()
+            throws Exception {
+        ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
+        classes.add(OffendingPwaClass.class);
+        initializer.onStartup(classes, servletContext);
+        Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
+        assertTrue(arg.getValue().contains("We changed the way you configure PWAs"));
+    }
+
+    @Test
+    public void should_not_link_to_PWA_article()
+            throws Exception {
+        ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
+        classes.add(OffendingNonPwaClass.class);
+        initializer.onStartup(classes, servletContext);
+        Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
+        assertFalse(arg.getValue().contains("We changed the way you configure PWAs"));
+        assertTrue(arg.getValue().contains("@Viewport"));
+    }
+
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);
         return new VaadinServletRequest(request, service);
@@ -385,5 +433,24 @@ public class VaadinAppShellInitializerTest {
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
         Mockito.when(request.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
         return request;
+    }
+
+    private Logger mockLog(Class clz) throws Exception {
+        // wrap logger for clz in an spy
+        Logger spy = Mockito.spy(LoggerFactory.getLogger(clz.getName()));
+        ConcurrentMap<String, Logger> ilogger = clearIlogger();
+        // replace original logger with the spy
+        ilogger.put(clz.getName(), spy);
+        return spy;
+    }
+
+    private ConcurrentMap<String, Logger> clearIlogger() throws Exception {
+        ILoggerFactory ilogger = LoggerFactory.getILoggerFactory();
+        Field field = SimpleLoggerFactory.class.getDeclaredField("loggerMap");
+        field.setAccessible(true);
+        ConcurrentMap<String, Logger> map = (ConcurrentMap<String, Logger>) field
+                .get(ilogger);
+        map.clear();
+        return map;
     }
 }

@@ -52,7 +52,7 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
+import static com.vaadin.flow.server.AppShellRegistry.*;
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING;
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_CONFIGURATOR;
@@ -138,8 +138,10 @@ public class VaadinAppShellInitializer implements ServletContainerInitializer,
 
         if (!offendingAnnotations.isEmpty()) {
             if (registry.getShell() == null) {
+                boolean hasPwa = offendingAnnotations.stream()
+                        .anyMatch(err -> err.matches(".*@PWA.*"));
                 String message = String.format(
-                        ERROR_HEADER_NO_SHELL,
+                        hasPwa? ERROR_HEADER_OFFENDING_PWA: ERROR_HEADER_NO_SHELL,
                         String.join("\n  ", offendingAnnotations));
                 getLogger().error(message);
             } else {
