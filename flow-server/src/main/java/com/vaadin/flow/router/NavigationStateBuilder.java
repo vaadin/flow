@@ -70,7 +70,7 @@ public class NavigationStateBuilder {
      * @param navigationTarget
      *            the navigation target
      * @param urlParameters
-     *            the url parameter of the navigation target
+     *            the url parameters of the navigation target
      * @return this builder, for chaining
      */
     public NavigationStateBuilder withTarget(

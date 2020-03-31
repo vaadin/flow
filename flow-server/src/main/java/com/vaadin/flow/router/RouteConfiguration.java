@@ -413,18 +413,25 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * This method now returns the url template.
+     * Return the url base without any url parameters.
      *
      * @param navigationTarget
-     *            navigation target to get url template for.
-     * @return an empty Optional
+     *            navigation target to get url for
+     * @return optional url base without url parameters or empty if there is no
+     *         registered route for {@code navigationTarget}, not {@code null}
      * @deprecated url base doesn't exist anymore in context of named parameters
      *             within the route. Use {@link #getUrlTemplate(Class)} instead.
      */
     @Deprecated
     public Optional<String> getUrlBase(
             Class<? extends Component> navigationTarget) {
-        return getUrlTemplate(navigationTarget);
+        final Optional<String> urlTemplate = getUrlTemplate(navigationTarget);
+        if (urlTemplate.isPresent()) {
+            return Optional.of(HasUrlParameterFormat
+                    .getUrlBase(urlTemplate.get(), navigationTarget));
+        } else {
+            return urlTemplate;
+        }
     }
 
     /**
@@ -494,16 +501,17 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Gets a valid url which navigates to given navigationTarget using given
+     * Gets the url which navigates to given navigationTarget using given
      * parameters.
      * 
      * @param navigationTarget
      *            navigation target.
      * @param parameters
      *            url parameters.
-     * @return a valid url.
+     * @return the url which navigates to given navigationTarget using given
+     *         parameters.
      * @throws NotFoundException
-     *             in case the navigatonTarget is not registered with a url
+     *             in case the navigationTarget is not registered with a url
      *             template matching the given parameters.
      */
     public String getUrl(Class<? extends Component> navigationTarget,
@@ -514,7 +522,7 @@ public class RouteConfiguration implements Serializable {
                 : handledRegistry.getTargetUrl(navigationTarget, parameters);
         if (!targetUrl.isPresent()) {
             throw new NotFoundException(
-                    "No route found for given navigation target and parameters!");
+                    "No route found for the given navigation target and parameters!");
         }
         return targetUrl.get();
     }

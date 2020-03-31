@@ -56,8 +56,8 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Create a new root segment instance. This is an empty segment defining the
-     * root of the routes tree.
+     * Create a new route model instance for storing navigation targets mapped
+     * by url templates.
      */
     static RouteModel create() {
         return new RouteModel();
@@ -465,15 +465,14 @@ class RouteModel implements Serializable {
         }
 
         /**
-         * Finds a route for the given url.
+         * Search for a route target using given navigation <code>url</code>
+         * argument.
          *
          * @param url
-         *            navigation url where the parameters are provided with
-         *            their real value. The method is looking to map the value
-         *            provided in the url with the ids found in the stored
-         *            templates.
-         * @return a route result containing the target and parameter values
-         *         mapped by their ids.
+         *            the navigation url used to search a route target.
+         * @return a {@link NavigationRouteTarget} instance containing the
+         *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+         *         <code>url</code> argument according with the route configuration.
          */
         NavigationRouteTarget getNavigationRouteTarget(String url) {
 

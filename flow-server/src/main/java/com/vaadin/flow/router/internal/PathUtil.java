@@ -31,8 +31,8 @@ public class PathUtil implements Serializable {
      * path.
      *
      * @param path
-     *            url path to get split into segments. The path may also start
-     *            with a slash `/` but it may not contain the url protocol.
+     *            url path to split into segments. The path may also start with
+     *            a slash `/` but it may not contain the url protocol.
      * @return a List containing the segments of the path.
      */
     public static List<String> getSegmentsList(String path) {

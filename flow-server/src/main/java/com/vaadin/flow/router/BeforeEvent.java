@@ -504,7 +504,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Get the URL parameters of the forward target.
+     * Gets the URL parameters of the forward target.
      *
      * @return URL parameters of forward target
      * @throws NullPointerException
@@ -519,7 +519,7 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Get the URL parameters of the forward target.
+     * Gets the URL parameters of the forward target.
      *
      * @return URL parameters of forward target
      * @throws NullPointerException
@@ -559,7 +559,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return route target type
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             if no reroute is set. Check {@link #hasRerouteTarget()}
      *             before accessing this method.
      */
     public Class<? extends Component> getRerouteTargetType() {
@@ -571,7 +571,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of reroute target
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             if no reroute is set. Check {@link #hasRerouteTarget()}
      *             before accessing this method.
      * @deprecated use {@link #getRerouteTargetUrlParameters()} instead.
      */
@@ -586,7 +586,7 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of reroute target
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             if no reroute is set. Check {@link #hasRerouteTarget()}
      *             before accessing this method.
      */
     public UrlParameters getRerouteTargetUrlParameters() {
@@ -598,7 +598,7 @@ public abstract class BeforeEvent extends EventObject {
      * 
      * @return the reroute url.
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasRerouteTarget()}
+     *             if no reroute is set. Check {@link #hasRerouteTarget()}
      *             before accessing this method.
      */
     public String getRerouteUrl() {

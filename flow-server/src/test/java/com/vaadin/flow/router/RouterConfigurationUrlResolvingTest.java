@@ -262,29 +262,54 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // 3519
+    public void getUrlBase_returns_url_without_parameter_even_for_required_parameters()
+            throws InvalidRouteConfigurationException {
+            setNavigationTargets(RouteWithParameter.class,
+                    RouteWithMultipleParameters.class, OptionalParameter.class,
+                    FooNavigationTarget.class);
+
+            Assert.assertEquals("Required parameter didn't match url base.",
+                    RouteWithParameter.class.getAnnotation(Route.class).value(),
+                    routeConfiguration.getUrlBase(RouteWithParameter.class)
+                            .orElse(null));
+        Assert.assertEquals("Wildcard parameter didn't match url base.",
+                RouteWithMultipleParameters.class.getAnnotation(Route.class)
+                        .value(),
+                routeConfiguration.getUrlBase(RouteWithMultipleParameters.class)
+                        .orElse(null));
+        Assert.assertEquals("Optional parameter didn't match url base.",
+                OptionalParameter.class.getAnnotation(Route.class).value(),
+                routeConfiguration.getUrlBase(OptionalParameter.class)
+                        .orElse(null));
+        Assert.assertEquals("Non parameterized url didn't match url base.",
+                FooNavigationTarget.class.getAnnotation(Route.class).value(),
+                routeConfiguration.getUrlBase(FooNavigationTarget.class)
+                        .orElse(null));
+    }
+
+    @Test // #2740
     public void getUrlTemplate_returns_url_template()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithParameter.class,
                 RouteWithMultipleParameters.class, OptionalParameter.class,
                 FooNavigationTarget.class);
 
-        Assert.assertEquals("Required parameter didn't match url base.",
+        Assert.assertEquals("Required parameter didn't match url template.",
                 getUrlTemplate(RouteWithParameter.class),
                 routeConfiguration.getUrlTemplate(RouteWithParameter.class)
                         .orElse(null));
-        Assert.assertEquals("Wildcard parameter didn't match url base.",
+        Assert.assertEquals("Wildcard parameter didn't match url template.",
                 getUrlTemplate(RouteWithMultipleParameters.class),
                 routeConfiguration.getUrlTemplate(RouteWithMultipleParameters.class)
                         .orElse(null));
-        Assert.assertEquals("Optional parameter didn't match url base.",
+        Assert.assertEquals("Optional parameter didn't match url template.",
                 getUrlTemplate(OptionalParameter.class),
                 routeConfiguration.getUrlTemplate(OptionalParameter.class)
                         .orElse(null));
-        Assert.assertEquals("Non parameterized url didn't match url base.",
+        Assert.assertEquals("Non parameterized url didn't match url template.",
                 getUrlTemplate(FooNavigationTarget.class),
                 routeConfiguration.getUrlTemplate(FooNavigationTarget.class)
                         .orElse(null));
-
     }
 
     @Test
@@ -311,6 +336,57 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         Assert.assertFalse(
                 "Link should not be highlighted when navigated to other target",
                 loneLink.getElement().hasAttribute("highlight"));
+    }
+
+    @Test // #2740
+    public void navigation_targets_with_same_route_and_one_with_parameter()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(MyPage.class, MyPageWithParam.class);
+
+        assertSameRouteWithParams();
+    }
+
+    @Test // #2740
+    public void navigation_targets_with_same_route_and_two_with_parameter()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(MyPage.class, MyPageWithParam.class,
+                MyPageWithWildcardParam.class);
+
+        assertSameRouteWithParams();
+
+        Assert.assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME + "*",
+                routeConfiguration.getUrlTemplate(MyPageWithWildcardParam.class)
+                        .get());
+
+        Assert.assertEquals("my/wild/value", routeConfiguration
+                .getUrl(MyPageWithWildcardParam.class, "wild/value"));
+        Assert.assertEquals("my/wild/value",
+                routeConfiguration.getUrl(MyPageWithWildcardParam.class,
+                        new UrlParameters(HasUrlParameterFormat.PARAMETER_NAME,
+                                "wild/value")));
+
+        Assert.assertEquals(MyPageWithWildcardParam.class,
+                routeConfiguration.getRoute("my/wild/param").get());
+    }
+
+    private void assertSameRouteWithParams() {
+        Assert.assertEquals("my",
+                routeConfiguration.getUrlTemplate(MyPage.class).get());
+        Assert.assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME,
+                routeConfiguration.getUrlTemplate(MyPageWithParam.class).get());
+
+        Assert.assertEquals("my", routeConfiguration.getUrl(MyPage.class));
+        Assert.assertEquals("my/value",
+                routeConfiguration.getUrl(MyPageWithParam.class, "value"));
+        Assert.assertEquals("my/value",
+                routeConfiguration.getUrl(MyPageWithParam.class,
+                        new UrlParameters(HasUrlParameterFormat.PARAMETER_NAME,
+                                "value")));
+
+        Assert.assertEquals(MyPage.class,
+                routeConfiguration.getRoute("my").get());
+        Assert.assertEquals(MyPageWithParam.class,
+                routeConfiguration.getRoute("my/param").get());
     }
 
     @RoutePrefix("parent")
@@ -512,6 +588,32 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
+        }
+    }
+
+    @Route("my")
+    @Tag(Tag.DIV)
+    public class MyPage extends Component {
+    }
+
+    @Route("my")
+    @Tag(Tag.DIV)
+    public class MyPageWithParam extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+        }
+    }
+
+    @Route("my")
+    @Tag(Tag.DIV)
+    public class MyPageWithWildcardParam extends Component
+            implements HasUrlParameter<String> {
+
+        @Override
+        public void setParameter(BeforeEvent event,
+                @com.vaadin.flow.router.WildcardParameter String parameter) {
         }
     }
 
