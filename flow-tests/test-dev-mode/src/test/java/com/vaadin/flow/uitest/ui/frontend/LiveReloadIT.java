@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -62,5 +63,26 @@ public class LiveReloadIT extends ChromeBrowserTest {
 
         Assert.assertEquals(0,
                 findElements(By.id("vaadin-live-reload-indicator")).size());
+    }
+
+    @Test
+    public void notificationShownOnAutoReload() {
+        open();
+
+        WebElement liveReloadTrigger = findElement(
+                By.id("live-reload-trigger-button"));
+        liveReloadTrigger.click();
+
+        waitUntil(ExpectedConditions.presenceOfElementLocated(
+                By.id("vaadin-live-reload-notification")));
+
+        WebElement reloadNotification = findElement(
+                By.id("vaadin-live-reload-notification"));
+        Assert.assertNotNull(reloadNotification);
+        Assert.assertNull(reloadNotification.getAttribute("hidden"));
+
+        findElement(By.tagName("body")).click();
+        Assert.assertNotNull(reloadNotification.getAttribute("hidden"));
+
     }
 }
