@@ -20,8 +20,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 
 /**
  * Abstract base class for route and route alias data.
@@ -136,16 +138,16 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     }
 
     /**
-     * This method will throw {@link UnsupportedOperationException}.
+     * Get {@link Route} url parameters types if any.
      *
      * @return url parameters (by type and in order)
-     * @throws UnsupportedOperationException
      * @deprecated use {@link #getDefinedParameters()} instead.
      */
     @Deprecated
     public List<Class<?>> getParameters() {
-        throw new UnsupportedOperationException(
-                "Use getDefinedParameters instead.");
+        final List<String> parametersRegex = parameters.values().stream()
+                .map(RouteParameterData::getRegex).collect(Collectors.toList());
+        return HasUrlParameterFormat.getParameterTypes(parametersRegex);
     }
 
     /**
@@ -185,6 +187,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
 
     @Override
     public int hashCode() {
-        return Objects.hash(parentLayouts, urlTemplate, navigationTarget);
+        return Objects.hash(parentLayouts, urlTemplate, parameters,
+                navigationTarget);
     }
 }

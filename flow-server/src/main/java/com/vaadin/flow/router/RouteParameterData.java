@@ -24,14 +24,17 @@ public class RouteParameterData implements Serializable {
 
     private final String template;
 
+    private final String regex;
+
     /**
      * Create a parameter data instance.
      * 
      * @param template
      *            the parameter template.
      */
-    public RouteParameterData(String template) {
+    public RouteParameterData(String template, String regex) {
         this.template = template;
+        this.regex = regex;
     }
 
     /**
@@ -41,5 +44,14 @@ public class RouteParameterData implements Serializable {
      */
     public String getTemplate() {
         return template;
+    }
+
+    /**
+     * Gets the regex of the parameter.
+     * 
+     * @return the regex of the parameter.
+     */
+    public String getRegex() {
+        return regex;
     }
 }

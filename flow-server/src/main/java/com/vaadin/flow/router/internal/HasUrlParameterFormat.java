@@ -287,12 +287,12 @@ public class HasUrlParameterFormat implements Serializable {
         return type;
     }
 
-    private static Class<?> getType(String s) {
-        if (RouteFormat.INTEGER_REGEX.equalsIgnoreCase(s)) {
+    private static Class<?> getType(String regex) {
+        if (RouteFormat.INTEGER_REGEX.equalsIgnoreCase(regex)) {
             return Integer.class;
-        } else if (RouteFormat.LONG_REGEX.equalsIgnoreCase(s)) {
+        } else if (RouteFormat.LONG_REGEX.equalsIgnoreCase(regex)) {
             return Long.class;
-        } else if (RouteFormat.BOOLEAN_REGEX.equalsIgnoreCase(s)) {
+        } else if (RouteFormat.BOOLEAN_REGEX.equalsIgnoreCase(regex)) {
             return Boolean.class;
         } else {
             return String.class;

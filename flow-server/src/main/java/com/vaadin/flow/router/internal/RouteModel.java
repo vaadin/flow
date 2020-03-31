@@ -239,8 +239,8 @@ class RouteModel implements Serializable {
 
         this.root.matchSegmentTemplates(urlTemplate, segment -> {
             if (segment.isParameter()) {
-                result.put(segment.getName(),
-                        new RouteParameterData(segment.getTemplate()));
+                result.put(segment.getName(), new RouteParameterData(
+                        segment.getTemplate(), segment.getRegex()));
             }
         }, null);
         return result;
