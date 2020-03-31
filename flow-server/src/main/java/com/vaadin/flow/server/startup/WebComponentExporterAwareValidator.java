@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
@@ -39,11 +38,12 @@ import com.vaadin.flow.component.page.Push;
  * @since 2.0
  */
 @HandlesTypes(Push.class)
-public class WebComponentExporterAwareValidator extends
-        AbstractAnnotationValidator implements ServletContainerInitializer {
+public class WebComponentExporterAwareValidator
+        extends AbstractAnnotationValidator
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
+    public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         validateClasses(classSet);
     }
