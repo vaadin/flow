@@ -496,8 +496,8 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return forward target type
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasForwardTarget()}
-     *             before accessing this method.
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
      */
     public Class<? extends Component> getForwardTargetType() {
         return forwardTargetState.getNavigationTarget();
@@ -508,8 +508,8 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of forward target
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasForwardTarget()}
-     *             before accessing this method.
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
      * @deprecated use {@link #getForwardTargetUrlParameters()} instead.
      */
     @Deprecated
@@ -523,8 +523,8 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of forward target
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasForwardTarget()}
-     *             before accessing this method.
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
      */
     public UrlParameters getForwardTargetUrlParameters() {
         return forwardTargetState.getParameters();
@@ -535,8 +535,8 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return the reroute url.
      * @throws NullPointerException
-     *             if no forward is set. Check {@link #hasForwardTarget()}
-     *             before accessing this method.
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
      */
     public String getForwardUrl() {
         return forwardTargetState.getResolvedPath();
@@ -559,8 +559,8 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return route target type
      * @throws NullPointerException
-     *             if no reroute is set. Check {@link #hasRerouteTarget()}
-     *             before accessing this method.
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
@@ -571,8 +571,8 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of reroute target
      * @throws NullPointerException
-     *             if no reroute is set. Check {@link #hasRerouteTarget()}
-     *             before accessing this method.
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
      * @deprecated use {@link #getRerouteTargetUrlParameters()} instead.
      */
     @Deprecated
@@ -586,8 +586,8 @@ public abstract class BeforeEvent extends EventObject {
      *
      * @return URL parameters of reroute target
      * @throws NullPointerException
-     *             if no reroute is set. Check {@link #hasRerouteTarget()}
-     *             before accessing this method.
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public UrlParameters getRerouteTargetUrlParameters() {
         return rerouteTargetState.getParameters();
@@ -598,8 +598,8 @@ public abstract class BeforeEvent extends EventObject {
      * 
      * @return the reroute url.
      * @throws NullPointerException
-     *             if no reroute is set. Check {@link #hasRerouteTarget()}
-     *             before accessing this method.
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public String getRerouteUrl() {
         return rerouteTargetState.getResolvedPath();
