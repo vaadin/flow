@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -30,37 +32,44 @@ public class LiveReloadIT extends ChromeBrowserTest {
         open();
 
         // Upon opening, the LiveReloadUI should show the indicator but not the
-        // message
-        Assert.assertEquals(1,
-                findElements(By.id("vaadin-live-reload-indicator")).size());
-        WebElement reloadOverlay = findElement(
-                By.id("vaadin-live-reload-overlay"));
-        Assert.assertNotNull(reloadOverlay.getAttribute("hidden"));
+        // message window
+        List<WebElement> gizmos = findElements(
+                By.tagName("vaadin-devmode-gizmo"));
+        Assert.assertEquals(1, gizmos.size());
+        WebElement gizmo = gizmos.get(0);
+
+        WebElement window = findInShadowRoot(gizmo, By.className("window"))
+                .get(0);
+        Assert.assertFalse(window.isDisplayed());
 
         // After clicking the icon in the indicator, the live-reload message
-        // should appear
-        WebElement liveReloadIcon = findElement(
-                By.id("vaadin-live-reload-icon"));
+        // window should appear
+        WebElement liveReloadIcon = findInShadowRoot(gizmo,
+                By.className("vaadin-logo")).get(0);
         liveReloadIcon.click();
-        Assert.assertNotEquals("true", reloadOverlay.getAttribute("hidden"));
+        Assert.assertTrue(window.isDisplayed());
     }
 
     @Test
     public void overlayShouldNotBeRenderedAfterDisable() {
         open();
 
-        WebElement liveReloadIcon = findElement(
-                By.id("vaadin-live-reload-icon"));
+        WebElement gizmo = findElement(By.tagName("vaadin-devmode-gizmo"));
+        gizmo.click();
+
+        WebElement liveReloadIcon = findInShadowRoot(gizmo,
+                By.className("vaadin-logo")).get(0);
         liveReloadIcon.click();
-        WebElement button = findElement(By.id("vaadin-live-reload-disable"));
+
+        WebElement button = findInShadowRoot(gizmo, By.id("disable")).get(0);
         button.click();
 
         Assert.assertEquals(0,
-                findElements(By.id("vaadin-live-reload-indicator")).size());
+                findElements(By.tagName("vaadin-devmode-gizmo")).size());
 
         driver.navigate().refresh();
 
         Assert.assertEquals(0,
-                findElements(By.id("vaadin-live-reload-indicator")).size());
+                findElements(By.tagName("vaadin-devmode-gizmo")).size());
     }
 }

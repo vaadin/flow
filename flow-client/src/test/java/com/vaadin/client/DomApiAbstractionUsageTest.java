@@ -39,7 +39,7 @@ public class DomApiAbstractionUsageTest {
             .of(DomElement.class, DomNode.class, ResourceLoader.class,
                     BrowserInfo.class, DefaultReconnectDialog.class,
                     SystemErrorHandler.class, LoadingIndicator.class,
-                    LiveReload.class, RouterLinkHandler.class, Profiler.class,
+                    RouterLinkHandler.class, Profiler.class,
                     ScrollPositionHandler.class)
             .map(Class::getName).collect(Collectors.toSet());
 

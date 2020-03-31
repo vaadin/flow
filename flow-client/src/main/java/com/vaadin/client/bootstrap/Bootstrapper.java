@@ -163,8 +163,6 @@ public class Bootstrapper implements EntryPoint {
                 jsoConfiguration.getConfigBoolean("requestTiming"));
         conf.setExportedWebComponents(
                 jsoConfiguration.getConfigStringArray("webcomponents"));
-        conf.setDevModeLiveReloadEnabled(jsoConfiguration.getConfigBoolean(
-                Constants.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD));
     }
 
     private static void doStartApplication(final String applicationId) {

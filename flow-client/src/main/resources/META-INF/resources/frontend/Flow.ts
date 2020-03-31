@@ -7,6 +7,8 @@ interface AppConfig {
   appId: string;
   uidl: object;
   webComponentMode: boolean;
+  devmodeGizmoEnabled: boolean;
+  serviceUrl: string;
 }
 
 interface AppInitResponse {
@@ -221,6 +223,13 @@ export class Flow {
         this.container.style.display = 'none';
         document.body.appendChild(this.container);
       }
+
+      // Load live-reload gizmo (server ensures true only in dev mode)
+      if (appConfig.devmodeGizmoEnabled) {
+        const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
+        await devmodeGizmoMod.init(appConfig.serviceUrl);
+      }
+
       this.isActive = false;
     }
     return this.response;
