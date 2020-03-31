@@ -254,6 +254,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 "4.2.2");
         added += addDependency(packageJson, DEV_DEPENDENCIES, "raw-loader",
                 "3.0.0");
+        added += addDependency(packageJson, DEV_DEPENDENCIES, "terser",
+                "4.6.7");
         if (added > 0) {
             log().info("Added {} dependencies to main package.json", added);
         }
