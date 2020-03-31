@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -183,7 +184,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Run_Updaters_doesNotThrow() throws Exception {
         // no any exception means that updaters are executed and dev mode server
         // started
-        runOnStartup();
+        process();
     }
 
     @Test
@@ -193,7 +194,41 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         mainPackageFile.delete();
         // no any exception means that updaters are executed and dev mode server
         // started
-        runOnStartup();
+        process();
+    }
+
+    public void should_Run_Updaters() throws Exception {
+        process();
+        assertNotNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
+        webpackFile.delete();
+        mainPackageFile.delete();
+        process();
+        assertNotNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Test
+    public void should_Not_Run_Updaters_when_NoMainPackageFile()
+            throws Exception {
+        assertNull(DevModeHandler.getDevModeHandler());
+        mainPackageFile.delete();
+        assertNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
+        process();
+        assertNotNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
+        webpackFile.delete();
+        process();
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
@@ -206,11 +241,20 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
+    public void should_Not_AddContextListener() throws Exception {
+        ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor
+                .forClass(EventListener.class);
+        process();
+        Mockito.verify(servletContext, Mockito.never())
+                .addListener(arg.capture());
+    }
+
+    @Test
     public void listener_should_stopDevModeHandler_onDestroy()
             throws Exception {
         initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
-        runOnStartup();
+        process();
 
         assertNotNull(DevModeHandler.getDevModeHandler());
 
@@ -320,16 +364,17 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
-        Mockito.when(servletContext.getInitParameterNames()).thenReturn(
-                Collections.enumeration(new HashSet<>(
+        Mockito.when(servletContext.getInitParameterNames())
+                .thenReturn(Collections.enumeration(new HashSet<>(
                         Arrays.asList(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
                                 FrontendUtils.PROJECT_BASEDIR))));
         Mockito.when(
                 servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
                 .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
-        Mockito.when(
-                servletContext.getInitParameter(Constants.SERVLET_PARAMETER_ENABLE_PNPM))
-                .thenReturn(initParams.get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+        Mockito.when(servletContext
+                .getInitParameter(Constants.SERVLET_PARAMETER_ENABLE_PNPM))
+                .thenReturn(initParams
+                        .get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
