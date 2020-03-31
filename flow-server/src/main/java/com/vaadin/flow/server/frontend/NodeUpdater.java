@@ -259,6 +259,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("webpack-merge", "4.2.2");
         defaults.put("raw-loader", "3.1.0");
 
+        defaults.put("terser", "4.6.7");
+
         return defaults;
     }
 
