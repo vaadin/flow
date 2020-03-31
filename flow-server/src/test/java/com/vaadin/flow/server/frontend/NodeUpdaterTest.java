@@ -34,7 +34,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 
@@ -187,6 +186,14 @@ public class NodeUpdaterTest {
                         .getString("@webcomponents/webcomponentsjs"));
         Assert.assertEquals("5.0.1", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+    }
+
+    @Test
+    public void assertTerserVersion() throws IOException {
+        final JsonObject packageJson = nodeUpdater.getPackageJson();
+        nodeUpdater.updateDefaultDependencies(packageJson);
+        Assert.assertEquals("4.6.7", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("terser"));
     }
 
     private String getPolymerVersion(JsonObject object) {
