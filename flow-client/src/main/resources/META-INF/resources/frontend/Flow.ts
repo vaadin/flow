@@ -9,6 +9,7 @@ interface AppConfig {
   webComponentMode: boolean;
   devmodeGizmoEnabled: boolean;
   serviceUrl: string;
+  springBootDevToolsPort: number;
 }
 
 interface AppInitResponse {
@@ -227,7 +228,7 @@ export class Flow {
       // Load live-reload gizmo (server ensures true only in dev mode)
       if (appConfig.devmodeGizmoEnabled) {
         const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
-        await devmodeGizmoMod.init(appConfig.serviceUrl);
+        await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.springBootDevToolsPort);
       }
 
       this.isActive = false;

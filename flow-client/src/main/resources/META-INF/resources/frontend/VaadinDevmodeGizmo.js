@@ -82,7 +82,8 @@ class VaadinDevmodeGizmo extends LitElement {
       messages: {type: Array},
       status: {type: String},
       notification: {type: String},
-      serviceurl: {type: String}
+      serviceurl: {type: String},
+      springBootDevToolsPort: {type: Number}
     };
   }
 
@@ -118,10 +119,6 @@ class VaadinDevmodeGizmo extends LitElement {
     return 'vaadin.live-reload.triggeredCount';
   }
 
-  static get SPRING_DEV_TOOLS_PORT() {
-    return 35729;
-  }
-
   static get isEnabled() {
     const enabled = window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE);
     return enabled === null || !(enabled === 'false');
@@ -146,33 +143,45 @@ class VaadinDevmodeGizmo extends LitElement {
       this.connection.close();
       this.connection = null;
     }
-    const self = this;
     const hostname = window.location.hostname;
-    // try Spring Boot Devtools first
-    self.connection = new WebSocket(
-      'ws://' + hostname + ':' + VaadinDevmodeGizmo.SPRING_DEV_TOOLS_PORT);
-    self.connection.onmessage = msg => self.handleMessage(msg);
-    self.connection.onclose = _ => {
-      self.status = VaadinDevmodeGizmo.UNAVAILABLE;
-    };
-    self.connection.onerror = err => {
-      if (self.status === VaadinDevmodeGizmo.UNAVAILABLE) {
-        // no Spring, try the dedicated push channel
-        const url = self.serviceurl ? self.serviceurl : window.location.toString();
-        if (!url.startsWith('http://')) {
-          console.warn('The protocol of the url should be http for live reload to work.');
-          return;
+    // try Spring Boot Devtools first, if port is set
+    if (this.springBootDevToolsPort) {
+      const self = this;
+      self.connection = new WebSocket(
+        'ws://' + hostname + ':' + this.springBootDevToolsPort);
+      self.connection.onmessage = msg => self.handleMessage(msg);
+      self.connection.onclose = _ => {
+        self.status = VaadinDevmodeGizmo.UNAVAILABLE;
+        // TODO Not setting connection to null here because it will race with the
+        // next connection attempt to the dedicated push channel.
+      };
+      self.connection.onerror = err => {
+        if (self.status === VaadinDevmodeGizmo.UNAVAILABLE) {
+          // no Spring, try the dedicated push channel
+          self.openDedicatedWebSocketConnection();
+        } else {
+          self.handleError(err);
         }
-        const wsUrl = url.replace(/^http:/, 'ws:') + '?refresh_connection';
-        self.connection = new WebSocket(wsUrl);
-        self.connection.onmessage = msg => self.handleMessage(msg);
-        self.connection.onerror = err => self.handleError(err);
-        self.connection.onclose = _ => {
-          self.status = VaadinDevmodeGizmo.UNAVAILABLE;
-        };
-      } else {
-        self.handleError(err);
-      }
+      };
+    } else {
+      this.openDedicatedWebSocketConnection();
+    }
+  }
+
+  openDedicatedWebSocketConnection() {
+    const url = this.serviceurl ? this.serviceurl : window.location.toString();
+    if (!url.startsWith('http://')) {
+      console.warn('The protocol of the url should be http for live reload to work.');
+      return;
+    }
+    const wsUrl = url.replace(/^http:/, 'ws:') + '?refresh_connection';
+    const self = this;
+    this.connection = new WebSocket(wsUrl);
+    this.connection.onmessage = msg => this.handleMessage(msg);
+    this.connection.onerror = err => this.handleError(err);
+    this.connection.onclose = _ => {
+      self.status = VaadinDevmodeGizmo.UNAVAILABLE;
+      self.connection = null;
     };
   }
 
@@ -306,12 +315,15 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 }
 
-const init = function(serviceUrl) {
+const init = function(serviceUrl, springBootDevToolsPort) {
   if ('false' !== window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE)) {
     customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
     const devmodeGizmo = document.createElement('vaadin-devmode-gizmo');
     if (serviceUrl) {
       devmodeGizmo.setAttribute('serviceurl', serviceUrl);
+    }
+    if (springBootDevToolsPort) {
+      devmodeGizmo.setAttribute('springBootDevToolsPort', springBootDevToolsPort);
     }
     document.body.appendChild(devmodeGizmo);
   }

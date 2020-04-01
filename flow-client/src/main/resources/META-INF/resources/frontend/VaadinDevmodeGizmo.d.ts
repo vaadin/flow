@@ -1,1 +1,1 @@
-export const init: (serviceUrl: string) => void;
+export const init: (serviceUrl: string, springBootDevToolsPort: number) => void;
