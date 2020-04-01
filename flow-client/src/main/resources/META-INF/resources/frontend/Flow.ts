@@ -225,7 +225,8 @@ export class Flow {
         document.body.appendChild(this.container);
       }
 
-      // Load live-reload gizmo (server ensures true only in dev mode)
+      // Load devmode gizmo, which handles live-reload connection to the server
+      // (server ensures this parameter is true only in dev mode)
       if (appConfig.devmodeGizmoEnabled) {
         const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
         await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.springBootDevToolsPort);

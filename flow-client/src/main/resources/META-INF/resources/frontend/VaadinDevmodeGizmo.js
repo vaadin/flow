@@ -222,6 +222,8 @@ class VaadinDevmodeGizmo extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+
+    // when focus or clicking anywhere, move the notification to the message tray
     this.disableEventListener = e => this.demoteNotification();
     document.body.addEventListener('focus', this.disableEventListener);
     document.body.addEventListener('click', this.disableEventListener);
@@ -234,7 +236,7 @@ class VaadinDevmodeGizmo extends LitElement {
       const reloaded = ('0' + now.getHours()).slice(-2) + ':'
         + ('0' + now.getMinutes()).slice(-2) + ':'
         + ('0' + now.getSeconds()).slice(-2);
-      this.showNotification('Automatic reload #' + count + ' finished on ' + reloaded);
+      this.showNotification('Automatic reload #' + count + ' finished at ' + reloaded);
       window.sessionStorage.removeItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
   }
