@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect;
 
 import java.lang.reflect.Method;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -93,8 +94,10 @@ public class VaadinConnectControllerConfiguration {
      */
     private RequestMappingInfo prependConnectPrefixUrl(
             RequestMappingInfo mapping) {
+        String customEnpointPrefixName = FrontendUtils.getCustomEndpointPrefix();
         PatternsRequestCondition connectEndpointPattern =
                 new PatternsRequestCondition(
+                        customEnpointPrefixName != null ? customEnpointPrefixName :
                 vaadinEndpointProperties.getVaadinEndpointPrefix())
                         .combine(mapping.getPatternsCondition());
 

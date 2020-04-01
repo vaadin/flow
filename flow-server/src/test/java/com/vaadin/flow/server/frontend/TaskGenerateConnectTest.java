@@ -38,13 +38,14 @@ public class TaskGenerateConnectTest {
         File ts1 = new File(outputDirectory, "FooBarEndpoint.ts");
         File ts2 = new File(outputDirectory, "FooFooEndpoint.ts");
         File client = new File(outputDirectory, "connect-client.default.ts");
+        File frontendDirectory = outputDirectory.getParentFile();
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
         assertFalse(client.exists());
 
         taskGenerateConnectTs = new TaskGenerateConnect(properties,
-                openApiJson, outputDirectory);
+                openApiJson, outputDirectory, frontendDirectory);
 
         taskGenerateConnectTs.execute();
 
@@ -60,4 +61,38 @@ public class TaskGenerateConnectTest {
         assertTrue(output.contains("export default client;"));
     }
 
+    @Test
+    public void should_use_custom_endpoint_name_when_connect_client_exists() throws Exception {
+        File ts1 = new File(outputDirectory, "FooBarEndpoint.ts");
+        File ts2 = new File(outputDirectory, "FooFooEndpoint.ts");
+        File client = new File(outputDirectory, "connect-client.default.ts");
+        File frontendDirectory = outputDirectory.getParentFile();
+        File customConnectClient = temporaryFolder
+                .newFile("connect-client.ts");
+
+        assertFalse(ts1.exists());
+        assertFalse(ts2.exists());
+        assertFalse(client.exists());
+        assertTrue(customConnectClient.exists());
+
+        taskGenerateConnectTs = new TaskGenerateConnect(properties,
+                openApiJson, outputDirectory, frontendDirectory);
+
+        taskGenerateConnectTs.execute();
+
+        assertTrue(ts1.exists());
+        assertTrue(ts2.exists());
+        assertTrue(client.exists());
+
+        String outputEndpoinTs1 = FileUtils.readFileToString(ts1, "UTF-8");
+        String outputEndpoinTs2 = FileUtils.readFileToString(ts2, "UTF-8");
+        assertTrue(outputEndpoinTs1
+                .contains("import client from '"
+                        + customConnectClient.getPath()
+                        .replaceFirst("[.][^.]+$", "") + "'"));
+        assertTrue(outputEndpoinTs2
+                .contains("import client from '"
+                        + customConnectClient.getPath()
+                        .replaceFirst("[.][^.]+$", "") + "'"));
+    }
 }
