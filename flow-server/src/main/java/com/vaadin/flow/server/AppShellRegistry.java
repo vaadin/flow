@@ -56,6 +56,10 @@ public class AppShellRegistry implements Serializable {
             "%n%nFound app shell configuration annotations in non `AppShellConfigurator` classes."
             + "%nThe following annotations must be either removed or moved to the '%s' class:%n  %s%n";
 
+    public static final String ERROR_HEADER_OFFENDING_PWA =
+            "%n%nWe changed the way you configure PWAs, please see this link for more info:%n"
+            + "https://vaadin.com/docs/v15/flow/advanced/tutorial-modifying-the-bootstrap-page.html%n";
+
     public static final String ERROR_HEADER_NO_APP_CONFIGURATOR =
             "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
             + "%nPlease, create a class implementing `AppShellConfigurator`, and remove `PageConfigurator` from: %n  - %s%n";

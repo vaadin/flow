@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.HttpServer;
+import org.jsoup.Jsoup;
+import org.jsoup.internal.StringUtil;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -35,32 +48,17 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithMultipleAnnotations;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import org.jsoup.Jsoup;
-import org.jsoup.internal.StringUtil;
-import org.jsoup.nodes.DataNode;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class IndexHtmlRequestHandlerTest {
     private MockServletServiceSessionSetup mocks;
@@ -433,7 +431,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent() throws Exception {
         // Set class in context and do not call initializer
         AppShellRegistry registry = new AppShellRegistry();
-        registry.setShell(MyAppShellWithMultipleAnnotations.class);
+        registry.setShell(AppShellWithPWA.class);
         mocks.setAppShellRegistry(registry);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -444,7 +442,7 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
-        assertEquals(7, elements.size());
+        assertEquals(5, elements.size());
         assertEquals("viewport", elements.get(1).attr("name"));
         assertEquals("my-viewport", elements.get(1).attr("content"));
         assertEquals("apple-mobile-web-app-capable", elements.get(2).attr("name"));
@@ -454,18 +452,10 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("apple-mobile-web-app-status-bar-style", elements.get(4).attr("name"));
         assertEquals("#ffffff", elements.get(4).attr("content"));
 
-        assertEquals("foo", elements.get(5).attr("name"));
-        assertEquals("bar", elements.get(5).attr("content"));
-        assertEquals("lorem", elements.get(6).attr("name"));
-        assertEquals("ipsum", elements.get(6).attr("content"));
-
         Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
-        assertEquals(3, headInlineAndStyleElements.size());
-        assertEquals("text/css", headInlineAndStyleElements.get(2).attr("type"));
-        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
-
-        Elements bodyInlineElements = document.body().getElementsByTag("script");
-        assertEquals(4, bodyInlineElements.size());
+        assertEquals(2, headInlineAndStyleElements.size());
+        assertEquals("text/css", headInlineAndStyleElements.get(1).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(1).childNode(0).toString());
     }
 
     @Test
