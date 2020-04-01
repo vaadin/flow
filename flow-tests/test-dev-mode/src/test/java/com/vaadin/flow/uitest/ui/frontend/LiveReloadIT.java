@@ -28,6 +28,13 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class LiveReloadIT extends ChromeBrowserTest {
 
     @Test
+    public void testInSequence() {
+        overlayShouldRender();
+        notificationShownOnAutoReloadAndClosedOnBodyClick();
+        deactivateLiveReload();
+        overlayShouldNotBeRenderedAfterDisable();
+    }
+
     public void overlayShouldRender() {
         open();
         // Upon opening, the LiveReloadUI should show the indicator but not the
@@ -50,7 +57,6 @@ public class LiveReloadIT extends ChromeBrowserTest {
         Assert.assertTrue(window.isDisplayed());
     }
 
-    @Test
     public void overlayShouldNotBeRenderedAfterDisable() {
         open();
         waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
@@ -74,7 +80,6 @@ public class LiveReloadIT extends ChromeBrowserTest {
                 findElements(By.tagName("vaadin-devmode-gizmo")).size());
     }
 
-    @Test
     public void notificationShownOnAutoReloadAndClosedOnBodyClick() {
         open();
         waitForElementPresent(By.id("live-reload-trigger-button"));
@@ -103,7 +108,6 @@ public class LiveReloadIT extends ChromeBrowserTest {
         Assert.assertTrue(gizmo2.getAttribute("class").contains("vaadin-logo"));
     }
 
-    @Test
     public void deactivateLiveReload() {
         open();
 
