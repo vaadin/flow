@@ -26,7 +26,6 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -194,25 +193,6 @@ public interface RouteRegistry extends Serializable {
      */
     Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget);
-
-    /**
-     * Get the main url template for given navigation target with parameters formatted
-     * according to the given format.
-     * <p>
-     * In case of annotated target the main url template is composed of the
-     * {@link Route} annotation value prefixed by all {@link RoutePrefix} values
-     * of the parent {@link RouterLayout}s chain.
-     *
-     * @param navigationTarget
-     *            navigation target to get route definition for, not
-     *            {@code null}
-     * @param format
-     *            settings used to format the result parameters.
-     * @return {@link Optional} navigation target url template string or
-     *         {@link Optional#empty()} if navigation target was not found
-     */
-    Optional<String> getUrlTemplate(Class<? extends Component> navigationTarget,
-            Set<RouteParameterFormat> format);
 
     /**
      * Get the layout chain for given navigation target on the targeted url.

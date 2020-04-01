@@ -119,7 +119,7 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getParentLayouts(), getUrlTemplate(), getNavigationTarget(),
-                routeAliases);
+        return Objects.hash(getParentLayouts(), getUrlTemplate(),
+                getNavigationTarget(), routeAliases);
     }
 }

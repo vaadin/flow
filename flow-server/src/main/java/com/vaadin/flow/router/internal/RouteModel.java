@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteParameterData;
-import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -209,11 +209,11 @@ class RouteModel implements Serializable {
      *             not match with the template.
      */
     String formatUrlTemplate(String urlTemplate,
-            Set<RouteParameterFormat> format) {
+            Set<RouteParameterFormatOption> format) {
 
-        if (format.contains(RouteParameterFormat.NAME)
-                && format.contains(RouteParameterFormat.MODIFIER)
-                && format.contains(RouteParameterFormat.REGEX)) {
+        if (format.contains(RouteParameterFormatOption.NAME)
+                && format.contains(RouteParameterFormatOption.MODIFIER)
+                && format.contains(RouteParameterFormatOption.REGEX)) {
             return urlTemplate;
         }
 

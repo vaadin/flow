@@ -27,10 +27,12 @@ public class RouteParameterData implements Serializable {
     private final String regex;
 
     /**
-     * Create a parameter data instance.
+     * Creates a parameter data instance.
      * 
      * @param template
      *            the parameter template.
+     * @param regex
+     *            the regex as found in the template.
      */
     public RouteParameterData(String template, String regex) {
         this.template = template;

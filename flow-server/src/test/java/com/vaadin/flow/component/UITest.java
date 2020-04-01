@@ -35,6 +35,7 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -104,10 +105,20 @@ public class UITest {
 
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            System.out.println("xxxxxxxxxx");
         }
 
     }
+
+    @Tag(Tag.DIV)
+    public static class ParameterizedNotRoute extends Component
+            implements HasUrlParameter<Integer> {
+
+        @Override
+        public void setParameter(BeforeEvent event, Integer parameter) {
+        }
+
+    }
+
 
     private static class AttachableComponent extends Component {
         public AttachableComponent() {
@@ -172,7 +183,7 @@ public class UITest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor)
+                               ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
             VaadinServletRequest request = Mockito
@@ -896,4 +907,80 @@ public class UITest {
         ui.navigate(Parameterized.class, "baz");
         Assert.assertEquals("foo-bar/baz", loc.get());
     }
+
+    @Test
+    public void navigate_throws_illegal_argument_exception() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        try {
+            ui.navigate(Parameterized.class);
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
+
+        try {
+            ui.navigate(Parameterized.class, (String) null);
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
+
+        try {
+            ui.navigate(Parameterized.class, UrlParameters.empty());
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
+
+        try {
+            ui.navigate((String) null);
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Location may not be null", e.getMessage());
+        }
+
+        try {
+            ui.navigate((String) null, QueryParameters.empty());
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Location may not be null",
+                    e.getMessage());
+        }
+
+        try {
+            ui.navigate("foo-bar", null);
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertEquals("Query parameters may not be null",
+                    e.getMessage());
+        }
+    }
+
+    @Test
+    public void navigate_throws_not_found_exception() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        try {
+            ui.navigate(FooBarParamNavigationTarget.class);
+            Assert.fail("NotFoundException expected.");
+        } catch (NotFoundException e) {
+        }
+
+        try {
+            ui.navigate(ParameterizedNotRoute.class, 1);
+            Assert.fail("NotFoundException expected.");
+        } catch (NotFoundException e) {
+        }
+
+        try {
+            ui.navigate(FooBarParamNavigationTarget.class,
+                    new UrlParameters("fooParam", "123"));
+            Assert.fail("NotFoundException expected.");
+        } catch (NotFoundException e) {
+        }
+    }
+
 }

@@ -140,7 +140,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     /**
      * Get {@link Route} url parameters types if any.
      *
-     * @return url parameters (by type and in order)
+     * @return url parameters types.
      * @deprecated use {@link #getDefinedParameters()} instead.
      */
     @Deprecated
@@ -178,9 +178,9 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     public boolean equals(Object obj) {
         if (obj instanceof RouteBaseData<?>) {
             RouteBaseData<?> other = (RouteBaseData<?>) obj;
-            return other.parentLayouts.equals(this.parentLayouts) && other.urlTemplate
-                    .equals(this.urlTemplate) && other.navigationTarget
-                    .equals(navigationTarget);
+            return other.parentLayouts.equals(this.parentLayouts)
+                    && other.urlTemplate.equals(this.urlTemplate)
+                    && other.navigationTarget.equals(navigationTarget);
         }
         return false;
     }

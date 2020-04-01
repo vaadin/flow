@@ -24,7 +24,7 @@ import java.util.Map;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteParameterData;
-import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.startup.RouteTarget;
@@ -187,29 +187,29 @@ public class RouteModelTest {
 
         Assert.assertEquals(urlTemplate,
                 root.formatUrlTemplate(urlTemplate,
-                        EnumSet.of(RouteParameterFormat.NAME,
-                                RouteParameterFormat.REGEX,
-                                RouteParameterFormat.MODIFIER)));
+                        EnumSet.of(RouteParameterFormatOption.NAME,
+                                RouteParameterFormatOption.REGEX,
+                                RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("trunk/branch/:id(integer)/:list*(long)",
                 root.formatUrlTemplate(urlTemplate,
-                        EnumSet.of(RouteParameterFormat.NAME,
-                                RouteParameterFormat.REGEX_NAME,
-                                RouteParameterFormat.MODIFIER)));
+                        EnumSet.of(RouteParameterFormatOption.NAME,
+                                RouteParameterFormatOption.REGEX_NAME,
+                                RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("trunk/branch/:id(integer)/:list(long)",
                 root.formatUrlTemplate(urlTemplate,
-                        EnumSet.of(RouteParameterFormat.NAME,
-                                RouteParameterFormat.REGEX_NAME)));
+                        EnumSet.of(RouteParameterFormatOption.NAME,
+                                RouteParameterFormatOption.REGEX_NAME)));
 
         Assert.assertEquals("trunk/branch/:id/:list*",
                 root.formatUrlTemplate(urlTemplate,
-                        EnumSet.of(RouteParameterFormat.NAME,
-                                RouteParameterFormat.MODIFIER)));
+                        EnumSet.of(RouteParameterFormatOption.NAME,
+                                RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("trunk/branch/:integer/:long",
                 root.formatUrlTemplate(urlTemplate,
-                        EnumSet.of(RouteParameterFormat.REGEX_NAME)));
+                        EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
     }
 
     @Test

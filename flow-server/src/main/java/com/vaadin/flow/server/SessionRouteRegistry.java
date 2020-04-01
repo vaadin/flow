@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
@@ -225,18 +224,6 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             return targetRoute;
         }
         return getParentRegistry().getUrlTemplate(navigationTarget);
-    }
-
-    @Override
-    public Optional<String> getUrlTemplate(
-            Class<? extends Component> navigationTarget,
-            Set<RouteParameterFormat> format) {
-        final Optional<String> targetRoute = super.getUrlTemplate(
-                navigationTarget, format);
-        if (targetRoute.isPresent()) {
-            return targetRoute;
-        }
-        return getParentRegistry().getUrlTemplate(navigationTarget, format);
     }
 
     @Override

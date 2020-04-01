@@ -1,10 +1,9 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
 
-import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import org.junit.Assert;
 import org.junit.Test;
@@ -85,26 +84,26 @@ public class ConfiguredRoutesTest {
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:intType(integer)/:longType?(long)/:boolType?(boolean)/:stringType?(string)/:varargs*(string)",
                 config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.NAME,
-                                RouteParameterFormat.MODIFIER,
-                                RouteParameterFormat.REGEX_NAME)));
+                        EnumSet.of(RouteParameterFormatOption.NAME,
+                                RouteParameterFormatOption.MODIFIER,
+                                RouteParameterFormatOption.REGEX_NAME)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:intType/:longType?/:boolType?/:stringType?/:varargs*",
                 config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.NAME,
-                                RouteParameterFormat.MODIFIER)));
+                        EnumSet.of(RouteParameterFormatOption.NAME,
+                                RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:intType/:longType/:boolType/:stringType/:varargs",
                 config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.NAME)));
+                        EnumSet.of(RouteParameterFormatOption.NAME)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:(integer)/:?(long)/:?(boolean)/:?(string)/:*(string)",
                 config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.MODIFIER,
-                                RouteParameterFormat.REGEX_NAME)));
+                        EnumSet.of(RouteParameterFormatOption.MODIFIER,
+                                RouteParameterFormatOption.REGEX_NAME)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:(" + RouteParameterRegex.INTEGER + ")/:?("
@@ -112,17 +111,17 @@ public class ConfiguredRoutesTest {
                         + RouteParameterRegex.BOOLEAN
                         + ")/:?/:*(thinking|of|U|and|I)",
                 config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.MODIFIER,
-                                RouteParameterFormat.REGEX)));
+                        EnumSet.of(RouteParameterFormatOption.MODIFIER,
+                                RouteParameterFormatOption.REGEX)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:integer/:long/:boolean/:string/:string",
                 config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.REGEX_NAME)));
+                        EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:/:?/:?/:?/:*", config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.MODIFIER)));
+                        EnumSet.of(RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("Invalid formatted urlTemplate",
                 "path/to/:" + RouteParameterRegex.INTEGER + "/:"
@@ -130,7 +129,7 @@ public class ConfiguredRoutesTest {
                         + RouteParameterRegex.BOOLEAN
                         + "/:/:thinking|of|U|and|I",
                 config.getUrlTemplate(BaseTarget.class,
-                        EnumSet.of(RouteParameterFormat.REGEX)));
+                        EnumSet.of(RouteParameterFormatOption.REGEX)));
 
     }
 

@@ -20,7 +20,7 @@ package com.vaadin.flow.router;
  * information, so that the result may contain the parameters definition
  * represented according with the specified flags.
  */
-public enum RouteParameterFormat {
+public enum RouteParameterFormatOption {
 
     /**
      * The name of the parameter.

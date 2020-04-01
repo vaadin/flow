@@ -18,7 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 
 /**
@@ -81,7 +81,7 @@ class RouteFormat implements Serializable {
     }
 
     static String formatSegment(RouteModel.RouteSegment segment,
-            Set<RouteParameterFormat> format) {
+            Set<RouteParameterFormatOption> format) {
 
         if (!segment.isParameter()) {
             return segment.getName();
@@ -91,16 +91,16 @@ class RouteFormat implements Serializable {
 
         result.append(":");
 
-        final boolean formatRegex = format.contains(RouteParameterFormat.REGEX)
-                || format.contains(RouteParameterFormat.REGEX_NAME);
+        final boolean formatRegex = format.contains(RouteParameterFormatOption.REGEX)
+                || format.contains(RouteParameterFormatOption.REGEX_NAME);
         boolean wrapRegex = false;
 
-        if (format.contains(RouteParameterFormat.NAME)) {
+        if (format.contains(RouteParameterFormatOption.NAME)) {
             result.append(segment.getName());
             wrapRegex = true;
         }
 
-        if (format.contains(RouteParameterFormat.MODIFIER)) {
+        if (format.contains(RouteParameterFormatOption.MODIFIER)) {
             result.append(getModifier(segment.getTemplate()));
             wrapRegex = true;
         }
@@ -122,9 +122,9 @@ class RouteFormat implements Serializable {
     }
 
     static String formatSegmentRegex(RouteModel.RouteSegment segment,
-            Set<RouteParameterFormat> format) {
+            Set<RouteParameterFormatOption> format) {
         final String regex = segment.getRegex();
-        if (format.contains(RouteParameterFormat.REGEX_NAME)) {
+        if (format.contains(RouteParameterFormatOption.REGEX_NAME)) {
             return getRegexName(regex);
         } else {
             return regex;

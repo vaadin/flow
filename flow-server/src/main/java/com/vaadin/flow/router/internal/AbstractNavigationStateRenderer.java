@@ -696,10 +696,31 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         String url;
-        if (beforeNavigation.hasForwardTarget()) {
+        final boolean isForward = beforeNavigation.hasForwardTarget();
+        if (isForward) {
             url = beforeNavigation.getForwardUrl();
         } else {
             url = beforeNavigation.getRerouteUrl();
+        }
+
+        if (url == null) {
+            final String redirectType;
+            final Class<? extends Component> redirectTarget;
+            final UrlParameters redirectParameters;
+
+            if (isForward) {
+                redirectType = "forward";
+                redirectTarget = beforeNavigation.getForwardTargetType();
+                redirectParameters = beforeNavigation.getForwardTargetUrlParameters();
+            } else {
+                redirectType = "reroute";
+                redirectTarget = beforeNavigation.getRerouteTargetType();
+                redirectParameters = beforeNavigation.getRerouteTargetUrlParameters();
+            }
+
+            throw new IllegalStateException(String.format(
+                    "Attempting to %s to unresolved location target %s with url parameters %s",
+                    redirectType, redirectTarget, redirectParameters));
         }
 
         // TODO: Why are we passing query parameters from previous navigation event?

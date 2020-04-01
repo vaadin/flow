@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.slf4j.Logger;
@@ -789,11 +790,19 @@ public class UI extends Component
      *
      * @param navigationTarget
      *            navigation target to navigate to
+     * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     * @see #navigate(Class, Object)
+     * @see #navigate(Class, UrlParameters)
      */
     public void navigate(Class<? extends Component> navigationTarget) {
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(getRouter().getRegistry());
-        navigate(configuration.getUrl(navigationTarget));
+        navigate(navigationTarget, UrlParameters.empty());
     }
 
     /**
@@ -820,6 +829,9 @@ public class UI extends Component
      *             if a {@code null} parameter is given while navigationTarget's
      *             parameter is not annotated with @OptionalParameter
      *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
      */
     public <T, C extends Component & HasUrlParameter<T>> void navigate(
             Class<? extends C> navigationTarget, T parameter) {
@@ -843,6 +855,11 @@ public class UI extends Component
      * @param parameters
      *            parameters to pass to view.
      * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter, but parameters argument doesn't
+     *             provide {@link HasUrlParameterFormat#PARAMETER_NAME}
+     *             parameter.
+     * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      */
@@ -866,7 +883,7 @@ public class UI extends Component
      * @param location
      *            the location to navigate to, not {@code null}
      * @throws IllegalArgumentException
-     *             if the location or queryParameters are null.
+     *             if the location is null.
      */
     public void navigate(String location) {
         navigate(location, QueryParameters.empty());

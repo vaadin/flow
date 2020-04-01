@@ -1547,7 +1547,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("show/:filter?")
-    public static class FilterView extends UrlParametersBase {
+    public static class RedirectUrlParametersView extends UrlParametersBase {
 
         static boolean doForward = false;
 
@@ -1560,10 +1560,14 @@ public class RouterTest extends RoutingTestBase {
                 if (!value.equals("original")) {
                     UrlParametersBase.clear();
 
-                    if (value.equals("all")) {
-                        redirect(event, FilterAllView.class);
+                    if (value.equals("wrong")) {
+                        redirect(event, RedirectWithUrlParametersView.class,
+                                new UrlParameters("noParameter", value));
+                    } else if (value.equals("all")) {
+                        redirect(event, RedirectToView.class);
                     } else {
-                        redirect(event, FilterParamView.class, new UrlParameters("text", value));
+                        redirect(event, RedirectWithUrlParametersView.class,
+                                new UrlParameters("text", value));
                     }
                 }
             });
@@ -1590,13 +1594,14 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("filter")
-    public static class FilterAllView extends UrlParametersBase {
+    public static class RedirectToView extends UrlParametersBase {
     }
 
     @Route("filter/:text")
-    public static class FilterParamView extends UrlParametersBase {
+    public static class RedirectWithUrlParametersView
+            extends UrlParametersBase {
     }
-
+    
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -3746,21 +3751,57 @@ public class RouterTest extends RoutingTestBase {
     @Test // #2740 #4213
     public void routes_fail_to_register_with_alternate_optional_parameter() {
         assertFailingRouteConfiguration(SearchView.class);
-        assertFailingRouteConfiguration(ShowAllView.class, FilterView.class);
-        assertFailingRouteConfiguration(FilterView.class, ShowAllView.class);
+        assertFailingRouteConfiguration(ShowAllView.class, RedirectUrlParametersView.class);
+        assertFailingRouteConfiguration(RedirectUrlParametersView.class, ShowAllView.class);
     }
 
     @Test // #2740 #4213
     public void reroute_with_url_parameters() {
-        setNavigationTargets(FilterView.class, FilterAllView.class,
-                FilterParamView.class);
+        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
+                RedirectWithUrlParametersView.class);
 
-        assertUrlParameters("show/all", parameters(), FilterAllView.class);
+        assertUrlParametersRedirect();
+    }
+
+    @Test // #2740 #4213
+    public void forward_with_url_parameters() {
+        RedirectUrlParametersView.doForward = true;
+
+        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
+                RedirectWithUrlParametersView.class);
+
+        assertUrlParametersRedirect();
+    }
+
+    @Test // #2740 #4213
+    public void reroute_with_wrong_url_parameters() {
+        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
+                RedirectWithUrlParametersView.class);
+
+        assertWrongUrlParametersRedirect();
+    }
+
+    @Test // #2740 #4213
+    public void forward_with_wrong_url_parameters() {
+        RedirectUrlParametersView.doForward = true;
+
+        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
+                RedirectWithUrlParametersView.class);
+
+        assertWrongUrlParametersRedirect();
+    }
+
+    private void assertWrongUrlParametersRedirect() {
+        assertUrlParameters("show/wrong", null, null);
+    }
+
+    private void assertUrlParametersRedirect() {
+        assertUrlParameters("show/all", parameters(), RedirectToView.class);
         assertUrlParameters("show/some", parameters("text", "some"),
-                FilterParamView.class);
-        assertUrlParameters("show", parameters(), FilterView.class);
+                RedirectWithUrlParametersView.class);
+        assertUrlParameters("show", parameters(), RedirectUrlParametersView.class);
         assertUrlParameters("show/original", parameters("filter", "original"),
-                FilterView.class);
+                RedirectUrlParametersView.class);
     }
 
     private void assertFailingRouteConfiguration(

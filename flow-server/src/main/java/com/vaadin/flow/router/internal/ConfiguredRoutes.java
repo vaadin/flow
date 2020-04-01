@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteParameterData;
-import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.startup.RouteTarget;
@@ -317,9 +317,9 @@ public class ConfiguredRoutes implements Serializable {
     public String getUrlTemplate(Class<? extends Component> navigationTarget) {
         return getRouteModel().formatUrlTemplate(
                 getTargetRoutes().get(navigationTarget),
-                EnumSet.of(RouteParameterFormat.NAME,
-                        RouteParameterFormat.MODIFIER,
-                        RouteParameterFormat.REGEX));
+                EnumSet.of(RouteParameterFormatOption.NAME,
+                        RouteParameterFormatOption.MODIFIER,
+                        RouteParameterFormatOption.REGEX));
     }
 
     /**
@@ -333,7 +333,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return base route string if target class found
      */
     public String getUrlTemplate(Class<? extends Component> navigationTarget,
-            Set<RouteParameterFormat> format) {
+            Set<RouteParameterFormatOption> format) {
         final String urlTemplate = getTargetRoutes().get(navigationTarget);
         if (urlTemplate == null) {
             return null;

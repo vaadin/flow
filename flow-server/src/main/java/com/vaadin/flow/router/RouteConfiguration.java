@@ -443,10 +443,7 @@ public class RouteConfiguration implements Serializable {
      */
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
-        return handledRegistry.getUrlTemplate(navigationTarget,
-                EnumSet.of(RouteParameterFormat.NAME,
-                        RouteParameterFormat.MODIFIER,
-                        RouteParameterFormat.REGEX));
+        return handledRegistry.getUrlTemplate(navigationTarget);
     }
 
     /**
@@ -469,9 +466,6 @@ public class RouteConfiguration implements Serializable {
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, T parameter) {
-        if (parameter == null) {
-            return getUrl(navigationTarget);
-        }
         return getUrl(navigationTarget,
                 HasUrlParameterFormat.getParameters(parameter));
     }
@@ -517,9 +511,8 @@ public class RouteConfiguration implements Serializable {
     public String getUrl(Class<? extends Component> navigationTarget,
             UrlParameters parameters) {
 
-        Optional<String> targetUrl = parameters == null
-                ? handledRegistry.getTargetUrl(navigationTarget)
-                : handledRegistry.getTargetUrl(navigationTarget, parameters);
+        Optional<String> targetUrl = handledRegistry
+                .getTargetUrl(navigationTarget, parameters);
         if (!targetUrl.isPresent()) {
             throw new NotFoundException(
                     "No route found for the given navigation target and parameters!");

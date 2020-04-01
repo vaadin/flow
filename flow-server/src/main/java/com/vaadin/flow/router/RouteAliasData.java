@@ -80,8 +80,9 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
         if (obj instanceof RouteAliasData) {
             RouteAliasData other = (RouteAliasData) obj;
             return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrlTemplate().equals(this.getUrlTemplate()) && other
-                    .getNavigationTarget().equals(getNavigationTarget());
+                    && other.getUrlTemplate().equals(this.getUrlTemplate())
+                    && other.getNavigationTarget()
+                            .equals(getNavigationTarget());
         }
         return false;
     }

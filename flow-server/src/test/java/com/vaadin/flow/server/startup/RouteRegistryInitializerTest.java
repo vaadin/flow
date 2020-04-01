@@ -46,7 +46,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterFormat;
+import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
@@ -313,13 +313,15 @@ public class RouteRegistryInitializerTest {
                         .collect(Collectors.toSet()),
                 servletContext);
 
-        final EnumSet<RouteParameterFormat> format = EnumSet
-                .of(RouteParameterFormat.REGEX_NAME);
-
-        Assert.assertEquals("parameter/:boolean",
-                registry.getUrlTemplate(ParameterRoute.class, format).get());
-        Assert.assertEquals("string/:string", registry
-                .getUrlTemplate(StringParameterRoute.class, format).get());
+        Assert.assertEquals(
+                String.format("parameter/:%s(%s)",
+                        HasUrlParameterFormat.PARAMETER_NAME,
+                        RouteParameterRegex.BOOLEAN),
+                registry.getUrlTemplate(ParameterRoute.class).get());
+        Assert.assertEquals(
+                String.format("string/:%s",
+                        HasUrlParameterFormat.PARAMETER_NAME),
+                registry.getUrlTemplate(StringParameterRoute.class).get());
     }
 
     @Test

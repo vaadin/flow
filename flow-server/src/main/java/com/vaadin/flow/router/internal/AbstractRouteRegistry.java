@@ -32,7 +32,6 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
-import com.vaadin.flow.router.RouteParameterFormat;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
@@ -295,16 +294,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         return Optional.ofNullable(
                 getConfiguration().getUrlTemplate(navigationTarget));
-    }
-
-    @Override
-    public Optional<String> getUrlTemplate(
-            Class<? extends Component> navigationTarget,
-            Set<RouteParameterFormat> format) {
-        requireNonNull(navigationTarget);
-
-        return Optional.ofNullable(
-                getConfiguration().getUrlTemplate(navigationTarget, format));
     }
 
     @Override
