@@ -19,8 +19,8 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * A generic interface for listing components that use a filterable
- * {@link DataProvider} for showing data.
+ * A generic interface for listing components that use a filterable data
+ * provider for showing data.
  * <p>
  * A listing component should implement either this interface or
  * {@link HasDataProvider}, but not both.
@@ -38,29 +38,29 @@ import com.vaadin.flow.function.SerializableFunction;
 public interface HasFilterableDataProvider<T, F> extends HasItems<T> {
 
     /**
-     * Sets the {@link DataProvider} for this listing. The {@link DataProvider} is queried for
+     * Sets the data provider for this listing. The data provider is queried for
      * displayed items as needed.
      *
      * @param dataProvider
-     *            the {@link DataProvider}, not <code>null</code>
+     *            the data provider, not <code>null</code>
      */
-    default void setDataProvider(DataProvider<? extends T, F> dataProvider) {
+    default void setDataProvider(DataProvider<T, F> dataProvider) {
         setDataProvider(dataProvider, SerializableFunction.identity());
     }
 
     /**
-     * Sets the {@link DataProvider} and filter converter for this listing. The
-     * {@link DataProvider} is queried for displayed items as needed.
+     * Sets the data provider and filter converter for this listing. The data
+     * provider is queried for displayed items as needed.
      *
      * @param dataProvider
      *            the data provider, not <code>null</code>
      * @param filterConverter
      *            a function that converts filter values produced by this
-     *            listing into filter values expected by the provided
-     *            {@link DataProvider}, not <code>null</code>
+     *            listing into filter values expected by the provided data
+     *            provider, not <code>null</code>
      * @param <C>
      *            the filter type
      */
-    <C> void setDataProvider(DataProvider<? extends T, C> dataProvider,
+    <C> void setDataProvider(DataProvider<T, C> dataProvider,
             SerializableFunction<F, C> filterConverter);
 }
