@@ -67,8 +67,9 @@ public class DevModeInitializerTestBase {
 
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
+        Boolean enablePnpm = Boolean.TRUE;
 
-        createStubNode(false, true, baseDir);
+        createStubNode(false, true, enablePnpm, baseDir);
         createStubWebpackServer("Compiled", 500, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
@@ -80,7 +81,7 @@ public class DevModeInitializerTestBase {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
-        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, "true");
+        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, enablePnpm.toString());
 
         Mockito.when(vaadinServletRegistration.getInitParameters())
                 .thenReturn(initParams);

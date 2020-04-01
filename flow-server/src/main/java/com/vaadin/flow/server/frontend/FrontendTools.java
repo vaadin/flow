@@ -407,7 +407,7 @@ public class FrontendTools {
                         Collections.singletonList(pkgJson.toJson()));
                 JsonObject lockJson = Json.createObject();
                 lockJson.put("lockfileVersion", 1);
-                FileUtils.writeLines(new File(baseDir, "package-lock.json"),
+                FileUtils.writeLines(new File(dir, "package-lock.json"),
                         Collections.singletonList(lockJson.toJson()));
             } catch (IOException e) {
                 getLogger().warn("Couldn't create temporary package.json");
@@ -665,7 +665,7 @@ public class FrontendTools {
         command.add("pnpm@" + DEFAULT_PNPM_VERSION);
 
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug(FrontendUtils.commandToString(baseDir, command));
+            getLogger().debug(FrontendUtils.commandToString(dir, command));
         }
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
