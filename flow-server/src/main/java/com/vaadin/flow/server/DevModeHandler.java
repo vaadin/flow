@@ -75,7 +75,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  */
 public final class DevModeHandler implements RequestHandler {
 
-    private static final String COULDN_T_START_DEV_SERVER = "Couldn't start dev server because ";
+    private static final String START_FAILURE = "Couldn't start dev server because";
 
     private static final AtomicReference<DevModeHandler> atomicHandler = new AtomicReference<>();
 
@@ -487,8 +487,8 @@ public final class DevModeHandler implements RequestHandler {
                 watchDog.set(null);
                 return;
             }
-            throw new IllegalStateException(format(COULDN_T_START_DEV_SERVER
-                    + "webpack-dev-server port '%d' is defined but it's not working properly",
+            throw new IllegalStateException(format(START_FAILURE
+                    + " webpack-dev-server port '%d' is defined but it's not working properly",
                     port));
         }
         // here the port == 0
@@ -603,33 +603,31 @@ public final class DevModeHandler implements RequestHandler {
         File webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
         if (!npmFolder.exists()) {
             getLogger().warn("No project folder '{}' exists", npmFolder);
-            throw new ExecutionFailedException(COULDN_T_START_DEV_SERVER
-                    + "the target execution folder doesn't exist.");
+            throw new ExecutionFailedException(START_FAILURE
+                    + " the target execution folder doesn't exist.");
         }
         if (!webpack.exists()) {
             getLogger().warn("'{}' doesn't exist. Did you run `npm install`?",
                     webpack);
             throw new ExecutionFailedException(String.format(
-                    COULDN_T_START_DEV_SERVER
-                            + "'%s' doesn't exist. `npm install` has not been executed most likely.",
-                    webpack));
+                    "%s '%s' doesn't exist. `npm install` has not run or failed.",
+                    START_FAILURE, webpack));
         } else if (!webpack.canExecute()) {
             getLogger().warn(
-                    "'{}' is not an executable. Did you run `npm install`?",
+                    " '{}' is not an executable. Did you run `npm install`?",
                     webpack);
             throw new ExecutionFailedException(String.format(
-                    COULDN_T_START_DEV_SERVER
-                            + "'%s' is not an executable. `npm install` has not been executed most likely.",
-                    webpack));
+                    "%s '%s' is not an executable."
+                            + " `npm install` has not run or failed.",
+                    START_FAILURE, webpack));
         }
         if (!webpackConfig.canRead()) {
             getLogger().warn(
                     "Webpack configuration '{}' is not found or is not readable.",
                     webpackConfig);
-            throw new ExecutionFailedException(String.format(
-                    COULDN_T_START_DEV_SERVER
-                            + "'%s' doesn't exist or is not readable.",
-                    webpackConfig));
+            throw new ExecutionFailedException(
+                    String.format("%s '%s' doesn't exist or is not readable.",
+                            START_FAILURE, webpackConfig));
         }
         return new Pair<>(webpack, webpackConfig);
     }
