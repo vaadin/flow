@@ -125,10 +125,10 @@ public class DevModeHandlerTest {
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled()
             throws Exception {
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
-        assertNotNull(hanlder);
-        hanlder.join();
+        assertNotNull(handler);
+        handler.join();
         assertTrue(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
                         .canRead());
@@ -153,10 +153,10 @@ public class DevModeHandlerTest {
         configuration.setApplicationOrSystemProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300, baseDir);
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
-        assertNotNull(hanlder);
-        hanlder.join();
+        assertNotNull(handler);
+        handler.join();
         int port = DevModeHandler.getDevModeHandler().getPort();
         assertTrue(port > 0);
 
@@ -171,18 +171,18 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_ProductionMode()
             throws Exception {
         configuration.setProductionMode(true);
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
-        assertNull(hanlder);
+        assertNull(handler);
     }
 
     @Test
     public void enableDevServerFalse_shouldNotCreateInstance()
             throws Exception {
         configuration.setEnableDevServer(false);
-        DevModeHandler hanlder = DevModeHandler.start(configuration, npmFolder,
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
-        assertNull(hanlder);
+        assertNull(handler);
     }
 
     @Test
@@ -375,7 +375,7 @@ public class DevModeHandlerTest {
     }
 
     @Test(expected = CustomRuntimeException.class)
-    public void startDevModeHandler_prepareTasksThorws_handleThrows()
+    public void startDevModeHandler_prepareTasksThrows_handleThrows()
             throws IOException {
         CompletableFuture<Void> throwFuture = new CompletableFuture<>();
         throwFuture.completeExceptionally(new CustomRuntimeException());

@@ -91,8 +91,7 @@ public class NodeUpdateTestUtil {
             FileUtils.writeStringToFile(ppmCli,
                     "process.argv.includes('--version') && console.log('4.5.0');",
                     StandardCharsets.UTF_8);
-            File yaml = new File(baseDir, "node_modules/.modules.yaml");
-            FileUtils.writeStringToFile(yaml, "", StandardCharsets.UTF_8);
+            new File(baseDir, "node_modules/.modules.yaml").createNewFile();
         }
         if (stubNode) {
             File node = new File(baseDir,
