@@ -33,8 +33,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERV
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -47,7 +46,6 @@ public class PrepareFrontendMojoTest {
     public ExpectedException exception = ExpectedException.none();
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
-    private File nodeModulesPath;
     private File flowResourcesFolder;
     private String webpackConfig;
     private String packageJson;
@@ -69,8 +67,7 @@ public class PrepareFrontendMojoTest {
         project = Mockito.mock(MavenProject.class);
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
-        nodeModulesPath = new File(projectBase, NODE_MODULES);
-        flowResourcesFolder = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
+        flowResourcesFolder = new File(projectBase, DEAULT_FLOW_RESOURCES_FOLDER);
         webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
@@ -101,8 +98,6 @@ public class PrepareFrontendMojoTest {
                 defaultJavaSource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
-        ReflectionUtils.setVariableValueInObject(mojo, "flowResourcesFolder",
-                flowResourcesFolder);
 
         ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
         ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
