@@ -114,7 +114,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = Constants.ENABLE_PNPM_DEFAULT_STRING)
     protected boolean pnpmEnable;
 
     /**
