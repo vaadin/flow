@@ -211,7 +211,7 @@ class VaadinDevmodeGizmo extends LitElement {
         break;
 
       default:
-        console.warn('unknown command:', command);
+        console.warn('Unknown command received from the live reload server:', command);
     }
   }
 
