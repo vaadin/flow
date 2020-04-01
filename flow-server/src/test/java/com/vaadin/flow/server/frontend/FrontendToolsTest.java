@@ -436,7 +436,7 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
-        createStubNode(true, true, baseDir);
+        createStubNode(true, true, false, baseDir);
 
         assertNodeCommand(() -> baseDir);
     }
@@ -454,7 +454,7 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
-        createStubNode(false, true, baseDir);
+        createStubNode(false, true, false, baseDir);
 
         assertNpmCommand(() -> baseDir);
     }
@@ -468,7 +468,7 @@ public class FrontendToolsTest {
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {
-        createStubNode(false, true, vaadinHomeDir);
+        createStubNode(false, true, false, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
         assertThat(tools.getNodeExecutable(),
@@ -480,7 +480,7 @@ public class FrontendToolsTest {
     }
 
     private void assertNodeCommand(Supplier<String> path) throws IOException {
-        createStubNode(true, true, vaadinHomeDir);
+        createStubNode(true, true, false, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString(DEFAULT_NODE));
         assertThat(tools.getNodeExecutable(), containsString(path.get()));
