@@ -487,9 +487,9 @@ public final class DevModeHandler implements RequestHandler {
                 watchDog.set(null);
                 return;
             }
-            throw new IllegalStateException(format(START_FAILURE
-                    + " webpack-dev-server port '%d' is defined but it's not working properly",
-                    port));
+            throw new IllegalStateException(format(
+                    "%s webpack-dev-server port '%d' is defined but it's not working properly",
+                    START_FAILURE, port));
         }
         // here the port == 0
         Pair<File, File> webPackFiles = validateFiles(npmFolder);

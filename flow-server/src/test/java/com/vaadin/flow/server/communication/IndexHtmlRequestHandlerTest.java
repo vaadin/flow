@@ -452,34 +452,25 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
-        assertEquals(4, elements.size());
-        // already in the index.html used as template
-        assertEquals("UTF-8", elements.get(0).attr("charset"));
-
-        // replaced ones in the index.html template by configurator ones
+        assertEquals(5, elements.size());
         assertEquals("viewport", elements.get(1).attr("name"));
         assertEquals("my-viewport", elements.get(1).attr("content"));
-
-        // added by configurator
-        assertEquals("foo", elements.get(2).attr("name"));
-        assertEquals("bar", elements.get(2).attr("content"));
-        assertEquals("lorem", elements.get(3).attr("name"));
-        assertEquals("ipsum", elements.get(3).attr("content"));
-
-        assertEquals("my-title", document.head().getElementsByTag("title")
-                .get(0).childNode(0).toString());
+        assertEquals("apple-mobile-web-app-capable",
+                elements.get(2).attr("name"));
+        assertEquals("yes", elements.get(2).attr("content"));
+        assertEquals("theme-color", elements.get(3).attr("name"));
+        assertEquals("#ffffff", elements.get(3).attr("content"));
+        assertEquals("apple-mobile-web-app-status-bar-style",
+                elements.get(4).attr("name"));
+        assertEquals("#ffffff", elements.get(4).attr("content"));
 
         Elements headInlineAndStyleElements = document.head()
                 .getElementsByTag("style");
-        assertEquals(3, headInlineAndStyleElements.size());
+        assertEquals(2, headInlineAndStyleElements.size());
         assertEquals("text/css",
-                headInlineAndStyleElements.get(2).attr("type"));
+                headInlineAndStyleElements.get(1).attr("type"));
         assertEquals("body,#outlet{width:my-width;height:my-height;}",
-                headInlineAndStyleElements.get(2).childNode(0).toString());
-
-        Elements bodyInlineElements = document.body()
-                .getElementsByTag("script");
-        assertEquals(3, bodyInlineElements.size());
+                headInlineAndStyleElements.get(1).childNode(0).toString());
     }
 
     @Test
