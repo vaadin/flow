@@ -482,8 +482,6 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
-        String refreshConnection = resource.getRequest()
-                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
         if (isLiveReloadConnection(resource)) {
             BrowserLiveReloadAccess access = service.getInstantiator()
                     .getOrCreate(BrowserLiveReloadAccess.class);
