@@ -21,6 +21,7 @@ import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
+import elemental.dom.NodeList;
 
 /**
  * The loading indicator for Vaadin applications representation.
@@ -271,8 +272,12 @@ public class LoadingIndicator {
      */
     public Element getElement() {
         if (element == null) {
+            NodeList nodes = Browser.getDocument().getElementsByClassName(PRIMARY_STYLE_NAME);
+            if (nodes.length() > 0) {
+                element = (Element) nodes.item(0);
+                return element;
+            }
             setupTheming();
-
             element = Browser.getDocument().createElement("div");
             Browser.getDocument().getBody().appendChild(element);
         }
