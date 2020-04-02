@@ -39,7 +39,7 @@ public class ConnectEndpointsValidatorTest {
     public void should_start_when_spring_in_classpath() throws Exception {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         classes.add(WithConnectEndpoint.class);
-        validator.onStartup(classes, servletContext);
+        validator.process(classes, servletContext);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class ConnectEndpointsValidatorTest {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         validator.setClassToCheck("foo.bar.Baz");
         classes.add(WithConnectEndpoint.class);
-        validator.onStartup(classes, servletContext);
+        validator.process(classes, servletContext);
 
     }
 
@@ -57,14 +57,13 @@ public class ConnectEndpointsValidatorTest {
             throws Exception {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         classes.add(WithoutConnectEndpoint.class);
-        validator.onStartup(classes, servletContext);
+        validator.process(classes, servletContext);
     }
 
     @Test
-    public void should_start_when_CDI_environment()
-            throws Exception {
+    public void should_start_when_CDI_environment() throws Exception {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         classes = null;
-        validator.onStartup(classes, servletContext);
+        validator.process(classes, servletContext);
     }
 }

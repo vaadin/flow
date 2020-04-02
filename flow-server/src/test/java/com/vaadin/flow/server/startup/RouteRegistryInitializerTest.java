@@ -63,8 +63,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.
@@ -114,17 +112,17 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_no_exception_with_null_arguments() {
+    public void process_no_exception_with_null_arguments() {
         try {
             routeRegistryInitializer.process(null, servletContext);
         } catch (Exception e) {
             Assert.fail(
-                    "RouteRegistryInitializer.onStartup should not throw with null arguments");
+                    "RouteRegistryInitializer.process should not throw with null arguments");
         }
     }
 
     @Test(expected = ServletException.class)
-    public void onStartUp_duplicate_routes_throws() throws ServletException {
+    public void process_duplicate_routes_throws() throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(NavigationTargetFoo.class, NavigationTargetFoo2.class)
                         .collect(Collectors.toSet()),
@@ -132,7 +130,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test(expected = ServletException.class)
-    public void onStartUp_duplicate_routesViaAlias_throws()
+    public void process_duplicate_routesViaAlias_throws()
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(NavigationTargetBar.class, NavigationTargetBar2.class)
@@ -585,7 +583,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_wrong_position_view_layout_throws()
+    public void process_wrong_position_view_layout_throws()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -598,7 +596,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_only_one_viewport_in_route_chain()
+    public void process_check_only_one_viewport_in_route_chain()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(
@@ -612,7 +610,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_route_can_not_contain_viewport_if_has_parent()
+    public void process_route_can_not_contain_viewport_if_has_parent()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -625,7 +623,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_one_viewport_in_chain_and_one_for_route_passes()
+    public void process_one_viewport_in_chain_and_one_for_route_passes()
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(SingleNavigationTarget.class, RootWithParent.class)
@@ -634,7 +632,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_also_faulty_alias_route()
+    public void process_check_also_faulty_alias_route()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -647,7 +645,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_valid_alias_does_not_throw() throws ServletException {
+    public void process_valid_alias_does_not_throw() throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(AliasView.class).collect(Collectors.toSet()),
                 servletContext);
@@ -714,7 +712,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_wrong_position_body_size_view_layout_throws()
+    public void process_wrong_position_body_size_view_layout_throws()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -727,7 +725,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_only_one_body_size_in_route_chain()
+    public void process_check_only_one_body_size_in_route_chain()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(
@@ -741,7 +739,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_route_can_not_contain_body_size_if_has_parent()
+    public void process_route_can_not_contain_body_size_if_has_parent()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -755,7 +753,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_one_body_size_in_chain_and_one_for_route_passes()
+    public void process_one_body_size_in_chain_and_one_for_route_passes()
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(BodySingleNavigationTarget.class,
@@ -764,7 +762,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_also_faulty_body_size_alias_route()
+    public void process_check_also_faulty_body_size_alias_route()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -777,7 +775,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_valid_body_size_alias_does_not_throw()
+    public void process_valid_body_size_alias_does_not_throw()
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(BodyAliasView.class).collect(Collectors.toSet()),
@@ -856,7 +854,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_valid_page_configurator_does_not_throw()
+    public void process_valid_page_configurator_does_not_throw()
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(SingleConfigurator.class).collect(Collectors.toSet()),
@@ -864,7 +862,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_wrong_position_page_configurator_throws()
+    public void process_wrong_position_page_configurator_throws()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -878,7 +876,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_only_one_page_configurator_in_route_chain()
+    public void process_check_only_one_page_configurator_in_route_chain()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(
@@ -892,7 +890,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_route_can_not_contain_page_configurator_if_has_parent()
+    public void process_route_can_not_contain_page_configurator_if_has_parent()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -906,7 +904,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_one_page_configurator_in_chain_and_one_for_route_passes()
+    public void process_one_page_configurator_in_chain_and_one_for_route_passes()
             throws ServletException {
         routeRegistryInitializer.process(Stream
                 .of(SingleConfigurator.class, RootWithParentConfigurator.class)
@@ -914,7 +912,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_page_configurator_for_faulty_alias_route()
+    public void process_check_page_configurator_for_faulty_alias_route()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -989,7 +987,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_wrong_position_inline_view_layout_throws()
+    public void process_wrong_position_inline_view_layout_throws()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -1002,7 +1000,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_only_one_inline_in_route_chain()
+    public void process_check_only_one_inline_in_route_chain()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(
@@ -1015,7 +1013,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_route_can_not_contain_inline_if_has_parent()
+    public void process_route_can_not_contain_inline_if_has_parent()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -1029,7 +1027,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_one_inline_in_chain_and_one_for_route_passes()
+    public void process_one_inline_in_chain_and_one_for_route_passes()
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(InlineSingleNavigationTarget.class,
@@ -1038,7 +1036,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_check_also_faulty_inline_alias_route()
+    public void process_check_also_faulty_inline_alias_route()
             throws ServletException {
         expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
         expectedEx.expectMessage(String.format(
@@ -1051,7 +1049,7 @@ public class RouteRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_valid_inline_alias_does_not_throw()
+    public void process_valid_inline_alias_does_not_throw()
             throws ServletException {
         routeRegistryInitializer.process(
                 Stream.of(InlineAliasView.class).collect(Collectors.toSet()),
@@ -1226,149 +1224,6 @@ public class RouteRegistryInitializerTest {
                 routeAliases.get(3).getParentLayout());
         Assert.assertEquals("Sort order was not the one expected",
                 MiddleParent.class, routeAliases.get(4).getParentLayout());
-    }
-
-    /* Theme tests */
-    public static class MyTheme implements AbstractTheme {
-
-        @Override
-        public String getBaseUrl() {
-            return "src/";
-        }
-
-        @Override
-        public String getThemeUrl() {
-            return "theme/myTheme/";
-        }
-    }
-
-    @Route("single")
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class ThemeSingleNavigationTarget extends Component {
-    }
-
-    @Tag(Tag.DIV)
-    public static class ThemeParent extends Component implements RouterLayout {
-    }
-
-    @Tag(Tag.DIV)
-    @ParentLayout(ThemeParent.class)
-    @Theme(MyTheme.class)
-    public static class ThemeMiddleParentLayout extends Component
-            implements RouterLayout {
-    }
-
-    @Tag(Tag.DIV)
-    @ParentLayout(ThemeMiddleParentLayout.class)
-    @Theme(MyTheme.class)
-    public static class ThemeMultiMiddleParentLayout extends Component
-            implements RouterLayout {
-    }
-
-    @Route(value = "", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    public static class ThemeRootWithParent extends Component {
-    }
-
-    @Route(value = "", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class ThemeRootViewportWithParent extends Component {
-    }
-
-    @Route(value = "", layout = ThemeMiddleParentLayout.class)
-    @Tag(Tag.DIV)
-    public static class ThemeRootWithParents extends Component {
-    }
-
-    @Route(value = "", layout = ThemeMultiMiddleParentLayout.class)
-    @Tag(Tag.DIV)
-    public static class ThemeMultiViewport extends Component {
-    }
-
-    @Route("")
-    @RouteAlias(value = "alias", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    @Theme(MyTheme.class)
-    public static class ThemeFailingAliasView extends Component {
-    }
-
-    @Route("")
-    @RouteAlias(value = "alias", layout = ThemeParent.class)
-    @Tag(Tag.DIV)
-    public static class ThemeAliasView extends Component {
-    }
-
-    @Test
-    public void onStartUp_wrong_position_theme_view_layout_throws()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Theme annotation should be on the top most route layout '%s'. Offending class: '%s'",
-                ThemeParent.class.getName(),
-                ThemeMiddleParentLayout.class.getName()));
-
-        routeRegistryInitializer.process(Stream.of(ThemeRootWithParents.class)
-                .collect(Collectors.toSet()), servletContext);
-    }
-
-    @Test
-    public void onStartUp_check_only_one_theme_in_route_chain()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(
-                "Only one Theme annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                        + ThemeMultiMiddleParentLayout.class.getName() + ", "
-                        + ThemeMiddleParentLayout.class.getName());
-
-        routeRegistryInitializer.process(
-                Stream.of(ThemeMultiViewport.class).collect(Collectors.toSet()),
-                servletContext);
-    }
-
-    @Test
-    public void onStartUp_route_can_not_contain_theme_if_has_parent()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Theme annotation needs to be on the top parent layout '%s' not on '%s'",
-                ThemeParent.class.getName(),
-                ThemeRootViewportWithParent.class.getName()));
-
-        routeRegistryInitializer
-                .process(Stream.of(ThemeRootViewportWithParent.class)
-                        .collect(Collectors.toSet()), servletContext);
-    }
-
-    @Test
-    public void onStartUp_one_theme_in_chain_and_one_for_route_passes()
-            throws ServletException {
-        routeRegistryInitializer.process(
-                Stream.of(ThemeSingleNavigationTarget.class,
-                        ThemeRootWithParent.class).collect(Collectors.toSet()),
-                servletContext);
-    }
-
-    @Test
-    public void onStartUp_check_also_faulty_theme_alias_route()
-            throws ServletException {
-        expectedEx.expect(InvalidRouteLayoutConfigurationException.class);
-        expectedEx.expectMessage(String.format(
-                "Theme annotation needs to be on the top parent layout '%s' not on '%s'",
-                ThemeParent.class.getName(),
-                ThemeFailingAliasView.class.getName()));
-
-        routeRegistryInitializer.process(Stream.of(ThemeFailingAliasView.class)
-                .collect(Collectors.toSet()), servletContext);
-    }
-
-    @Test
-    public void onStartUp_valid_theme_alias_does_not_throw()
-            throws ServletException {
-        routeRegistryInitializer.process(
-                Stream.of(ThemeAliasView.class).collect(Collectors.toSet()),
-                servletContext);
     }
 
     @Route("ignored")
