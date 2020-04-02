@@ -1078,8 +1078,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
-                appConfig.put(Constants.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD,
+                appConfig.put("devmodeGizmoEnabled",
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
+                // make configurable when fixing #7847
+                appConfig.put("springBootDevToolsPort", 35729);
             }
 
             // Use locale from session if set, else from the request

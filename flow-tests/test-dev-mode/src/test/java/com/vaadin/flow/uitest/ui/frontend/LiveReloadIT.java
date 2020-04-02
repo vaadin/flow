@@ -16,73 +16,144 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import javax.annotation.concurrent.NotThreadSafe;
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+// These tests are not parallelizable, nor should they be run at the same time
+// as other tests in the same module, due to live-reload affecting the whole
+// application
+@NotThreadSafe
 public class LiveReloadIT extends ChromeBrowserTest {
+
+    private static final Lock lock = new ReentrantLock();
+
+    @Before
+    @Override
+    public void setup() throws Exception {
+        lock.lock();
+        super.setup();
+    }
+
+    @After
+    public void tearDown() {
+        lock.unlock();
+    }
 
     @Test
     public void overlayShouldRender() {
         open();
-
         // Upon opening, the LiveReloadUI should show the indicator but not the
-        // message
-        Assert.assertEquals(1,
-                findElements(By.id("vaadin-live-reload-indicator")).size());
-        WebElement reloadOverlay = findElement(
-                By.id("vaadin-live-reload-overlay"));
-        Assert.assertNotNull(reloadOverlay.getAttribute("hidden"));
+        // message window
+        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
+        List<WebElement> liveReloads = findElements(
+                By.tagName("vaadin-devmode-gizmo"));
+        Assert.assertEquals(1, liveReloads.size());
+        WebElement liveReload = liveReloads.get(0);
+
+        WebElement window = findInShadowRoot(liveReload, By.className("window"))
+                .get(0);
+        Assert.assertFalse(window.isDisplayed());
 
         // After clicking the icon in the indicator, the live-reload message
-        // should appear
-        WebElement liveReloadIcon = findElement(
-                By.id("vaadin-live-reload-icon"));
+        // window should appear
+        WebElement liveReloadIcon = findInShadowRoot(liveReload,
+                By.className("vaadin-logo")).get(0);
         liveReloadIcon.click();
-        Assert.assertNotEquals("true", reloadOverlay.getAttribute("hidden"));
+        Assert.assertTrue(window.isDisplayed());
     }
 
     @Test
     public void overlayShouldNotBeRenderedAfterDisable() {
         open();
+        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
+        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
+        liveReload.click();
 
-        WebElement liveReloadIcon = findElement(
-                By.id("vaadin-live-reload-icon"));
+        WebElement liveReloadIcon = findInShadowRoot(liveReload,
+                By.className("vaadin-logo")).get(0);
         liveReloadIcon.click();
-        WebElement button = findElement(By.id("vaadin-live-reload-disable"));
+
+        WebElement button = findInShadowRoot(liveReload, By.id("disable"))
+                .get(0);
         button.click();
 
         Assert.assertEquals(0,
-                findElements(By.id("vaadin-live-reload-indicator")).size());
+                findElements(By.tagName("vaadin-devmode-gizmo")).size());
 
         driver.navigate().refresh();
 
         Assert.assertEquals(0,
-                findElements(By.id("vaadin-live-reload-indicator")).size());
+                findElements(By.tagName("vaadin-devmode-gizmo")).size());
     }
 
     @Test
-    public void notificationShownOnAutoReload() {
+    public void notificationShownOnAutoReloadAndClosedOnBodyClick() {
         open();
-
+        waitForElementPresent(By.id("live-reload-trigger-button"));
         WebElement liveReloadTrigger = findElement(
                 By.id("live-reload-trigger-button"));
         liveReloadTrigger.click();
 
-        waitUntil(ExpectedConditions.presenceOfElementLocated(
-                By.id("vaadin-live-reload-notification")));
-
-        WebElement reloadNotification = findElement(
-                By.id("vaadin-live-reload-notification"));
-        Assert.assertNotNull(reloadNotification);
-        Assert.assertNull(reloadNotification.getAttribute("hidden"));
+        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
+        Assert.assertNotNull(liveReload);
+        WebElement gizmo1 = findInShadowRoot(liveReload, By.className("gizmo"))
+                .get(0);
+        Assert.assertTrue(
+                gizmo1.getAttribute("class").contains("notification"));
+        Assert.assertFalse(
+                gizmo1.getAttribute("class").contains("vaadin-logo"));
 
         findElement(By.tagName("body")).click();
-        Assert.assertNotNull(reloadNotification.getAttribute("hidden"));
 
+        WebElement liveReload2 = findElement(
+                By.tagName("vaadin-devmode-gizmo"));
+        Assert.assertNotNull(liveReload2);
+        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
+                .get(0);
+        Assert.assertFalse(
+                gizmo2.getAttribute("class").contains("notification"));
+        Assert.assertTrue(gizmo2.getAttribute("class").contains("vaadin-logo"));
+    }
+
+    @Test
+    public void deactivateLiveReload() {
+        open();
+
+        // given: live reload is deactivated
+        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
+        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
+
+        WebElement liveReloadIcon = findInShadowRoot(liveReload,
+                By.className("vaadin-logo")).get(0);
+        liveReloadIcon.click();
+
+        WebElement deactivateCheckbox = findInShadowRoot(liveReload,
+                By.id("toggle")).get(0);
+        deactivateCheckbox.click();
+
+        // when: live reload is triggered
+        WebElement liveReloadTrigger = findElement(
+                By.id("live-reload-trigger-button"));
+        liveReloadTrigger.click();
+
+        // then: page is not reloaded
+        WebElement liveReload2 = findElement(
+                By.tagName("vaadin-devmode-gizmo"));
+        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
+                .get(0);
+        Assert.assertFalse(
+                gizmo2.getAttribute("class").contains("notification"));
+        Assert.assertTrue(gizmo2.getAttribute("class").contains("vaadin-logo"));
     }
 }
