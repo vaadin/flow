@@ -292,7 +292,7 @@ public class PushHandler {
         // In development mode we may have a live-reload push channel
         // that should be closed.
 
-        if (service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()) {
+        if (isLiveReloadConnection(resource)) {
             BrowserLiveReloadAccess access = service.getInstantiator()
                     .getOrCreate(BrowserLiveReloadAccess.class);
             BrowserLiveReload liveReload = access.getLiveReload(service);
@@ -482,11 +482,7 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
-        String refreshConnection = resource.getRequest()
-                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
-        if (service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
-                && refreshConnection != null
-                && TRANSPORT.WEBSOCKET.equals(resource.transport())) {
+        if (isLiveReloadConnection(resource)) {
             BrowserLiveReloadAccess access = service.getInstantiator()
                     .getOrCreate(BrowserLiveReloadAccess.class);
             BrowserLiveReload liveReload = access.getLiveReload(service);
@@ -503,7 +499,20 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onMessage(AtmosphereResource resource) {
-        callWithUi(resource, receiveCallback);
+        if (isLiveReloadConnection(resource)) {
+            getLogger().debug("Received live reload heartbeat");
+        } else {
+            callWithUi(resource, receiveCallback);
+        }
+    }
+
+
+    private boolean isLiveReloadConnection(AtmosphereResource resource) {
+        String refreshConnection = resource.getRequest()
+                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
+        return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
+                && refreshConnection != null
+                && TRANSPORT.WEBSOCKET.equals(resource.transport());
     }
 
     /**
