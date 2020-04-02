@@ -23,7 +23,6 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -102,17 +101,23 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     @Test
-    @Ignore("On CI for some reason this test is failing even though it never fails locally")
     public void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
             throws ExecutionFailedException, IOException {
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // create some package.json file so pnpm does some installation into
+        // node_modules folder
+        FileUtils.write(packageJson,
+                "{\"dependencies\": {" + "\"pnpm\": \"4.5.0\"}}",
+                StandardCharsets.UTF_8);
+
         getNodeUpdater().modified = true;
         createTask().execute();
 
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        FileUtils.forceMkdir(nodeModules);
-
         // create a fake file in the node modules dir to check that it's removed
-        File fakeFile = new File(nodeModules, ".fake.file");
+        File fakeFile = new File(getNodeUpdater().nodeModulesFolder,
+                ".fake.file");
         fakeFile.createNewFile();
 
         getNodeUpdater().modified = true;

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
 
 import com.sun.net.httpserver.HttpServer;
 import net.jcip.annotations.NotThreadSafe;
@@ -93,7 +94,8 @@ public class DevModeHandlerStopTest {
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandler.start(port, configuration, npmFolder);
+        DevModeHandler.start(port, configuration, npmFolder,
+                CompletableFuture.completedFuture(null)).join();
         assertEquals(port, DevModeHandler.getDevModeHandler().getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
 
@@ -108,13 +110,15 @@ public class DevModeHandlerStopTest {
 
         startTestServer(port, HTTP_OK, "OK");
 
-        DevModeHandler.start(port, configuration, npmFolder);
+        DevModeHandler.start(port, configuration, npmFolder,
+                CompletableFuture.completedFuture(null)).join();
 
         // Simulate a server restart by removing the handler, and starting a new
         // one
         DevModeHandlerTest.removeDevModeHandlerInstance();
         assertNull(DevModeHandler.getDevModeHandler());
-        DevModeHandler.start(configuration, npmFolder);
+        DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null)).join();
 
         // Webpack server should continue working
         assertNotNull(requestWebpackServer(port, "/bar"));

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.sun.net.httpserver.HttpServer;
@@ -134,15 +135,12 @@ public class IndexHtmlRequestHandlerTest {
 
     @Test
     public void canHandleRequest_withoutBootstrapUrlPredicate() {
-        Assert.assertTrue(
-                indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/nested/picture.png")));
-        Assert.assertTrue(
-                indexHtmlRequestHandler.canHandleRequest(
-                        createVaadinRequest("/nested/CAPITAL.PNG")));
-        Assert.assertTrue(
-                indexHtmlRequestHandler
-                        .canHandleRequest(createVaadinRequest("com.foo.MyTest")));
+        Assert.assertTrue(indexHtmlRequestHandler
+                .canHandleRequest(createVaadinRequest("/nested/picture.png")));
+        Assert.assertTrue(indexHtmlRequestHandler
+                .canHandleRequest(createVaadinRequest("/nested/CAPITAL.PNG")));
+        Assert.assertTrue(indexHtmlRequestHandler
+                .canHandleRequest(createVaadinRequest("com.foo.MyTest")));
     }
 
     @Test
@@ -191,7 +189,6 @@ public class IndexHtmlRequestHandlerTest {
                 indexHtmlRequestHandler
                         .canHandleRequest(createVaadinRequest("/.htaccess")));
     }
-
 
     @Test
     public void bootstrapListener_addListener_responseIsModified()
@@ -248,7 +245,8 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("window.Vaadin = {TypeScript: {}};", scripts.get(0).childNode(0).toString());
+        Assert.assertEquals("window.Vaadin = {TypeScript: {}};",
+                scripts.get(0).childNode(0).toString());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
 
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
@@ -274,8 +272,7 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertEquals(1, scripts.size());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
         String scriptContent = scripts.get(0).toString();
-        Assert.assertTrue(
-                scriptContent.contains("Could not navigate"));
+        Assert.assertTrue(scriptContent.contains("Could not navigate"));
         Assert.assertFalse("Initial object content should not be escaped",
                 scriptContent.contains("&lt;")
                         || scriptContent.contains("&gt;"));
@@ -299,7 +296,8 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertEquals("window.Vaadin = {TypeScript: {}};", scripts.get(0).childNode(0).toString());
+        Assert.assertEquals("window.Vaadin = {TypeScript: {}};",
+                scripts.get(0).childNode(0).toString());
         Assert.assertEquals("", scripts.get(0).attr("initial"));
         Assert.assertNull(UI.getCurrent());
     }
@@ -312,7 +310,8 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        Assert.assertNotNull(indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+        Assert.assertNotNull(
+                indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
     }
 
     @Test
@@ -321,7 +320,8 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
-        Assert.assertEquals(Optional.empty(), indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
+        Assert.assertEquals(Optional.empty(),
+                indexHtmlRequestHandler.getIndexHtmlResponse().getUI());
     }
 
     @Test
@@ -337,7 +337,8 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {TypeScript: {\"csrfToken\":\"foo\""));
+        Assert.assertTrue(scripts.get(0).childNode(0).toString().contains(
+                "window.Vaadin = {TypeScript: {\"csrfToken\":\"foo\""));
         Assert.assertEquals("", scripts.get(0).attr("initial"));
     }
 
@@ -353,7 +354,8 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(1, scripts.size());
-        Assert.assertFalse(scripts.get(0).childNode(0).toString().contains("window.Vaadin = {Flow: {\"csrfToken\":"));
+        Assert.assertFalse(scripts.get(0).childNode(0).toString()
+                .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", scripts.get(0).attr("initial"));
     }
 
@@ -389,13 +391,20 @@ public class IndexHtmlRequestHandlerTest {
         // Create a DevModeHandler
         deploymentConfiguration.setEnableDevServer(true);
         deploymentConfiguration.setProductionMode(false);
-        DevModeHandler handler = DevModeHandler.start(0, deploymentConfiguration, npmFolder);
+        DevModeHandler handler = DevModeHandler.start(0,
+                deploymentConfiguration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        Method join = DevModeHandler.class.getDeclaredMethod("join");
+        join.setAccessible(true);
+        join.invoke(handler);
         // Ask to the DevModeHandler for the computed random port
-        Method runningPort = DevModeHandler.class.getDeclaredMethod("getRunningDevServerPort");
+        Method runningPort = DevModeHandler.class
+                .getDeclaredMethod("getRunningDevServerPort");
         runningPort.setAccessible(true);
-        int port = (Integer)runningPort.invoke(handler);
+        int port = (Integer) runningPort.invoke(handler);
 
-        // Configure webpack-dev-server tcp listener to return the `index.html` content
+        // Configure webpack-dev-server tcp listener to return the `index.html`
+        // content
         httpServer = createStubWebpackTcpListener(port, 200, "<html></html>");
 
         // Send the request
@@ -404,16 +413,16 @@ public class IndexHtmlRequestHandlerTest {
 
         String indexHtml = responseOutput
                 .toString(StandardCharsets.UTF_8.name());
-        Assert.assertTrue(
-                "Should have a system error dialog",
-                indexHtml.contains("<div class=\"v-system-error\" onclick=\"this.parentElement.removeChild(this)\">"));
-        Assert.assertTrue(
-                "Should show webpack failure error",
+        Assert.assertTrue("Should have a system error dialog",
+                indexHtml.contains(
+                        "<div class=\"v-system-error\" onclick=\"this.parentElement.removeChild(this)\">"));
+        Assert.assertTrue("Should show webpack failure error",
                 indexHtml.contains("Failed to compile"));
     }
 
     @Test
-    public void should_not_add_metaElements_when_not_appShellPresent() throws Exception {
+    public void should_not_add_metaElements_when_not_appShellPresent()
+            throws Exception {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
 
@@ -428,7 +437,8 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent() throws Exception {
+    public void should_add_metaAndPwa_Inline_Elements_when_appShellPresent()
+            throws Exception {
         // Set class in context and do not call initializer
         AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(AppShellWithPWA.class);
@@ -445,21 +455,27 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals(5, elements.size());
         assertEquals("viewport", elements.get(1).attr("name"));
         assertEquals("my-viewport", elements.get(1).attr("content"));
-        assertEquals("apple-mobile-web-app-capable", elements.get(2).attr("name"));
+        assertEquals("apple-mobile-web-app-capable",
+                elements.get(2).attr("name"));
         assertEquals("yes", elements.get(2).attr("content"));
         assertEquals("theme-color", elements.get(3).attr("name"));
         assertEquals("#ffffff", elements.get(3).attr("content"));
-        assertEquals("apple-mobile-web-app-status-bar-style", elements.get(4).attr("name"));
+        assertEquals("apple-mobile-web-app-status-bar-style",
+                elements.get(4).attr("name"));
         assertEquals("#ffffff", elements.get(4).attr("content"));
 
-        Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
+        Elements headInlineAndStyleElements = document.head()
+                .getElementsByTag("style");
         assertEquals(2, headInlineAndStyleElements.size());
-        assertEquals("text/css", headInlineAndStyleElements.get(1).attr("type"));
-        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(1).childNode(0).toString());
+        assertEquals("text/css",
+                headInlineAndStyleElements.get(1).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}",
+                headInlineAndStyleElements.get(1).childNode(0).toString());
     }
 
     @Test
-    public void should_add_elements_when_appShellWithConfigurator() throws Exception {
+    public void should_add_elements_when_appShellWithConfigurator()
+            throws Exception {
         // Set class in context and do not call initializer
         AppShellRegistry registry = new AppShellRegistry();
         registry.setShell(MyAppShellWithConfigurator.class);
@@ -487,19 +503,25 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals("lorem", elements.get(3).attr("name"));
         assertEquals("ipsum", elements.get(3).attr("content"));
 
-        assertEquals("my-title", document.head().getElementsByTag("title").get(0).childNode(0).toString());
+        assertEquals("my-title", document.head().getElementsByTag("title")
+                .get(0).childNode(0).toString());
 
-        Elements headInlineAndStyleElements = document.head().getElementsByTag("style");
+        Elements headInlineAndStyleElements = document.head()
+                .getElementsByTag("style");
         assertEquals(3, headInlineAndStyleElements.size());
-        assertEquals("text/css", headInlineAndStyleElements.get(2).attr("type"));
-        assertEquals("body,#outlet{width:my-width;height:my-height;}", headInlineAndStyleElements.get(2).childNode(0).toString());
+        assertEquals("text/css",
+                headInlineAndStyleElements.get(2).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}",
+                headInlineAndStyleElements.get(2).childNode(0).toString());
 
-        Elements bodyInlineElements = document.body().getElementsByTag("script");
+        Elements bodyInlineElements = document.body()
+                .getElementsByTag("script");
         assertEquals(3, bodyInlineElements.size());
     }
 
     @Test
-    public void should_export_usage_statistics_in_development_mode() throws IOException {
+    public void should_export_usage_statistics_in_development_mode()
+            throws IOException {
         deploymentConfiguration.setProductionMode(false);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -509,7 +531,8 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
 
-        Elements bodyInlineElements = document.body().getElementsByTag("script");
+        Elements bodyInlineElements = document.body()
+                .getElementsByTag("script");
         assertEquals(2, bodyInlineElements.size());
 
         String entries = UsageStatistics.getEntries().map(entry -> {
@@ -521,17 +544,18 @@ public class IndexHtmlRequestHandlerTest {
             return json.toString();
         }).collect(Collectors.joining(","));
 
-        String expected = StringUtil.normaliseWhitespace(
-                    "window.Vaadin = window.Vaadin || {}; " +
-                            "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
-                            + "window.Vaadin.registrations.push(" + entries
-                            + ");");
+        String expected = StringUtil
+                .normaliseWhitespace("window.Vaadin = window.Vaadin || {}; "
+                        + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                        + "window.Vaadin.registrations.push(" + entries + ");");
 
-        assertEquals(StringUtil.normaliseWhitespace(expected), bodyInlineElements.get(1).childNode(0).outerHtml());
+        assertEquals(StringUtil.normaliseWhitespace(expected),
+                bodyInlineElements.get(1).childNode(0).outerHtml());
     }
 
     @Test
-    public void should_NOT_export_usage_statistics_in_production_mode() throws IOException {
+    public void should_NOT_export_usage_statistics_in_production_mode()
+            throws IOException {
         deploymentConfiguration.setProductionMode(true);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -541,7 +565,8 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
 
-        Elements bodyInlineElements = document.body().getElementsByTag("script");
+        Elements bodyInlineElements = document.body()
+                .getElementsByTag("script");
         assertEquals(1, bodyInlineElements.size());
     }
 

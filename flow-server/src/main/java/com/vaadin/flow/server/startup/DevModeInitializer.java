@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +44,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -83,6 +86,7 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -341,38 +345,36 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
-        try {
-            builder.enablePackagesUpdate(true)
-                    .useByteCodeScanner(useByteCodeScanner)
-                    .withFlowResourcesFolder(flowResourcesFolder)
-                    .copyResources(frontendLocations)
-                    .copyLocalResources(new File(baseDir,
-                            Constants.LOCAL_FRONTEND_RESOURCES_PATH))
-                    .enableImportsUpdate(true).runNpmInstall(true)
-                    .populateTokenFileData(tokenFileData)
-                    .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                    .withHomeNodeExecRequired(useHomeNodeExec).build()
-                    .execute();
+        NodeTasks tasks = builder.enablePackagesUpdate(true)
+                .useByteCodeScanner(useByteCodeScanner)
+                .withFlowResourcesFolder(flowResourcesFolder)
+                .copyResources(frontendLocations)
+                .copyLocalResources(new File(baseDir,
+                        Constants.LOCAL_FRONTEND_RESOURCES_PATH))
+                .enableImportsUpdate(true).runNpmInstall(true)
+                .populateTokenFileData(tokenFileData)
+                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .withHomeNodeExecRequired(useHomeNodeExec).build();
 
-            FallbackChunk chunk = FrontendUtils
-                    .readFallbackChunk(tokenFileData);
-            if (chunk != null) {
-                vaadinContext.setAttribute(chunk);
-            }
-        } catch (ExecutionFailedException exception) {
-            log().debug(
-                    "Could not initialize dev mode handler. One of the node tasks failed",
-                    exception);
-            throw new ServletException(exception);
-        }
+        CompletableFuture<Void> runNodeTasks = CompletableFuture
+                .runAsync(() -> {
+                    try {
+                        tasks.execute();
 
-        try {
-            DevModeHandler.start(config, builder.npmFolder);
-        } catch (IllegalStateException exception) {
-            // wrap an ISE which can be caused by inability to find tools like
-            // node, npm into a servlet exception
-            throw new ServletException(exception);
-        }
+                        FallbackChunk chunk = FrontendUtils
+                                .readFallbackChunk(tokenFileData);
+                        if (chunk != null) {
+                            vaadinContext.setAttribute(chunk);
+                        }
+                    } catch (ExecutionFailedException exception) {
+                        log().debug(
+                                "Could not initialize dev mode handler. One of the node tasks failed",
+                                exception);
+                        throw new CompletionException(exception);
+                    }
+                });
+
+        DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
     }
 
     private static Logger log() {

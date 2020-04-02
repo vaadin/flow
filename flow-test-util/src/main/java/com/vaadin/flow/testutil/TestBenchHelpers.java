@@ -406,6 +406,19 @@ public class TestBenchHelpers extends ParallelTest {
         checkLogsForErrors(msg -> false);
     }
 
+    /**
+     * If dev server start in progress wait until it's started. Otherwise return
+     * immidiately.
+     */
+    protected void waitForDevServer() {
+        Object result;
+        do {
+            getCommandExecutor().waitForVaadin();
+            result = getCommandExecutor().executeScript(
+                    "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
+        } while (Boolean.TRUE.equals(result));
+    }
+
     private WebElement getShadowRoot(WebElement webComponent) {
         waitUntil(driver -> getCommandExecutor().executeScript(
                 "return arguments[0].shadowRoot", webComponent) != null);
