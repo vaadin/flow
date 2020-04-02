@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;

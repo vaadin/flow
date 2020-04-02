@@ -800,8 +800,6 @@ public class UI extends Component
      * @see #navigate(Class, UrlParameters)
      */
     public void navigate(Class<? extends Component> navigationTarget) {
-        RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
         navigate(navigationTarget, UrlParameters.empty());
     }
 
