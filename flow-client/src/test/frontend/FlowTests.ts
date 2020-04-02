@@ -129,7 +129,10 @@ suite("Flow", () => {
   test("should initialize a flow loading indicator", async () => {
     new Flow({imports: () => {}});
     const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
+    const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
     assert.isNotNull(indicator);
+    assert.isNotNull(styles);
+
     assert.isFunction($wnd.Vaadin.Flow.loading);
     assert.equal('none', indicator.getAttribute('style'));
 
