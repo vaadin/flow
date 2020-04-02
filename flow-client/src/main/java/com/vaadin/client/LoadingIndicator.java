@@ -272,19 +272,18 @@ public class LoadingIndicator {
      */
     public Element getElement() {
         if (element == null) {
-            NodeList nodes = Browser.getDocument().getElementsByClassName(PRIMARY_STYLE_NAME);
-            if (nodes.length() > 0) {
-                element = (Element) nodes.item(0);
-                return element;
-            }
+            element = Browser.getDocument().querySelector("." + PRIMARY_STYLE_NAME);
             setupTheming();
-            element = Browser.getDocument().createElement("div");
-            Browser.getDocument().getBody().appendChild(element);
+            if (element == null) {
+                element = Browser.getDocument().createElement("div");
+                Browser.getDocument().getBody().appendChild(element);
+            }
         }
         return element;
     }
 
     private void setupTheming() {
+        styleElement = Browser.getDocument().querySelector("style#css-loading-indicator");
         if (styleElement == null) {
             styleElement = Browser.getDocument().createStyleElement();
             styleElement.setAttribute("type", "text/css");

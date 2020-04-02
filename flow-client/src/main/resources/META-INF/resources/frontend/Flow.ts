@@ -335,6 +335,8 @@ export class Flow {
     document.body.appendChild(loading);
 
     const style = document.createElement('style');
+    style.setAttribute('type', 'text/css');
+    style.setAttribute('id', 'css-loading-indicator');
     style.textContent = `
       @keyframes v-progress-start {
         0% {width: 0%;}
