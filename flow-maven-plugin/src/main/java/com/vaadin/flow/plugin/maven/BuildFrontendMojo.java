@@ -113,7 +113,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
      * Whether to use byte code scanner strategy to discover frontend
      * components.
      */
-    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
+    @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
     @Override
