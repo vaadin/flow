@@ -224,11 +224,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         Process webpackLaunch = null;
         try {
-            webpackLaunch = new ProcessBuilder(nodePath,
-                    webpackExecutable.getAbsolutePath())
-                            .directory(project.getBasedir())
-                            .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                            .start();
+            webpackLaunch = builder.start();
             int errorCode = webpackLaunch.waitFor();
             if (errorCode != 0) {
                 readDetailsAndThrowException(webpackLaunch);
