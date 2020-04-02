@@ -880,7 +880,7 @@ public class UI extends Component
      *
      * @param location
      *            the location to navigate to, not {@code null}
-     * @throws IllegalArgumentException
+     * @throws NullPointerException
      *             if the location is null.
      */
     public void navigate(String location) {
@@ -903,17 +903,12 @@ public class UI extends Component
      * @param queryParameters
      *            query parameters that are used for navigation, not
      *            {@code null}
-     * @throws IllegalArgumentException
+     * @throws NullPointerException
      *             if the location or queryParameters are null.
      */
     public void navigate(String location, QueryParameters queryParameters) {
-        if (location == null) {
-            throw new IllegalArgumentException("Location may not be null");
-        }
-        if (queryParameters == null) {
-            throw new IllegalArgumentException(
-                    "Query parameters may not be null");
-        }
+        Objects.requireNonNull(location, "Location may not be null");
+        Objects.requireNonNull(queryParameters, "Query parameters may not be null");
 
         Location navigationLocation = new Location(location, queryParameters);
         if (!internals.hasLastHandledLocation()

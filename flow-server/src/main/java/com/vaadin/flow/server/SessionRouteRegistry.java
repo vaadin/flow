@@ -226,7 +226,11 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         return getParentRegistry().getUrlTemplate(navigationTarget);
     }
 
+    /**
+     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
+     */
     @Override
+    @Deprecated
     public List<Class<? extends RouterLayout>> getRouteLayouts(String url,
             Class<? extends Component> navigationTarget) {
         final NavigationRouteTarget navigationRouteTarget = getConfiguration()

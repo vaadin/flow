@@ -106,16 +106,14 @@ public class RouteConfiguration implements Serializable {
     }
 
     /**
-     * Check if there is a registered target for the given urlTamplate.
+     * Check if there is a registered target for the given path.
      *
-     * @param urlTamplate
-     *         urlTamplate to check for route registration
-     * @return true if there exists a route for the given urlTamplate
-     * @deprecated use {@link #isUrlTemplateRegistered(String)} instead.
+     * @param path
+     *         path to check for route registration
+     * @return true if there exists a route for the given path
      */
-    @Deprecated
-    public boolean isPathRegistered(String urlTamplate) {
-        return isUrlTemplateRegistered(urlTamplate);
+    public boolean isPathRegistered(String path) {
+        return isUrlTemplateRegistered(path);
     }
 
     /**
@@ -377,10 +375,7 @@ public class RouteConfiguration implements Serializable {
      *            path to remove from registry
      * @param navigationTarget
      *            path navigation target to remove
-     * @deprecated use {@link #removeRoute(String)} or
-     *             {@link #removeRoute(Class)} instead.
      */
-    @Deprecated
     public void removeRoute(String path,
             Class<? extends Component> navigationTarget) {
         handledRegistry.removeRoute(path, navigationTarget);
@@ -418,18 +413,15 @@ public class RouteConfiguration implements Serializable {
      *            navigation target to get url for
      * @return optional url base without url parameters or empty if there is no
      *         registered route for {@code navigationTarget}, not {@code null}
-     * @deprecated url base doesn't exist anymore in context of named parameters
-     *             within the route. Use {@link #getUrlTemplate(Class)} instead.
      */
-    @Deprecated
     public Optional<String> getUrlBase(
             Class<? extends Component> navigationTarget) {
         final Optional<String> urlTemplate = getUrlTemplate(navigationTarget);
         if (urlTemplate.isPresent()) {
-            return Optional.of(HasUrlParameterFormat
-                    .getUrlBase(urlTemplate.get(), navigationTarget));
+            return Optional
+                    .of(HasUrlParameterFormat.getUrlBase(urlTemplate.get()));
         } else {
-            return urlTemplate;
+            return Optional.empty();
         }
     }
 

@@ -58,9 +58,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *            route navigation target
      * @throws IllegalArgumentException
      *             if parameters is not empty.
-     * @deprecated use {@link #RouteBaseData(List, String, Map, Class)} instead.
      */
-    @Deprecated
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
             String urlTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {

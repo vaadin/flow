@@ -290,14 +290,11 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      *            urlTemplate to remove target from.
      * @param targetRoute
      *            target route to remove from urlTemplate.
-     * @deprecated use {@link #removeRoute(String)} or
-     *             {@link #removeRoute(Class)} instead.
      */
-    @Deprecated
     public void removeRoute(String urlTemplate,
             Class<? extends Component> targetRoute) {
-        if (!hasRoute(urlTemplate) || !getRoutesMap().get(urlTemplate)
-                .containsTarget(targetRoute)) {
+        if (!hasUrlTemplate(urlTemplate) || !getRoutesMap().get(urlTemplate)
+                .getTarget().equals(targetRoute)) {
             return;
         }
 

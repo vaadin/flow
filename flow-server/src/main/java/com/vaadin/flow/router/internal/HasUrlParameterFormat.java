@@ -88,15 +88,12 @@ public class HasUrlParameterFormat implements Serializable {
      * 
      * @param urlTemplate
      *            the url template.
-     * @param navigationTarget
-     *            the navigation target.
      * @return the url base excluding the parameter placeholder.
      */
-    public static String getUrlBase(String urlTemplate,
-            Class<? extends Component> navigationTarget) {
-        if (hasUrlParameter(navigationTarget)
-                && RouteFormat.hasParameters(urlTemplate)) {
-            return urlTemplate.substring(0, urlTemplate.indexOf("/:"));
+    public static String getUrlBase(String urlTemplate) {
+        if (RouteFormat.hasParameters(urlTemplate)) {
+            return PathUtil.trimPath(
+                    urlTemplate.substring(0, urlTemplate.indexOf(":")));
         }
         return urlTemplate;
     }

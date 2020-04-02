@@ -82,16 +82,13 @@ public interface RouteRegistry extends Serializable {
     void removeRoute(String urlTemplate);
 
     /**
-     * Remove navigationTarget from the urlTemplate.
+     * Remove navigationTarget for the urlTemplate.
      *
      * @param urlTemplate
      *            urlTemplate to remove from registry
      * @param navigationTarget
      *            urlTemplate navigation target to remove
-     * @deprecated use {@link #removeRoute(String)} or
-     *             {@link #removeRoute(Class)} instead.
      */
-    @Deprecated
     void removeRoute(String urlTemplate, Class<? extends Component> navigationTarget);
 
     /**

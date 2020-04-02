@@ -49,10 +49,7 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            list of aliases for this route
      * @throws IllegalArgumentException
      *             if parameters is not empty.
-     * @deprecated use {@link #RouteData(List, String, Map, Class, List)}
-     *             instead
      */
-    @Deprecated
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
             String urlTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget,

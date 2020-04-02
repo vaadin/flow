@@ -933,26 +933,32 @@ public class UITest {
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
         }
+    }
+
+    @Test
+    public void navigate_throws_null_pointer_exception() {
+        UI ui = new UI();
+        initUI(ui, "", null);
 
         try {
             ui.navigate((String) null);
-            Assert.fail("IllegalArgumentException expected.");
-        } catch (IllegalArgumentException e) {
+            Assert.fail("NullPointerException expected.");
+        } catch (NullPointerException e) {
             Assert.assertEquals("Location may not be null", e.getMessage());
         }
 
         try {
             ui.navigate((String) null, QueryParameters.empty());
-            Assert.fail("IllegalArgumentException expected.");
-        } catch (IllegalArgumentException e) {
+            Assert.fail("NullPointerException expected.");
+        } catch (NullPointerException e) {
             Assert.assertEquals("Location may not be null",
                     e.getMessage());
         }
 
         try {
             ui.navigate("foo-bar", null);
-            Assert.fail("IllegalArgumentException expected.");
-        } catch (IllegalArgumentException e) {
+            Assert.fail("NullPointerException expected.");
+        } catch (NullPointerException e) {
             Assert.assertEquals("Query parameters may not be null",
                     e.getMessage());
         }

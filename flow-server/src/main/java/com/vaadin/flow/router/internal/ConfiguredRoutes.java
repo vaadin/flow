@@ -48,22 +48,22 @@ public class ConfiguredRoutes implements Serializable {
     // Stores targets accessed by urls with parameters.
     private final RouteModel routeModel;
 
-    private final Map<String, RouteTarget> urlTemplate2RouteTarget;
-    private final Map<Class<? extends Component>, String> target2UrlTemplate;
+    private final Map<String, RouteTarget> pathToTarget;
+    private final Map<Class<? extends Component>, String> targetToPath;
 
     private final Map<Class<? extends Component>, RouteModel> targetRouteModels;
 
-    private final Map<Class<? extends Exception>, Class<? extends Component>> exception2Target;
+    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionToTarget;
 
     /**
      * Create an immutable RouteConfiguration.
      */
     public ConfiguredRoutes() {
         routeModel = RouteModel.create();
-        urlTemplate2RouteTarget = Collections.emptyMap();
-        target2UrlTemplate = Collections.emptyMap();
+        pathToTarget = Collections.emptyMap();
+        targetToPath = Collections.emptyMap();
         targetRouteModels = Collections.emptyMap();
-        exception2Target = Collections.emptyMap();
+        exceptionToTarget = Collections.emptyMap();
     }
 
     /**
@@ -89,22 +89,22 @@ public class ConfiguredRoutes implements Serializable {
                 .copyTargetRouteModels();
 
         this.routeModel = RouteModel.copy(original.getRouteModel());
-        this.urlTemplate2RouteTarget = routeMap.isEmpty()
+        this.pathToTarget = routeMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(routeMap);
-        this.target2UrlTemplate = targetRouteMap.isEmpty()
+        this.targetToPath = targetRouteMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(targetRouteMap);
         this.targetRouteModels = target2UrlTemplatesMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(target2UrlTemplatesMap);
-        this.exception2Target = exceptionTargetMap.isEmpty()
+        this.exceptionToTarget = exceptionTargetMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(exceptionTargetMap);
     }
 
     protected Map<String, RouteTarget> getRoutesMap() {
-        return urlTemplate2RouteTarget;
+        return pathToTarget;
     }
 
     RouteModel getRouteModel() {
@@ -270,7 +270,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return component-to-path map of all target routes
      */
     public Map<Class<? extends Component>, String> getTargetRoutes() {
-        return target2UrlTemplate;
+        return targetToPath;
     }
 
     /**
@@ -404,7 +404,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return all registered exception handlers
      */
     public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
-        return exception2Target;
+        return exceptionToTarget;
     }
 
     /**

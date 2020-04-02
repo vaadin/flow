@@ -47,10 +47,7 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *            route navigation target
      * @throws IllegalArgumentException
      *             if parameters is not empty.
-     * @deprecated use {@link #RouteAliasData(List, String, Map, Class)}
-     *             instead.
      */
-    @Deprecated
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
             String urlTemplate, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {

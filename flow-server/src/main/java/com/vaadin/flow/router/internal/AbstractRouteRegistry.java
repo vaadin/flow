@@ -49,6 +49,8 @@ import com.vaadin.flow.shared.Registration;
  */
 public abstract class AbstractRouteRegistry implements RouteRegistry {
 
+    private static final String TARGET_MUST_NOT_BE_NULL = "Target must not be null.";
+
     /**
      * Configuration interface to use for updating the configuration entity.
      */
@@ -256,7 +258,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         return Collections.emptyList();
     }
 
+    /**
+     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
+     */
     @Override
+    @Deprecated
     public List<Class<? extends RouterLayout>> getRouteLayouts(String url,
             Class<? extends Component> navigationTarget) {
         return getConfiguration().getParentLayouts(url, navigationTarget);
@@ -265,7 +271,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget) {
-        requireNonNull(navigationTarget);
+        Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget, null);
 
@@ -277,7 +283,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget,
             UrlParameters parameters) {
-        requireNonNull(navigationTarget);
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget,
                 parameters);
@@ -289,7 +295,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
-        requireNonNull(navigationTarget);
+        Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
         return Optional.ofNullable(
                 getConfiguration().getUrlTemplate(navigationTarget));
@@ -325,7 +331,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasUrlTemplate(urlTemplate)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(urlTemplate));
+        configure(configuration -> configuration.removeRoute(urlTemplate,
+                navigationTarget));
     }
 
     @Override
@@ -333,10 +340,6 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         configure(ConfigureRoutes::clear);
     }
     
-    private void requireNonNull(Class<? extends Component> navigationTarget) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
-    }
-
     /**
      * This adds a new route path to the configuration.
      * <p>

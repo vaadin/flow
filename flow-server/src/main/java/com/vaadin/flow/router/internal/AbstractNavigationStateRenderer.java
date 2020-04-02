@@ -723,7 +723,6 @@ public abstract class AbstractNavigationStateRenderer
                     redirectType, redirectTarget, redirectParameters));
         }
 
-        // TODO: Why are we passing query parameters from previous navigation event?
         Location location = new Location(url,
                 event.getLocation().getQueryParameters());
 

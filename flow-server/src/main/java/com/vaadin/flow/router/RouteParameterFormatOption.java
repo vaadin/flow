@@ -41,6 +41,6 @@ public enum RouteParameterFormatOption {
      * The named template of the parameter, i.e. <code>int</code>,
      * <code>long</code>, <code>bool</code>, <code>string</code>.
      */
-    REGEX_NAME,
+    REGEX_NAME
 
 }
