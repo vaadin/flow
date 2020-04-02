@@ -29,10 +29,12 @@ const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
 const statsFile = `${confFolder}/stats.json`;
 // make sure that build folder exists before outputting anything
 const mkdirp = require('mkdirp');
-mkdirp(buildFolder);
-mkdirp(confFolder);
 
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
+
+!devMode && mkdirp(buildFolder);
+mkdirp(confFolder);
+
 let stats;
 
 const watchDogPrefix = '--watchDogPort=';
