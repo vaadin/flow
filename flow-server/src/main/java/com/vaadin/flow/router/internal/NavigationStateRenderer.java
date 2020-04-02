@@ -81,10 +81,10 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         try {
             deserializedParameter = ParameterDeserializer
                     .deserializeUrlParameters(routeTargetType, parameters);
-
         } catch (Exception e) {
             beforeEnterEvent.rerouteToError(NotFoundException.class, String
                     .format("Failed to parse url parameter, exception: %s", e));
+            return;
         }
 
         HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
