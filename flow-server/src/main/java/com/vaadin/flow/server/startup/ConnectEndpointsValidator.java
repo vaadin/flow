@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,12 +36,12 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
  */
 @HandlesTypes({ Endpoint.class })
 public class ConnectEndpointsValidator
-        implements ServletContainerInitializer, Serializable {
+        implements ClassLoaderAwareServletContainerInitializer, Serializable {
 
     private String classToCheck = "org.springframework.boot.autoconfigure.jackson.JacksonProperties";
 
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
+    public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
 
         if (classSet == null) {
