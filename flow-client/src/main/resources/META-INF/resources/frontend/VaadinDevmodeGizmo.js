@@ -119,6 +119,10 @@ class VaadinDevmodeGizmo extends LitElement {
     return 'vaadin.live-reload.triggeredCount';
   }
 
+  static get HEARTBEAT_INTERVAL() {
+    return 180000;
+  }
+
   static get isEnabled() {
     const enabled = window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE);
     return enabled === null || !(enabled === 'false');
@@ -183,6 +187,11 @@ class VaadinDevmodeGizmo extends LitElement {
       self.status = VaadinDevmodeGizmo.UNAVAILABLE;
       self.connection = null;
     };
+    setInterval(function() {
+      if (self.connection !== null) {
+        self.connection.send('');
+      }
+    }, VaadinDevmodeGizmo.HEARTBEAT_INTERVAL);
   }
 
   handleMessage(msg) {
