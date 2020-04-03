@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     static final String SKIPPING_NPM_INSTALL = "Skipping `npm install`.";
 
     private final NodeUpdater packageUpdater;
+
+    private final List<String> ignoredNodeFolders = Arrays
+            .asList(".bin",".staging");
 
     /**
      * Create an instance of the command.
@@ -65,8 +69,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
+            // Ignore installation files
             File[] installedPackages = packageUpdater.nodeModulesFolder
-                    .listFiles();
+                    .listFiles(
+                            (dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
