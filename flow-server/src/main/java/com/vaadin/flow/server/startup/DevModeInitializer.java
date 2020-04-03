@@ -227,7 +227,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         initDevModeHandler(classes, context, config);
 
-        devModeAlreadyStarted = true;
+        setDevModeStarted();
     }
 
     private boolean isVaadinServletSubClass(String className)
@@ -387,13 +387,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
     }
 
     /**
-     * Shows whether {@link DevModeHandler} has been already started or not
+     * Shows whether {@link DevModeHandler} has been already started or not.
      *
      * @return <code>true</code> if {@link DevModeHandler} has already been started,
      *         <code>false</code> - otherwise
      */
     public static boolean isDevModeAlreadyStarted() {
         return devModeAlreadyStarted;
+    }
+
+    private static void setDevModeStarted() {
+        devModeAlreadyStarted = true;
     }
 
     private static Logger log() {
