@@ -1,0 +1,4 @@
+[submodule "vaadin-grid-flow"]
+	path = vaadin-grid-flow
+	url = git@github.com:vaadin/vaadin-grid-flow.git
+	branch = feature/dataprovider
