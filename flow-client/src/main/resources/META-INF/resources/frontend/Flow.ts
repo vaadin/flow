@@ -86,9 +86,9 @@ export class Flow {
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
     this.baseRegex = new RegExp('^' +
-        // IE11 does not support document.baseURI
-        (document.baseURI || elm && elm.href || '/')
-            .replace(/^https?:\/\/[^\/]+/i, ''));
+      // IE11 does not support document.baseURI
+      (document.baseURI || elm && elm.href || '/')
+        .replace(/^https?:\/\/[^\/]+/i, ''));
   }
 
   /**
@@ -127,9 +127,9 @@ export class Flow {
   // Send a remote call to `JavaScriptBootstrapUI` to check
   // whether navigation has to be cancelled.
   private async flowLeave(
-      // @ts-ignore
-      ctx: NavigationParameters,
-      cmd?: PreventCommands): Promise<any> {
+    // @ts-ignore
+    ctx: NavigationParameters,
+    cmd?: PreventCommands): Promise<any> {
 
     // server -> server
     if (this.pathname === ctx.pathname) {
@@ -171,12 +171,13 @@ export class Flow {
 
       // Call server side to navigate to the given route
       flowRoot.$server
-          .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
+        .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
     });
   }
 
   private getFlowRoute(context: NavigationParameters | Location): string {
-    return (context.pathname + (context.search || '')).replace(this.baseRegex, '');
+    return (context.pathname + (context.search || '')).replace(this.baseRegex, '')
+      .replace(/\%20/g, ' ');
   }
 
   // import flow client modules and initialize UI in server side.
@@ -185,7 +186,7 @@ export class Flow {
     if (!this.response) {
       this.isActive = true;
       // Initialize server side UI
-      this.response = await this.flowInitUi(serverSideRouting);
+      this.response = await this.flowInitUi();
 
       // Enable or disable server side routing
       this.response.appConfig.webComponentMode = !serverSideRouting;
@@ -264,8 +265,8 @@ export class Flow {
       const intervalId = setInterval(() => {
         // client `isActive() == true` while initializing or processing
         const initializing = Object.keys($wnd.Vaadin.Flow.clients)
-            .filter(key => key !== 'TypeScript')
-            .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
+          .filter(key => key !== 'TypeScript')
+          .reduce((prev, id) => prev || $wnd.Vaadin.Flow.clients[id].isActive(), false);
         if (!initializing) {
           clearInterval(intervalId);
           resolve();
@@ -275,7 +276,7 @@ export class Flow {
   }
 
   // Returns the `appConfig` object
-  private async flowInitUi(serverSideRouting: boolean): Promise<AppInitResponse> {
+  private async flowInitUi(): Promise<AppInitResponse> {
     // appConfig was sent in the index.html request
     const initial = $wnd.Vaadin && $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.initial;
     if (initial) {
@@ -289,12 +290,12 @@ export class Flow {
       const httpRequest = xhr as any;
       const currentPath = location.pathname || '/';
       const requestPath = `${currentPath}?v-r=init` +
-          (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+        (location.search ? `&location=${this.getFlowRoute(location).replace(/\?/g, '&')}` : '');
 
       httpRequest.open('GET', requestPath);
 
       httpRequest.onerror = () => reject(new Error(
-          `Invalid server response when initializing Flow UI.
+        `Invalid server response when initializing Flow UI.
         ${httpRequest.status}
         ${httpRequest.responseText}`));
 
