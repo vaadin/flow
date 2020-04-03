@@ -2,6 +2,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -447,6 +448,41 @@ public class DeploymentConfigurationFactoryTest {
         CssImportData data = cssImports.iterator().next();
         Assert.assertEquals("foo-value", data.getValue());
         Assert.assertEquals("bar-id", data.getId());
+    }
+
+    @Test
+    public void createInitParameters_readDevModeProperties() throws Exception {
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
+                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+    }
+
+    @Test
+    public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
+            throws Exception {
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{", "\"pnpm.enable\": true,", "}"));
+
+        DeploymentConfiguration config = createConfig(Collections
+                .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
+
+        config.getInitParameters().setProperty(
+                Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                Boolean.FALSE.toString());
+        config.getInitParameters().setProperty(
+                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                Boolean.FALSE.toString());
+
+        Assert.assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
+                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertEquals(Boolean.FALSE.toString(),
+                config.getInitParameters().getProperty(
+                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

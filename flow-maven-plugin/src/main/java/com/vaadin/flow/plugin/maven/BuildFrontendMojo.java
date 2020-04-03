@@ -111,11 +111,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
      * Whether to use byte code scanner strategy to discover frontend
      * components.
      */
-    @Parameter(defaultValue = "true")
+    @Parameter(property = Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, defaultValue = "true")
     private boolean optimizeBundle;
-
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
-    private boolean pnpmEnable;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -191,7 +188,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .directory(project.getBasedir()).inheritIO();
         getLog().info("Running webpack ...");
         FrontendUtils.console(FrontendUtils.YELLOW,
-                FrontendUtils.commandToString(npmFolder.getAbsolutePath(), 
+                FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
                         command));
 
         Process webpackLaunch = null;
@@ -250,6 +247,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
+
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

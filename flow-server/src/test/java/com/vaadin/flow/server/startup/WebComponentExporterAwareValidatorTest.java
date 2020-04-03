@@ -76,18 +76,18 @@ public class WebComponentExporterAwareValidatorTest {
     }
 
     @Test
-    public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
+    public void process_no_exception_is_thrown_for_correctly_setup_classes()
             throws ServletException {
         annotationValidator
-                .onStartup(Stream.of(AbstractMain.class, WCExporter.class)
+                .process(Stream.of(AbstractMain.class, WCExporter.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 
     @Test
-    public void onStartUp_all_failing_anotations_are_reported()
+    public void process_all_failing_anotations_are_reported()
             throws ServletException {
         try {
-            annotationValidator.onStartup(
+            annotationValidator.process(
                     Collections.singleton(ThemeViewportWithParent.class),
                     servletContext);
             Assert.fail("No exception was thrown for faulty setup.");
@@ -98,7 +98,7 @@ public class WebComponentExporterAwareValidatorTest {
     }
 
     @Test
-    public void onStartUp_non_linked_push_throws() throws ServletException {
+    public void process_non_linked_push_throws() throws ServletException {
         assertNon_linked_theme_throws(NonRoutePush.class, Push.class);
     }
 
@@ -112,7 +112,7 @@ public class WebComponentExporterAwareValidatorTest {
                         + "layout/top level route/web component.",
                 clazz.getName(), "@" + annotationType.getSimpleName()));
 
-        annotationValidator.onStartup(
+        annotationValidator.process(
                 Stream.of(clazz).collect(Collectors.toSet()), servletContext);
     }
 

@@ -34,11 +34,6 @@ import com.vaadin.flow.shared.Registration;
 public class DndUtil {
 
     /**
-     * Resource path for importing dnd connector for compatibility mode.
-     */
-    public static final String DND_CONNECTOR_COMPATIBILITY = "frontend://dndConnector.js";
-
-    /**
      * Resource path for importing dnd connector.
      */
     public static final String DND_CONNECTOR = "./dndConnector-es6.js";

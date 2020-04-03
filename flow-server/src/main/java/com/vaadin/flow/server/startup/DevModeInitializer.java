@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -114,8 +113,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class })
 @WebListener
-public class DevModeInitializer implements ServletContainerInitializer,
-        Serializable, ServletContextListener {
+public class DevModeInitializer
+        implements ClassLoaderAwareServletContainerInitializer, Serializable,
+        ServletContextListener {
 
     static class DevModeClassFinder extends DefaultClassFinder {
 
@@ -183,7 +183,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     + "/?$");
 
     @Override
-    public void onStartup(Set<Class<?>> classes, ServletContext context)
+    public void process(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
@@ -334,8 +334,7 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
-        boolean enablePnpm = config.getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+        boolean enablePnpm = config.isPnpmEnabled();
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
