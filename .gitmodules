@@ -2,3 +2,7 @@
 	path = vaadin-grid-flow
 	url = git@github.com:vaadin/vaadin-grid-flow.git
 	branch = feature/dataprovider
+[submodule "vaadin-combo-box-flow"]
+	path = vaadin-combo-box-flow
+	url = git@github.com:vaadin/vaadin-combo-box-flow.git
+	branch = feature/dataprovider
