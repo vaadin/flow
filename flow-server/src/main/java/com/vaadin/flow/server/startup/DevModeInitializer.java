@@ -161,6 +161,15 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
     }
 
+    // Attribute key for storing Dev Mode Handler startup flag.
+    // If presented in Servlet Context, shows the Dev Mode Handler already
+    // started / become starting.
+    // This attribute helps to avoid Dev Mode running twice.
+    //
+    // Addresses the issue https://github.com/vaadin/spring/issues/502
+    public static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE =
+            "dev-mode-handler-already-started-attribute";
+
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
@@ -219,11 +228,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         initDevModeHandler(classes, context, config);
+
+        setDevModeStarted(context);
     }
 
     private boolean isVaadinServletSubClass(String className)
             throws ClassNotFoundException {
         return VaadinServlet.class.isAssignableFrom(Class.forName(className));
+    }
+
+    private void setDevModeStarted(ServletContext context) {
+        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, true);
     }
 
     /**
