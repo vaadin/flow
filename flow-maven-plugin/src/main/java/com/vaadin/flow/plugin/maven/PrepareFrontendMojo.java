@@ -158,8 +158,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                 generatedTsFolder.getAbsolutePath());
 
         buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
-        buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
-                requireHomeNodeExec);
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
