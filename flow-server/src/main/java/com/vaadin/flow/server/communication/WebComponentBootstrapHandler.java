@@ -184,6 +184,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .map(conf -> Json.create(conf.getTag()))
                 .collect(JsonUtils.asArray());
         config.put("webcomponents", tags);
+
+        config.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED, false);
+
         return context;
     }
 
