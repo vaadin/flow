@@ -161,15 +161,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
     }
 
-    // Attribute key for storing Dev Mode Handler startup flag.
-    // If presented in Servlet Context, shows the Dev Mode Handler already
-    // started / become starting.
-    // This attribute helps to avoid Dev Mode running twice.
-    //
-    // Addresses the issue https://github.com/vaadin/spring/issues/502
-    public static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE =
-            "dev-mode-handler-already-started-attribute";
-
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
@@ -194,6 +185,13 @@ public class DevModeInitializer implements ServletContainerInitializer,
             .compile("^(?:file:)?(.+)"
                     + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
                     + "/?$");
+
+    // Stores Dev Mode Handler startup flag.
+    // Shows if the Dev Mode Handler already started / becomes starting.
+    // This flag helps to avoid Dev Mode running twice.
+    //
+    // Addresses the issue https://github.com/vaadin/spring/issues/502
+    private static volatile boolean devModeAlreadyStarted = false;
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -229,16 +227,12 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         initDevModeHandler(classes, context, config);
 
-        setDevModeStarted(context);
+        devModeAlreadyStarted = true;
     }
 
     private boolean isVaadinServletSubClass(String className)
             throws ClassNotFoundException {
         return VaadinServlet.class.isAssignableFrom(Class.forName(className));
-    }
-
-    private void setDevModeStarted(ServletContext context) {
-        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, true);
     }
 
     /**
@@ -390,6 +384,16 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 });
 
         DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
+    }
+
+    /**
+     * Shows whether {@link DevModeHandler} has been already started or not
+     *
+     * @return <code>true</code> if {@link DevModeHandler} has already been started,
+     *         <code>false</code> - otherwise
+     */
+    public static boolean isDevModeAlreadyStarted() {
+        return devModeAlreadyStarted;
     }
 
     private static Logger log() {
