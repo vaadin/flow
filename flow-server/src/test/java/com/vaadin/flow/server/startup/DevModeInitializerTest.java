@@ -334,6 +334,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
+    @Test
+    public void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted() throws Exception {
+        runOnStartup();
+        assertTrue(DevModeInitializer.isDevModeAlreadyStarted());
+    }
+
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
         loadingJarsWithProtocol_allFilesExist(resourcesFolder, s -> {
