@@ -44,9 +44,9 @@ public class ListDataProvider<T>
     /**
      * Constructs a new ListDataProvider.
      * <p>
-     * No protective copy is made of the items, and changes in the provided
-     * backing {@link Collection} will be visible via this DataProvider. The caller
-     * should copy the items if necessary.
+     * No protective copy is made of the list, and changes in the provided
+     * backing Collection will be visible via this data provider. The caller
+     * should copy the list if necessary.
      *
      * @param items
      *            the initial data, not null

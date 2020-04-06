@@ -15,12 +15,12 @@ import static org.junit.Assert.assertNotNull;
 public class DataSerializableTest extends ClassesSerializableTest {
 
     /*
-     * {@link com.vaadin.flow.data.provider.AbstractDataProvider#addDataProviderListener} may return a
-     * {@link Registration} instance that is not deserializable due to self references.
-     * This happens for example if the {@link DataProvider}, member of a component,
-     * is used to add a {@link com.vaadin.flow.data.provider.DataProviderListener}
-     * into an inner component; the resulting {@link Registration} handles a reference
-     * to the {@link DataProvider} itself that is already referenced by the outer component
+     * AbstractDataProvider.addDataProviderListener may return a Registration instance
+     * that is not deserializable due to self references.
+     * This happens for example if the dataprovider, member of a component,
+     * is used to add a com.vaadin.flow.data.provider.DataProviderListener
+     * into an inner component; the resulting Registration handles a reference
+     * to the dataprovider itself that is already referenced by the outer component
      */
     @Test
     public void selfReferenceSerialization() throws Throwable {
@@ -34,7 +34,7 @@ public class DataSerializableTest extends ClassesSerializableTest {
         private Registration registration;
 
         @Override
-        public void setDataProvider(DataProvider<?, ?> dataProvider) {
+        public void setDataProvider(DataProvider<Object, ?> dataProvider) {
             if (registration != null) {
                 registration.remove();
             }
