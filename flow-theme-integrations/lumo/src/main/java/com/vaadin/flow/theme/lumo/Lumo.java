@@ -31,7 +31,7 @@ import com.vaadin.flow.theme.AbstractTheme;
  *
  * @since 1.0
  */
-@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.5.0")
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.6.0")
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
 @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
