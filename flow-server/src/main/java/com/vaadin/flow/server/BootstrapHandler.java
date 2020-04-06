@@ -1078,7 +1078,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
-                appConfig.put("devmodeGizmoEnabled",
+                appConfig.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED,
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
                 // make configurable when fixing #7847
                 appConfig.put("springBootDevToolsPort", 35729);
