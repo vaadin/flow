@@ -186,12 +186,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
                     + "/?$");
 
-    // Stores Dev Mode Handler startup flag.
-    // Shows if the Dev Mode Handler already started / becomes starting.
-    // This flag helps to avoid Dev Mode running twice.
+    // Attribute key for storing Dev Mode Handler startup flag.
+    // If presented in Servlet Context, shows the Dev Mode Handler already
+    // started / become starting.
+    // This attribute helps to avoid Dev Mode running twice.
     //
     // Addresses the issue https://github.com/vaadin/spring/issues/502
-    private static volatile boolean devModeAlreadyStarted = false;
+    private static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE =
+            "dev-mode-handler-already-started-attribute";
 
     @Override
     public void onStartup(Set<Class<?>> classes, ServletContext context)
@@ -227,12 +229,16 @@ public class DevModeInitializer implements ServletContainerInitializer,
 
         initDevModeHandler(classes, context, config);
 
-        setDevModeStarted();
+        setDevModeStarted(context);
     }
 
     private boolean isVaadinServletSubClass(String className)
             throws ClassNotFoundException {
         return VaadinServlet.class.isAssignableFrom(Class.forName(className));
+    }
+
+    private void setDevModeStarted(ServletContext context) {
+        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, true);
     }
 
     /**
@@ -389,15 +395,14 @@ public class DevModeInitializer implements ServletContainerInitializer,
     /**
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
+     * @param servletContext The servlet context, not <code>null</code>
      * @return <code>true</code> if {@link DevModeHandler} has already been started,
      *         <code>false</code> - otherwise
      */
-    public static boolean isDevModeAlreadyStarted() {
-        return devModeAlreadyStarted;
-    }
-
-    private static void setDevModeStarted() {
-        devModeAlreadyStarted = true;
+    public static boolean isDevModeAlreadyStarted(ServletContext servletContext) {
+        assert servletContext != null;
+        return servletContext.getAttribute(
+                DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE) != null;
     }
 
     private static Logger log() {

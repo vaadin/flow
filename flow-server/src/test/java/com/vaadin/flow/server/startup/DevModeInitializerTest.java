@@ -19,8 +19,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 import java.util.function.Function;
 
+import com.google.common.collect.Maps;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -336,8 +338,20 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted() throws Exception {
+        final Map<String, Object> servletContextAttributes = Maps.newHashMap();
+        Mockito.doAnswer(answer -> {
+            String key = answer.getArgumentAt(0, String.class);
+            Object value = answer.getArgumentAt(1, Object.class);
+            servletContextAttributes.putIfAbsent(key, value);
+            return null;
+        })
+                .when(servletContext)
+                .setAttribute(Mockito.anyString(), Mockito.anyObject());
+        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+                .thenAnswer(answer ->
+                        servletContextAttributes.get(answer.getArgumentAt(0, String.class)));
         runOnStartup();
-        assertTrue(DevModeInitializer.isDevModeAlreadyStarted());
+        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(servletContext));
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
