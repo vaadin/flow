@@ -32,13 +32,13 @@ import com.vaadin.flow.theme.AbstractTheme;
  *
  * @since 1.0
  */
-@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.5.0")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/color.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/typography.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/sizing.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/spacing.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/style.html")
 @HtmlImport("frontend://bower_components/vaadin-lumo-styles/icons.html")
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "1.6.0")
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
 @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
