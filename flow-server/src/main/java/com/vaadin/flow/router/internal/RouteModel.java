@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 
 /**
@@ -128,7 +128,7 @@ class RouteModel implements Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
      *         <code>url</code> argument according with the route configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url) {
@@ -148,7 +148,7 @@ class RouteModel implements Serializable {
      *             in case urlTemplate is not registered or the parameters do
      *             not match with the template.
      */
-    RouteTarget getRouteTarget(String urlTemplate, UrlParameters parameters) {
+    RouteTarget getRouteTarget(String urlTemplate, RouteParameters parameters) {
         AtomicReference<RouteTarget> target = new AtomicReference<>();
         root.matchSegmentTemplatesWithParameters(urlTemplate, parameters, null,
                 routeSegment -> target.set(routeSegment.getTarget()));
@@ -156,7 +156,7 @@ class RouteModel implements Serializable {
     }
 
     /**
-     * Gets a url path by replacing into the url template the url parameters.
+     * Gets a url path by replacing into the url template the route parameters.
      * <p>
      * In case all parameters defined in the urlTemplate are optional or
      * varargs, parameter arguments can be null and the path will be provided
@@ -177,7 +177,7 @@ class RouteModel implements Serializable {
      *             in case urlTemplate is not registered or the parameters do
      *             not match exactly with the template.
      */
-    String getUrl(String urlTemplate, UrlParameters parameters) {
+    String getUrl(String urlTemplate, RouteParameters parameters) {
         final List<String> result = new ArrayList<>();
 
         root.matchSegmentTemplatesWithParameters(urlTemplate, parameters,

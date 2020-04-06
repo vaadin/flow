@@ -207,18 +207,18 @@ public class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    public void routerLink_withoutRouter_WithUrlParameters() {
-        assertRouterLinkUrlParameters(false);
+    public void routerLink_withoutRouter_WithRouteParameters() {
+        assertRouterLinkRouteParameters(false);
     }
 
     @Test
-    public void routerLink_WithUrlParameters() {
-        assertRouterLinkUrlParameters(true);
+    public void routerLink_WithRouteParameters() {
+        assertRouterLinkRouteParameters(true);
     }
 
-    private void assertRouterLinkUrlParameters(boolean useUI) {
+    private void assertRouterLinkRouteParameters(boolean useUI) {
         RouterLink link = new RouterLink("Foo", ParameterNavigationTarget.class,
-                new UrlParameters("barId", "barValue"));
+                new RouteParameters("barId", "barValue"));
 
         if (useUI) {
             ui.add(link);
@@ -228,24 +228,24 @@ public class RouterLinkTest extends HasCurrentService {
                 link.getElement().getAttribute("href"));
 
         assertRouterLinkSetRoute(link, ParameterNavigationTarget.class,
-                new UrlParameters("fooId", "123"), "foo/123/foo");
+                new RouteParameters("fooId", "123"), "foo/123/foo");
 
         assertRouterLinkSetRoute(link, ParameterNavigationTarget.class,
-                new UrlParameters("fooBar", "false"), "false/foo/bar");
+                new RouteParameters("fooBar", "false"), "false/foo/bar");
 
         assertRouterLinkSetRoute(link, ParameterNavigationTarget.class,
-                new UrlParameters("foos", "123/qwe"), "foo/123/qwe");
+                new RouteParameters("foos", "123/qwe"), "foo/123/qwe");
 
         try {
             link.setRoute(ParameterNavigationTarget.class,
-                    new UrlParameters("fooId", "qwe"));
+                    new RouteParameters("fooId", "qwe"));
             Assert.fail("Route is not registered.");
         } catch (NotFoundException e) {
         }
     }
 
     private void assertRouterLinkSetRoute(RouterLink link,
-            Class<? extends Component> target, UrlParameters parameters,
+            Class<? extends Component> target, RouteParameters parameters,
             String url) {
         link.setRoute(target, parameters);
         Assert.assertEquals(url, link.getElement().getAttribute("href"));

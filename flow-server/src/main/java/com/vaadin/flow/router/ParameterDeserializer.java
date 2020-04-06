@@ -83,22 +83,22 @@ public final class ParameterDeserializer {
      *
      * @param navigationTarget
      *            navigation target for which to deserialize parameters
-     * @param urlParameters
-     *            the list of url parameters to deserialize
+     * @param parameters
+     *            the list of route parameters to deserialize
      * @return the deserialized url parameter, can be {@code null}
      */
-    public static Object deserializeUrlParameters(Class<?> navigationTarget,
-            List<String> urlParameters) {
-        if (urlParameters.isEmpty()) {
+    public static Object deserializeRouteParameters(Class<?> navigationTarget,
+            List<String> parameters) {
+        if (parameters.isEmpty()) {
             return isAnnotatedParameter(navigationTarget,
                     WildcardParameter.class) ? "" : null;
         }
         Class<?> parameterType = getClassType(navigationTarget);
         if (isAnnotatedParameter(navigationTarget, WildcardParameter.class)) {
             validateWildcardType(navigationTarget, parameterType);
-            return urlParameters.stream().collect(Collectors.joining("/"));
+            return parameters.stream().collect(Collectors.joining("/"));
         }
-        String parameter = urlParameters.get(0);
+        String parameter = parameters.get(0);
         return ParameterDeserializer.deserializeParameter(parameterType,
                 parameter, navigationTarget.getName());
     }
@@ -122,17 +122,17 @@ public final class ParameterDeserializer {
     }
 
     /**
-     * Verifies that the list of url parameters is valid for the given
+     * Verifies that the list of route parameters is valid for the given
      * navigation target.
      *
      * @param navigationTarget
      *            the navigation target to verify against
-     * @param urlParameters
-     *            the list of url parameters to verify
+     * @param parameters
+     *            the list of route parameters to verify
      * @return {@code true} if the parameters are valid, otherwise {@code false}
      */
     public static boolean verifyParameters(Class<?> navigationTarget,
-            List<String> urlParameters) {
+            List<String> parameters) {
         if (!HasUrlParameter.class.isAssignableFrom(navigationTarget)) {
             throw new IllegalArgumentException(String.format(
                     "Given navigationTarget '%s' does not implement HasUrlParameter.",
@@ -147,9 +147,9 @@ public final class ParameterDeserializer {
                 return true;
             } else if (isAnnotatedParameter(navigationTarget,
                     OptionalParameter.class)) {
-                return urlParameters.size() <= 1;
+                return parameters.size() <= 1;
             }
-            return urlParameters.size() == 1;
+            return parameters.size() == 1;
         }
         throw new UnsupportedOperationException(String.format(
                 "Currently HasUrlParameter only supports the following parameter types: %s.",

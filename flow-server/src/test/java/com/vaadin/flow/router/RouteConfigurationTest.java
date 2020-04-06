@@ -184,7 +184,7 @@ public class RouteConfigurationTest {
         Assert.assertEquals("Missing or incorrect url with parameters",
                 "double/1234567890/float/12345678900",
                 routeConfiguration.getUrl(ParameterView.class,
-                        new UrlParameters("int", "1234567890", "long",
+                        new RouteParameters("int", "1234567890", "long",
                                 "12345678900")));
 
         Assert.assertEquals("Missing or incorrect url template",
@@ -241,30 +241,30 @@ public class RouteConfigurationTest {
         Assert.assertEquals("Unexpected URL",
                 "component/button/api/com/vaadin/flow/button",
                 routeConfiguration.getUrl(ComponentView.class,
-                        new UrlParameters("identifier", "button", "tab", "api",
+                        new RouteParameters("identifier", "button", "tab", "api",
                                 "path", "com/vaadin/flow/button")));
 
         Assert.assertEquals("Unexpected URL",
                 "component/button/com/vaadin/flow/button",
                 routeConfiguration.getUrl(ComponentView.class,
-                        new UrlParameters("identifier", "button", "path",
+                        new RouteParameters("identifier", "button", "path",
                                 "com/vaadin/flow/button")));
 
         Assert.assertEquals("Unexpected URL",
                 "component/button/reviews",
                 routeConfiguration.getUrl(ComponentView.class,
-                        new UrlParameters("identifier", "button", "tab",
+                        new RouteParameters("identifier", "button", "tab",
                                 "reviews")));
 
         Assert.assertEquals("Unexpected URL",
                 "component/button/overview",
                 routeConfiguration.getUrl(ComponentView.class,
-                        new UrlParameters("identifier", "button", "tab",
+                        new RouteParameters("identifier", "button", "tab",
                                 "overview")));
 
         try {
             routeConfiguration.getUrl(ComponentView.class,
-                    new UrlParameters("identifier", "button", "tab",
+                    new RouteParameters("identifier", "button", "tab",
                             "examples"));
             Assert.fail("Valid URL returned instead of invalid.");
         } catch (NotFoundException e) {

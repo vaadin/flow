@@ -75,7 +75,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public RouterLink(String text,
             Class<? extends Component> navigationTarget) {
-        this(text, navigationTarget, UrlParameters.empty());
+        this(text, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -108,10 +108,10 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param navigationTarget
      *         navigation target
      * @param parameters
-     *         url parameters for navigation target
+     *         route parameters for navigation target
      */
     public RouterLink(String text, Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         this();
         setText(text);
         setRoute(getRouter(), navigationTarget, parameters);
@@ -130,7 +130,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public RouterLink(Router router, String text,
             Class<? extends Component> navigationTarget) {
-        this(router, text, navigationTarget, UrlParameters.empty());
+        this(router, text, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -168,11 +168,11 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param navigationTarget
      *            navigation target
      * @param parameters
-     *            url parameters for navigation target
+     *            route parameters for navigation target
      */
     public RouterLink(Router router, String text,
             Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         this();
         setText(text);
         setRoute(router, navigationTarget, parameters);
@@ -188,7 +188,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget) {
-        setRoute(router, navigationTarget, UrlParameters.empty());
+        setRoute(router, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -218,11 +218,11 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param navigationTarget
      *            navigation target
      * @param parameters
-     *            url parameters for navigation target
+     *            route parameters for navigation target
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         validateRouter(router);
         String url = RouteConfiguration.forRegistry(router.getRegistry())
                 .getUrl(navigationTarget, parameters);
@@ -262,10 +262,10 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param navigationTarget
      *            navigation target
      * @param parameters
-     *            url parameters for navigation target
+     *            route parameters for navigation target
      */
     public void setRoute(Class<? extends Component> navigationTarget,
-                         UrlParameters parameters) {
+                         RouteParameters parameters) {
         setRoute(getRouter(), navigationTarget, parameters);
     }
 

@@ -46,7 +46,7 @@ public class DefaultRouteResolver implements RouteResolver {
                 request.getRouter());
         try {
             builder.withTarget(navigationResult.getRouteTarget(),
-                    navigationResult.getUrlParameters());
+                    navigationResult.getRouteParameters());
             builder.withPath(navigationResult.getPath());
         } catch (NotFoundException nfe) {
             String message = "Exception while navigation to path " + path;

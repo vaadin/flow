@@ -26,7 +26,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -144,14 +144,14 @@ public class RouteModelTest {
         final String expectedUrl = "trunk/branch/12";
         final String urlTemplate = "trunk/branch/:id("
                 + RouteParameterRegex.INTEGER + ")";
-        final UrlParameters urlParameters = parameters("id", "12");
+        final RouteParameters parameters = parameters("id", "12");
 
-        assertUrl(root, expectedUrl, urlTemplate, urlParameters);
+        assertUrl(root, expectedUrl, urlTemplate, parameters);
 
         root.removeRoute(urlTemplate);
 
         try {
-            assertUrl(root, expectedUrl, urlTemplate, urlParameters);
+            assertUrl(root, expectedUrl, urlTemplate, parameters);
             Assert.fail("Route was just removed.");
         } catch (IllegalArgumentException e) {
         }
@@ -163,14 +163,14 @@ public class RouteModelTest {
 
         final String urlTemplate = "trunk/branch/:id("
                 + RouteParameterRegex.INTEGER + ")";
-        final UrlParameters urlParameters = parameters("id", "12");
+        final RouteParameters parameters = parameters("id", "12");
 
-        assertRoute(root, Branch.class, urlTemplate, urlParameters);
+        assertRoute(root, Branch.class, urlTemplate, parameters);
 
         root.removeRoute(urlTemplate);
 
         try {
-            root.getRouteTarget(urlTemplate, urlParameters);
+            root.getRouteTarget(urlTemplate, parameters);
             Assert.fail("Route was just removed.");
         } catch (IllegalArgumentException e) {
         }
@@ -275,13 +275,13 @@ public class RouteModelTest {
     }
 
     private void assertUrl(RouteModel root, String expectedUrl,
-            String urlTemplate, UrlParameters parameters) {
+            String urlTemplate, RouteParameters parameters) {
         final String modelUrl = root.getUrl(urlTemplate, parameters);
         Assert.assertEquals(expectedUrl, modelUrl);
     }
 
     private void assertNavigation(RouteModel model, String url,
-            Class<? extends Component> target, UrlParameters urlParameters) {
+            Class<? extends Component> target, RouteParameters parameters) {
 
         NavigationRouteTarget result = model.getNavigationRouteTarget(url);
 
@@ -291,15 +291,15 @@ public class RouteModelTest {
         assertTarget(target, routeTarget);
 
         if (target != null) {
-            Assert.assertEquals("Invalid url", urlParameters,
-                    result.getUrlParameters());
+            Assert.assertEquals("Invalid url", parameters,
+                    result.getRouteParameters());
         }
     }
 
     private void assertRoute(RouteModel model,
             Class<? extends Component> target, String urlTemplate,
-            UrlParameters urlParameters) {
-        assertTarget(target, model.getRouteTarget(urlTemplate, urlParameters));
+            RouteParameters parameters) {
+        assertTarget(target, model.getRouteTarget(urlTemplate, parameters));
     }
 
     private void assertTarget(Class<? extends Component> target,
@@ -327,8 +327,8 @@ public class RouteModelTest {
      *            the keys and values of the map.
      * @return a Map containing the specified arguments.
      */
-    public static UrlParameters parameters(String... keysAndValues) {
-        return new UrlParameters(keysAndValues);
+    public static RouteParameters parameters(String... keysAndValues) {
+        return new RouteParameters(keysAndValues);
     }
 
     /**

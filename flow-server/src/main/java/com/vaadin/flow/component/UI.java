@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -797,10 +797,10 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      * @see #navigate(Class, Object)
-     * @see #navigate(Class, UrlParameters)
+     * @see #navigate(Class, RouteParameters)
      */
     public void navigate(Class<? extends Component> navigationTarget) {
-        navigate(navigationTarget, UrlParameters.empty());
+        navigate(navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -862,7 +862,7 @@ public class UI extends Component
      *             navigationTarget matching the parameters.
      */
     public void navigate(Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));

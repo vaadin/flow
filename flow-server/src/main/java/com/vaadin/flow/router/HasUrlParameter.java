@@ -18,7 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Defines url parameters for navigation targets for use in routing.
+ * Defines route parameters for navigation targets for use in routing.
  *
  * @author Vaadin Ltd
  * @since 1.0.

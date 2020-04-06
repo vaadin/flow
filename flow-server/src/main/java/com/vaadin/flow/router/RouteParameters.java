@@ -26,33 +26,33 @@ import java.util.Set;
 import com.vaadin.flow.router.internal.PathUtil;
 
 /**
- * Immutable container which stores the url parameters extracted from a
+ * Immutable container which stores the route parameters extracted from a
  * navigation url received from the client.
  */
-public final class UrlParameters implements Serializable {
+public final class RouteParameters implements Serializable {
 
-    private static final UrlParameters EMPTY = new UrlParameters();
+    private static final RouteParameters EMPTY = new RouteParameters();
 
     private Map<String, String> params;
 
-    private UrlParameters() {
+    private RouteParameters() {
         params = Collections.emptyMap();
     }
 
     /**
-     * Creates a UrlParameters container using the given map as argument.
+     * Creates a RouteParameters container using the given map as argument.
      * 
      * @param params
      *            parameters mapping containing the parameter names mapping
      *            their values.
      */
-    public UrlParameters(Map<String, String> params) {
+    public RouteParameters(Map<String, String> params) {
         this.params = params != null ? Collections.unmodifiableMap(params)
                 : Collections.emptyMap();
     }
 
     /**
-     * Creates a UrlParameters container using the given parameter names and
+     * Creates a RouteParameters container using the given parameter names and
      * values. The input argument contains a sequence of pairs where the first
      * string in the pair represents the parameter name, while the second string
      * in the pair represents its value.
@@ -66,7 +66,7 @@ public final class UrlParameters implements Serializable {
      *             if the varargs size is not a multiple of 2 or the name of a
      *             parameter is specified more than once.
      */
-    public UrlParameters(String... namesAndValues) {
+    public RouteParameters(String... namesAndValues) {
         if (namesAndValues.length % 2 == 1) {
             throw new IllegalArgumentException(
                     "Input varargs must be of even size.");
@@ -90,11 +90,11 @@ public final class UrlParameters implements Serializable {
     }
 
     /**
-     * Creates an empty UrlParameters instance.
+     * Creates an empty RouteParameters instance.
      * 
-     * @return an empty instance of UrlParameters.
+     * @return an empty instance of RouteParameters.
      */
-    public static UrlParameters empty() {
+    public static RouteParameters empty() {
         return EMPTY;
     }
 
@@ -203,9 +203,9 @@ public final class UrlParameters implements Serializable {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof UrlParameters) {
-            UrlParameters urlParameters = (UrlParameters) obj;
-            return params.equals(urlParameters.params);
+        if (obj instanceof RouteParameters) {
+            RouteParameters parameters = (RouteParameters) obj;
+            return params.equals(parameters.params);
         }
         return false;
     }

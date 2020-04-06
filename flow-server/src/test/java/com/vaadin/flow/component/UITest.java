@@ -43,7 +43,7 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -308,7 +308,7 @@ public class UITest {
         initUI(ui, "", null);
 
         ui.navigate(FooBarParamNavigationTarget.class,
-                new UrlParameters("fooParam", "flu", "barParam", "beer"));
+                new RouteParameters("fooParam", "flu", "barParam", "beer"));
 
         assertEquals("foo/flu/beer/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
@@ -928,14 +928,14 @@ public class UITest {
         }
 
         try {
-            ui.navigate(Parameterized.class, UrlParameters.empty());
+            ui.navigate(Parameterized.class, RouteParameters.empty());
             Assert.fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
         }
 
         try {
-            ui.navigate(Parameterized.class, new UrlParameters("some", "value"));
+            ui.navigate(Parameterized.class, new RouteParameters("some", "value"));
             Assert.fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
@@ -990,7 +990,7 @@ public class UITest {
 
         try {
             ui.navigate(FooBarParamNavigationTarget.class,
-                    new UrlParameters("fooParam", "123"));
+                    new RouteParameters("fooParam", "123"));
             Assert.fail("NotFoundException expected.");
         } catch (NotFoundException e) {
         }

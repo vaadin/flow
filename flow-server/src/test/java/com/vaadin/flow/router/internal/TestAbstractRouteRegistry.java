@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 
 public class TestAbstractRouteRegistry extends AbstractRouteRegistry {
 
@@ -33,7 +33,7 @@ public class TestAbstractRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         return getConfiguration().getRouteTarget(target, parameters);
     }
 

@@ -56,7 +56,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.VaadinSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,7 +148,7 @@ public abstract class AbstractNavigationStateRenderer
 
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
-        final UrlParameters urlParameters = navigationState.getParameters();
+        final RouteParameters parameters = navigationState.getParameters();
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
         routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
@@ -161,7 +161,7 @@ public abstract class AbstractNavigationStateRenderer
         checkForDuplicates(routeTargetType, routeLayoutTypes);
 
         BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
-                event, routeTargetType, urlParameters, routeLayoutTypes);
+                event, routeTargetType, parameters, routeLayoutTypes);
 
         Deque<BeforeLeaveHandler> leaveHandlers;
         if (postponed != null) {
@@ -225,7 +225,7 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
-                event, routeTargetType, urlParameters, routeLayoutTypes);
+                event, routeTargetType, parameters, routeLayoutTypes);
 
         transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
                 beforeNavigationActivating, event, chain);
@@ -638,14 +638,14 @@ public abstract class AbstractNavigationStateRenderer
             BeforeEvent beforeEvent) {
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                        beforeEvent.getForwardTargetUrlParameters())
+                        beforeEvent.getForwardTargetRouteParameters())
                 || beforeEvent.isUnknownRoute()) {
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 
         if (beforeEvent.hasRerouteTarget()
                 && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetUrlParameters())) {
+                        beforeEvent.getRerouteTargetRouteParameters())) {
             return Optional.of(TransitionOutcome.REROUTED);
         }
 
@@ -653,7 +653,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private boolean isSameNavigationState(Class<? extends Component> targetType,
-            UrlParameters targetParameters) {
+            RouteParameters targetParameters) {
         final boolean sameTarget = navigationState.getNavigationTarget()
                 .equals(targetType);
 
@@ -705,20 +705,20 @@ public abstract class AbstractNavigationStateRenderer
         if (url == null) {
             final String redirectType;
             final Class<? extends Component> redirectTarget;
-            final UrlParameters redirectParameters;
+            final RouteParameters redirectParameters;
 
             if (isForward) {
                 redirectType = "forward";
                 redirectTarget = beforeNavigation.getForwardTargetType();
-                redirectParameters = beforeNavigation.getForwardTargetUrlParameters();
+                redirectParameters = beforeNavigation.getForwardTargetRouteParameters();
             } else {
                 redirectType = "reroute";
                 redirectTarget = beforeNavigation.getRerouteTargetType();
-                redirectParameters = beforeNavigation.getRerouteTargetUrlParameters();
+                redirectParameters = beforeNavigation.getRerouteTargetRouteParameters();
             }
 
             throw new IllegalStateException(String.format(
-                    "Attempting to %s to unresolved location target %s with url parameters %s",
+                    "Attempting to %s to unresolved location target %s with route parameters %s",
                     redirectType, redirectTarget, redirectParameters));
         }
 

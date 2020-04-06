@@ -362,7 +362,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
                 .getUrl(MyPageWithWildcardParam.class, "wild/value"));
         Assert.assertEquals("my/wild/value",
                 routeConfiguration.getUrl(MyPageWithWildcardParam.class,
-                        new UrlParameters(HasUrlParameterFormat.PARAMETER_NAME,
+                        new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME,
                                 "wild/value")));
 
         Assert.assertEquals(MyPageWithWildcardParam.class,
@@ -380,7 +380,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
                 routeConfiguration.getUrl(MyPageWithParam.class, "value"));
         Assert.assertEquals("my/value",
                 routeConfiguration.getUrl(MyPageWithParam.class,
-                        new UrlParameters(HasUrlParameterFormat.PARAMETER_NAME,
+                        new RouteParameters(HasUrlParameterFormat.PARAMETER_NAME,
                                 "value")));
 
         Assert.assertEquals(MyPage.class,

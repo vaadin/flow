@@ -18,7 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.Map;
 
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 
 /**
  * Contains the information resulted from searching a route target using a
@@ -37,13 +37,13 @@ public class NavigationRouteTarget implements Serializable {
     private RouteTarget routeTarget;
 
     // Parameters found in the path.
-    private UrlParameters urlParameters;
+    private RouteParameters parameters;
 
     NavigationRouteTarget(String path, RouteTarget routeTarget,
-                          Map<String, String> urlParameters) {
+                          Map<String, String> parameters) {
         this.path = path;
         this.routeTarget = routeTarget;
-        this.urlParameters = new UrlParameters(urlParameters);
+        this.parameters = new RouteParameters(parameters);
     }
 
     /**
@@ -75,18 +75,18 @@ public class NavigationRouteTarget implements Serializable {
     }
 
     /**
-     * Gets the url parameters for this search response.
+     * Gets the route parameters for this search response.
      * 
-     * @return the url parameters for this search response.
+     * @return the route parameters for this search response.
      */
-    public UrlParameters getUrlParameters() {
-        return urlParameters;
+    public RouteParameters getRouteParameters() {
+        return parameters;
     }
 
     @Override
     public String toString() {
         return "[url: \"" + path + "\", target: "
                 + (routeTarget != null ? routeTarget.getTarget() : null)
-                + ", parameters: " + urlParameters + "]";
+                + ", parameters: " + parameters + "]";
     }
 }

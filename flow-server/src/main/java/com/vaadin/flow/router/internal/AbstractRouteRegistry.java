@@ -34,7 +34,7 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -281,7 +281,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         Objects.requireNonNull(navigationTarget, "Target must not be null.");
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget,

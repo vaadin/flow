@@ -867,7 +867,7 @@ this.workbox.precaching = (function (DBWrapper_mjs,logger_mjs,cacheNames_mjs,Wor
   const cacheName = cacheNames_mjs.cacheNames.getPrecacheName();
   const precacheController = new PrecacheController(cacheName);
 
-  const _removeIgnoreUrlParams = (origUrlObject, ignoreUrlParametersMatching) => {
+  const _removeIgnoreUrlParams = (origUrlObject, ignoreRouteParametersMatching) => {
     // Exclude initial '?'
     const searchString = origUrlObject.search.slice(1);
 
@@ -878,7 +878,7 @@ this.workbox.precaching = (function (DBWrapper_mjs,logger_mjs,cacheNames_mjs,Wor
       return keyValueString.split('=');
     });
     const filteredKeyValuesPairs = keyValuePairs.filter(keyValuePair => {
-      return ignoreUrlParametersMatching.every(ignoredRegex => {
+      return ignoreRouteParametersMatching.every(ignoredRegex => {
         // Return true iff the key doesn't match any of the regexes.
         return !ignoredRegex.test(keyValuePair[0]);
       });
@@ -907,7 +907,7 @@ this.workbox.precaching = (function (DBWrapper_mjs,logger_mjs,cacheNames_mjs,Wor
    * @private
    */
   const _getPrecachedUrl = (url, {
-    ignoreUrlParametersMatching = [/^utm_/],
+    ignoreRouteParametersMatching = [/^utm_/],
     directoryIndex = 'index.html',
     cleanUrls = true,
     urlManipulation = null
@@ -917,7 +917,7 @@ this.workbox.precaching = (function (DBWrapper_mjs,logger_mjs,cacheNames_mjs,Wor
     // Change '/some-url#123' => '/some-url'
     urlObject.hash = '';
 
-    const urlWithoutIgnoredParams = _removeIgnoreUrlParams(urlObject, ignoreUrlParametersMatching);
+    const urlWithoutIgnoredParams = _removeIgnoreUrlParams(urlObject, ignoreRouteParametersMatching);
 
     let urlsToAttempt = [
     // Test the URL that was fetched
@@ -1014,7 +1014,7 @@ this.workbox.precaching = (function (DBWrapper_mjs,logger_mjs,cacheNames_mjs,Wor
    * @param {string} [options.directoryIndex=index.html] The `directoryIndex` will
    * check cache entries for a URLs ending with '/' to see if there is a hit when
    * appending the `directoryIndex` value.
-   * @param {Array<RegExp>} [options.ignoreUrlParametersMatching=[/^utm_/]] An
+   * @param {Array<RegExp>} [options.ignoreRouteParametersMatching=[/^utm_/]] An
    * array of regex's to remove search params when looking for a cache match.
    * @param {boolean} [options.cleanUrls=true] The `cleanUrls` option will
    * check the cache for the URL with a `.html` added to the end of the end.

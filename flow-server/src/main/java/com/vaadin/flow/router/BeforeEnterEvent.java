@@ -49,15 +49,15 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
      *            navigation target, not <code>null</code>
-     * @param urlParameters
-     *            url parameters, not <code>null</code>
+     * @param parameters
+     *            route parameters, not <code>null</code>
      * @param layouts
      *            navigation layout chain, not <code>null</code>
      */
     public BeforeEnterEvent(NavigationEvent event, Class<?> navigationTarget,
-            UrlParameters urlParameters,
+            RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
-        super(event, navigationTarget, urlParameters, layouts);
+        super(event, navigationTarget, parameters, layouts);
     }
 
     /**
@@ -96,8 +96,8 @@ public class BeforeEnterEvent extends BeforeEvent {
      *            the new location, not <code>null</code>
      * @param navigationTarget
      *            navigation target class, not <code>null</code>
-     * @param urlParameters
-     *            url parameters, not <code>null</code>
+     * @param parameters
+     *            route parameters, not <code>null</code>
      * @param ui
      *            the UI related to the navigation, not <code>null</code>
      * @param layouts
@@ -106,8 +106,8 @@ public class BeforeEnterEvent extends BeforeEvent {
      */
     public BeforeEnterEvent(Router router, NavigationTrigger trigger,
             Location location, Class<?> navigationTarget,
-            UrlParameters urlParameters, UI ui,
+            RouteParameters parameters, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
-        super(router, trigger, location, navigationTarget, urlParameters, ui, layouts);
+        super(router, trigger, location, navigationTarget, parameters, ui, layouts);
     }
 }

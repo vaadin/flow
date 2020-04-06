@@ -29,7 +29,7 @@ import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedListener;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
@@ -105,24 +105,24 @@ public interface RouteRegistry extends Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
      *         <code>url</code> argument according with the route configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url);
 
     /**
      * Gets the {@link RouteTarget} instance matching the given target component
-     * and url parameters.
+     * and route parameters.
      * 
      * @param target
      *            a component class which is a navigation target.
      * @param parameters
      *            parameter values that may be used with given target.
      * @return the {@link RouteTarget} instance matching the given target
-     *         component and url parameters.
+     *         component and route parameters.
      */
     RouteTarget getRouteTarget(Class<? extends Component> target,
-                               UrlParameters parameters);
+                               RouteParameters parameters);
 
     /**
      * Gets the optional navigation target class for a given path. Returns an
@@ -172,7 +172,7 @@ public interface RouteRegistry extends Serializable {
      *         {@link Optional#empty()} if navigation target was not found
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
-            UrlParameters parameters);
+            RouteParameters parameters);
 
     /**
      * Get the main url template for given navigation target.

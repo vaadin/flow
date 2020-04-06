@@ -44,22 +44,22 @@ public class NavigationStateBuilder {
     }
 
     /**
-     * Assigns the given navigation target with the given url parameters to the
+     * Assigns the given navigation target with the given route parameters to the
      * navigation state being built.
      *
      * @param navigationTarget
      *            the navigation target
-     * @param urlParameters
-     *            the url parameters of the navigation target
+     * @param parameters
+     *            the route parameters of the navigation target
      * @return this builder, for chaining
-     * @deprecated use {@link #withTarget(Class, UrlParameters)} instead.
+     * @deprecated use {@link #withTarget(Class, RouteParameters)} instead.
      */
     @Deprecated
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
-            List<String> urlParameters) {
+            List<String> parameters) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setUrlParameters(urlParameters);
+        currentState.setRouteParameters(parameters);
         return this;
     }
 
@@ -69,32 +69,32 @@ public class NavigationStateBuilder {
      *
      * @param navigationTarget
      *            the navigation target
-     * @param urlParameters
-     *            the url parameters of the navigation target
+     * @param parameters
+     *            the route parameters of the navigation target
      * @return this builder, for chaining
      */
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
-            UrlParameters urlParameters) {
+            RouteParameters parameters) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setParameters(urlParameters);
+        currentState.setParameters(parameters);
         return this;
     }
 
     /**
-     * Assigns the given route target with the given url parameters to the
+     * Assigns the given route target with the given route parameters to the
      * navigation state being built.
      *
      * @param routeTarget
      *            the route target
-     * @param urlParameters
-     *            the url parameters of the navigation target
+     * @param parameters
+     *            the route parameters of the navigation target
      * @return this builder, for chaining
      */
     public NavigationStateBuilder withTarget(RouteTarget routeTarget,
-            UrlParameters urlParameters) {
+            RouteParameters parameters) {
         currentState.setRouteTarget(routeTarget);
-        currentState.setParameters(urlParameters);
+        currentState.setParameters(parameters);
         return this;
     }
 

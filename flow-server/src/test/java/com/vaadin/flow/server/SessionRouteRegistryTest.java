@@ -133,7 +133,7 @@ public class SessionRouteRegistryTest {
                 registry.getNavigationTarget("home", Collections.emptyList())
                         .get());
         Assert.assertEquals(
-                "Expected HasUrlParameters class for request with segments.",
+                "Expected HasRouteParameters class for request with segments.",
                 Parameter.class,
                 registry.getNavigationTarget("home", Arrays.asList("param"))
                         .get());

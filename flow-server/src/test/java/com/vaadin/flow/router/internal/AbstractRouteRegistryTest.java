@@ -649,7 +649,7 @@ public class AbstractRouteRegistryTest {
 
     /* HasUrl parameter */
     @Test
-    public void two_has_url_parameters_throw_exception()
+    public void two_has_route_parameters_throw_exception()
             throws InvalidRouteConfigurationException {
         expectedEx.expect(InvalidRouteConfigurationException.class);
         expectedEx.expectMessage(String.format(

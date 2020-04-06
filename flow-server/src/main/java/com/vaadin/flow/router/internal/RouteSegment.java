@@ -33,7 +33,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 
 /**
@@ -255,17 +255,17 @@ final class RouteSegment implements Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
      *         <code>url</code> argument according with the route configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url) {
 
-        Map<String, String> urlParameters = new HashMap<>();
+        Map<String, String> parameters = new HashMap<>();
 
         RouteTarget routeTarget = url == null ? null
-                : findRouteTarget(PathUtil.getSegmentsList(url), urlParameters);
+                : findRouteTarget(PathUtil.getSegmentsList(url), parameters);
 
-        return new NavigationRouteTarget(url, routeTarget, urlParameters);
+        return new NavigationRouteTarget(url, routeTarget, parameters);
     }
 
     /**
@@ -414,7 +414,7 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget findRouteTarget(List<String> segments,
-            Map<String, String> urlParameters) {
+            Map<String, String> parameters) {
 
         // First try with a static segment (non a parameter). An empty
         // segments list should happen only on root, so this instance should
@@ -425,7 +425,7 @@ final class RouteSegment implements Serializable {
         // Static segments
         if (routeSegment != null) {
             RouteTarget foundTarget = routeSegment
-                    .getRouteTargetMatchingParameter(segments, urlParameters);
+                    .getRouteTargetMatchingParameter(segments, parameters);
             if (foundTarget != null) {
                 return foundTarget;
             }
@@ -438,27 +438,27 @@ final class RouteSegment implements Serializable {
             RouteTarget foundTarget;
 
             // Mandatory parameters
-            foundTarget = findRouteTarget(segments, urlParameters,
+            foundTarget = findRouteTarget(segments, parameters,
                     getParameterSegments());
             if (foundTarget != null) {
                 return foundTarget;
             }
 
             // Optionals
-            foundTarget = findRouteTarget(segments, urlParameters,
+            foundTarget = findRouteTarget(segments, parameters,
                     getOptionalSegments());
             if (foundTarget != null) {
                 return foundTarget;
             }
 
             // Optional's children
-            foundTarget = findRouteTargetInOptionals(segments, urlParameters);
+            foundTarget = findRouteTargetInOptionals(segments, parameters);
             if (foundTarget != null) {
                 return foundTarget;
             }
 
             // Varargs
-            foundTarget = findRouteTarget(segments, urlParameters,
+            foundTarget = findRouteTarget(segments, parameters,
                     getVarargsSegments());
             if (foundTarget != null) {
                 return foundTarget;
@@ -469,7 +469,7 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget findRouteTargetInOptionals(List<String> segments,
-            Map<String, String> urlParameters) {
+            Map<String, String> parameters) {
         RouteTarget foundTarget;
         for (RouteSegment parameter : getOptionalSegments().values()) {
             // Try ignoring the parameter if optional and look into its
@@ -478,7 +478,7 @@ final class RouteSegment implements Serializable {
             foundTarget = parameter.findRouteTarget(segments, outputParameters);
 
             if (foundTarget != null) {
-                urlParameters.putAll(outputParameters);
+                parameters.putAll(outputParameters);
                 return foundTarget;
             }
         }
@@ -486,11 +486,11 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget findRouteTarget(List<String> segments,
-            Map<String, String> urlParameters,
+            Map<String, String> parameters,
             Map<String, RouteSegment> children) {
         for (RouteSegment segment : children.values()) {
             RouteTarget foundTarget = segment
-                    .getRouteTargetMatchingParameter(segments, urlParameters);
+                    .getRouteTargetMatchingParameter(segments, parameters);
             if (foundTarget != null) {
                 return foundTarget;
             }
@@ -499,7 +499,7 @@ final class RouteSegment implements Serializable {
     }
 
     private RouteTarget getRouteTargetMatchingParameter(List<String> segments,
-            Map<String, String> urlParameters) {
+            Map<String, String> parameters) {
 
         Map<String, String> outputParameters = new HashMap<>();
 
@@ -537,7 +537,7 @@ final class RouteSegment implements Serializable {
         RouteTarget foundTarget = getRouteTarget(segments, outputParameters);
 
         if (foundTarget != null) {
-            urlParameters.putAll(outputParameters);
+            parameters.putAll(outputParameters);
         }
 
         return foundTarget;
@@ -609,7 +609,7 @@ final class RouteSegment implements Serializable {
     }
 
     void matchSegmentTemplatesWithParameters(String urlTemplate,
-            UrlParameters parameters,
+            RouteParameters parameters,
             Consumer<RouteSegmentValue> segmentProcessor,
             Consumer<RouteSegment> targetSegmentProcessor) {
 
@@ -624,7 +624,7 @@ final class RouteSegment implements Serializable {
         final Set<String> parameterNames = new HashSet<>(
                 parameters.getParameterNames());
 
-        UrlParameters finalParameters = parameters;
+        RouteParameters finalParameters = parameters;
         matchSegmentTemplates(urlTemplate, segmentTemplates, routeSegment -> {
             final Optional<String> segmentValue = getSegmentValue(routeSegment,
                     finalParameters);
@@ -641,7 +641,7 @@ final class RouteSegment implements Serializable {
             // All parameter must be used.
             if (!parameterNames.isEmpty()) {
                 throw new IllegalArgumentException(
-                        "All provided UrlParameters must be used to process the urlTemplate. Provide the exact required UrlParameters or a urlTemplate that will use all UrlParameters");
+                        "All provided RouteParameters must be used to process the urlTemplate. Provide the exact required RouteParameters or a urlTemplate that will use all RouteParameters");
             }
 
             if (targetSegmentProcessor != null) {
@@ -799,7 +799,7 @@ final class RouteSegment implements Serializable {
     }
 
     private static Optional<String> getSegmentValue(RouteSegment routeSegment,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
 
         if (routeSegment.isVarargs()) {
             return getVarargsValue(routeSegment, parameters);
@@ -813,7 +813,7 @@ final class RouteSegment implements Serializable {
     }
 
     private static Optional<String> getVarargsValue(RouteSegment routeSegment,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         final String parameterName = routeSegment.getName();
 
         List<String> args = parameters.getWildcard(parameterName);
@@ -838,7 +838,7 @@ final class RouteSegment implements Serializable {
     }
 
     private static Optional<String> getParameterValue(RouteSegment routeSegment,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         final String parameterName = routeSegment.getName();
 
         final Optional<String> value = parameters.get(parameterName);

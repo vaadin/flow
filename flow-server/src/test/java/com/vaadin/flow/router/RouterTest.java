@@ -1444,10 +1444,10 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Tag(Tag.DIV)
-    public static class UrlParametersBase extends Component
+    public static class RouteParametersBase extends Component
             implements BeforeEnterObserver {
 
-        static UrlParameters parameters;
+        static RouteParameters parameters;
 
         static Class<? extends Component> target;
 
@@ -1458,40 +1458,40 @@ public class RouterTest extends RoutingTestBase {
 
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
-            parameters = event.getUrlParameters();
+            parameters = event.getRouteParameters();
             target = getClass();
         }
     }
 
     @RoutePrefix(":parentID")
-    public static class ParentWithParameter extends UrlParametersBase
+    public static class ParentWithParameter extends RouteParametersBase
             implements RouterLayout {
     }
 
     @Route(value = "", layout = ParentWithParameter.class)
     @RoutePrefix("link/:chainLinkID")
     @ParentLayout(ParentWithParameter.class)
-    public static class ChainLinkWithParameter extends UrlParametersBase
+    public static class ChainLinkWithParameter extends RouteParametersBase
             implements RouterLayout {
     }
 
     @Route(value = "target/:targetChainLinkID/bar", layout = ChainLinkWithParameter.class)
-    public static class TargetWithParameter extends UrlParametersBase {
+    public static class TargetWithParameter extends RouteParametersBase {
     }
 
     @Route(value = ":optional?/:anotherOptional?", layout = ChainLinkWithParameter.class)
-    public static class TargetWithOptionalParameters extends UrlParametersBase {
+    public static class TargetWithOptionalParameters extends RouteParametersBase {
     }
 
     @Route(value = ":targetChainLinkID", layout = ParentWithParameter.class)
     @RoutePrefix("targetLink/:chainLinkID?/chainLink")
     @ParentLayout(ParentWithParameter.class)
     public static class ChainLinkWithParameterAndTarget
-            extends UrlParametersBase implements RouterLayout {
+            extends RouteParametersBase implements RouterLayout {
     }
 
     @Route(value = ":anotherTargetID/:yetAnotherID/foo/:varargsFoo*", layout = ChainLinkWithParameterAndTarget.class)
-    public static class AnotherTargetWithParameter extends UrlParametersBase {
+    public static class AnotherTargetWithParameter extends RouteParametersBase {
     }
 
     @Route(":intType(" + RouteParameterRegex.INTEGER + ")")
@@ -1503,7 +1503,7 @@ public class RouterTest extends RoutingTestBase {
             + "/:boolType?(" + RouteParameterRegex.BOOLEAN + ")"
             + "/:stringType?/:varargs*(thinking|of|U|and|I)")
     @RoutePrefix("param/types")
-    public static class ParameterTypesView extends UrlParametersBase
+    public static class ParameterTypesView extends RouteParametersBase
             implements RouterLayout {
     }
 
@@ -1511,7 +1511,7 @@ public class RouterTest extends RoutingTestBase {
     @RouteAlias(":messageID(" + RouteParameterRegex.INTEGER + ")")
     @RouteAlias("last")
     @RoutePrefix("forum/thread/:threadID(" + RouteParameterRegex.INTEGER + ")")
-    public static class ParametersForumThreadView extends UrlParametersBase
+    public static class ParametersForumThreadView extends RouteParametersBase
             implements RouterLayout {
     }
 
@@ -1519,35 +1519,35 @@ public class RouterTest extends RoutingTestBase {
     @RouteAlias(":groupId(\\w[\\w\\d]+\\.[\\w\\d\\-\\.]+)/:artifactId/:version?(v?\\d.*)/:path*")
     @RouteAlias(":path*")
     @RoutePrefix("api")
-    public static class ParametersApiView extends UrlParametersBase
+    public static class ParametersApiView extends RouteParametersBase
             implements RouterLayout {
     }
 
     @Route(":tabIdentifier?(api)/:apiPath*")
     @RouteAlias(":tabIdentifier?(overview|samples|links|reviews|discussions)")
     @RoutePrefix("directory/component/:urlIdentifier/:versionIdentifier?(v?\\d.*)")
-    public static class DetailsView extends UrlParametersBase
+    public static class DetailsView extends RouteParametersBase
             implements RouterLayout {
     }
 
     @Route("")
     @RouteAlias("param/:regex?([0-9]*)")
     @RouteAlias("param/:regex?([0-9]*)/edit")
-    public static class ParametersRegexView extends UrlParametersBase {
+    public static class ParametersRegexView extends RouteParametersBase {
     }
 
     @Route("")
     @RouteAlias(":search?")
     @RoutePrefix("search")
-    public static class SearchView extends UrlParametersBase {
+    public static class SearchView extends RouteParametersBase {
     }
 
     @Route("show")
-    public static class ShowAllView extends UrlParametersBase {
+    public static class ShowAllView extends RouteParametersBase {
     }
 
     @Route("show/:filter?")
-    public static class RedirectUrlParametersView extends UrlParametersBase {
+    public static class RedirectRouteParametersView extends RouteParametersBase {
 
         static boolean doForward = false;
 
@@ -1555,19 +1555,19 @@ public class RouterTest extends RoutingTestBase {
         public void beforeEnter(BeforeEnterEvent event) {
             super.beforeEnter(event);
 
-            event.getUrlParameters().get("filter").ifPresent(value -> {
+            event.getRouteParameters().get("filter").ifPresent(value -> {
                 
                 if (!value.equals("original")) {
-                    UrlParametersBase.clear();
+                    RouteParametersBase.clear();
 
                     if (value.equals("wrong")) {
-                        redirect(event, RedirectWithUrlParametersView.class,
-                                new UrlParameters("noParameter", value));
+                        redirect(event, RedirectWithRouteParametersView.class,
+                                new RouteParameters("noParameter", value));
                     } else if (value.equals("all")) {
                         redirect(event, RedirectToView.class);
                     } else {
-                        redirect(event, RedirectWithUrlParametersView.class,
-                                new UrlParameters("text", value));
+                        redirect(event, RedirectWithRouteParametersView.class,
+                                new RouteParameters("text", value));
                     }
                 }
             });
@@ -1584,7 +1584,7 @@ public class RouterTest extends RoutingTestBase {
         }
 
         private void redirect(BeforeEnterEvent event,
-                Class<? extends Component> target, UrlParameters parameters) {
+                Class<? extends Component> target, RouteParameters parameters) {
             if (doForward) {
                 event.forwardTo(target, parameters);
             } else {
@@ -1594,12 +1594,12 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route("filter")
-    public static class RedirectToView extends UrlParametersBase {
+    public static class RedirectToView extends RouteParametersBase {
     }
 
     @Route("filter/:text")
-    public static class RedirectWithUrlParametersView
-            extends UrlParametersBase {
+    public static class RedirectWithRouteParametersView
+            extends RouteParametersBase {
     }
     
     @Override
@@ -1950,7 +1950,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_with_multiple_url_parameters()
+    public void reroute_with_multiple_route_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 RouteWithMultipleParameters.class,
@@ -1966,7 +1966,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_fails_with_faulty_url_parameters()
+    public void reroute_fails_with_faulty_route_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 RouteWithMultipleParameters.class, FailRerouteWithParams.class);
@@ -1985,7 +1985,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_with_multiple_url_parameters_fails_to_parameterless_target()
+    public void reroute_with_multiple_route_parameters_fails_to_parameterless_target()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 ParameterRouteNoParameter.class,
@@ -2005,7 +2005,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_with_multiple_url_parameters_fails_to_single_parameter_target()
+    public void reroute_with_multiple_route_parameters_fails_to_single_parameter_target()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 RouteWithParameter.class,
@@ -3525,170 +3525,170 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void url_parameters_fail_to_be_extracted_from_views() {
+    public void route_parameters_fail_to_be_extracted_from_views() {
         setNavigationTargets(ChainLinkWithParameter.class,
                 TargetWithOptionalParameters.class,
                 TargetWithParameter.class,
                 AnotherTargetWithParameter.class,
                 ChainLinkWithParameterAndTarget.class);
 
-        assertUrlParameters("qwe/123/link", null);
+        assertRouteParameters("qwe/123/link", null);
 
-        assertUrlParameters("link/qwe/123/456", null);
+        assertRouteParameters("link/qwe/123/456", null);
 
-        assertUrlParameters("123/link/456/789/target/bar", null);
+        assertRouteParameters("123/link/456/789/target/bar", null);
 
-        assertUrlParameters(
+        assertRouteParameters(
                 "123/targetLink/456/789/chainLink/987/foo/a/b/c/d/e/f", null);
 
-        assertUrlParameters("987/765/targetLink/chainLink/543", null);
+        assertRouteParameters("987/765/targetLink/chainLink/543", null);
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_view1() {
+    public void route_parameters_are_extracted_for_view1() {
         setNavigationTargets(ChainLinkWithParameter.class);
 
-        assertUrlParameters("qwe/link/123",
+        assertRouteParameters("qwe/link/123",
                 parameters("parentID", "qwe", "chainLinkID", "123"));
     }
     
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_view2() {
+    public void route_parameters_are_extracted_for_view2() {
         setNavigationTargets(TargetWithOptionalParameters.class);
 
-        assertUrlParameters("qwe/link/123/456", parameters("parentID", "qwe",
+        assertRouteParameters("qwe/link/123/456", parameters("parentID", "qwe",
                 "chainLinkID", "123", "optional", "456"));
-        assertUrlParameters("qwe/link/123/456/789",
+        assertRouteParameters("qwe/link/123/456/789",
                 parameters("parentID", "qwe", "chainLinkID", "123", "optional",
                         "456", "anotherOptional", "789"));
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_view3() {
+    public void route_parameters_are_extracted_for_view3() {
         setNavigationTargets(TargetWithParameter.class);
 
-        assertUrlParameters("123/link/456/target/789/bar",
+        assertRouteParameters("123/link/456/target/789/bar",
                 parameters("parentID", "123", "chainLinkID", "456",
                         "targetChainLinkID", "789"));
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_view4() {
+    public void route_parameters_are_extracted_for_view4() {
         setNavigationTargets(AnotherTargetWithParameter.class);
 
-        assertUrlParameters(
+        assertRouteParameters(
                 "123/targetLink/456/chainLink/789/987/foo/a/b/c/d/e/f",
                 parameters("parentID", "123", "chainLinkID", "456",
                         "anotherTargetID", "789", "yetAnotherID", "987",
                         "varargsFoo", varargs("a", "b", "c", "d", "e", "f")));
-        assertUrlParameters("abc/targetLink/def/chainLink/ghi/jkl/foo",
+        assertRouteParameters("abc/targetLink/def/chainLink/ghi/jkl/foo",
                 parameters("parentID", "abc", "chainLinkID", "def",
                         "anotherTargetID", "ghi", "yetAnotherID", "jkl"));
 
-        assertUrlParameters("012/targetLink/chainLink/345/678/foo/1/2/3/4",
+        assertRouteParameters("012/targetLink/chainLink/345/678/foo/1/2/3/4",
                 parameters("parentID", "012", "anotherTargetID", "345",
                         "yetAnotherID", "678", "varargsFoo",
                         varargs("1", "2", "3", "4")));
-        assertUrlParameters("012/targetLink/chainLink/345/678/foo",
+        assertRouteParameters("012/targetLink/chainLink/345/678/foo",
                 parameters("parentID", "012", "anotherTargetID", "345",
                         "yetAnotherID", "678"));
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_view5() {
+    public void route_parameters_are_extracted_for_view5() {
         setNavigationTargets(ChainLinkWithParameterAndTarget.class);
 
-        assertUrlParameters("987/targetLink/765/chainLink/543",
+        assertRouteParameters("987/targetLink/765/chainLink/543",
                 parameters("parentID", "987", "chainLinkID", "765",
                         "targetChainLinkID", "543"));
-        assertUrlParameters("987/targetLink/chainLink/543",
+        assertRouteParameters("987/targetLink/chainLink/543",
                 parameters("parentID", "987", "targetChainLinkID", "543"));
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_parameters_view() {
+    public void route_parameters_are_extracted_for_parameters_view() {
         setNavigationTargets(ParameterTypesView.class);
 
-        assertUrlParameters("param/types/123", parameters("intType", "123"));
+        assertRouteParameters("param/types/123", parameters("intType", "123"));
 
-        assertUrlParameters("param/types/12345678900",
+        assertRouteParameters("param/types/12345678900",
                 parameters("longType", "12345678900"));
 
-        assertUrlParameters("param/types/true", parameters("boolType", "true"));
+        assertRouteParameters("param/types/true", parameters("boolType", "true"));
 
-        assertUrlParameters("param/types/false",
+        assertRouteParameters("param/types/false",
                 parameters("boolType", "false"));
 
-        assertUrlParameters("param/types/thinking",
+        assertRouteParameters("param/types/thinking",
                 parameters("stringType", "thinking"));
 
-        assertUrlParameters("param/types/1/am/thinking/of/U/and/I",
+        assertRouteParameters("param/types/1/am/thinking/of/U/and/I",
                 parameters("intType", "1", "stringType", "am", "varargs",
                         "thinking/of/U/and/I"));
         Assert.assertEquals("Invalid varargs",
                 Arrays.asList("thinking", "of", "U", "and", "I"),
-                UrlParametersBase.parameters.getWildcard("varargs"));
+                RouteParametersBase.parameters.getWildcard("varargs"));
 
-        assertUrlParameters("param/types/12345678900/long",
+        assertRouteParameters("param/types/12345678900/long",
                 parameters("longType", "12345678900", "stringType", "long"));
 
-        assertUrlParameters("param/types/long/12345678900", null);
+        assertRouteParameters("param/types/long/12345678900", null);
 
-        assertUrlParameters("param/types/true/false",
+        assertRouteParameters("param/types/true/false",
                 parameters("boolType", "true", "stringType", "false"));
 
-        assertUrlParameters("param/types/thinking/of/U/and/I",
+        assertRouteParameters("param/types/thinking/of/U/and/I",
                 parameters("stringType", "thinking", "varargs", "of/U/and/I"));
 
-        assertUrlParameters("param/types/I/am/thinking", null);
+        assertRouteParameters("param/types/I/am/thinking", null);
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_forum_view() {
+    public void route_parameters_are_extracted_for_forum_view() {
         setNavigationTargets(ParametersForumThreadView.class);
 
-        assertUrlParameters("forum/thread/123/456",
+        assertRouteParameters("forum/thread/123/456",
                 parameters("threadID", "123", "messageID", "456"));
-        assertUrlParameters("forum/thread/123/last",
+        assertRouteParameters("forum/thread/123/last",
                 parameters("threadID", "123"));
-        assertUrlParameters("forum/thread/123", parameters("threadID", "123"));
-        assertUrlParameters("forum/thread/123/thread-name",
+        assertRouteParameters("forum/thread/123", parameters("threadID", "123"));
+        assertRouteParameters("forum/thread/123/thread-name",
                 parameters("threadID", "123", "something", "thread-name"));
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_api_view() {
+    public void route_parameters_are_extracted_for_api_view() {
         setNavigationTargets(ParametersApiView.class);
 
         // path is empty
-        assertUrlParameters("api", parameters());
+        assertRouteParameters("api", parameters());
 
         // with path
-        assertUrlParameters("api/com/vaadin/client/package-summary.html",
+        assertRouteParameters("api/com/vaadin/client/package-summary.html",
                 parameters("path", varargs("com", "vaadin", "client",
                         "package-summary.html")));
 
         // alias=framework, version is empty
-        assertUrlParameters("api/framework/com/vaadin/client/package-summary.html",
+        assertRouteParameters("api/framework/com/vaadin/client/package-summary.html",
                 parameters("alias", "framework", "path", varargs("com",
                         "vaadin", "client", "package-summary.html")));
 
         // alias=framework, version=8.9.4
-        assertUrlParameters(
+        assertRouteParameters(
                 "api/framework/8.9.4/com/vaadin/client/package-summary.html",
                 parameters("alias", "framework", "version", "8.9.4", "path",
                         varargs("com", "vaadin", "client",
                                 "package-summary.html")));
 
         // groupId=com.vaadin, artifactId=vaadin-all, version is empty
-        assertUrlParameters(
+        assertRouteParameters(
                 "api/com.vaadin/vaadin-all/com/vaadin/client/package-summary.html",
                 parameters("groupId", "com.vaadin", "artifactId", "vaadin-all",
                         "path", varargs("com", "vaadin", "client",
                                 "package-summary.html")));
 
         // groupId=com.vaadin, artifactId=vaadin-all, version=8.9.4
-        assertUrlParameters(
+        assertRouteParameters(
                 "api/com.vaadin/vaadin-all/8.9.4/com/vaadin/client/package-summary.html",
                 parameters("groupId", "com.vaadin", "version", "8.9.4",
                         "artifactId", "vaadin-all", "path", varargs("com",
@@ -3696,112 +3696,112 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_details_view() {
+    public void route_parameters_are_extracted_for_details_view() {
         setNavigationTargets(DetailsView.class);
 
-        assertUrlParameters("directory/component/url-parameter-mapping",
+        assertRouteParameters("directory/component/url-parameter-mapping",
                 parameters("urlIdentifier", "url-parameter-mapping"));
-        assertUrlParameters(
+        assertRouteParameters(
                 "directory/component/url-parameter-mapping/discussions",
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "tabIdentifier", "discussions"));
-        assertUrlParameters(
+        assertRouteParameters(
                 "directory/component/url-parameter-mapping/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html",
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "tabIdentifier", "api", "apiPath",
                         varargs("org", "vaadin", "flow", "helper",
                                 "HasAbsoluteUrlParameterMapping.html")));
 
-        assertUrlParameters(
+        assertRouteParameters(
                 "directory/component/url-parameter-mapping/1.0.0-alpha7/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html",
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "versionIdentifier", "1.0.0-alpha7", "tabIdentifier",
                         "api", "apiPath",
                         varargs("org", "vaadin", "flow", "helper",
                                 "HasAbsoluteUrlParameterMapping.html")));
-        assertUrlParameters(
+        assertRouteParameters(
                 "directory/component/url-parameter-mapping/1.0.0-alpha7/discussions",
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "versionIdentifier", "1.0.0-alpha7", "tabIdentifier",
                         "discussions"));
-        assertUrlParameters("directory/component/url-parameter-mapping/1.0.0-alpha7",
+        assertRouteParameters("directory/component/url-parameter-mapping/1.0.0-alpha7",
                 parameters("urlIdentifier", "url-parameter-mapping",
                         "versionIdentifier", "1.0.0-alpha7"));
 
         // Assert url failure
-        assertUrlParameters("directory/component", null);
+        assertRouteParameters("directory/component", null);
     }
 
     @Test // #2740 #4213
-    public void url_parameters_are_extracted_for_regex_view() {
+    public void route_parameters_are_extracted_for_regex_view() {
         setNavigationTargets(ParametersRegexView.class);
 
-        assertUrlParameters("param/123", parameters("regex", "123"));
-        assertUrlParameters("param/abc", null);
-        assertUrlParameters("param/-123", null);
+        assertRouteParameters("param/123", parameters("regex", "123"));
+        assertRouteParameters("param/abc", null);
+        assertRouteParameters("param/-123", null);
 
-        assertUrlParameters("param/123/edit", parameters("regex", "123"));
-        assertUrlParameters("param/abc/edit", null);
-        assertUrlParameters("param/-123/edit", null);
+        assertRouteParameters("param/123/edit", parameters("regex", "123"));
+        assertRouteParameters("param/abc/edit", null);
+        assertRouteParameters("param/-123/edit", null);
 
-        assertUrlParameters("param", parameters());
-        assertUrlParameters("param/edit", parameters());
+        assertRouteParameters("param", parameters());
+        assertRouteParameters("param/edit", parameters());
     }
 
     @Test // #2740 #4213
     public void routes_fail_to_register_with_alternate_optional_parameter() {
         assertFailingRouteConfiguration(SearchView.class);
-        assertFailingRouteConfiguration(ShowAllView.class, RedirectUrlParametersView.class);
-        assertFailingRouteConfiguration(RedirectUrlParametersView.class, ShowAllView.class);
+        assertFailingRouteConfiguration(ShowAllView.class, RedirectRouteParametersView.class);
+        assertFailingRouteConfiguration(RedirectRouteParametersView.class, ShowAllView.class);
     }
 
     @Test // #2740 #4213
-    public void reroute_with_url_parameters() {
-        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
-                RedirectWithUrlParametersView.class);
+    public void reroute_with_route_parameters() {
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
 
-        assertUrlParametersRedirect();
+        assertRouteParametersRedirect();
     }
 
     @Test // #2740 #4213
-    public void forward_with_url_parameters() {
-        RedirectUrlParametersView.doForward = true;
+    public void forward_with_route_parameters() {
+        RedirectRouteParametersView.doForward = true;
 
-        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
-                RedirectWithUrlParametersView.class);
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
 
-        assertUrlParametersRedirect();
+        assertRouteParametersRedirect();
     }
 
     @Test // #2740 #4213
-    public void reroute_with_wrong_url_parameters() {
-        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
-                RedirectWithUrlParametersView.class);
+    public void reroute_with_wrong_route_parameters() {
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
 
-        assertWrongUrlParametersRedirect();
+        assertWrongRouteParametersRedirect();
     }
 
     @Test // #2740 #4213
-    public void forward_with_wrong_url_parameters() {
-        RedirectUrlParametersView.doForward = true;
+    public void forward_with_wrong_route_parameters() {
+        RedirectRouteParametersView.doForward = true;
 
-        setNavigationTargets(RedirectUrlParametersView.class, RedirectToView.class,
-                RedirectWithUrlParametersView.class);
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
 
-        assertWrongUrlParametersRedirect();
+        assertWrongRouteParametersRedirect();
     }
 
-    private void assertWrongUrlParametersRedirect() {
-        assertUrlParameters("show/wrong", null, null);
+    private void assertWrongRouteParametersRedirect() {
+        assertRouteParameters("show/wrong", null, null);
     }
 
-    private void assertUrlParametersRedirect() {
-        assertUrlParameters("show/all", parameters(), RedirectToView.class);
-        assertUrlParameters("show/some", parameters("text", "some"),
-                RedirectWithUrlParametersView.class);
-        assertUrlParameters("show", parameters(), RedirectUrlParametersView.class);
-        assertUrlParameters("show/original", parameters("filter", "original"),
-                RedirectUrlParametersView.class);
+    private void assertRouteParametersRedirect() {
+        assertRouteParameters("show/all", parameters(), RedirectToView.class);
+        assertRouteParameters("show/some", parameters("text", "some"),
+                RedirectWithRouteParametersView.class);
+        assertRouteParameters("show", parameters(), RedirectRouteParametersView.class);
+        assertRouteParameters("show/original", parameters("filter", "original"),
+                RedirectRouteParametersView.class);
     }
 
     private void assertFailingRouteConfiguration(
@@ -3813,22 +3813,22 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
-    private void assertUrlParameters(String url, UrlParameters parameters) {
-        assertUrlParameters(url, parameters, null);
+    private void assertRouteParameters(String url, RouteParameters parameters) {
+        assertRouteParameters(url, parameters, null);
     }
 
-    private void assertUrlParameters(String url, UrlParameters parameters,
+    private void assertRouteParameters(String url, RouteParameters parameters,
             Class<? extends Component> target) {
-        UrlParametersBase.clear();
+        RouteParametersBase.clear();
 
         navigate(url);
 
         Assert.assertEquals("Incorrect parameters", parameters,
-                UrlParametersBase.parameters);
+                RouteParametersBase.parameters);
         
         if (target != null) {
             Assert.assertEquals("Incorrect target", target,
-                    UrlParametersBase.target);
+                    RouteParametersBase.target);
         }
     }
 

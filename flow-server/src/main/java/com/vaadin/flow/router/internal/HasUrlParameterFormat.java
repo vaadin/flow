@@ -28,7 +28,7 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParameterDeserializer;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.WildcardParameter;
 
 /**
@@ -115,18 +115,18 @@ public class HasUrlParameterFormat implements Serializable {
     }
 
     /**
-     * Transform the {@link HasUrlParameter} value into a {@link UrlParameters}
-     * object.
+     * Transform the {@link HasUrlParameter} value into a
+     * {@link RouteParameters} object.
      *
      * @param parameter
      *            the parameter values.
      * @param <T>
      *            type of the input value.
-     * @return UrlParameters instance wrapping the given parameter.
+     * @return RouteParameters instance wrapping the given parameter.
      */
-    public static <T> UrlParameters getParameters(T parameter) {
+    public static <T> RouteParameters getParameters(T parameter) {
         if (parameter == null) {
-            return UrlParameters.empty();
+            return RouteParameters.empty();
 
         } else if (parameter instanceof String) {
             final List<String> segments = PathUtil
@@ -136,21 +136,21 @@ public class HasUrlParameterFormat implements Serializable {
             }
         }
 
-        return new UrlParameters(
+        return new RouteParameters(
                 Collections.singletonMap(PARAMETER_NAME, parameter.toString()));
     }
 
     /**
-     * Transform the {@link HasUrlParameter} values into a {@link UrlParameters}
-     * object.
+     * Transform the {@link HasUrlParameter} values into a
+     * {@link RouteParameters} object.
      * 
      * @param parametersList
      *            the list of values.
      * @param <T>
      *            type of the input values.
-     * @return UrlParameters instance wrapping the given parameters.
+     * @return RouteParameters instance wrapping the given parameters.
      */
-    public static <T> UrlParameters getParameters(List<T> parametersList) {
+    public static <T> RouteParameters getParameters(List<T> parametersList) {
 
         if (parametersList.size() == 1) {
             return getParameters(parametersList.get(0));
@@ -166,32 +166,32 @@ public class HasUrlParameterFormat implements Serializable {
                             .collect(Collectors.joining("/")));
         }
 
-        return new UrlParameters(map);
+        return new RouteParameters(map);
     }
 
     /**
      * Gets the values for the {@link HasUrlParameter} from the specified url
      * parameters.
      * 
-     * @param urlParameters
+     * @param parameters
      *            url parameter.
      * @return HasUrlParameter compatible values.
      */
-    public static List<String> getParameterValues(UrlParameters urlParameters) {
+    public static List<String> getParameterValues(RouteParameters parameters) {
 
-        List<String> parameters = urlParameters
+        List<String> wildcard = parameters
                 .getWildcard(HasUrlParameterFormat.PARAMETER_NAME);
 
-        if (parameters.isEmpty()) {
-            final Optional<String> value = urlParameters
+        if (wildcard.isEmpty()) {
+            final Optional<String> value = parameters
                     .get(HasUrlParameterFormat.PARAMETER_NAME);
 
             if (value.isPresent()) {
-                parameters = Collections.singletonList(value.get());
+                wildcard = Collections.singletonList(value.get());
             }
         }
 
-        return parameters;
+        return wildcard;
     }
 
     /**
@@ -213,11 +213,11 @@ public class HasUrlParameterFormat implements Serializable {
      * @param navigationTarget
      *            navigation target.
      * @param parameters
-     *            navigation url parameters.
+     *            navigation route parameters.
      */
     public static void checkMandatoryParameter(
             Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         if (hasUrlParameter(navigationTarget)
                 && hasMandatoryParameter(navigationTarget)
                 && (parameters == null

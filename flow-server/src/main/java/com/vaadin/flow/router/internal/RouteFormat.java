@@ -33,11 +33,11 @@ class RouteFormat implements Serializable {
     static final String STRING_REGEX = "";
 
     /**
-     * Returns whether the specified urlTemplate contains url parameters.
+     * Returns whether the specified urlTemplate contains route parameters.
      *
      * @param urlTemplate
      *            a url template.
-     * @return true if the specified urlTemplate contains url parameters,
+     * @return true if the specified urlTemplate contains route parameters,
      *         otherwise false.
      */
     static boolean hasParameters(String urlTemplate) {
@@ -45,11 +45,11 @@ class RouteFormat implements Serializable {
     }
 
     /**
-     * Returns whether the specified urlTemplate contains url parameters.
+     * Returns whether the specified urlTemplate contains route parameters.
      *
      * @param urlTemplate
      *            a url template.
-     * @return true if the specified urlTemplate contains url parameters,
+     * @return true if the specified urlTemplate contains route parameters,
      *         otherwise false.
      */
     static boolean hasRequiredParameter(String urlTemplate) {

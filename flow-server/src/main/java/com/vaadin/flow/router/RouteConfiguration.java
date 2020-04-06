@@ -403,15 +403,15 @@ public class RouteConfiguration implements Serializable {
      *         if the navigation target requires a parameter
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
-        return getUrl(navigationTarget, UrlParameters.empty());
+        return getUrl(navigationTarget, RouteParameters.empty());
     }
 
     /**
-     * Return the url base without any url parameters.
+     * Return the url base without any route parameters.
      *
      * @param navigationTarget
      *            navigation target to get url for
-     * @return optional url base without url parameters or empty if there is no
+     * @return optional url base without route parameters or empty if there is no
      *         registered route for {@code navigationTarget}, not {@code null}
      */
     public Optional<String> getUrlBase(
@@ -492,7 +492,7 @@ public class RouteConfiguration implements Serializable {
      * @param navigationTarget
      *            navigation target.
      * @param parameters
-     *            url parameters.
+     *            route parameters.
      * @return the url which navigates to given navigationTarget using given
      *         parameters.
      * @throws NotFoundException
@@ -500,7 +500,7 @@ public class RouteConfiguration implements Serializable {
      *             template matching the given parameters.
      */
     public String getUrl(Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
 
         Optional<String> targetUrl = handledRegistry
                 .getTargetUrl(navigationTarget, parameters);

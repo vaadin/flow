@@ -34,7 +34,7 @@ import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
@@ -196,7 +196,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         return getConfiguration().getRouteTarget(target, parameters);
     }
 

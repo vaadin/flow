@@ -30,7 +30,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.UrlParameters;
+import com.vaadin.flow.router.RouteParameters;
 
 /**
  * Route configuration class that is used as a value object.
@@ -184,7 +184,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link UrlParameters} extracted from the
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
      *         <code>url</code> argument according with the route configuration.
      */
     public NavigationRouteTarget getNavigationRouteTarget(String url) {
@@ -193,17 +193,17 @@ public class ConfiguredRoutes implements Serializable {
 
     /**
      * Gets the {@link RouteTarget} instance matching the given target component
-     * and url parameters.
+     * and route parameters.
      *
      * @param target
      *            a component class which is a navigation target.
      * @param parameters
      *            parameter values that may be used with given target.
      * @return the {@link RouteTarget} instance matching the given target
-     *         component and url parameters.
+     *         component and route parameters.
      */
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-                                      UrlParameters parameters) {
+                                      RouteParameters parameters) {
         return iterateUrlTemplates(target, urlTemplate -> {
             try {
                 return getRouteModel().getRouteTarget(urlTemplate, parameters);
@@ -347,7 +347,7 @@ public class ConfiguredRoutes implements Serializable {
                 // In case all parameters are optional or wildcard, this will
                 // return successfully.
                 return getRouteModel().getUrl(urlTemplate,
-                        UrlParameters.empty());
+                        RouteParameters.empty());
             }
 
             return urlTemplate;
@@ -361,12 +361,12 @@ public class ConfiguredRoutes implements Serializable {
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @param parameters
-     *            url parameters
+     *            route parameters
      * @return url String populated with parameters for the given
      *         navigationTarget
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget,
-            UrlParameters parameters) {
+            RouteParameters parameters) {
         return iterateUrlTemplates(navigationTarget, urlTemplate -> {
             try {
                 return getRouteModel().getUrl(urlTemplate, parameters);

@@ -20,11 +20,11 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class UrlParametersTest {
+public class RouteParametersTest {
 
     @Test
     public void getters_provide_correct_values() {
-        UrlParameters parameters = getParameters();
+        RouteParameters parameters = getParameters();
 
         // String getter
         Assert.assertEquals("Wrong value", "foo",
@@ -76,7 +76,7 @@ public class UrlParametersTest {
 
     @Test
     public void getters_provide_empty_values() {
-        UrlParameters parameters = getParameters();
+        RouteParameters parameters = getParameters();
 
         Assert.assertFalse("Optional should be empty",
                 parameters.get("foo").isPresent());
@@ -93,7 +93,7 @@ public class UrlParametersTest {
 
     @Test
     public void integer_getter_throws_exception() {
-        UrlParameters parameters = getParameters();
+        RouteParameters parameters = getParameters();
 
         try {
             parameters.getInteger("string");
@@ -126,7 +126,7 @@ public class UrlParametersTest {
 
     @Test
     public void long_getter_throws_exception() {
-        UrlParameters parameters = getParameters();
+        RouteParameters parameters = getParameters();
 
         try {
             parameters.getLong("string");
@@ -153,24 +153,24 @@ public class UrlParametersTest {
     @Test
     public void varargs_initializer_throws_exception() {
         try {
-            new UrlParameters("int", "123", "long");
+            new RouteParameters("int", "123", "long");
 
             Assert.fail(
-                    "UrlParameters initializer should have failed with odd size argument.");
+                    "RouteParameters initializer should have failed with odd size argument.");
         } catch (IllegalArgumentException e) {
         }
 
         try {
-            new UrlParameters("int", "123", "int", "123");
+            new RouteParameters("int", "123", "int", "123");
 
             Assert.fail(
-                    "UrlParameters initializer should have failed with same parameter defined more than once.");
+                    "RouteParameters initializer should have failed with same parameter defined more than once.");
         } catch (IllegalArgumentException e) {
         }
     }
 
-    private UrlParameters getParameters() {
-        return new UrlParameters("string", "foo", "integer", "123", "long",
+    private RouteParameters getParameters() {
+        return new RouteParameters("string", "foo", "integer", "123", "long",
                 "12345678900", "boolean", "true", "varargs", "path/to/foo/bar");
     }
 
