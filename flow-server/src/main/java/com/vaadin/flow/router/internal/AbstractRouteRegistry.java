@@ -282,7 +282,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public Optional<String> getTargetUrl(
             Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
         HasUrlParameterFormat.checkMandatoryParameter(navigationTarget,
                 parameters);
@@ -294,7 +294,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public Optional<String> getUrlTemplate(
             Class<? extends Component> navigationTarget) {
-        Objects.requireNonNull(navigationTarget, "Target must not be null.");
+        Objects.requireNonNull(navigationTarget, TARGET_MUST_NOT_BE_NULL);
 
         return Optional.ofNullable(
                 getConfiguration().getUrlTemplate(navigationTarget));
