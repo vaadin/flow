@@ -59,7 +59,7 @@ public class ConfiguredRoutes implements Serializable {
      * Create an immutable RouteConfiguration.
      */
     public ConfiguredRoutes() {
-        routeModel = RouteModel.create();
+        routeModel = RouteModel.create(false);
         pathToTarget = Collections.emptyMap();
         targetToPath = Collections.emptyMap();
         targetRouteModels = Collections.emptyMap();
@@ -80,15 +80,15 @@ public class ConfiguredRoutes implements Serializable {
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routeMap.put(route.getKey(), route.getValue().copy(false));
+            routeMap.put(route.getKey(), route.getValue());
         }
         targetRouteMap.putAll(original.getTargetRoutes());
         exceptionTargetMap.putAll(original.getExceptionHandlers());
 
         Map<Class<? extends Component>, RouteModel> target2UrlTemplatesMap = original
-                .copyTargetRouteModels();
+                .copyTargetRouteModels(false);
 
-        this.routeModel = RouteModel.copy(original.getRouteModel());
+        this.routeModel = RouteModel.copy(original.getRouteModel(), false);
         this.pathToTarget = routeMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(routeMap);
@@ -128,22 +128,19 @@ public class ConfiguredRoutes implements Serializable {
     protected List<String> getRoutePaths(
             Class<? extends Component> routeTarget) {
         return getRoutesMap().entrySet().stream()
-                .filter(entry -> Objects.equals(routeTarget,
-                        entry.getValue().getTarget()))
+                .filter(entry -> entry.getValue().containsTarget(routeTarget))
                 .map(Map.Entry::getKey).collect(Collectors.toList());
     }
 
     /**
-     * See if configuration contains a registered route for given url template.
+     * See if configuration contains a registered route for given path.
      *
-     * @param urlTemplate
-     *            url template to check
+     * @param path
+     *            path to check
      * @return true if configuration contains route
-     * @deprecated use {@link #hasUrlTemplate(String)} instead.
      */
-    @Deprecated
-    public boolean hasRoute(String urlTemplate) {
-        return getRoutesMap().containsKey(urlTemplate);
+    public boolean hasRoute(String path) {
+        return hasUrlTemplate(path);
     }
 
     /**
@@ -161,16 +158,14 @@ public class ConfiguredRoutes implements Serializable {
      * Check if configuration holds a route for given path with possible path
      * segments.
      *
-     * @param url
+     * @param path
      *            path string to check
      * @param segments
      *            path segments for route
      * @return true if a route is found, else false
-     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
-    @Deprecated
-    public boolean hasRoute(String url, List<String> segments) {
-        return getNavigationRouteTarget(PathUtil.getPath(url, segments))
+    public boolean hasRoute(String path, List<String> segments) {
+        return getNavigationRouteTarget(PathUtil.getPath(path, segments))
                 .hasTarget();
     }
 
@@ -246,9 +241,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param segments
      *            possible path segments
      * @return {@link Optional} containing the navigationTarget class if found
-     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
-    @Deprecated
     public Optional<Class<? extends Component>> getRoute(String url,
             List<String> segments) {
         return getTarget(PathUtil.getPath(url, segments));
@@ -287,10 +280,11 @@ public class ConfiguredRoutes implements Serializable {
      * 
      * @return a copy of the target and route models mapping.
      */
-    protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels() {
+    protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(
+            boolean mutable) {
         Map<Class<? extends Component>, RouteModel> copyMap = new HashMap<>();
         this.getTargetRouteModels().entrySet().forEach(entry -> copyMap
-                .put(entry.getKey(), RouteModel.copy(entry.getValue())));
+                .put(entry.getKey(), RouteModel.copy(entry.getValue(), mutable)));
         return copyMap;
     }
 
@@ -300,9 +294,7 @@ public class ConfiguredRoutes implements Serializable {
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @return base route string if target class found
-     * @deprecated use {@link #getUrlTemplate(Class)} instead.
      */
-    @Deprecated
     public String getTargetRoute(Class<? extends Component> navigationTarget) {
         return getUrlTemplate(navigationTarget);
     }
@@ -315,11 +307,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return base route string if target class found
      */
     public String getUrlTemplate(Class<? extends Component> navigationTarget) {
-        return getRouteModel().formatUrlTemplate(
-                getTargetRoutes().get(navigationTarget),
-                EnumSet.of(RouteParameterFormatOption.NAME,
-                        RouteParameterFormatOption.MODIFIER,
-                        RouteParameterFormatOption.REGEX));
+        return getTargetRoutes().get(navigationTarget);
     }
 
     /**
@@ -329,12 +317,16 @@ public class ConfiguredRoutes implements Serializable {
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @param format
-     *            settings used to format the result parameters.
+     *            settings used to format the result parameters. If all of
+     *            {@link RouteParameterFormatOption#NAME},
+     *            {@link RouteParameterFormatOption#MODIFIER} and
+     *            {@link RouteParameterFormatOption#REGEX} are provided, the
+     *            unformatted url template will be provided.
      * @return base route string if target class found
      */
     public String getUrlTemplate(Class<? extends Component> navigationTarget,
             Set<RouteParameterFormatOption> format) {
-        final String urlTemplate = getTargetRoutes().get(navigationTarget);
+        final String urlTemplate = getUrlTemplate(navigationTarget);
         if (urlTemplate == null) {
             return null;
         }
@@ -351,17 +343,17 @@ public class ConfiguredRoutes implements Serializable {
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget) {
         return iterateUrlTemplates(navigationTarget, urlTemplate -> {
-            if (RouteFormat.hasParameters(urlTemplate)) {
-                try {
-                    // In case all parameters are optional, this will return
-                    // successfully.
-                    return getRouteModel().getUrl(urlTemplate, null);
-                } catch (IllegalArgumentException e) {
-                    return null;
-                }
-            } else {
-                return urlTemplate;
+            if (RouteFormat.hasRequiredParameter(urlTemplate)) {
+                return null;
+
+            } else if (RouteFormat.hasParameters(urlTemplate)) {
+                // In case all parameters are optional or wildcard, this will
+                // return successfully.
+                return getRouteModel().getUrl(urlTemplate,
+                        UrlParameters.empty());
             }
+
+            return urlTemplate;
         });
     }
 
@@ -373,7 +365,8 @@ public class ConfiguredRoutes implements Serializable {
      *            navigationTarget to get registered route for
      * @param parameters
      *            url parameters
-     * @return base route string if target class found
+     * @return url String populated with parameters for the given
+     *         navigationTarget
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget,
             UrlParameters parameters) {
@@ -409,45 +402,22 @@ public class ConfiguredRoutes implements Serializable {
 
     /**
      * Return the parent layout chain for given navigation target on the target
-     * url.
+     * path.
      *
-     * @param url
-     *            url to get parent layout chain for.
+     * @param path
+     *            path to get parent layout chain for.
      * @param navigationTarget
-     *            navigation target on url to get parent layout chain for.
+     *            navigation target on path to get parent layout chain for.
      * @return list of parent layout chain.
      * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
     @Deprecated
-    public List<Class<? extends RouterLayout>> getParentLayouts(String url,
+    public List<Class<? extends RouterLayout>> getParentLayouts(String path,
             Class<? extends Component> navigationTarget) {
-        final NavigationRouteTarget result = getNavigationRouteTarget(url);
+        final NavigationRouteTarget result = getNavigationRouteTarget(path);
 
         if (result.hasTarget()) {
             return result.getRouteTarget().getParentLayouts();
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    /**
-     * Return the parent layout chain for given navigation target.
-     *
-     * @param navigationTarget
-     *            navigation target to get parent layout chain for.
-     * @return list of parent layout chain.
-     */
-    public List<Class<? extends RouterLayout>> getParentLayouts(
-            Class<? extends Component> navigationTarget) {
-
-        final String urlTemplate = getTargetRoutes().get(navigationTarget);
-        RouteTarget target = null;
-        if (urlTemplate != null) {
-            target = getRoutesMap().get(urlTemplate);
-        }
-
-        if (target != null) {
-            return target.getParentLayouts();
         } else {
             return Collections.emptyList();
         }
@@ -487,8 +457,6 @@ public class ConfiguredRoutes implements Serializable {
         }
 
         final Collection<String> urlTemplates = model.getRoutes().keySet();
-        // This iteration may be moved inside the model in the form of recursion
-        // similar to what getRoutes() is doing.
         for (String urlTemplate : urlTemplates) {
             final T result = urlTemplateOutput.apply(urlTemplate);
             if (result != null) {

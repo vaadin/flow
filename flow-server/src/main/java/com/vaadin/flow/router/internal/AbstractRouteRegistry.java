@@ -302,10 +302,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void setRoute(String urlTemplate,
+    public void setRoute(String template,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
-        configure(configuration -> addRouteToConfiguration(urlTemplate,
+        configure(configuration -> addRouteToConfiguration(template,
                 navigationTarget, parentChain, configuration));
     }
 
@@ -318,20 +318,20 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void removeRoute(String urlTemplate) {
-        if (!getConfiguration().hasUrlTemplate(urlTemplate)) {
+    public void removeRoute(String template) {
+        if (!getConfiguration().hasUrlTemplate(template)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(urlTemplate));
+        configure(configuration -> configuration.removeRoute(template));
     }
 
     @Override
-    public void removeRoute(String urlTemplate,
+    public void removeRoute(String template,
             Class<? extends Component> navigationTarget) {
-        if (!getConfiguration().hasUrlTemplate(urlTemplate)) {
+        if (!getConfiguration().hasUrlTemplate(template)) {
             return;
         }
-        configure(configuration -> configuration.removeRoute(urlTemplate,
+        configure(configuration -> configuration.removeRoute(template,
                 navigationTarget));
     }
 

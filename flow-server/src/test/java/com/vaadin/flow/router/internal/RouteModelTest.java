@@ -34,7 +34,7 @@ import org.junit.Test;
 public class RouteModelTest {
 
     private RouteModel getRouteModel() {
-        RouteModel root = RouteModel.create();
+        RouteModel root = RouteModel.create(true);
         root.addRoute("", routeTarget(Root.class));
         root.addRoute("trunk", routeTarget(Trunk.class));
         root.addRoute("trunk/branch", routeTarget(Branch.class));
@@ -103,7 +103,7 @@ public class RouteModelTest {
 
     @Test
     public void varargs_url_parameter_defined_only_as_last_segment() {
-        RouteModel root = RouteModel.create();
+        RouteModel root = RouteModel.create(true);
         try {
             root.addRoute("trunk/:vararg*/edit", routeTarget(Root.class));
 
@@ -252,6 +252,29 @@ public class RouteModelTest {
                 routes.get(urlTemplate).getTarget());
     }
 
+    @Test
+    public void mutable_methods_throw_when_model_is_immutable() {
+        RouteModel immutable = RouteModel.create(false);
+        try {
+            immutable.addRoute("foo/:foo", routeTarget(Root.class));
+
+            Assert.fail("Immutable model should not be mutable.");
+        } catch (IllegalStateException e) {
+        }
+
+        RouteModel mutable = RouteModel.create(true);
+        mutable.addRoute("foo/:foo", routeTarget(Root.class));
+
+        RouteModel immutableCopy = RouteModel.copy(mutable, false);
+
+        try {
+            immutableCopy.removeRoute("foo/:foo");
+
+            Assert.fail("Immutable model should not be mutable.");
+        } catch (IllegalStateException e) {
+        }
+    }
+
     private void assertUrl(RouteModel root, String expectedUrl,
             String urlTemplate, UrlParameters parameters) {
         final String modelUrl = root.getUrl(urlTemplate, parameters);
@@ -263,7 +286,7 @@ public class RouteModelTest {
 
         NavigationRouteTarget result = model.getNavigationRouteTarget(url);
 
-        Assert.assertEquals("Invalid url", url, result.getUrl());
+        Assert.assertEquals("Invalid url", url, result.getPath());
 
         final RouteTarget routeTarget = result.getRouteTarget();
         assertTarget(target, routeTarget);

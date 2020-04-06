@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import com.vaadin.flow.router.BeforeEvent;
@@ -13,7 +11,6 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.startup.RouteTargetTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -714,38 +711,6 @@ public class AbstractRouteRegistryTest {
         Assert.assertTrue(
                 "All routes should have been removed from the target.",
                 config().getTargetRoutes().isEmpty());
-    }
-
-    @Test
-    public void parent_layouts_are_given_for_correct_route() {
-        addTarget(NormalRoute.class, Collections.singletonList(Parent.class));
-        addTarget(HasUrlRoute.class);
-
-        Assert.assertTrue("HasUrlRoute should not get parent layouts.",
-                config().getParentLayouts(HasUrlRoute.class).isEmpty());
-
-        Assert.assertEquals("NormaRoute should have exactly one parent layout.",
-                1, config().getParentLayouts(NormalRoute.class).size());
-        Assert.assertEquals("Received parent layout did not match expected.",
-                Parent.class,
-                config().getParentLayouts(NormalRoute.class).get(0));
-    }
-
-    @Test
-    public void removing_route_removes_parent_layouts() {
-        addTarget(NormalRoute.class, Collections.singletonList(Parent.class));
-
-        Assert.assertEquals("NormaRoute should have exactly one parent layout.",
-                1, config().getParentLayouts(NormalRoute.class).size());
-        Assert.assertEquals("Received parent layout did not match expected.",
-                Parent.class,
-                config().getParentLayouts(NormalRoute.class).get(0));
-
-        registry.removeRoute(NormalRoute.class);
-        Assert.assertTrue("No targets should remain in RouteTarget",
-                config().getTargetRoutes().isEmpty());
-        Assert.assertTrue("No parents should be returned from NormalRoute",
-                config().getParentLayouts(NormalRoute.class).isEmpty());
     }
 
     /* Private stuff */

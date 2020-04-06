@@ -16,7 +16,6 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,17 +43,17 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
     private final Map<String, RouteTarget> routeMap;
     private final Map<Class<? extends Component>, String> targetRouteMap;
-    private final Map<Class<? extends Component>, RouteModel> target2UrlTemplates;
+    private final Map<Class<? extends Component>, RouteModel> targetToRouteModel;
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
 
     /**
      * Create an immutable RouteConfiguration.
      */
     public ConfigureRoutes() {
-        routeModel = RouteModel.create();
+        routeModel = RouteModel.create(true);
         routeMap = new HashMap<>();
         targetRouteMap = new HashMap<>();
-        target2UrlTemplates = new HashMap<>();
+        targetToRouteModel = new HashMap<>();
         exceptionTargetMap = new HashMap<>();
     }
 
@@ -72,19 +71,19 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routesMap.put(route.getKey(), route.getValue().copy(true));
+            routesMap.put(route.getKey(), route.getValue());
         }
         targetRoutesMap.putAll(original.getTargetRoutes());
         exceptionTargetsMap.putAll(original.getExceptionHandlers());
 
         Map<Class<? extends Component>, RouteModel> target2UrlTemplatesMap = original
-                .copyTargetRouteModels();
+                .copyTargetRouteModels(true);
 
-        this.routeModel = RouteModel.copy(original.getRouteModel());
+        this.routeModel = RouteModel.copy(original.getRouteModel(), true);
 
         this.routeMap = routesMap;
         this.targetRouteMap = targetRoutesMap;
-        this.target2UrlTemplates = target2UrlTemplatesMap;
+        this.targetToRouteModel = target2UrlTemplatesMap;
         this.exceptionTargetMap = exceptionTargetsMap;
     }
 
@@ -174,11 +173,11 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         getRouteModel().addRoute(urlTemplate, target);
 
         if (!hasRouteTarget(navigationTarget)) {
-            setTargetRouteImpl(navigationTarget, urlTemplate);
+            setTargetRoute(navigationTarget, urlTemplate);
         }
 
         getTargetRouteModels().computeIfAbsent(navigationTarget,
-                aClass -> RouteModel.create());
+                aClass -> RouteModel.create(true));
         getTargetRouteModels().get(navigationTarget).addRoute(urlTemplate, target);
 
         getRoutesMap().put(urlTemplate, target);
@@ -194,14 +193,10 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      *            navigation target to map
      * @param path
      *            path for given navigation target
-     * 
-     * @deprecated use only {@link #setRoute(String, Class, List)} which also handles
-     *             the reverse mapping.
      */
-    @Deprecated
     public void setTargetRoute(Class<? extends Component> navigationTarget,
             String path) {
-        setTargetRouteImpl(navigationTarget, path);
+        getTargetRoutes().put(navigationTarget, path);
     }
 
     /**
@@ -294,7 +289,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     public void removeRoute(String urlTemplate,
             Class<? extends Component> targetRoute) {
         if (!hasUrlTemplate(urlTemplate) || !getRoutesMap().get(urlTemplate)
-                .getTarget().equals(targetRoute)) {
+                .containsTarget(targetRoute)) {
             return;
         }
 
@@ -303,12 +298,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
     @Override
     Map<Class<? extends Component>, RouteModel> getTargetRouteModels() {
-        return target2UrlTemplates;
-    }
-
-    private void setTargetRouteImpl(Class<? extends Component> navigationTarget,
-                                    String pathPattern) {
-        getTargetRoutes().put(navigationTarget, pathPattern);
+        return targetToRouteModel;
     }
 
 }

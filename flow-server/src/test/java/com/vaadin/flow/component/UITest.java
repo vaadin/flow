@@ -933,6 +933,13 @@ public class UITest {
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
         }
+
+        try {
+            ui.navigate(Parameterized.class, new UrlParameters("some", "value"));
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
     }
 
     @Test

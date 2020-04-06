@@ -44,6 +44,57 @@ class RouteFormat implements Serializable {
         return urlTemplate.contains(":");
     }
 
+    /**
+     * Returns whether the specified urlTemplate contains url parameters.
+     *
+     * @param urlTemplate
+     *            a url template.
+     * @return true if the specified urlTemplate contains url parameters,
+     *         otherwise false.
+     */
+    static boolean hasRequiredParameter(String urlTemplate) {
+        int index = -1;
+        do {
+            index = urlTemplate.indexOf(":", index + 1);
+
+            if (index >= 0) {
+                final int regexIndex = urlTemplate.indexOf("(", index);
+                final int slashIndex = urlTemplate.indexOf("/", index);
+
+                int parameterNameEnding = Math.min(regexIndex, slashIndex);
+
+                // Missing regex.
+                if (parameterNameEnding < 0) {
+                    parameterNameEnding = slashIndex;
+                }
+                // End of the string.
+                if (parameterNameEnding < 0) {
+                    parameterNameEnding = urlTemplate.length();
+                }
+
+                int optional = urlTemplate.indexOf("?", index);
+                if (0 < optional && optional < parameterNameEnding) {
+                    // This parameter is an optional, move on.
+                    continue;
+                }
+
+                int wildcard = urlTemplate.indexOf("*", index);
+                if (0 < wildcard && wildcard < parameterNameEnding) {
+                    // This parameter is a wildcard and should be the last.
+                    return false;
+                }
+
+                // This parameter is required.
+                return true;
+
+            } else {
+                // We reached the end of the search.
+                return false;
+            }
+
+        } while (true);
+    }
+
     static boolean isParameter(String segmentTemplate) {
         return segmentTemplate.startsWith(":");
     }
@@ -80,7 +131,7 @@ class RouteFormat implements Serializable {
         }
     }
 
-    static String formatSegment(RouteModel.RouteSegment segment,
+    static String formatSegment(RouteSegment segment,
             Set<RouteParameterFormatOption> format) {
 
         if (!segment.isParameter()) {
@@ -91,7 +142,8 @@ class RouteFormat implements Serializable {
 
         result.append(":");
 
-        final boolean formatRegex = format.contains(RouteParameterFormatOption.REGEX)
+        final boolean formatRegex = format
+                .contains(RouteParameterFormatOption.REGEX)
                 || format.contains(RouteParameterFormatOption.REGEX_NAME);
         boolean wrapRegex = false;
 
@@ -121,7 +173,7 @@ class RouteFormat implements Serializable {
         return result.toString();
     }
 
-    static String formatSegmentRegex(RouteModel.RouteSegment segment,
+    static String formatSegmentRegex(RouteSegment segment,
             Set<RouteParameterFormatOption> format) {
         final String regex = segment.getRegex();
         if (format.contains(RouteParameterFormatOption.REGEX_NAME)) {

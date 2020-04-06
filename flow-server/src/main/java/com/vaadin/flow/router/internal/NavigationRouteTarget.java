@@ -32,7 +32,7 @@ import com.vaadin.flow.server.startup.RouteTarget;
 public class NavigationRouteTarget implements Serializable {
 
     // Processed path.
-    private String url;
+    private String path;
 
     // Target found for the specified path.
     private RouteTarget routeTarget;
@@ -40,9 +40,9 @@ public class NavigationRouteTarget implements Serializable {
     // Parameters found in the path.
     private UrlParameters urlParameters;
 
-    NavigationRouteTarget(String url, RouteTarget routeTarget,
-            Map<String, String> urlParameters) {
-        this.url = url;
+    NavigationRouteTarget(String path, RouteTarget routeTarget,
+                          Map<String, String> urlParameters) {
+        this.path = path;
         this.routeTarget = routeTarget;
         this.urlParameters = new UrlParameters(urlParameters);
     }
@@ -62,8 +62,8 @@ public class NavigationRouteTarget implements Serializable {
      * 
      * @return the input path for the search.
      */
-    public String getUrl() {
-        return url;
+    public String getPath() {
+        return path;
     }
 
     /**
@@ -86,7 +86,7 @@ public class NavigationRouteTarget implements Serializable {
 
     @Override
     public String toString() {
-        return "[url: \"" + url + "\", target: "
+        return "[url: \"" + path + "\", target: "
                 + (routeTarget != null ? routeTarget.getTarget() : null)
                 + ", parameters: " + urlParameters + "]";
     }

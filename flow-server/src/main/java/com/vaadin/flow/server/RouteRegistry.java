@@ -46,12 +46,12 @@ import com.vaadin.flow.shared.Registration;
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Register a navigation target with specified url template and given
-     * parent layout chain. Any {@link ParentLayout}, {@link Route} or
+     * Register a navigation target with specified template and given parent
+     * layout chain. Any {@link ParentLayout}, {@link Route} or
      * {@link RouteAlias} will be ignored in route handling.
      *
-     * @param urlTemplate
-     *            url template to register navigation target to
+     * @param template
+     *            template to register navigation target to
      * @param navigationTarget
      *            navigation target to register into session scope
      * @param parentChain
@@ -59,7 +59,7 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *             thrown if exact route already defined in this scope
      */
-    void setRoute(String urlTemplate, Class<? extends Component> navigationTarget,
+    void setRoute(String template, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain);
 
     /**
@@ -76,20 +76,20 @@ public interface RouteRegistry extends Serializable {
     /**
      * Remove the registration for given url template.
      *
-     * @param urlTemplate
-     *            urlTemplate for which to remove the navigation target.
+     * @param template
+     *            template for which to remove the navigation target.
      */
-    void removeRoute(String urlTemplate);
+    void removeRoute(String template);
 
     /**
-     * Remove navigationTarget for the urlTemplate.
+     * Remove navigationTarget for the template.
      *
-     * @param urlTemplate
-     *            urlTemplate to remove from registry
+     * @param template
+     *            template to remove from registry
      * @param navigationTarget
-     *            urlTemplate navigation target to remove
+     *            template navigation target to remove
      */
-    void removeRoute(String urlTemplate, Class<? extends Component> navigationTarget);
+    void removeRoute(String template, Class<? extends Component> navigationTarget);
 
     /**
      * Get the {@link RouteData} for all registered navigation targets.

@@ -113,7 +113,7 @@ public class RouteConfiguration implements Serializable {
      * @return true if there exists a route for the given path
      */
     public boolean isPathRegistered(String path) {
-        return isUrlTemplateRegistered(path);
+        return isTemplateRegistered(path);
     }
 
     /**
@@ -123,7 +123,7 @@ public class RouteConfiguration implements Serializable {
      *         urlTemplate to check for route registration
      * @return true if there exists a route for the given urlTemplate
      */
-    public boolean isUrlTemplateRegistered(String urlTemplate) {
+    public boolean isTemplateRegistered(String urlTemplate) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
                     .hasUrlTemplate(urlTemplate);

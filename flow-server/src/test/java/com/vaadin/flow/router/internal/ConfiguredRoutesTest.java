@@ -65,6 +65,46 @@ public class ConfiguredRoutesTest {
     }
 
     @Test
+    public void configuration_provides_target_url() {
+        ConfigureRoutes edit = new ConfigureRoutes();
+        edit.setRoute("foo/:foo", FooTarget.class);
+        edit.setRoute("foo/:foo(qwe)", FooTarget.class);
+        edit.setRoute("foo/:foo/bar?(asd)", FooTarget.class);
+        edit.setRoute(":foo/:bar?(asd)", FooTarget.class);
+        edit.setRoute("foo/:foo/:bar*(asd)", FooTarget.class);
+        edit.setRoute("foo/:foo(qwe)/:bar*(asd)", FooTarget.class);
+        edit.setRoute("foo/foobar?/:foo(qwe)/:bar*(asd)", FooTarget.class);
+        edit.setRoute("foo/foobar?/:foo(qwe)", FooTarget.class);
+        edit.setRoute("foo/foobar?/:foo", FooTarget.class);
+
+        edit.setRoute("bar/:bar?", BarTarget.class);
+        edit.setRoute("bar/:bar?/foobar", BarTarget.class);
+        edit.setRoute("bar/:bar?(qwe)", BarTarget.class);
+        edit.setRoute("bar/:bar?(qwe)/:foo*(asd)", BarTarget.class);
+        edit.setRoute("bar/:bar?/:foo*", BarTarget.class);
+        edit.setRoute(":bar?/:foo*", BarTarget.class);
+        edit.setRoute(":bar?/foobar/:foo*", BarTarget.class);
+
+        ConfiguredRoutes config = new ConfiguredRoutes(edit);
+
+        Assert.assertNull(config.getTargetUrl(FooTarget.class));
+        Assert.assertEquals("bar", config.getTargetUrl(BarTarget.class));
+
+        // Make sure all routes are passed.
+        config.getRouteModel().getRoutes().entrySet()
+                .forEach(stringRouteTargetEntry -> {
+                    final boolean requiredParameter = RouteFormat
+                            .hasRequiredParameter(
+                                    stringRouteTargetEntry.getKey());
+                    
+                    Assert.assertEquals(
+                            stringRouteTargetEntry.getValue().getTarget()
+                                    .equals(FooTarget.class),
+                            requiredParameter);
+                });
+    }
+
+    @Test
     public void configuration_provides_formatted_url_template() {
         ConfigureRoutes config = new ConfigureRoutes();
 
@@ -131,6 +171,14 @@ public class ConfiguredRoutesTest {
                 config.getUrlTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.REGEX)));
 
+    }
+
+    @Tag("div")
+    public static class FooTarget extends Component {
+    }
+
+    @Tag("div")
+    public static class BarTarget extends Component {
     }
 
     @Tag("div")

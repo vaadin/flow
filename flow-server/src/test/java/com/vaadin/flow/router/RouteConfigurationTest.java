@@ -162,11 +162,11 @@ public class RouteConfigurationTest {
                 "After unlock registry should be updated for others to configure with new data",
                 4, routeConfiguration.getAvailableRoutes().size());
         Assert.assertTrue("Expected path '' to be registered",
-                routeConfiguration.isUrlTemplateRegistered(""));
+                routeConfiguration.isTemplateRegistered(""));
         Assert.assertTrue("Expected path 'path' to be registered",
-                routeConfiguration.isUrlTemplateRegistered("path"));
+                routeConfiguration.isTemplateRegistered("path"));
         Assert.assertTrue("Expected path 'parents' to be registered",
-                routeConfiguration.isUrlTemplateRegistered("parents"));
+                routeConfiguration.isTemplateRegistered("parents"));
 
         Assert.assertEquals("Url should have only been 'parents'", "parents",
                 routeConfiguration.getUrl(MiddleLayout.class));
@@ -193,7 +193,7 @@ public class RouteConfigurationTest {
                 routeConfiguration.getUrlTemplate(ParameterView.class).get());
 
         Assert.assertTrue("Missing url template",
-                routeConfiguration.isUrlTemplateRegistered("double/:int("
+                routeConfiguration.isTemplateRegistered("double/:int("
                         + RouteParameterRegex.INTEGER + ")/float/:long("
                         + RouteParameterRegex.LONG + ")"));
 
@@ -204,11 +204,11 @@ public class RouteConfigurationTest {
 
         Assert.assertFalse(
                 "Removing the path 'path' should have cleared it from the registry",
-                routeConfiguration.isUrlTemplateRegistered("path"));
+                routeConfiguration.isTemplateRegistered("path"));
 
         Assert.assertTrue("Expected path 'url' to be registered",
                 routeConfiguration
-                        .isUrlTemplateRegistered(HasUrlParameterFormat
+                        .isTemplateRegistered(HasUrlParameterFormat
                                 .getUrlTemplate("url", Url.class)));
 
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
