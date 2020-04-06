@@ -98,6 +98,10 @@ suite("Flow", () => {
   beforeEach(() => {
     delete $wnd.Vaadin;
     mock.setup();
+    const indicator = $wnd.document.body.querySelector('.v-loading-indicator');
+    if (indicator) {
+      $wnd.document.body.removeChild(indicator);
+    }
   });
 
   afterEach(() => {
@@ -120,6 +124,33 @@ suite("Flow", () => {
 
     assert.isDefined($wnd.Vaadin);
     assert.isDefined($wnd.Vaadin.Flow);
+  });
+
+  test("should initialize a flow loading indicator", async () => {
+    new Flow({imports: () => {}});
+    const indicator = $wnd.document.querySelector('.v-loading-indicator') as HTMLElement;
+    const styles = $wnd.document.querySelector('style#css-loading-indicator') as HTMLElement;
+    assert.isNotNull(indicator);
+    assert.isNotNull(styles);
+
+    assert.isFunction($wnd.Vaadin.Flow.loading);
+    assert.equal('none', indicator.getAttribute('style'));
+
+    $wnd.Vaadin.Flow.loading(true);
+    assert.isNull(indicator.getAttribute('style'));
+    assert.isFalse(indicator.classList.contains('second'));
+    assert.isFalse(indicator.classList.contains('third'));
+
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    assert.isTrue(indicator.classList.contains('second'));
+
+    await new Promise(resolve => setTimeout(resolve, 3500));
+    assert.isTrue(indicator.classList.contains('third'));
+
+    $wnd.Vaadin.Flow.loading(false);
+    assert.equal('none', indicator.getAttribute('style'));
+    assert.isFalse(indicator.classList.contains('second'));
+    assert.isFalse(indicator.classList.contains('third'));
   });
 
   test("should initialize Flow server navigation when calling flowInit(true)", () => {
@@ -252,10 +283,15 @@ suite("Flow", () => {
     assert.isFalse($wnd.Vaadin.Flow.clients.TypeScript.isActive());
 
     const route = flow.serverSideRoutes[0];
+    const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
-    // Check the `isAcive` flag at the time the action is being executed
     let wasActive = false;
-    setTimeout(() => wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive(), 5);
+    let style = '';
+    setTimeout(() => {
+    // Check the `isActive` flag and indicator.style at the time the action is being executed
+    wasActive = $wnd.Vaadin.Flow.clients.TypeScript.isActive();
+      style = indicator.getAttribute('style');
+    }, 5);
 
     return route
       .action({pathname: "Foo/Bar.baz"})
@@ -269,6 +305,7 @@ suite("Flow", () => {
         // Check that flowClient was initialized
         assert.isDefined($wnd.Vaadin.Flow.clients.foobar.resolveUri);
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
+        assert.equal('none', indicator.getAttribute('style'));
 
         // Check that pushScript is not initialized
         assert.isUndefined($wnd.vaadinPush);
@@ -279,6 +316,8 @@ suite("Flow", () => {
 
         // Check that `isActive` flag was active during the action
         assert.isTrue(wasActive);
+        // Check that indicator was visible during the action
+        assert.isNull(style);
         // Check that `isActive` flag is set to false after the action
         assert.isFalse($wnd.Vaadin.Flow.clients.foobar.isActive());
       });
