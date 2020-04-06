@@ -395,7 +395,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .thenAnswer(answer ->
                         servletContextAttributes.get(answer.getArgumentAt(0, String.class)));
-        runOnStartup();
+        process();
         assertTrue(DevModeInitializer.isDevModeAlreadyStarted(servletContext));
     }
 
