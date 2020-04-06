@@ -34,6 +34,9 @@
         <module>flow-test-generic</module>
         <module>flow-bom</module>
         <module>build-tools</module>
+        <!-- TODO remove and do not push to master -->
+        <module>vaadin-grid-flow</module>
+        <module>vaadin-combo-box-flow</module>
     </modules>
 
     <organization>
