@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import com.vaadin.flow.router.UrlParameters;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Contains the information resulted from searching a route target using a

@@ -35,7 +35,6 @@ import java.util.regex.Pattern;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Define a route url segment node with references to its children nodes, thus

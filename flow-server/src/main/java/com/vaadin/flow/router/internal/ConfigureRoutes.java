@@ -23,7 +23,6 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Configuration class for editing routes. After editing the class should

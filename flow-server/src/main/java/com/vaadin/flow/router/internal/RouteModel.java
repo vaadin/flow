@@ -27,7 +27,6 @@ import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Define a route url template data model which is used to store internally

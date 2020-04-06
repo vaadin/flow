@@ -18,11 +18,9 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -33,7 +31,6 @@ import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.UrlParameters;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Route configuration class that is used as a value object.

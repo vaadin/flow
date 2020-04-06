@@ -27,7 +27,6 @@ import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.UrlParameters;
-import com.vaadin.flow.server.startup.RouteTarget;
 import org.junit.Assert;
 import org.junit.Test;
 

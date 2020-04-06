@@ -33,7 +33,7 @@ import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.server.startup.RouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**

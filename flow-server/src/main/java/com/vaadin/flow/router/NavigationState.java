@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
-import com.vaadin.flow.server.startup.RouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
 
 /**
  * Contains all relevant information related to a valid navigation.

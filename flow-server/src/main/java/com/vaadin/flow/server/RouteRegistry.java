@@ -31,7 +31,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedListener;
 import com.vaadin.flow.router.UrlParameters;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
-import com.vaadin.flow.server.startup.RouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -122,7 +122,7 @@ public interface RouteRegistry extends Serializable {
      *         component and url parameters.
      */
     RouteTarget getRouteTarget(Class<? extends Component> target,
-            UrlParameters parameters);
+                               UrlParameters parameters);
 
     /**
      * Gets the optional navigation target class for a given path. Returns an

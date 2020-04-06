@@ -18,7 +18,7 @@ package com.vaadin.flow.router;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.server.startup.RouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
 
 /**
  * A builder class for constructing new {@link NavigationState} instances.
