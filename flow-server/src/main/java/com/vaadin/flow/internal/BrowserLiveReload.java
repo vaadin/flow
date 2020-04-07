@@ -31,7 +31,7 @@ public interface BrowserLiveReload {
      */
     enum Backend {
         HOTSWAP_AGENT, JREBEL, SPRING_BOOT_DEVTOOLS;
-    };
+    }
 
     /**
      * Detect and return enabling live reload backend technology.

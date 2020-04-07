@@ -18,7 +18,7 @@ package com.vaadin.flow.internal;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -43,7 +43,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
-    private static final Map<Backend, List<String>> IDENTIFIER_CLASSES = new HashMap<>();
+    private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(Backend.class);
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -73,7 +73,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
             for (String clazz : entry.getValue()) {
                 try {
                     classLoader.loadClass(clazz);
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException e) { // NOSONAR
                     getLogger().debug("Class {} not found, excluding {}", clazz,
                             backend);
                     found = false;
