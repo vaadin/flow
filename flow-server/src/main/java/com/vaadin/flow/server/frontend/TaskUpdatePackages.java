@@ -37,7 +37,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
@@ -50,9 +49,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
-    private static final String VAADIN_FLOW_DEPS = "@vaadin/flow-deps";
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
+    protected static final String VAADIN_APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
 
@@ -129,7 +128,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
                 .getObject(DEPENDENCIES);
         boolean doCleanUp = forceCleanUp;
-        int removed = ensureVersionUpgrade(packageJson) ? 1 : 0;
+        int removed = ensureVersionUpgrade(packageJson);
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
                 if (!dependencyCollection.contains(key)
@@ -204,18 +203,26 @@ public class TaskUpdatePackages extends NodeUpdater {
         return Objects.equals(shrinkWrapVersion, getCurrentShrinkWrapVersion());
     }
 
-    private boolean ensureVersionUpgrade(JsonObject packageJson)
+    private int ensureVersionUpgrade(JsonObject packageJson)
             throws IOException {
-        boolean result = false;
+        int result = 0;
         /*
          * In modern Flow versions "@vaadin/flow-deps" should not exist.
          */
         if (packageJson.hasKey(DEPENDENCIES)) {
             JsonObject object = packageJson.getObject(DEPENDENCIES);
-            if (object.hasKey(VAADIN_FLOW_DEPS)) {
-                object.remove(VAADIN_FLOW_DEPS);
-                result = true;
+            if (object.hasKey(DEP_NAME_FLOW_DEPS)) {
+                object.remove(DEP_NAME_FLOW_DEPS);
+                log().debug("Removed \"{}\" as it's not generated anymore.",
+                        DEP_NAME_FLOW_DEPS);
+                result++;
             }
+        }
+        if (packageJson.hasKey(VAADIN_APP_PACKAGE_HASH)) {
+            packageJson.remove(VAADIN_APP_PACKAGE_HASH);
+            log().debug("Removed \"{}\" as it's not used.",
+                    "vaadinAppPackageHash");
+            result++;
         }
         if (!enablePnpm) {
             return result;
