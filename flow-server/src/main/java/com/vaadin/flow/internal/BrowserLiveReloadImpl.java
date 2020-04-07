@@ -43,6 +43,8 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
+    private Backend backend = null;
+
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(Backend.class);
 
     static {
@@ -66,26 +68,36 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     @Override
     public Backend getBackend() {
-        for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES
-                .entrySet()) {
-            Backend backend = entry.getKey();
-            boolean found = true;
-            for (String clazz : entry.getValue()) {
-                try {
-                    classLoader.loadClass(clazz);
-                } catch (ClassNotFoundException e) { // NOSONAR
-                    getLogger().debug("Class {} not found, excluding {}", clazz,
-                            backend);
-                    found = false;
+        if (backend == null) {
+            for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES
+                    .entrySet()) {
+                Backend backendCandidate = entry.getKey();
+                boolean found = true;
+                for (String clazz : entry.getValue()) {
+                    try {
+                        classLoader.loadClass(clazz);
+                    } catch (ClassNotFoundException e) { // NOSONAR
+                        getLogger().debug("Class {} not found, excluding {}",
+                                clazz, backendCandidate);
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    backend = backendCandidate;
                     break;
                 }
             }
-            if (found) {
-                return entry.getKey();
-            }
         }
-        return null;
+        return backend;
     }
+
+    @Override
+    public void setBackend(Backend backend) {
+        assert (backend != null);
+        this.backend = backend;
+    }
+
 
     @Override
     public void onConnect(AtmosphereResource resource) {

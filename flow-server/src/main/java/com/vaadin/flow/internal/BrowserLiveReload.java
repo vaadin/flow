@@ -41,6 +41,14 @@ public interface BrowserLiveReload {
     Backend getBackend();
 
     /**
+     * Set the live reload backend technology explicitly.
+     *
+     * @param backend
+     *      enabling technology, not <code>null</code>.
+     */
+    void setBackend(Backend backend);
+
+    /**
      * Sets the web socket connection resource when it's established.
      *
      * @param resource

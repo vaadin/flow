@@ -174,10 +174,8 @@ class VaadinDevmodeGizmo extends LitElement {
       const self = this;
       self.connection = new WebSocket(
         'ws://' + hostname + ':' + this.springBootDevToolsPort);
-    } else if (this.liveReloadBackend) {
-      this.openDedicatedWebSocketConnection();
     } else {
-      this.showMessage('Live reload unavailable');
+      this.openDedicatedWebSocketConnection();
     }
     if (this.connection) {
       this.connection.onmessage = msg => this.handleMessage(msg);
@@ -210,13 +208,18 @@ class VaadinDevmodeGizmo extends LitElement {
     const command = json['command'];
     switch (command) {
       case 'hello': {
-        if (VaadinDevmodeGizmo.isActive) {
-          this.status = VaadinDevmodeGizmo.ACTIVE;
+        if (this.liveReloadBackend) {
+          if (VaadinDevmodeGizmo.isActive) {
+            this.status = VaadinDevmodeGizmo.ACTIVE;
+          } else {
+            this.status = VaadinDevmodeGizmo.INACTIVE;
+          }
+          const backend = VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.liveReloadBackend];
+          this.showMessage('Live reload available: ' + backend);
         } else {
           this.status = VaadinDevmodeGizmo.INACTIVE;
+          this.showMessage('Live reload unavailable');
         }
-        const backend = VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.liveReloadBackend];
-        this.showMessage('Live reload available: ' + backend);
         break;
       }
 
