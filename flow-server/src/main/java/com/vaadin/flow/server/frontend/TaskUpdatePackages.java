@@ -221,7 +221,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         if (packageJson.hasKey(VAADIN_APP_PACKAGE_HASH)) {
             packageJson.remove(VAADIN_APP_PACKAGE_HASH);
             log().debug("Removed \"{}\" as it's not used.",
-                    "vaadinAppPackageHash");
+                    VAADIN_APP_PACKAGE_HASH);
             result++;
         }
         if (!enablePnpm) {
