@@ -75,6 +75,12 @@ public interface RouteRegistry extends Serializable {
 
     /**
      * Remove the registration for given path.
+     * <p>
+     * In case navigationTarget is a
+     * {@link com.vaadin.flow.router.HasUrlParameter}, path argument needs to
+     * include the parameter placeholder which is added automatically.
+     * Otherwise, using {@link #removeRoute(String, Class)} is preferred in such
+     * a case.
      *
      * @param path
      *            path for which to remove the navigation target.
@@ -83,6 +89,15 @@ public interface RouteRegistry extends Serializable {
 
     /**
      * Remove navigationTarget for the path.
+     * <p>
+     * This method will check if indeed navigationTarget is registered with
+     * path.
+     * <p>
+     * In case navigationTarget is a
+     * {@link com.vaadin.flow.router.HasUrlParameter}, the path needs to be
+     * specified exactly as it is in the {@link Route} annotation or as it was
+     * registered using {@link #setRoute(String, Class, List)}, without the
+     * parameter placeholder which is automatically added.
      *
      * @param path
      *            path to remove from registry

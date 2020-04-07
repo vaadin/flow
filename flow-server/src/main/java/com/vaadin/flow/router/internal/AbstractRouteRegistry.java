@@ -314,7 +314,8 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasRouteTarget(navigationTarget)) {
             return;
         }
-        configureSafe(configuration -> configuration.removeRoute(navigationTarget));
+        configureSafe(
+                configuration -> configuration.removeRoute(navigationTarget));
     }
 
     @Override

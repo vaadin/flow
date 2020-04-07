@@ -353,21 +353,23 @@ public class RouteConfiguration implements Serializable {
      * <p>
      * Note! The restored path will be the first found match for all paths that
      * are registered.
+     * <p>
+     * In case navigationTarget is a
+     * {@link com.vaadin.flow.router.HasUrlParameter}, path argument needs to
+     * include the parameter placeholder which is added automatically.
+     * Otherwise, using {@link #removeRoute(String, Class)} is preferred in such
+     * a case.
      *
      * @param path
-     *         path for which to remove all navigation targets
+     *            path for which to remove all navigation targets
      */
     public void removeRoute(String path) {
         handledRegistry.removeRoute(path);
     }
 
     /**
-     * Remove only the specified navigationTarget from the path and not the
-     * whole path if other targets exist for path. If no other targets exist
-     * whole route will be cleared.
-     * <p>
-     * This will leave any other targets for path e.g. removing the wildcard
-     * path will still leave the optional target.
+     * Remove only the specified navigationTarget from the path and not other
+     * targets if they exist for the same path.
      * <p>
      * Note! If another path exists for the removed navigation target it will
      * get a new main path so it can still get a resolved url. The restored path
