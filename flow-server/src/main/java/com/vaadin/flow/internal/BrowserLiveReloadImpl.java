@@ -37,8 +37,6 @@ import com.vaadin.flow.server.VaadinService;
  */
 class BrowserLiveReloadImpl implements BrowserLiveReload {
 
-    private final VaadinService service;
-
     private final ClassLoader classLoader;
 
     private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
@@ -62,31 +60,31 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     }
 
     BrowserLiveReloadImpl(VaadinService service, ClassLoader classLoader) {
-        this.service = service;
         this.classLoader = classLoader;
     }
 
     @Override
     public Backend getBackend() {
-        if (backend == null) {
-            for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES
-                    .entrySet()) {
-                Backend backendCandidate = entry.getKey();
-                boolean found = true;
-                for (String clazz : entry.getValue()) {
-                    try {
-                        classLoader.loadClass(clazz);
-                    } catch (ClassNotFoundException e) { // NOSONAR
-                        getLogger().debug("Class {} not found, excluding {}",
-                                clazz, backendCandidate);
-                        found = false;
-                        break;
-                    }
-                }
-                if (found) {
-                    backend = backendCandidate;
+        if (backend != null) {
+            return backend;
+        }
+        for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES
+                .entrySet()) {
+            Backend backendCandidate = entry.getKey();
+            boolean found = true;
+            for (String clazz : entry.getValue()) {
+                try {
+                    classLoader.loadClass(clazz);
+                } catch (ClassNotFoundException e) { // NOSONAR
+                    getLogger().debug("Class {} not found, excluding {}", clazz,
+                            backendCandidate);
+                    found = false;
                     break;
                 }
+            }
+            if (found) {
+                backend = backendCandidate;
+                break;
             }
         }
         return backend;
