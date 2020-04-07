@@ -38,7 +38,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
         implements Comparable<T>, Serializable {
 
     private final List<Class<? extends RouterLayout>> parentLayouts;
-    private final String urlTemplate;
+    private final String template;
     private final Map<String, RouteParameterData> parameters;
     private final Class<? extends Component> navigationTarget;
 
@@ -49,7 +49,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *
      * @param parentLayouts
      *            route parent layout class chain
-     * @param urlTemplate
+     * @param template
      *            full route url
      * @param parameters
      *            supports only null or empty list. If a non empty list is
@@ -60,7 +60,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *             if parameters is not empty.
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, List<Class<?>> parameters,
+            String template, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {
         if (!(parameters == null || parameters.isEmpty())) {
             throw new IllegalArgumentException(
@@ -68,7 +68,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
         }
 
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
-        this.urlTemplate = urlTemplate;
+        this.template = template;
         this.parameters = Collections.emptyMap();
         this.navigationTarget = navigationTarget;
     }
@@ -78,7 +78,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *
      * @param parentLayouts
      *         route parent layout class chain
-     * @param urlTemplate
+     * @param template
      *         full route url
      * @param parameters
      *         navigation target path parameters
@@ -86,10 +86,10 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *         route navigation target
      */
     public RouteBaseData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, Map<String, RouteParameterData> parameters,
+            String template, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget) {
         this.parentLayouts = Collections.unmodifiableList(parentLayouts);
-        this.urlTemplate = urlTemplate;
+        this.template = template;
         this.parameters = Collections.unmodifiableMap(parameters);
         this.navigationTarget = navigationTarget;
     }
@@ -119,20 +119,20 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * Get the full route url of {@link Route}.
      *
      * @return route url
-     * @deprecated use {@link #getUrlTemplate()} instead.
+     * @deprecated use {@link #getTemplate()} instead.
      */
     @Deprecated
     public String getUrl() {
-        return urlTemplate;
+        return template;
     }
 
     /**
      * Get the full route url of {@link Route}.
      *
-     * @return route url template.
+     * @return route template.
      */
-    public String getUrlTemplate() {
-        return urlTemplate;
+    public String getTemplate() {
+        return template;
     }
 
     /**
@@ -168,8 +168,8 @@ public abstract class RouteBaseData<T extends RouteBaseData>
 
     @Override
     public int compareTo(T otherRouteData) {
-        return this.getUrlTemplate()
-                .compareToIgnoreCase(otherRouteData.getUrlTemplate());
+        return this.getTemplate()
+                .compareToIgnoreCase(otherRouteData.getTemplate());
     }
 
     @Override
@@ -177,7 +177,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
         if (obj instanceof RouteBaseData<?>) {
             RouteBaseData<?> other = (RouteBaseData<?>) obj;
             return other.parentLayouts.equals(this.parentLayouts)
-                    && other.urlTemplate.equals(this.urlTemplate)
+                    && other.template.equals(this.template)
                     && other.navigationTarget.equals(navigationTarget);
         }
         return false;
@@ -185,7 +185,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
 
     @Override
     public int hashCode() {
-        return Objects.hash(parentLayouts, urlTemplate, parameters,
+        return Objects.hash(parentLayouts, template, parameters,
                 navigationTarget);
     }
 }

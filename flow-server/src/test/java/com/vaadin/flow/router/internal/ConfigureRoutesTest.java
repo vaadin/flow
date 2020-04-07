@@ -44,7 +44,7 @@ public class ConfigureRoutesTest {
         mutable.setRoute("", BaseTarget.class);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
-                mutable.hasUrlTemplate(""));
+                mutable.hasTemplate(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
                 mutable.getTarget("").get());
@@ -59,7 +59,7 @@ public class ConfigureRoutesTest {
         Assert.assertTrue("", mutable.hasRouteTarget(BaseTarget.class));
 
         Assert.assertEquals("Configuration should have registered base target.",
-                "", mutable.getUrlTemplate(BaseTarget.class));
+                "", mutable.getTemplate(BaseTarget.class));
     }
 
     @Test
@@ -71,14 +71,14 @@ public class ConfigureRoutesTest {
         ConfiguredRoutes immutable = new ConfiguredRoutes(mutable);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
-                immutable.hasUrlTemplate(""));
+                immutable.hasTemplate(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
                 immutable.getTarget("").get());
 
         Assert.assertTrue("", immutable.hasRouteTarget(BaseTarget.class));
         Assert.assertEquals("Configuration should have registered base target.",
-                "", immutable.getUrlTemplate(BaseTarget.class));
+                "", immutable.getTemplate(BaseTarget.class));
     }
 
     @Test

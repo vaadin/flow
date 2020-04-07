@@ -162,17 +162,17 @@ public class RouteConfigurationTest {
                 "After unlock registry should be updated for others to configure with new data",
                 4, routeConfiguration.getAvailableRoutes().size());
         Assert.assertTrue("Expected path '' to be registered",
-                routeConfiguration.isTemplateRegistered(""));
+                routeConfiguration.isPathAvailable(""));
         Assert.assertTrue("Expected path 'path' to be registered",
-                routeConfiguration.isTemplateRegistered("path"));
+                routeConfiguration.isPathAvailable("path"));
         Assert.assertTrue("Expected path 'parents' to be registered",
-                routeConfiguration.isTemplateRegistered("parents"));
+                routeConfiguration.isPathAvailable("parents"));
 
         Assert.assertEquals("Url should have only been 'parents'", "parents",
                 routeConfiguration.getUrl(MiddleLayout.class));
 
         Assert.assertEquals("Url should have only been 'parents'", "parents",
-                routeConfiguration.getUrlTemplate(MiddleLayout.class).get());
+                routeConfiguration.getTemplate(MiddleLayout.class).get());
 
         Optional<Class<? extends Component>> pathRoute = routeConfiguration
                 .getRoute("path");
@@ -187,13 +187,13 @@ public class RouteConfigurationTest {
                         new RouteParameters("int", "1234567890", "long",
                                 "12345678900")));
 
-        Assert.assertEquals("Missing or incorrect url template",
+        Assert.assertEquals("Missing or incorrect template",
                 "double/:int(" + RouteParameterRegex.INTEGER + ")/float/:long("
                         + RouteParameterRegex.LONG + ")",
-                routeConfiguration.getUrlTemplate(ParameterView.class).get());
+                routeConfiguration.getTemplate(ParameterView.class).get());
 
-        Assert.assertTrue("Missing url template",
-                routeConfiguration.isTemplateRegistered("double/:int("
+        Assert.assertTrue("Missing template",
+                routeConfiguration.isPathAvailable("double/:int("
                         + RouteParameterRegex.INTEGER + ")/float/:long("
                         + RouteParameterRegex.LONG + ")"));
 
@@ -204,12 +204,12 @@ public class RouteConfigurationTest {
 
         Assert.assertFalse(
                 "Removing the path 'path' should have cleared it from the registry",
-                routeConfiguration.isTemplateRegistered("path"));
+                routeConfiguration.isPathAvailable("path"));
 
         Assert.assertTrue("Expected path 'url' to be registered",
                 routeConfiguration
-                        .isTemplateRegistered(HasUrlParameterFormat
-                                .getUrlTemplate("url", Url.class)));
+                        .isPathAvailable(HasUrlParameterFormat
+                                .getTemplate("url", Url.class)));
 
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
                 .getRoute("url");
@@ -236,7 +236,7 @@ public class RouteConfigurationTest {
 
         Assert.assertEquals("Incorrect URL template",
                 "component/:identifier/:path*",
-                routeConfiguration.getUrlTemplate(ComponentView.class).get());
+                routeConfiguration.getTemplate(ComponentView.class).get());
 
         Assert.assertEquals("Unexpected URL",
                 "component/button/api/com/vaadin/flow/button",

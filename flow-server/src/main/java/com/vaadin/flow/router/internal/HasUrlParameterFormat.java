@@ -33,7 +33,9 @@ import com.vaadin.flow.router.WildcardParameter;
 
 /**
  * Utility methods to transform urls and parameters from/into the
- * {@link HasUrlParameter} format into/from the url template format.
+ * {@link HasUrlParameter} format into/from the template format.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public class HasUrlParameterFormat implements Serializable {
 
@@ -48,7 +50,7 @@ public class HasUrlParameterFormat implements Serializable {
     }
 
     /**
-     * Gets the url template for the given url base by appending the parameter
+     * Gets the template for the given url base by appending the parameter
      * according to the given navigationTarget if it's implementing
      * {@link HasUrlParameter}
      * 
@@ -56,9 +58,9 @@ public class HasUrlParameterFormat implements Serializable {
      *            url base.
      * @param navigationTarget
      *            {@link HasUrlParameter} navigation target.
-     * @return the final url template.
+     * @return the final template.
      */
-    public static String getUrlTemplate(String urlBase,
+    public static String getTemplatePath(String urlBase,
             Class<? extends Component> navigationTarget) {
         if (hasUrlParameter(navigationTarget)) {
 
@@ -83,19 +85,19 @@ public class HasUrlParameterFormat implements Serializable {
     }
 
     /**
-     * Gets the url base without the parameter for the given url template and
+     * Gets the url base without the parameter for the given template and
      * navigation target implementing * {@link HasUrlParameter}.
      * 
-     * @param urlTemplate
-     *            the url template.
+     * @param template
+     *            the template.
      * @return the url base excluding the parameter placeholder.
      */
-    public static String getUrlBase(String urlTemplate) {
-        if (RouteFormat.hasParameters(urlTemplate)) {
+    public static String getUrlBase(String template) {
+        if (RouteFormat.hasParameters(template)) {
             return PathUtil.trimPath(
-                    urlTemplate.substring(0, urlTemplate.indexOf(":")));
+                    template.substring(0, template.indexOf(":")));
         }
-        return urlTemplate;
+        return template;
     }
 
     /**

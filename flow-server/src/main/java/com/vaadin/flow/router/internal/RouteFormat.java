@@ -24,6 +24,8 @@ import com.vaadin.flow.router.RouteParameterRegex;
 /**
  * Utility class which contains various methods for defining url parameter
  * template.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 class RouteFormat implements Serializable {
 
@@ -33,33 +35,33 @@ class RouteFormat implements Serializable {
     static final String STRING_REGEX = "";
 
     /**
-     * Returns whether the specified urlTemplate contains route parameters.
+     * Returns whether the specified template contains route parameters.
      *
-     * @param urlTemplate
-     *            a url template.
-     * @return true if the specified urlTemplate contains route parameters,
+     * @param template
+     *            a template.
+     * @return true if the specified template contains route parameters,
      *         otherwise false.
      */
-    static boolean hasParameters(String urlTemplate) {
-        return urlTemplate.contains(":");
+    static boolean hasParameters(String template) {
+        return template.contains(":");
     }
 
     /**
-     * Returns whether the specified urlTemplate contains route parameters.
+     * Returns whether the specified template contains route parameters.
      *
-     * @param urlTemplate
-     *            a url template.
-     * @return true if the specified urlTemplate contains route parameters,
+     * @param template
+     *            a template.
+     * @return true if the specified template contains route parameters,
      *         otherwise false.
      */
-    static boolean hasRequiredParameter(String urlTemplate) {
+    static boolean hasRequiredParameter(String template) {
         int index = -1;
         do {
-            index = urlTemplate.indexOf(":", index + 1);
+            index = template.indexOf(":", index + 1);
 
             if (index >= 0) {
-                final int regexIndex = urlTemplate.indexOf("(", index);
-                final int slashIndex = urlTemplate.indexOf("/", index);
+                final int regexIndex = template.indexOf("(", index);
+                final int slashIndex = template.indexOf("/", index);
 
                 int parameterNameEnding = Math.min(regexIndex, slashIndex);
 
@@ -69,16 +71,16 @@ class RouteFormat implements Serializable {
                 }
                 // End of the string.
                 if (parameterNameEnding < 0) {
-                    parameterNameEnding = urlTemplate.length();
+                    parameterNameEnding = template.length();
                 }
 
-                int optional = urlTemplate.indexOf("?", index);
+                int optional = template.indexOf("?", index);
                 if (0 < optional && optional < parameterNameEnding) {
                     // This parameter is an optional, move on.
                     continue;
                 }
 
-                int wildcard = urlTemplate.indexOf("*", index);
+                int wildcard = template.indexOf("*", index);
                 if (0 < wildcard && wildcard < parameterNameEnding) {
                     // This parameter is a wildcard and should be the last.
                     return false;

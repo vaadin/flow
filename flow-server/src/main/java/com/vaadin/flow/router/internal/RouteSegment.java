@@ -41,6 +41,8 @@ import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
  * A segment can contain a set of the next segment(s) in route(s) and also a
  * {@link RouteTarget} in case this segment is the last in the segments chain
  * referring to its target.ConfiguredRoutes.java
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 final class RouteSegment implements Serializable {
 
@@ -205,7 +207,7 @@ final class RouteSegment implements Serializable {
     /**
      * Collects all routes in an unmodifiable {@link Map}.
      *
-     * @return a {@link Map} containing all url templates and their specific
+     * @return a {@link Map} containing all templates and their specific
      *         targets.
      */
     Map<String, RouteTarget> getRoutes() {
@@ -228,22 +230,22 @@ final class RouteSegment implements Serializable {
         }
     }
 
-    void removeSubRoute(String urlTemplate) {
-        removeSubRoute(PathUtil.getSegmentsList(urlTemplate));
+    void removeSubRoute(String template) {
+        removeSubRoute(PathUtil.getSegmentsList(template));
     }
 
     /**
-     * Add a urlTemplate template following this route segment. If the template
+     * Add a template template following this route segment. If the template
      * already exists and exception is thrown.
      *
-     * @param urlTemplate
-     *            a url template where parameters are defined by their ids and
+     * @param template
+     *            a template where parameters are defined by their ids and
      *            details.
      * @param target
-     *            target to set for the given url template
+     *            target to set for the given template
      */
-    void addSubRoute(String urlTemplate, RouteTarget target) {
-        addSubRoute(PathUtil.getSegmentsList(urlTemplate), target);
+    void addSubRoute(String template, RouteTarget target) {
+        addSubRoute(PathUtil.getSegmentsList(template), target);
     }
 
     /**
@@ -269,21 +271,21 @@ final class RouteSegment implements Serializable {
     /**
      * Gets a simple representation of the path tamplate.
      *
-     * @param urlTemplate
-     *            the full url template.
+     * @param template
+     *            the full template.
      * @param parameterFormat
      *            the parameter format function.
-     * @return the simple url template.
+     * @return the simple template.
      */
-    String formatUrlTemplate(String urlTemplate,
+    String formatTemplate(String template,
             Function<RouteSegment, String> parameterFormat) {
-        if (urlTemplate == null) {
+        if (template == null) {
             return null;
         }
 
         final List<String> result = new ArrayList<>();
 
-        matchSegmentTemplates(urlTemplate,
+        matchSegmentTemplates(template,
                 routeSegment -> result.add(routeSegment.isParameter()
                         ? parameterFormat.apply(routeSegment)
                         : routeSegment.getName()),
@@ -564,15 +566,15 @@ final class RouteSegment implements Serializable {
         return foundTarget;
     }
 
-    void matchSegmentTemplates(String urlTemplate,
+    void matchSegmentTemplates(String template,
             Consumer<RouteSegment> segmentProcessor,
             Consumer<RouteSegment> targetSegmentProcessor) {
-        matchSegmentTemplates(urlTemplate,
-                PathUtil.getSegmentsList(urlTemplate), segmentProcessor,
+        matchSegmentTemplates(template,
+                PathUtil.getSegmentsList(template), segmentProcessor,
                 targetSegmentProcessor);
     }
 
-    private void matchSegmentTemplates(final String urlTemplate,
+    private void matchSegmentTemplates(final String template,
             List<String> segmentTemplates,
             Consumer<RouteSegment> segmentProcessor,
             Consumer<RouteSegment> targetSegmentProcessor) {
@@ -585,7 +587,7 @@ final class RouteSegment implements Serializable {
 
         if (routeSegment == null) {
             throw new IllegalArgumentException(
-                    "Unregistered url template \"" + urlTemplate + "\"");
+                    "Unregistered route template \"" + template + "\"");
         }
 
         if (segmentProcessor != null) {
@@ -593,26 +595,26 @@ final class RouteSegment implements Serializable {
         }
 
         if (segmentTemplates.size() > 1) {
-            routeSegment.matchSegmentTemplates(urlTemplate,
+            routeSegment.matchSegmentTemplates(template,
                     segmentTemplates.subList(1, segmentTemplates.size()),
                     segmentProcessor, targetSegmentProcessor);
 
         } else if (routeSegment.getTarget() == null) {
             throw new IllegalArgumentException(
-                    "Unregistered url template \"" + urlTemplate + "\"");
+                    "Unregistered route template \"" + template + "\"");
 
         } else if (targetSegmentProcessor != null) {
             targetSegmentProcessor.accept(routeSegment);
         }
     }
 
-    void matchSegmentTemplatesWithParameters(String urlTemplate,
+    void matchSegmentTemplatesWithParameters(String template,
             RouteParameters parameters,
             Consumer<RouteSegmentValue> segmentProcessor,
             Consumer<RouteSegment> targetSegmentProcessor) {
 
         final List<String> segmentTemplates = PathUtil
-                .getSegmentsList(urlTemplate);
+                .getSegmentsList(template);
 
         if (segmentTemplates.isEmpty()
                 && parameters.getParameterNames().isEmpty()) {
@@ -623,7 +625,7 @@ final class RouteSegment implements Serializable {
                 parameters.getParameterNames());
 
         RouteParameters finalParameters = parameters;
-        matchSegmentTemplates(urlTemplate, segmentTemplates, routeSegment -> {
+        matchSegmentTemplates(template, segmentTemplates, routeSegment -> {
             final Optional<String> segmentValue = getSegmentValue(routeSegment,
                     finalParameters);
 
@@ -639,7 +641,7 @@ final class RouteSegment implements Serializable {
             // All parameter must be used.
             if (!parameterNames.isEmpty()) {
                 throw new IllegalArgumentException(
-                        "All provided RouteParameters must be used to process the urlTemplate. Provide the exact required RouteParameters or a urlTemplate that will use all RouteParameters");
+                        "All provided RouteParameters must be used to process the template. Provide the exact required RouteParameters or a template that will use all RouteParameters");
             }
 
             if (targetSegmentProcessor != null) {

@@ -38,8 +38,8 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *
      * @param parentLayouts
      *            route parent layout class chain
-     * @param urlTemplate
-     *            full route urlTemplate
+     * @param template
+     *            full route template
      * @param parameters
      *            supports only null or empty list. If a non empty list is
      *            passed and {@link IllegalArgumentException} is raised.
@@ -49,9 +49,9 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *             if parameters is not empty.
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, List<Class<?>> parameters,
+            String template, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget) {
-        super(parentLayouts, urlTemplate, parameters, navigationTarget);
+        super(parentLayouts, template, parameters, navigationTarget);
     }
 
     /**
@@ -59,17 +59,17 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
      *
      * @param parentLayouts
      *            route parent layout class chain
-     * @param urlTemplate
-     *            full route urlTemplate
+     * @param template
+     *            full route template
      * @param parameters
      *            navigation target path parameters
      * @param navigationTarget
      *            route navigation target
      */
     public RouteAliasData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, Map<String, RouteParameterData> parameters,
+            String template, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget) {
-        super(parentLayouts, urlTemplate, parameters, navigationTarget);
+        super(parentLayouts, template, parameters, navigationTarget);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
         if (obj instanceof RouteAliasData) {
             RouteAliasData other = (RouteAliasData) obj;
             return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrlTemplate().equals(this.getUrlTemplate())
+                    && other.getTemplate().equals(this.getTemplate())
                     && other.getNavigationTarget()
                             .equals(getNavigationTarget());
         }
@@ -87,13 +87,13 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
     @Override
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getUrlTemplate() + '\'' + ", parameters=" + getDefinedParameters()
+                + getTemplate() + '\'' + ", parameters=" + getDefinedParameters()
                 + ", navigationTarget=" + getNavigationTarget() + '}';
     }
 
     @Override
     public int hashCode() {
         return Objects
-                .hash(getParentLayouts(), getUrlTemplate(), getNavigationTarget());
+                .hash(getParentLayouts(), getTemplate(), getNavigationTarget());
     }
 }

@@ -38,8 +38,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      * 
      * @param parentLayouts
      *            route parent layout class chain
-     * @param urlTemplate
-     *            full route urlTemplate
+     * @param template
+     *            full route template
      * @param parameters
      *            supports only null or empty list. If a non empty list is
      *            passed and {@link IllegalArgumentException} is raised.
@@ -51,10 +51,10 @@ public class RouteData extends RouteBaseData<RouteData> {
      *             if parameters is not empty.
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, List<Class<?>> parameters,
+            String template, List<Class<?>> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
-        super(parentLayouts, urlTemplate, parameters, navigationTarget);
+        super(parentLayouts, template, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
@@ -65,8 +65,8 @@ public class RouteData extends RouteBaseData<RouteData> {
      *
      * @param parentLayouts
      *            route parent layout class chain
-     * @param urlTemplate
-     *            full route urlTemplate
+     * @param template
+     *            full route template
      * @param parameters
      *            navigation target path parameters
      * @param navigationTarget
@@ -75,10 +75,10 @@ public class RouteData extends RouteBaseData<RouteData> {
      *            list of aliases for this route
      */
     public RouteData(List<Class<? extends RouterLayout>> parentLayouts,
-            String urlTemplate, Map<String, RouteParameterData> parameters,
+            String template, Map<String, RouteParameterData> parameters,
             Class<? extends Component> navigationTarget,
             List<RouteAliasData> routeAliases) {
-        super(parentLayouts, urlTemplate, parameters, navigationTarget);
+        super(parentLayouts, template, parameters, navigationTarget);
 
         Collections.sort(routeAliases);
         this.routeAliases = Collections.unmodifiableList(routeAliases);
@@ -96,7 +96,7 @@ public class RouteData extends RouteBaseData<RouteData> {
     @Override
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getUrlTemplate() + '\'' + ", parameters="
+                + getTemplate() + '\'' + ", parameters="
                 + getDefinedParameters() + ", navigationTarget="
                 + getNavigationTarget() + ", routeAliases=" + routeAliases
                 + '}';
@@ -107,7 +107,7 @@ public class RouteData extends RouteBaseData<RouteData> {
         if (obj instanceof RouteData) {
             RouteData other = (RouteData) obj;
             return other.getParentLayouts().equals(this.getParentLayouts())
-                    && other.getUrlTemplate().equals(this.getUrlTemplate())
+                    && other.getTemplate().equals(this.getTemplate())
                     && other.getNavigationTarget().equals(getNavigationTarget())
                     && routeAliases.containsAll(other.routeAliases);
         }
@@ -116,7 +116,7 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getParentLayouts(), getUrlTemplate(),
+        return Objects.hash(getParentLayouts(), getTemplate(),
                 getNavigationTarget(), routeAliases);
     }
 }

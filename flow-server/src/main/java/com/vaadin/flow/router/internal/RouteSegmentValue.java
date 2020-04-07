@@ -18,7 +18,9 @@ package com.vaadin.flow.router.internal;
 import java.util.Optional;
 
 /**
- * Used when process matching parameter values inside a urlTemplate.
+ * Used when process matching parameter values inside a template.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 class RouteSegmentValue {
 

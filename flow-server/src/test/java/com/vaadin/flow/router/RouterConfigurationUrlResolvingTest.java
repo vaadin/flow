@@ -288,27 +288,27 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
-    public void getUrlTemplate_returns_url_template()
+    public void getTemplate_returns_url_template()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(RouteWithParameter.class,
                 RouteWithMultipleParameters.class, OptionalParameter.class,
                 FooNavigationTarget.class);
 
-        Assert.assertEquals("Required parameter didn't match url template.",
-                getUrlTemplate(RouteWithParameter.class),
-                routeConfiguration.getUrlTemplate(RouteWithParameter.class)
+        Assert.assertEquals("Required parameter didn't match route template.",
+                getTemplate(RouteWithParameter.class),
+                routeConfiguration.getTemplate(RouteWithParameter.class)
                         .orElse(null));
-        Assert.assertEquals("Wildcard parameter didn't match url template.",
-                getUrlTemplate(RouteWithMultipleParameters.class),
-                routeConfiguration.getUrlTemplate(RouteWithMultipleParameters.class)
+        Assert.assertEquals("Wildcard parameter didn't match route template.",
+                getTemplate(RouteWithMultipleParameters.class),
+                routeConfiguration.getTemplate(RouteWithMultipleParameters.class)
                         .orElse(null));
-        Assert.assertEquals("Optional parameter didn't match url template.",
-                getUrlTemplate(OptionalParameter.class),
-                routeConfiguration.getUrlTemplate(OptionalParameter.class)
+        Assert.assertEquals("Optional parameter didn't match route template.",
+                getTemplate(OptionalParameter.class),
+                routeConfiguration.getTemplate(OptionalParameter.class)
                         .orElse(null));
-        Assert.assertEquals("Non parameterized url didn't match url template.",
-                getUrlTemplate(FooNavigationTarget.class),
-                routeConfiguration.getUrlTemplate(FooNavigationTarget.class)
+        Assert.assertEquals("Non parameterized url didn't match route template.",
+                getTemplate(FooNavigationTarget.class),
+                routeConfiguration.getTemplate(FooNavigationTarget.class)
                         .orElse(null));
     }
 
@@ -355,7 +355,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         assertSameRouteWithParams();
 
         Assert.assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME + "*",
-                routeConfiguration.getUrlTemplate(MyPageWithWildcardParam.class)
+                routeConfiguration.getTemplate(MyPageWithWildcardParam.class)
                         .get());
 
         Assert.assertEquals("my/wild/value", routeConfiguration
@@ -371,9 +371,9 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
     private void assertSameRouteWithParams() {
         Assert.assertEquals("my",
-                routeConfiguration.getUrlTemplate(MyPage.class).get());
+                routeConfiguration.getTemplate(MyPage.class).get());
         Assert.assertEquals("my/:" + HasUrlParameterFormat.PARAMETER_NAME,
-                routeConfiguration.getUrlTemplate(MyPageWithParam.class).get());
+                routeConfiguration.getTemplate(MyPageWithParam.class).get());
 
         Assert.assertEquals("my", routeConfiguration.getUrl(MyPage.class));
         Assert.assertEquals("my/value",
@@ -638,9 +638,9 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
     }
 
-    private String getUrlTemplate(
+    private String getTemplate(
             Class<? extends Component> routeWithHasUrlParameterClass) {
-        return HasUrlParameterFormat.getUrlTemplate(
+        return HasUrlParameterFormat.getTemplate(
                 routeWithHasUrlParameterClass.getAnnotation(Route.class)
                         .value(),
                 routeWithHasUrlParameterClass);

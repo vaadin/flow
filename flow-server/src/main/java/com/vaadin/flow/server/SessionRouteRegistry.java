@@ -92,10 +92,10 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         List<RouteData> registeredRoutes = getParentRegistry()
                 .getRegisteredRoutes();
         if (!registeredRoutes.isEmpty()) {
-            Set<String> collect = routes.stream().map(RouteData::getUrlTemplate)
+            Set<String> collect = routes.stream().map(RouteData::getTemplate)
                     .collect(Collectors.toSet());
             registeredRoutes.stream()
-                    .filter(data -> !collect.contains(data.getUrlTemplate()))
+                    .filter(data -> !collect.contains(data.getTemplate()))
                     .forEach(routes::add);
         }
 
@@ -123,12 +123,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                     List<RouteBaseData<?>> addedVisible = event.getAddedRoutes()
                             .stream()
                             .filter(routeData -> !configuration
-                                    .hasUrlTemplate(routeData.getUrlTemplate()))
+                                    .hasTemplate(routeData.getTemplate()))
                             .collect(Collectors.toList());
                     List<RouteBaseData<?>> removedVisible = event
                             .getRemovedRoutes().stream()
                             .filter(routeData -> !configuration
-                                    .hasUrlTemplate(routeData.getUrlTemplate()))
+                                    .hasTemplate(routeData.getTemplate()))
                             .collect(Collectors.toList());
                     // Only fire an event if we have visible changes.
                     if (!(addedVisible.isEmpty() && removedVisible.isEmpty())) {
@@ -168,15 +168,15 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
-            String pathString) {
-        Objects.requireNonNull(pathString, "pathString must not be null.");
+            String url) {
+        Objects.requireNonNull(url, "pathString must not be null.");
         final Optional<Class<? extends Component>> target = getConfiguration()
-                .getTarget(pathString);
+                .getTarget(url);
         if (target.isPresent()) {
             return target;
         }
 
-        return getParentRegistry().getNavigationTarget(pathString);
+        return getParentRegistry().getNavigationTarget(url);
     }
 
     @Override
@@ -216,14 +216,14 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<String> getUrlTemplate(
+    public Optional<String> getTemplate(
             Class<? extends Component> navigationTarget) {
-        final Optional<String> targetRoute = super.getUrlTemplate(
+        final Optional<String> targetRoute = super.getTemplate(
                 navigationTarget);
         if (targetRoute.isPresent()) {
             return targetRoute;
         }
-        return getParentRegistry().getUrlTemplate(navigationTarget);
+        return getParentRegistry().getTemplate(navigationTarget);
     }
 
     /**

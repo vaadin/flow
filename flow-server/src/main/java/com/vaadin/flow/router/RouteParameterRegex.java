@@ -18,24 +18,24 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 
 /**
- * Predefined regex used with url template parameters.
+ * Predefined regex used with template parameters.
  */
 public class RouteParameterRegex implements Serializable {
 
     /**
      * Integer type regex.
      */
-    public static final String INTEGER = "[+-]?[0-1]?[0-9]{1,9}";
+    public static final String INTEGER = "^[-+]?\\d+$";
 
     /**
      * Long type regex.
      */
-    public static final String LONG = "[+-]?[0-8]?[0-9]{1,18}";
+    public static final String LONG = "^[+-]?[0-8]?[0-9]{1,18}$";
 
     /**
      * Boolean type regex.
      */
-    public static final String BOOLEAN = "true|false";
+    public static final String BOOLEAN = "^true|false$";
 
     private RouteParameterRegex() {
     }

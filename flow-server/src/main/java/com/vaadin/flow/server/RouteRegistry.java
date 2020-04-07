@@ -74,22 +74,22 @@ public interface RouteRegistry extends Serializable {
     void removeRoute(Class<? extends Component> navigationTarget);
 
     /**
-     * Remove the registration for given url template.
+     * Remove the registration for given path.
      *
-     * @param template
-     *            template for which to remove the navigation target.
+     * @param path
+     *            path for which to remove the navigation target.
      */
-    void removeRoute(String template);
+    void removeRoute(String path);
 
     /**
-     * Remove navigationTarget for the template.
+     * Remove navigationTarget for the path.
      *
-     * @param template
-     *            template to remove from registry
+     * @param path
+     *            path to remove from registry
      * @param navigationTarget
-     *            template navigation target to remove
+     *            path navigation target to remove
      */
-    void removeRoute(String template, Class<? extends Component> navigationTarget);
+    void removeRoute(String path, Class<? extends Component> navigationTarget);
 
     /**
      * Get the {@link RouteData} for all registered navigation targets.
@@ -128,11 +128,11 @@ public interface RouteRegistry extends Serializable {
      * Gets the optional navigation target class for a given path. Returns an
      * empty optional if no navigation target corresponds to the given url.
      *
-     * @param pathString
+     * @param url
      *            the path to get the navigation target for, not {@code null}
      * @return optional of the navigation target corresponding to the given path
      */
-    Optional<Class<? extends Component>> getNavigationTarget(String pathString);
+    Optional<Class<? extends Component>> getNavigationTarget(String url);
 
     /**
      * Gets the optional navigation target class for a given Location matching
@@ -175,19 +175,19 @@ public interface RouteRegistry extends Serializable {
             RouteParameters parameters);
 
     /**
-     * Get the main url template for given navigation target.
+     * Get the main template for given navigation target.
      * <p>
-     * In case of annotated target the main url template is composed of the
+     * In case of annotated target the main template is composed of the
      * {@link Route} annotation value prefixed by all {@link RoutePrefix} values
      * of the parent {@link RouterLayout}s chain.
      *
      * @param navigationTarget
      *            navigation target to get route definition for, not
      *            {@code null}
-     * @return {@link Optional} navigation target url template string or
+     * @return {@link Optional} navigation target template string or
      *         {@link Optional#empty()} if navigation target was not found
      */
-    Optional<String> getUrlTemplate(
+    Optional<String> getTemplate(
             Class<? extends Component> navigationTarget);
 
     /**

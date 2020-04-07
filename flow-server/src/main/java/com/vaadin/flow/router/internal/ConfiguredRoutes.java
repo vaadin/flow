@@ -37,6 +37,8 @@ import com.vaadin.flow.router.RouteParameters;
  * <p>
  * Note! This is always immutable and any changes should be made from
  * {@link ConfigureRoutes}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */
@@ -82,7 +84,7 @@ public class ConfiguredRoutes implements Serializable {
         targetRouteMap.putAll(original.getTargetRoutes());
         exceptionTargetMap.putAll(original.getExceptionHandlers());
 
-        Map<Class<? extends Component>, RouteModel> target2UrlTemplatesMap = original
+        Map<Class<? extends Component>, RouteModel> target2TemplatesMap = original
                 .copyTargetRouteModels(false);
 
         this.routeModel = RouteModel.copy(original.getRouteModel(), false);
@@ -92,9 +94,9 @@ public class ConfiguredRoutes implements Serializable {
         this.targetToPath = targetRouteMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(targetRouteMap);
-        this.targetRouteModels = target2UrlTemplatesMap.isEmpty()
+        this.targetRouteModels = target2TemplatesMap.isEmpty()
                 ? Collections.emptyMap()
-                : Collections.unmodifiableMap(target2UrlTemplatesMap);
+                : Collections.unmodifiableMap(target2TemplatesMap);
         this.exceptionToTarget = exceptionTargetMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(exceptionTargetMap);
@@ -137,18 +139,18 @@ public class ConfiguredRoutes implements Serializable {
      * @return true if configuration contains route
      */
     public boolean hasRoute(String path) {
-        return hasUrlTemplate(path);
+        return hasTemplate(path);
     }
 
     /**
-     * See if configuration contains a registered route for given url template.
+     * See if configuration contains a registered route for given template.
      *
-     * @param urlTemplate
-     *            url template to check
+     * @param template
+     *            template to check
      * @return true if configuration contains route
      */
-    public boolean hasUrlTemplate(String urlTemplate) {
-        return getRoutesMap().containsKey(urlTemplate);
+    public boolean hasTemplate(String template) {
+        return getRoutesMap().containsKey(template);
     }
 
     /**
@@ -204,9 +206,9 @@ public class ConfiguredRoutes implements Serializable {
      */
     public RouteTarget getRouteTarget(Class<? extends Component> target,
                                       RouteParameters parameters) {
-        return iterateUrlTemplates(target, urlTemplate -> {
+        return iterateTemplates(target, template -> {
             try {
-                return getRouteModel().getRouteTarget(urlTemplate, parameters);
+                return getRouteModel().getRouteTarget(template, parameters);
             } catch (IllegalArgumentException e) {
                 return null;
             }
@@ -255,7 +257,7 @@ public class ConfiguredRoutes implements Serializable {
 
     /**
      * Get all registered target routes for this configuration mapping the main
-     * url template.
+     * template.
      *
      * @return component-to-path map of all target routes
      */
@@ -286,29 +288,29 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route url template String for the given navigation target class.
+     * Get the route template String for the given navigation target class.
      *
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @return base route string if target class found
      */
     public String getTargetRoute(Class<? extends Component> navigationTarget) {
-        return getUrlTemplate(navigationTarget);
+        return getTemplate(navigationTarget);
     }
 
     /**
-     * Get the route url template String for the given navigation target class.
+     * Get the route template String for the given navigation target class.
      *
      * @param navigationTarget
      *            navigationTarget to get registered route for
      * @return base route string if target class found
      */
-    public String getUrlTemplate(Class<? extends Component> navigationTarget) {
+    public String getTemplate(Class<? extends Component> navigationTarget) {
         return getTargetRoutes().get(navigationTarget);
     }
 
     /**
-     * Get the route url template String for the given navigation target class
+     * Get the route template String for the given navigation target class
      * and using the specified parameters format.
      *
      * @param navigationTarget
@@ -318,17 +320,17 @@ public class ConfiguredRoutes implements Serializable {
      *            {@link RouteParameterFormatOption#NAME},
      *            {@link RouteParameterFormatOption#MODIFIER} and
      *            {@link RouteParameterFormatOption#REGEX} are provided, the
-     *            unformatted url template will be provided.
+     *            unformatted template will be provided.
      * @return base route string if target class found
      */
-    public String getUrlTemplate(Class<? extends Component> navigationTarget,
+    public String getTemplate(Class<? extends Component> navigationTarget,
             Set<RouteParameterFormatOption> format) {
-        final String urlTemplate = getUrlTemplate(navigationTarget);
-        if (urlTemplate == null) {
+        final String template = getTemplate(navigationTarget);
+        if (template == null) {
             return null;
         }
 
-        return getRouteModel().formatUrlTemplate(urlTemplate, format);
+        return getRouteModel().formatTemplate(template, format);
     }
 
     /**
@@ -339,18 +341,18 @@ public class ConfiguredRoutes implements Serializable {
      * @return route string if target class found
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget) {
-        return iterateUrlTemplates(navigationTarget, urlTemplate -> {
-            if (RouteFormat.hasRequiredParameter(urlTemplate)) {
+        return iterateTemplates(navigationTarget, template -> {
+            if (RouteFormat.hasRequiredParameter(template)) {
                 return null;
 
-            } else if (RouteFormat.hasParameters(urlTemplate)) {
+            } else if (RouteFormat.hasParameters(template)) {
                 // In case all parameters are optional or wildcard, this will
                 // return successfully.
-                return getRouteModel().getUrl(urlTemplate,
+                return getRouteModel().getUrl(template,
                         RouteParameters.empty());
             }
 
-            return urlTemplate;
+            return template;
         });
     }
 
@@ -367,9 +369,9 @@ public class ConfiguredRoutes implements Serializable {
      */
     public String getTargetUrl(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
-        return iterateUrlTemplates(navigationTarget, urlTemplate -> {
+        return iterateTemplates(navigationTarget, template -> {
             try {
-                return getRouteModel().getUrl(urlTemplate, parameters);
+                return getRouteModel().getUrl(template, parameters);
             } catch (IllegalArgumentException e) {
                 return null;
             }
@@ -421,31 +423,31 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Gets the parameters defined by the given urlTemplate.
+     * Gets the parameters defined by the given template.
      * 
-     * @param urlTemplate
-     *            url template to get parameters from.
+     * @param template
+     *            template to get parameters from.
      * @return map parameter names with {@link com.vaadin.flow.router.RouteParameterData}.
      */
-    public Map<String, RouteParameterData> getParameters(String urlTemplate) {
-        return getRouteModel().getParameters(urlTemplate);
+    public Map<String, RouteParameterData> getParameters(String template) {
+        return getRouteModel().getParameters(template);
     }
 
     /**
-     * Get the RouteTarget stored for the given urlTemplate.
+     * Get the RouteTarget stored for the given template.
      *
-     * @param urlTemplate
-     *            urlTemplate to get route target for
-     * @return route target for urlTemplate, <code>null</code> if nothing
+     * @param template
+     *            template to get route target for
+     * @return route target for template, <code>null</code> if nothing
      *         registered
      */
-    protected RouteTarget getRouteTarget(String urlTemplate) {
-        return getRoutesMap().get(urlTemplate);
+    protected RouteTarget getRouteTarget(String template) {
+        return getRoutesMap().get(template);
     }
 
-    private <T> T iterateUrlTemplates(
+    private <T> T iterateTemplates(
             Class<? extends Component> navigationTarget,
-            Function<String, T> urlTemplateOutput) {
+            Function<String, T> templateOutput) {
 
         final RouteModel model = getTargetRouteModels()
                 .get(navigationTarget);
@@ -453,9 +455,9 @@ public class ConfiguredRoutes implements Serializable {
             return null;
         }
 
-        final Collection<String> urlTemplates = model.getRoutes().keySet();
-        for (String urlTemplate : urlTemplates) {
-            final T result = urlTemplateOutput.apply(urlTemplate);
+        final Collection<String> templates = model.getRoutes().keySet();
+        for (String template : templates) {
+            final T result = templateOutput.apply(template);
             if (result != null) {
                 return result;
             }

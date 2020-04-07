@@ -26,10 +26,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
- * Defines the route url template suffix for components that function as
+ * Defines the route template suffix for components that function as
  * navigation targets in routing.
  * <p>
- * The full url template of the navigation target is composed of the values of
+ * The full template of the navigation target is composed of the values of
  * all {@link RoutePrefix} annotated on the {@link #layout()} and
  * {@link ParentLayout} class values, starting from the root parent and joined
  * together using slash delimiter to form a url form string.
@@ -52,7 +52,7 @@ public @interface Route {
     String NAMING_CONVENTION = "___NAMING_CONVENTION___";
 
     /**
-     * Sets the route url template suffix value of the annotated class.
+     * Sets the route template suffix value of the annotated class.
      *
      * <p>
      * If no value is provided, the path will be derived from the class name of

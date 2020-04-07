@@ -27,6 +27,8 @@ import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Route target stores the target component and parent layouts.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.0
  */

@@ -126,26 +126,15 @@ public class RouteConfiguration implements Serializable {
      * @return true if there exists a route for the given path
      */
     public boolean isPathAvailable(String path) {
-        return isTemplateRegistered(path);
-    }
-
-    /**
-     * Check if there is a registered target for the given urlTemplate.
-     *
-     * @param urlTemplate
-     *         urlTemplate to check for route registration
-     * @return true if there exists a route for the given urlTemplate
-     */
-    public boolean isTemplateRegistered(String urlTemplate) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
-                    .hasUrlTemplate(urlTemplate);
+                    .hasTemplate(path);
         }
         return getAvailableRoutes().stream().anyMatch(
-                routeData -> routeData.getUrlTemplate().equals(urlTemplate)
+                routeData -> routeData.getTemplate().equals(path)
                         || routeData.getRouteAliases().stream()
-                                .anyMatch(routeAliasData -> routeAliasData
-                                        .getUrlTemplate().equals(urlTemplate)));
+                        .anyMatch(routeAliasData -> routeAliasData
+                                .getTemplate().equals(path)));
     }
 
     /**
@@ -156,7 +145,7 @@ public class RouteConfiguration implements Serializable {
      * @return true if class is registered
      */
     public boolean isRouteRegistered(Class<? extends Component> route) {
-        return handledRegistry.getUrlTemplate(route).isPresent();
+        return handledRegistry.getTemplate(route).isPresent();
     }
 
     /**
@@ -429,25 +418,25 @@ public class RouteConfiguration implements Serializable {
      */
     public Optional<String> getUrlBase(
             Class<? extends Component> navigationTarget) {
-        final Optional<String> urlTemplate = getUrlTemplate(navigationTarget);
-        if (urlTemplate.isPresent()) {
+        final Optional<String> template = getTemplate(navigationTarget);
+        if (template.isPresent()) {
             return Optional
-                    .of(HasUrlParameterFormat.getUrlBase(urlTemplate.get()));
+                    .of(HasUrlParameterFormat.getUrlBase(template.get()));
         } else {
             return Optional.empty();
         }
     }
 
     /**
-     * Gets the url template for the given target.
+     * Gets the route template for the given target.
      * 
      * @param navigationTarget
      *            target class.
-     * @return main url template for the given target.
+     * @return main template for the given target.
      */
-    public Optional<String> getUrlTemplate(
+    public Optional<String> getTemplate(
             Class<? extends Component> navigationTarget) {
-        return handledRegistry.getUrlTemplate(navigationTarget);
+        return handledRegistry.getTemplate(navigationTarget);
     }
 
     /**

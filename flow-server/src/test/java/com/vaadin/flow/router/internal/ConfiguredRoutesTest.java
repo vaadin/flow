@@ -19,7 +19,7 @@ public class ConfiguredRoutesTest {
         ConfiguredRoutes configuration = new ConfiguredRoutes();
 
         Assert.assertFalse("No routes should be configured",
-                configuration.hasUrlTemplate(""));
+                configuration.hasTemplate(""));
         Assert.assertFalse("No routes should be configured",
                 configuration.getTarget("")
                         .isPresent());
@@ -30,7 +30,7 @@ public class ConfiguredRoutesTest {
         Assert.assertNull("No exception handler should be found.", configuration
                 .getExceptionHandlerByClass(RuntimeException.class));
         Assert.assertNull("No target route should be found", configuration
-                .getUrlTemplate(BaseTarget.class));
+                .getTemplate(BaseTarget.class));
         Assert.assertTrue("Configuration should be empty",
                 configuration.getExceptionHandlers().isEmpty());
         Assert.assertFalse("No route should be found", configuration
@@ -47,7 +47,7 @@ public class ConfiguredRoutesTest {
         ConfiguredRoutes immutable = new ConfiguredRoutes(mutable);
 
         Assert.assertTrue("Configuration should have \"\" route registered",
-                immutable.hasUrlTemplate(""));
+                immutable.hasTemplate(""));
         Assert.assertEquals("Configuration should have registered base target.",
                 BaseTarget.class,
                 immutable.getTarget("").get());
@@ -56,7 +56,7 @@ public class ConfiguredRoutesTest {
                 "BaseTarget registration should have been copied over",
                 immutable.hasRouteTarget(BaseTarget.class));
         Assert.assertEquals("Configuration should have registered base target.",
-                "", immutable.getUrlTemplate(BaseTarget.class));
+                "", immutable.getTemplate(BaseTarget.class));
 
         Assert.assertEquals(
                 "Given parentLayouts should have been copied correctly",
@@ -108,67 +108,67 @@ public class ConfiguredRoutesTest {
     public void configuration_provides_formatted_url_template() {
         ConfigureRoutes config = new ConfigureRoutes();
 
-        final String urlTemplate = "/path/to" 
+        final String template = "/path/to"
                 + "/:intType(" + RouteParameterRegex.INTEGER + ")"
                 + "/:longType?(" + RouteParameterRegex.LONG + ")"
                 + "/:boolType?(" + RouteParameterRegex.BOOLEAN + ")"
                 + "/:stringType?/:varargs*(thinking|of|U|and|I)";
-        config.setRoute(urlTemplate, BaseTarget.class);
+        config.setRoute(template, BaseTarget.class);
 
-        Assert.assertFalse("Url template should not contain prefixed forward slash '/'",
-                urlTemplate.equals(config.getUrlTemplate(BaseTarget.class)));
+        Assert.assertFalse("Template should not contain prefixed forward slash '/'",
+                template.equals(config.getTemplate(BaseTarget.class)));
 
-        Assert.assertEquals("Invalid urlTemplate", urlTemplate.substring(1),
-                config.getUrlTemplate(BaseTarget.class));
+        Assert.assertEquals("Invalid template", template.substring(1),
+                config.getTemplate(BaseTarget.class));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
+        Assert.assertEquals("Invalid formatted template",
                 "path/to/:intType(integer)/:longType?(long)/:boolType?(boolean)/:stringType?(string)/:varargs*(string)",
-                config.getUrlTemplate(BaseTarget.class,
+                config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX_NAME)));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
+        Assert.assertEquals("Invalid formatted template",
                 "path/to/:intType/:longType?/:boolType?/:stringType?/:varargs*",
-                config.getUrlTemplate(BaseTarget.class,
+                config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER)));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
+        Assert.assertEquals("Invalid formatted template",
                 "path/to/:intType/:longType/:boolType/:stringType/:varargs",
-                config.getUrlTemplate(BaseTarget.class,
+                config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME)));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
+        Assert.assertEquals("Invalid formatted template",
                 "path/to/:(integer)/:?(long)/:?(boolean)/:?(string)/:*(string)",
-                config.getUrlTemplate(BaseTarget.class,
+                config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX_NAME)));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
+        Assert.assertEquals("Invalid formatted template",
                 "path/to/:(" + RouteParameterRegex.INTEGER + ")/:?("
                         + RouteParameterRegex.LONG + ")/:?("
                         + RouteParameterRegex.BOOLEAN
                         + ")/:?/:*(thinking|of|U|and|I)",
-                config.getUrlTemplate(BaseTarget.class,
+                config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX)));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
+        Assert.assertEquals("Invalid formatted template",
                 "path/to/:integer/:long/:boolean/:string/:string",
-                config.getUrlTemplate(BaseTarget.class,
+                config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
-                "path/to/:/:?/:?/:?/:*", config.getUrlTemplate(BaseTarget.class,
+        Assert.assertEquals("Invalid formatted template",
+                "path/to/:/:?/:?/:?/:*", config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER)));
 
-        Assert.assertEquals("Invalid formatted urlTemplate",
+        Assert.assertEquals("Invalid formatted template",
                 "path/to/:" + RouteParameterRegex.INTEGER + "/:"
                         + RouteParameterRegex.LONG + "/:"
                         + RouteParameterRegex.BOOLEAN
                         + "/:/:thinking|of|U|and|I",
-                config.getUrlTemplate(BaseTarget.class,
+                config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.REGEX)));
 
     }
