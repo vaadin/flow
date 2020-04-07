@@ -55,10 +55,10 @@ public class AbstractRouteRegistryInitializerTest {
 
     }
 
-    @Test(expected = InvalidRouteLayoutConfigurationException.class)
-    public void routeAndParentLayout_notRouterLayout_throws() {
+    @Test // (expected = InvalidRouteLayoutConfigurationException.class)
+    public void routeAndParentLayout_notRouterLayout_noThrows() {
+        // this has been switched to intentionally not throw but log a warning
         initializer.validateRouteClasses(Stream.of(RouteAndParentLayout.class));
-
     }
 
     @Test
