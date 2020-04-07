@@ -12,6 +12,7 @@ interface AppConfig {
   devmodeGizmoEnabled: boolean;
   serviceUrl: string;
   springBootDevToolsPort: number;
+  liveReloadBackend: string;
 }
 
 interface AppInitResponse {
@@ -234,7 +235,7 @@ export class Flow {
       // (server ensures this parameter is true only in dev mode)
       if (appConfig.devmodeGizmoEnabled) {
         const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
-        await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.springBootDevToolsPort);
+        await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.liveReloadBackend, appConfig.springBootDevToolsPort);
       }
 
       // hide flow progress indicator

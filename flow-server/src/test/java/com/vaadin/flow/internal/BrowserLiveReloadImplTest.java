@@ -90,4 +90,72 @@ public class BrowserLiveReloadImplTest {
 
         Mockito.verifyZeroInteractions(broadcaster);
     }
+
+    @Test
+    public void getBackend_JRebelInitializerClassLoaded_returnsJREBEL() {
+        class JRebelInitializer {
+        }
+        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(service,
+                new ClassLoader(getClass().getClassLoader()) {
+                    @Override
+                    protected Class<?> findClass(String name)
+                            throws ClassNotFoundException {
+                        switch (name) {
+                        case "com.vaadin.flow.server.jrebel.JRebelInitializer":
+                            return JRebelInitializer.class;
+                        default:
+                            throw new ClassNotFoundException();
+                        }
+                    }
+                });
+        Assert.assertEquals(BrowserLiveReload.Backend.JREBEL,
+                reload.getBackend());
+    }
+
+    @Test
+    public void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
+        class VaadinIntegration {
+        }
+        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(service,
+                new ClassLoader(getClass().getClassLoader()) {
+                    @Override
+                    protected Class<?> findClass(String name)
+                            throws ClassNotFoundException {
+                        switch (name) {
+                        case "org.hotswap.agent.plugin.vaadin.VaadinIntegration":
+                            return VaadinIntegration.class;
+                        default:
+                            throw new ClassNotFoundException();
+                        }
+                    }
+                });
+        Assert.assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT,
+                reload.getBackend());
+    }
+
+    @Test
+    public void getBackend_SpringBootDevtoolsClassesLoaded_returnsSPRING_BOOT_DEVTOOLS() {
+        class SpringServlet {
+        }
+        class LiveReloadServer {
+        }
+        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(service,
+                new ClassLoader(getClass().getClassLoader()) {
+                    @Override
+                    protected Class<?> findClass(String name)
+                            throws ClassNotFoundException {
+                        switch (name) {
+                        case "com.vaadin.flow.spring.SpringServlet":
+                            return SpringServlet.class;
+                        case "org.springframework.boot.devtools.livereload.LiveReloadServer":
+                            return LiveReloadServer.class;
+                        default:
+                            throw new ClassNotFoundException();
+                        }
+                    }
+                });
+        Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
+                reload.getBackend());
+    }
+
 }

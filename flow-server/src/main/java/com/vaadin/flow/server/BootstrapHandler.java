@@ -61,6 +61,8 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -1080,6 +1082,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appConfig.put("versionInfo", versionInfo);
                 appConfig.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED,
                         deploymentConfiguration.isDevModeLiveReloadEnabled());
+
+                VaadinService service = session.getService();
+                BrowserLiveReloadAccess liveReloadAccess = service
+                        .getInstantiator()
+                        .getOrCreate(BrowserLiveReloadAccess.class);
+                BrowserLiveReload liveReload = liveReloadAccess != null
+                        ? liveReloadAccess.getLiveReload(service)
+                        : null;
+                if (liveReload != null && liveReload.getBackend() != null) {
+                    appConfig.put("liveReloadBackend",
+                            liveReload.getBackend().toString());
+                }
+
                 // make configurable when fixing #7847
                 appConfig.put("springBootDevToolsPort", 35729);
             }

@@ -83,6 +83,7 @@ class VaadinDevmodeGizmo extends LitElement {
       status: {type: String},
       notification: {type: String},
       serviceurl: {type: String},
+      liveReloadBackend: {type: String},
       springBootDevToolsPort: {type: Number}
     };
   }
@@ -123,6 +124,26 @@ class VaadinDevmodeGizmo extends LitElement {
     return 180000;
   }
 
+  static get HOTSWAP_AGENT() {
+    return 'HOTSWAP_AGENT';
+  }
+
+  static get JREBEL() {
+    return 'JREBEL';
+  }
+
+  static get SPRING_BOOT_DEVTOOLS() {
+    return 'SPRING_BOOT_DEVTOOLS';
+  }
+
+  static get BACKEND_DISPLAY_NAME() {
+    return {
+      HOTSWAP_AGENT: 'HotswapAgent',
+      JREBEL: 'JRebel',
+      SPRING_BOOT_DEVTOOLS: 'Spring Boot Devtools'
+    };
+  }
+
   static get isEnabled() {
     const enabled = window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE);
     return enabled === null || !(enabled === 'false');
@@ -149,26 +170,22 @@ class VaadinDevmodeGizmo extends LitElement {
     }
     const hostname = window.location.hostname;
     // try Spring Boot Devtools first, if port is set
-    if (this.springBootDevToolsPort) {
+    if (this.liveReloadBackend === VaadinDevmodeGizmo.SPRING_BOOT_DEVTOOLS && this.springBootDevToolsPort) {
       const self = this;
       self.connection = new WebSocket(
         'ws://' + hostname + ':' + this.springBootDevToolsPort);
-      self.connection.onmessage = msg => self.handleMessage(msg);
-      self.connection.onclose = _ => {
-        self.status = VaadinDevmodeGizmo.UNAVAILABLE;
-        // TODO Not setting connection to null here because it will race with the
-        // next connection attempt to the dedicated push channel.
-      };
-      self.connection.onerror = err => {
-        if (self.status === VaadinDevmodeGizmo.UNAVAILABLE) {
-          // no Spring, try the dedicated push channel
-          self.openDedicatedWebSocketConnection();
-        } else {
-          self.handleError(err);
-        }
-      };
-    } else {
+    } else if (this.liveReloadBackend) {
       this.openDedicatedWebSocketConnection();
+    } else {
+      this.showMessage('Live reload unavailable');
+    }
+    if (this.connection) {
+      this.connection.onmessage = msg => this.handleMessage(msg);
+      this.connection.onerror = err => this.handleError(err);
+      this.connection.onclose = _ => {
+        self.status = VaadinDevmodeGizmo.UNAVAILABLE;
+        self.connection = null;
+      };
     }
   }
 
@@ -181,12 +198,6 @@ class VaadinDevmodeGizmo extends LitElement {
     const wsUrl = url.replace(/^http:/, 'ws:') + '?refresh_connection';
     const self = this;
     this.connection = new WebSocket(wsUrl);
-    this.connection.onmessage = msg => this.handleMessage(msg);
-    this.connection.onerror = err => this.handleError(err);
-    this.connection.onclose = _ => {
-      self.status = VaadinDevmodeGizmo.UNAVAILABLE;
-      self.connection = null;
-    };
     setInterval(function() {
       if (self.connection !== null) {
         self.connection.send('');
@@ -198,15 +209,16 @@ class VaadinDevmodeGizmo extends LitElement {
     const json = JSON.parse(msg.data);
     const command = json['command'];
     switch (command) {
-      case 'hello':
+      case 'hello': {
         if (VaadinDevmodeGizmo.isActive) {
           this.status = VaadinDevmodeGizmo.ACTIVE;
         } else {
           this.status = VaadinDevmodeGizmo.INACTIVE;
         }
-        this.showMessage('Live reload available');
-        this.connection.onerror = e => self.handleError(e);
+        const backend = VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.liveReloadBackend];
+        this.showMessage('Live reload available: ' + backend);
         break;
+      }
 
       case 'reload':
         if (this.status === VaadinDevmodeGizmo.ACTIVE) {
@@ -330,12 +342,15 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 }
 
-const init = function(serviceUrl, springBootDevToolsPort) {
+const init = function(serviceUrl, liveReloadBackend, springBootDevToolsPort) {
   if ('false' !== window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE)) {
     customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
     const devmodeGizmo = document.createElement('vaadin-devmode-gizmo');
     if (serviceUrl) {
       devmodeGizmo.setAttribute('serviceurl', serviceUrl);
+    }
+    if (liveReloadBackend) {
+      devmodeGizmo.setAttribute('liveReloadBackend', liveReloadBackend);
     }
     if (springBootDevToolsPort) {
       devmodeGizmo.setAttribute('springBootDevToolsPort', springBootDevToolsPort);

@@ -16,6 +16,11 @@
 package com.vaadin.flow.internal;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.atmosphere.cpr.AtmosphereResource;
@@ -34,10 +39,52 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private final VaadinService service;
 
+    private final ClassLoader classLoader;
+
     private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
+    private static final Map<Backend, List<String>> IDENTIFIER_CLASSES = new HashMap<>();
+
+    static {
+        IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
+                "com.vaadin.flow.server.jrebel.JRebelInitializer"));
+        IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
+                "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
+        IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
+                "com.vaadin.flow.spring.SpringServlet",
+                "org.springframework.boot.devtools.livereload.LiveReloadServer"));
+    }
+
     BrowserLiveReloadImpl(VaadinService service) {
+        this(service, BrowserLiveReloadImpl.class.getClassLoader());
+    }
+
+    BrowserLiveReloadImpl(VaadinService service, ClassLoader classLoader) {
         this.service = service;
+        this.classLoader = classLoader;
+    }
+
+    @Override
+    public Backend getBackend() {
+        for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES
+                .entrySet()) {
+            Backend backend = entry.getKey();
+            boolean found = true;
+            for (String clazz : entry.getValue()) {
+                try {
+                    classLoader.loadClass(clazz);
+                } catch (ClassNotFoundException e) {
+                    getLogger().debug("Class {} not found, excluding {}", clazz,
+                            backend);
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     @Override
