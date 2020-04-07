@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
