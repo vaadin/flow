@@ -37,6 +37,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
+import org.slf4j.LoggerFactory;
 
 /**
  * Common validation methods for route registry initializer.
@@ -187,11 +188,17 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             return;
         }
         if (!RouterLayout.class.isAssignableFrom(route)) {
-            throw new InvalidRouteLayoutConfigurationException(String.format(
-                    "The class '%s' should either be a '%s' or only a navigation target using"
-                            + " '%s.layout' to set the parent layout",
-                    route.getSimpleName(), RouterLayout.class.getSimpleName(),
-                    Route.class.getSimpleName()));
+            String routerLayoutSimpleName = RouterLayout.class.getSimpleName();
+            LoggerFactory
+                    .getLogger(AbstractRouteRegistryInitializer.class.getName())
+                    .error("\n\n"
+                            + "The class '{}' should either be a '{}' or only a navigation target using '{}.layout' to set the parent layout."
+                            + "\nUsing '{}' without implementing '{}' will be changed to throwing an exception in a future release.\n",
+                            route.getSimpleName(),
+                            routerLayoutSimpleName,
+                            Route.class.getSimpleName(),
+                            ParentLayout.class.getSimpleName(),
+                            routerLayoutSimpleName);
         }
     }
 
