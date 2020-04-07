@@ -154,22 +154,14 @@ public class VaadinConnectControllerConfiguration {
      */
     @Bean
     @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER)
-    ObjectMapper objectMapper(ApplicationContext context) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JacksonProperties jacksonProperties = context
-                    .getBean(JacksonProperties.class);
-            if (jacksonProperties.getVisibility().isEmpty()) {
-                objectMapper.setVisibility(PropertyAccessor.ALL,
-                        JsonAutoDetect.Visibility.ANY);
-            }
-            return objectMapper;
-        } catch (Exception e) {
-            throw new IllegalStateException(String.format(
-                    "Auto configured jackson object mapper is not found."
-                            + "Please define your own object mapper with '@Qualifier(%s)' or "
-                            + "make sure that the auto configured jackson object mapper is available.",
-                    VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER), e);
+    ObjectMapper vaadinEndpointMapper(ApplicationContext context) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JacksonProperties jacksonProperties = context
+                .getBean(JacksonProperties.class);
+        if (jacksonProperties.getVisibility().isEmpty()) {
+            objectMapper.setVisibility(PropertyAccessor.ALL,
+                    JsonAutoDetect.Visibility.ANY);
         }
+        return objectMapper;
     }
 }
