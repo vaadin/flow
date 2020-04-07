@@ -257,6 +257,10 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   disableLiveReload() {
+    if (this.connection !== null) {
+      this.connection.close();
+      this.connection = null;
+    }
     window.localStorage.setItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE, 'false');
     this.remove();
   }

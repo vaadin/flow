@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import java.util.Random;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
@@ -28,8 +30,11 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.frontend.LiveReloadView", layout = ViewTestLayout.class)
 public class LiveReloadView extends Div {
+
+    Integer instanceIdentifier = new Random().nextInt();
+
     public LiveReloadView() {
-        Label label = new Label("Just a label");
+        Label label = new Label(Integer.toString(instanceIdentifier));
         label.setId("elementId");
         NativeButton reloadButton = new NativeButton("Trigger live reload");
         reloadButton.addClickListener(this::handleClickLiveReload);
