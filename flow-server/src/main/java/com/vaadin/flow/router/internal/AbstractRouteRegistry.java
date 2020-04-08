@@ -301,10 +301,10 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     @Override
-    public void setRoute(String template,
+    public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
-        configureSafe(template, navigationTarget,
+        configureWithFullTemplate(path, navigationTarget,
                 (configuration, fullTemplate) -> configuration
                         .setRoute(fullTemplate, navigationTarget, parentChain));
     }
@@ -314,8 +314,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasRouteTarget(navigationTarget)) {
             return;
         }
-        configureSafe(
-                configuration -> configuration.removeRoute(navigationTarget));
+        configure(configuration -> configuration.removeRoute(navigationTarget));
     }
 
     @Override
@@ -323,7 +322,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasTemplate(path)) {
             return;
         }
-        configureSafe(configuration -> configuration.removeRoute(path));
+        configure(configuration -> configuration.removeRoute(path));
     }
 
     @Override
@@ -332,7 +331,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         if (!getConfiguration().hasTemplate(path)) {
             return;
         }
-        configureSafe(path, navigationTarget,
+        configureWithFullTemplate(path, navigationTarget,
                 (configuration, fullTemplate) -> configuration
                         .removeRoute(fullTemplate, navigationTarget));
     }
@@ -342,25 +341,13 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         configure(ConfigureRoutes::clear);
     }
 
-    private void configureSafe(String path,
+    private void configureWithFullTemplate(String path,
             Class<? extends Component> navigationTarget,
             TemplateConfiguration templateConfiguration) {
-        requireLock();
         configure(configuration -> {
-            templateConfiguration.configure(configuration, HasUrlParameterFormat
-                    .getTemplatePath(path, navigationTarget));
+            templateConfiguration.configure(configuration,
+                    HasUrlParameterFormat.getTemplate(path, navigationTarget));
         });
-    }
-
-    private void configureSafe(Configuration configuration) {
-        requireLock();
-        configure(configuration);
-    }
-
-    private void requireLock() {
-        if (!hasLock()) {
-            throw new IllegalStateException("Registry lock required.");
-        }
     }
 
     /**

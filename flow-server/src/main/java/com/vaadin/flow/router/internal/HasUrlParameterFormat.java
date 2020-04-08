@@ -46,6 +46,13 @@ public class HasUrlParameterFormat implements Serializable {
      */
     public static final String PARAMETER_NAME = "___url_parameter";
 
+    /**
+     * Reserved parameter placeholder used when setup internally route path
+     * pattern with the parameter design for backward compatibility with
+     * {@link HasUrlParameter}.
+     */
+    public static final String PARAMETER = ":" + PARAMETER_NAME;
+
     private HasUrlParameterFormat() {
     }
 
@@ -60,16 +67,18 @@ public class HasUrlParameterFormat implements Serializable {
      *            {@link HasUrlParameter} navigation target.
      * @return the final template.
      */
-    public static String getTemplatePath(String urlBase,
+    public static String getTemplate(String urlBase,
             Class<? extends Component> navigationTarget) {
         if (hasUrlParameter(navigationTarget)) {
 
+            urlBase = PathUtil.trimPath(urlBase);
+
             if (hasOptionalParameter(navigationTarget)) {
-                urlBase += "/:" + PARAMETER_NAME + "?";
+                urlBase += "/" + PARAMETER + "?";
             } else if (hasWildcardParameter(navigationTarget)) {
-                urlBase += "/:" + PARAMETER_NAME + "*";
+                urlBase += "/" + PARAMETER + "*";
             } else {
-                urlBase += "/:" + PARAMETER_NAME;
+                urlBase += "/" + PARAMETER;
             }
 
             final Class<?> parameterType = ParameterDeserializer
@@ -94,8 +103,8 @@ public class HasUrlParameterFormat implements Serializable {
      */
     public static String getUrlBase(String template) {
         if (RouteFormat.hasParameters(template)) {
-            return PathUtil.trimPath(
-                    template.substring(0, template.indexOf(":")));
+            return PathUtil
+                    .trimPath(template.substring(0, template.indexOf(":")));
         }
         return template;
     }

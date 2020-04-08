@@ -125,12 +125,12 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public void setRoute(String template,
+    public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
         if (routeFilters.stream().allMatch(
                 filter -> filter.testNavigationTarget(navigationTarget))) {
-            super.setRoute(template, navigationTarget, parentChain);
+            super.setRoute(path, navigationTarget, parentChain);
         } else {
             LoggerFactory.getLogger(ApplicationRouteRegistry.class).info(
                     "Not registering route {} because it's not valid for all registered routeFilters.",

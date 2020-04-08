@@ -47,22 +47,22 @@ public class ConfiguredRoutes implements Serializable {
     // Stores targets accessed by urls with parameters.
     private final RouteModel routeModel;
 
-    private final Map<String, RouteTarget> pathToTarget;
-    private final Map<Class<? extends Component>, String> targetToPath;
+    private final Map<String, RouteTarget> routeMap;
+    private final Map<Class<? extends Component>, String> targetRouteMap;
 
-    private final Map<Class<? extends Component>, RouteModel> targetRouteModels;
+    private final Map<Class<? extends Component>, RouteModel> targetRouteModelMap;
 
-    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionToTarget;
+    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
 
     /**
      * Create an immutable RouteConfiguration.
      */
     public ConfiguredRoutes() {
         routeModel = RouteModel.create(false);
-        pathToTarget = Collections.emptyMap();
-        targetToPath = Collections.emptyMap();
-        targetRouteModels = Collections.emptyMap();
-        exceptionToTarget = Collections.emptyMap();
+        routeMap = Collections.emptyMap();
+        targetRouteMap = Collections.emptyMap();
+        targetRouteModelMap = Collections.emptyMap();
+        exceptionTargetMap = Collections.emptyMap();
     }
 
     /**
@@ -88,22 +88,22 @@ public class ConfiguredRoutes implements Serializable {
                 .copyTargetRouteModels(false);
 
         this.routeModel = RouteModel.copy(original.getRouteModel(), false);
-        this.pathToTarget = routeMap.isEmpty()
+        this.routeMap = routeMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(routeMap);
-        this.targetToPath = targetRouteMap.isEmpty()
+        this.targetRouteMap = targetRouteMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(targetRouteMap);
-        this.targetRouteModels = target2TemplatesMap.isEmpty()
+        this.targetRouteModelMap = target2TemplatesMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(target2TemplatesMap);
-        this.exceptionToTarget = exceptionTargetMap.isEmpty()
+        this.exceptionTargetMap = exceptionTargetMap.isEmpty()
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(exceptionTargetMap);
     }
 
     protected Map<String, RouteTarget> getRoutesMap() {
-        return pathToTarget;
+        return routeMap;
     }
 
     RouteModel getRouteModel() {
@@ -262,7 +262,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return component-to-path map of all target routes
      */
     public Map<Class<? extends Component>, String> getTargetRoutes() {
-        return targetToPath;
+        return targetRouteMap;
     }
 
     /**
@@ -270,8 +270,8 @@ public class ConfiguredRoutes implements Serializable {
      *
      * @return component-to-path map of all target routes
      */
-    Map<Class<? extends Component>, RouteModel> getTargetRouteModels() {
-        return targetRouteModels;
+    Map<Class<? extends Component>, RouteModel> getTargetRouteModelMap() {
+        return targetRouteModelMap;
     }
 
     /**
@@ -282,7 +282,7 @@ public class ConfiguredRoutes implements Serializable {
     protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(
             boolean mutable) {
         Map<Class<? extends Component>, RouteModel> copyMap = new HashMap<>();
-        this.getTargetRouteModels().entrySet().forEach(entry -> copyMap
+        this.getTargetRouteModelMap().entrySet().forEach(entry -> copyMap
                 .put(entry.getKey(), RouteModel.copy(entry.getValue(), mutable)));
         return copyMap;
     }
@@ -396,7 +396,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return all registered exception handlers
      */
     public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
-        return exceptionToTarget;
+        return exceptionTargetMap;
     }
 
     /**
@@ -449,7 +449,7 @@ public class ConfiguredRoutes implements Serializable {
             Class<? extends Component> navigationTarget,
             Function<String, T> templateOutput) {
 
-        final RouteModel model = getTargetRouteModels()
+        final RouteModel model = getTargetRouteModelMap()
                 .get(navigationTarget);
         if (model == null) {
             return null;

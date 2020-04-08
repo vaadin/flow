@@ -44,7 +44,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
     private final Map<String, RouteTarget> routeMap;
     private final Map<Class<? extends Component>, String> targetRouteMap;
-    private final Map<Class<? extends Component>, RouteModel> targetToRouteModel;
+    private final Map<Class<? extends Component>, RouteModel> targetRouteModelMap;
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
 
     /**
@@ -54,7 +54,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         routeModel = RouteModel.create(true);
         routeMap = new HashMap<>();
         targetRouteMap = new HashMap<>();
-        targetToRouteModel = new HashMap<>();
+        targetRouteModelMap = new HashMap<>();
         exceptionTargetMap = new HashMap<>();
     }
 
@@ -84,7 +84,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
         this.routeMap = routesMap;
         this.targetRouteMap = targetRoutesMap;
-        this.targetToRouteModel = target2TemplatesMap;
+        this.targetRouteModelMap = target2TemplatesMap;
         this.exceptionTargetMap = exceptionTargetsMap;
     }
 
@@ -177,9 +177,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
             setTargetRoute(navigationTarget, template);
         }
 
-        getTargetRouteModels().computeIfAbsent(navigationTarget,
+        getTargetRouteModelMap().computeIfAbsent(navigationTarget,
                 aClass -> RouteModel.create(true));
-        getTargetRouteModels().get(navigationTarget).addRoute(template, target);
+        getTargetRouteModelMap().get(navigationTarget).addRoute(template, target);
 
         getRoutesMap().put(template, target);
     }
@@ -230,7 +230,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         // Remove target route from class-to-string map
         getTargetRoutes().remove(target);
 
-        getTargetRouteModels().remove(target).getRoutes().keySet()
+        getTargetRouteModelMap().remove(target).getRoutes().keySet()
                 .forEach(template -> {
                     getRouteModel().removeRoute(template);
                     getRoutesMap().remove(template);
@@ -257,12 +257,12 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
         if (removedRoute != null) {
             final Class<? extends Component> target = removedRoute.getTarget();
 
-            final RouteModel targetRouteModel = getTargetRouteModels()
+            final RouteModel targetRouteModel = getTargetRouteModelMap()
                     .get(target);
             targetRouteModel.removeRoute(template);
 
             if (targetRouteModel.isEmpty()) {
-                getTargetRouteModels().remove(target);
+                getTargetRouteModelMap().remove(target);
             }
 
             final String mainTemplate = getTargetRoutes().get(target);
@@ -298,8 +298,8 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     @Override
-    Map<Class<? extends Component>, RouteModel> getTargetRouteModels() {
-        return targetToRouteModel;
+    Map<Class<? extends Component>, RouteModel> getTargetRouteModelMap() {
+        return targetRouteModelMap;
     }
 
 }

@@ -152,29 +152,29 @@ public class RouteConfiguration implements Serializable {
      * Gets the registered route class for a given path. Returns an empty
      * optional if no navigation target corresponds to the given path.
      *
-     * @param pathString
+     * @param path
      *         path to get route for
      * @return optional containing the path component or empty if not found
      */
-    public Optional<Class<? extends Component>> getRoute(String pathString) {
-        return getRoute(pathString, Collections.emptyList());
+    public Optional<Class<? extends Component>> getRoute(String path) {
+        return getRoute(path, Collections.emptyList());
     }
 
     /**
      * Gets the optional navigation target class for a given Location matching
      * with path segments.
      *
-     * @param pathString
+     * @param path
      *         path to get navigation target for, not {@code null}
      * @param segments
      *         segments given for path
      * @return optional navigation target corresponding to the given path and
      * segments
      */
-    public Optional<Class<? extends Component>> getRoute(String pathString,
+    public Optional<Class<? extends Component>> getRoute(String path,
             List<String> segments) {
         return handledRegistry
-                .getNavigationTarget(PathUtil.getPath(pathString, segments));
+                .getNavigationTarget(PathUtil.getPath(path, segments));
     }
 
     /**

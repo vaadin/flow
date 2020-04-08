@@ -46,12 +46,12 @@ import com.vaadin.flow.shared.Registration;
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Register a navigation target with specified template and given parent
+     * Register a navigation target with specified path and given parent
      * layout chain. Any {@link ParentLayout}, {@link Route} or
      * {@link RouteAlias} will be ignored in route handling.
      *
-     * @param template
-     *            template to register navigation target to
+     * @param path
+     *            path to register navigation target to
      * @param navigationTarget
      *            navigation target to register into session scope
      * @param parentChain
@@ -59,7 +59,7 @@ public interface RouteRegistry extends Serializable {
      * @throws InvalidRouteConfigurationException
      *             thrown if exact route already defined in this scope
      */
-    void setRoute(String template, Class<? extends Component> navigationTarget,
+    void setRoute(String path, Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain);
 
     /**

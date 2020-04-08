@@ -63,17 +63,17 @@ public class PathUtil implements Serializable {
     /**
      * Join the segments into a url path.
      *
-     * @param pathPrefix
+     * @param basePath
      *            path prefix.
      * @param segments
      *            path segments following the prefix.
-     * @return pathPrefix form from input segments.
+     * @return the path form by concatenating basePath and segments.
      */
-    public static String getPath(String pathPrefix, List<String> segments) {
-        pathPrefix = trimPath(pathPrefix);
+    public static String getPath(String basePath, List<String> segments) {
+        basePath = trimPath(basePath);
 
         return trimPath(
-                pathPrefix + ((segments == null || segments.isEmpty()) ? ""
+                basePath + ((segments == null || segments.isEmpty()) ? ""
                         : ("/" + String.join("/", segments))));
     }
 

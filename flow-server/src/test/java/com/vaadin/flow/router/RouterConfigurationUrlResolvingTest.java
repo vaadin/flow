@@ -339,6 +339,68 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test // #2740
+    public void navigation_targets_remove_route_with_same_path()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(MyPage.class, MyPageWithParam.class);
+
+        assertMyPageAndWithParamAvailable();
+
+        routeConfiguration.update(() -> routeConfiguration.removeRoute("my"));
+
+        final List<RouteData> availableRoutes = routeConfiguration
+                .getAvailableRoutes();
+        Assert.assertEquals(1, availableRoutes.size());
+        Assert.assertEquals("my/" + HasUrlParameterFormat.PARAMETER,
+                availableRoutes.get(0).getTemplate());
+        Assert.assertEquals(MyPageWithParam.class,
+                availableRoutes.get(0).getNavigationTarget());
+    }
+
+    @Test // #2740
+    public void navigation_targets_remove_route_with_same_path_and_parameter()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(MyPage.class, MyPageWithParam.class);
+
+        assertMyPageAndWithParamAvailable();
+
+        routeConfiguration.update(() -> routeConfiguration
+                .removeRoute("my/" + HasUrlParameterFormat.PARAMETER));
+
+        assertMyPageAvailable();
+    }
+
+    @Test // #2740
+    public void navigation_targets_remove_route_target_with_same_path_and_parameter()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(MyPage.class, MyPageWithParam.class);
+
+        assertMyPageAndWithParamAvailable();
+
+        routeConfiguration.update(() -> routeConfiguration.removeRoute("my",
+                MyPageWithParam.class));
+
+        assertMyPageAvailable();
+    }
+
+    private void assertMyPageAvailable() {
+        final List<RouteData> availableRoutes = routeConfiguration
+                .getAvailableRoutes();
+
+        Assert.assertEquals(1, availableRoutes.size());
+        Assert.assertEquals("my", availableRoutes.get(0).getTemplate());
+        Assert.assertEquals(MyPage.class,
+                availableRoutes.get(0).getNavigationTarget());
+    }
+
+    private void assertMyPageAndWithParamAvailable() {
+        Assert.assertEquals(MyPage.class, routeConfiguration.getRoute("my").get());
+        Assert.assertEquals(MyPageWithParam.class, routeConfiguration
+                .getRoute("my/" + HasUrlParameterFormat.PARAMETER).get());
+        Assert.assertEquals(MyPageWithParam.class, routeConfiguration
+                .getRoute("my", Arrays.asList(HasUrlParameterFormat.PARAMETER)).get());
+    }
+
+    @Test // #2740
     public void navigation_targets_with_same_route_and_one_with_parameter()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(MyPage.class, MyPageWithParam.class);
