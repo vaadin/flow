@@ -44,6 +44,8 @@ import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -168,6 +170,13 @@ public abstract class AbstractNodeUpdatePackagesTest
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
+
+        // Add flowDeps
+        JsonObject json = packageUpdater.getPackageJson();
+        getDependencies(json).put(DEP_NAME_FLOW_DEPS, "target/frontend");
+        json.put(VAADIN_APP_PACKAGE_HASH, "e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b");
+        Files.write(packageJson.toPath(),
+                Collections.singletonList(json.toJson()));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, false, true);
@@ -561,6 +570,36 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
+    public void legacyPackageJson_isCleanedCorrectly_pnpm() throws IOException {
+        String legacyPackageContent = getLegacyPackageContent();
+
+        Files.write(packageJson.toPath(),
+                Collections.singletonList(legacyPackageContent));
+
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, null, false,
+                true);
+        packageUpdater.execute();
+
+        assertPackageJsonFlowDeps();
+    }
+
+    @Test
+    public void legacyPackageJson_isCleanedCorrectly_npm() throws IOException {
+        String legacyPackageContent = getLegacyPackageContent();
+
+        Files.write(packageJson.toPath(),
+                Collections.singletonList(legacyPackageContent));
+
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), baseDir, generatedDir, null, false,
+                false);
+        packageUpdater.execute();
+
+        assertPackageJsonFlowDeps();
+    }
+
+    @Test
     public void frameworkManagedPackages_versionsAreUpdated()
             throws IOException {
         FrontendDependencies frontendDependencies = Mockito
@@ -642,6 +681,34 @@ public abstract class AbstractNodeUpdatePackagesTest
                 "vaadin-checkbox is still available in the dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
+    }
+
+    public String getLegacyPackageContent() {
+        return "{\n" + "  \"name\": \"no-name\",\n"
+                + "  \"license\": \"UNLICENSED\",\n" + "  \"vaadin\": {\n"
+                + "    \"dependencies\": {\n"
+                + "      \"@vaadin/router\": \"^1.6.0\",\n"
+                + "      \"@polymer/polymer\": \"3.2.0\",\n"
+                + "      \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
+                + "      \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
+                + "      \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
+                + "      \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
+                + "    },\n" + "    \"devDependencies\": {\n"
+                + "      \"webpack-dev-server\": \"3.10.3\"\n" + "    },\n"
+                + "    \"hash\": \"72bdea1adb5aa0d1259db10a6f76872d996db31d2c312d0c7849eb39de92835e\"\n"
+                + "  },\n" + "  \"dependencies\": {\n"
+                + "    \"@vaadin/router\": \"^1.6.0\",\n"
+                + "    \"@polymer/polymer\": \"3.2.0\",\n"
+                + "    \"@vaadin/flow-deps\": \"./target/frontend\",\n"
+                + "    \"@vaadin/flow-frontend\": \"./target/flow-frontend\",\n"
+                + "    \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
+                + "    \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
+                + "    \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
+                + "    \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
+                + "  },\n" + "  \"devDependencies\": {\n"
+                + "    \"webpack-dev-server\": \"3.10.3\"\n" + "  },\n"
+                + "\"vaadinAppPackageHash\": \"e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b\"\n"
+                + "}\n";
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {
@@ -739,9 +806,15 @@ public abstract class AbstractNodeUpdatePackagesTest
         JsonObject packJsonObject = getPackageJson(packageJson);
         JsonObject deps = packJsonObject.get(DEPENDENCIES);
         // No Flow deps
-        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
+        Assert.assertFalse(deps.hasKey(DEP_NAME_FLOW_DEPS));
+        // No old package hash
+        Assert.assertFalse(deps.hasKey(VAADIN_APP_PACKAGE_HASH));
         // Contains initially generated default polymer dep
         Assert.assertTrue(deps.hasKey("@polymer/polymer"));
+        // Contains new hash
+        Assert.assertTrue(
+                packJsonObject.getObject("vaadin")
+                        .hasKey("hash"));
     }
 
     JsonObject getPackageJson(File packageFile) throws IOException {
