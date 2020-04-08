@@ -16,13 +16,16 @@
 package com.vaadin.flow.internal;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.VaadinService;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -32,13 +35,65 @@ import com.vaadin.flow.server.VaadinService;
  */
 class BrowserLiveReloadImpl implements BrowserLiveReload {
 
-    private final VaadinService service;
+    private final ClassLoader classLoader;
 
     private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
-    BrowserLiveReloadImpl(VaadinService service) {
-        this.service = service;
+    private Backend backend = null;
+
+    private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(Backend.class);
+
+    static {
+        IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
+                "com.vaadin.flow.server.jrebel.JRebelInitializer"));
+        IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
+                "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
+        IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
+                "com.vaadin.flow.spring.SpringServlet",
+                "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
+
+    BrowserLiveReloadImpl() {
+        this(BrowserLiveReloadImpl.class.getClassLoader());
+    }
+
+    BrowserLiveReloadImpl(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    @Override
+    public Backend getBackend() {
+        if (backend != null) {
+            return backend;
+        }
+        for (Map.Entry<Backend, List<String>> entry : IDENTIFIER_CLASSES
+                .entrySet()) {
+            Backend backendCandidate = entry.getKey();
+            boolean found = true;
+            for (String clazz : entry.getValue()) {
+                try {
+                    classLoader.loadClass(clazz);
+                } catch (ClassNotFoundException e) { // NOSONAR
+                    getLogger().debug("Class {} not found, excluding {}", clazz,
+                            backendCandidate);
+                    found = false;
+                    break;
+                }
+            }
+            if (found) {
+                backend = backendCandidate;
+                break;
+            }
+        }
+        return backend;
+    }
+
+    @Override
+    public void setBackend(Backend backend) {
+        assert (backend != null);
+        this.backend = backend;
+    }
+
 
     @Override
     public void onConnect(AtmosphereResource resource) {
