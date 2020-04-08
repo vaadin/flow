@@ -174,6 +174,7 @@ class VaadinDevmodeGizmo extends LitElement {
       const self = this;
       self.connection = new WebSocket(
         'ws://' + hostname + ':' + this.springBootDevToolsPort);
+    } else if (this.liveReloadBackend) {
       this.openDedicatedWebSocketConnection();
     } else {
       this.showMessage('Live reload unavailable');
@@ -334,7 +335,9 @@ class VaadinDevmodeGizmo extends LitElement {
                 <div class="window" style="visibility: ${this.expanded ? 'visible' : 'hidden'}">
                     <div class="window-header">
                         <button id="disable" @click=${e => this.disableLiveReload()}>Disable</button>
-                        <input id="toggle" type="checkbox" ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}" 
+                        <input id="toggle" type="checkbox" 
+                            ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR} 
+                            ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}" 
                         @change=${e => this.setActive(e.target.checked)}>Live-reload</input>
                     </div>
                     <div class="message-tray">
