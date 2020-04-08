@@ -150,6 +150,8 @@ public class VaadinConnectControllerConfiguration {
     /**
      * Registers a {@link ObjectMapper} bean instance.
      *
+     * @param context
+     *            Spring application context
      * @return the object mapper for endpoint.
      */
     @Bean
