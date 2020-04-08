@@ -41,7 +41,7 @@ public interface BrowserLiveReload {
     Backend getBackend();
 
     /**
-     * Set the live reload backend technology explicitly.
+     * Sets the live reload backend technology explicitly.
      *
      * @param backend
      *      enabling technology, not <code>null</code>.
