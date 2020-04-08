@@ -17,7 +17,7 @@
 package com.vaadin.flow.component;
 
 /**
- * Specifies the direction for content.
+ * Specifies the direction of the text and other content inside of a container.
  *
  * @author Vaadin Ltd
  * @since 3.1
