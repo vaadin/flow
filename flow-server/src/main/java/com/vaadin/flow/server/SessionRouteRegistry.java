@@ -227,18 +227,22 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     /**
-     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
+     * @deprecated instead use {@link #getNavigationRouteTarget(String)} and
+     *             retrieve the list of route layouts from the
+     *             {@link RouteTarget} contained in the
+     *             {@link NavigationRouteTarget}.
+     * @see RouteTarget#getParentLayouts()
      */
     @Override
     @Deprecated
-    public List<Class<? extends RouterLayout>> getRouteLayouts(String url,
+    public List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget) {
         final NavigationRouteTarget navigationRouteTarget = getConfiguration()
-                .getNavigationRouteTarget(url);
+                .getNavigationRouteTarget(path);
         if (navigationRouteTarget.hasTarget()) {
             return navigationRouteTarget.getRouteTarget().getParentLayouts();
         }
-        return getParentRegistry().getRouteLayouts(url, navigationTarget);
+        return getParentRegistry().getRouteLayouts(path, navigationTarget);
     }
 
     private RouteRegistry getParentRegistry() {

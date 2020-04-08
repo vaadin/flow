@@ -3523,7 +3523,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_fail_to_be_extracted_from_views() {
+    public void navigate_incorrectParameter_shouldNotBeResolved() {
         setNavigationTargets(ChainLinkWithParameter.class,
                 TargetWithOptionalParameters.class,
                 TargetWithParameter.class,
@@ -3543,7 +3543,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_view1() {
+    public void navigateToChainLinkWithParameter_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ChainLinkWithParameter.class);
 
         assertRouteParameters("qwe/link/123",
@@ -3551,7 +3551,7 @@ public class RouterTest extends RoutingTestBase {
     }
     
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_view2() {
+    public void navigateToTargetWithOptionalParameters_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(TargetWithOptionalParameters.class);
 
         assertRouteParameters("qwe/link/123/456", parameters("parentID", "qwe",
@@ -3562,7 +3562,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_view3() {
+    public void navigateToTargetWithParameter_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(TargetWithParameter.class);
 
         assertRouteParameters("123/link/456/target/789/bar",
@@ -3571,7 +3571,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_view4() {
+    public void navigateToAnotherTargetWithParameter_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(AnotherTargetWithParameter.class);
 
         assertRouteParameters(
@@ -3593,7 +3593,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_view5() {
+    public void navigateToChainLinkWithParameterAndTarget_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ChainLinkWithParameterAndTarget.class);
 
         assertRouteParameters("987/targetLink/765/chainLink/543",
@@ -3604,7 +3604,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_parameters_view() {
+    public void navigateToParameterTypesView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ParameterTypesView.class);
 
         assertRouteParameters("param/types/123", parameters("intType", "123"));
@@ -3639,7 +3639,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_forum_view() {
+    public void navigateToParametersForumThreadView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ParametersForumThreadView.class);
 
         assertRouteParameters("forum/thread/123/456",
@@ -3652,7 +3652,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_api_view() {
+    public void navigateToParametersApiView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ParametersApiView.class);
 
         // path is empty
@@ -3691,7 +3691,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_details_view() {
+    public void navigateToDetailsView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(DetailsView.class);
 
         assertRouteParameters("directory/component/url-parameter-mapping",
@@ -3728,7 +3728,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void route_parameters_are_extracted_for_regex_view() {
+    public void navigateToParametersRegexView_routeParametersAreExtractedCorrectly() {
         setNavigationTargets(ParametersRegexView.class);
 
         assertRouteParameters("param/123", parameters("regex", "123"));
@@ -3744,14 +3744,14 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void routes_fail_to_register_with_alternate_optional_parameter() {
+    public void routes_withAlternateOptionalParameter_failToRegister() {
         assertFailingRouteConfiguration(SearchView.class);
         assertFailingRouteConfiguration(ShowAllView.class, RedirectRouteParametersView.class);
         assertFailingRouteConfiguration(RedirectRouteParametersView.class, ShowAllView.class);
     }
 
     @Test // #2740 #4213
-    public void reroute_with_route_parameters() {
+    public void reroute_withRouteParameters_succeed() {
         setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
                 RedirectWithRouteParametersView.class);
 
@@ -3759,7 +3759,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void forward_with_route_parameters() {
+    public void forward_withRouteParameters_succeed() {
         RedirectRouteParametersView.doForward = true;
 
         setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
@@ -3769,7 +3769,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void reroute_with_wrong_route_parameters() {
+    public void reroute_withWrongRouteParameters_fails() {
         setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
                 RedirectWithRouteParametersView.class);
 
@@ -3777,7 +3777,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test // #2740 #4213
-    public void forward_with_wrong_route_parameters() {
+    public void forward_withWrongRouteParameters_fails() {
         RedirectRouteParametersView.doForward = true;
 
         setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,

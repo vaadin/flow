@@ -206,19 +206,23 @@ public interface RouteRegistry extends Serializable {
             Class<? extends Component> navigationTarget);
 
     /**
-     * Get the layout chain for given navigation target on the targeted url.
+     * Get the layout chain for given navigation target on the targeted path.
      * <p>
      * This chain may be pre-defined or generated from annotation data.
      *
-     * @param url
-     *            url to use for resolving chain
+     * @param path
+     *            path to use for resolving chain
      * @param navigationTarget
      *            navigation target to get layout chain for
      * @return layout chain of target
-     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
+     * @deprecated instead use {@link #getNavigationRouteTarget(String)} and
+     *             retrieve the list of route layouts from the
+     *             {@link RouteTarget} contained in the
+     *             {@link NavigationRouteTarget}.
+     * @see RouteTarget#getParentLayouts()
      */
     @Deprecated
-    List<Class<? extends RouterLayout>> getRouteLayouts(String url,
+    List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget);
 
     /**
