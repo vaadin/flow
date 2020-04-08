@@ -80,18 +80,12 @@ export class Flow {
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
     this.baseRegex = new RegExp('^' +
-<<<<<<< HEAD
-      // IE11 does not support document.baseURI
-      (document.baseURI || elm && elm.href || '/')
-        .replace(/^https?:\/\/[^\/]+/i, ''));
-=======
         // IE11 does not support document.baseURI
         (document.baseURI || elm && elm.href || '/')
             .replace(/^https?:\/\/[^\/]+/i, ''));
 
     // Put a flow progress-bar in the dom
     this.addLoadingIndicator();
->>>>>>> 640420c397... Show flow loading indicator when requesting server routes and endpoints (#7975)
   }
 
   /**
