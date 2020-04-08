@@ -44,7 +44,7 @@ import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_FLOW_DEPS;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -173,7 +173,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         // Add flowDeps
         JsonObject json = packageUpdater.getPackageJson();
-        getDependencies(json).put(DEP_NAME_FLOW_DEPS, "target/frontend");
+        getDependencies(json).put(VAADIN_FLOW_DEPS, "target/frontend");
         json.put(VAADIN_APP_PACKAGE_HASH, "e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b");
         Files.write(packageJson.toPath(),
                 Collections.singletonList(json.toJson()));
@@ -577,7 +577,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(legacyPackageContent));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false,
+                getScanner(classFinder), baseDir, generatedDir, false,
                 true);
         packageUpdater.execute();
 
@@ -592,7 +592,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 Collections.singletonList(legacyPackageContent));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), baseDir, generatedDir, null, false,
+                getScanner(classFinder), baseDir, generatedDir,  false,
                 false);
         packageUpdater.execute();
 
@@ -806,7 +806,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         JsonObject packJsonObject = getPackageJson(packageJson);
         JsonObject deps = packJsonObject.get(DEPENDENCIES);
         // No Flow deps
-        Assert.assertFalse(deps.hasKey(DEP_NAME_FLOW_DEPS));
+        Assert.assertFalse(deps.hasKey(VAADIN_FLOW_DEPS));
         // No old package hash
         Assert.assertFalse(deps.hasKey(VAADIN_APP_PACKAGE_HASH));
         // Contains initially generated default polymer dep
