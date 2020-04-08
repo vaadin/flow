@@ -749,7 +749,7 @@ public class UI extends Component
      *            the direction to use, not null
      */
     public void setDirection(Direction direction) {
-        getPage().executeJs("document.documentElement.rtl = $0",
+        getPage().executeJs("document.documentElement.dir = $0",
                 direction.getClientName());
     }
 
