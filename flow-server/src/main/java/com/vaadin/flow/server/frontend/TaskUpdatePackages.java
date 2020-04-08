@@ -43,8 +43,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -213,11 +211,10 @@ public class TaskUpdatePackages extends NodeUpdater {
          */
         if (packageJson.hasKey(DEPENDENCIES)) {
             JsonObject object = packageJson.getObject(DEPENDENCIES);
-            if (object.hasKey(DEP_NAME_FLOW_DEPS)) {
-                object.remove(DEP_NAME_FLOW_DEPS);
+            if (object.hasKey(VAADIN_DEP_KEY)) {
+                object.remove(VAADIN_DEP_KEY);
                 log().debug("Removed \"{}\" as it's not generated anymore.",
-                        DEP_NAME_FLOW_DEPS);
-                result++;
+                        VAADIN_DEP_KEY);
             }
         }
         if (packageJson.hasKey(VAADIN_APP_PACKAGE_HASH)) {
