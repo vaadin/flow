@@ -34,7 +34,7 @@ public interface BrowserLiveReload {
     }
 
     /**
-     * Detect and return enabling live reload backend technology.
+     * Detects and return enabling live reload backend technology.
      * 
      * @return enabling technology, or <code>null</code> if none
      */
