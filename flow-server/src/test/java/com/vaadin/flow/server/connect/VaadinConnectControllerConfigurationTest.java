@@ -37,10 +37,10 @@ public class VaadinConnectControllerConfigurationTest {
         verify(contextMock, times(1)).getBean(JacksonProperties.class);
 
         try {
-                String result = objectMapper.writeValueAsString(new Entity());
-                assertEquals("{\"name\":\"Bond\"}", result);
+            String result = objectMapper.writeValueAsString(new Entity());
+            assertEquals("{\"name\":\"Bond\"}", result);
         } catch (Exception e) {
-                fail("Failed to write an entity");
+            fail("Failed to write an entity");
         }
 
     }
