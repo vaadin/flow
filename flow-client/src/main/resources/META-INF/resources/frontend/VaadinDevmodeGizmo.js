@@ -174,8 +174,9 @@ class VaadinDevmodeGizmo extends LitElement {
       const self = this;
       self.connection = new WebSocket(
         'ws://' + hostname + ':' + this.springBootDevToolsPort);
-    } else {
       this.openDedicatedWebSocketConnection();
+    } else {
+      this.showMessage('Live reload unavailable');
     }
     if (this.connection) {
       this.connection.onmessage = msg => this.handleMessage(msg);
@@ -218,7 +219,6 @@ class VaadinDevmodeGizmo extends LitElement {
           this.showMessage('Live reload available: ' + backend);
         } else {
           this.status = VaadinDevmodeGizmo.INACTIVE;
-          this.showMessage('Live reload unavailable');
         }
         break;
       }
