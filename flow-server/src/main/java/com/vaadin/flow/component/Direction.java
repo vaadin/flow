@@ -17,7 +17,7 @@
 package com.vaadin.flow.component;
 
 /**
- * Specifies the direction for content.
+ * Specifies the direction of the text and other content inside of an element.
  *
  * @author Vaadin Ltd
  * @since 3.1
@@ -34,7 +34,7 @@ public enum Direction {
 
     /**
      * Gets the value applied as the {@code dir} attribute in html for
-     * {@code document.documentElement}.
+     * {@code document}.
      *
      * @return the value applied as the "dir" attribute.
      */

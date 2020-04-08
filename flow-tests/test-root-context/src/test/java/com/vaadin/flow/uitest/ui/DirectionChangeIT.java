@@ -30,11 +30,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class DirectionChangeIT extends ChromeBrowserTest {
 
+    private static final String RETURN_DIR_SCRIPT = "return document.dir;";
+
     @Test
     public void testDirection_changingDirection_updatesDocument() {
         open();
 
-        // the value of document.documentElement.dir is "" initially
+        // the value of document.dir is "" initially
         verifyDirection(null);
 
         clickElementWithJs("rtl-button");
@@ -50,7 +52,7 @@ public class DirectionChangeIT extends ChromeBrowserTest {
 
         // due to #8028 / 8029 need to wait for JS execution to complete
         waitUntil(webDriver -> ((JavascriptExecutor) driver)
-                        .executeScript("return document.documentElement.dir"), 2);
+                        .executeScript(RETURN_DIR_SCRIPT), 2);
 
         verifyDirection(Direction.RIGHT_TO_LEFT);
 
@@ -66,6 +68,6 @@ public class DirectionChangeIT extends ChromeBrowserTest {
     }
 
     private String getDirection() {
-        return (String) executeScript("return document.documentElement.dir;");
+        return (String) executeScript(RETURN_DIR_SCRIPT);
     }
 }

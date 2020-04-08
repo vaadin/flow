@@ -754,7 +754,7 @@ public class UI extends Component
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
-        getPage().executeJs("document.documentElement.dir = $0",
+        getPage().executeJs("document.dir = $0",
                 direction.getClientName());
     }
 
