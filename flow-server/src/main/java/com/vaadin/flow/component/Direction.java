@@ -17,7 +17,7 @@
 package com.vaadin.flow.component;
 
 /**
- * Specifies the direction for content
+ * Specifies the direction for content.
  *
  * @author Vaadin Ltd
  * @since 3.1.0
@@ -33,9 +33,9 @@ public enum Direction {
     }
 
     /**
-     * Gets the value applied as the "dir" attribute
+     * Gets the value applied as the "dir" attribute.
      *
-     * @return the value applied as the "dir" attribute
+     * @return the value applied as the "dir" attribute.
      */
     public String getClientName() {
         return clientName;
