@@ -734,9 +734,23 @@ public class UI extends Component
         assert locale != null : "Null locale is not supported!";
         if (!this.locale.equals(locale)) {
             this.locale = locale;
-            Direction.set(this, locale);
             EventUtil.informLocaleChangeObservers(this);
         }
+    }
+
+    /**
+     * Sets the direction for the UI.
+     * <p>
+     * If you need the direction to update automatically upon {@code Locale}
+     * change, make the main layout implement {@code LocaleChangeObserver} and
+     * call {@code setDirection} from the {@code localeChange} implementation.
+     *
+     * @param direction
+     *            the direction to use, not null
+     */
+    public void setDirection(Direction direction) {
+        getPage().executeJs("document.documentElement.rtl = $0",
+                direction.getClientName());
     }
 
     /**
