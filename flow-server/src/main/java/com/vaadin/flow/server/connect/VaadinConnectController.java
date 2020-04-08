@@ -39,17 +39,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
@@ -130,14 +126,12 @@ public class VaadinConnectController {
      *            from
      */
     public VaadinConnectController(
-            @Autowired(required = false) @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
+            @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
             VaadinConnectAccessChecker accessChecker,
             EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             ApplicationContext context) {
-        this.vaadinEndpointMapper = vaadinEndpointMapper != null
-                ? vaadinEndpointMapper
-                : getDefaultObjectMapper(context);
+        this.vaadinEndpointMapper = vaadinEndpointMapper;
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
@@ -180,25 +174,6 @@ public class VaadinConnectController {
 
         vaadinEndpoints.put(endpointName.toLowerCase(Locale.ENGLISH),
                 new VaadinEndpointData(endpointBean, beanType.getMethods()));
-    }
-
-    private ObjectMapper getDefaultObjectMapper(ApplicationContext context) {
-        try {
-            ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
-            JacksonProperties jacksonProperties = context
-                    .getBean(JacksonProperties.class);
-            if (jacksonProperties.getVisibility().isEmpty()) {
-                objectMapper.setVisibility(PropertyAccessor.ALL,
-                        JsonAutoDetect.Visibility.ANY);
-            }
-            return objectMapper;
-        } catch (Exception e) {
-            throw new IllegalStateException(String.format(
-                    "Auto configured jackson object mapper is not found."
-                            + "Please define your own object mapper with '@Qualifier(%s)' or "
-                            + "make sure that the auto configured jackson object mapper is available.",
-                    VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER), e);
-        }
     }
 
     /**
