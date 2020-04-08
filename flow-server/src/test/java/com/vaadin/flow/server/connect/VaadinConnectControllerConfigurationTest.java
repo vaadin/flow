@@ -24,7 +24,7 @@ public class VaadinConnectControllerConfigurationTest {
         ApplicationContext contextMock = mock(ApplicationContext.class);
         VaadinEndpointProperties endpointPropertiesMock = mock(VaadinEndpointProperties.class);
         VaadinConnectControllerConfiguration configuration = new VaadinConnectControllerConfiguration(endpointPropertiesMock);
-        
+
         JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
         when(contextMock.getBean(JacksonProperties.class))
                 .thenReturn(mockJacksonProperties);
@@ -36,10 +36,10 @@ public class VaadinConnectControllerConfigurationTest {
 
         verify(contextMock, times(1)).getBean(JacksonProperties.class);
 
-        try{
+        try {
                 String result = objectMapper.writeValueAsString(new Entity());
                 assertEquals("{\"name\":\"Bond\"}", result);
-        }catch(Exception e){
+        } catch (Exception e) {
                 fail("Failed to write an entity");
         }
 
@@ -52,19 +52,19 @@ public class VaadinConnectControllerConfigurationTest {
         private String firstName = "James";
 
         public String getName() {
-                return name;
+            return name;
         }
 
         public void setName(String name) {
-                this.name = name;
+            this.name = name;
         }
 
         protected String getFirstName() {
-                return firstName;
+            return firstName;
         }
 
         protected void setFirstName(String firstName) {
-                this.firstName = firstName;
+            this.firstName = firstName;
         }
     }
 }
