@@ -7,11 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -258,23 +256,6 @@ public class UITest {
         Location value = location.getValue();
         Assert.assertEquals(route, value.getPath());
         Assert.assertEquals(params, value.getQueryParameters());
-    }
-
-    @Test
-    public void localeSet_directionUpdated() {
-        MockUI ui = new MockUI();
-
-        ui.setLocale(Locale.forLanguageTag("ar"));
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
-                .dumpPendingJsInvocations();
-
-        Assert.assertEquals(1, pendingJavaScriptInvocations.size());
-        Assert.assertEquals("rtl",
-                pendingJavaScriptInvocations.get(0).
-                        getInvocation().getParameters().get(0));
     }
 
     @Test

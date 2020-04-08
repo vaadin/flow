@@ -733,7 +733,6 @@ public class UI extends Component
         assert locale != null : "Null locale is not supported!";
         if (!this.locale.equals(locale)) {
             this.locale = locale;
-            Direction.set(this, locale);
             EventUtil.informLocaleChangeObservers(this);
         }
     }
