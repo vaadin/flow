@@ -128,7 +128,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         JsonObject vaadinDependencies = packageJson.getObject(VAADIN_DEP_KEY)
                 .getObject(DEPENDENCIES);
         boolean doCleanUp = forceCleanUp;
-        int removed = ensureVersionUpgrade(packageJson);
+        int removed = removeLegacyProperties(packageJson);
         if (dependencies != null) {
             for (String key : dependencies.keys()) {
                 if (!dependencyCollection.contains(key)
@@ -203,7 +203,17 @@ public class TaskUpdatePackages extends NodeUpdater {
         return Objects.equals(shrinkWrapVersion, getCurrentShrinkWrapVersion());
     }
 
-    private int ensureVersionUpgrade(JsonObject packageJson)
+    /**
+     * Cleans up any previous version properties from the packageJson object if
+     * present.
+     *
+     * @param packageJson
+     *         JsonObject of current package.json contents
+     * @return amount of removed properties
+     * @throws IOException
+     *         thrown if removal of package-lock.json fails
+     */
+    private int removeLegacyProperties(JsonObject packageJson)
             throws IOException {
         int result = 0;
         /*

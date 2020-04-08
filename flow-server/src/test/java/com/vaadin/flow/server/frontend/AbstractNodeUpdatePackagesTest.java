@@ -574,35 +574,11 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void faultyPackageJson_isCleanedCorrectly_pnpm() throws IOException {
-        String faultyPackageContent = "{\n" + "  \"name\": \"no-name\",\n"
-                + "  \"license\": \"UNLICENSED\",\n" + "  \"vaadin\": {\n"
-                + "    \"dependencies\": {\n"
-                + "      \"@vaadin/router\": \"^1.6.0\",\n"
-                + "      \"@polymer/polymer\": \"3.2.0\",\n"
-                + "      \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
-                + "      \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
-                + "      \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
-                + "      \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
-                + "    },\n" + "    \"devDependencies\": {\n"
-                + "      \"webpack-dev-server\": \"3.10.3\"\n" + "    },\n"
-                + "    \"hash\": \"72bdea1adb5aa0d1259db10a6f76872d996db31d2c312d0c7849eb39de92835e\"\n"
-                + "  },\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"^1.6.0\",\n"
-                + "    \"@polymer/polymer\": \"3.2.0\",\n"
-                + "    \"@vaadin/flow-deps\": \"./target/frontend\",\n"
-                + "    \"@vaadin/flow-frontend\": \"./target/flow-frontend\",\n"
-                + "    \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
-                + "    \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
-                + "    \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
-                + "    \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
-                + "  },\n" + "  \"devDependencies\": {\n"
-                + "    \"webpack-dev-server\": \"3.10.3\"\n" + "  },\n"
-                + "\"vaadinAppPackageHash\": \"e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b\"\n"
-                + "}\n";
+    public void legacyPackageJson_isCleanedCorrectly_pnpm() throws IOException {
+        String legacyPackageContent = getLegacyPackageContent();
 
         Files.write(packageJson.toPath(),
-                Collections.singletonList(faultyPackageContent));
+                Collections.singletonList(legacyPackageContent));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, null, false,
@@ -613,35 +589,11 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void faultyPackageJson_isCleanedCorrectly_npm() throws IOException {
-        String faultyPackageContent = "{\n" + "  \"name\": \"no-name\",\n"
-                + "  \"license\": \"UNLICENSED\",\n" + "  \"vaadin\": {\n"
-                + "    \"dependencies\": {\n"
-                + "      \"@vaadin/router\": \"^1.6.0\",\n"
-                + "      \"@polymer/polymer\": \"3.2.0\",\n"
-                + "      \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
-                + "      \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
-                + "      \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
-                + "      \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
-                + "    },\n" + "    \"devDependencies\": {\n"
-                + "      \"webpack-dev-server\": \"3.10.3\"\n" + "    },\n"
-                + "    \"hash\": \"72bdea1adb5aa0d1259db10a6f76872d996db31d2c312d0c7849eb39de92835e\"\n"
-                + "  },\n" + "  \"dependencies\": {\n"
-                + "    \"@vaadin/router\": \"^1.6.0\",\n"
-                + "    \"@polymer/polymer\": \"3.2.0\",\n"
-                + "    \"@vaadin/flow-deps\": \"./target/frontend\",\n"
-                + "    \"@vaadin/flow-frontend\": \"./target/flow-frontend\",\n"
-                + "    \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
-                + "    \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
-                + "    \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
-                + "    \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
-                + "  },\n" + "  \"devDependencies\": {\n"
-                + "    \"webpack-dev-server\": \"3.10.3\"\n" + "  },\n"
-                + "\"vaadinAppPackageHash\": \"e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b\"\n"
-                + "}\n";
+    public void legacyPackageJson_isCleanedCorrectly_npm() throws IOException {
+        String legacyPackageContent = getLegacyPackageContent();
 
         Files.write(packageJson.toPath(),
-                Collections.singletonList(faultyPackageContent));
+                Collections.singletonList(legacyPackageContent));
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, null, false,
@@ -733,6 +685,34 @@ public abstract class AbstractNodeUpdatePackagesTest
                 "vaadin-checkbox is still available in the dependencies",
                 dependencies.hasKey("@vaadin/vaadin-checkbox"));
 
+    }
+
+    public String getLegacyPackageContent() {
+        return "{\n" + "  \"name\": \"no-name\",\n"
+                + "  \"license\": \"UNLICENSED\",\n" + "  \"vaadin\": {\n"
+                + "    \"dependencies\": {\n"
+                + "      \"@vaadin/router\": \"^1.6.0\",\n"
+                + "      \"@polymer/polymer\": \"3.2.0\",\n"
+                + "      \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
+                + "      \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
+                + "      \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
+                + "      \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
+                + "    },\n" + "    \"devDependencies\": {\n"
+                + "      \"webpack-dev-server\": \"3.10.3\"\n" + "    },\n"
+                + "    \"hash\": \"72bdea1adb5aa0d1259db10a6f76872d996db31d2c312d0c7849eb39de92835e\"\n"
+                + "  },\n" + "  \"dependencies\": {\n"
+                + "    \"@vaadin/router\": \"^1.6.0\",\n"
+                + "    \"@polymer/polymer\": \"3.2.0\",\n"
+                + "    \"@vaadin/flow-deps\": \"./target/frontend\",\n"
+                + "    \"@vaadin/flow-frontend\": \"./target/flow-frontend\",\n"
+                + "    \"@vaadin/vaadin-ordered-layout\": \"1.1.0\",\n"
+                + "    \"@vaadin/vaadin-combo-box\": \"5.0.11\",\n"
+                + "    \"@vaadin/vaadin-lumo-styles\": \"1.6.0\",\n"
+                + "    \"@vaadin/vaadin-material-styles\": \"1.3.2\"\n"
+                + "  },\n" + "  \"devDependencies\": {\n"
+                + "    \"webpack-dev-server\": \"3.10.3\"\n" + "  },\n"
+                + "\"vaadinAppPackageHash\": \"e05bfd4b6c6bd20c806b3a0ad1be521bfd775c9b6f8f9c997b0ad1fda834805b\"\n"
+                + "}\n";
     }
 
     private void makeNodeModulesAndPackageLock() throws IOException {
