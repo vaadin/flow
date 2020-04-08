@@ -27,8 +27,6 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.VaadinService;
-
 /**
  * {@link BrowserLiveReload} implementation class.
  *
@@ -55,11 +53,11 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
-    BrowserLiveReloadImpl(VaadinService service) {
-        this(service, BrowserLiveReloadImpl.class.getClassLoader());
+    BrowserLiveReloadImpl() {
+        this(BrowserLiveReloadImpl.class.getClassLoader());
     }
 
-    BrowserLiveReloadImpl(VaadinService service, ClassLoader classLoader) {
+    BrowserLiveReloadImpl(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
 

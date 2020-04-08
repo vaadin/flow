@@ -21,13 +21,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.VaadinService;
-
 public class BrowserLiveReloadImplTest {
 
-    private VaadinService service = Mockito.mock(VaadinService.class);
-
-    private BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(service);
+    private BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl();
 
     @Test
     public void onConnect_suspend_sayHello() {
@@ -95,7 +91,7 @@ public class BrowserLiveReloadImplTest {
     public void getBackend_JRebelInitializerClassLoaded_returnsJREBEL() {
         class JRebelInitializer {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(service,
+        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -116,7 +112,7 @@ public class BrowserLiveReloadImplTest {
     public void getBackend_HotSwapVaadinIntegrationClassLoaded_returnsHOTSWAP_AGENT() {
         class VaadinIntegration {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(service,
+        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
@@ -139,7 +135,7 @@ public class BrowserLiveReloadImplTest {
         }
         class LiveReloadServer {
         }
-        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(service,
+        BrowserLiveReloadImpl reload = new BrowserLiveReloadImpl(
                 new ClassLoader(getClass().getClassLoader()) {
                     @Override
                     protected Class<?> findClass(String name)
