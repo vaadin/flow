@@ -71,7 +71,7 @@ public class DeploymentConfigurationPropertiesTest {
 
         // Check that we have added all other constants as parameters (except
         // those we know)
-        Assert.assertEquals(39, constantsCopy.size());
+        Assert.assertEquals(40, constantsCopy.size());
 
         Assert.assertTrue(constantsCopy
                 .contains(Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION));
@@ -98,5 +98,55 @@ public class DeploymentConfigurationPropertiesTest {
                 Constants.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT));
         Assert.assertTrue(
                 constantsCopy.contains(Constants.VAADIN_VERSIONS_JSON));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.CONNECT_GENERATED_TS_DIR_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.CONNECT_OPEN_API_FILE_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.DEFAULT_EXTERNAL_STATS_URL));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.ENABLE_PNPM_DEFAULT_STRING));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.EXTERNAL_STATS_FILE));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.EXTERNAL_STATS_FILE_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.EXTERNAL_STATS_URL));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.EXTERNAL_STATS_URL_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.FRONTEND_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.GENERATED_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.LOCAL_FRONTEND_RESOURCES_PATH));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.NPM_TOKEN));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.SERVLET_PARAMETER_INITIAL_UIDL));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.STATISTIC_ROUTING_CLIENT));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.STATISTIC_ROUTING_HYBRID));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.STATISTIC_ROUTING_SERVER));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.URL_PARAMETER_CLOSE_APPLICATION));
+        Assert.assertTrue(
+                constantsCopy.contains(Constants.URL_PARAMETER_RESTART_APPLICATION));
     }
 }

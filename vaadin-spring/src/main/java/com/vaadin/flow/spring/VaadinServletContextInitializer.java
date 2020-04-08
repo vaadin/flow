@@ -78,6 +78,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.DevModeInitializer;
 import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
@@ -294,15 +295,15 @@ public class VaadinServletContextInitializer
 
         @SuppressWarnings("unchecked")
         private void validateAnnotations(
-                ServletContainerInitializer initializer, ServletContext context,
-                List<Class<?>> annotations) {
+                ClassLoaderAwareServletContainerInitializer initializer,
+                ServletContext context, List<Class<?>> annotations) {
 
             Stream<Class<?>> annotatedClasses = findByAnnotation(
                     getVerifiableAnnotationPackages(),
                     annotations.toArray(new Class[annotations.size()]));
             Set<Class<?>> set = annotatedClasses.collect(Collectors.toSet());
             try {
-                initializer.onStartup(set, context);
+                initializer.process(set, context);
             } catch (ServletException exception) {
                 throw new RuntimeException(
                         "Unexpected servlet exception from "
@@ -356,8 +357,10 @@ public class VaadinServletContextInitializer
                 throw new RuntimeException(
                         "Unable to initialize Vaadin DevModeHandler", e);
             }
-            // to make sure the user knows the application is ready, show notification to the user
-            ServletDeployer.logAppStartupToConsole(event.getServletContext(), true);
+            // to make sure the user knows the application is ready, show
+            // notification to the user
+            ServletDeployer.logAppStartupToConsole(event.getServletContext(),
+                    true);
         }
 
         @Override
@@ -417,7 +420,7 @@ public class VaadinServletContextInitializer
                         getWebComponentPackages(), WebComponentExporter.class)
                                 .collect(Collectors.toSet());
 
-                initializer.onStartup(webComponentExporters,
+                initializer.process(webComponentExporters,
                         event.getServletContext());
             }
         }
@@ -449,7 +452,6 @@ public class VaadinServletContextInitializer
             VaadinAppShellInitializer.init(classes, event.getServletContext(),
                     config);
         }
-
     }
 
     /**
