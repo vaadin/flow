@@ -154,7 +154,7 @@ public class VaadinConnectControllerConfiguration {
      */
     @Bean
     @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER)
-    ObjectMapper vaadinEndpointMapper(ApplicationContext context) {
+    public ObjectMapper vaadinEndpointMapper(ApplicationContext context) {
         ObjectMapper objectMapper = new ObjectMapper();
         JacksonProperties jacksonProperties = context
                 .getBean(JacksonProperties.class);
