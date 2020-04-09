@@ -104,7 +104,7 @@ public class HasUrlParameterFormat implements Serializable {
     public static String getUrlBase(String template) {
         if (RouteFormat.hasParameters(template)) {
             return PathUtil
-                    .trimPath(template.substring(0, template.indexOf(":")));
+                    .trimPath(template.substring(0, template.indexOf(':')));
         }
         return template;
     }

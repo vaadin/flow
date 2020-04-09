@@ -66,26 +66,26 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      *         original configuration to get data from
      */
     public ConfigureRoutes(ConfiguredRoutes original) {
-        Map<String, RouteTarget> routesMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
+        Map<String, RouteTarget> originalRouteMap = new HashMap<>();
+        Map<Class<? extends Component>, String> originalTargetRouteMap = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> originalExceptionTargetsMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routesMap.put(route.getKey(), route.getValue());
+            originalRouteMap.put(route.getKey(), route.getValue());
         }
-        targetRoutesMap.putAll(original.getTargetRoutes());
-        exceptionTargetsMap.putAll(original.getExceptionHandlers());
+        originalTargetRouteMap.putAll(original.getTargetRoutes());
+        originalExceptionTargetsMap.putAll(original.getExceptionHandlers());
 
-        Map<Class<? extends Component>, RouteModel> target2TemplatesMap = original
+        Map<Class<? extends Component>, RouteModel> originalTargetRouteModelMap = original
                 .copyTargetRouteModels(true);
 
         this.routeModel = RouteModel.copy(original.getRouteModel(), true);
 
-        this.routeMap = routesMap;
-        this.targetRouteMap = targetRoutesMap;
-        this.targetRouteModelMap = target2TemplatesMap;
-        this.exceptionTargetMap = exceptionTargetsMap;
+        this.routeMap = originalRouteMap;
+        this.targetRouteMap = originalTargetRouteMap;
+        this.targetRouteModelMap = originalTargetRouteModelMap;
+        this.exceptionTargetMap = originalExceptionTargetsMap;
     }
 
     /**

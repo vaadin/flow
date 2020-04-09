@@ -57,11 +57,11 @@ class RouteFormat implements Serializable {
     static boolean hasRequiredParameter(String template) {
         int index = -1;
         do {
-            index = template.indexOf(":", index + 1);
+            index = template.indexOf(':', index + 1);
 
             if (index >= 0) {
-                final int regexIndex = template.indexOf("(", index);
-                final int slashIndex = template.indexOf("/", index);
+                final int regexIndex = template.indexOf('(', index);
+                final int slashIndex = template.indexOf('/', index);
 
                 int parameterNameEnding = Math.min(regexIndex, slashIndex);
 
@@ -74,13 +74,13 @@ class RouteFormat implements Serializable {
                     parameterNameEnding = template.length();
                 }
 
-                int optional = template.indexOf("?", index);
+                int optional = template.indexOf('?', index);
                 if (0 < optional && optional < parameterNameEnding) {
                     // This parameter is an optional, move on.
                     continue;
                 }
 
-                int wildcard = template.indexOf("*", index);
+                int wildcard = template.indexOf('*', index);
                 if (0 < wildcard && wildcard < parameterNameEnding) {
                     // This parameter is a wildcard and should be the last.
                     return false;

@@ -73,33 +73,33 @@ public class ConfiguredRoutes implements Serializable {
      *            original configuration to get data from
      */
     public ConfiguredRoutes(ConfigureRoutes original) {
-        Map<String, RouteTarget> routeMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRouteMap = new HashMap<>();
-        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap = new HashMap<>();
+        Map<String, RouteTarget> originalRouteMap = new HashMap<>();
+        Map<Class<? extends Component>, String> originalTargetRouteMap = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> originalExceptionTargetMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routeMap.put(route.getKey(), route.getValue());
+            originalRouteMap.put(route.getKey(), route.getValue());
         }
-        targetRouteMap.putAll(original.getTargetRoutes());
-        exceptionTargetMap.putAll(original.getExceptionHandlers());
+        originalTargetRouteMap.putAll(original.getTargetRoutes());
+        originalExceptionTargetMap.putAll(original.getExceptionHandlers());
 
-        Map<Class<? extends Component>, RouteModel> target2TemplatesMap = original
+        Map<Class<? extends Component>, RouteModel> originalTargetRouteModelMap = original
                 .copyTargetRouteModels(false);
 
         this.routeModel = RouteModel.copy(original.getRouteModel(), false);
-        this.routeMap = routeMap.isEmpty()
+        this.routeMap = originalRouteMap.isEmpty()
                 ? Collections.emptyMap()
-                : Collections.unmodifiableMap(routeMap);
-        this.targetRouteMap = targetRouteMap.isEmpty()
+                : Collections.unmodifiableMap(originalRouteMap);
+        this.targetRouteMap = originalTargetRouteMap.isEmpty()
                 ? Collections.emptyMap()
-                : Collections.unmodifiableMap(targetRouteMap);
-        this.targetRouteModelMap = target2TemplatesMap.isEmpty()
+                : Collections.unmodifiableMap(originalTargetRouteMap);
+        this.targetRouteModelMap = originalTargetRouteModelMap.isEmpty()
                 ? Collections.emptyMap()
-                : Collections.unmodifiableMap(target2TemplatesMap);
-        this.exceptionTargetMap = exceptionTargetMap.isEmpty()
+                : Collections.unmodifiableMap(originalTargetRouteModelMap);
+        this.exceptionTargetMap = originalExceptionTargetMap.isEmpty()
                 ? Collections.emptyMap()
-                : Collections.unmodifiableMap(exceptionTargetMap);
+                : Collections.unmodifiableMap(originalExceptionTargetMap);
     }
 
     protected Map<String, RouteTarget> getRoutesMap() {

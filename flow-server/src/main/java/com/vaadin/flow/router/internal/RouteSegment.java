@@ -858,4 +858,21 @@ final class RouteSegment implements Serializable {
         return value;
     }
 
+    /**
+     * Used when process matching parameter values inside a template.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    class RouteSegmentValue {
+
+        final RouteSegment segment;
+
+        final Optional<String> value;
+
+        RouteSegmentValue(RouteSegment segment, Optional<String> value) {
+            this.segment = segment;
+            this.value = value;
+        }
+    }
+
 }
