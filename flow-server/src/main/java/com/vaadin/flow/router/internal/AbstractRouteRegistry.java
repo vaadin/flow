@@ -238,7 +238,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         for (RouteData route : routeData) {
             RouteData nonAliasCollection = new RouteData(
                     route.getParentLayouts(), route.getTemplate(),
-                    route.getDefinedParameters(), route.getNavigationTarget(),
+                    route.getRouteParameters(), route.getNavigationTarget(),
                     Collections.emptyList());
 
             flatRoutes.add(nonAliasCollection);

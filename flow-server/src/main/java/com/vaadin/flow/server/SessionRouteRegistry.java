@@ -157,7 +157,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     @Override
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-                                      RouteParameters parameters) {
+            RouteParameters parameters) {
         final RouteTarget routeTarget = getConfiguration()
                 .getRouteTarget(target, parameters);
         if (routeTarget != null) {

@@ -74,7 +74,7 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        List<String> parameters = navigationState.getRouteParameters()
+        List<String> parameters = navigationState.getUrlParameters()
                 .orElse(null);
 
         Object deserializedParameter = null;

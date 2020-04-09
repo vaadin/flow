@@ -34,7 +34,7 @@ public class NavigationState implements Serializable {
 
     private Class<? extends Component> navigationTarget;
     private RouteTarget routeTarget;
-    private RouteParameters parameters = RouteParameters.empty();
+    private RouteParameters routeParameters = RouteParameters.empty();
     private String resolvedPath;
     private final Router router;
 
@@ -90,7 +90,7 @@ public class NavigationState implements Serializable {
     public RouteTarget getRouteTarget() {
         if (routeTarget == null && navigationTarget != null) {
             routeTarget = router.getRegistry().getRouteTarget(navigationTarget,
-                    parameters);
+                    routeParameters);
 
             if (routeTarget != null) {
                 assert navigationTarget.equals(routeTarget.getTarget());
@@ -117,7 +117,7 @@ public class NavigationState implements Serializable {
     public String getResolvedPath() {
         if (resolvedPath == null) {
             resolvedPath = router.getRegistry()
-                    .getTargetUrl(getNavigationTarget(), getParameters())
+                    .getTargetUrl(getNavigationTarget(), getRouteParameters())
                     .orElse(null);
         }
         return resolvedPath;
@@ -126,13 +126,13 @@ public class NavigationState implements Serializable {
     /**
      * Sets the route parameters.
      *
-     * @param parameters
+     * @param routeParameters
      *            route parameters.
      */
-    void setParameters(RouteParameters parameters) {
-        assert parameters != null;
+    void setRouteParameters(RouteParameters routeParameters) {
+        assert routeParameters != null;
 
-        this.parameters = parameters;
+        this.routeParameters = routeParameters;
     }
 
     /**
@@ -140,30 +140,30 @@ public class NavigationState implements Serializable {
      * 
      * @return route parameters.
      */
-    public RouteParameters getParameters() {
-        return parameters;
+    public RouteParameters getRouteParameters() {
+        return routeParameters;
     }
 
     /**
      * Gets the list of strings that correspond to the raw string url
      * parameters.
      *
-     * @return the route parameters of this navigation state
+     * @return the url parameters of this navigation state
      */
-    public Optional<List<String>> getRouteParameters() {
+    public Optional<List<String>> getUrlParameters() {
         return Optional.of(HasUrlParameterFormat
-                .getParameterValues(getParameters()));
+                .getParameterValues(getRouteParameters()));
     }
 
     /**
      * Set the list of strings that correspond to the raw string route parameters.
      *
      * @param parameters
-     *            the route parameters to set
-     * @deprecated use {@link #setParameters(RouteParameters)} instead.
+     *            the url parameters to set
+     * @deprecated use {@link #setRouteParameters(RouteParameters)} instead.
      */
     @Deprecated
-    public void setRouteParameters(List<String> parameters) {
-        setParameters(HasUrlParameterFormat.getParameters(parameters));
+    public void setUrlParameters(List<String> parameters) {
+        setRouteParameters(HasUrlParameterFormat.getParameters(parameters));
     }
 }

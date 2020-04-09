@@ -514,7 +514,7 @@ public abstract class BeforeEvent extends EventObject {
      */
     @Deprecated
     public List<String> getForwardTargetParameters() {
-        return forwardTargetState.getRouteParameters()
+        return forwardTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
     }
 
@@ -527,7 +527,7 @@ public abstract class BeforeEvent extends EventObject {
      *             {@link #hasForwardTarget()} before accessing this method.
      */
     public RouteParameters getForwardTargetRouteParameters() {
-        return forwardTargetState.getParameters();
+        return forwardTargetState.getRouteParameters();
     }
 
     /**
@@ -577,7 +577,7 @@ public abstract class BeforeEvent extends EventObject {
      */
     @Deprecated
     public List<String> getRerouteTargetParameters() {
-        return rerouteTargetState.getRouteParameters()
+        return rerouteTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
     }
 
@@ -590,7 +590,7 @@ public abstract class BeforeEvent extends EventObject {
      *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public RouteParameters getRerouteTargetRouteParameters() {
-        return rerouteTargetState.getParameters();
+        return rerouteTargetState.getRouteParameters();
     }
 
     /**

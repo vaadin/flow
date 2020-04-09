@@ -139,7 +139,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      * Get {@link Route} route parameters types if any.
      *
      * @return route parameters types.
-     * @deprecated use {@link #getDefinedParameters()} instead.
+     * @deprecated use {@link #getRouteParameters()} instead.
      */
     @Deprecated
     public List<Class<?>> getParameters() {
@@ -153,7 +153,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
      *
      * @return route parameters names mapped with their defined regex.
      */
-    public Map<String, RouteParameterData> getDefinedParameters() {
+    public Map<String, RouteParameterData> getRouteParameters() {
         return parameters;
     }
 

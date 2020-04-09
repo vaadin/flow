@@ -148,7 +148,7 @@ public abstract class AbstractNavigationStateRenderer
 
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
-        final RouteParameters parameters = navigationState.getParameters();
+        final RouteParameters parameters = navigationState.getRouteParameters();
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
         routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
@@ -658,7 +658,7 @@ public abstract class AbstractNavigationStateRenderer
                 .equals(targetType);
 
         final boolean sameParameters = targetParameters.equals(navigationState
-                .getParameters());
+                .getRouteParameters());
 
         return sameTarget && sameParameters;
     }

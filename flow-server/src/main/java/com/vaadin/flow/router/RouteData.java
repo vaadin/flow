@@ -97,7 +97,7 @@ public class RouteData extends RouteBaseData<RouteData> {
     public String toString() {
         return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
                 + getTemplate() + '\'' + ", parameters="
-                + getDefinedParameters() + ", navigationTarget="
+                + getRouteParameters() + ", navigationTarget="
                 + getNavigationTarget() + ", routeAliases=" + routeAliases
                 + '}';
     }

@@ -59,7 +59,7 @@ public class NavigationStateBuilder {
             Class<? extends Component> navigationTarget,
             List<String> parameters) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setRouteParameters(parameters);
+        currentState.setUrlParameters(parameters);
         return this;
     }
 
@@ -77,7 +77,7 @@ public class NavigationStateBuilder {
             Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setParameters(parameters);
+        currentState.setRouteParameters(parameters);
         return this;
     }
 
@@ -94,7 +94,7 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(RouteTarget routeTarget,
             RouteParameters parameters) {
         currentState.setRouteTarget(routeTarget);
-        currentState.setParameters(parameters);
+        currentState.setRouteParameters(parameters);
         return this;
     }
 

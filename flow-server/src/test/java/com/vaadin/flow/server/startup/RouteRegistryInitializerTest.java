@@ -1175,30 +1175,30 @@ public class RouteRegistryInitializerTest {
                 registeredRoutes.size());
 
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(0).getDefinedParameters().size());
+                registeredRoutes.get(0).getRouteParameters().size());
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(1).getDefinedParameters().size());
+                registeredRoutes.get(1).getRouteParameters().size());
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(2).getDefinedParameters().size());
+                registeredRoutes.get(2).getRouteParameters().size());
         Assert.assertEquals("Missing parameters", 1,
-                registeredRoutes.get(3).getDefinedParameters().size());
+                registeredRoutes.get(3).getRouteParameters().size());
 
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(4).getDefinedParameters().size());
+                registeredRoutes.get(4).getRouteParameters().size());
         Assert.assertEquals("Unexpected parameters encountered", 0,
-                registeredRoutes.get(5).getDefinedParameters().size());
+                registeredRoutes.get(5).getRouteParameters().size());
         Assert.assertEquals("Missing parameters", 1,
-                registeredRoutes.get(6).getDefinedParameters().size());
+                registeredRoutes.get(6).getRouteParameters().size());
 
         Assert.assertEquals("Unexpected parameter type encountered",
                 ":" + HasUrlParameterFormat.PARAMETER_NAME + "("
                         + RouteParameterRegex.BOOLEAN + ")",
-                registeredRoutes.get(3).getDefinedParameters()
+                registeredRoutes.get(3).getRouteParameters()
                         .get(HasUrlParameterFormat.PARAMETER_NAME)
                         .getTemplate());
         Assert.assertEquals("Unexpected parameter type encountered",
                 ":" + HasUrlParameterFormat.PARAMETER_NAME,
-                registeredRoutes.get(6).getDefinedParameters()
+                registeredRoutes.get(6).getRouteParameters()
                         .get(HasUrlParameterFormat.PARAMETER_NAME)
                         .getTemplate());
     }

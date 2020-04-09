@@ -137,7 +137,7 @@ public interface RouteRegistry extends Serializable {
      *         component and route parameters.
      */
     RouteTarget getRouteTarget(Class<? extends Component> target,
-                               RouteParameters parameters);
+            RouteParameters parameters);
 
     /**
      * Gets the optional navigation target class for a given path. Returns an

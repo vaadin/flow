@@ -85,7 +85,7 @@ public class DefaultRouteResolverTest extends RoutingTestBase {
                 Collections.singleton(GreetingNavigationTarget.class));
 
         Assert.assertEquals(Collections.singletonList("World"),
-                resolveNavigationState("greeting/World").getRouteParameters()
+                resolveNavigationState("greeting/World").getUrlParameters()
                         .get());
     }
 
