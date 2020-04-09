@@ -300,6 +300,9 @@
                 <module>test-ccdm/pom-production.xml</module>
 
                 <module>test-root-context</module>
+
+                <!-- tests are disabled in this module, this reference is for maven version plugin -->
+                <module>test-no-theme</module>
             </modules>
         </profile>
         <profile>
