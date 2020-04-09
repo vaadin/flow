@@ -863,7 +863,7 @@ final class RouteSegment implements Serializable {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      */
-    class RouteSegmentValue {
+    static class RouteSegmentValue {
 
         final RouteSegment segment;
 
