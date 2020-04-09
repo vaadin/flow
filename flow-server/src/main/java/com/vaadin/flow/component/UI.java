@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.i18n.LocaleChangeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -741,14 +742,18 @@ public class UI extends Component
     /**
      * Sets the direction for the UI.
      * <p>
-     * If you need the direction to update automatically upon {@code Locale}
-     * change, make the main layout implement {@code LocaleChangeObserver} and
-     * call {@code setDirection} from the {@code localeChange} implementation.
+     * If you need the direction to update automatically upon {@link Locale}
+     * change, make the main layout implement
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver} and call this method
+     * from the
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver#localeChange(LocaleChangeEvent)}
+     * implementation.
      *
      * @param direction
-     *            the direction to use, not null
+     *            the direction to use, not {@code null}
      */
     public void setDirection(Direction direction) {
+        Objects.requireNonNull(direction, "Direction cannot be null");
         getPage().executeJs("document.documentElement.dir = $0",
                 direction.getClientName());
     }
@@ -1061,7 +1066,7 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> new Component[] {this},
+        return new ShortcutRegistration(this, () -> new Component[] { this },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -1096,8 +1101,8 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> new Component[] { this }, listener, key)
-                .withModifiers(keyModifiers);
+        return new ShortcutRegistration(this, () -> new Component[] { this },
+                listener, key).withModifiers(keyModifiers);
     }
 
     /**

@@ -52,6 +52,7 @@ public class LocationObserverTest {
         public void localeChange(LocaleChangeEvent event) {
             eventCollector.add("Received locale change event for locale: "
                     + event.getLocale().getDisplayName());
+            Assert.assertNotNull(event.getUI());
         }
     }
 
