@@ -5,7 +5,7 @@
     <parent>
         <artifactId>flow-test-multi-war</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>3.1-SNAPSHOT</version>
+        <version>3.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-multi-war-bundle</artifactId>
     <name>Bundle testing multiple war deployment</name>
