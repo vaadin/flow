@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -279,7 +278,7 @@ public class UITest {
     public void localeSet_directionUpdated() {
         MockUI ui = new MockUI();
 
-        ui.setLocale(Locale.forLanguageTag("ar"));
+        ui.setDirection(Direction.RIGHT_TO_LEFT);
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
