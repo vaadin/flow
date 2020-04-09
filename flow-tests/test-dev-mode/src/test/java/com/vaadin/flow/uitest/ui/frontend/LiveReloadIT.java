@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -34,6 +35,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 // as other tests in the same module, due to live-reload affecting the whole
 // application
 @NotThreadSafe
+@Ignore("Live reload is not supported in this version.")
 public class LiveReloadIT extends ChromeBrowserTest {
 
     private static final Lock lock = new ReentrantLock();
