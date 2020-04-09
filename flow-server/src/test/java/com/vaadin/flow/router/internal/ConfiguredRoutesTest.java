@@ -111,7 +111,6 @@ public class ConfiguredRoutesTest {
         final String template = "/path/to"
                 + "/:intType(" + RouteParameterRegex.INTEGER + ")"
                 + "/:longType?(" + RouteParameterRegex.LONG + ")"
-                + "/:boolType?(" + RouteParameterRegex.BOOLEAN + ")"
                 + "/:stringType?/:varargs*(thinking|of|U|and|I)";
         config.setRoute(template, BaseTarget.class);
 
@@ -122,55 +121,51 @@ public class ConfiguredRoutesTest {
                 config.getTemplate(BaseTarget.class));
 
         Assert.assertEquals("Invalid formatted template",
-                "path/to/:intType(integer)/:longType?(long)/:boolType?(boolean)/:stringType?(string)/:varargs*(string)",
+                "path/to/:intType(integer)/:longType?(long)/:stringType?(string)/:varargs*(string)",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX_NAME)));
 
         Assert.assertEquals("Invalid formatted template",
-                "path/to/:intType/:longType?/:boolType?/:stringType?/:varargs*",
+                "path/to/:intType/:longType?/:stringType?/:varargs*",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("Invalid formatted template",
-                "path/to/:intType/:longType/:boolType/:stringType/:varargs",
+                "path/to/:intType/:longType/:stringType/:varargs",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.NAME)));
 
         Assert.assertEquals("Invalid formatted template",
-                "path/to/:(integer)/:?(long)/:?(boolean)/:?(string)/:*(string)",
+                "path/to/:(integer)/:?(long)/:?(string)/:*(string)",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX_NAME)));
 
         Assert.assertEquals("Invalid formatted template",
                 "path/to/:(" + RouteParameterRegex.INTEGER + ")/:?("
-                        + RouteParameterRegex.LONG + ")/:?("
-                        + RouteParameterRegex.BOOLEAN
+                        + RouteParameterRegex.LONG
                         + ")/:?/:*(thinking|of|U|and|I)",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER,
                                 RouteParameterFormatOption.REGEX)));
 
         Assert.assertEquals("Invalid formatted template",
-                "path/to/:integer/:long/:boolean/:string/:string",
+                "path/to/:integer/:long/:string/:string",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
 
         Assert.assertEquals("Invalid formatted template",
-                "path/to/:/:?/:?/:?/:*", config.getTemplate(BaseTarget.class,
+                "path/to/:/:?/:?/:*", config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.MODIFIER)));
 
         Assert.assertEquals("Invalid formatted template",
                 "path/to/:" + RouteParameterRegex.INTEGER + "/:"
-                        + RouteParameterRegex.LONG + "/:"
-                        + RouteParameterRegex.BOOLEAN
-                        + "/:/:thinking|of|U|and|I",
+                        + RouteParameterRegex.LONG + "/:/:thinking|of|U|and|I",
                 config.getTemplate(BaseTarget.class,
                         EnumSet.of(RouteParameterFormatOption.REGEX)));
-
     }
 
     @Tag("div")

@@ -48,7 +48,7 @@ public class RouteModelTest {
                 routeTarget(BranchEdit.class));
         root.addRoute("trunk/:name/:type?/branch/:id("
                 + RouteParameterRegex.INTEGER + ")/flower/:open("
-                + RouteParameterRegex.BOOLEAN + ")/edit",
+                + RouteParameterRegex.LONG + ")/edit",
                 routeTarget(FlowerEdit.class));
         root.addRoute("trunk/twig/:leafs*", routeTarget(Twig.class));
         return root;
@@ -92,9 +92,9 @@ public class RouteModelTest {
                 BranchEdit.class,
                 parameters("id", "12", "name", "red", "type", "birch"));
 
-        assertNavigation(root, "trunk/red/branch/12/flower/true/edit",
+        assertNavigation(root, "trunk/red/branch/12/flower/1234567890/edit",
                 FlowerEdit.class,
-                parameters("id", "12", "name", "red", "open", "true"));
+                parameters("id", "12", "name", "red", "open", "1234567890"));
 
         assertNavigation(root, "trunk/red/branch/12/flower/edit", null, null);
 
@@ -304,8 +304,8 @@ public class RouteModelTest {
 
     private void assertTarget(Class<? extends Component> target,
             RouteTarget routeTarget) {
-        Assert.assertEquals("Weird expected target [" + target + "], actual ["
-                + routeTarget + "]", target == null, routeTarget == null);
+        Assert.assertTrue("Weird expected target [" + target + "], actual ["
+                + routeTarget + "]", (target == null) == (routeTarget == null));
 
         if (target != null) {
             Assert.assertTrue(

@@ -1495,10 +1495,8 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Route(":intType(" + RouteParameterRegex.INTEGER + ")")
-    @RouteAlias(":boolType(" + RouteParameterRegex.BOOLEAN + ")")
     @RouteAlias(":stringType")
     @RouteAlias(":intType?(" + RouteParameterRegex.INTEGER + ")"
-            + "/:boolType?(" + RouteParameterRegex.BOOLEAN + ")"
             + "/:stringType?/:varargs*(thinking|of|U|and|I)")
     @RoutePrefix("param/types")
     public static class ParameterTypesView extends RouteParametersBase
@@ -3609,11 +3607,6 @@ public class RouterTest extends RoutingTestBase {
 
         assertRouteParameters("param/types/123", parameters("intType", "123"));
 
-        assertRouteParameters("param/types/true", parameters("boolType", "true"));
-
-        assertRouteParameters("param/types/false",
-                parameters("boolType", "false"));
-
         assertRouteParameters("param/types/thinking",
                 parameters("stringType", "thinking"));
 
@@ -3628,9 +3621,6 @@ public class RouterTest extends RoutingTestBase {
                 parameters("intType", "12345678900", "stringType", "long"));
 
         assertRouteParameters("param/types/long/12345678900", null);
-
-        assertRouteParameters("param/types/true/false",
-                parameters("boolType", "true", "stringType", "false"));
 
         assertRouteParameters("param/types/thinking/of/U/and/I",
                 parameters("stringType", "thinking", "varargs", "of/U/and/I"));

@@ -316,7 +316,7 @@ public class RouteRegistryInitializerTest {
         Assert.assertEquals(
                 String.format("parameter/:%s(%s)",
                         HasUrlParameterFormat.PARAMETER_NAME,
-                        RouteParameterRegex.BOOLEAN),
+                        RouteParameterRegex.INTEGER),
                 registry.getTemplate(ParameterRoute.class).get());
         Assert.assertEquals(
                 String.format("string/:%s",
@@ -452,10 +452,10 @@ public class RouteRegistryInitializerTest {
 
     @Route("parameter")
     private static class ParameterRoute extends Component
-            implements HasUrlParameter<Boolean> {
+            implements HasUrlParameter<Integer> {
 
         @Override
-        public void setParameter(BeforeEvent event, Boolean parameter) {
+        public void setParameter(BeforeEvent event, Integer parameter) {
 
         }
     }
@@ -1192,7 +1192,7 @@ public class RouteRegistryInitializerTest {
 
         Assert.assertEquals("Unexpected parameter type encountered",
                 ":" + HasUrlParameterFormat.PARAMETER_NAME + "("
-                        + RouteParameterRegex.BOOLEAN + ")",
+                        + RouteParameterRegex.INTEGER + ")",
                 registeredRoutes.get(3).getRouteParameters()
                         .get(HasUrlParameterFormat.PARAMETER_NAME)
                         .getTemplate());

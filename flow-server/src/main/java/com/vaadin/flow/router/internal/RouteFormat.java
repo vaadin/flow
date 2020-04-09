@@ -31,7 +31,7 @@ class RouteFormat implements Serializable {
 
     static final String INTEGER_REGEX = RouteParameterRegex.INTEGER;
     static final String LONG_REGEX = RouteParameterRegex.LONG;
-    static final String BOOLEAN_REGEX = RouteParameterRegex.BOOLEAN;
+    static final String BOOLEAN_REGEX = "true|false";
     static final String STRING_REGEX = "";
 
     /**
@@ -126,8 +126,6 @@ class RouteFormat implements Serializable {
             return "integer";
         } else if (LONG_REGEX.equals(regex)) {
             return "long";
-        } else if (BOOLEAN_REGEX.equals(regex)) {
-            return "boolean";
         } else {
             return "string";
         }

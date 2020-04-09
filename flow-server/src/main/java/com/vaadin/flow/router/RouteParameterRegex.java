@@ -32,11 +32,6 @@ public class RouteParameterRegex implements Serializable {
      */
     public static final String LONG = "^[+-]?[0-8]?[0-9]{1,18}$";
 
-    /**
-     * Boolean type regex.
-     */
-    public static final String BOOLEAN = "^true|false$";
-
     private RouteParameterRegex() {
     }
 

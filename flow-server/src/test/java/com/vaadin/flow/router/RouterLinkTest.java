@@ -231,9 +231,6 @@ public class RouterLinkTest extends HasCurrentService {
                 new RouteParameters("fooId", "123"), "foo/123/foo");
 
         assertRouterLinkSetRoute(link, ParameterNavigationTarget.class,
-                new RouteParameters("fooBar", "false"), "false/foo/bar");
-
-        assertRouterLinkSetRoute(link, ParameterNavigationTarget.class,
                 new RouteParameters("foos", "123/qwe"), "foo/123/qwe");
 
         try {
@@ -397,7 +394,6 @@ public class RouterLinkTest extends HasCurrentService {
 
     @Route("foo/:barId?/bar")
     @RouteAlias("foo/:fooId(" + RouteParameterRegex.INTEGER + ")/foo")
-    @RouteAlias(":fooBar(" + RouteParameterRegex.BOOLEAN + ")/foo/bar")
     @RouteAlias("foo/:foos*")
     @Tag(Tag.DIV)
     public static class ParameterNavigationTarget extends Component {

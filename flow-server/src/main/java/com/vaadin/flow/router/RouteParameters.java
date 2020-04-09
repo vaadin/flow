@@ -158,23 +158,6 @@ public final class RouteParameters implements Serializable {
     }
 
     /**
-     * Gets the boolean representation of a parameter.
-     *
-     * @param parameterName
-     *            the name of the parameter.
-     * @return an {@link Optional} {@link Boolean} representation of the
-     *         parameter. If the value is missing the {@link Optional} is empty.
-     */
-    public Optional<Boolean> getBoolean(String parameterName) {
-        final String value = getValue(parameterName);
-        if (value == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(Boolean.valueOf(value));
-    }
-
-    /**
      * Gets a list representing the wildcard value of a parameter, where each
      * element in the list is a path segment. In case the value is missing the
      * result is an empty {@link List}.

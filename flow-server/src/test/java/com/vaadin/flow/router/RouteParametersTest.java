@@ -33,8 +33,6 @@ public class RouteParametersTest {
                 parameters.get("integer").get());
         Assert.assertEquals("Wrong value", "12345678900",
                 parameters.get("long").get());
-        Assert.assertEquals("Wrong value", "true",
-                parameters.get("boolean").get());
         Assert.assertEquals("Wrong value", "path/to/foo/bar",
                 parameters.get("varargs").get());
 
@@ -48,18 +46,6 @@ public class RouteParametersTest {
         Assert.assertEquals("Wrong value", Long.valueOf(12345678900L),
                 parameters.getLong("long").get());
 
-        // Boolean getter
-        Assert.assertEquals("Wrong value", Boolean.FALSE,
-                parameters.getBoolean("string").get());
-        Assert.assertEquals("Wrong value", Boolean.FALSE,
-                parameters.getBoolean("integer").get());
-        Assert.assertEquals("Wrong value", Boolean.FALSE,
-                parameters.getBoolean("long").get());
-        Assert.assertEquals("Wrong value", Boolean.TRUE,
-                parameters.getBoolean("boolean").get());
-        Assert.assertEquals("Wrong value", Boolean.FALSE,
-                parameters.getBoolean("varargs").get());
-
         // Wildcard getter
         Assert.assertEquals("Wrong value", Arrays.asList("foo"),
                 parameters.getWildcard("string"));
@@ -67,8 +53,6 @@ public class RouteParametersTest {
                 parameters.getWildcard("integer"));
         Assert.assertEquals("Wrong value", Arrays.asList("12345678900"),
                 parameters.getWildcard("long"));
-        Assert.assertEquals("Wrong value", Arrays.asList("true"),
-                parameters.getWildcard("boolean"));
         Assert.assertEquals("Wrong value",
                 Arrays.asList("path", "to", "foo", "bar"),
                 parameters.getWildcard("varargs"));
@@ -84,8 +68,6 @@ public class RouteParametersTest {
                 parameters.getInteger("foo").isPresent());
         Assert.assertFalse("Optional should be empty",
                 parameters.getLong("foo").isPresent());
-        Assert.assertFalse("Optional should be empty",
-                parameters.getBoolean("foo").isPresent());
 
         Assert.assertTrue("List should be empty",
                 parameters.getWildcard("foo").isEmpty());
@@ -110,13 +92,6 @@ public class RouteParametersTest {
         }
 
         try {
-            parameters.getInteger("boolean");
-
-            Assert.fail("getInteger should not be able to format a string.");
-        } catch (NumberFormatException e) {
-        }
-
-        try {
             parameters.getInteger("varargs");
 
             Assert.fail("getInteger should not be able to format a varargs.");
@@ -130,13 +105,6 @@ public class RouteParametersTest {
 
         try {
             parameters.getLong("string");
-
-            Assert.fail("getInteger should not be able to format a string.");
-        } catch (NumberFormatException e) {
-        }
-
-        try {
-            parameters.getLong("boolean");
 
             Assert.fail("getInteger should not be able to format a string.");
         } catch (NumberFormatException e) {
@@ -171,7 +139,7 @@ public class RouteParametersTest {
 
     private RouteParameters getParameters() {
         return new RouteParameters("string", "foo", "integer", "123", "long",
-                "12345678900", "boolean", "true", "varargs", "path/to/foo/bar");
+                "12345678900", "varargs", "path/to/foo/bar");
     }
 
 }
