@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
 import com.vaadin.flow.dom.Element;
@@ -256,6 +257,22 @@ public class UITest {
         Location value = location.getValue();
         Assert.assertEquals(route, value.getPath());
         Assert.assertEquals(params, value.getQueryParameters());
+    }
+
+    @Test
+    public void localeSet_directionUpdated() {
+        MockUI ui = new MockUI();
+
+        ui.setDirection(Direction.RIGHT_TO_LEFT);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
+                .dumpPendingJsInvocations();
+
+        Assert.assertEquals(1, pendingJavaScriptInvocations.size());
+        Assert.assertEquals("rtl", pendingJavaScriptInvocations.get(0)
+                .getInvocation().getParameters().get(0));
     }
 
     @Test
