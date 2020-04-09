@@ -50,7 +50,9 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
                 .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
         BrowserLiveReload browserLiveReload = liveReloadAccess
                 .getLiveReload(VaadinService.getCurrent());
-        browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);
+        if (browserLiveReload != null) {
+            browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);
+        }
     }
 
 }
