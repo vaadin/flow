@@ -35,7 +35,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.data.binder.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
@@ -190,7 +190,7 @@ public class BinderConverterValidatorTest
                 validationErrors, hasSize(1));
         BindingValidationStatus<?> error = validationErrors.get(0);
         assertEquals(errorMessage, error.getMessage().get());
-        assertInvalidField(errorMessage, (HasValidation) error.getField());
+        assertInvalidField(errorMessage, (HasValidation<?>) error.getField());
     }
 
     @Test

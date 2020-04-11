@@ -1,11 +1,11 @@
 package com.vaadin.flow.data.binder.testcomponents;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
-import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.data.binder.HasValidation;
 import com.vaadin.flow.function.SerializableFunction;
 
 public abstract class AbstractTestHasValueAndValidation<C extends AbstractSinglePropertyField<C, T>, T>
-        extends AbstractSinglePropertyField<C, T> implements HasValidation {
+        extends AbstractSinglePropertyField<C, T> implements HasValidation<T> {
 
     public AbstractTestHasValueAndValidation(T defaultValue,
             SerializableFunction<String, T> propertyToValue,

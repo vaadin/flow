@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
-import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.component.HasValue.ValueChangeListener;
@@ -1508,8 +1507,8 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator
-                                ? ((HasValidator) field).getDefaultValidator()
+                        .withValidator(field instanceof HasValidation
+                                ? ((HasValidation) field).getDefaultValidator()
                                 : Validator.alwaysPass());
     }
 
@@ -2306,7 +2305,7 @@ public class Binder<BEAN> implements Serializable {
      */
     protected void handleError(HasValue<?, ?> field, ValidationResult result) {
         if (field instanceof HasValidation) {
-            HasValidation fieldWithValidation = (HasValidation) field;
+            HasValidation<?> fieldWithValidation = (HasValidation<?>) field;
             fieldWithValidation.setInvalid(true);
             fieldWithValidation.setErrorMessage(result.getErrorMessage());
         }
@@ -2320,7 +2319,7 @@ public class Binder<BEAN> implements Serializable {
      */
     protected void clearError(HasValue<?, ?> field) {
         if (field instanceof HasValidation) {
-            HasValidation fieldWithValidation = (HasValidation) field;
+            HasValidation<?> fieldWithValidation = (HasValidation<?>) field;
             fieldWithValidation.setInvalid(false);
         }
     }
