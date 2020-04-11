@@ -14,17 +14,19 @@
  * the License.
  */
 
-package com.vaadin.flow.component;
+package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
 
 /**
  * A component that supports input validation.
  *
+ * @param <V>
+ *            the component value type
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public interface HasValidation extends Serializable {
+public interface HasValidation<V> extends Serializable {
 
     /**
      * Sets an error message to the component.
@@ -66,4 +68,17 @@ public interface HasValidation extends Serializable {
      * @return whether the component input is valid
      */
     boolean isInvalid();
+
+    /**
+     * Returns a validator that checks the state of the Value. This should be
+     * overridden for components with internal value conversion or validation,
+     * e.g. when the user is providing a string that has to be parsed into a
+     * date. An invalid input from user will be exposed to a {@code Binder} and
+     * can be seen as a validation failure.
+     *
+     * @return state validator
+     */
+    default Validator<V> getDefaultValidator() {
+        return Validator.alwaysPass();
+    }
 }

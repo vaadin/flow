@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.data.binder.HasValidation;
 
 /**
  * Base class for validation tests of components that implement

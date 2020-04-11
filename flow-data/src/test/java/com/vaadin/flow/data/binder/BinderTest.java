@@ -39,6 +39,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.binder.testcomponents.TestIntegerField;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
@@ -1516,6 +1517,74 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         Assert.assertTrue("Inner listener should be invoked",
                 innerListenerInvoked.get());
+    }
+
+    @Test
+    public void binderValidator_validatorIsDefinedInComponent_customValidatorIsUsed() {
+        final int validValue = 42;
+        final int invalidValue = -1;
+        final String customErrorMessage = "Age should be in range from 0 to 100";
+
+        TestIntegerField ageField = new TestIntegerField() {
+            @Override
+            public Validator<Integer> getDefaultValidator() {
+                return (value, context) -> {
+                    IntegerRangeValidator integerRangeValidator =
+                            new IntegerRangeValidator(getIntegerRangeErrorMessage(),
+                                    getMinValue(), getMaxValue());
+                    return integerRangeValidator.apply(value, context);
+                };
+            }
+        };
+
+        ageField.setMinValue(0);
+        ageField.setMaxValue(100);
+        ageField.setIntegerRangeErrorMessage(customErrorMessage);
+
+        binder.forField(ageField)
+                .asRequired()
+                .bind(Person::getAge, Person::setAge);
+        binder.readBean(item);
+
+        // Valid age has been entered
+        ageField.setValue(validValue);
+
+        boolean isValid = binder.writeBeanIfValid(item);
+
+        Assert.assertTrue(isValid);
+        assertValidField(ageField);
+
+        // Invalid age has been entered
+        ageField.setValue(invalidValue);
+
+        isValid = binder.writeBeanIfValid(item);
+
+        Assert.assertFalse(isValid);
+        assertInvalidField(customErrorMessage, ageField);
+    }
+
+    @Test
+    public void binderValidator_noValidatorDefined_defaultValidatorIsUsed() {
+        final int invalidValue = -1;
+
+        TestIntegerField ageField = new TestIntegerField();
+        ageField.setMinValue(0);
+        ageField.setMaxValue(100);
+
+        binder.forField(ageField)
+                .asRequired()
+                .bind(Person::getAge, Person::setAge);
+        binder.readBean(item);
+
+        // Invalid age has been entered
+        ageField.setValue(invalidValue);
+
+        boolean isValid = binder.writeBeanIfValid(item);
+
+        // The field should be still valid since 'always pass' default server-side
+        // validator is used
+        Assert.assertTrue(isValid);
+        assertValidField(ageField);
     }
 
     private TestTextField createNullRejectingFieldWithEmptyValue(

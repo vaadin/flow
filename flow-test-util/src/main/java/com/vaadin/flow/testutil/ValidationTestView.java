@@ -16,7 +16,7 @@
 package com.vaadin.flow.testutil;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.data.binder.HasValidation;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 
@@ -35,7 +35,7 @@ public abstract class ValidationTestView extends Div {
     }
 
     private void initView() {
-        HasValidation field = getValidationComponent();
+        HasValidation<?> field = getValidationComponent();
         ((Component) field).setId("field");
         add(((Component) field));
 
@@ -61,5 +61,5 @@ public abstract class ValidationTestView extends Div {
      *
      * @return a component that implements {@link HasValidation}
      */
-    protected abstract HasValidation getValidationComponent();
+    protected abstract HasValidation<?> getValidationComponent();
 }

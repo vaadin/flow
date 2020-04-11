@@ -24,7 +24,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 
-import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.data.binder.HasValidation;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.Converter;
@@ -68,14 +68,14 @@ public abstract class BinderTestBase<BINDER extends Binder<ITEM>, ITEM>
         }
     }
 
-    void assertInvalidField(String expectedErrorMessage, HasValidation field) {
+    void assertInvalidField(String expectedErrorMessage, HasValidation<?> field) {
         Assert.assertEquals(
                 "The field should contain same error message as binder",
                 expectedErrorMessage, field.getErrorMessage());
         Assert.assertTrue("The field should be invalid", field.isInvalid());
     }
 
-    void assertValidField(HasValidation field) {
+    void assertValidField(HasValidation<?> field) {
         Assert.assertFalse("The field should be valid", field.isInvalid());
     }
 
