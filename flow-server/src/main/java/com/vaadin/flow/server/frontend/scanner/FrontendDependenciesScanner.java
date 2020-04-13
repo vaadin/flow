@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -110,6 +111,14 @@ public interface FrontendDependenciesScanner extends Serializable {
      * @return the theme instance
      */
     AbstractTheme getTheme();
+
+    /**
+     * Get the {@link com.vaadin.flow.server.PwaConfiguration} instance used in
+     * the application.
+     * 
+     * @return the pwa configuration
+     */
+    PwaConfiguration getPwaConfiguration();
 
     /**
      * Get all Java classes considered when looking for used dependencies.

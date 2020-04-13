@@ -28,6 +28,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -333,4 +334,16 @@ public final class JsonUtils {
             throw new RuntimeException("Error converting map to JSON", e);
         }
     }
+
+    /**
+     * Converts the given string array to a JsonArray of JsonString.
+     * 
+     * @param strings
+     *            The strings to include
+     */
+    public static JsonArray toJsonArray(String[] strings) {
+        return Stream.of(strings).map(string -> Json.create(string))
+                .collect(asArray());
+    }
+
 }

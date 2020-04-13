@@ -16,6 +16,13 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -23,17 +30,17 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
+import elemental.json.Json;
+import elemental.json.JsonArray;
 
 /**
  * Updates the webpack config file according with current project settings.
@@ -53,6 +60,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path frontendDirectory;
     private final boolean useV14Bootstrapping;
     private final Path flowResourcesFolder;
+    private final FrontendDependenciesScanner frontendDependencies;
+    private File[] staticFileLocations;
+    private File staticFileOutput;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -75,11 +85,15 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            whether the application running with deprecated V14 bootstrapping
      * @param flowResourcesFolder
      *            relative path to `flow-frontend` package
+     * @param frontendDependencies
+     *            scanner used to find dependencies
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
             String webpackGeneratedTemplate, File generatedFlowImports,
-            boolean useV14Bootstrapping, File flowResourcesFolder) {
+            boolean useV14Bootstrapping, File flowResourcesFolder,
+            FrontendDependenciesScanner frontendDependencies,
+            File[] staticFileLocations, File staticFileOutput) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -88,6 +102,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.useV14Bootstrapping = useV14Bootstrapping;
         this.flowResourcesFolder = flowResourcesFolder.toPath();
+        this.frontendDependencies = frontendDependencies;
+        this.staticFileLocations = staticFileLocations;
+        this.staticFileOutput = staticFileOutput;
     }
 
     @Override
@@ -165,7 +182,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
             if (lines.get(i).startsWith("const frontendFolder")) {
                 lines.set(i, frontendLine);
             }
-            if (lines.get(i).startsWith("const useClientSideIndexFileForBootstrapping")) {
+            if (lines.get(i).startsWith(
+                    "const useClientSideIndexFileForBootstrapping")) {
                 lines.set(i, isClientSideBootstrapModeLine);
             }
             if (lines.get(i).startsWith("const clientSideIndexHTML")) {
@@ -178,6 +196,16 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
             if (lines.get(i).startsWith("const devmodeGizmoJS")) {
                 lines.set(i, devModeGizmoJSLine);
+            }
+
+            if (lines.get(i).startsWith("const swOfflineResources")) {
+                lines.set(i, getOfflineResources());
+            }
+            if (lines.get(i).startsWith("const swResourceLocations")) {
+                lines.set(i, getOfflineResourceLocations());
+            }
+            if (lines.get(i).startsWith("const swResourceOutput")) {
+                lines.set(i, getOfflineResourceOutput());
             }
         }
         return lines;
@@ -196,13 +224,12 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     getEscapedRelativeWebpackPath(path));
             return String.format(declaration, relativePath);
         } else {
-            return String.format(declaration, "'./" + INDEX_HTML +"'");
+            return String.format(declaration, "'./" + INDEX_HTML + "'");
         }
     }
 
     private String getClientEntryPoint() {
-        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS)
-                .exists()
+        boolean exists = new File(frontendDirectory.toFile(), INDEX_TS).exists()
                 || new File(frontendDirectory.toFile(), INDEX_JS).exists();
         String declaration = "const clientSideIndexEntryPoint = %s;";
         if (!exists) {
@@ -211,7 +238,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
                     INDEX_TS);
             String relativePath = String.format(
                     "require('path').resolve(__dirname, '%s')",
-                    getEscapedRelativeWebpackPath(path).replaceFirst("\\.[tj]s$", ""));
+                    getEscapedRelativeWebpackPath(path)
+                            .replaceFirst("\\.[tj]s$", ""));
             return String.format(declaration, relativePath);
         } else {
             return String.format(declaration, "'./index'");
@@ -224,6 +252,30 @@ public class TaskUpdateWebpack implements FallibleCommand {
         } else {
             return FrontendUtils.getUnixPath(path);
         }
+    }
+
+    private String getOfflineResources() {
+        List<String> offlineResources = frontendDependencies
+                .getPwaConfiguration().getOfflineResources();
+        JsonArray offlineResourcesJson = offlineResources.stream()
+                .map(res -> Json.create(res)).collect(JsonUtils.asArray());
+        return String.format("const swOfflineResources = %s;",
+                offlineResourcesJson.toJson());
+    }
+
+    private String getOfflineResourceLocations() {
+        // FIXME Path relative to build root
+        JsonArray offlineResourceLocationsJson = Stream.of(staticFileLocations)
+                .map(res -> Json.create(res.getAbsolutePath()))
+                .collect(JsonUtils.asArray());
+        return String.format("const swResourceLocations = %s;",
+                offlineResourceLocationsJson.toJson());
+    }
+
+    private String getOfflineResourceOutput() {
+        // FIXME Path relative to build root
+        return String.format("const swResourceOutput = %s;",
+                Json.create(staticFileOutput.getAbsolutePath() + "/").toJson());
     }
 
     private Logger log() {

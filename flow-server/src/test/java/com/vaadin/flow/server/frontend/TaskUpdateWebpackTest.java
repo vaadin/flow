@@ -63,7 +63,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                null, null, null);
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
         webpackGenerated = new File(baseDir, WEBPACK_GENERATED);
@@ -106,7 +107,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                null, null, null);
 
         webpackUpdater.execute();
 
@@ -151,7 +153,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED, new File(baseDir, "bar"), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                null, null, null);
         newUpdater.execute();
 
         assertWebpackGeneratedConfigContent("bar", "foo");
@@ -172,9 +175,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "useClientSideIndexFileForBootstrapping should be false by "
                         + "default",
-                webpackGeneratedContents
-                        .contains(
-                                "const useClientSideIndexFileForBootstrapping = false;"));
+                webpackGeneratedContents.contains(
+                        "const useClientSideIndexFileForBootstrapping = false;"));
 
     }
 
@@ -186,15 +188,15 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"),
                 WEBPACK_CONFIG, WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                null, null, null);
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue(
                 "useClientSideIndexFileForBootstrapping should be true",
-                webpackGeneratedContents
-                        .contains(
-                                "const useClientSideIndexFileForBootstrapping = true;"));
+                webpackGeneratedContents.contains(
+                        "const useClientSideIndexFileForBootstrapping = true;"));
 
     }
 
@@ -250,9 +252,11 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .filter(line -> line.contains("/"))
                 // trim the whitespaces
                 .map(line -> line.replaceAll("\\s", ""))
-                // publicPath is URI which should start with slash
+                // publicPath is URI which should start with
+                // slash
                 .filter(line -> !line.startsWith("publicPath:"))
-                // check the equals ( a=something ) and object declarations (
+                // check the equals ( a=something ) and object
+                // declarations (
                 // {a: something} )
                 .map(line -> {
                     int equalsSignPosition = line.indexOf("=");
@@ -265,7 +269,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                         return null;
                     }
                 }).filter(Objects::nonNull)
-                // take the lines with strings only and trim the string start
+                // take the lines with strings only and trim the
+                // string start
                 .filter(line -> line.startsWith("'") || line.startsWith("\"")
                         || line.startsWith("`"))
                 .map(line -> line.substring(1))

@@ -317,6 +317,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.4.0");
 
+        defaults.put("workbox-webpack-plugin", "5.1.2");
+        defaults.put("glob", "7.1.6");
         return defaults;
     }
 

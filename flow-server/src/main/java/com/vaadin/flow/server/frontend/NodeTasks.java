@@ -17,10 +17,12 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -28,6 +30,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
+import org.checkerframework.checker.units.qual.kg;
 
 import elemental.json.JsonObject;
 
@@ -124,6 +128,15 @@ public class NodeTasks implements FallibleCommand {
          * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          */
         private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+
+        /**
+         * Should a webmanifest.manifest be generated.
+         */
+        private boolean createWebManifest = false;
+
+        public File[] staticFileLocations;
+
+        public File staticFileOutputFolder;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -493,6 +506,14 @@ public class NodeTasks implements FallibleCommand {
             this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
             return this;
         }
+
+        public Builder withWebManifest(File[] staticFileLocations,
+                File staticFileOutputFolder) {
+            this.createWebManifest = true;
+            this.staticFileLocations = staticFileLocations;
+            this.staticFileOutputFolder = staticFileOutputFolder;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -502,17 +523,18 @@ public class NodeTasks implements FallibleCommand {
         ClassFinder classFinder = new ClassFinder.CachedClassFinder(
                 builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
-
-        if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
+        if (builder.enablePackagesUpdate || builder.enableImportsUpdate
+                || builder.webpackTemplate != null) {
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
                 generator.generateWebComponents(builder.generatedFolder);
             }
-
-            frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(!builder.useByteCodeScanner, classFinder,
-                            builder.generateEmbeddableWebComponents);
+            if (frontendDependencies == null) {
+                frontendDependencies = getFrontendDependencies(
+                        builder.useByteCodeScanner, builder.classFinder,
+                        builder.generateEmbeddableWebComponents);
+            }
         }
 
         if (builder.createMissingPackageJson) {
@@ -565,9 +587,22 @@ public class NodeTasks implements FallibleCommand {
                     builder.webpackTemplate, builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
-                    builder.flowResourcesFolder));
+                    builder.flowResourcesFolder,
+                    frontendDependencies,
+                    builder.staticFileLocations,
+                    builder.staticFileOutputFolder));
         }
 
+        if (builder.createWebManifest) {
+            if (frontendDependencies == null) {
+                frontendDependencies = getFrontendDependencies(
+                        builder.useByteCodeScanner, builder.classFinder,
+                        builder.generateEmbeddableWebComponents);
+            }
+            commands.add(new TaskCreateWebmanifest(frontendDependencies,
+                    builder.staticFileLocations,
+                    builder.staticFileOutputFolder));
+        }
         if (builder.enableImportsUpdate) {
             commands.add(
                     new TaskUpdateImports(classFinder, frontendDependencies,
@@ -576,6 +611,14 @@ public class NodeTasks implements FallibleCommand {
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm));
         }
+    }
+
+    private FrontendDependenciesScanner getFrontendDependencies(
+            boolean useByteCodeScanner, ClassFinder classFinder,
+            boolean generateEmbeddableWebComponents) {
+        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                .createScanner(!useByteCodeScanner, classFinder,
+                        generateEmbeddableWebComponents);
     }
 
     private void addBootstrapTasks(Builder builder) {

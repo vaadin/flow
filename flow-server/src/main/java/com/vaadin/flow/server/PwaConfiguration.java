@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.servlet.ServletContext;
-
 /**
  * Holds the configuration from the {@link PWA} annotation.
  *
@@ -39,7 +37,7 @@ public class PwaConfiguration implements Serializable {
     public static final String DEFAULT_DISPLAY = "standalone";
     public static final String DEFAULT_OFFLINE_PATH = "offline.html";
 
-    private final String appName;
+    private final String name;
     private final String shortName;
     private final String description;
     private final String backgroundColor;
@@ -49,53 +47,40 @@ public class PwaConfiguration implements Serializable {
     private final String offlinePath;
     private final String serviceWorkerPath = "sw.js";
     private final String display;
-    private final String rootUrl;
     private final String startPath;
     private final boolean enabled;
     private final List<String> offlineResources;
 
-    protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
-        rootUrl = hasContextPath(servletContext)
-                ? servletContext.getContextPath() + "/"
-                : "/";
-        if (pwa != null) {
-            appName = pwa.name();
-            shortName = pwa.shortName().substring(0,
-                    Math.min(pwa.shortName().length(), 12));
-            description = pwa.description();
-            backgroundColor = pwa.backgroundColor();
-            themeColor = pwa.themeColor();
-            iconPath = checkPath(pwa.iconPath());
-            manifestPath = checkPath(pwa.manifestPath());
-            offlinePath = checkPath(pwa.offlinePath());
-            display = pwa.display();
-            startPath = pwa.startPath().replaceAll("^/+", "");
-            enabled = true;
-            offlineResources = Arrays.asList(pwa.offlineResources());
-        } else {
-            appName = DEFAULT_NAME;
-            shortName = "Flow PWA";
-            description = "";
-            backgroundColor = DEFAULT_BACKGROUND_COLOR;
-            themeColor = DEFAULT_THEME_COLOR;
-            iconPath = DEFAULT_ICON;
-            manifestPath = DEFAULT_PATH;
-            offlinePath = DEFAULT_OFFLINE_PATH;
-            display = DEFAULT_DISPLAY;
-            startPath = "";
-            enabled = false;
-            offlineResources = Collections.emptyList();
-        }
+    public PwaConfiguration() {
+        this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
+                DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
+                DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, "", new String[] {});
     }
 
-    private static boolean hasContextPath(ServletContext servletContext) {
-        return !(servletContext == null
-                || servletContext.getContextPath() == null
-                || servletContext.getContextPath().isEmpty());
+    public PwaConfiguration(PWA pwa) {
+        this(true, pwa.name(), pwa.shortName(), pwa.description(),
+                pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
+                pwa.manifestPath(), pwa.offlinePath(), pwa.display(),
+                pwa.startPath(), pwa.offlineResources());
     }
 
-    private static String checkPath(String path) {
-        return path.replaceAll("^[./]+", "");
+    public PwaConfiguration(boolean enabled, String name, String shortName,
+            String description, String backgroundColor, String themeColor,
+            String iconPath, String manifestPath, String offlinePath,
+            String display, String startPath, String[] offlineResources) {
+        this.shortName = shortName.substring(0,
+                Math.min(shortName.length(), 12));
+        this.name = name;
+        this.description = description;
+        this.backgroundColor = backgroundColor;
+        this.themeColor = themeColor;
+        this.iconPath = iconPath;
+        this.manifestPath = manifestPath;
+        this.offlinePath = offlinePath;
+        this.display = display;
+        this.startPath = startPath;
+        this.enabled = enabled;
+        this.offlineResources = Arrays.asList(offlineResources);
     }
 
     /**
@@ -104,7 +89,7 @@ public class PwaConfiguration implements Serializable {
      * @return application name
      */
     public String getAppName() {
-        return appName;
+        return name;
     }
 
     /**
@@ -160,15 +145,6 @@ public class PwaConfiguration implements Serializable {
      */
     public String getIconPath() {
         return iconPath;
-    }
-
-    /**
-     * Gets the ath to icon with prefix, so request matches.
-     *
-     * @return path to icon with prefix, so request matches
-     */
-    public String relIconPath() {
-        return "/" + iconPath;
     }
 
     /**
@@ -254,16 +230,7 @@ public class PwaConfiguration implements Serializable {
      * @return start url of the PWA application
      */
     public String getStartUrl() {
-        return rootUrl + startPath;
-    }
-
-    /**
-     * Gets the application root url.
-     *
-     * @return application root url
-     */
-    public String getRootUrl() {
-        return rootUrl;
+        return startPath;
     }
 
     /**
@@ -274,4 +241,17 @@ public class PwaConfiguration implements Serializable {
     public boolean isEnabled() {
         return enabled;
     }
+
+    @Override
+    public String toString() {
+        return "PwaConfiguration [appName=" + name + ", shortName=" + shortName
+                + ", description=" + description + ", backgroundColor="
+                + backgroundColor + ", themeColor=" + themeColor + ", iconPath="
+                + iconPath + ", manifestPath=" + manifestPath + ", offlinePath="
+                + offlinePath + ", serviceWorkerPath=" + serviceWorkerPath
+                + ", display=" + display + ", startPath=" + startPath
+                + ", enabled=" + enabled + ", offlineResources="
+                + offlineResources + "]";
+    }
+
 }

@@ -15,14 +15,7 @@
  */
 package com.vaadin.flow.server;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,37 +45,28 @@ public class PwaIcon implements Serializable {
         HEADER, MANIFEST
     }
 
-    private final boolean shouldBeCached;
     private final int width;
     private final int height;
-    private long fileHash;
     private String baseName;
     private Domain domain;
-    private byte[] data;
 
     private final Map<String, String> attributes = new HashMap<>();
     private String tag = "link";
 
-    PwaIcon(int width, int height, String baseName) {
+    public PwaIcon(int width, int height, String baseName) {
         this(width, height, baseName, Domain.HEADER);
     }
 
-    PwaIcon(int width, int height, String baseName, Domain domain) {
-        this(width, height, baseName, domain, false);
+    public PwaIcon(int width, int height, String baseName, Domain domain) {
+        this(width, height, baseName, domain, "icon", "");
     }
 
-    PwaIcon(int width, int height, String baseName, Domain domain,
-            boolean shouldBeCached) {
-        this(width, height, baseName, domain, shouldBeCached, "icon", "");
-    }
-
-    PwaIcon(int width, int height, String baseName, Domain domain,
-            boolean shouldBeCached, String rel, String media) {
+    public PwaIcon(int width, int height, String baseName, Domain domain,
+            String rel, String media) {
         this.width = width;
         this.height = height;
         this.baseName = baseName;
         this.domain = domain;
-        this.shouldBeCached = shouldBeCached;
 
         attributes.put("type", "image/png");
         attributes.put("rel", rel);
@@ -90,8 +74,7 @@ public class PwaIcon implements Serializable {
         if (media != null && !media.isEmpty()) {
             attributes.put("media", media);
         }
-
-        setRelativeName();
+        attributes.put("href", getPath());
     }
 
     /**
@@ -123,23 +106,10 @@ public class PwaIcon implements Serializable {
         return height;
     }
 
-    /**
-     * Should the icon be cached by the Service Worker.
-     *
-     * @return should the icon be cached by the Service Worker.
-     */
-    public boolean shouldBeCached() {
-        return shouldBeCached;
-    }
-
-    private void setRelativeName() {
+    public String getPath() {
         int split = baseName.lastIndexOf('.');
-        String link = baseName.substring(0, split) + "-" + getSizes()
+        return baseName.substring(0, split) + "-" + getSizes()
                 + baseName.substring(split);
-        if (!shouldBeCached) {
-            link = link + "?" + fileHash;
-        }
-        attributes.put("href", link);
     }
 
     /**
@@ -161,28 +131,6 @@ public class PwaIcon implements Serializable {
     }
 
     /**
-     * Return href with '/' -prefix and removed possible ?[fileHash].
-     *
-     * Used in matching, when serving images.
-     *
-     * @return href with '/' -prefix and removed possible ?[fileHash]
-     */
-    public String getRelHref() {
-        String[] split = getHref().split("\\?");
-        return "/" + split[0];
-    }
-
-    /**
-     * Gets the cache-string used in Google Workbox caching.
-     *
-     * @return "{ url: '[href]', revision: '[fileHash' }"
-     */
-    public String getCacheFormat() {
-        return String.format("{ url: '%s', revision: '%s' }", getHref(),
-                fileHash);
-    }
-
-    /**
      * Gets the value of the {@literal type} attribute.
      *
      * @return value of the {@literal type} attribute
@@ -198,40 +146,6 @@ public class PwaIcon implements Serializable {
      */
     public Domain getDomain() {
         return domain;
-    }
-
-    /**
-     * Sets the image presenting the icon.
-     *
-     * @param image
-     *            the image in png format
-     */
-    public void setImage(BufferedImage image) {
-        try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-            ImageIO.write(image, "png", stream);
-            stream.flush();
-            data = stream.toByteArray();
-            fileHash = Arrays.hashCode(data);
-            setRelativeName();
-        } catch (IOException ioe) {
-            throw new UncheckedIOException("Failed to write an image ", ioe);
-        }
-    }
-
-    /**
-     * Writes the icon image to output stream.
-     *
-     * @param outputStream
-     *            output stream to write the icon image to
-     */
-    public void write(OutputStream outputStream) {
-        try {
-            outputStream.write(data);
-        } catch (IOException ioe) {
-            throw new UncheckedIOException(
-                    "Failed to store the icon image into the stream provided",
-                    ioe);
-        }
     }
 
 }

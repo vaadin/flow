@@ -70,6 +70,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -116,7 +117,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
         CssImport.class, CssImport.Container.class, JavaScript.class,
         JavaScript.Container.class, Theme.class, NoTheme.class,
-        HasErrorParameter.class })
+        HasErrorParameter.class, PWA.class })
 @WebListener
 public class DevModeInitializer
         implements ClassLoaderAwareServletContainerInitializer, Serializable,
@@ -165,7 +166,8 @@ public class DevModeInitializer
     private static final Pattern JAR_FILE_REGEX = Pattern
             .compile(".*file:(.+\\.jar).*");
 
-    // Path of jar files in a URL with zip protocol doesn't start with "zip:"
+    // Path of jar files in a URL with zip protocol doesn't start with
+    // "zip:"
     // nor "file:". It contains only the path of the file.
     // Weblogic uses zip protocol.
     private static final Pattern ZIP_PROTOCOL_JAR_FILE_REGEX = Pattern
@@ -301,7 +303,8 @@ public class DevModeInitializer
         File generatedPackages = new File(builder.generatedFolder,
                 PACKAGE_JSON);
 
-        // If we are missing the generated webpack configuration then generate
+        // If we are missing the generated webpack configuration then
+        // generate
         // webpack configurations
         if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
             builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
@@ -338,7 +341,8 @@ public class DevModeInitializer
                     .withConnectClientTsApiFolder(new File(connectTsFolder));
         }
 
-        // If we are missing either the base or generated package json files
+        // If we are missing either the base or generated package json
+        // files
         // generate those
         if (!new File(builder.npmFolder, PACKAGE_JSON).exists()
                 || !generatedPackages.exists()) {
@@ -527,15 +531,19 @@ public class DevModeInitializer
             Object virtualFile = url.openConnection().getContent();
             Class virtualFileClass = virtualFile.getClass();
 
-            // Reflection as we cannot afford a dependency to WildFly or JBoss
+            // Reflection as we cannot afford a dependency to
+            // WildFly or JBoss
             Method getChildrenRecursivelyMethod = virtualFileClass
                     .getMethod("getChildrenRecursively");
             Method getPhysicalFileMethod = virtualFileClass
                     .getMethod("getPhysicalFile");
 
-            // By calling getPhysicalFile, we make sure that the corresponding
-            // physical files/directories of the root directory and its children
-            // are created. Later, these physical files are scanned to collect
+            // By calling getPhysicalFile, we make sure that the
+            // corresponding
+            // physical files/directories of the root directory and
+            // its children
+            // are created. Later, these physical files are scanned
+            // to collect
             // their resources.
             List virtualFiles = (List) getChildrenRecursivelyMethod
                     .invoke(virtualFile);
@@ -578,7 +586,8 @@ public class DevModeInitializer
     private static void generateJarFromJBossVfsFolder(Object jarVirtualFile,
             Path tempJar) throws IOException, IllegalAccessException,
             InvocationTargetException, NoSuchMethodException {
-        // We should use reflection to use JBoss VFS API as we cannot afford a
+        // We should use reflection to use JBoss VFS API as we cannot
+        // afford a
         // dependency to WildFly or JBoss
         Class virtualFileClass = jarVirtualFile.getClass();
         Method getChildrenRecursivelyMethod = virtualFileClass
