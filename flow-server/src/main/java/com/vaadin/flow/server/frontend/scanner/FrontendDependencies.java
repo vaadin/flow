@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -30,10 +34,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.bytebuddy.jar.asm.ClassReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
@@ -41,14 +41,22 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import net.bytebuddy.jar.asm.AnnotationVisitor;
+import net.bytebuddy.jar.asm.ClassReader;
+import net.bytebuddy.jar.asm.ClassVisitor;
+import net.bytebuddy.jar.asm.MethodVisitor;
+import net.bytebuddy.jar.asm.Opcodes;
 
 /**
  * Represents the class dependency tree of the application.
@@ -62,6 +70,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final Set<String> visited = new HashSet<>();
+    private PwaConfiguration pwaConfiguration;
 
     /**
      * Default Constructor.
@@ -99,6 +108,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             computeApplicationTheme();
             computePackages();
+            computePwaConfiguration();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
         } catch (ClassNotFoundException | InstantiationException
@@ -203,6 +213,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public AbstractTheme getTheme() {
         return themeInstance;
+    }
+
+    @Override
+    public PwaConfiguration getPwaConfiguration() {
+        return this.pwaConfiguration;
     }
 
     /**
@@ -506,4 +521,56 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     public String toString() {
         return endPoints.toString();
     }
+
+    /**
+     * Find the class with a {@link com.vaadin.flow.server.PWA} annotation and
+     * read it into a {@link com.vaadin.flow.server.PwaConfiguration} object.
+     *
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    private void computePwaConfiguration()
+            throws ClassNotFoundException, IOException {
+
+        FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
+                getFinder(), PWA.class.getName());
+
+        for (Class<?> hopefullyAppShellClass :
+
+        getFinder().getAnnotatedClasses(PWA.class.getName())) {
+            pwaVisitor.visitClass(hopefullyAppShellClass.getName());
+        }
+
+        Set<String> dependencies = pwaVisitor.getValues("name");
+        if (dependencies.size() > 1) {
+            throw new IOException(ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+        }
+        if (dependencies.isEmpty()) {
+            this.pwaConfiguration = new PwaConfiguration();
+            return;
+        }
+
+        String name = pwaVisitor.getValue("name");
+        String shortName = pwaVisitor.getValue("shortName");
+        String description = pwaVisitor.getValue("description");
+        String backgroundColor = pwaVisitor.getValue("backgroundColor");
+        String themeColor = pwaVisitor.getValue("themeColor");
+        String iconPath = pwaVisitor.getValue("iconPath");
+        log().error(
+                "iconPath in " + getClass().getSimpleName() + ": " + iconPath);
+        String manifestPath = pwaVisitor.getValue("manifestPath");
+        String offlinePath = pwaVisitor.getValue("offlinePath");
+        String display = pwaVisitor.getValue("display");
+        String startPath = pwaVisitor.getValue("startPath");
+        List<String> offlineResources = pwaVisitor.getValue("offlineResources");
+        boolean enableInstallPrompt = pwaVisitor
+                .getValue("enableInstallPrompt");
+
+        this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
+                description, backgroundColor, themeColor, iconPath,
+                manifestPath, offlinePath, display, startPath,
+                offlineResources.toArray(new String[offlineResources.size()]),
+                enableInstallPrompt);
+    }
+
 }

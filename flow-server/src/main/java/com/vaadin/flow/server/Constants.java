@@ -47,6 +47,8 @@ public final class Constants implements Serializable {
     public static final String CONNECT_GENERATED_TS_DIR_TOKEN = "connect.generated";
     public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
+    public static final String STATIC_FILE_OUTPUT_DIRECTORY = "staticFileOutputDirectory";
+    public static final String STATIC_FILE_LOCATIONS = "staticFileLocations";
 
     /**
      * Enable it if your project is using client-side bootstrapping (CCDM).

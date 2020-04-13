@@ -15,6 +15,15 @@
  */
 package com.vaadin.flow.plugin.maven;
 
+import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +33,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.theme.Theme;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -36,27 +57,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.theme.Theme;
-
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
-import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Goal that builds the frontend bundle.
@@ -81,6 +83,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+
+    @Parameter(defaultValue = "${project.build.directory}", readonly = true, required = true)
+    private File buildDirectory;
 
     /**
      * Whether to generate a bundle from the project frontend sources or not.
@@ -116,6 +121,22 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
+    /**
+     * Copy the `webapp.config.js` from the specified URL if missing. Default is
+     * the template provided by this plugin. Set it to empty string to disable
+     * the feature.
+     */
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
+    private String webpackTemplate;
+
+    /**
+     * Copy the `webapp.generated.js` from the specified URL. Default is the
+     * template provided by this plugin. Set it to empty string to disable the
+     * feature.
+     */
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
+    private String webpackGeneratedTemplate;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         updateBuildFile();
@@ -149,10 +170,18 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         File flowResourcesFolder = new File(npmFolder,
                 DEAULT_FLOW_RESOURCES_FOLDER);
+
+        File[] processedStaticFileLocations = Stream.of(staticFileLocations)
+                .map(location -> new File(outputDirectory, location.trim()))
+                .toArray(File[]::new);
+
         // @formatter:off
         new NodeTasks.Builder(getClassFinder(project),
                 npmFolder, generatedFolder, frontendDirectory)
                         .runNpmInstall(runNpmInstall)
+                        .withWebpack(webpackOutputDirectory,
+                                webpackTemplate, webpackGeneratedTemplate)
+                        .withWebManifest(processedStaticFileLocations, staticFileOutputDirectory)
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
@@ -169,6 +198,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withConnectGeneratedOpenApiJson(openApiJsonFile)
                         .withConnectClientTsApiFolder(generatedTsFolder)
                         .withHomeNodeExecRequired(requireHomeNodeExec)
+                        .withWebManifest(processedStaticFileLocations, staticFileOutputDirectory)
                         .build()
                         .execute();
     }

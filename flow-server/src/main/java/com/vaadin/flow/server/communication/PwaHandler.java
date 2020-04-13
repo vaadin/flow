@@ -41,7 +41,6 @@ import com.vaadin.flow.server.VaadinSession;
  * Resources include:
  * <ul>
  * <li>manifest
- * <li>service worker
  * <li>offline fallback page
  * <li>icons
  * </ul>
@@ -71,23 +70,23 @@ public class PwaHandler implements RequestHandler {
             return;
         }
 
-        // Icon handling
-        for (PwaIcon icon : pwaRegistry.getIcons()) {
-            requestHandlerMap.put(icon.getRelHref(),
-                    (session, request, response) -> {
-                        response.setContentType(icon.getType());
-                        // Icon is cached with service worker, deny browser
-                        // caching
-                        if (icon.shouldBeCached()) {
-                            response.setHeader("Cache-Control",
-                                    "no-cache, must-revalidate");
-                        }
-                        try (OutputStream out = response.getOutputStream()) {
-                            icon.write(out);
-                        }
-                        return true;
-                    });
-        }
+        // // Icon handling
+        // for (PwaIcon icon : pwaRegistry.getIcons()) {
+        // requestHandlerMap.put(icon.getRelHref(),
+        // (session, request, response) -> {
+        // response.setContentType(icon.getType());
+        // // Icon is cached with service worker, deny browser
+        // // caching
+        // if (icon.shouldBeCached()) {
+        // response.setHeader("Cache-Control",
+        // "no-cache, must-revalidate");
+        // }
+        // try (OutputStream out = response.getOutputStream()) {
+        // icon.write(out);
+        // }
+        // return true;
+        // });
+        // }
         // Offline page handling
         requestHandlerMap.put(
                 pwaRegistry.getPwaConfiguration().relOfflinePath(),
@@ -99,27 +98,6 @@ public class PwaHandler implements RequestHandler {
                     return true;
                 });
 
-        // manifest.webmanifest handling
-        requestHandlerMap.put(
-                pwaRegistry.getPwaConfiguration().relManifestPath(),
-                (session, request, response) -> {
-                    response.setContentType("application/manifest+json");
-                    try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getManifestJson());
-                    }
-                    return true;
-                });
-
-        // serviceworker.js handling
-        requestHandlerMap.put(
-                pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
-                (session, request, response) -> {
-                    response.setContentType("application/javascript");
-                    try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getServiceWorkerJs());
-                    }
-                    return true;
-                });
     }
 
     @Override
@@ -129,52 +107,12 @@ public class PwaHandler implements RequestHandler {
 
         if (pwaRegistry.getPwaConfiguration().isEnabled()) {
             if (requestHandlerMap.containsKey(requestUri)) {
-                return requestHandlerMap.get(requestUri)
-                        .handleRequest(session,request,response);
-            } else if (requestUri.startsWith("/"+PwaRegistry.WORKBOX_FOLDER)) {
-
-                // allow only files under workbox_folder
-                String resourceName = PwaRegistry.WORKBOX_FOLDER + requestUri
-                        // remove the extra '/'
-                        .substring(PwaRegistry.WORKBOX_FOLDER.length() + 1)
-                        .replaceAll("/", "");
-                return handleWorkboxResource(resourceName, response);
+                return requestHandlerMap.get(requestUri).handleRequest(session,
+                        request, response);
             }
 
         }
         return false;
-    }
-
-    private boolean handleWorkboxResource(String fileName,
-            VaadinResponse response) {
-        try (InputStream stream = BootstrapHandler.class
-                .getResourceAsStream(fileName);
-             InputStreamReader reader = new InputStreamReader(
-                     stream, StandardCharsets.UTF_8);) {
-            PrintWriter writer = response.getWriter();
-            if (fileName.endsWith(".js")) {
-                response.setContentType("application/javascript");
-            } else {
-                response.setContentType("text/plain");
-            }
-
-            final char[] buffer = new char[1024];
-            int n;
-            while ((n = reader.read(buffer)) != -1) {
-                writer.write(buffer, 0, n);
-            }
-            return true;
-        } catch (NullPointerException e) {
-            getLogger().debug("Workbox file '{}' does not exist", fileName, e);
-            return false;
-        } catch (IOException e) {
-            getLogger().warn("Error while reading workbox file '{}'", fileName, e);
-            return false;
-        }
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(PwaHandler.class);
     }
 
 }

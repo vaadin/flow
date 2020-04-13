@@ -19,6 +19,7 @@ package com.vaadin.flow.internal;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -26,6 +27,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
@@ -48,7 +50,7 @@ public final class JsonUtils {
      * Collects a stream of JSON values to a JSON array.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     private static final class JsonArrayCollector
             implements Collector<JsonValue, JsonArray, JsonArray> {
@@ -275,4 +277,16 @@ public final class JsonUtils {
 
         return object;
     }
+
+    /**
+     * Converts the given string array to a JsonArray of JsonString.
+     * 
+     * @param strings
+     *            The strings to include
+     */
+    public static JsonArray toJsonArray(String[] strings) {
+        return Stream.of(strings).map(string -> Json.create(string))
+                .collect(asArray());
+    }
+
 }

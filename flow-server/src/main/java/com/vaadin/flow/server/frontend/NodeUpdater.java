@@ -281,9 +281,11 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("raw-loader", "4.0.0");
 
         defaults.put("terser", "4.6.7");
-        
+
         defaults.put("lit-element", "2.3.1");
 
+        defaults.put("workbox-webpack-plugin", "5.1.2");
+        defaults.put("glob", "7.1.6");
         return defaults;
     }
 

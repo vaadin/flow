@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -52,6 +53,7 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
+import static com.vaadin.flow.server.Constants.META_INF;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -62,7 +64,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 /**
  * This goal checks that node and npm tools are installed, copies frontend
  * resources available inside `.jar` dependencies to `node_modules`, and creates
- * or updates `package.json` and `webpack.config.json` files.
+ * or updates `package.json`.
  *
  * @since 2.0
  */
@@ -71,22 +73,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-
-    /**
-     * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
-    private String webpackTemplate;
-
-    /**
-     * Copy the `webapp.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
-    private String webpackGeneratedTemplate;
 
     @Component
     private BuildContext buildContext; // m2eclipse integration
@@ -117,14 +103,13 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             NodeTasks.Builder builder = new NodeTasks.Builder(
                     getClassFinder(project), npmFolder, generatedFolder,
                     frontendDirectory)
-                            .withWebpack(webpackOutputDirectory,
-                                    webpackTemplate, webpackGeneratedTemplate)
                             .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
                             .enablePackagesUpdate(false).runNpmInstall(false);
-            // If building a jar project copy jar artifact contents now as we
+            // If building a jar project copy jar artifact contents
+            // now as we
             // might
             // not be able to read files from jar path.
             if ("jar".equals(project.getPackaging())) {
@@ -143,7 +128,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     }
 
     private void propagateBuildInfo() {
-        // For forked processes not accessing to System.properties we leave a
+        // For forked processes not accessing to System.properties we
+        // leave a
         // token file with the information about the build
         File token = new File(webpackOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
@@ -166,14 +152,20 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
         buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                 requireHomeNodeExec);
+        buildInfo.put(Constants.STATIC_FILE_OUTPUT_DIRECTORY,
+                staticFileOutputDirectory.getAbsolutePath());
+        buildInfo.put(Constants.STATIC_FILE_LOCATIONS,
+                JsonUtils.toJsonArray(staticFileLocations));
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
             FileUtils.write(token, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
 
-            // Inform m2eclipse that the directory containing the token file has
-            // been updated in order to trigger server re-deployment (#6103)
+            // Inform m2eclipse that the directory containing the
+            // token file has
+            // been updated in order to trigger server re-deployment
+            // (#6103)
             if (buildContext != null) {
                 buildContext.refresh(token.getParentFile());
             }

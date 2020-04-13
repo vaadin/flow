@@ -23,7 +23,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
@@ -32,6 +31,13 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
  * @since 2.0
  */
 public abstract class FlowModeAbstractMojo extends AbstractMojo {
+
+    /**
+     * The build output directory
+     */
+    @Parameter(readonly = true, defaultValue = "${project.build.outputDirectory}")
+    protected File outputDirectory;
+
     /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
@@ -103,6 +109,23 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
     protected File generatedTsFolder;
+
+    /**
+     * The folder where static files should be output so they are served to the
+     * browser.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/resources")
+    protected File staticFileOutputDirectory;
+
+    /**
+     * The folders where static files for the project can be found, relative to
+     * the project output directory. Used for determining hashes for caching in
+     * service workers.
+     */
+    // War file resources are placed in `target/myproject-1.0` directly
+    // Spring Boot JAR resources are placed on the classpath
+    @Parameter
+    protected String[] staticFileLocations = new String[] { "WEB-INF/classes/static", "" };
 
     /**
      * Instructs to use pnpm for installing npm frontend resources.

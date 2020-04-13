@@ -30,19 +30,22 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Full classpath scanner.
@@ -58,6 +61,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
+    private PwaConfiguration pwaConfiguration;
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
     private Set<String> scripts = new LinkedHashSet<>();
@@ -119,8 +123,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         cssData = discoverCss();
 
         discoverTheme();
-
         modules = calculateModules(regularModules, themeModules);
+
+        this.pwaConfiguration = findPWA();
         getLogger().info("Visited {} classes. Took {} ms.", getClasses().size(),
                 System.currentTimeMillis() - start);
     }
@@ -324,11 +329,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 + getThemesList(themes));
             }
             if (!themes.isEmpty() && !notThemeClasses.isEmpty()) {
-                throw new IllegalStateException("@"
-                        + Theme.class.getSimpleName() + " ("
-                        + getThemesList(themes) + ") and @"
-                        + NoTheme.class.getSimpleName()
-                        + " annotations can't be used simultaneously.");
+                throw new IllegalStateException(
+                        "@" + Theme.class.getSimpleName() + " ("
+                                + getThemesList(themes) + ") and @"
+                                + NoTheme.class.getSimpleName()
+                                + " annotations can't be used simultaneously.");
             }
             if (!notThemeClasses.isEmpty()) {
                 return ThemeData.createNoTheme();
@@ -342,9 +347,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private String getThemesList(Collection<ThemeData> themes) {
-        return themes
-                .stream().map(theme -> "name = '" + theme.getName()
-                        + "' and variant = '" + theme.getVariant() + "'")
+        return themes.stream()
+                .map(theme -> "name = '" + theme.getName() + "' and variant = '"
+                        + theme.getVariant() + "'")
                 .collect(Collectors.joining(", "));
     }
 
@@ -383,7 +388,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private String invokeAnnotationMethodAsString(Annotation target,
             String methodName) {
         Object result = invokeAnnotationMethod(target, methodName);
-        return result == null ? null : result.toString();
+        return result == null
+                ? getAnnotationMethodDefaultValueAsString(target, methodName)
+                : result.toString();
     }
 
     private Object invokeAnnotationMethod(Annotation target,
@@ -407,8 +414,82 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
+    private String getAnnotationMethodDefaultValueAsString(Annotation target,
+            String methodName) {
+        Object result = getAnnotationMethodDefaultValue(target, methodName);
+        return result == null ? null : result.toString();
+    }
+
+    private Object getAnnotationMethodDefaultValue(Annotation target,
+            String methodName) {
+        try {
+            return target.getClass().getDeclaredMethod(methodName)
+                    .getDefaultValue();
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(
+                    String.format("Annotation '%s' has no method named `%s",
+                            target, methodName),
+                    e);
+        }
+    }
+
     private Logger getLogger() {
         return LoggerFactory.getLogger(this.getClass());
+    }
+
+    @Override
+    public PwaConfiguration getPwaConfiguration() {
+        return pwaConfiguration;
+    }
+
+    private PwaConfiguration findPWA() {
+        try {
+            Class<? extends Annotation> loadedPWAAnnotation = getFinder()
+                    .loadClass(PWA.class.getName());
+
+            Set<Class<?>> annotatedClasses = getFinder()
+                    .getAnnotatedClasses(loadedPWAAnnotation);
+            if (annotatedClasses.isEmpty()) {
+                return null;
+            } else if (annotatedClasses.size() != 1) {
+                throw new IllegalStateException(
+                        ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+            }
+            Annotation pwa = annotationFinder
+                    .apply(annotatedClasses.iterator().next(),
+                            loadedPWAAnnotation)
+                    .get(0);
+            String name = invokeAnnotationMethodAsString(pwa, "name");
+            String shortName = invokeAnnotationMethodAsString(pwa, "shortName");
+            String description = invokeAnnotationMethodAsString(pwa,
+                    "description");
+            String backgroundColor = invokeAnnotationMethodAsString(pwa,
+                    "backgroundColor");
+            String themeColor = invokeAnnotationMethodAsString(pwa,
+                    "themeColor");
+            String iconPath = invokeAnnotationMethodAsString(pwa, "iconPath");
+
+            getLogger().error("iconPath in " + getClass().getSimpleName() + ": "
+                    + iconPath);
+            String manifestPath = invokeAnnotationMethodAsString(pwa,
+                    "manifestPath");
+            String offlinePath = invokeAnnotationMethodAsString(pwa,
+                    "offlinePath");
+            String display = invokeAnnotationMethodAsString(pwa, "display");
+            String startPath = invokeAnnotationMethodAsString(pwa, "startPath");
+            String[] offlineResources = (String[]) invokeAnnotationMethod(pwa,
+                    "offlineResources");
+            boolean enableInstallPrompt = (boolean) invokeAnnotationMethod(pwa,
+                    "enableInstallPrompt");
+
+            return new PwaConfiguration(true, name, shortName, description,
+                    backgroundColor, themeColor, iconPath, manifestPath,
+                    offlinePath, display, startPath, offlineResources,
+                    enableInstallPrompt);
+        } catch (ClassNotFoundException exception) {
+            throw new IllegalStateException(
+                    "Could not load PWA annotation class", exception);
+        }
     }
 
 }
