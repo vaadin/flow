@@ -5,13 +5,14 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>3.1-SNAPSHOT</version>
+        <version>3.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-no-theme</artifactId>
     <name>Flow tests for no theme in NPM mode</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>

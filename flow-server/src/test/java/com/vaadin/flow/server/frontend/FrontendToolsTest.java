@@ -35,6 +35,7 @@ import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -203,19 +204,18 @@ public class FrontendToolsTest {
     @Test
     public void ensurePnpm_requestInstall_keepPackageJson_removePackageLock_ignoredPnpmExists_localPnpmIsRemoved()
             throws IOException {
-        Assume.assumeTrue(tools.getPnpmExecutable(baseDir, false).isEmpty());
-        File packageJson = new File(baseDir, "package.json");
+        Assume.assumeTrue(
+                tools.getPnpmExecutable(vaadinHomeDir, false).isEmpty());
+        File packageJson = new File(vaadinHomeDir, "package.json");
         FileUtils.writeStringToFile(packageJson, "{}", StandardCharsets.UTF_8);
 
-        File packageLockJson = new File(baseDir, "package-lock.json");
+        File packageLockJson = new File(vaadinHomeDir, "package-lock.json");
         FileUtils.writeStringToFile(packageLockJson, "{}",
                 StandardCharsets.UTF_8);
 
         tools.ensurePnpm();
-        Assert.assertFalse(tools.getPnpmExecutable(baseDir, false).isEmpty());
-
-        // locally installed pnpm (via npm/pnpm) is removed
-        Assert.assertFalse(new File("node_modules/pnpm").exists());
+        Assert.assertFalse(
+                tools.getPnpmExecutable(vaadinHomeDir, false).isEmpty());
 
         Assert.assertEquals("{}", FileUtils.readFileToString(packageJson,
                 StandardCharsets.UTF_8));
@@ -229,6 +229,16 @@ public class FrontendToolsTest {
         Assert.assertTrue(executable.contains("--shamefully-hoist=true"));
         Assert.assertTrue(
                 executable.stream().anyMatch(cmd -> cmd.contains("pnpm")));
+    }
+
+    @Test
+    public void getPnpmExecutable_pnpmIsNotInstalledGlobally_pnpmIsInstalledInHome() {
+        List<String> executable = tools.getPnpmExecutable(baseDir, false);
+        Assume.assumeTrue(executable.isEmpty());
+
+        executable = tools.getPnpmExecutable();
+        Assert.assertThat(executable.get(1),
+                CoreMatchers.startsWith(vaadinHomeDir));
     }
 
     @Test
@@ -426,7 +436,7 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
-        createStubNode(true, true, baseDir);
+        createStubNode(true, true, false, baseDir);
 
         assertNodeCommand(() -> baseDir);
     }
@@ -444,7 +454,7 @@ public class FrontendToolsTest {
         Assume.assumeFalse(
                 "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
                 FrontendUtils.isWindows());
-        createStubNode(false, true, baseDir);
+        createStubNode(false, true, false, baseDir);
 
         assertNpmCommand(() -> baseDir);
     }
@@ -458,7 +468,7 @@ public class FrontendToolsTest {
     }
 
     private void assertNpmCommand(Supplier<String> path) throws IOException {
-        createStubNode(false, true, vaadinHomeDir);
+        createStubNode(false, true, false, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
         assertThat(tools.getNodeExecutable(),
@@ -470,7 +480,7 @@ public class FrontendToolsTest {
     }
 
     private void assertNodeCommand(Supplier<String> path) throws IOException {
-        createStubNode(true, true, vaadinHomeDir);
+        createStubNode(true, true, false, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString(DEFAULT_NODE));
         assertThat(tools.getNodeExecutable(), containsString(path.get()));

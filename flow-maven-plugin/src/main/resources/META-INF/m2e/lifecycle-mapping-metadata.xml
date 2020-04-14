@@ -4,9 +4,7 @@
     <pluginExecution>
       <pluginExecutionFilter>
         <goals>
-          <goal>copy-frontend-files</goal>
-          <goal>copy-production-files</goal>
-          <goal>package-for-production</goal>
+          <goal>prepare-frontend</goal>
           <goal>validate</goal>
           <goal>build-frontend</goal>
         </goals>

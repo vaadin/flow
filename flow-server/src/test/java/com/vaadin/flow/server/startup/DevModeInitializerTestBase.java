@@ -2,7 +2,10 @@ package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
+
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -16,16 +19,19 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -67,8 +73,9 @@ public class DevModeInitializerTestBase {
 
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
+        Boolean enablePnpm = Boolean.TRUE;
 
-        createStubNode(false, true, baseDir);
+        createStubNode(false, true, enablePnpm, baseDir);
         createStubWebpackServer("Compiled", 500, baseDir);
 
         servletContext = Mockito.mock(ServletContext.class);
@@ -80,7 +87,8 @@ public class DevModeInitializerTestBase {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
-        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, "true");
+        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                enablePnpm.toString());
 
         Mockito.when(vaadinServletRegistration.getInitParameters())
                 .thenReturn(initParams);
@@ -157,8 +165,18 @@ public class DevModeInitializerTestBase {
         }
     }
 
-    public void runOnStartup() throws Exception {
-        devModeInitializer.onStartup(classes, servletContext);
+    public void process() throws Exception {
+        devModeInitializer.process(classes, servletContext);
+        waitForDevModeServer();
+    }
+
+    protected void waitForDevModeServer() throws NoSuchMethodException,
+            IllegalAccessException, InvocationTargetException {
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        Assert.assertNotNull(handler);
+        Method join = DevModeHandler.class.getDeclaredMethod("join");
+        join.setAccessible(true);
+        join.invoke(handler);
     }
 
     public void runDestroy() throws Exception {

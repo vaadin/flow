@@ -176,6 +176,12 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
 
     /**
+     * Constant for whether pnpm is default or not. Mojos need the value as
+     * string and constant, so need to use string instead of boolean.
+     */
+    public static final String ENABLE_PNPM_DEFAULT_STRING = "true";
+
+    /**
      * Configuration parameter name for requiring node executable installed in
      * home directory.
      *
@@ -274,6 +280,13 @@ public final class Constants implements Serializable {
      * The name of platform versions file.
      */
     public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
+
+    /**
+     * Configuration parameter name for enabling live reload.
+     *
+     * @since
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
 
     private Constants() {
         // prevent instantiation constants class only

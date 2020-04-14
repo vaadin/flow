@@ -2,6 +2,7 @@ package com.vaadin.flow.server;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -451,10 +452,8 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void createInitParameters_readDevModeProperties() throws Exception {
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"pnpm.enable\": true,",
-                        "\"require.home.node\": true,",
-                        "\"devmode.optimizeBundle\": true", "}"));
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
@@ -463,18 +462,13 @@ public class DeploymentConfigurationFactoryTest {
                 .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
         Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
                 .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
-        Assert.assertEquals(Boolean.TRUE.toString(),
-                config.getInitParameters().getProperty(
-                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
     public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
             throws Exception {
-        FileUtils.writeLines(tokenFile,
-                Arrays.asList("{", "\"pnpm.enable\": true,",
-                        "\"require.home.node\": true,",
-                        "\"devmode.optimizeBundle\": true", "}"));
+        FileUtils.writeLines(tokenFile, Arrays.asList("{",
+                "\"pnpm.enable\": true,", "\"require.home.node\": true,", "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));

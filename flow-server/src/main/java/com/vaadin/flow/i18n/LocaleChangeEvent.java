@@ -34,7 +34,7 @@ public class LocaleChangeEvent extends EventObject {
      * Locale change event constructor.
      *
      * @param ui
-     *            The object on which the Event initially occurred.
+     *            The ui on which the Event initially occurred.
      * @param locale
      *            new locale that was set
      */
@@ -50,5 +50,14 @@ public class LocaleChangeEvent extends EventObject {
      */
     public Locale getLocale() {
         return locale;
+    }
+
+    /**
+     * Returns the UI where the locale changed in.
+     * 
+     * @return the ui
+     */
+    public UI getUI() {
+        return (UI) getSource();
     }
 }

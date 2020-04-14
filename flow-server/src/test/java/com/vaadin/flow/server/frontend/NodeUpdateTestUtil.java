@@ -75,7 +75,7 @@ public class NodeUpdateTestUtil {
     // frontend-maven-plugin does
     // Also creates a stub version of webpack-devmode-server
     public static void createStubNode(boolean stubNode, boolean stubNpm,
-            String baseDir) throws IOException {
+            boolean stubPnpm, String baseDir) throws IOException {
 
         if (stubNpm) {
             File npmCli = new File(baseDir,
@@ -84,12 +84,14 @@ public class NodeUpdateTestUtil {
             FileUtils.writeStringToFile(npmCli,
                     "process.argv.includes('--version') && console.log('5.6.0');",
                     StandardCharsets.UTF_8);
-
+        }
+        if (stubPnpm) {
             File ppmCli = new File(baseDir, "node_modules/pnpm/bin/pnpm.js");
             FileUtils.forceMkdirParent(ppmCli);
             FileUtils.writeStringToFile(ppmCli,
-                    "process.argv.includes('--version') && console.log('4.1.0');",
+                    "process.argv.includes('--version') && console.log('4.5.0');",
                     StandardCharsets.UTF_8);
+            new File(baseDir, "node_modules/.modules.yaml").createNewFile();
         }
         if (stubNode) {
             File node = new File(baseDir,

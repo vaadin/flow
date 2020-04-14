@@ -5,7 +5,7 @@
     <parent>
         <artifactId>flow-project</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>3.1-SNAPSHOT</version>
+        <version>3.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-jrebel-plugin</artifactId>
     <name>Flow Devmode for JRebel</name>
@@ -28,14 +28,14 @@
         <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>jr-sdk</artifactId>
-            <version>2020.1.1</version>
+            <version>2020.2.0</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>jr-utils</artifactId>
-            <version>2020.1.1</version>
+            <version>2020.2.0</version>
             <scope>provided</scope>
         </dependency>
 

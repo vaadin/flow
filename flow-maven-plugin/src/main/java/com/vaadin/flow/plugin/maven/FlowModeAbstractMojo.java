@@ -53,13 +53,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     public File frontendDirectory;
 
     /**
-     * The directory where flow resources from jars will be copied to.
-     */
-    @Parameter(defaultValue = "${project.basedir}/"
-            + DEAULT_FLOW_RESOURCES_FOLDER)
-    public File flowResourcesFolder;
-
-    /**
      * Whether or not we are running in productionMode.
      */
     @Parameter(defaultValue = "${vaadin.productionMode}")
@@ -114,7 +107,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = "false")
+    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = Constants.ENABLE_PNPM_DEFAULT_STRING)
     protected boolean pnpmEnable;
 
     /**

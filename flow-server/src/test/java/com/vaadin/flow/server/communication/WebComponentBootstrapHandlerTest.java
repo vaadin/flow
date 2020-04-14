@@ -155,6 +155,33 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
+    public void writeBootstrapPage_devmodeGizmoIsDisabled()
+            throws IOException, ServiceException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService();
+        service.init();
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setEnableDevServer(false);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue(result.contains("\\\"devmodeGizmoEnabled\\\": false"));
+    }
+
+    @Test
     public void writeBootstrapPage_spepe()
             throws Exception {
         WebComponentBootstrapHandler handler = new WebComponentBootstrapHandler();

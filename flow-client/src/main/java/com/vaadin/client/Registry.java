@@ -312,5 +312,4 @@ public class Registry {
     public Poller getPoller() {
         return get(Poller.class);
     }
-
 }

@@ -290,7 +290,6 @@ export class ConnectClient {
       'X-CSRF-Token': $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken || ''
     };
 
-
     // helper to keep the undefined value in object after JSON.stringify
     const nullForUndefined = (obj: any): any => {
       for (const property in obj) {
@@ -336,7 +335,11 @@ export class ConnectClient {
     // this way makes the folding down below more concise.
     const fetchNext: MiddlewareNext =
       async(context: MiddlewareContext): Promise<Response> => {
-        return fetch(context.request);
+        this.loading(true);
+        return fetch(context.request).then(response => {
+          this.loading(false);
+          return response;
+        });
       };
 
     // Assemble the final middlewares array from internal
@@ -357,5 +360,12 @@ export class ConnectClient {
 
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
+  }
+
+  // Re-use flow loading indicator when fetching endpoints
+  private loading(action: boolean) {
+    if ($wnd.Vaadin.Flow?.loading) {
+      $wnd.Vaadin.Flow.loading(action);
+    }
   }
 }

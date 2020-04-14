@@ -61,6 +61,8 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
@@ -79,7 +81,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -510,7 +511,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             head, initialPageSettings));
 
             if (!config.isProductionMode()) {
-                UsageStatisticsExporter.exportUsageStatisticsToDocument(document);
+                UsageStatisticsExporter
+                        .exportUsageStatisticsToDocument(document);
             }
 
             setupPwa(document, context);
@@ -749,19 +751,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 BootstrapContext context) throws IOException {
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
-                StringBuilder message = new StringBuilder("The stats file from webpack (stats.json) was not found.\n");
-                if(service.getDeploymentConfiguration().isProductionMode()) {
+                StringBuilder message = new StringBuilder(
+                        "The stats file from webpack (stats.json) was not found.\n");
+                if (service.getDeploymentConfiguration().isProductionMode()) {
                     message.append(
                             "The application is running in production mode.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                    message.append("Or switch application to development mode.");
-                } else if(!service.getDeploymentConfiguration().enableDevServer()) {
-                    message.append("Dev server is disabled for the application.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Or switch application to development mode.");
+                } else if (!service.getDeploymentConfiguration()
+                        .enableDevServer()) {
+                    message.append(
+                            "Dev server is disabled for the application.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
                 } else {
-                    message.append("This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
-                            message.append("If you are using Spring Boot and are launching the Application class directly, ");
-                                    message.append("you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+                    message.append(
+                            "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
+                    message.append(
+                            "If you are using Spring Boot and are launching the Application class directly, ");
+                    message.append(
+                            "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
                 }
                 throw new IOException(message.toString());
             }
@@ -1069,6 +1080,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
+                appConfig.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED,
+                        deploymentConfiguration.isDevModeLiveReloadEnabled());
+
+                VaadinService service = session.getService();
+                BrowserLiveReloadAccess liveReloadAccess = service
+                        .getInstantiator()
+                        .getOrCreate(BrowserLiveReloadAccess.class);
+                BrowserLiveReload liveReload = liveReloadAccess != null
+                        ? liveReloadAccess.getLiveReload(service)
+                        : null;
+                if (liveReload != null && liveReload.getBackend() != null) {
+                    appConfig.put("liveReloadBackend",
+                            liveReload.getBackend().toString());
+                }
+
+                // make configurable when fixing #7847
+                appConfig.put("springBootDevToolsPort", 35729);
             }
 
             // Use locale from session if set, else from the request
@@ -1101,7 +1129,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             appConfig.put("heartbeatInterval",
                     deploymentConfiguration.getHeartbeatInterval());
-            
+
             appConfig.put("maxMessageSuspendTimeout",
                     deploymentConfiguration.getMaxMessageSuspendTimeout());
 

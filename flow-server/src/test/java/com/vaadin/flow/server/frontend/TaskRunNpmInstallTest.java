@@ -90,6 +90,18 @@ public class TaskRunNpmInstallTest {
 
         Mockito.verify(logger).info(getRunningMsg());
     }
+    @Test
+    public void runNpmInstall_nodeModulesContainsStaging_npmInstallIsExecuted()
+            throws ExecutionFailedException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+        File staging = new File(nodeModules, ".staging");
+        staging.mkdir();
+        nodeUpdater.modified = false;
+        task.execute();
+
+        Mockito.verify(logger).info(getRunningMsg());
+    }
 
     @Test
     public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()

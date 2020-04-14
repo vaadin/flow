@@ -5,13 +5,12 @@
  * This file will be overwritten on every run. Any custom changes should be made to webpack.config.js
  */
 const fs = require('fs');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+const ProgressPlugin = require('progress-webpack-plugin');
 
 const path = require('path');
-const baseDir = path.resolve(__dirname);
 
 // the folder of app resources:
 //  - flow templates for classic Flow
@@ -34,10 +33,12 @@ const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
 const statsFile = `${confFolder}/stats.json`;
 // make sure that build folder exists before outputting anything
 const mkdirp = require('mkdirp');
-mkdirp(buildFolder);
-mkdirp(confFolder);
 
 const devMode = process.argv.find(v => v.indexOf('webpack-dev-server') >= 0);
+
+!devMode && mkdirp(buildFolder);
+mkdirp(confFolder);
+
 let stats;
 
 // Open a connection with the Java dev-mode handler in order to finish
@@ -143,7 +144,9 @@ module.exports = {
   },
   plugins: [
     // Generate compressed bundles when not devMode
-    devMode && new CompressionPlugin(),
+    !devMode && new CompressionPlugin(),
+    // Give some feedback when heavy builds
+    new ProgressPlugin(true),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {

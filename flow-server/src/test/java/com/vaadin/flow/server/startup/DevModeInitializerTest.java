@@ -1,21 +1,29 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 import java.util.function.Function;
 
+import com.google.common.collect.Maps;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -37,7 +45,6 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.DevModeHandler.getDevModeHandler;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +79,42 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Route
     public static class RoutedWithReferenceToVisited {
         Visited b;
+    }
+
+    public static class MockVirtualFile {
+        File file;
+
+        public List<MockVirtualFile> getChildrenRecursively() {
+            List<MockVirtualFile> files = new ArrayList<>();
+
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    MockVirtualFile mvf = new MockVirtualFile();
+                    mvf.file = child;
+                    files.add(mvf);
+                    files.addAll(mvf.getChildrenRecursively());
+                }
+            }
+            return files;
+        }
+
+        public InputStream openStream() throws FileNotFoundException {
+            return new FileInputStream(file);
+        }
+
+        public File getPhysicalFile() {
+            return file;
+        }
+
+        public String getPathNameRelativeTo(MockVirtualFile other) {
+            return Paths.get(file.toURI())
+                    .relativize(Paths.get(other.file.toURI())).toString();
+        }
+
+        public boolean isFile() {
+            return file.isFile();
+        }
     }
 
     @Rule
@@ -110,8 +153,54 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
+    public void loadingFsResources_usesVfsProtocol_allFilesExist()
+            throws Exception {
+        String path = Paths
+                .get("/dir-with-modern-frontend", RESOURCES_FRONTEND_DEFAULT)
+                .toString();
+        MockVirtualFile virtualFile = new MockVirtualFile();
+        virtualFile.file = new File(getClass().getResource(path).toURI());
+
+        URLConnection urlConnection = Mockito.mock(URLConnection.class);
+        Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
+
+        URL.setURLStreamHandlerFactory(protocol -> {
+            if (protocol.equals("vfs")) {
+                return new URLStreamHandler() {
+                    @Override
+                    protected URLConnection openConnection(URL u) {
+                        return urlConnection;
+                    }
+                };
+            }
+            return null;
+        });
+        URL url = new URL(
+                Paths.get("vfs://some-non-existent-place", path).toString());
+
+        loadingFsResources_allFilesExist(Collections.singletonList(url),
+                RESOURCES_FRONTEND_DEFAULT);
+    }
+
+    @Test
+    public void should_Run_Updaters_doesNotThrow() throws Exception {
+        // no any exception means that updaters are executed and dev mode server
+        // started
+        process();
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NoNodeConfFiles_doesNotThrow()
+            throws Exception {
+        webpackFile.delete();
+        mainPackageFile.delete();
+        // no any exception means that updaters are executed and dev mode server
+        // started
+        process();
+    }
+
     public void should_Run_Updaters() throws Exception {
-        runOnStartup();
+        process();
         assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
@@ -119,29 +208,29 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
-        runOnStartup();
-        assertNotNull(getDevModeHandler());
+        process();
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Not_Run_Updaters_when_NoMainPackageFile()
             throws Exception {
-        assertNull(getDevModeHandler());
+        assertNull(DevModeHandler.getDevModeHandler());
         mainPackageFile.delete();
-        assertNull(getDevModeHandler());
+        assertNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
-        runOnStartup();
-        assertNotNull(getDevModeHandler());
+        process();
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
         webpackFile.delete();
-        runOnStartup();
-        assertNotNull(getDevModeHandler());
+        process();
+        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
@@ -157,7 +246,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void should_Not_AddContextListener() throws Exception {
         ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor
                 .forClass(EventListener.class);
-        runOnStartup();
+        process();
         Mockito.verify(servletContext, Mockito.never())
                 .addListener(arg.capture());
     }
@@ -167,7 +256,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
 
-        runOnStartup();
+        process();
 
         assertNotNull(DevModeHandler.getDevModeHandler());
 
@@ -186,6 +275,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
         ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
                 .forClass(FallbackChunk.class);
         Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
@@ -227,6 +317,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
         Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
@@ -264,6 +355,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
         devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
     }
@@ -275,13 +367,36 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
         Mockito.when(servletContext.getInitParameterNames())
-                .thenReturn(Collections.enumeration(
-                        Collections.singleton(FrontendUtils.PROJECT_BASEDIR)));
+                .thenReturn(Collections.enumeration(new HashSet<>(
+                        Arrays.asList(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                                FrontendUtils.PROJECT_BASEDIR))));
         Mockito.when(
                 servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
                 .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
+        Mockito.when(servletContext
+                .getInitParameter(Constants.SERVLET_PARAMETER_ENABLE_PNPM))
+                .thenReturn(initParams
+                        .get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
+    }
+
+    @Test
+    public void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted() throws Exception {
+        final Map<String, Object> servletContextAttributes = Maps.newHashMap();
+        Mockito.doAnswer(answer -> {
+            String key = answer.getArgumentAt(0, String.class);
+            Object value = answer.getArgumentAt(1, Object.class);
+            servletContextAttributes.putIfAbsent(key, value);
+            return null;
+        })
+                .when(servletContext)
+                .setAttribute(Mockito.anyString(), Mockito.anyObject());
+        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+                .thenAnswer(answer ->
+                        servletContextAttributes.get(answer.getArgumentAt(0, String.class)));
+        process();
+        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(servletContext));
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)
@@ -348,7 +463,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             String resourcesFolder) throws IOException, ServletException {
         List<URL> urls = Collections.singletonList(
                 getClass().getResource(resourcesRoot + resourcesFolder));
+        loadingFsResources_allFilesExist(urls, resourcesFolder);
+    }
 
+    private void loadingFsResources_allFilesExist(Collection<URL> urls,
+            String resourcesFolder) throws IOException, ServletException {
         // Create mock loader with the single jar to be found
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(classLoader.getResources(resourcesFolder))

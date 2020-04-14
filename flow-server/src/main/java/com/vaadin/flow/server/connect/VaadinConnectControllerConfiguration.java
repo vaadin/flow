@@ -18,14 +18,24 @@ package com.vaadin.flow.server.connect;
 
 import java.lang.reflect.Method;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
+
+import static com.vaadin.flow.server.connect.VaadinConnectController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER;
 
 /**
  * A configuration class for customizing the {@link VaadinConnectController}
@@ -93,8 +103,10 @@ public class VaadinConnectControllerConfiguration {
      */
     private RequestMappingInfo prependConnectPrefixUrl(
             RequestMappingInfo mapping) {
+        String customEnpointPrefixName = FrontendUtils.getCustomEndpointPrefix();
         PatternsRequestCondition connectEndpointPattern =
                 new PatternsRequestCondition(
+                        customEnpointPrefixName != null ? customEnpointPrefixName :
                 vaadinEndpointProperties.getVaadinEndpointPrefix())
                         .combine(mapping.getPatternsCondition());
 
@@ -133,5 +145,25 @@ public class VaadinConnectControllerConfiguration {
     @Bean
     public ExplicitNullableTypeChecker typeChecker() {
         return new ExplicitNullableTypeChecker();
+    }
+
+    /**
+     * Registers a {@link ObjectMapper} bean instance.
+     *
+     * @param context
+     *            Spring application context
+     * @return the object mapper for endpoint.
+     */
+    @Bean
+    @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER)
+    public ObjectMapper vaadinEndpointMapper(ApplicationContext context) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JacksonProperties jacksonProperties = context
+                .getBean(JacksonProperties.class);
+        if (jacksonProperties.getVisibility().isEmpty()) {
+            objectMapper.setVisibility(PropertyAccessor.ALL,
+                    JsonAutoDetect.Visibility.ANY);
+        }
+        return objectMapper;
     }
 }

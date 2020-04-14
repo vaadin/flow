@@ -39,12 +39,25 @@ public class BrowserLiveReloadAccessTest {
     }
 
     @Test
+    public void getLiveReload_liveReloadDisabled_nullIsReturned() {
+        VaadinService service = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.isDevModeLiveReloadEnabled()).thenReturn(false);
+
+        Assert.assertNull(access.getLiveReload(service));
+    }
+
+    @Test
     public void getLiveReload_devMode_contextHasNoReloadInstance_instanceIsCreated() {
         VaadinService service = Mockito.mock(VaadinService.class);
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
         Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.isDevModeLiveReloadEnabled()).thenReturn(true);
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);
@@ -59,6 +72,7 @@ public class BrowserLiveReloadAccessTest {
                 .mock(DeploymentConfiguration.class);
         Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
         Mockito.when(config.isProductionMode()).thenReturn(false);
+        Mockito.when(config.isDevModeLiveReloadEnabled()).thenReturn(true);
 
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);

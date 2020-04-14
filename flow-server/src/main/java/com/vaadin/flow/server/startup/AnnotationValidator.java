@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -35,10 +35,10 @@ import com.vaadin.flow.component.page.Viewport;
  */
 @HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
 public class AnnotationValidator extends AbstractAnnotationValidator
-        implements ServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer {
 
     @Override
-    public void onStartup(Set<Class<?>> classSet, ServletContext servletContext)
+    public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         validateClasses(classSet);
     }

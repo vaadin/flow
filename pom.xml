@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>3.1-SNAPSHOT</version>
+    <version>3.2-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-parent</artifactId>
-        <version>2.0.1</version>
+        <version>2.0.2</version>
     </parent>
 
     <modules>
@@ -65,7 +65,8 @@
         <flow.release.repo.url>
             https://maven.vaadin.com/vaadin-prereleases/
         </flow.release.repo.url>
-        <flow.deployment.repo.id>${flow.snapshot.repo.id}</flow.deployment.repo.id>
+        <flow.deployment.repo.id>${flow.snapshot.repo.id}
+        </flow.deployment.repo.id>
         <flow.deployment.repo.url>
             ${flow.snapshot.repo.url}
         </flow.deployment.repo.url>
@@ -107,6 +108,7 @@
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>6.2.1</testbench.version>
         <jetty.version>9.4.27.v20200227</jetty.version>
+        <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
@@ -116,11 +118,14 @@
         <!-- Used in OSGi manifests -->
         <jsoup.version>1.12.1</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
-        <atmosphere.runtime.version>2.4.30.slf4jvaadin1</atmosphere.runtime.version>
+        <atmosphere.runtime.version>2.4.30.slf4jvaadin1
+        </atmosphere.runtime.version>
 
         <!-- OSGi -->
         <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
-        <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
+        <osgi.bundle.version>
+            ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}
+        </osgi.bundle.version>
         <bnd.version>3.3.0</bnd.version>
         <osgi.core.version>6.0.0</osgi.core.version>
         <osgi.compendium.version>6.0.0</osgi.compendium.version>
@@ -234,7 +239,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.10.1</version>
+                <version>1.10.9</version>
             </dependency>
 
 
@@ -448,7 +453,8 @@
                     <dependencies>
                         <dependency>
                             <groupId>de.skuzzle.enforcer</groupId>
-                            <artifactId>restrict-imports-enforcer-rule</artifactId>
+                            <artifactId>restrict-imports-enforcer-rule
+                            </artifactId>
                             <version>0.8.0</version>
                         </dependency>
                     </dependencies>
@@ -462,9 +468,10 @@
                             <configuration>
                                 <rules>
                                     <restrictImports
-                                        implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
+                                            implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
-                                        <bannedImport>java.util.logging.**</bannedImport>
+                                        <bannedImport>java.util.logging.**
+                                        </bannedImport>
                                     </restrictImports>
                                 </rules>
                             </configuration>
@@ -641,8 +648,11 @@
                         </plugin>
                         <plugin>
                             <groupId>com.lazerycode.selenium</groupId>
-                            <artifactId>driver-binary-downloader-maven-plugin</artifactId>
-                            <version>${driver.binary.downloader.maven.plugin.version}</version>
+                            <artifactId>driver-binary-downloader-maven-plugin
+                            </artifactId>
+                            <version>
+                                ${driver.binary.downloader.maven.plugin.version}
+                            </version>
                             <dependencies>
                                 <dependency>
                                     <groupId>javax.xml.bind</groupId>

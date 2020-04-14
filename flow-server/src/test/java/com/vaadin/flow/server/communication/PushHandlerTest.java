@@ -79,13 +79,14 @@ public class PushHandlerTest {
     }
 
     @Test
-    public void onConnect_devMode_webscoket_refreshConnection_onConnectIsCalled_callWithUIIsNotCalled()
+    public void onConnect_devMode_websocket_refreshConnection_onConnectIsCalled_callWithUIIsNotCalled()
             throws ServiceException {
         MockVaadinServletService service = Mockito
                 .spy(MockVaadinServletService.class);
         MockDeploymentConfiguration deploymentConfiguration = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setDevModeLiveReloadEnabled(true);
 
         VaadinContext context = service.getContext();
         BrowserLiveReload liveReload = BrowserLiveReloadAccessTest
@@ -104,6 +105,34 @@ public class PushHandlerTest {
         Mockito.verify(service, Mockito.times(0)).requestStart(Mockito.any(),
                 Mockito.any());
         Mockito.verify(liveReload).onConnect(res.get());
+    }
+
+    @Test
+    public void onMessage_devMode_websocket_refreshConnection_callWithUIIsNotCalled()
+            throws ServiceException {
+        MockVaadinServletService service = Mockito
+                .spy(MockVaadinServletService.class);
+        MockDeploymentConfiguration deploymentConfiguration = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setDevModeLiveReloadEnabled(true);
+
+        VaadinContext context = service.getContext();
+        BrowserLiveReload liveReload = BrowserLiveReloadAccessTest
+                .mockBrowserLiveReloadImpl(context);
+
+        AtomicReference<AtmosphereResource> res = new AtomicReference<>();
+        runTest(service, (handler, resource) -> {
+            AtmosphereRequest request = resource.getRequest();
+            Mockito.when(request
+                    .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION))
+                    .thenReturn("");
+            Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            handler.onMessage(resource);
+            res.set(resource);
+        });
+        Mockito.verify(service, Mockito.times(0)).requestStart(Mockito.any(),
+                Mockito.any());
     }
 
     @Test

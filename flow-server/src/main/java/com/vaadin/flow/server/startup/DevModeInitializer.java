@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -23,6 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 import javax.servlet.annotation.WebListener;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +43,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -83,6 +85,7 @@ import com.vaadin.flow.theme.Theme;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -114,8 +117,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class })
 @WebListener
-public class DevModeInitializer implements ServletContainerInitializer,
-        Serializable, ServletContextListener {
+public class DevModeInitializer
+        implements ClassLoaderAwareServletContainerInitializer, Serializable,
+        ServletContextListener {
 
     static class DevModeClassFinder extends DefaultClassFinder {
 
@@ -182,8 +186,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
                     + "/?$");
 
+    // Attribute key for storing Dev Mode Handler startup flag.
+    // If presented in Servlet Context, shows the Dev Mode Handler already
+    // started / become starting.
+    // This attribute helps to avoid Dev Mode running twice.
+    //
+    // Addresses the issue https://github.com/vaadin/spring/issues/502
+    private static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE =
+            "dev-mode-handler-already-started-attribute";
+
     @Override
-    public void onStartup(Set<Class<?>> classes, ServletContext context)
+    public void process(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
@@ -215,11 +228,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         initDevModeHandler(classes, context, config);
+
+        setDevModeStarted(context);
     }
 
     private boolean isVaadinServletSubClass(String className)
             throws ClassNotFoundException {
         return VaadinServlet.class.isAssignableFrom(Class.forName(className));
+    }
+
+    private void setDevModeStarted(ServletContext context) {
+        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, true);
     }
 
     /**
@@ -334,46 +353,56 @@ public class DevModeInitializer implements ServletContainerInitializer,
                         SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                         Boolean.FALSE.toString())));
 
-        boolean enablePnpm = config.getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+        boolean enablePnpm = config.isPnpmEnabled();
 
         boolean useHomeNodeExec = config.getBooleanProperty(
                 Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
-        try {
-            builder.enablePackagesUpdate(true)
-                    .useByteCodeScanner(useByteCodeScanner)
-                    .withFlowResourcesFolder(flowResourcesFolder)
-                    .copyResources(frontendLocations)
-                    .copyLocalResources(new File(baseDir,
-                            Constants.LOCAL_FRONTEND_RESOURCES_PATH))
-                    .enableImportsUpdate(true).runNpmInstall(true)
-                    .populateTokenFileData(tokenFileData)
-                    .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                    .withHomeNodeExecRequired(useHomeNodeExec).build()
-                    .execute();
+        NodeTasks tasks = builder.enablePackagesUpdate(true)
+                .useByteCodeScanner(useByteCodeScanner)
+                .withFlowResourcesFolder(flowResourcesFolder)
+                .copyResources(frontendLocations)
+                .copyLocalResources(new File(baseDir,
+                        Constants.LOCAL_FRONTEND_RESOURCES_PATH))
+                .enableImportsUpdate(true).runNpmInstall(true)
+                .populateTokenFileData(tokenFileData)
+                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .withHomeNodeExecRequired(useHomeNodeExec).build();
 
-            FallbackChunk chunk = FrontendUtils
-                    .readFallbackChunk(tokenFileData);
-            if (chunk != null) {
-                vaadinContext.setAttribute(chunk);
-            }
-        } catch (ExecutionFailedException exception) {
-            log().debug(
-                    "Could not initialize dev mode handler. One of the node tasks failed",
-                    exception);
-            throw new ServletException(exception);
-        }
+        CompletableFuture<Void> runNodeTasks = CompletableFuture
+                .runAsync(() -> {
+                    try {
+                        tasks.execute();
 
-        try {
-            DevModeHandler.start(config, builder.npmFolder);
-        } catch (IllegalStateException exception) {
-            // wrap an ISE which can be caused by inability to find tools like
-            // node, npm into a servlet exception
-            throw new ServletException(exception);
-        }
+                        FallbackChunk chunk = FrontendUtils
+                                .readFallbackChunk(tokenFileData);
+                        if (chunk != null) {
+                            vaadinContext.setAttribute(chunk);
+                        }
+                    } catch (ExecutionFailedException exception) {
+                        log().debug(
+                                "Could not initialize dev mode handler. One of the node tasks failed",
+                                exception);
+                        throw new CompletionException(exception);
+                    }
+                });
+
+        DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
+    }
+
+    /**
+     * Shows whether {@link DevModeHandler} has been already started or not.
+     *
+     * @param servletContext The servlet context, not <code>null</code>
+     * @return <code>true</code> if {@link DevModeHandler} has already been started,
+     *         <code>false</code> - otherwise
+     */
+    public static boolean isDevModeAlreadyStarted(ServletContext servletContext) {
+        assert servletContext != null;
+        return servletContext.getAttribute(
+                DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE) != null;
     }
 
     private static Logger log() {
@@ -431,7 +460,18 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 Matcher dirCompatibilityMatcher = DIR_REGEX_COMPATIBILITY_FRONTEND_DEFAULT
                         .matcher(path);
                 Matcher jarVfsMatcher = VFS_FILE_REGEX.matcher(urlString);
-                if (jarMatcher.find()) {
+                Matcher dirVfsMatcher = VFS_DIRECTORY_REGEX.matcher(urlString);
+                if (jarVfsMatcher.find()) {
+                    String vfsJar = jarVfsMatcher.group(1);
+                    if (vfsJars.add(vfsJar))
+                        frontendFiles.add(
+                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                } else if (dirVfsMatcher.find()) {
+                    URL vfsDirUrl = new URL(urlString.substring(0,
+                            urlString.lastIndexOf(resourcesFolder)));
+                    frontendFiles
+                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
+                } else if (jarMatcher.find()) {
                     frontendFiles.add(new File(jarMatcher.group(1)));
                 } else if ("zip".equalsIgnoreCase(url.getProtocol())
                         && zipProtocolJarMatcher.find()) {
@@ -441,16 +481,6 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 } else if (dirCompatibilityMatcher.find()) {
                     frontendFiles
                             .add(new File(dirCompatibilityMatcher.group(1)));
-                } else if (jarVfsMatcher.find()) {
-                    String vfsJar = jarVfsMatcher.group(1);
-                    if (vfsJars.add(vfsJar))
-                        frontendFiles.add(
-                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
-                } else if (VFS_DIRECTORY_REGEX.matcher(urlString).find()) {
-                    URL vfsDirUrl = new URL(urlString.substring(0,
-                            urlString.lastIndexOf(resourcesFolder)));
-                    frontendFiles
-                            .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                 } else {
                     log().warn(
                             "Resource {} not visited because does not meet supported formats.",

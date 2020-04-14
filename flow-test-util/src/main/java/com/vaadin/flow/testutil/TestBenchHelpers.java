@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,6 +45,13 @@ import com.vaadin.testbench.parallel.ParallelTest;
  * @since 1.0
  */
 public class TestBenchHelpers extends ParallelTest {
+
+    /**
+     * When an error occurs during establishing a WebSocket connection, a severe
+     * error is added to the console by the browser. We can't prevent it, so we
+     * have to ignore it for now until we figure out a way to supress it.
+     */
+    private static final String WEB_SOCKET_CONNECTION_ERROR_PREFIX = "WebSocket connection to ";
 
     /**
      * Waits up to 10s for the given condition to become false. Use e.g. as
@@ -374,6 +380,8 @@ public class TestBenchHelpers extends ParallelTest {
         getLogEntries(Level.WARNING).forEach(logEntry -> {
             if ((Objects.equals(logEntry.getLevel(), Level.SEVERE)
                     || logEntry.getMessage().contains("404"))
+                    && !logEntry.getMessage()
+                            .contains(WEB_SOCKET_CONNECTION_ERROR_PREFIX)
                     && !acceptableMessagePredicate
                             .test(logEntry.getMessage())) {
                 throw new AssertionError(String.format(
@@ -398,6 +406,19 @@ public class TestBenchHelpers extends ParallelTest {
         checkLogsForErrors(msg -> false);
     }
 
+    /**
+     * If dev server start in progress wait until it's started. Otherwise return
+     * immidiately.
+     */
+    protected void waitForDevServer() {
+        Object result;
+        do {
+            getCommandExecutor().waitForVaadin();
+            result = getCommandExecutor().executeScript(
+                    "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
+        } while (Boolean.TRUE.equals(result));
+    }
+
     private WebElement getShadowRoot(WebElement webComponent) {
         waitUntil(driver -> getCommandExecutor().executeScript(
                 "return arguments[0].shadowRoot", webComponent) != null);
@@ -418,7 +439,8 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     private static class LazyDndSimulationLoad {
-        private static final String DND_SCRIPT = loadDndScript("/dnd-simulation.js");
+        private static final String DND_SCRIPT = loadDndScript(
+                "/dnd-simulation.js");
 
         private static String loadDndScript(String scriptLocation) {
             InputStream stream = TestBenchHelpers.class

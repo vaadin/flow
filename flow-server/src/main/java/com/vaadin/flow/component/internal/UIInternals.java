@@ -22,14 +22,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -38,7 +43,10 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
@@ -67,8 +75,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -398,9 +404,7 @@ public class UIInternals implements Serializable {
             this.session = session;
         }
 
-        if (session != null)
-
-        {
+        if (session != null) {
             ComponentUtil.onComponentAttach(ui, true);
         }
     }
@@ -712,6 +716,8 @@ public class UIInternals implements Serializable {
             throw new IllegalArgumentException(
                     "Root can't be null here since we know there's at least one item in the chain");
         }
+
+        configurePush(root);
 
         internalsHandler.updateRoot(ui, oldRoot, root);
     }
@@ -1045,5 +1051,19 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    private void configurePush(HasElement root) {
+        Optional<Push> push = AnnotationReader.getAnnotationFor(root.getClass(),
+                Push.class);
+        DeploymentConfiguration deploymentConfiguration = getSession()
+                .getService().getDeploymentConfiguration();
+        PushConfiguration pushConfiguration = ui.getPushConfiguration();
+        PushMode pushMode = push.map(Push::value)
+                .orElseGet(deploymentConfiguration::getPushMode);
+        pushConfiguration.setPushMode(pushMode);
+        if (push.isPresent()) {
+            pushConfiguration.setTransport(push.get().transport());
+        }
     }
 }

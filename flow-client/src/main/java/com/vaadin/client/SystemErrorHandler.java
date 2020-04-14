@@ -20,6 +20,8 @@ import java.util.Set;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
 
+import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -56,8 +58,12 @@ public class SystemErrorHandler {
      *            message details or null if there are no details
      */
     public void handleSessionExpiredError(String details) {
-        handleUnrecoverableError(details, registry.getApplicationConfiguration()
-                .getSessionExpiredError());
+        // Run asynchronously to guarantee that all executions in the Uidl are
+        // done (#7581)
+        Scheduler.get()
+                .scheduleDeferred(() -> handleUnrecoverableError(details,
+                        registry.getApplicationConfiguration()
+                                .getSessionExpiredError()));
     }
 
     /**
@@ -89,7 +95,7 @@ public class SystemErrorHandler {
      *            {@code null} to refresh on click
      */
     public void handleUnrecoverableError(String caption, String message,
-                                         String details, String url) {
+            String details, String url) {
         handleUnrecoverableError(caption, message, details, url, null);
     }
 
@@ -118,14 +124,15 @@ public class SystemErrorHandler {
             return;
         }
 
-        Element systemErrorContainer =
-                handleError(caption, message, details, querySelector);
+        Element systemErrorContainer = handleError(caption, message, details,
+                querySelector);
         systemErrorContainer.addEventListener("click",
                 e -> WidgetUtil.redirect(url), false);
 
         Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
             int keyCode = ((KeyboardEvent) e).getKeyCode();
             if (keyCode == KeyCode.ESC) {
+                e.preventDefault();
                 WidgetUtil.redirect(url);
             }
         }, false);
@@ -167,8 +174,8 @@ public class SystemErrorHandler {
         }
     }
 
-    private Element handleError(String caption, String message,
-            String details, String querySelector) {
+    private Element handleError(String caption, String message, String details,
+            String querySelector) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");

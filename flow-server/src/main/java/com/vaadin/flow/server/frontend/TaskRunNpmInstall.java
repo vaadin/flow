@@ -51,7 +51,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final NodeUpdater packageUpdater;
 
     private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
-            "pnpm", ".ignored_pnpm", ".pnpm", MODULES_YAML);
+            "pnpm", ".ignored_pnpm", ".pnpm", ".staging", MODULES_YAML);
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final ClassFinder classFinder;
@@ -143,6 +143,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
+        // Do possible cleaning before generating any new files.
+        try {
+            cleanUp();
+        } catch (IOException exception) {
+            throw new ExecutionFailedException("Couldn't remove "
+                    + packageUpdater.nodeModulesFolder + " directory",
+                    exception);
+        }
+
         if (enablePnpm) {
             try {
                 createPnpmFile(generateVersionsJson());
@@ -154,14 +163,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "with npm by setting system variable -Dvaadin.pnpm.enable=false",
                         exception);
             }
-        }
-
-        try {
-            cleanUp();
-        } catch (IOException exception) {
-            throw new ExecutionFailedException("Couldn't remove "
-                    + packageUpdater.nodeModulesFolder + " directory",
-                    exception);
         }
 
         List<String> executable;
@@ -278,8 +279,17 @@ public class TaskRunNpmInstall implements FallibleCommand {
         File modulesYaml = new File(packageUpdater.nodeModulesFolder,
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
-        if (hasModulesYaml != enablePnpm) {
+        if (!enablePnpm && hasModulesYaml) {
             FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+        } else if (enablePnpm && !hasModulesYaml) {
+            // presence of .staging dir with a "pnpm-*" folder means that pnpm
+            // download is in progress, don't remove anything in this case
+            File staging = new File(packageUpdater.nodeModulesFolder,
+                    ".staging");
+            if (!staging.isDirectory() || staging.listFiles(
+                    (dir, name) -> name.startsWith("pnpm-")).length == 0) {
+                FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+            }
         }
     }
 

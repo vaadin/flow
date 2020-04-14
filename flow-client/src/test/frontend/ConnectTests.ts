@@ -124,6 +124,13 @@ describe('ConnectClient', () => {
       expect(fetchMock.lastOptions()).to.include({method: 'POST'});
     });
 
+    it('should call Flow.loading indicator', async() => {
+      let calls = '';
+      (window as any).Vaadin.Flow = {loading: (action: boolean) => calls += action};
+      await client.call('FooEndpoint', 'fooMethod');
+      expect(calls).to.equal('truefalse');
+    });
+
     it('should use JSON request headers', async() => {
       await client.call('FooEndpoint', 'fooMethod');
 
