@@ -29,11 +29,6 @@ import com.vaadin.flow.router.RouteParameterRegex;
  */
 class RouteFormat implements Serializable {
 
-    static final String INTEGER_REGEX = RouteParameterRegex.INTEGER;
-    static final String LONG_REGEX = RouteParameterRegex.LONG;
-    static final String BOOLEAN_REGEX = "true|false";
-    static final String STRING_REGEX = "";
-
     /**
      * Returns whether the specified template contains route parameters.
      *
@@ -121,16 +116,6 @@ class RouteFormat implements Serializable {
         return "";
     }
 
-    static String getRegexName(String regex) {
-        if (INTEGER_REGEX.equals(regex)) {
-            return "integer";
-        } else if (LONG_REGEX.equals(regex)) {
-            return "long";
-        } else {
-            return "string";
-        }
-    }
-
     static String formatSegment(RouteSegment segment,
             Set<RouteParameterFormatOption> format) {
 
@@ -177,7 +162,7 @@ class RouteFormat implements Serializable {
             Set<RouteParameterFormatOption> format) {
         final String regex = segment.getRegex();
         if (format.contains(RouteParameterFormatOption.REGEX_NAME)) {
-            return getRegexName(regex);
+            return RouteParameterRegex.getName(regex);
         } else {
             return regex;
         }
@@ -228,7 +213,7 @@ class RouteFormat implements Serializable {
                         template.length() - 1);
             } else {
                 name = template;
-                regex = STRING_REGEX;
+                regex = RouteParameterRegex.STRING;
             }
         }
 

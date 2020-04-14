@@ -28,6 +28,8 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParameterDeserializer;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.WildcardParameter;
 
@@ -84,10 +86,9 @@ public class HasUrlParameterFormat implements Serializable {
             final Class<?> parameterType = ParameterDeserializer
                     .getClassType(navigationTarget);
 
-            String type = getParameterType(parameterType);
-
-            if (!RouteFormat.STRING_REGEX.equals(type)) {
-                urlBase += "(" + type + ")";
+            if (!String.class.equals(parameterType)) {
+                urlBase += "(" + RouteParameterRegex.getRegex(parameterType)
+                        + ")";
             }
         }
         return urlBase;
@@ -213,7 +214,7 @@ public class HasUrlParameterFormat implements Serializable {
      * @return the class types of the parameters.
      */
     public static List<Class<?>> getParameterTypes(Collection<String> types) {
-        return types.stream().map(HasUrlParameterFormat::getType)
+        return types.stream().map(RouteParameterRegex::getType)
                 .collect(Collectors.toList());
     }
 
@@ -298,32 +299,6 @@ public class HasUrlParameterFormat implements Serializable {
     static boolean hasWildcardParameter(Class<? extends Component> target) {
         return ParameterDeserializer.isAnnotatedParameter(target,
                 WildcardParameter.class);
-    }
-
-    private static String getParameterType(Class<?> parameterType) {
-        String type = null;
-        if (parameterType.isAssignableFrom(Integer.class)) {
-            type = RouteFormat.INTEGER_REGEX;
-        } else if (parameterType.isAssignableFrom(Long.class)) {
-            type = RouteFormat.LONG_REGEX;
-        } else if (parameterType.isAssignableFrom(Boolean.class)) {
-            type = RouteFormat.BOOLEAN_REGEX;
-        } else {
-            type = RouteFormat.STRING_REGEX;
-        }
-        return type;
-    }
-
-    private static Class<?> getType(String regex) {
-        if (RouteFormat.INTEGER_REGEX.equalsIgnoreCase(regex)) {
-            return Integer.class;
-        } else if (RouteFormat.LONG_REGEX.equalsIgnoreCase(regex)) {
-            return Long.class;
-        } else if (RouteFormat.BOOLEAN_REGEX.equalsIgnoreCase(regex)) {
-            return Boolean.class;
-        } else {
-            return String.class;
-        }
     }
 
 }
