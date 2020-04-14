@@ -813,9 +813,9 @@ public class VaadinConnectControllerTest {
                 mock(ServletContext.class));
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
+        verify(contextMock, times(1)).getBean(JacksonProperties.class);
         verify(mockSpringObjectMapper, never()).setVisibility(
                 PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        verify(contextMock, never()).getBean(JacksonProperties.class);
     }
 
     @Test
