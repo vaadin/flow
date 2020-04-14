@@ -819,6 +819,31 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
+    public void should_NotOverrideVisibility_When_JacksonPropertiesProvideVisibility() {
+        ApplicationContext contextMock = mock(ApplicationContext.class);
+        ObjectMapper mockDefaultObjectMapper = mock(ObjectMapper.class);
+        JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
+        when(contextMock.getBean(ObjectMapper.class))
+                .thenReturn(mockDefaultObjectMapper);
+        when(contextMock.getBean(JacksonProperties.class))
+                .thenReturn(mockJacksonProperties);
+        when(mockJacksonProperties.getVisibility())
+                .thenReturn(Collections.singletonMap(PropertyAccessor.ALL,
+                        JsonAutoDetect.Visibility.PUBLIC_ONLY));
+        new VaadinConnectController(null,
+                mock(VaadinConnectAccessChecker.class),
+                mock(EndpointNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
+
+        verify(contextMock, never()).getBean(ObjectMapper.class);
+        verify(mockDefaultObjectMapper, never()).setVisibility(
+                PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        verify(contextMock, times(1)).getBean(JacksonProperties.class);
+    }
+
+    @Test
     public void should_ReturnValidationError_When_DeserializationFails()
             throws IOException {
         String inputValue = "\"string\"";
