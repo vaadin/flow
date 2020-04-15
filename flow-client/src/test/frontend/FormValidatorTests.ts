@@ -2,7 +2,7 @@ const { suite, test} = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import {Email, Null, NotNull, NotEmpty, NotBlank, AssertTrue, AssertFalse, Min, Max} from "../../main/resources/META-INF/resources/frontend/FormValidator";
+import { AssertFalse, AssertTrue, DecimalMin, DecimalMax, Digits, Email, Future, Max, Min, Negative, NegativeOrCero, NotBlank, NotEmpty, NotNull, Null, Past, Pattern, Positive, PositiveOrCero, Size } from "../../main/resources/META-INF/resources/frontend/FormValidator";
 
 suite("Validator", () => {
   test("Email", () => {
@@ -83,44 +83,100 @@ suite("Validator", () => {
     assert.isFalse(validator.validate(1.1));
   });
 
-  // test("decimalMin", () => {
+  test("DecimalMin", () => {
+    const validator = new DecimalMin(2);
+    assert.isFalse(validator.validate(1));
+    assert.isFalse(validator.validate(1.1));
+    assert.isTrue(validator.validate(1.11));
+    assert.isTrue(validator.validate(1.111));
+  });
+
+  test("DecimalMax", () => {
+    const validator = new DecimalMax(2);
+    assert.isTrue(validator.validate(1));
+    assert.isTrue(validator.validate(1.1));
+    assert.isTrue(validator.validate(1.11));
+    assert.isFalse(validator.validate(1.111));
+  });
+
+  test("Negative", () => {
+    const validator = new Negative();
+    assert.isTrue(validator.validate(-1));
+    assert.isTrue(validator.validate(-0.01));
+    assert.isFalse(validator.validate(0));
+    assert.isFalse(validator.validate(1));
+  });
+
+
+  test("NegativeOrCero", () => {
+    const validator = new NegativeOrCero();
+    assert.isTrue(validator.validate(-1));
+    assert.isTrue(validator.validate(-0.01));
+    assert.isTrue(validator.validate(0));
+    assert.isFalse(validator.validate(1));
+  });
+
+  test("Positive", () => {
+    const validator = new Positive();
+    assert.isFalse(validator.validate(-1));
+    assert.isFalse(validator.validate(-0.01));
+    assert.isFalse(validator.validate(0));
+    assert.isTrue(validator.validate(0.01));
+  });
+
+  test("PositiveOrCero", () => {
+    const validator = new PositiveOrCero();
+    assert.isFalse(validator.validate(-1));
+    assert.isFalse(validator.validate(-0.01));
+    assert.isTrue(validator.validate(0));
+    assert.isTrue(validator.validate(0.01));
+  });
+
+
+  test("Size", () => {
+    const validator = new Size(2, 4);
+    assert.isFalse(validator.validate(""));
+    assert.isFalse(validator.validate("a"));
+    assert.isTrue(validator.validate("aa"));
+    assert.isTrue(validator.validate("aaa"));
+  });
+
+  test("Digits", () => {
+    const validator = new Digits(2, 3);
+    assert.isTrue(validator.validate("11.111"));
+    assert.isFalse(validator.validate("1.1"));
+    assert.isFalse(validator.validate("111.1111"));
+  });
+
+  test("Past", () => {
+    const validator = new Past();
+    assert.isTrue(validator.validate("2019-12-31"));
+    assert.isFalse(validator.validate(String(new Date())));
+    assert.isFalse(validator.validate("3000-01-01"));
+  });
+
+  // test("PastOrPresent", () => {
   // });
 
-  // test("decimalMax", () => {
+  test("Future", () => {
+    const validator = new Future();
+    assert.isFalse(validator.validate("2019-12-31"));
+    assert.isFalse(validator.validate(String(new Date())));
+    assert.isTrue(validator.validate("3000-01-01"));
+  });
+
+  // test("FutureOrPresent", () => {
   // });
 
-  // test("negative", () => {
-  // });
-
-  // test("negativeOrCero", () => {
-  // });
-
-  // test("positive", () => {
-  // });
-
-  // test("positiveOrCero", () => {
-  // });
-
-  // test("size", () => {
-  // });
-
-  // test("digits", () => {
-  // });
-
-  // test("past", () => {
-  // });
-
-  // test("pastOrPresent", () => {
-  // });
-
-  // test("future", () => {
-  // });
-
-  // test("futureOrPresent", () => {
-  // });
-
-  // test("pattern", () => {
-  // });  
+  test("Pattern", () => {
+    const validator = new Pattern(/^(\+\d+)?([ -]?\d+){4,14}$/);
+    assert.isFalse(validator.validate(""));
+    assert.isFalse(validator.validate("123"));
+    assert.isFalse(validator.validate("abcdefghijk"));
+    assert.isTrue(validator.validate("+35 123 456 789"));
+    assert.isTrue(validator.validate("123 456 789"));
+    assert.isTrue(validator.validate("123-456-789"));
+  });
 
 });
 
