@@ -121,7 +121,7 @@ class VaadinDevmodeGizmo extends LitElement {
           content: "ⓘ";
           margin-right: var(--lumo-space-s);
       }
-      
+
       .ahreflike {
           cursor: pointer;
           font-weight: 600;
@@ -306,7 +306,9 @@ class VaadinDevmodeGizmo extends LitElement {
     super.connectedCallback();
 
     // automatically move notification to message tray after a certain amount of time
-    setTimeout(() => { this.demoteNotification() }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
+    setTimeout(() => {
+      this.demoteNotification();
+    }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
     // when focus or clicking anywhere, move the notification to the message tray
     this.disableEventListener = e => this.demoteNotification();
     document.body.addEventListener('focus', this.disableEventListener);
