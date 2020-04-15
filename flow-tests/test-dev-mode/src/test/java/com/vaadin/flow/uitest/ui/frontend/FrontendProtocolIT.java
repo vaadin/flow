@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui.frontend;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -43,6 +44,7 @@ import com.vaadin.testbench.TestBenchElement;
 public class FrontendProtocolIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore
     public void loadComponentFromEs6Path() {
         openProduction();
 
@@ -72,6 +74,7 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void loadComponentFromEs6Property() {
         openForEs6Url();
 
