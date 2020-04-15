@@ -124,6 +124,10 @@ class VaadinDevmodeGizmo extends LitElement {
     return 180000;
   }
 
+  static get AUTO_DEMOTE_NOTIFICATION_DELAY() {
+    return 5000;
+  }
+
   static get HOTSWAP_AGENT() {
     return 'HOTSWAP_AGENT';
   }
@@ -248,6 +252,8 @@ class VaadinDevmodeGizmo extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
+    // automatically move notification to message tray after a certain amount of time
+    setTimeout(() => { this.demoteNotification() }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
     // when focus or clicking anywhere, move the notification to the message tray
     this.disableEventListener = e => this.demoteNotification();
     document.body.addEventListener('focus', this.disableEventListener);
