@@ -39,6 +39,10 @@
         </dependency>
 
         <dependency>
+            <groupId>org.webjars.bowergithub.webcomponents</groupId>
+            <artifactId>webcomponentsjs</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.webjars.bowergithub.vaadin</groupId>
             <artifactId>vaadin-themable-mixin</artifactId>
             <version>1.4.4</version>
