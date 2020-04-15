@@ -305,10 +305,6 @@ class VaadinDevmodeGizmo extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    // automatically move notification to message tray after a certain amount of time
-    setTimeout(() => {
-      this.demoteNotification();
-    }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
     // when focus or clicking anywhere, move the notification to the message tray
     this.disableEventListener = e => this.demoteNotification();
     document.body.addEventListener('focus', this.disableEventListener);
