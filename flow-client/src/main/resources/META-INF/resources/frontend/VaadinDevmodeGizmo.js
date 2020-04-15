@@ -4,74 +4,122 @@ class VaadinDevmodeGizmo extends LitElement {
 
   static get styles() {
     return css`
-      .vaadin-live-reload > div {
-         box-shadow: 2px 2px 2px grey;
-         background-color: #333; 
-         color: #DDD;
-      }
-      
-      .gizmo { 
+       :host {
+          --gizmo-border-radius: 1rem;
+       }
+
+       a {
+          color: #fff;
+          text-decoration: none;
+          font-weight: 600;
+       }
+
+      .gizmo-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           position: fixed;
-          right: 15px;
-          top: 10px;
+          right: 0;
+          bottom: 1rem;
+          height: 2rem;
+          width: auto;
+          border-top-left-radius: var(--gizmo-border-radius);
+          border-bottom-left-radius: var(--gizmo-border-radius);
+          padding-right: var(--lumo-space-s);
+          padding-left: var(--lumo-space-s);
+          background-color: rgba(50,50,50,.15);
+          color: rgba(255,255,255,.8);
+          transform: translateX(calc(100% - 2rem));
+          transition: 400ms;
           z-index: 20000;
       }
-      
-      .vaadin-logo {
-          font-size: 20px;
-          font-weight: bold;
-          text-align: center;
-          vertical-align: middle; 
-          line-height: 50px; 
-          transform: rotate(90deg);
-          border-radius: 50%;
-          width: 50px;
-          height: 50px;
+
+      .gizmo-container:hover,
+      .gizmo-container.active {
+          transform: translateX(0);
+          background-color: rgba(50,50,50,1);
       }
-      
-      .notification {
-        padding: 4px 20px 4px 10px;
-        border-radius: 8px;
+
+      .gizmo-container .status-description a {
+          margin-left: var(--lumo-space-s);
       }
-      
-      .status-blip {
-          position: fixed;
-          right: 15px;
-          top: 10px;
+
+      .gizmo-container .status-description {
+          opacity: 1;
+      }
+
+      .gizmo-container:hover .status-description {
+          opacity: 1;
+      }
+
+      .gizmo-container .status-blip {
+          display: block;
           background-color: green;
-          border: 3px solid black;
           border-radius: 50%;
-          width: 10px;
-          height: 10px;
+          width: 1.125rem;
+          height: 1.125rem;
+          margin-right: var(--lumo-space-s);
           z-index: 20001;
       }
-      
+
+      .gizmo {
+          position: fixed;
+          right: 0px;
+          bottom: 1rem;
+          background-color: rgba(50,50,50,.15);
+          color: rgba(255,255,255,.8);
+          z-index: 20000;
+      }
+
+      .window.hidden {
+          opacity: 0;
+          transform: scale(0.1,0.4);
+      }
+
+      .window.visible {
+          transform: scale(1,1);
+          opacity: 1;
+      }
+
+      .window.visible ~ .gizmo-container {
+          opacity: 0;
+      }
+
+      .window.hidden ~ .gizmo-container {
+          opacity: 1;
+      }
+
       .window {
           position: fixed;
-          right: 10px;
-          top: 65px;
-          border-radius: 8px;
-          border: #AAA;
-          width: 30%;
+          right: 1rem;
+          bottom: 1rem;
+          border-radius: var(--lumo-border-radius-l);
+          width: 480px;
           font-size: 14px;
+          background-color: rgba(50,50,50,1);
+          color: #fff;
+          transition: 400ms;
+          transform-origin: bottom right;
       }
-      
+
       .window-header {
-          background-color: #222;
-          border-radius: 8px 8px 0px 0px;
-          border-color: #AAA;
-          padding: 4px;
+          background-color: rgba(40,40,40,1);
+          border-radius: var(--lumo-border-radius-l) var(--lumo-border-radius-l) 0px 0px;
+          border-bottom: 1px solid rgba(70,70,70,1);
+          padding: var(--lumo-space-xs) var(--lumo-space-s);
           text-align: right;
       }
-      
-      .message-tray > div {
-          padding: 6px;
-          border-top: 1px solid #444;
+
+      .message-tray .message {
+          padding: var(--lumo-space-xs) var(--lumo-space-s);
       }
-      
-      .message-tray > div:before {
+      .message-tray .message:not(:last-of-type) {
+          border-bottom: 1px solid rgba(70,70,70,1);
+      }
+
+      .message-tray .message:before {
           content: "ⓘ";
-          margin-right: 4px;
+          margin-right: var(--lumo-space-s);
       }
     `;
   }
@@ -253,7 +301,9 @@ class VaadinDevmodeGizmo extends LitElement {
     super.connectedCallback();
 
     // automatically move notification to message tray after a certain amount of time
-    setTimeout(() => { this.demoteNotification() }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
+    setTimeout(() => {
+      this.demoteNotification();
+    }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
     // when focus or clicking anywhere, move the notification to the message tray
     this.disableEventListener = e => this.demoteNotification();
     document.body.addEventListener('focus', this.disableEventListener);
@@ -333,24 +383,26 @@ class VaadinDevmodeGizmo extends LitElement {
   render() {
     return html`
             <div class="vaadin-live-reload">
-                ${this.notification !== null
-    ? html`<div class="gizmo notification" @click=${e => this.toggleExpanded()}>${this.notification}</div>`
-    : html`<div class="gizmo vaadin-logo" @click=${e => this.toggleExpanded()}>}&gt;</div>`}
 
-                <span class="status-blip" style="background-color: ${this.getStatusColor()}"></span>
-                <div class="window" style="visibility: ${this.expanded ? 'visible' : 'hidden'}">
+            <div class="window ${this.expanded ? 'visible' : 'hidden'}">
                     <div class="window-header">
-                        <button id="disable" @click=${e => this.disableLiveReload()}>Disable</button>
-                        <input id="toggle" type="checkbox" 
-                            ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR} 
-                            ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}" 
+                        <!--button id="disable" @click=${e => this.disableLiveReload()}>Disable</button-->
+                        <input id="toggle" type="checkbox" ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
                         @change=${e => this.setActive(e.target.checked)}>Live-reload</input>
+                        <button id="minimize" @click=${e => this.toggleExpanded()}>X</button>
                     </div>
                     <div class="message-tray">
-                         ${this.messages.map(i => html`<div>${i}</div>`)}
+                         ${this.messages.map(i => html`<div class="message">${i}</div>`)}
                     </div>
                 </div>
-            </div>`;
+
+      <div class="gizmo-container ${this.notification !== null ? 'active' : ''}" @click=${e => this.toggleExpanded()}>
+        <span class="status-blip" style="background-color: ${this.getStatusColor()}"></span>
+    ${this.notification !== null
+    ? html`<span class="status-description">${this.notification}</span></div>`
+    : html`<span class="status-description">Debugger<a href="#">Show</a></span></div>`
+}
+      </div>`;
   }
 }
 
