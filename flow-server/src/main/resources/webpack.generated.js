@@ -159,10 +159,14 @@ module.exports = {
         // Collect all modules for the given keys
         const modules = collectModules(statsJson, acceptedKeys);
 
+        // Collect accepted chunks and their modules
+        const chunks = collectChunks(statsJson, acceptedKeys);
+
         if (!devMode) {
           let customStats = {
             hash: statsJson.hash,
             assetsByChunkName: statsJson.assetsByChunkName,
+            chunks: chunks,
             modules: modules
           };
           // eslint-disable-next-line no-console
@@ -172,8 +176,6 @@ module.exports = {
           // eslint-disable-next-line no-console
           console.log("         Serving the 'stats.json' file dynamically.");
 
-          // Collect accepted chunks and their modules
-          const chunks = collectChunks(statsJson, acceptedKeys);
           let customStats = {
             hash: statsJson.hash,
             assetsByChunkName: statsJson.assetsByChunkName,
