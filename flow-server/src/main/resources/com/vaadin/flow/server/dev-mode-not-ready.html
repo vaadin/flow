@@ -1,5 +1,45 @@
 <html>
 <head>
+<style>
+.flex-center {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.message {
+    position: relative;
+    background-color: rgba(50,50,50,1);
+    color: rgba(255,255,255,.9);
+    border-radius: 1rem;
+    box-sizing: border-box;
+    padding: 0.5em 1em 0.5em 2.25em;
+    line-height: 1;
+    font-family: system-ui;
+}
+
+/* Spinner */
+.message:before {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border-radius: 50%;
+  border: 2px solid #2CA6FF;
+  border-top-color: rgba(50,50,50,1);
+  animation: spinner .6s linear infinite;
+}
+
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+</style>
 <script type="text/javascript">
 
 // Set specific flag for TB and make sure that there are no any clients.
@@ -13,8 +53,10 @@ setTimeout(function(){
 </script>
 </head>
 <body>
-  <div style="position: absolute; top: 1em; right: 1em; border: solid 1px; padding: 1em">
-    The webpack dev server has not yet started. Please wait...
+ <div class="flex-center">
+  <div class="message">
+    The frontend development build has not yet finished. Please wait...
+   </div>
   </div>
 </body>
 </html>
