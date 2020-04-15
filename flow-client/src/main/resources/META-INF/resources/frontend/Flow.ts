@@ -177,8 +177,7 @@ export class Flow {
   }
 
   private getFlowRoute(context: NavigationParameters | Location): string {
-    return (context.pathname + (context.search || '')).replace(this.baseRegex, '')
-      .replace(/\%20/g, ' ');
+    return decodeURI((context.pathname + (context.search || '')).replace(this.baseRegex, ''));
   }
 
   // import flow client modules and initialize UI in server side.
@@ -295,8 +294,7 @@ export class Flow {
       const httpRequest = xhr as any;
       const currentPath = location.pathname || '/';
       const requestPath = `${currentPath}?v-r=init` +
-        (location.search ? `&location=${this.getFlowRoute(location).replace(/\?/g, '&')}` : '');
-
+        (location.search ? `&location=${this.getFlowRoute(location)}` : '');
       httpRequest.open('GET', requestPath);
 
       httpRequest.onerror = () => reject(new Error(
