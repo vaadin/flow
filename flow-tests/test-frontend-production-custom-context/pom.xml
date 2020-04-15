@@ -33,6 +33,10 @@
             <artifactId>flow-server-compatibility-mode</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.webjars.bowergithub.webcomponents</groupId>
+            <artifactId>webcomponentsjs</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
