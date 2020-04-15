@@ -300,10 +300,6 @@ class VaadinDevmodeGizmo extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    // automatically move notification to message tray after a certain amount of time
-    setTimeout(() => {
-      this.demoteNotification();
-    }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
     // when focus or clicking anywhere, move the notification to the message tray
     this.disableEventListener = e => this.demoteNotification();
     document.body.addEventListener('focus', this.disableEventListener);
@@ -343,6 +339,12 @@ class VaadinDevmodeGizmo extends LitElement {
 
   showNotification(msg) {
     this.notification = msg;
+    // automatically move notification to message tray after a certain amount of time
+    if (this.notification != null) {
+      setTimeout(() => {
+        this.demoteNotification();
+      }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
+    }
   }
 
   showMessage(msg) {
@@ -386,8 +388,9 @@ class VaadinDevmodeGizmo extends LitElement {
 
             <div class="window ${this.expanded ? 'visible' : 'hidden'}">
                     <div class="window-header">
-                        <!--button id="disable" @click=${e => this.disableLiveReload()}>Disable</button-->
-                        <input id="toggle" type="checkbox" ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
+                        <input id="toggle" type="checkbox"
+                            ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
+                            ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
                         @change=${e => this.setActive(e.target.checked)}>Live-reload</input>
                         <button id="minimize" @click=${e => this.toggleExpanded()}>X</button>
                     </div>
@@ -400,7 +403,7 @@ class VaadinDevmodeGizmo extends LitElement {
         <span class="status-blip" style="background-color: ${this.getStatusColor()}"></span>
     ${this.notification !== null
     ? html`<span class="status-description">${this.notification}</span></div>`
-    : html`<span class="status-description">Debugger<a href="#">Show</a></span></div>`
+    : html`<span class="status-description"><a href="#">Show</a></span></div>`
 }
       </div>`;
   }
