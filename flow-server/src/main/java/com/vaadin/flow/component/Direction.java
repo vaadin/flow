@@ -16,54 +16,30 @@
 
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
 /**
- * Class for setting the direction on the document element.
+ * Specifies the direction of the text and other content inside of an element.
  *
  * @author Vaadin Ltd
- * @since 2.1.4
+ * @since 3.1
  */
-class Direction implements Serializable {
+public enum Direction {
 
-    private static final Set<String> rtlSet;
+    RIGHT_TO_LEFT("rtl"), LEFT_TO_RIGHT("ltr");
 
-    static {
-        Set<String> lang = new HashSet<>();
-        lang.add("ar"); // Arabic
-        lang.add("dv"); // Divehi
-        lang.add("fa"); // Persian
-        lang.add("ha"); // Hausa
-        lang.add("he"); // Hebrew
-        lang.add("iw"); // Hebrew
-        lang.add("ji"); // Yiddish
-        lang.add("ps"); // Pushto
-        lang.add("sd"); // Sindhi
-        lang.add("ug"); // Uighur
-        lang.add("ur"); // Urdu
-        lang.add("yi"); // Yiddish
+    private final String clientName;
 
-        rtlSet = Collections.unmodifiableSet(lang);
-    }
-
-    static void set(UI ui, Locale locale) {
-        ui.getElement().executeJs("document.querySelector('html').dir=$0",
-                getDirectionForLocale(locale));
+    Direction(String clientName) {
+        this.clientName = clientName;
     }
 
     /**
-     * Returns direction string based on the locale provided.
+     * Gets the value applied as the {@code dir} attribute in html for
+     * {@code document}.
      *
-     * @param locale
-     *            the locale set for the UI
-     *
-     * @return the direction string
+     * @return the value applied as the "dir" attribute.
      */
-    public static String getDirectionForLocale(Locale locale) {
-        return rtlSet.contains(locale.getLanguage()) ? "rtl" : "ltr";
+    public String getClientName() {
+        return clientName;
     }
+
 }

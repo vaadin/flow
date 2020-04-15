@@ -97,8 +97,8 @@ public class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp() throws ServletException {
-        initializer.onStartup(
+    public void process() throws ServletException {
+        initializer.process(
                 Stream.of(MyComponentExporter.class, UserBoxExporter.class,
                         ExporterFactory.class).collect(Collectors.toSet()),
                 servletContext);
@@ -116,12 +116,12 @@ public class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_noExceptionWithNullArguments() {
+    public void process_noExceptionWithNullArguments() {
         try {
-            initializer.onStartup(null, servletContext);
+            initializer.process(null, servletContext);
         } catch (Exception e) {
             Assert.fail(
-                    "WebComponentRegistryInitializer.onStartup should not throw with null argument");
+                    "WebComponentRegistryInitializer.process should not throw with null argument");
         }
         // Expect a call to setWebComponents even if we have an empty or null
         // set
@@ -129,14 +129,14 @@ public class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
-    public void onStartUp_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
+    public void process_noExceptionForMultipleCorrectExportsOfTheSameComponent() {
         try {
-            initializer.onStartup(
+            initializer.process(
                     Stream.of(MyComponentExporter.class, SiblingExporter.class)
                             .collect(Collectors.toSet()),
                     servletContext);
         } catch (Exception e) {
-            Assert.fail("WebComponentRegistryInitializer.onStartup should not "
+            Assert.fail("WebComponentRegistryInitializer.process should not "
                     + "throw with 'sibling' exporters");
         }
     }
@@ -144,21 +144,21 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void emptySet_noExceptionAndWebComponentsSet() {
         try {
-            initializer.onStartup(Collections.emptySet(), servletContext);
+            initializer.process(Collections.emptySet(), servletContext);
         } catch (Exception e) {
             Assert.fail(
-                    "WebComponentRegistryInitializer.onStartup should not throw with empty set");
+                    "WebComponentRegistryInitializer.process should not throw with empty set");
         }
         Mockito.verify(registry).setConfigurations(Collections.emptySet());
     }
 
     @Test
-    public void duplicateNamesFoundOnStartUp_exceptionIsThrown()
+    public void duplicateNamesFoundprocess_exceptionIsThrown()
             throws ServletException {
         expectedEx.expect(ServletException.class);
         expectedEx.expectCause(CauseMatcher.ex(IllegalArgumentException.class)
                 .msgStartsWith("Found two WebComponentExporter classes"));
-        initializer.onStartup(
+        initializer.process(
                 Stream.of(MyComponentExporter.class, DuplicateTagExporter.class)
                         .collect(Collectors.toSet()),
                 servletContext);
@@ -176,14 +176,14 @@ public class WebComponentConfigurationRegistryInitializerTest {
                         "invalid",
                         InvalidNameExporter.class.getCanonicalName())));
 
-        initializer.onStartup(Collections.singleton(InvalidNameExporter.class),
+        initializer.process(Collections.singleton(InvalidNameExporter.class),
                 servletContext);
     }
 
     @Test
     public void duplicatePropertyRegistration_doesNotCauseIssues()
             throws ServletException {
-        initializer.onStartup(
+        initializer.process(
                 Collections.singleton(DuplicatePropertyExporter.class),
                 servletContext);
     }
@@ -191,7 +191,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
     @Test
     public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues()
             throws ServletException {
-        initializer.onStartup(Collections.singleton(ExtendingExporter.class),
+        initializer.process(Collections.singleton(ExtendingExporter.class),
                 servletContext);
     }
 

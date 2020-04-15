@@ -18,7 +18,10 @@ package com.vaadin.flow.uitest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -41,6 +44,13 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
             }
             return dependencies;
         });
+
+        // just set a fake backend to trigger live-reload client-side
+        BrowserLiveReloadAccess liveReloadAccess = VaadinService.getCurrent()
+                .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReload browserLiveReload = liveReloadAccess
+                .getLiveReload(VaadinService.getCurrent());
+        browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);
     }
 
 }

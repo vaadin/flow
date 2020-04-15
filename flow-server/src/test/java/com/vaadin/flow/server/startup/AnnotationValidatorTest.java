@@ -1,13 +1,10 @@
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.ERROR_MESSAGE_BEGINNING;
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,6 +21,9 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
+
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.ERROR_MESSAGE_BEGINNING;
+import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
 
 public class AnnotationValidatorTest {
 
@@ -82,7 +82,7 @@ public class AnnotationValidatorTest {
     public void onStartUp_all_failing_anotations_are_reported()
             throws ServletException {
         try {
-            annotationValidator.onStartup(Stream
+            annotationValidator.process(Stream
                     .of(InlineViewportWithParent.class,
                             BodySizeViewportWithParent.class,
                             ViewPortViewportWithParent.class)
@@ -116,7 +116,7 @@ public class AnnotationValidatorTest {
                 "@" + BodySize.class.getSimpleName() + ", "
                         + "@" + Inline.class.getSimpleName()));
 
-        annotationValidator.onStartup(Stream.of(FailingMultiAnnotation.class)
+        annotationValidator.process(Stream.of(FailingMultiAnnotation.class)
                 .collect(Collectors.toSet()), servletContext);
 
         Assert.fail("No exception was thrown for faulty setup.");
@@ -126,7 +126,7 @@ public class AnnotationValidatorTest {
     public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
             throws ServletException {
         annotationValidator
-                .onStartup(Stream.of(MultiAnnotation.class, AbstractMain.class)
+                .process(Stream.of(MultiAnnotation.class, AbstractMain.class)
                         .collect(Collectors.toSet()), servletContext);
     }
 }

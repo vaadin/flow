@@ -87,7 +87,8 @@ public class DevModeInitializerTestBase {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
-        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, enablePnpm.toString());
+        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                enablePnpm.toString());
 
         Mockito.when(vaadinServletRegistration.getInitParameters())
                 .thenReturn(initParams);
@@ -164,8 +165,8 @@ public class DevModeInitializerTestBase {
         }
     }
 
-    public void runOnStartup() throws Exception {
-        devModeInitializer.onStartup(classes, servletContext);
+    public void process() throws Exception {
+        devModeInitializer.process(classes, servletContext);
         waitForDevModeServer();
     }
 

@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.i18n.LocaleChangeEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -734,9 +735,27 @@ public class UI extends Component
         assert locale != null : "Null locale is not supported!";
         if (!this.locale.equals(locale)) {
             this.locale = locale;
-            Direction.set(this, locale);
             EventUtil.informLocaleChangeObservers(this);
         }
+    }
+
+    /**
+     * Sets the direction for the UI.
+     * <p>
+     * If you need the direction to update automatically upon {@link Locale}
+     * change, make the main layout implement
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver} and call this method
+     * from the
+     * {@link com.vaadin.flow.i18n.LocaleChangeObserver#localeChange(LocaleChangeEvent)}
+     * implementation.
+     *
+     * @param direction
+     *            the direction to use, not {@code null}
+     */
+    public void setDirection(Direction direction) {
+        Objects.requireNonNull(direction, "Direction cannot be null");
+        getPage().executeJs("document.dir = $0",
+                direction.getClientName());
     }
 
     /**
@@ -1047,7 +1066,7 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> new Component[] {this},
+        return new ShortcutRegistration(this, () -> new Component[] { this },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -1082,8 +1101,8 @@ public class UI extends Component
             throw new IllegalArgumentException(
                     String.format(Shortcuts.NULL, "key"));
         }
-        return new ShortcutRegistration(this, () -> new Component[] { this }, listener, key)
-                .withModifiers(keyModifiers);
+        return new ShortcutRegistration(this, () -> new Component[] { this },
+                listener, key).withModifiers(keyModifiers);
     }
 
     /**

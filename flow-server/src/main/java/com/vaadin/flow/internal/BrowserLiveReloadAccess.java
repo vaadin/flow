@@ -56,7 +56,7 @@ public class BrowserLiveReloadAccess {
         synchronized (this) {
             liveReload = context.getAttribute(BrowserLiveReloadImpl.class);
             if (liveReload == null) {
-                liveReload = new BrowserLiveReloadImpl(service);
+                liveReload = new BrowserLiveReloadImpl();
                 context.setAttribute(BrowserLiveReloadImpl.class, liveReload);
             }
         }
