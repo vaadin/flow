@@ -230,14 +230,7 @@ export class Flow {
         this.container.style.display = 'none';
         document.body.appendChild(this.container);
       }
-
-      // Load devmode gizmo, which handles live-reload connection to the server
-      // (server ensures this parameter is true only in dev mode)
-      if (appConfig.devmodeGizmoEnabled) {
-        const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
-        await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.liveReloadBackend, appConfig.springBootDevToolsPort);
-      }
-
+      
       // hide flow progress indicator
       this.hideLoading();
     }
