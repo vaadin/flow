@@ -44,7 +44,7 @@ import com.vaadin.testbench.TestBenchElement;
 public class FrontendProtocolIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore
+    @Ignore // https://github.com/vaadin/flow/issues/8063
     public void loadComponentFromEs6Path() {
         openProduction();
 
@@ -74,7 +74,7 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore
+    @Ignore // https://github.com/vaadin/flow/issues/8063
     public void loadComponentFromEs6Property() {
         openForEs6Url();
 
