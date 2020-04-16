@@ -423,6 +423,9 @@ const init = function(serviceUrl, liveReloadBackend, springBootDevToolsPort) {
       devmodeGizmo.setAttribute('springBootDevToolsPort', springBootDevToolsPort);
     }
     document.body.appendChild(devmodeGizmo);
+    return devmodeGizmo;
+  } else {
+    return undefined;
   }
 };
 

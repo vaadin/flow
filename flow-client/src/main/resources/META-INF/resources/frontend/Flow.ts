@@ -235,7 +235,8 @@ export class Flow {
       // (server ensures this parameter is true only in dev mode)
       if (appConfig.devmodeGizmoEnabled) {
         const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
-        await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.liveReloadBackend, appConfig.springBootDevToolsPort);
+        const devmodeGizmo = await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.liveReloadBackend, appConfig.springBootDevToolsPort);
+        $wnd.Vaadin.Flow.devModeGizmo = devmodeGizmo;
       }
 
       // hide flow progress indicator
