@@ -24,6 +24,8 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class ThemedVariantComponentIT extends ChromeBrowserTest {
 
+    private String theme;
+
     @Override
     protected String getTestPath() {
         return "/index.html";
@@ -34,9 +36,7 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
         open();
 
         waitUntil(driver -> hasThemeAttribute());
-        TestBenchElement webComponent = $("themed-variant-web-component")
-                .first();
-        Assert.assertEquals("dark", webComponent.getAttribute("theme"));
+        Assert.assertEquals("dark", theme);
 
         String customStyle = $("custom-style").first()
                 .getAttribute("innerHTML");
@@ -49,6 +49,7 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
     private boolean hasThemeAttribute() {
         TestBenchElement webComponent = $("themed-variant-web-component")
                 .first();
-        return webComponent.getAttribute("theme") != null;
+        theme = webComponent.getAttribute("theme");
+        return theme != null;
     }
 }
