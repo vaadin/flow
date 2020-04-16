@@ -36,7 +36,7 @@ public class VaadinConnectEndpoints {
         public ZonedDateTime getZonedDateTime() {
             return zonedDateTime;
         }
-    
+
         public void setZonedDateTime(ZonedDateTime zonedDateTime) {
             this.zonedDateTime = zonedDateTime;
         }
