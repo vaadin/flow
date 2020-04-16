@@ -46,7 +46,7 @@
             <groupId>org.webjars.bowergithub.vaadin</groupId>
             <artifactId>vaadin-themable-mixin</artifactId>
             <version>1.4.4</version>
-        </dependency>
+       </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
