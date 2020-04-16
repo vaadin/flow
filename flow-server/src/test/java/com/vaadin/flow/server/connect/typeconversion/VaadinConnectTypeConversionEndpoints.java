@@ -18,7 +18,6 @@ package com.vaadin.flow.server.connect.typeconversion;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,7 +33,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.rest.BeanWithPrivateFields;
 
 @Endpoint
 public class VaadinConnectTypeConversionEndpoints {
@@ -243,27 +241,6 @@ public class VaadinConnectTypeConversionEndpoints {
         newBean.setCustomProperty(value.getCustomProperty() + "-foo");
         return newBean;
     }
-
-    public BeanWithZonedDateTimeField getBeanWithZonedDateTimeField(){
-        return new BeanWithZonedDateTimeField();
-    }
-
-    public BeanWithPrivateFields getEntityWithPrivateFields(){
-        return new BeanWithPrivateFields();
-    }
-
-    public static class BeanWithZonedDateTimeField {
-        private ZonedDateTime zonedDateTime = ZonedDateTime.now();
-
-        public ZonedDateTime getZonedDateTime() {
-            return zonedDateTime;
-        }
-    
-        public void setZonedDateTime(ZonedDateTime zonedDateTime) {
-            this.zonedDateTime = zonedDateTime;
-        }
-    }
-
 
     public enum TestEnum {
         FIRST(1), SECOND(2), THIRD(3);
