@@ -18,6 +18,7 @@ package com.vaadin.flow.webcomponent;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -33,8 +34,11 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
     public void servletPageGetsWebComponent_attributeIsReflectedToServer() {
         open();
 
-        TestBenchElement webComponent = $("themed-variant-web-component")
-                .first();
+        checkLogsForErrors();
+
+        waitUntil(driver -> !driver.findElement(By.className("v-loading-indicator")).isDisplayed());
+        
+        TestBenchElement webComponent = $("themed-variant-web-component").first();
         Assert.assertEquals("dark", webComponent.getAttribute("theme"));
 
         String customStyle = $("custom-style").first()
