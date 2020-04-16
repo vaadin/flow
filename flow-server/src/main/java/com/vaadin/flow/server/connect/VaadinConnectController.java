@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.connect;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -39,24 +41,30 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -64,6 +72,7 @@ import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException.ValidationErrorData;
+import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 /**
  * The controller that is responsible for processing Vaadin Connect requests.
@@ -90,7 +99,7 @@ public class VaadinConnectController {
      *
      * @see #VaadinConnectController(ObjectMapper, VaadinConnectAccessChecker,
      *      EndpointNameChecker, ExplicitNullableTypeChecker,
-     *      ApplicationContext)
+     *      ApplicationContext, ServletContext)
      */
     public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER =
             "vaadinEndpointMapper";
@@ -124,20 +133,54 @@ public class VaadinConnectController {
      * @param context
      *            Spring context to extract beans annotated with {@link Endpoint}
      *            from
+     * @param servletContext
+     *            The servlet context for the controller.
      */
     public VaadinConnectController(
-            @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
+            @Autowired(required = false) @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) 
+            ObjectMapper vaadinEndpointMapper,
             VaadinConnectAccessChecker accessChecker,
             EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
-            ApplicationContext context) {
-        this.vaadinEndpointMapper = vaadinEndpointMapper;
+            ApplicationContext context,
+            ServletContext servletContext) {
+        this.vaadinEndpointMapper = vaadinEndpointMapper != null
+                ? vaadinEndpointMapper
+                : createVaadinConnectObjectMapper(context);
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
         context.getBeansWithAnnotation(Endpoint.class).forEach(
                 (name, endpointBean) -> validateEndpointBean(endpointNameChecker,
                         name, endpointBean));
+
+
+        DeploymentConfiguration cfg = createDeploymentConfiguration(servletContext);
+        if (cfg != null) {
+            accessChecker.enableCsrf(cfg.isXsrfProtectionEnabled());
+        }
+    }
+
+    private ObjectMapper createVaadinConnectObjectMapper(ApplicationContext context) {
+        ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
+        JacksonProperties jacksonProperties = context
+                .getBean(JacksonProperties.class);
+        if (jacksonProperties.getVisibility().isEmpty()) {
+            objectMapper.setVisibility(PropertyAccessor.ALL,
+                    JsonAutoDetect.Visibility.ANY);
+        }
+        return objectMapper;
+      }
+
+    private DeploymentConfiguration createDeploymentConfiguration(
+            ServletContext ctx) {
+        if (ctx.getServletRegistrations().isEmpty()) {
+            return null;
+        }
+        ServletRegistration reg = ctx.getServletRegistrations().entrySet()
+                .iterator().next().getValue();
+        return StubServletConfig.createDeploymentConfiguration(ctx, reg,
+                VaadinConnectController.class);
     }
 
     private static Logger getLogger() {
