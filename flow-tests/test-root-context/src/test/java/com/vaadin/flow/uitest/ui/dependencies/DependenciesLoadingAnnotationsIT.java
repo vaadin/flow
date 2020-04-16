@@ -1,18 +1,5 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.DOM_CHANGE_TEXT;
-import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.PRELOADED_DIV_ID;
-import static org.hamcrest.CoreMatchers.both;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.either;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,6 +12,19 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testcategory.IgnoreNPM;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.DOM_CHANGE_TEXT;
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingBaseView.PRELOADED_DIV_ID;
+import static org.hamcrest.CoreMatchers.both;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.either;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 /**
  * A test that ensures correct order of dependencies loaded. Test corresponds to
@@ -127,6 +127,11 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         for (int i = 0; i < jsImports.size(); i++) {
             WebElement jsImport = jsImports.get(i);
             String jsUrl = jsImport.getAttribute("src");
+            // TODO: where are these comming from and why do they get async when using driver.
+            if (!jsImport.getAttribute("type").equals("text/javascript")
+                    || jsUrl.startsWith("data:text/javascript")) {
+                continue;
+            }
             if (foundClientEngine) {
                 if (userDependencyMinIndex > i) {
                     userDependencyMinIndex = i;

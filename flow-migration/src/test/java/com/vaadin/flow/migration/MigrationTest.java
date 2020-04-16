@@ -35,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class MigrationTest {
@@ -121,6 +122,9 @@ public class MigrationTest {
     public void migrateNpmPassesHappyPath() throws MigrationFailureException,
             MigrationToolsException, IOException {
         Mockito.when(configuration.isPnpmEnabled()).thenReturn(false);
+        FrontendTools tools = new FrontendTools(new File("foo").getPath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        final List<String> npm = tools.getNpmExecutable();
         // Expected execution calls:
         // 1 - npm --no-update-notifier --no-audit install polymer-modulizer
         // 2 - node {tempFolder} i -F --confid.interactive=false -S
@@ -128,8 +132,13 @@ public class MigrationTest {
         // 3 - npm --no-update-notifier --no-audit i
         // 4 - node node_modules/polymer-modulizer/bin/modulizer.js --force
         // --out , --import-style=name
-        migratePassesHappyPath(Stream.of(5, 7, 4, 6)
-                .collect(Collectors.toCollection(LinkedList::new)));
+
+        // with .vadin path calls 1 and 3 will get node in the beginning.
+        if(npm.get(0).contains(".vaadin")) {
+            migratePassesHappyPath(Stream.of(6, 7, 5, 6).collect(Collectors.toCollection(LinkedList::new)));
+        } else {
+            migratePassesHappyPath(Stream.of(5, 7, 4, 6).collect(Collectors.toCollection(LinkedList::new)));
+        }
     }
 
     @Test
