@@ -178,6 +178,7 @@ class VaadinDevmodeGizmo extends LitElement {
       .ahreflike {
           cursor: pointer;
           font-weight: 600;
+      }
 
       #live-reload-text {
           margin-left: 4px;
