@@ -107,6 +107,8 @@ public class OpenApiObjectGenerator {
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
 
+    public static final String EXT_VALID = "x-annotations";
+
     private List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
     private Map<String, ResolvedReferenceType> usedTypes;
@@ -190,6 +192,7 @@ public class OpenApiObjectGenerator {
         endpointsJavadoc = new HashMap<>();
         schemaResolver = new SchemaResolver();
         ParserConfiguration parserConfiguration = createParserConfiguration();
+
 
         javaSourcePaths.stream()
                 .map(path -> new SourceRoot(path, parserConfiguration))
@@ -453,11 +456,22 @@ public class OpenApiObjectGenerator {
                     // not required
                     propertySchema.setNullable(true);
                 }
+                addFieldAnnotationsToSchema(field, propertySchema);
                 properties.put(variableDeclarator.getNameAsString(),
                         propertySchema);
             });
         }
         return properties;
+    }
+
+    private void addFieldAnnotationsToSchema(FieldDeclaration field,
+            Schema<?> schema) {
+        List<String> annotations = field.getAnnotations().stream()
+                .map(a -> a.toString().substring(1))
+                .collect(Collectors.toList());
+        if (!annotations.isEmpty()) {
+            schema.addExtension(EXT_VALID, annotations);
+        }
     }
 
     private Map<String, ResolvedReferenceType> collectUsedTypesFromSchema(

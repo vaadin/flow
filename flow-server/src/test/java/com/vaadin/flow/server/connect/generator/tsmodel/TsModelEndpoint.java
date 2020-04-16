@@ -1,0 +1,83 @@
+/*
+ * Copyright 2000-2020 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.connect.generator.tsmodel;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.AssertFalse;
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.DecimalMax;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.Future;
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Negative;
+import javax.validation.constraints.NegativeOrZero;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
+
+import com.vaadin.flow.server.connect.Endpoint;
+
+@Endpoint
+public class TsModelEndpoint {
+
+    @Nullable
+    public TsModel getEntity() {
+        return new TsModel();
+    }
+
+
+    @Nullable
+    public String stringNullable() {
+        return "";
+    }
+
+    public static class TsModel {
+        String foo;
+        @Email String email;
+        @Null String isNull;
+        @NotNull String notNull;
+        @NotEmpty @NotNull String notEmpty;
+        @NotBlank String notBlank;
+        @AssertTrue String assertTrue;
+        @AssertFalse String assertFalse;
+        @Min(1) String min;
+        @Max(2) String max;
+        @DecimalMin("0.01") String decimalMin;
+        @DecimalMax("0.01") String decimalMax;
+        @Negative int negative;
+        @NegativeOrZero int negativeOrCero;
+        @Positive int positive;
+        @PositiveOrZero int positiveOrCero;
+        @Size String size;
+        @Digits(integer=5, fraction = 2) String digits;
+        @Past String past;
+        @PastOrPresent String pastOrPresent;
+        @Future String future;
+        @FutureOrPresent String futureOrPresent;
+        @Pattern(regexp = ".+") String pattern;
+    }
+}
