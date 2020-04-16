@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
 import com.vaadin.flow.testcategory.IgnoreNPM;
@@ -29,6 +30,7 @@ import com.vaadin.flow.testcategory.IgnoreNPM;
  * @since 1.0
  *
  */
+@Ignore // #8096
 @Category(IgnoreNPM.class)
 public class AnnotatedFrontendInlineIT extends AbstractFrontendInlineIT {
 
