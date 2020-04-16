@@ -95,14 +95,4 @@ public abstract class BaseTypeConversionIT {
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         return mockMvc.perform(requestBuilder).andReturn().getResponse();
     }
-
-    protected MockHttpServletResponse callMethod(String methodName) throws Exception {
-        String endpointName = VaadinConnectTypeConversionEndpoints.class
-                .getSimpleName();
-        String requestUrl = String.format("/%s/%s", endpointName, methodName);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post(requestUrl)
-                .accept(MediaType.APPLICATION_JSON_UTF8_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-        return mockMvc.perform(requestBuilder).andReturn().getResponse();
-    }
 }
