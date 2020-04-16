@@ -146,7 +146,7 @@ public class VaadinConnectController {
             ServletContext servletContext) {
         this.vaadinEndpointMapper = vaadinEndpointMapper != null
                 ? vaadinEndpointMapper
-                : getDefaultObjectMapper(context);
+                : createVaadinConnectObjectMapper(context);
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
@@ -161,7 +161,7 @@ public class VaadinConnectController {
         }
     }
 
-    private ObjectMapper getDefaultObjectMapper(ApplicationContext context) {
+    private ObjectMapper createVaadinConnectObjectMapper(ApplicationContext context) {
         ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
         JacksonProperties jacksonProperties = context
                 .getBean(JacksonProperties.class);
