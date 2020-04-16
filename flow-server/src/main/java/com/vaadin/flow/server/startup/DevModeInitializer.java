@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -118,8 +117,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class })
 @WebListener
-public class DevModeInitializer implements ServletContainerInitializer,
-        Serializable, ServletContextListener {
+public class DevModeInitializer
+        implements ClassLoaderAwareServletContainerInitializer, Serializable,
+        ServletContextListener {
 
     static class DevModeClassFinder extends DefaultClassFinder {
 
@@ -186,8 +186,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
                     + Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
                     + "/?$");
 
+    // Attribute key for storing Dev Mode Handler startup flag.
+    // If presented in Servlet Context, shows the Dev Mode Handler already
+    // started / become starting.
+    // This attribute helps to avoid Dev Mode running twice.
+    //
+    // Addresses the issue https://github.com/vaadin/spring/issues/502
+    private static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE =
+            "dev-mode-handler-already-started-attribute";
+
     @Override
-    public void onStartup(Set<Class<?>> classes, ServletContext context)
+    public void process(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
         Collection<? extends ServletRegistration> registrations = context
                 .getServletRegistrations().values();
@@ -219,11 +228,17 @@ public class DevModeInitializer implements ServletContainerInitializer,
         }
 
         initDevModeHandler(classes, context, config);
+
+        setDevModeStarted(context);
     }
 
     private boolean isVaadinServletSubClass(String className)
             throws ClassNotFoundException {
         return VaadinServlet.class.isAssignableFrom(Class.forName(className));
+    }
+
+    private void setDevModeStarted(ServletContext context) {
+        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, true);
     }
 
     /**
@@ -375,6 +390,19 @@ public class DevModeInitializer implements ServletContainerInitializer,
                 });
 
         DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
+    }
+
+    /**
+     * Shows whether {@link DevModeHandler} has been already started or not.
+     *
+     * @param servletContext The servlet context, not <code>null</code>
+     * @return <code>true</code> if {@link DevModeHandler} has already been started,
+     *         <code>false</code> - otherwise
+     */
+    public static boolean isDevModeAlreadyStarted(ServletContext servletContext) {
+        assert servletContext != null;
+        return servletContext.getAttribute(
+                DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE) != null;
     }
 
     private static Logger log() {

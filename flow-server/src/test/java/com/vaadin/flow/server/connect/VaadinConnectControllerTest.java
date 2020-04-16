@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
@@ -57,6 +56,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -795,12 +795,12 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_UseDefaultObjectMapper_When_NoneIsProvided() {
+    public void should_Never_UseSpringObjectMapper() {
         ApplicationContext contextMock = mock(ApplicationContext.class);
-        ObjectMapper mockDefaultObjectMapper = mock(ObjectMapper.class);
+        ObjectMapper mockSpringObjectMapper = mock(ObjectMapper.class);
         JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
         when(contextMock.getBean(ObjectMapper.class))
-                .thenReturn(mockDefaultObjectMapper);
+                .thenReturn(mockSpringObjectMapper);
         when(contextMock.getBean(JacksonProperties.class))
                 .thenReturn(mockJacksonProperties);
         when(mockJacksonProperties.getVisibility())
@@ -812,52 +812,10 @@ public class VaadinConnectControllerTest {
                 contextMock,
                 mock(ServletContext.class));
 
-        verify(contextMock, times(1)).getBean(ObjectMapper.class);
-        verify(mockDefaultObjectMapper, times(1)).setVisibility(
+        verify(contextMock, never()).getBean(ObjectMapper.class);
+        verify(mockSpringObjectMapper, never()).setVisibility(
                 PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        verify(contextMock, times(1)).getBean(JacksonProperties.class);
-    }
-
-    @Test
-    public void should_NotOverrideVisibility_When_JacksonPropertiesProvideVisibility() {
-        ApplicationContext contextMock = mock(ApplicationContext.class);
-        ObjectMapper mockDefaultObjectMapper = mock(ObjectMapper.class);
-        JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
-        when(contextMock.getBean(ObjectMapper.class))
-                .thenReturn(mockDefaultObjectMapper);
-        when(contextMock.getBean(JacksonProperties.class))
-                .thenReturn(mockJacksonProperties);
-        when(mockJacksonProperties.getVisibility())
-                .thenReturn(Collections.singletonMap(PropertyAccessor.ALL,
-                        JsonAutoDetect.Visibility.PUBLIC_ONLY));
-        new VaadinConnectController(null,
-                mock(VaadinConnectAccessChecker.class),
-                mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class),
-                contextMock,
-                mock(ServletContext.class));
-
-        verify(contextMock, times(1)).getBean(ObjectMapper.class);
-        verify(mockDefaultObjectMapper, times(0)).setVisibility(
-                PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        verify(contextMock, times(1)).getBean(JacksonProperties.class);
-    }
-
-    @Test
-    public void should_ThrowError_When_DefaultObjectMapperIsNotFound() {
-        ApplicationContext contextMock = mock(ApplicationContext.class);
-        when(contextMock.getBean(ObjectMapper.class))
-                .thenThrow(new NoSuchBeanDefinitionException("Bean not found"));
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("object mapper");
-
-        new VaadinConnectController(null,
-                mock(VaadinConnectAccessChecker.class),
-                mock(EndpointNameChecker.class),
-                mock(ExplicitNullableTypeChecker.class),
-                contextMock,
-                mock(ServletContext.class));
+        verify(contextMock, never()).getBean(JacksonProperties.class);
     }
 
     @Test

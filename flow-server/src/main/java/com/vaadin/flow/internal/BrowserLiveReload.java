@@ -27,6 +27,28 @@ import org.atmosphere.cpr.AtmosphereResource;
 public interface BrowserLiveReload {
 
     /**
+     * Live reload enabling technology detected.
+     */
+    enum Backend {
+        HOTSWAP_AGENT, JREBEL, SPRING_BOOT_DEVTOOLS;
+    }
+
+    /**
+     * Detects and return enabling live reload backend technology.
+     * 
+     * @return enabling technology, or <code>null</code> if none
+     */
+    Backend getBackend();
+
+    /**
+     * Sets the live reload backend technology explicitly.
+     *
+     * @param backend
+     *      enabling technology, not <code>null</code>.
+     */
+    void setBackend(Backend backend);
+
+    /**
      * Sets the web socket connection resource when it's established.
      *
      * @param resource

@@ -98,6 +98,32 @@ public class LiveReloadIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void liveReloadShouldNotTriggerAfterDisable() throws InterruptedException {
+        open();
+        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
+        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
+        liveReload.click();
+
+        String instanceId = findElement(By.id("elementId")).getText();
+
+        WebElement liveReloadIcon = findInShadowRoot(liveReload,
+                By.className("vaadin-logo")).get(0);
+        liveReloadIcon.click();
+
+        WebElement button = findInShadowRoot(liveReload, By.id("disable"))
+                .get(0);
+        button.click();
+
+        WebElement liveReloadTrigger = findElement(
+                By.id("live-reload-trigger-button"));
+        liveReloadTrigger.click();
+
+        String instanceId2 = findElement(By.id("elementId")).getText();
+
+        Assert.assertEquals(instanceId, instanceId2);
+    }
+
+    @Test
     public void notificationShownOnAutoReloadAndClosedOnBodyClick() {
         open();
         waitForElementPresent(By.id("live-reload-trigger-button"));

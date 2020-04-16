@@ -193,4 +193,9 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String LIVE_RELOAD_CONNECTION = "refresh_connection";
 
+    /**
+     * Boolean client configuration parameter enabling the development mode
+     * gizmo.
+     */
+    public static final String DEVMODE_GIZMO_ENABLED = "devmodeGizmoEnabled";
 }

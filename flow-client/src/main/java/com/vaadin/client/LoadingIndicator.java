@@ -17,7 +17,9 @@
 package com.vaadin.client;
 
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
+
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
 import elemental.dom.Element;
@@ -118,7 +120,6 @@ public class LoadingIndicator {
 
     private Element element;
 
-    private Element styleElement;
     private boolean applyDefaultTheme = true;
 
     /**
@@ -271,15 +272,18 @@ public class LoadingIndicator {
      */
     public Element getElement() {
         if (element == null) {
+            element = Browser.getDocument().querySelector("." + PRIMARY_STYLE_NAME);
             setupTheming();
-
-            element = Browser.getDocument().createElement("div");
-            Browser.getDocument().getBody().appendChild(element);
+            if (element == null) {
+                element = Browser.getDocument().createElement("div");
+                Browser.getDocument().getBody().appendChild(element);
+            }
         }
         return element;
     }
 
     private void setupTheming() {
+        Element styleElement = Browser.getDocument().querySelector("style#css-loading-indicator");
         if (styleElement == null) {
             styleElement = Browser.getDocument().createStyleElement();
             styleElement.setAttribute("type", "text/css");
