@@ -16,4 +16,10 @@
     jar is added to the classpath of a web application, it will run in Vaadin 10-13 compatibility mode.
     </description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.webjars.bowergithub.webcomponents</groupId>
+            <artifactId>webcomponentsjs</artifactId>
+        </dependency>
+    </dependencies>
 </project>

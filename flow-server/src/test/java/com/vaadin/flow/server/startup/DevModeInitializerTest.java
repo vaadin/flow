@@ -1,7 +1,6 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -149,8 +148,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void loadingFsResources_usesVfsProtocol_allFilesExist()
             throws Exception {
-        String path = Paths.get("/dir-with-modern-frontend",
-                Constants.RESOURCES_FRONTEND_DEFAULT).toString();
+        String path = "/dir-with-modern-frontend/"
+                + Constants.RESOURCES_FRONTEND_DEFAULT;
         MockVirtualFile virtualFile = new MockVirtualFile();
         virtualFile.file = new File(getClass().getResource(path).toURI());
 
@@ -168,8 +167,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             }
             return null;
         });
-        URL url = new URL(
-                Paths.get("vfs://some-non-existent-place", path).toString());
+        URL url = new URL("vfs://some-non-existent-place" + path);
 
         loadingFsResources_allFilesExist(Collections.singletonList(url),
                 Constants.RESOURCES_FRONTEND_DEFAULT);
