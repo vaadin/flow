@@ -73,7 +73,7 @@ public class FrontendToolsLocator implements Serializable {
      */
     public Optional<File> tryLocateTool(String toolName) {
         List<String> candidateLocations = executeCommand(false,
-                isWindows() ? "where" : "which", toolName)
+                isWindows() ? "where" : "command -v", toolName) // do not use 'which' #8083
                         .map(this::omitErrorResult)
                         .map(CommandResult::getStdout)
                         .orElseGet(() -> Arrays.asList(
