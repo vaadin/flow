@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.RouteAliasData;
@@ -347,9 +348,9 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     private void configureWithFullTemplate(String path,
             Class<? extends Component> navigationTarget,
-            TemplateConfiguration templateConfiguration) {
+            SerializableBiConsumer<ConfigureRoutes, String> templateConfiguration) {
         configure(configuration -> {
-            templateConfiguration.configure(configuration,
+            templateConfiguration.accept(configuration,
                     HasUrlParameterFormat.getTemplate(path, navigationTarget));
         });
     }
@@ -461,23 +462,5 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         return Optional.empty();
     }
-
-    /**
-     * Configuration interface to use for updating the configuration entity.
-     */
-    @FunctionalInterface
-    private interface TemplateConfiguration extends Serializable {
-        /**
-         * Configure the given configurable route holder object.
-         *
-         * @param configuration
-         *            mutable route configuration to make changes to
-         * @param fullTemplate
-         *            the full template including the
-         *            {@link com.vaadin.flow.router.HasUrlParameter} parameter
-         *            placeholder.
-         */
-        void configure(ConfigureRoutes configuration, String fullTemplate);
-    }
-
+    
 }

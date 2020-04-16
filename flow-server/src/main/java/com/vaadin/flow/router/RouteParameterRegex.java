@@ -38,11 +38,12 @@ public class RouteParameterRegex implements Serializable {
     public static final String BOOLEAN = "^true|false$";
 
     /**
-     * String type regex.
-     *
-     * Empty string is used and any value is accepted.
+     * String type represented by an empty regex matching any parameter value.
      */
     public static final String STRING = "";
+
+    private RouteParameterRegex() {
+    }
 
     /**
      * Gets the regex used for the given parameterType.
@@ -93,9 +94,6 @@ public class RouteParameterRegex implements Serializable {
      */
     public static String getName(String regex) {
         return getType(regex).getSimpleName().toLowerCase();
-    }
-
-    private RouteParameterRegex() {
     }
 
 }
