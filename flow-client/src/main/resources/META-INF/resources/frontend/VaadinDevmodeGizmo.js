@@ -71,6 +71,57 @@ class VaadinDevmodeGizmo extends LitElement {
           z-index: 20000;
       }
 
+      .switch {
+          position: relative;
+          display: inline-block;
+          margin-top: auto;
+          margin-bottom: auto;
+          width: 28px;
+          height: 18px;
+      }
+
+      .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 18px;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: var(--lumo-success-color);
+      }
+
+      input:checked + .slider:before {
+        -webkit-transform: translateX(10px);
+        -ms-transform: translateX(10px);
+        transform: translateX(10px);
+      }
+
       .window.hidden {
           opacity: 0;
           transform: scale(0.1,0.4);
@@ -103,6 +154,8 @@ class VaadinDevmodeGizmo extends LitElement {
       }
 
       .window-header {
+          display: flex;
+          justify-content: flex-end;
           background-color: rgba(40,40,40,1);
           border-radius: var(--lumo-border-radius-l) var(--lumo-border-radius-l) 0px 0px;
           border-bottom: 1px solid rgba(70,70,70,1);
@@ -125,6 +178,10 @@ class VaadinDevmodeGizmo extends LitElement {
       .ahreflike {
           cursor: pointer;
           font-weight: 600;
+
+      #live-reload-text {
+          margin-left: 4px;
+          margin-right: 4px;
       }
     `;
   }
@@ -393,11 +450,15 @@ class VaadinDevmodeGizmo extends LitElement {
 
             <div class="window ${this.expanded ? 'visible' : 'hidden'}">
                     <div class="window-header">
-                        <input id="toggle" type="checkbox"
-                            ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
-                            ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
-                        @change=${e => this.setActive(e.target.checked)}>Live-reload</input>
-                        <button id="minimize" @click=${e => this.toggleExpanded()}>X</button>
+                        <label class="switch">
+                            <input id="toggle" type="checkbox"
+                                ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
+                                ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
+                            @change=${e => this.setActive(e.target.checked)}/>
+                            <span class="slider"></span>
+                         </label>
+                         <span id="live-reload-text">Live-reload</span>
+                         <button id="minimize" @click=${e => this.toggleExpanded()}>X</button>
                     </div>
                     <div class="message-tray">
                          ${this.messages.map(i => html`<div class="message">${i}</div>`)}
