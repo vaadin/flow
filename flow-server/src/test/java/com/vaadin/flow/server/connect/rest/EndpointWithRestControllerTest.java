@@ -65,8 +65,7 @@ public class EndpointWithRestControllerTest {
                 null, mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class),
-                applicationContext,
-                mock(ServletContext.class)))
+                applicationContext))
                 .build();
         Assert.assertNotEquals(null, applicationContext);
     }

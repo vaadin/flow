@@ -825,8 +825,7 @@ public class VaadinConnectControllerTest {
                 mock(VaadinConnectAccessChecker.class),
                 mock(EndpointNameChecker.class),
                 mock(ExplicitNullableTypeChecker.class),
-                contextMock,
-                mock(ServletContext.class));
+                contextMock);
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
         verify(mockDefaultObjectMapper, never()).setVisibility(
