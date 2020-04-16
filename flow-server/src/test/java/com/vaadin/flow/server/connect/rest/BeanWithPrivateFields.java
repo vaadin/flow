@@ -14,9 +14,9 @@
  * the License.
  */
 
-package com.vaadin.flow.server.connect.typeconversion;
+package com.vaadin.flow.server.connect.rest;
 
-public class EntityWithPrivateFields {
+public class BeanWithPrivateFields {
     @SuppressWarnings("unused")
 	private String codeNumber = "007";
 	private String name = "Bond";

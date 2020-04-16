@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.flow.server.connect.rest.BeanWithPrivateFields;
 
 @Endpoint
 public class VaadinConnectTypeConversionEndpoints {
@@ -247,8 +248,8 @@ public class VaadinConnectTypeConversionEndpoints {
         return new BeanWithZonedDateTimeField();
     }
 
-    public EntityWithPrivateFields getEntityWithPrivateFields(){
-        return new EntityWithPrivateFields();
+    public BeanWithPrivateFields getEntityWithPrivateFields(){
+        return new BeanWithPrivateFields();
     }
 
     public static class BeanWithZonedDateTimeField {

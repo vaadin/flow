@@ -13,18 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.server.connect.rest;
 
-package com.vaadin.flow.server.connect.typeconversion;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-@RestController
-public class MyRestController {
-
-	@GetMapping("api/get")
-	public EntityWithPrivateFields read() {
-		return new EntityWithPrivateFields();
-	}
-
+@SpringBootApplication
+public class MixedRestAndEndpointApplication {
+    // Test application to provide test context for the integration tests
 }
