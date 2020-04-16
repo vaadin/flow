@@ -24,9 +24,9 @@ import com.vaadin.flow.server.connect.rest.BeanWithPrivateFields;
 @RestController
 public class MyRestController {
 
-	@GetMapping("api/get")
-	public BeanWithPrivateFields read() {
-		return new BeanWithPrivateFields();
-	}
+    @GetMapping("api/get")
+    public BeanWithPrivateFields read() {
+        return new BeanWithPrivateFields();
+    }
 
 }
