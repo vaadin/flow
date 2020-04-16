@@ -49,6 +49,6 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
     private boolean hasThemeAttribute() {
         TestBenchElement webComponent = $("themed-variant-web-component")
                 .first();
-        return webComponent.hasAttribute("theme");
+        return webComponent.getAttribute("theme") != null;
     }
 }
