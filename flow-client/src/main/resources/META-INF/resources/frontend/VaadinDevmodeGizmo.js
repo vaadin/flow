@@ -121,6 +121,11 @@ class VaadinDevmodeGizmo extends LitElement {
           content: "ⓘ";
           margin-right: var(--lumo-space-s);
       }
+      
+      .ahreflike {
+          cursor: pointer;
+          font-weight: 600;
+      }
     `;
   }
 
@@ -403,7 +408,7 @@ class VaadinDevmodeGizmo extends LitElement {
         <span class="status-blip" style="background-color: ${this.getStatusColor()}"></span>
     ${this.notification !== null
     ? html`<span class="status-description">${this.notification}</span></div>`
-    : html`<span class="status-description"><a href="javascript:void(0)">Show</a></span></div>`
+    : html`<span class="status-description"><span class="ahreflike">Show</span></span></div>`
 }
       </div>`;
   }
