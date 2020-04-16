@@ -33,6 +33,7 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
     public void servletPageGetsWebComponent_attributeIsReflectedToServer() {
         open();
 
+        waitUntil(driver -> hasThemeAttribute());
         TestBenchElement webComponent = $("themed-variant-web-component")
                 .first();
         Assert.assertEquals("dark", webComponent.getAttribute("theme"));
@@ -43,5 +44,11 @@ public class ThemedVariantComponentIT extends ChromeBrowserTest {
                 CoreMatchers.allOf(
                         CoreMatchers.containsString("theme~=\"dark\""),
                         CoreMatchers.containsString("--lumo-base-color")));
+    }
+
+    private boolean hasThemeAttribute() {
+        TestBenchElement webComponent = $("themed-variant-web-component")
+                .first();
+        return webComponent.hasAttribute("theme");
     }
 }
