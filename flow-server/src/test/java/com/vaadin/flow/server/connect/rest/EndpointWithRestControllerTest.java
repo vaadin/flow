@@ -116,3 +116,4 @@ public class EndpointWithRestControllerTest {
         return mockMvcForEndpoint.perform(requestBuilder).andReturn().getResponse().getContentAsString();
     }
 }
+
