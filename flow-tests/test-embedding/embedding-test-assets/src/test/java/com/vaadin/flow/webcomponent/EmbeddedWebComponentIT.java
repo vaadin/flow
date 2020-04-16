@@ -34,6 +34,7 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest {
     public void servletPageGetsWebComponent_attributeIsReflectedToServer() {
         open();
 
+        waitUntil(driver -> $("client-select").exists());
         TestBenchElement webComponent = $("client-select").first();
 
         Assert.assertTrue(
