@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @WebMvcTest
 @Import({VaadinConnectEndpoints.class, MyRestController.class})
-public class EndpointWithRestControllerIT {
+public class EndpointWithRestControllerTest {
 
     private MockMvc mockMvcForEndpoint;
 
