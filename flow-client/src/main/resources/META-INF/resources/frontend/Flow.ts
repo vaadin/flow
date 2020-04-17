@@ -1,3 +1,5 @@
+
+
 export interface FlowConfig {
   imports ?: () => void;
 }
@@ -177,7 +179,7 @@ export class Flow {
   }
 
   private getFlowRoute(context: NavigationParameters | Location): string {
-    return decodeURI((context.pathname + (context.search || '')).replace(this.baseRegex, ''));
+    return (context.pathname + (context.search || '')).replace(this.baseRegex, '');
   }
 
   // import flow client modules and initialize UI in server side.
@@ -189,7 +191,7 @@ export class Flow {
       this.showLoading();
 
       // Initialize server side UI
-      this.response = await this.flowInitUi();
+      this.response = await this.flowInitUi(serverSideRouting);
 
       // Enable or disable server side routing
       this.response.appConfig.webComponentMode = !serverSideRouting;
@@ -280,7 +282,7 @@ export class Flow {
   }
 
   // Returns the `appConfig` object
-  private async flowInitUi(): Promise<AppInitResponse> {
+  private async flowInitUi(serverSideRouting: boolean): Promise<AppInitResponse> {
     // appConfig was sent in the index.html request
     const initial = $wnd.Vaadin && $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.initial;
     if (initial) {
@@ -294,7 +296,8 @@ export class Flow {
       const httpRequest = xhr as any;
       const currentPath = location.pathname || '/';
       const requestPath = `${currentPath}?v-r=init` +
-        (location.search ? `&location=${this.getFlowRoute(location)}` : '');
+          (serverSideRouting ? `&location=${encodeURI(this.getFlowRoute(location))}` : '');
+
       httpRequest.open('GET', requestPath);
 
       httpRequest.onerror = () => reject(new Error(
