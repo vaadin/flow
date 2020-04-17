@@ -39,18 +39,23 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -126,18 +131,33 @@ public class VaadinConnectController {
      *            from
      */
     public VaadinConnectController(
-            @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
+            @Autowired(required = false) @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER)
+            ObjectMapper vaadinEndpointMapper,
             VaadinConnectAccessChecker accessChecker,
             EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             ApplicationContext context) {
-        this.vaadinEndpointMapper = vaadinEndpointMapper;
+        this.vaadinEndpointMapper = vaadinEndpointMapper != null
+                ? vaadinEndpointMapper
+                : createVaadinConnectObjectMapper(context);
         this.accessChecker = accessChecker;
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
 
         context.getBeansWithAnnotation(Endpoint.class).forEach(
                 (name, endpointBean) -> validateEndpointBean(endpointNameChecker,
                         name, endpointBean));
+    }
+
+    private ObjectMapper createVaadinConnectObjectMapper(ApplicationContext context) {
+        Jackson2ObjectMapperBuilder builder = context.getBean(Jackson2ObjectMapperBuilder.class);
+        ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+        JacksonProperties jacksonProperties = context
+                .getBean(JacksonProperties.class);
+        if (jacksonProperties.getVisibility().isEmpty()) {
+            objectMapper.setVisibility(PropertyAccessor.ALL,
+                    JsonAutoDetect.Visibility.ANY);
+        }
+        return objectMapper;
     }
 
     private static Logger getLogger() {
