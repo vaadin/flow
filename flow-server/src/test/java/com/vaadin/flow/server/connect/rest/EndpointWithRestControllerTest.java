@@ -38,6 +38,7 @@ import com.vaadin.flow.server.connect.ExplicitNullableTypeChecker;
 import com.vaadin.flow.server.connect.VaadinConnectController;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -78,7 +79,7 @@ public class EndpointWithRestControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
-        Assert.assertEquals("{\"name\":\"Bond\"}", result);
+        assertEquals("{\"name\":\"Bond\"}", result);
     }
 
     @Test
@@ -86,7 +87,7 @@ public class EndpointWithRestControllerTest {
     public void should_BeAbleToSerializePrivateFieldsOfABean_when_CallingFromConnectEndPoint() {
         try {
             String result = callEndpointMethod("getBeanWithPrivateFields");
-            Assert.assertEquals("{\"codeNumber\":\"007\",\"name\":\"Bond\",\"firstName\":\"James\"}", result);
+            assertEquals("{\"codeNumber\":\"007\",\"name\":\"Bond\",\"firstName\":\"James\"}", result);
         } catch (Exception e) {
             fail("failed to serialize a bean with private fields");
         }
@@ -103,6 +104,24 @@ public class EndpointWithRestControllerTest {
         } catch (Exception e) {
             fail("failed to serialize a bean with ZonedDateTime field");
         }
+    }
+
+    @Test
+    //https://github.com/vaadin/flow/issues/8067
+    public void should_RepsectJacksonAnnotation_when_serializeBean() throws Exception {
+        String result = callEndpointMethod("getBeanWithJacksonAnnotation");
+        assertEquals("{\"name\":null,\"rating\":2,\"bookId\":null}", result);
+    }
+
+    @Test
+    /**
+     * this requires jackson-datatype-jsr310, which is added as a test scope dependency.
+     * jackson-datatype-jsr310 is provided in spring-boot-starter-web, which is part of
+     * vaadin-spring-boot-starter
+     */
+    public void should_serializeLocalTimeInExpectedFormat_when_UsingSpringBoot() throws Exception{
+        String result = callEndpointMethod("getLocalTime");
+        assertEquals("\"08:00:00\"", result);
     }
 
     private String callEndpointMethod(String methodName) throws Exception {
