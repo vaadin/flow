@@ -78,18 +78,14 @@ public class LongConversionTest extends BaseTypeConversionTest {
     }
 
     @Test
-    public void should_HandleOverflowLong_When_ReceiveANumberOverflowOrUnderflow() {
+    public void should_FailToConvertToLong_When_ReceiveANumberOverflowOrUnderflow() {
         String overflowLong = "9223372036854775808"; // 2^63
-        assertEqualExpectedValueWhenCallingMethod("addOneLong", overflowLong,
-                String.valueOf(Long.MIN_VALUE + 1));
-        assertEqualExpectedValueWhenCallingMethod("addOneLongBoxed",
-                overflowLong, String.valueOf(Long.MIN_VALUE + 1));
+        assert400ResponseWhenCallingMethod("addOneLong", overflowLong);
+        assert400ResponseWhenCallingMethod("addOneLongBoxed", overflowLong);
 
         String underflowLong = "-9223372036854775809"; // -2^63-1
-        assertEqualExpectedValueWhenCallingMethod("addOneLong", underflowLong,
-                String.valueOf(Long.MIN_VALUE));
-        assertEqualExpectedValueWhenCallingMethod("addOneLongBoxed",
-                underflowLong, String.valueOf(Long.MIN_VALUE));
+        assert400ResponseWhenCallingMethod("addOneLong", underflowLong);
+        assert400ResponseWhenCallingMethod("addOneLongBoxed", underflowLong);
     }
 
     @Test
