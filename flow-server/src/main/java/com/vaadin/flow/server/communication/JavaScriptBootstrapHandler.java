@@ -116,7 +116,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
         pushConfiguration.setPushUrl(pushURL);
-
+        
         AppShellRegistry registry = AppShellRegistry
                 .getInstance(session.getService().getContext());
         registry.modifyPushConfiguration(pushConfiguration);
@@ -131,10 +131,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         String route = request
                 .getParameter(ApplicationConstants.REQUEST_LOCATION_PARAMETER);
         if (route != null) {
-            int index = route.indexOf('?');
-            if(index >= 0) {
-                route = route.substring(0, index);
-            }
             try {
                 route = URLDecoder.decode(route, "UTF-8").replaceFirst("^/+",
                         "");
