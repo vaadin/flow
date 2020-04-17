@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -162,7 +163,8 @@ public class VaadinConnectController {
     }
 
     private ObjectMapper createVaadinConnectObjectMapper(ApplicationContext context) {
-        ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().build();
+        Jackson2ObjectMapperBuilder builder = context.getBean(Jackson2ObjectMapperBuilder.class);
+        ObjectMapper objectMapper = builder.createXmlMapper(false).build();
         JacksonProperties jacksonProperties = context
                 .getBean(JacksonProperties.class);
         if (jacksonProperties.getVisibility().isEmpty()) {

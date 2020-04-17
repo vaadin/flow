@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.connect.rest;
 
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
 import com.vaadin.flow.server.connect.Endpoint;
@@ -28,6 +29,14 @@ public class VaadinConnectEndpoints {
 
     public BeanWithPrivateFields getBeanWithPrivateFields(){
         return new BeanWithPrivateFields();
+    }
+
+    public BeanWithJacksonAnnotation getBeanWithJacksonAnnotation(){
+        return new BeanWithJacksonAnnotation();
+    }
+
+    public LocalTime getLocalTime(){
+        return LocalTime.of(8, 0, 0);
     }
 
     public static class BeanWithZonedDateTimeField {
