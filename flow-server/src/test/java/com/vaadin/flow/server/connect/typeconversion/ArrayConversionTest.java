@@ -17,7 +17,7 @@ package com.vaadin.flow.server.connect.typeconversion;
 
 import org.junit.Test;
 
-public class ArrayConversionIT extends BaseTypeConversionIT {
+public class ArrayConversionTest extends BaseTypeConversionTest {
 
     @Test
     public void should_ConvertToArrayInt_When_ReceiveArrayInt() {

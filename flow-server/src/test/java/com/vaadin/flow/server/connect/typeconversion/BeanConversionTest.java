@@ -17,7 +17,7 @@ package com.vaadin.flow.server.connect.typeconversion;
 
 import org.junit.Test;
 
-public class BeanConversionIT extends BaseTypeConversionIT {
+public class BeanConversionTest extends BaseTypeConversionTest {
 
     @Test
     public void should_ConvertToBean_When_ReceiveBeanObject() {

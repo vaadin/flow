@@ -17,7 +17,7 @@ package com.vaadin.flow.server.connect.typeconversion;
 
 import org.junit.Test;
 
-public class IntegerConversionIT extends BaseTypeConversionIT {
+public class IntegerConversionTest extends BaseTypeConversionTest {
 
     @Test
     public void should_ConvertNumberToInt_When_ReceiveNumberAsNumber() {
