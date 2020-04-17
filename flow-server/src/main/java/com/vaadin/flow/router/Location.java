@@ -221,10 +221,15 @@ public class Location implements Serializable {
         if (beginIndex < 0) {
             return QueryParameters.empty();
         }
+        String query;
+        try {
+            query = new java.net.URI(path).getQuery();
+        } catch (URISyntaxException ignore) { // NOSONAR
+            query = path.substring(beginIndex + 1);
+        }
 
         Map<String, List<String>> parsedParams = Arrays
-                .stream(path.substring(beginIndex + 1)
-                        .split(PARAMETERS_SEPARATOR))
+                .stream(query.split(PARAMETERS_SEPARATOR))
                 .map(Location::makeQueryParamList)
                 .collect(Collectors.toMap(list -> list.get(0),
                         Location::getParameterValues, Location::mergeLists));
