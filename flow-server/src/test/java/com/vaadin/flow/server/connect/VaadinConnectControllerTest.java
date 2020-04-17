@@ -588,7 +588,6 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    @Ignore("requires mockito version with plugin for final classes")
     public void should_Return500_When_MapperFailsToSerializeResponse()
             throws Exception {
         ObjectMapper mapperMock = mock(ObjectMapper.class);
@@ -631,7 +630,6 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    @Ignore("requires mockito version with plugin for final classes")
     public void should_ThrowException_When_MapperFailsToSerializeEverything()
             throws Exception {
         ObjectMapper mapperMock = mock(ObjectMapper.class);
