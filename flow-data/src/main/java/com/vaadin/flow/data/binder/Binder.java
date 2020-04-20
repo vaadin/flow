@@ -240,14 +240,14 @@ public class Binder<BEAN> implements Serializable {
          * Define whether validators are disabled or enabled for this
          * specific binding.
          *
-         * @param validatorsDisabled A boolean value
+         * @param validatorsDisabled A boolean value.
          */
         public void setValidatorsDisabled(boolean validatorsDisabled);
 
         /**
-         * Returns if validators are currently disabled or not
+         * Returns if validators are currently disabled or not.
          *
-         * @return A boolean value
+         * @return A boolean value.
          */
         public boolean isValidatorsDisabled();
     }
@@ -1338,7 +1338,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void setValidatorsDisabled(boolean validatorsDisabled) {
-            this.validatorsDisabled = validatorsDisabled;			
+            this.validatorsDisabled = validatorsDisabled;
         }
 
         @Override
@@ -3069,7 +3069,7 @@ public class Binder<BEAN> implements Serializable {
      * Control whether validators including bean level validators are
      * disabled or enabled globally for this Binder.
      * 
-     * @param validatorsDisabled Boolean value
+     * @param validatorsDisabled Boolean value.
      */
     public void setValidatorsDisabled(boolean validatorsDisabled) {
         this.validatorsDisabled = validatorsDisabled;
