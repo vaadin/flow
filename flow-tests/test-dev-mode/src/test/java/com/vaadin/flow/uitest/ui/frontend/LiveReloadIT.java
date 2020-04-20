@@ -69,12 +69,12 @@ public class LiveReloadIT extends ChromeBrowserTest {
         // After clicking the icon in the indicator, the live-reload message
         // window should appear
         WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo-container")).get(0);
+                By.className("gizmo")).get(0);
         liveReloadIcon.click();
 
         waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
 
-        WebElement window2 = findInShadowRoot(liveReload, By.className("gizmo-container"))
+        WebElement window2 = findInShadowRoot(liveReload, By.className("gizmo"))
                 .get(0);
         Assert.assertTrue(window2.isDisplayed());
     }
@@ -88,7 +88,7 @@ public class LiveReloadIT extends ChromeBrowserTest {
         liveReload.click();
 
         WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo-container")).get(0);
+                By.className("gizmo")).get(0);
         liveReloadIcon.click();
 
         WebElement button = findInShadowRoot(liveReload, By.id("disable"))
@@ -115,7 +115,7 @@ public class LiveReloadIT extends ChromeBrowserTest {
         String instanceId = findElement(By.id("elementId")).getText();
 
         WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo-container")).get(0);
+                By.className("gizmo")).get(0);
         liveReloadIcon.click();
 
         WebElement button = findInShadowRoot(liveReload, By.id("disable"))
@@ -132,7 +132,7 @@ public class LiveReloadIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void notificationShownOnAutoReloadAndClosedOnBodyClick() {
+    public void splashMessageShownOnAutoReloadAndClosedOnBodyClick() {
         open();
         waitForElementPresent(By.id("live-reload-trigger-button"));
         WebElement liveReloadTrigger = findElement(
@@ -141,7 +141,7 @@ public class LiveReloadIT extends ChromeBrowserTest {
 
         WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
         Assert.assertNotNull(liveReload);
-        WebElement gizmo1 = findInShadowRoot(liveReload, By.className("gizmo-container"))
+        WebElement gizmo1 = findInShadowRoot(liveReload, By.className("gizmo"))
                 .get(0);
         Assert.assertTrue(
                 gizmo1.getAttribute("class").contains("active"));
@@ -151,11 +151,11 @@ public class LiveReloadIT extends ChromeBrowserTest {
         WebElement liveReload2 = findElement(
                 By.tagName("vaadin-devmode-gizmo"));
         Assert.assertNotNull(liveReload2);
-        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo-container"))
+        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
                 .get(0);
         Assert.assertFalse(
                 gizmo2.getAttribute("class").contains("active"));
-        Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo-container"));
+        Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 
     @Test
@@ -167,7 +167,7 @@ public class LiveReloadIT extends ChromeBrowserTest {
         WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
 
         WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo-container")).get(0);
+                By.className("gizmo")).get(0);
         liveReloadIcon.click();
 
         WebElement deactivateCheckbox = findInShadowRoot(liveReload,
@@ -182,10 +182,10 @@ public class LiveReloadIT extends ChromeBrowserTest {
         // then: page is not reloaded
         WebElement liveReload2 = findElement(
                 By.tagName("vaadin-devmode-gizmo"));
-        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo-container"))
+        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
                 .get(0);
         Assert.assertFalse(
                 gizmo2.getAttribute("class").contains("active"));
-        Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo-container"));
+        Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 }
