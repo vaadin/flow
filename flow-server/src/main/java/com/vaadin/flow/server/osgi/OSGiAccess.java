@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.server.osgi;
 
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.annotation.HandlesTypes;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,24 +37,18 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.annotation.HandlesTypes;
-
+import com.googlecode.gentyref.GenericTypeReflector;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.osgi.framework.Bundle;
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
-
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 
 /**
  * Manages scanned classes inside OSGi container.
@@ -57,7 +57,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
  *
  * @author Vaadin Ltd
  * @since 1.2
- * 
+ *
  * @see #getInstance()
  */
 public final class OSGiAccess {
@@ -202,8 +202,17 @@ public final class OSGiAccess {
     private void handleTypes(ServletContainerInitializer initializer) {
         Optional<HandlesTypes> handleTypes = AnnotationReader
                 .getAnnotationFor(initializer.getClass(), HandlesTypes.class);
+        /*
+         * Every initializer should be an instance of
+         * ClassLoaderAwareServletContainerInitializer : there is a test which
+         * forces this. So assert should be enough here.
+         */
+        assert initializer instanceof ClassLoaderAwareServletContainerInitializer;
         try {
-            initializer.onStartup(filterClasses(handleTypes.orElse(null)),
+            // don't use onStartup method because a fake servlet context is
+            // passed here: no need to detect classloaders in OSGi case
+            ((ClassLoaderAwareServletContainerInitializer) initializer).process(
+                    filterClasses(handleTypes.orElse(null)),
                     getOsgiServletContext());
         } catch (ServletException e) {
             throw new RuntimeException(
