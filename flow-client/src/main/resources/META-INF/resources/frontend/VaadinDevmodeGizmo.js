@@ -539,8 +539,8 @@ class VaadinDevmodeGizmo extends LitElement {
         link: link,
         persistentId: persistentId
       });
-      // automatically move notification to message tray after a certain amount of time unless detailed
-      if (details === null && link === null) {
+      // automatically move notification to message tray after a certain amount of time unless it contains a link
+      if (link === null) {
         setTimeout(() => {
           this.demoteNotification(id);
         }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
@@ -599,7 +599,7 @@ class VaadinDevmodeGizmo extends LitElement {
 
   renderMessage(messageObject) {
     return html`
-      <div class="message">
+      <div class="message" @click=${e => this.demoteNotification(messageObject.id)}>
         <div class="${messageObject.type}">${messageObject.message}</div>
         ${messageObject.details ? html`<div class="message-details">${messageObject.details}</div>` : ''}
         <span>
