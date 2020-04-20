@@ -4,7 +4,8 @@ module.exports = {
   mode: "development",
   entry: {
     flow: "./src/test/frontend/FlowTests.ts",
-    connect: "./src/test/frontend/ConnectTests.ts"
+    connect: "./src/test/frontend/ConnectTests.ts",
+    binder: "./src/test/frontend/BinderTests.ts"
   },
   output: {
     filename: "[name].spec.js",

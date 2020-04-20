@@ -283,6 +283,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("terser", "4.6.7");
         
         defaults.put("lit-element", "2.3.1");
+        defaults.put("lit-html", "1.2.1");
 
         return defaults;
     }
