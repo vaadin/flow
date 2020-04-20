@@ -115,7 +115,7 @@ public class UIInternalsTest {
     @Test
     public void showRouteTarget_usePushConfigFromComponent() {
         PushConfiguration pushConfig = setUpInitialPush();
-        internals.showRouteTarget(Mockito.mock(Location.class), "",
+        internals.showRouteTarget(Mockito.mock(Location.class),
                 new RouteTarget(), Collections.emptyList());
 
         Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
@@ -125,7 +125,7 @@ public class UIInternalsTest {
     @Test
     public void showRouteTarget_usePushConfigFromParentLayout() {
         PushConfiguration pushConfig = setUpInitialPush();
-        internals.showRouteTarget(Mockito.mock(Location.class), "",
+        internals.showRouteTarget(Mockito.mock(Location.class),
                 new RouteTarget1(),
                 Collections.singletonList(new RouteTarget()));
 
@@ -141,7 +141,7 @@ public class UIInternalsTest {
         Mockito.when(deploymentConfiguration.getPushMode())
                 .thenReturn(PushMode.AUTOMATIC);
 
-        internals.showRouteTarget(Mockito.mock(Location.class), "",
+        internals.showRouteTarget(Mockito.mock(Location.class),
                 new Text(""), Collections.emptyList());
 
         Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);

@@ -18,7 +18,6 @@ package com.vaadin.flow.ccdmtest;
 
 import java.util.function.Supplier;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
