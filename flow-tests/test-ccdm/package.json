@@ -1,0 +1,48 @@
+{
+  "name": "no-name",
+  "license": "UNLICENSED",
+  "vaadin": {
+    "dependencies": {
+      "@vaadin/router": "^1.6.0",
+      "@polymer/polymer": "3.2.0"
+    },
+    "devDependencies": {
+      "compression-webpack-plugin": "3.1.0",
+      "raw-loader": "4.0.0",
+      "webpack-cli": "3.3.11",
+      "script-ext-html-webpack-plugin": "2.1.4",
+      "awesome-typescript-loader": "5.2.1",
+      "terser": "4.6.7",
+      "copy-webpack-plugin": "5.1.1",
+      "lit-element": "2.3.1",
+      "webpack": "4.42.0",
+      "progress-webpack-plugin": "0.0.24",
+      "html-webpack-plugin": "3.2.0",
+      "typescript": "3.8.3",
+      "webpack-merge": "4.2.2",
+      "webpack-dev-server": "3.10.3"
+    },
+    "hash": "0fe2710117c99f333112bc84317dd97f66bee65603f8fcbcdd233715de47bfe7"
+  },
+  "dependencies": {
+    "@vaadin/router": "^1.6.0",
+    "@polymer/polymer": "3.2.0",
+    "@vaadin/flow-frontend": "./target/flow-frontend"
+  },
+  "devDependencies": {
+    "compression-webpack-plugin": "3.1.0",
+    "raw-loader": "4.0.0",
+    "webpack-cli": "3.3.11",
+    "script-ext-html-webpack-plugin": "2.1.4",
+    "awesome-typescript-loader": "5.2.1",
+    "terser": "4.6.7",
+    "copy-webpack-plugin": "5.1.1",
+    "lit-element": "2.3.1",
+    "webpack": "4.42.0",
+    "progress-webpack-plugin": "0.0.24",
+    "html-webpack-plugin": "3.2.0",
+    "typescript": "3.8.3",
+    "webpack-merge": "4.2.2",
+    "webpack-dev-server": "3.10.3"
+  }
+}

@@ -334,7 +334,7 @@ public class JavaScriptBootstrapUI extends UI {
             navigationInProgress = true;
             hasForwardTo = false;
             boolean postpone = false;
-            String execJs;
+            String execJs = null;
             NavigationState navigationState = this.getRouter()
                     .resolveNavigationTarget(location).orElse(null);
 
@@ -348,7 +348,7 @@ public class JavaScriptBootstrapUI extends UI {
                     return;
                 } else {
                     // Update browser URL but do not fire client-side navigation
-                    execJs = CLIENT_PUSHSTATE_TO;
+//                    execJs = CLIENT_PUSHSTATE_TO;
                 }
             } else {
 
@@ -359,9 +359,10 @@ public class JavaScriptBootstrapUI extends UI {
             navigationInProgress = false;
 
             // if hasForwardTo, url should be a new one, if has postpone, url should not update
-            String url = urlPathShouldBeDisplayed(hasForwardTo, postpone, location);
-
-            getPage().executeJs(execJs, url);
+            if (execJs != null) {
+                String url = urlPathShouldBeDisplayed(hasForwardTo, postpone, location);
+                getPage().executeJs(execJs, url);
+            }
         }
     }
 

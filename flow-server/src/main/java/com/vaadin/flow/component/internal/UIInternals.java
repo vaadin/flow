@@ -644,11 +644,11 @@ public class UIInternals implements Serializable {
      * @param viewLocation
      *            the location of the route target relative to the servlet
      *            serving the UI, not <code>null</code>
-     * @param target
-     *            the component to show, not <code>null</code>
      * @param path
      *            the resolved route path so we can determine what the rendered
      *            target is for
+     * @param target
+     *            the component to show, not <code>null</code>
      * @param layouts
      *            the parent layouts
      */
