@@ -1892,7 +1892,7 @@ public class Binder<BEAN> implements Serializable {
      *            disable all Validators during write
      */
     public void writeBeanAsDraft(BEAN bean, boolean forced) {
-        doWriteDraft(bean, new ArrayList<>(bindings),true);
+        doWriteDraft(bean, new ArrayList<>(bindings),forced);
     }
 
     /**
