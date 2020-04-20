@@ -1,3 +1,5 @@
+/* tslint:disable:max-classes-per-file */
+
 export const objectSymbol = Symbol('object');
 export const keySymbol = Symbol('key');
 export const parentSymbol = Symbol('parent');
@@ -9,8 +11,8 @@ export const constraintsSymbol = Symbol('constraints');
 // export type ChildModel<T> = AbstractModel<T[keyof T]>;
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
-//@ts-ignore
-import { directive, Part, AttributeCommitter, AttributePart, PropertyPart } from 'lit-html';
+// @ts-ignore
+import { AttributeCommitter, AttributePart, directive, Part,  PropertyPart } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat';
 
 export abstract class AbstractModel<T> {
@@ -21,7 +23,7 @@ export abstract class AbstractModel<T> {
   constructor(
     parent: ModelParent<T>,
     key: keyof any,
-    ...constraints: Constraint<T>[]
+    ...constraints: Array<Constraint<T>>
   ) {
     this[parentSymbol] = parent;
     this[keySymbol] = key;
@@ -37,9 +39,9 @@ export type ModelConstructor<M extends AbstractModel<T>, T> =
 const isSubmittingSymbol = Symbol('isSubmitting');
 
 export class Binder<T, M extends AbstractModel<T>> {
+  model: M;
   private [defaultValueSymbol]: T;
   private [valueSymbol]: T;
-  public model: M;
   private [isSubmittingSymbol]: boolean = false;
 
   constructor(
@@ -85,10 +87,6 @@ export class Binder<T, M extends AbstractModel<T>> {
     this.value = this.defaultValue;
   }
 
-  private update(oldValue: T) {
-    this.onChange.call(this.context, oldValue);
-  }
-
   async submitTo(endpointMethod: (value: T) => Promise<void>) {
     this[isSubmittingSymbol] = true;
     this.update(this.value);
@@ -98,6 +96,10 @@ export class Binder<T, M extends AbstractModel<T>> {
       this[isSubmittingSymbol] = false;
       this.update(this.value);
     }
+  }
+
+  private update(oldValue: T) {
+    this.onChange.call(this.context, oldValue);
   }
 
   get isSubmitting() {
@@ -110,14 +112,14 @@ interface PrimitiveCompatible<T> {
 }
 
 interface HasFromString<T> {
-  [fromStringSymbol](string: string): T
+  [fromStringSymbol](value: string): T
 }
 
 export function fromString<T>(
   model: AbstractModel<T> & HasFromString<T>,
-  string: string
+  value: string
 ): T {
-  return model[fromStringSymbol](string);
+  return model[fromStringSymbol](value);
 }
 
 export abstract class PrimitiveModel<T> extends AbstractModel<T>
@@ -129,7 +131,7 @@ export abstract class PrimitiveModel<T> extends AbstractModel<T>
 
 export class BooleanModel extends PrimitiveModel<boolean>
   implements PrimitiveCompatible<boolean>, HasFromString<boolean> {
-  public [fromStringSymbol] = Boolean;
+  [fromStringSymbol] = Boolean;
 
   get [defaultValueSymbol]() {
     return false;
@@ -138,7 +140,7 @@ export class BooleanModel extends PrimitiveModel<boolean>
 
 export class NumberModel extends PrimitiveModel<number>
   implements PrimitiveCompatible<number>, HasFromString<number> {
-  public [fromStringSymbol] = Number;
+  [fromStringSymbol] = Number;
 
   get [defaultValueSymbol]() {
     return 0;
@@ -147,7 +149,7 @@ export class NumberModel extends PrimitiveModel<number>
 
 export class StringModel extends PrimitiveModel<string>
   implements PrimitiveCompatible<string>, HasFromString<string> {
-  public [fromStringSymbol] = String;
+  [fromStringSymbol] = String;
   toString() {
     return this.valueOf();
   }
@@ -170,7 +172,7 @@ export const ModelSymbol = Symbol('Model');
 
 // type ReadonlyArrayItem<T> = T extends ReadonlyArray<infer I> ? I : never;
 // export type ReadonlyArrayItemModel<T> = AbstractModel<ReadonlyArray<T>, number>;
-//@ts-ignore
+// @ts-ignore
 type ModelType<M extends AbstractModel<any>> = M extends AbstractModel<infer T> ? T : never;
 
 export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<ReadonlyArray<T>> {
@@ -188,8 +190,8 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   *[Symbol.iterator](): IterableIterator<M> {
     const array = getValue(this);
     const Model = this[ModelSymbol];
-    //@ts-ignore
-    for (let [i, _] of array.entries()) {
+    // @ts-ignore
+    for (const [i, _] of array.entries()) {
       yield new Model(this, i);
     }
   }
@@ -232,7 +234,7 @@ export async function validate<T>(model: AbstractModel<T>): Promise<string | und
   const value = getValue(model);
 
   const modelConstraints = getModelConstraints(model);
-  for (let [callback, message] of modelConstraints) {
+  for (const [callback, message] of modelConstraints) {
     const valid = await ((async () => callback(value))());
     if (!valid) {
       return message;
@@ -338,7 +340,7 @@ export const field = directive(<T>(
       errorMessage: ''
     };
     fieldStateMap.set(propertyPart, fieldState);
-    //@ts-ignore
+    // @ts-ignore
     element.oninput = element.onchange = (event: Event) => {
       fieldState.value = element.value;
       // @ts-ignore
