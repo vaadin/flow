@@ -256,7 +256,6 @@ public class Router implements Serializable {
         ui.getSession().checkHasLock();
 
         if (handleNavigationForLocation(ui, location)) {
-
             try {
                 return handleNavigation(ui, location, trigger, state);
             } catch (Exception exception) {

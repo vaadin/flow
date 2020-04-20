@@ -314,43 +314,31 @@ public class JavaScriptBootstrapUI extends UI {
             }
 
             navigationInProgress = true;
-            boolean postpone = false;
-            String execJs;
+            String execJs = null;
             NavigationState navigationState = this.getRouter()
                     .resolveNavigationTarget(location).orElse(null);
 
             if (navigationState != null) {
                 // Navigation can be done in server side without extra
                 // round-trip
-                postpone = handleNavigation(location, navigationState);
+                handleNavigation(location, navigationState);
                 if (isUnknownRoute()) {
                     navigationInProgress = false;
                     this.navigate(forwardToUrl);
                     return;
-                } else {
-                    // Update browser URL but do not fire client-side navigation
-                    execJs = CLIENT_PUSHSTATE_TO;
                 }
             } else {
-
                 // Server cannot resolve navigation, let client-side to handle
                 // it
-                execJs = CLIENT_NAVIGATE_TO;
+                getPage().executeJs(CLIENT_NAVIGATE_TO, getForwardToUrl());
             }
             navigationInProgress = false;
-
-            getPage().executeJs(execJs, routeToBeDisplayed(postpone, location));
         }
     }
 
-    private String routeToBeDisplayed(boolean postpone, Location location) {
-        // if has forwardToUrl, url should be a new one, if has postpone, url
-        // should not update
+    private String routeToBeDisplayed(Location location) {
         return isUnknownRoute() ? getForwardToUrl()
-                : postpone
-                        ? getInternals().getActiveViewLocation()
-                                .getPathWithQueryParameters()
-                        : location.getPathWithQueryParameters();
+                : location.getPathWithQueryParameters();
     }
 
     private boolean isUnknownRoute() {
