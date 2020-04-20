@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,6 +74,9 @@ public abstract class AbstractNavigationStateRenderer
     private static List<Integer> statusCodes = ReflectTools
             .getConstantIntValues(HttpServletResponse.class);
 
+    private static final EnumSet<NavigationTrigger> PUSH_STATE_TRIGGERS = EnumSet
+            .of(NavigationTrigger.UI_NAVIGATE, NavigationTrigger.CLIENT_SIDE);
+
     private final NavigationState navigationState;
 
     private List<Class<? extends RouterLayout>> routeLayoutTypes;
@@ -80,6 +84,7 @@ public abstract class AbstractNavigationStateRenderer
     private Postpone postponed = null;
 
     private LocationChangeEvent locationChangeEvent = null;
+
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -219,8 +224,7 @@ public abstract class AbstractNavigationStateRenderer
 
         // Change the UI according to the navigation Component chain.
         ui.getInternals().showRouteTarget(event.getLocation(),
-                navigationState.getResolvedPath(), componentInstance,
-                routerLayouts);
+                componentInstance, routerLayouts);
 
         updatePageTitle(event, componentInstance);
 
@@ -236,6 +240,8 @@ public abstract class AbstractNavigationStateRenderer
         fireAfterNavigationListeners(
                 new AfterNavigationEvent(locationChangeEvent),
                 afterNavigationHandlers);
+
+
 
         return statusCode;
     }
@@ -265,7 +271,7 @@ public abstract class AbstractNavigationStateRenderer
                                         .getLastHandledLocation()
                                         .getPathWithQueryParameters()))) {
 
-            if (NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())) {
+            if (PUSH_STATE_TRIGGERS.contains(event.getTrigger())) {
                 // Enable navigating back
                 ui.getPage().getHistory().pushState(null, event.getLocation());
             }
