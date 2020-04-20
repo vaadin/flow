@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
 
 /**
  * Event created before navigation happens.
@@ -77,7 +78,15 @@ public class BeforeLeaveEvent extends BeforeEvent {
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
+                // handler and event and already cleared out by handle.
+                NavigationEvent finalEvent = event;
+
                 handler.handle(event);
+
+                History history = new History(finalEvent.getUI());
+                history.pushState(null, finalEvent.getLocation());
+
+                // handler and event are already null.
                 setReferences(null, null);
             }
         }
