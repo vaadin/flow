@@ -6,6 +6,7 @@ class VaadinDevmodeGizmo extends LitElement {
     return css`
        :host {
           --gizmo-border-radius: 1rem;
+          direction: ltr;
        }
 
        a {
