@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
 
 /**
  * Event created before navigation happens.

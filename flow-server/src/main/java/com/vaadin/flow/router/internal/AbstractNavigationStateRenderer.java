@@ -190,6 +190,16 @@ public abstract class AbstractNavigationStateRenderer
             return HttpServletResponse.SC_OK;
         }
 
+        if (!ui.getInternals().hasLastHandledLocation()
+                || !event.getLocation().getPathWithQueryParameters()
+                .equals(ui.getInternals().getLastHandledLocation()
+                        .getPathWithQueryParameters())) {
+            // Enable navigating back
+            ui.getPage().getHistory().pushState(null, event.getLocation());
+
+            ui.getInternals().setLastHandledNavigation(event.getLocation());
+        }
+
         final ArrayList<HasElement> chain;
 
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
@@ -272,6 +282,8 @@ public abstract class AbstractNavigationStateRenderer
         fireAfterNavigationListeners(
                 new AfterNavigationEvent(locationChangeEvent),
                 afterNavigationHandlers);
+
+
 
         return statusCode;
     }

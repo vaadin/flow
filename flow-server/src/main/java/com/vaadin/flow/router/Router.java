@@ -227,7 +227,7 @@ public class Router implements Serializable {
         ui.getSession().checkHasLock();
 
         if (handleNavigationForLocation(ui, location)) {
-            ui.getInternals().setLastHandledNavigation(location);
+//            ui.getInternals().setLastHandledNavigation(location);
 
             try {
                 return handleNavigation(ui, location, trigger);
