@@ -139,7 +139,7 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             verifyOpenApiJson(expectedOpenApiJsonResourceUrl);
         }
 
-        generateTsModules();
+        generateTsEndpoints();
 
         verifyTsModule();
         verifyModelTsModule();

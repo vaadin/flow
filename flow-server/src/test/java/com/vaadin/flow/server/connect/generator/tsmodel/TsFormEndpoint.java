@@ -39,14 +39,17 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import javax.validation.constraints.Size;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import com.vaadin.flow.server.connect.Endpoint;
 
 @Endpoint
-public class TsModelEndpoint {
+public class TsFormEndpoint {
 
     @Nullable
-    public TsModel getEntity() {
-        return new TsModel();
+    public MyEntity getEntity() {
+        return new MyEntity();
     }
 
 
@@ -55,8 +58,19 @@ public class TsModelEndpoint {
         return "";
     }
 
-    public static class TsModel {
+    public static class MyEntityId {
+        @NotNull
+        Long Id;
+    }
+
+    public static class MyBaz extends MyEntityId {
+        String lorem;
+        Integer ipsum;
+    }
+
+    public static class MyEntity extends MyEntityId {
         String foo;
+        MyBaz bar;
         @Email String email;
         @Null String isNull;
         @NotNull String notNull;
@@ -66,18 +80,18 @@ public class TsModelEndpoint {
         @AssertFalse String assertFalse;
         @Min(1) String min;
         @Max(2) String max;
-        @DecimalMin("0.01") String decimalMin;
-        @DecimalMax("0.01") String decimalMax;
+        @DecimalMin("0.01") double decimalMin;
+        @DecimalMax("0.01") double decimalMax;
         @Negative int negative;
         @NegativeOrZero int negativeOrCero;
         @Positive int positive;
         @PositiveOrZero int positiveOrCero;
         @Size String size;
         @Digits(integer=5, fraction = 2) String digits;
-        @Past String past;
-        @PastOrPresent String pastOrPresent;
-        @Future String future;
-        @FutureOrPresent String futureOrPresent;
+        @Past LocalDate past;
+        @PastOrPresent LocalTime pastOrPresent;
+        @Future LocalDate future;
+        @FutureOrPresent LocalTime futureOrPresent;
         @Pattern(regexp = ".+") String pattern;
     }
 }
