@@ -25,6 +25,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +49,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 
 /**
@@ -111,6 +113,22 @@ public final class OSGiAccess {
         public Map<String, ? extends ServletRegistration> getServletRegistrations() {
             // This method is used by Atmosphere initiailizer
             return Collections.emptyMap();
+        }
+
+        @Override
+        public String getInitParameter(String name) {
+            // OSGi is available in compatibility mode only, let's force it from
+            // the servlet context
+            if (Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE.equals(name)) {
+                return Boolean.TRUE.toString();
+            }
+            return null;
+        }
+
+        @Override
+        public Enumeration<String> getInitParameterNames() {
+            return Collections.enumeration(Collections.singletonList(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE));
         }
 
     }
@@ -195,8 +213,13 @@ public final class OSGiAccess {
     }
 
     private void resetContextInitializers() {
-        initializerClasses.get().stream().map(ReflectTools::createInstance)
-                .forEach(this::handleTypes);
+        try {
+            initializerClasses.get().stream().map(ReflectTools::createInstance)
+                    .forEach(this::handleTypes);
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            throw exception;
+        }
     }
 
     private void handleTypes(ServletContainerInitializer initializer) {

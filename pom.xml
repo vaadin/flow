@@ -95,6 +95,7 @@
         <hibernate.validator.version>6.0.1.Final</hibernate.validator.version>
         <slf4j.version>1.7.25</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
+        <apache.httpclient.version>4.5.2</apache.httpclient.version>
 
         <!-- Plugins -->
         <driver.binary.downloader.maven.plugin.version>1.0.17
@@ -255,6 +256,23 @@
                 <version>1.10.9</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient-osgi</artifactId>
+                <version>${apache.httpclient.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${apache.httpclient.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore-osgi</artifactId>
+                <version>4.4.4</version>
+            </dependency>
 
             <!-- Test dependencies -->
             <dependency>

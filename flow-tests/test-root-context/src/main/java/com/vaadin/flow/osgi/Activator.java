@@ -118,7 +118,6 @@ public class Activator implements BundleActivator {
                 // HTTP service is available, register our servlet...
                 HttpService httpService = this.context.getService(reference);
                 Dictionary dictionary = new Hashtable<>();
-                dictionary.put("bowerMode", Boolean.TRUE.toString());
                 try {
                     httpService.registerServlet("/view/*",
                             new FixedViewServlet(), dictionary, null);
