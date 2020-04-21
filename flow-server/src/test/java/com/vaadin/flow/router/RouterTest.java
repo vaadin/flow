@@ -28,8 +28,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -61,15 +70,9 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -1283,7 +1286,7 @@ public class RouterTest extends RoutingTestBase {
      * children components used in the assertion of the event order, as being
      * children of the layout in the chain instead of being part of the layout
      * chain itself.
-     * 
+     *
      * So any children of an instance of this class should receive the
      * navigation events right after the instance of this class receives them
      * and in the order they are added.
@@ -2726,7 +2729,6 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(MyTheme.class, themeObject.getClass());
     }
 
-
     @Test
     public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
             throws InvalidRouteConfigurationException, Exception {
@@ -3254,8 +3256,12 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
                 FileNotFound.trigger);
 
+        JsonObject state = Json.createObject();
+        state.put("href", "router_link");
+        state.put("scrollPositionX", 0d);
+        state.put("scrollPositionY", 0d);
         router.navigate(ui, new Location("router_link"),
-                NavigationTrigger.ROUTER_LINK);
+                NavigationTrigger.ROUTER_LINK, state);
 
         Assert.assertEquals(NavigationTrigger.ROUTER_LINK,
                 FileNotFound.trigger);
@@ -3427,49 +3433,48 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void optional_parameter_non_existing_route()
-    throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
-        router.navigate(
-            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
 
-        String exceptionText1 =
-             String.format("Could not navigate to '%s'", locationString);
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
 
-        String exceptionText2 =
-            String.format("Reason: Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 =
-            "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
+        String exceptionText3 = "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
 
-        assertExceptionComponent(
-            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2, exceptionText3);
     }
 
     @Test
     public void without_optional_parameter()
-    throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";
-        router.navigate(
-            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
 
-        String exceptionText1 =
-             String.format("Could not navigate to '%s'", locationString);
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
 
-        String exceptionText2 =
-            String.format("Reason: Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
         String exceptionText3 = "<li>optional (requires parameter)</li>";
 
-        assertExceptionComponent(
-            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2, exceptionText3);
     }
 
     @Test // #4595
@@ -3559,13 +3564,13 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("event/flower"),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         ProcessEventsBase.clear();
 
         final String parameter = "green";
         router.navigate(ui, new Location("event/leaf/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         assertEventOrder(Arrays.asList("ProcessEventsLeaf", "leafChild"),
                 getProcessEventsBranchChainNames("ProcessEventsFlower"),
                 getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf", "leafChild"),
@@ -3586,7 +3591,7 @@ public class RouterTest extends RoutingTestBase {
         // This is expected after reroute.
         final List<String> expectedOnReroute = getProcessEventsBranchChainNames(
                 "ProcessEventsFlower");
-        
+
         // This is expected on init and BeforeEnter since the ProcessEventsRotten
         // parent of ProcessEventsTwig will reroute, so ProcessEventsTwig and
         // ProcessEventsStick won't be created.

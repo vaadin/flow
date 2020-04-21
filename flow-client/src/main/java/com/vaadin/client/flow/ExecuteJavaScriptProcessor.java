@@ -34,8 +34,7 @@ import elemental.json.JsonValue;
 
 /**
  * Processes the result of
- * {@link Page#executeJs(String, java.io.Serializable...)} on the
- * client.
+ * {@link Page#executeJs(String, java.io.Serializable...)} on the client.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -208,6 +207,7 @@ public class ExecuteJavaScriptProcessor {
               return node;
           };
           object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
+          object.registry = this.@ExecuteJavaScriptProcessor::registry;
           object.attachExistingElement = function(parent, previousSibling, tagName, id){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
           };
@@ -217,6 +217,9 @@ public class ExecuteJavaScriptProcessor {
           object.registerUpdatableModelProperties = function(element, properties){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
           };
-          return object;
+          object.scrollPositionHandlerAfterServerNavigation = function(state) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
+          }
+        return object;
     }-*/;
 }
