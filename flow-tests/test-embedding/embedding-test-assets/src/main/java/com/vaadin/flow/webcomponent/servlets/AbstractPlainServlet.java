@@ -50,7 +50,7 @@ public abstract class AbstractPlainServlet extends HttpServlet {
 
     public final void writeCompatibilityImportsDev(PrintWriter writer) {
         writer.println(
-                "<script type='text/javascript' src='./frontend/bower_components/webcomponentsjs/webcomponents-loader.js'></script>");
+                "<script type='text/javascript' src='/frontend/bower_components/webcomponentsjs/webcomponents-loader.js'></script>");
         writer.println(
                 "<link rel='import' href='/vaadin/web-component/client-select.html'>");
     }
