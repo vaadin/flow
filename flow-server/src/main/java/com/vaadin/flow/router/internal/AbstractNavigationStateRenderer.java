@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -59,6 +60,8 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
+
+import elemental.json.JsonValue;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -226,6 +229,13 @@ public abstract class AbstractNavigationStateRenderer
             }
         }
 
+        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
+        // pushing history state shouldn't be done. So, it's done here to make
+        // sure that when history state is pushed the navigation is not
+        // postponed.
+        // See https://github.com/vaadin/flow/issues/3619 for more info.
+        pushHistoryStateIfNeeded(event, ui);
+
         final Component componentInstance = (Component) chain.get(0);
 
         // Preserve the navigation chain if all went well and it's being shown
@@ -259,6 +269,40 @@ public abstract class AbstractNavigationStateRenderer
                 afterNavigationHandlers);
 
         return statusCode;
+    }
+
+    private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
+        if (event instanceof ErrorNavigationEvent) {
+            return;
+        }
+
+        if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+            /*
+             * When the event trigger is a RouterLink, pushing history state
+             * should be done in client-side. See
+             * ScrollPositionHandler#afterNavigation(JsonObject).
+             */
+            JsonValue state = event.getState()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "When the navigation trigger is ROUTER_LINK, event state should not be null."));
+
+            ui.getPage().executeJs(
+                    "this.scrollPositionHandlerAfterServerNavigation($0);",
+                    state);
+        } else if (!event.isForwardTo()
+                && (!ui.getInternals().hasLastHandledLocation()
+                        || !event.getLocation().getPathWithQueryParameters()
+                                .equals(ui.getInternals()
+                                        .getLastHandledLocation()
+                                        .getPathWithQueryParameters()))) {
+
+            if (NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())) {
+                // Enable navigating back
+                ui.getPage().getHistory().pushState(null, event.getLocation());
+            }
+
+            ui.getInternals().setLastHandledNavigation(event.getLocation());
+        }
     }
 
     /**
@@ -319,7 +363,7 @@ public abstract class AbstractNavigationStateRenderer
 
         return Optional.empty();
     }
-    
+
     // The last element in the returned list is always a Component class
     private List<Class<? extends HasElement>> createTypesChain(NavigationEvent event) {
         final Class<? extends Component> routeTargetType = navigationState
@@ -329,7 +373,7 @@ public abstract class AbstractNavigationStateRenderer
                 getRouterLayoutTypes(routeTargetType,
                         event.getUI().getRouter()));
         Collections.reverse(routeLayoutTypes);
-        
+
         final ArrayList<Class<? extends HasElement>> chain = new ArrayList<>();
         for (Class<? extends RouterLayout> parentType : routeLayoutTypes) {
             chain.add(parentType);
@@ -398,7 +442,7 @@ public abstract class AbstractNavigationStateRenderer
      * event is sent first to the {@link BeforeEnterHandler}s registered within
      * the {@link UI}, then to any element in the chain and to any of it's child
      * components in the hierarchy which implements {@link BeforeEnterHandler}
-     * 
+     *
      * If the <code>chain</code> argument is empty <code>chainClasses</code> is
      * going to be used and populate <code>chain</code> with new created
      * instance.
@@ -683,7 +727,8 @@ public abstract class AbstractNavigationStateRenderer
                 .getUrlBase(targetType)
                 .orElseThrow(() -> new IllegalStateException(String.format(
                         "The target component '%s' has no registered route",
-                        targetType))), event.getLocation().getQueryParameters());
+                        targetType))),
+                event.getLocation().getQueryParameters());
 
         if (beforeNavigation.hasForwardTarget()) {
             List<String> segments = new ArrayList<>(location.getSegments());
@@ -692,13 +737,13 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC);
+                NavigationTrigger.PROGRAMMATIC, null, true);
     }
 
     /**
      * Checks if there exists a cached component chain of the route location in
      * the current window.
-     * 
+     *
      * If retrieving the window name requires another round-trip, schedule it
      * and make a new call to the handle {@link #handle(NavigationEvent)} in the
      * callback. In this case, this method returns {@link Optional#empty()}.
@@ -717,8 +762,8 @@ public abstract class AbstractNavigationStateRenderer
                 // We may have a cached instance for this location, but we
                 // need to retrieve the window name before we can determine
                 // this, so execute a client-side request.
-                ui.getPage().retrieveExtendedClientDetails(details ->
-                        handle(event));
+                ui.getPage().retrieveExtendedClientDetails(
+                        details -> handle(event));
                 return Optional.empty();
             }
         } else {
@@ -729,7 +774,7 @@ public abstract class AbstractNavigationStateRenderer
             if (maybePreserved.isPresent()) {
                 // Re-use preserved chain for this route
                 ArrayList<HasElement> chain = maybePreserved.get();
-                final HasElement root = chain.get(chain.size()-1);
+                final HasElement root = chain.get(chain.size() - 1);
                 final Component component = (Component) chain.get(0);
                 final Optional<UI> maybePrevUI = component.getUI();
 
@@ -775,7 +820,6 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-    
     private static void validateStatusCode(int statusCode,
             Class<? extends Component> targetClass) {
         if (!statusCodes.contains(statusCode)) {
@@ -888,7 +932,6 @@ public abstract class AbstractNavigationStateRenderer
         session.setAttribute(PreservedComponentCache.class, cache);
     }
 
-
     private static void clearAllPreservedChains(UI ui) {
         final VaadinSession session = ui.getSession();
         // Note that this check is always false if @PreserveOnRefresh has not
@@ -905,6 +948,4 @@ public abstract class AbstractNavigationStateRenderer
             });
         }
     }
-
-
 }
