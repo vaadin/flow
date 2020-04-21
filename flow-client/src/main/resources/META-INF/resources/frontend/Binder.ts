@@ -204,7 +204,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
 export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
 
 export interface Validator<T> {
-  callback: ValidationCallback<T>,
+  validate: ValidationCallback<T>,
   message: string,
   // Limit
   value?: any
