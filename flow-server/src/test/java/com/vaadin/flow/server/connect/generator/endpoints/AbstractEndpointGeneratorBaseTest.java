@@ -18,7 +18,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.generator.OpenApiConfiguration;
 import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
@@ -62,7 +61,7 @@ public abstract class AbstractEndpointGeneratorBaseTest {
         }
     }
 
-    protected void generateTsModules() {
+    protected void generateTsEndpoints() {
         VaadinConnectTsGenerator.launch(openApiJsonOutput.toFile(),
                 outputDirectory.getRoot());
     }

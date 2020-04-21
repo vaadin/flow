@@ -77,6 +77,8 @@ import com.vaadin.flow.server.connect.EndpointNameChecker;
 public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     public static final String TS = ".ts";
+    public static final String MODEL = "Model";
+    public static final String MODEL_TS = MODEL + TS;
     public static final String OPTIONAL_SUFFIX = " | undefined";
     private static final String GENERATOR_NAME = "javascript-vaadin-connect";
     private static final String EXTENSION_VAADIN_CONNECT_PARAMETERS = "x-vaadin-connect-parameters";
@@ -125,7 +127,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
          * different extensions for multiple files per class
          */
         apiTemplateFiles.put("TypeScriptApiTemplate.mustache", TS);
-        modelTemplateFiles.put("ModelTemplate.mustache", TS);
+        modelTemplateFiles.put("EntityTemplate.mustache", TS);
+        modelTemplateFiles.put("EntityModelTemplate.mustache", MODEL_TS);
 
         /*
          * Template Location. This is the location which templates will be read
@@ -242,7 +245,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             throw getUnexpectedOpenAPIException(configurator.getInputSpecURL(),
                     error);
         }
-        
+
     }
 
     private static void cleanGeneratedFolder(String outputDir,
@@ -510,6 +513,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             return getSimpleNameFromComplexType(dataType, imports);
         }
         return getSimpleNameFromQualifiedName(dataType);
+    }
+
+    private String getModeleName(String dataType,
+            List<Map<String, String>> imports) {
+        String simpleName = getSimpleNameFromImports(dataType, imports);
+        return simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1) + MODEL;
     }
 
     private String getSimpleNameFromComplexType(String dataType,
@@ -925,6 +934,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("multiplelines", getMultipleLinesHelper());
         handlebars.registerHelper("getClassNameFromImports",
                 getClassNameFromImportsHelper());
+        handlebars.registerHelper("getModelName",
+                getModelNameHelper());
     }
 
     private Helper<String> getMultipleLinesHelper() {
@@ -941,8 +952,17 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private Helper<String> getClassNameFromImportsHelper() {
-        return (className, options) -> getSimpleNameFromImports(className,
-                (List<Map<String, String>>) options.param(0));
+        return (className, options) -> {
+            return getSimpleNameFromImports(className,
+                    (List<Map<String, String>>) options.param(0));
+        };
+    }
+
+    private Helper<String> getModelNameHelper() {
+        return (className, options) -> {
+            return getModeleName(className,
+                    (List<Map<String, String>>) options.param(0));
+        };
     }
 
     /**
