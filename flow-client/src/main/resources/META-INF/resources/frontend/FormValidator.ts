@@ -1,14 +1,7 @@
 /* tslint:disable:max-classes-per-file */
 
 import * as validator from 'validator';
-
-export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
-
-export interface Validator<T> {
-  validate: ValidationCallback<T>,
-  message: string,
-  value?: any
-}
+import {Validator} from './Binder';
 
 // JSR380 equivalent (https://beanvalidation.org/2.0/spec/#builtinconstraints)
 export class Email implements Validator<string> {
