@@ -18,13 +18,13 @@ package com.vaadin.flow.server.osgi;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -48,6 +48,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 
 /**
@@ -108,9 +109,19 @@ public final class OSGiAccess {
         }
 
         @Override
-        public Map<String, ? extends ServletRegistration> getServletRegistrations() {
-            // This method is used by Atmosphere initiailizer
-            return Collections.emptyMap();
+        public String getInitParameter(String name) {
+            // OSGi is supported in compatibiity mode only. So set it by default
+            // for every ServletContainerInitializer
+            if (Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE.equals(name)) {
+                return Boolean.TRUE.toString();
+            }
+            return null;
+        }
+
+        @Override
+        public Enumeration<String> getInitParameterNames() {
+            return Collections.enumeration(Collections.singletonList(
+                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE));
         }
 
     }
