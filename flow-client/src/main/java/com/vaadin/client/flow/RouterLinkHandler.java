@@ -84,12 +84,6 @@ public class RouterLinkHandler {
         // round trip but need to store the scroll positions since browser adds
         // another history state
         if (isInsidePageNavigation(anchor)) {
-            // there is no pop state if the hashes are exactly the same
-            String currentHash = Browser.getDocument().getLocation().getHash();
-            if (!currentHash.equals(anchor.getHash())) {
-                registry.getScrollPositionHandler().beforeNavigation(href,
-                        false);
-            }
             // the browser triggers a fragment change & pop state event
             registry.getScrollPositionHandler()
                     .setIgnoreScrollRestorationOnNextPopStateEvent(true);
@@ -116,7 +110,6 @@ public class RouterLinkHandler {
             // don't send hash to server
             location = location.split("#", 2)[0];
         }
-        registry.getScrollPositionHandler().beforeNavigation(href, true);
 
         sendServerNavigationEvent(registry, location, null, true);
     }

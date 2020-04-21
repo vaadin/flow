@@ -180,6 +180,16 @@ public abstract class AbstractNavigationStateRenderer
             }
         }
 
+        if (!ui.getInternals().hasLastHandledLocation()
+                || !event.getLocation().getPathWithQueryParameters()
+                .equals(ui.getInternals().getLastHandledLocation()
+                        .getPathWithQueryParameters())) {
+            // Enable navigating back
+            ui.getPage().getHistory().pushState(null, event.getLocation());
+
+            ui.getInternals().setLastHandledNavigation(event.getLocation());
+        }
+
         final ArrayList<HasElement> chain;
 
         if (isPreserveOnRefreshTarget(routeTargetType, routeLayoutTypes)) {
