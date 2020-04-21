@@ -890,15 +890,8 @@ public class UI extends Component
         }
 
         Location navigationLocation = new Location(location, queryParameters);
-        if (!internals.hasLastHandledLocation()
-                || !navigationLocation.getPathWithQueryParameters()
-                        .equals(internals.getLastHandledLocation()
-                                .getPathWithQueryParameters())) {
-            // Enable navigating back
-            getPage().getHistory().pushState(null, navigationLocation);
-        }
         getRouter().navigate(this, navigationLocation,
-                NavigationTrigger.PROGRAMMATIC);
+                NavigationTrigger.UI_NAVIGATE);
     }
 
     /**

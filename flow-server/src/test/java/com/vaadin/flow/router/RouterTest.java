@@ -15,11 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,8 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,7 +68,12 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -2478,7 +2478,6 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(MyTheme.class, themeObject.getClass());
     }
 
-
     @Test
     public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
             throws InvalidRouteConfigurationException, Exception {
@@ -3006,8 +3005,12 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
                 FileNotFound.trigger);
 
+        JsonObject state = Json.createObject();
+        state.put("href", "router_link");
+        state.put("scrollPositionX", 0d);
+        state.put("scrollPositionY", 0d);
         router.navigate(ui, new Location("router_link"),
-                NavigationTrigger.ROUTER_LINK);
+                NavigationTrigger.ROUTER_LINK, state);
 
         Assert.assertEquals(NavigationTrigger.ROUTER_LINK,
                 FileNotFound.trigger);
@@ -3159,7 +3162,8 @@ public class RouterTest extends RoutingTestBase {
         RouteChildWithParameter.events.clear();
         ui.navigate(RouteChildWithParameter.class, "foobar");
 
-        BeforeEnterEvent beforeEnterEvent = (BeforeEnterEvent) RouteChildWithParameter.events.get(0);
+        BeforeEnterEvent beforeEnterEvent = (BeforeEnterEvent) RouteChildWithParameter.events
+                .get(0);
         Assert.assertEquals(
                 "There is not exactly one layout in the layout chain", 1,
                 beforeEnterEvent.getLayouts().size());
@@ -3169,7 +3173,8 @@ public class RouterTest extends RoutingTestBase {
         RouteChildWithParameter.events.clear();
         ui.navigate(LoneRoute.class);
 
-        BeforeLeaveEvent beforeLeaveEvent = (BeforeLeaveEvent) RouteChildWithParameter.events.get(0);
+        BeforeLeaveEvent beforeLeaveEvent = (BeforeLeaveEvent) RouteChildWithParameter.events
+                .get(0);
         Assert.assertEquals(
                 "There is not exactly one layout in the layout chain", 1,
                 beforeLeaveEvent.getLayouts().size());
@@ -3179,49 +3184,58 @@ public class RouterTest extends RoutingTestBase {
 
     @Test
     public void optional_parameter_non_existing_route()
-    throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
-        router.navigate(
-            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
 
-        String exceptionText1 =
-             String.format("Could not navigate to '%s'", locationString);
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
 
-        String exceptionText2 =
-            String.format("Reason: Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 =
-            "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
+        String exceptionText3 = "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
 
-        assertExceptionComponent(
-            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2, exceptionText3);
     }
 
     @Test
     public void without_optional_parameter()
-    throws InvalidRouteConfigurationException {
+            throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";
-        router.navigate(
-            ui, new Location(locationString), NavigationTrigger.PROGRAMMATIC);
+        router.navigate(ui, new Location(locationString),
+                NavigationTrigger.PROGRAMMATIC);
 
-        String exceptionText1 =
-             String.format("Could not navigate to '%s'", locationString);
+        String exceptionText1 = String.format("Could not navigate to '%s'",
+                locationString);
 
-        String exceptionText2 =
-            String.format("Reason: Couldn't find route for '%s'", locationString);
+        String exceptionText2 = String
+                .format("Reason: Couldn't find route for '%s'", locationString);
 
         String exceptionText3 = "<li>optional (requires parameter)</li>";
 
-        assertExceptionComponent(
-            RouteNotFoundError.class, exceptionText1, exceptionText2, exceptionText3);
+        assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
+                exceptionText2, exceptionText3);
+    }
+
+    @Test
+    public void navigate_withState_() {
+        setNavigationTargets(RootNavigationTarget.class);
+
+        RootNavigationTarget.events.clear();
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals(1, RootNavigationTarget.events.size());
+
     }
 
     private void setNavigationTargets(

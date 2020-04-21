@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,11 +24,12 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContext;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -36,6 +38,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
+import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
@@ -61,12 +64,17 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
-import net.jcip.annotations.NotThreadSafe;
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
 
     Router router;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void init() {
@@ -191,8 +199,8 @@ public class NavigationStateRendererTest {
         MockUI ui = new MockUI(session) {
             final Page page = new Page(this) {
                 @Override
-                public PendingJavaScriptResult executeJs(
-                        String expression, Serializable... params) {
+                public PendingJavaScriptResult executeJs(String expression,
+                        Serializable... params) {
                     jsInvoked.set(true);
                     return super.executeJs(expression, params);
                 }
@@ -205,8 +213,7 @@ public class NavigationStateRendererTest {
         };
 
         // when a navigation event reaches the renderer
-        renderer.handle(new NavigationEvent(
-                new Router(new TestRouteRegistry()),
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
 
         // then client-side JS was invoked
@@ -224,8 +231,8 @@ public class NavigationStateRendererTest {
 
         // given a UI that contain a window name ROOT.123
         MockUI ui1 = new MockUI(session);
-        ExtendedClientDetails details =
-                Mockito.mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
         Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
         ui1.getInternals().setExtendedClientDetails(details);
 
@@ -235,14 +242,13 @@ public class NavigationStateRendererTest {
 
         // when a navigation event reaches the renderer
         renderer1.handle(new NavigationEvent(
-                new Router(new TestRouteRegistry()),
-                new Location("preserved"), ui1, NavigationTrigger.PAGE_LOAD));
+                new Router(new TestRouteRegistry()), new Location("preserved"),
+                ui1, NavigationTrigger.PAGE_LOAD));
 
         // then the session has a cached record of the view
         Assert.assertTrue("Session expected to have cached view",
                 AbstractNavigationStateRenderer.getPreservedChain(session,
-                        "ROOT.123", new Location("preserved"))
-                        .isPresent());
+                        "ROOT.123", new Location("preserved")).isPresent());
 
         // given the recently instantiated view
         final Component view = (Component) ui1.getInternals()
@@ -258,12 +264,12 @@ public class NavigationStateRendererTest {
 
         // when another navigation targets the same location
         renderer2.handle(new NavigationEvent(
-                new Router(new TestRouteRegistry()),
-                new Location("preserved"), ui2, NavigationTrigger.PAGE_LOAD));
+                new Router(new TestRouteRegistry()), new Location("preserved"),
+                ui2, NavigationTrigger.PAGE_LOAD));
 
         // then the same view is routed to
-        Assert.assertEquals("Expected same view",
-                view, ui1.getInternals().getActiveRouterTargetsChain().get(0));
+        Assert.assertEquals("Expected same view", view,
+                ui1.getInternals().getActiveRouterTargetsChain().get(0));
 
         // given yet another new UI with the same window name
         MockUI ui3 = new MockUI(session);
@@ -275,8 +281,8 @@ public class NavigationStateRendererTest {
 
         // when a navigation event targets that other location
         renderer3.handle(new NavigationEvent(
-                new Router(new TestRouteRegistry()),
-                new Location("regular"), ui2, NavigationTrigger.PAGE_LOAD));
+                new Router(new TestRouteRegistry()), new Location("regular"),
+                ui2, NavigationTrigger.PAGE_LOAD));
 
         // then session no longer has a cached record at location "preserved"
         Assert.assertFalse("Session expected to not have cached view",
@@ -299,9 +305,9 @@ public class NavigationStateRendererTest {
 
         // given the session has a cache of PreservedView at this location
         final PreservedView view = new PreservedView();
-        AbstractNavigationStateRenderer.setPreservedChain(session,
-                "ROOT.123", new Location("preserved"),
-               new ArrayList<>(Arrays.asList(view)));
+        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
+                new Location("preserved"),
+                new ArrayList<>(Arrays.asList(view)));
 
         // given an old UI that contains the component and an extra element
         MockUI ui0 = new MockUI(session);
@@ -311,14 +317,13 @@ public class NavigationStateRendererTest {
 
         // given a new UI after a refresh with the same window name
         MockUI ui1 = new MockUI(session);
-        ExtendedClientDetails details =
-                Mockito.mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
         Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
         ui1.getInternals().setExtendedClientDetails(details);
 
         // when a navigation event reaches the renderer
-        renderer.handle(new NavigationEvent(
-                new Router(new TestRouteRegistry()),
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("preserved"), ui1, NavigationTrigger.PAGE_LOAD));
 
         // then both the view element and the other element are expected to be
@@ -361,9 +366,7 @@ public class NavigationStateRendererTest {
         NavigationStateRenderer renderer = new NavigationStateRenderer(
                 new NavigationStateBuilder(router)
                         .withTarget(PreservedNestedView.class)
-                        .withPath("preservedNested")
-                        .build()
-        );
+                        .withPath("preservedNested").build());
         router.getRegistry().setRoute("preservedNested",
                 PreservedNestedView.class,
                 Arrays.asList(PreservedLayout.class));
@@ -371,41 +374,39 @@ public class NavigationStateRendererTest {
         // given the session has a cache of PreservedNestedView at this location
         final PreservedLayout layout = new PreservedLayout();
         final PreservedNestedView nestedView = new PreservedNestedView();
-        AbstractNavigationStateRenderer.setPreservedChain(session,
-                "ROOT.123", new Location("preservedNested"),
-                new ArrayList<>(Arrays.asList(nestedView,layout)));
+        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
+                new Location("preservedNested"),
+                new ArrayList<>(Arrays.asList(nestedView, layout)));
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
-        ExtendedClientDetails details =
-                Mockito.mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
         Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
         ui.getInternals().setExtendedClientDetails(details);
 
         // when a navigation event reaches the renderer
-        renderer.handle(new NavigationEvent(
-                router,
-                new Location("preservedNested"), ui,
-                NavigationTrigger.PAGE_LOAD));
+        renderer.handle(
+                new NavigationEvent(router, new Location("preservedNested"), ui,
+                        NavigationTrigger.PAGE_LOAD));
 
         // then the view and the router layout are preserved
-        Assert.assertEquals("Expected same view",
-                nestedView,
+        Assert.assertEquals("Expected same view", nestedView,
                 ui.getInternals().getActiveRouterTargetsChain().get(0));
-        Assert.assertEquals("Expected same router layout",
-                layout,
+        Assert.assertEquals("Expected same router layout", layout,
                 ui.getInternals().getActiveRouterTargetsChain().get(1));
     }
 
     @Route(value = "preservedLayout")
     @Tag("div")
     private static class PreservedLayout extends Component
-            implements RouterLayout{
-        PreservedLayout() {}
+            implements RouterLayout {
+        PreservedLayout() {
+        }
     }
 
     @PreserveOnRefresh
-    @Route(value = "preservedNested", layout= PreservedLayout.class)
+    @Route(value = "preservedNested", layout = PreservedLayout.class)
     private static class PreservedNestedView extends Text {
         PreservedNestedView() {
             super("");
@@ -431,5 +432,176 @@ public class NavigationStateRendererTest {
     private NavigationState navigationStateFromTarget(
             Class<? extends Component> target) {
         return new NavigationStateBuilder(router).withTarget(target).build();
+    }
+
+    @Test
+    public void handle_RouterLinkTrigger_scrollPositionHandlerAfterServerNavigationIsInvoked() {
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to RegularView
+        new NavigationStateBuilder(router).withTarget(RegularView.class)
+                .build();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RegularView.class));
+
+        // given a UI with an instrumented Page that records JS invocations
+        AtomicBoolean jsInvoked = new AtomicBoolean(false);
+        List<String> jsExpressions = new ArrayList<>();
+        MockUI ui = new MockUI(session) {
+            final Page page = new Page(this) {
+                @Override
+                public PendingJavaScriptResult executeJs(String expression,
+                        Serializable... params) {
+                    jsInvoked.set(true);
+                    jsExpressions.add(expression);
+                    return super.executeJs(expression, params);
+                }
+            };
+
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
+
+        JsonObject state = Json.createObject();
+        state.put("href", "view/regular");
+        state.put("scrollPositionX", 0.0);
+        state.put("scrollPositionY", 0.0);
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved"), ui, NavigationTrigger.ROUTER_LINK,
+                state, false));
+
+        // then client-side JS was invoked
+        Assert.assertTrue("Expected JS invocation", jsInvoked.get());
+        Assert.assertTrue(jsExpressions.stream()
+                .anyMatch(expression -> expression.contains(
+                        "scrollPositionHandlerAfterServerNavigation")));
+    }
+
+    @Test
+    public void handle_RouterLinkTriggerNullState_IllegalStateException() {
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to RegularView
+        new NavigationStateBuilder(router).withTarget(RegularView.class)
+                .build();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RegularView.class));
+
+        MockUI ui = new MockUI(session);
+
+        expectedException.expect(IllegalStateException.class);
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.ROUTER_LINK,
+                null, false));
+    }
+
+    @Test
+    // In any of the following criteria, pushState shouldn't be invoked:
+    // - forwardTo is true
+    // - the navigation location is the same as the current location (repeated
+    // navigation)
+    // - navigation trigger is PAGE_LOAD, HISTORY, or PROGRAMMATIC
+    public void handle_variousInputs_checkPushStateShouldBeCalledOrNot() {
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to RegularView
+        new NavigationStateBuilder(router).withTarget(RegularView.class)
+                .build();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(RegularView.class));
+
+        // given a UI with an instrumented Page that records
+        // getHistory().pushState calls
+        AtomicBoolean pushStateCalled = new AtomicBoolean(false);
+        List<Location> pushStateLocations = new ArrayList<>();
+        MockUI ui = new MockUI(session) {
+            final Page page = new Page(this) {
+                final History history = new History(getUI().get()) {
+                    @Override
+                    public void pushState(JsonValue state, Location location) {
+                        pushStateCalled.set(true);
+                        pushStateLocations.add(location);
+                    }
+                };
+
+                @Override
+                public History getHistory() {
+                    return history;
+                }
+            };
+
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE,
+                null, true));
+        Assert.assertFalse(
+                "No pushState invocation is expected when forwardTo is true.",
+                pushStateCalled.get());
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC));
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigation trigger is PROGRAMMATIC.",
+                pushStateCalled.get());
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.HISTORY));
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigation trigger is HISTORY.",
+                pushStateCalled.get());
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.PAGE_LOAD));
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigation trigger is PAGE_LOAD.",
+                pushStateCalled.get());
+
+        pushStateCalled.set(false);
+        pushStateLocations.clear();
+        ui.getInternals().clearLastHandledNavigation();
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
+        Assert.assertTrue("pushState invocation is expected.",
+                pushStateCalled.get());
+        Assert.assertTrue(pushStateLocations.stream()
+                .anyMatch(location -> location.getPath().equals("regular")));
+
+        pushStateCalled.set(false);
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigating to the current location.",
+                pushStateCalled.get());
     }
 }
