@@ -6,7 +6,7 @@ export const parentSymbol = Symbol('parent');
 export const valueSymbol = Symbol('value');
 export const defaultValueSymbol = Symbol('defaultValue');
 export const fromStringSymbol = Symbol('fromString');
-export const constraintsSymbol = Symbol('constraints');
+export const validatorSymbol = Symbol('constraints');
 
 // export type ChildModel<T> = AbstractModel<T[keyof T]>;
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
@@ -18,16 +18,16 @@ import { repeat } from 'lit-html/directives/repeat';
 export abstract class AbstractModel<T> {
   private [parentSymbol]: ModelParent<T>;
   private [keySymbol]: keyof any;
-  private [constraintsSymbol] = new Set<Constraint<T>>();
+  private [validatorSymbol] = new Set<Validator<T>>();
 
   constructor(
     parent: ModelParent<T>,
     key: keyof any,
-    ...constraints: Array<Constraint<T>>
+    ...constraints: Array<Validator<T>>
   ) {
     this[parentSymbol] = parent;
     this[keySymbol] = key;
-    constraints.forEach(constraint => this[constraintsSymbol].add(constraint));
+    constraints.forEach(validator => this[validatorSymbol].add(validator));
   }
 
   abstract get [defaultValueSymbol](): T;
@@ -204,25 +204,28 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
 export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
 
 export interface Validator<T> {
-  callback: ValidationCallback<T>,
+  validate: ValidationCallback<T>,
   message: string,
   // Limit
   value?: any
 }
 
-export type Constraint<T> = [ValidationCallback<T>, string];
-
-export const requiredConstraint = [(value: string | number | any[]) => {
-  if (typeof value === 'string' || Array.isArray(value)) {
-    return value.length > 0;
-  } else if (typeof value === 'number') {
-    return Number.isFinite(value);
+class Required implements Validator<string> {
+  message = 'invalid';
+  validate = (value: any) => {
+    if (typeof value === 'string' || Array.isArray(value)) {
+      return value.length > 0;
+    } else if (typeof value === 'number') {
+      return Number.isFinite(value);
+    }
+    return false;
   }
-  return false;
-}, 'Cannot be missing'] as Constraint<string | number | any[]>;
+}
 
-export function getModelConstraints<T>(model: AbstractModel<T>): Set<Constraint<T>> {
-  return model[constraintsSymbol];
+export const requiredValidator = new Required();
+
+export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
+  return model[validatorSymbol];
 }
 
 export async function validate<T>(model: AbstractModel<T>): Promise<string | undefined> {
@@ -230,17 +233,14 @@ export async function validate<T>(model: AbstractModel<T>): Promise<string | und
   if (parent === undefined) {
     return;
   }
-
   const value = getValue(model);
-
-  const modelConstraints = getModelConstraints(model);
-  for (const [callback, message] of modelConstraints) {
-    const valid = await ((async () => callback(value))());
+  const modelValidators = getModelValidators(model);
+  for (const validator of modelValidators) {
+    const valid = await ((async () => validator.validate(value))());
     if (!valid) {
-      return message;
+      return validator.message;
     }
   }
-
   return;
 }
 
@@ -384,7 +384,7 @@ export const field = directive(<T>(
     || (model instanceof NumberModel)
     || (model instanceof BooleanModel)
     || (model instanceof ArrayModel)
-  ) && (getModelConstraints(model) as Set<Constraint<any>>).has(requiredConstraint);
+  ) && (getModelValidators(model) as Set<Validator<any>>).has(requiredValidator);
   if (required !== fieldState.required) {
     fieldState.required = required;
     element.required = required;
