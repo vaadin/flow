@@ -235,7 +235,6 @@ public class DevModeInitializer
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
         }
-        System.out.println("uuuuuuuuuuuuuuuu " + config.isCompatibilityMode());
         if (config.isCompatibilityMode()) {
             log().debug("Skipping DEV MODE because BOWER MODE is set.");
             return;
