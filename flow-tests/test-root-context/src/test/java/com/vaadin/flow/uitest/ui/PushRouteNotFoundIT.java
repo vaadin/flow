@@ -17,11 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-<<<<<<< HEAD:flow-tests/test-root-context/src/test/java/com/vaadin/flow/uitest/ui/PushRouteNotFoundIT.java
-=======
 import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
->>>>>>> 6e37232a67... Disable new Push tests in OSGI:flow-tests/test-root-context/src/test/java/com/vaadin/flow/uitest/ui/routing/PushRouteNotFoundIT.java
 
 import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
