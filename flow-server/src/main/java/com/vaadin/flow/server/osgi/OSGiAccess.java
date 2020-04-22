@@ -110,6 +110,7 @@ public final class OSGiAccess {
 
         @Override
         public String getInitParameter(String name) {
+            System.out.println("WWWWWWWWWWWWWWWWWWWW");
             // OSGi is supported in compatibiity mode only. So set it by default
             // for every ServletContainerInitializer
             if (Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE.equals(name)) {
