@@ -28,6 +28,7 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.Es6UrlViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
@@ -118,6 +119,8 @@ public class Activator implements BundleActivator {
                 // HTTP service is available, register our servlet...
                 HttpService httpService = this.context.getService(reference);
                 Dictionary dictionary = new Hashtable<>();
+                dictionary.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                        Boolean.TRUE.toString());
                 try {
                     httpService.registerServlet("/view/*",
                             new FixedViewServlet(), dictionary, null);
