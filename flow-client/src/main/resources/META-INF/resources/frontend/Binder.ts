@@ -1,12 +1,11 @@
 /* tslint:disable:max-classes-per-file */
 
-export const objectSymbol = Symbol('object');
-export const keySymbol = Symbol('key');
-export const parentSymbol = Symbol('parent');
-export const valueSymbol = Symbol('value');
-export const defaultValueSymbol = Symbol('defaultValue');
-export const fromStringSymbol = Symbol('fromString');
-export const validatorsSymbol = Symbol('validators');
+const keySymbol = Symbol('key');
+const parentSymbol = Symbol('parent');
+const valueSymbol = Symbol('value');
+const defaultValueSymbol = Symbol('defaultValue');
+const fromStringSymbol = Symbol('fromString');
+const validatorsSymbol = Symbol('validators');
 
 // export type ChildModel<T> = AbstractModel<T[keyof T]>;
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
