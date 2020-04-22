@@ -284,6 +284,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                     @Override
                     public int navigate(UI ui, Location location,
                             NavigationTrigger trigger) {
+                        ui.getPage().getHistory().pushState(null, location);
                         return HttpServletResponse.SC_OK;
                     }
                 };
