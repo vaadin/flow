@@ -5,7 +5,8 @@ module.exports = {
   entry: {
     flow: "./src/test/frontend/FlowTests.ts",
     connect: "./src/test/frontend/ConnectTests.ts",
-    binder: "./src/test/frontend/BinderTests.ts"
+    binder: "./src/test/frontend/BinderTests.ts",
+    validator: "./src/test/frontend/FormValidatorTests.ts"
   },
   output: {
     filename: "[name].spec.js",
