@@ -18,6 +18,7 @@ package com.vaadin.flow.server.osgi;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import java.lang.annotation.Annotation;
@@ -122,6 +123,11 @@ public final class OSGiAccess {
         public Enumeration<String> getInitParameterNames() {
             return Collections.enumeration(Collections.singletonList(
                     Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE));
+        }
+
+        @Override
+        public Map<String, ? extends ServletRegistration> getServletRegistrations() {
+            return Collections.emptyMap();
         }
 
     }
