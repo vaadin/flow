@@ -364,7 +364,7 @@ export class ConnectClient {
 
   // Re-use flow loading indicator when fetching endpoints
   private loading(action: boolean) {
-    if ($wnd.Vaadin.Flow?.loading) {
+    if ($wnd.Vaadin.Flow!.loading) {
       $wnd.Vaadin.Flow.loading(action);
     }
   }
