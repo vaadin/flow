@@ -69,6 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.connect.EndpointNameChecker;
+import static com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS;
 
 /**
  * Vaadin connect JavaScript generator implementation for swagger-codegen. Some
@@ -525,15 +526,17 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         if (simpleName.matches("Array<(.+)>")) {
             simpleName = simpleName.replaceFirst("Array<(.+)>",
                     "Array" + MODEL + "<$1, $1" + MODEL + "<$1>>(this, '" + name
-                            + "', $1" + MODEL);
+                            + "', $1" + MODEL + ")");
         } else {
-            if (simpleName.matches("string|number|any")) {
+            if ("any".equals(simpleName)) {
+                simpleName = "Object";
+            } else if (simpleName.matches("string|number")) {
                 simpleName = GeneratorUtils.capitalize(simpleName);
             }
             simpleName += MODEL + "(this, '" + name + "'"
                     + getConstrainsArguments(property) + ")";
         }
-        return "new " + simpleName + ")";
+        return "new " + simpleName;
     }
 
     private String getConstrainsArguments(CodegenProperty property) {
@@ -541,15 +544,16 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         if (property.required) {
             ret.append(", new Required()");
         }
-      List<String> annotations = (List)property.getVendorExtensions().get("x-annotations");
-      if (annotations != null) {
-          ret.append("/* ");
-          for (String annotation : annotations) {
-              ret.append(annotation);
-          }
-          ret.append("*/");
-      }
-      return ret.toString();
+        List<String> annotations = (List) property.getVendorExtensions()
+                .get(CONSTRAINT_ANNOTATIONS);
+        if (annotations != null) {
+            ret.append("/* ");
+            for (String annotation : annotations) {
+                ret.append(annotation);
+            }
+            ret.append("*/");
+        }
+        return ret.toString();
     }
 
     private String getSimpleNameFromComplexType(String dataType,
