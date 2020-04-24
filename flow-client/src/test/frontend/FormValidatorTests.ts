@@ -3,8 +3,17 @@ const { assert } = intern.getPlugin("chai");
 
 // API to test
 import { AssertFalse, AssertTrue, DecimalMin, DecimalMax, Digits, Email, Future, Max, Min, Negative, NegativeOrCero, NotBlank, NotEmpty, NotNull, Null, Past, Pattern, Positive, PositiveOrCero, Size } from "../../main/resources/META-INF/resources/frontend/FormValidator";
-
+import {Required} from "../../main/resources/META-INF/resources/frontend/Binder";
 suite("Validator", () => {
+
+  test("Required", () => {
+    const validator = new Required();
+    assert.isTrue(validator.validate('foo'));
+    assert.isFalse(validator.validate(''));
+    assert.isFalse(validator.validate(undefined));
+    assert.isTrue(validator.validate(0));
+  });
+
   test("Email", () => {
     const validator = new Email()
     assert.isTrue(validator.validate('foo@vaadin.com'));

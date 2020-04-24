@@ -6,6 +6,8 @@ const valueSymbol = Symbol('value');
 const defaultValueSymbol = Symbol('defaultValue');
 const fromStringSymbol = Symbol('fromString');
 const validatorsSymbol = Symbol('validators');
+const isSubmittingSymbol = Symbol('isSubmitting');
+const ModelSymbol = Symbol('Model');
 
 // export type ChildModel<T> = AbstractModel<T[keyof T]>;
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
@@ -34,8 +36,6 @@ export abstract class AbstractModel<T> {
 
 export type ModelConstructor<M extends AbstractModel<T>, T> =
   new (parent: ModelParent<T>, key: keyof any,  ...args: any[]) => M;
-
-const isSubmittingSymbol = Symbol('isSubmitting');
 
 export class Binder<T, M extends AbstractModel<T>> {
   model: M;
@@ -167,8 +167,6 @@ export class ObjectModel<T> extends AbstractModel<T> {
   }
 }
 
-export const ModelSymbol = Symbol('Model');
-
 // type ReadonlyArrayItem<T> = T extends ReadonlyArray<infer I> ? I : never;
 // export type ReadonlyArrayItemModel<T> = AbstractModel<ReadonlyArray<T>, number>;
 // @ts-ignore
@@ -209,7 +207,7 @@ export interface Validator<T> {
   value?: any
 }
 
-class Required implements Validator<string> {
+export class Required implements Validator<string> {
   message = 'invalid';
   validate = (value: any) => {
     if (typeof value === 'string' || Array.isArray(value)) {
@@ -220,8 +218,6 @@ class Required implements Validator<string> {
     return false;
   }
 }
-
-export const requiredValidator = new Required();
 
 export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
   return model[validatorsSymbol];
@@ -383,7 +379,8 @@ export const field = directive(<T>(
     || (model instanceof NumberModel)
     || (model instanceof BooleanModel)
     || (model instanceof ArrayModel)
-  ) && (getModelValidators(model) as Set<Validator<any>>).has(requiredValidator);
+  ) && !![getModelValidators(model)].find(val => val instanceof Required);
+
   if (required !== fieldState.required) {
     fieldState.required = required;
     element.required = required;
