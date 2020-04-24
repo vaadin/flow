@@ -20,6 +20,7 @@ import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,Neg
 export default class {{{getClassNameFromImports classname ../../imports}}}Model<T extends {{{getClassNameFromImports classname ../../imports}}}>
   {{~#parentSchema}} extends {{{getClassNameFromImports parentSchema ../../imports}}}Model<T> { {{/parentSchema}}
   {{~^parentSchema}} extends ObjectModel<T> { {{/parentSchema}}
+  static createEmptyValue: () => {{{getClassNameFromImports classname ../../imports}}};
 {{#vars}}
   public readonly {{name}} = {{{getModelConstructor this ../../imports}}};
 {{/vars}}

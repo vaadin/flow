@@ -9,7 +9,6 @@ const validatorsSymbol = Symbol('validators');
 const isSubmittingSymbol = Symbol('isSubmitting');
 const ModelSymbol = Symbol('Model');
 
-// export type ChildModel<T> = AbstractModel<T[keyof T]>;
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
 // @ts-ignore
@@ -17,6 +16,10 @@ import { AttributeCommitter, AttributePart, directive, Part,  PropertyPart } fro
 import { repeat } from 'lit-html/directives/repeat';
 
 export abstract class AbstractModel<T> {
+  static createEmptyValue(): unknown {
+    return undefined;
+  };
+
   private [parentSymbol]: ModelParent<T>;
   private [keySymbol]: keyof any;
   private [validatorsSymbol] = new Set<Validator<T>>();
@@ -24,18 +27,21 @@ export abstract class AbstractModel<T> {
   constructor(
     parent: ModelParent<T>,
     key: keyof any,
+    // @ts-ignore — argument required for generic type argument inference
+    valueConstructor: () => T,
     ...validators: Array<Validator<T>>
   ) {
     this[parentSymbol] = parent;
     this[keySymbol] = key;
     validators.forEach(validator => this[validatorsSymbol].add(validator));
   }
-
-  abstract get [defaultValueSymbol](): T;
 }
 
-export type ModelConstructor<M extends AbstractModel<T>, T> =
-  new (parent: ModelParent<T>, key: keyof any,  ...args: any[]) => M;
+export interface ModelConstructor<T, M extends AbstractModel<T>> {
+  createEmptyValue: () => T;
+
+  new (parent: ModelParent<T>, key: keyof any, getShape: () => T, ...args: any[]): M;
+}
 
 export class Binder<T, M extends AbstractModel<T>> {
   model: M;
@@ -45,11 +51,11 @@ export class Binder<T, M extends AbstractModel<T>> {
 
   constructor(
     public context: Element,
-    Model: ModelConstructor<M, T>,
+    Model: ModelConstructor<T, M>,
     public onChange: (oldValue: T) => void
   ) {
-    this.model = new Model(this, 'value');
-    this.reset(this.model[defaultValueSymbol]);
+    this.model = new Model(this, 'value', Model.createEmptyValue);
+    this.reset(Model.createEmptyValue());
   }
 
   get defaultValue() {
@@ -78,9 +84,9 @@ export class Binder<T, M extends AbstractModel<T>> {
     return this[valueSymbol] !== this[defaultValueSymbol];
   }
 
-  reset(newDefaultValue?: T) {
-    if (newDefaultValue !== undefined) {
-      this.defaultValue = newDefaultValue;
+  reset(defaultValue?: T) {
+    if (defaultValue !== undefined) {
+      this.defaultValue = defaultValue;
     }
 
     this.value = this.defaultValue;
@@ -123,58 +129,77 @@ export abstract class PrimitiveModel<T> extends AbstractModel<T>
 
 export class BooleanModel extends PrimitiveModel<boolean>
   implements PrimitiveCompatible<boolean>, HasFromString<boolean> {
+  static createEmptyValue() {
+    return false;
+  }
+
   [fromStringSymbol] = Boolean;
 
-  get [defaultValueSymbol]() {
-    return false;
+  constructor(parent: ModelParent<boolean>, key: keyof any) {
+    super(parent, key, Boolean);
   }
 }
 
 export class NumberModel extends PrimitiveModel<number>
   implements PrimitiveCompatible<number>, HasFromString<number> {
+  static createEmptyValue() {
+    return 0;
+  }
+
   [fromStringSymbol] = Number;
 
-  get [defaultValueSymbol]() {
-    return 0;
+  constructor(parent: ModelParent<number>, key: keyof any) {
+    super(parent, key, NumberModel.createEmptyValue);
   }
 }
 
 export class StringModel extends PrimitiveModel<string>
   implements PrimitiveCompatible<string>, HasFromString<string> {
-  [fromStringSymbol] = String;
-  toString() {
-    return this.valueOf();
+  static createEmptyValue() {
+    return '';
   }
 
-  get [defaultValueSymbol]() {
-    return '';
+  [fromStringSymbol] = String;
+
+  constructor(parent: ModelParent<string>, key: keyof any) {
+    super(parent, key, StringModel.createEmptyValue);
+  }
+
+  toString() {
+    return this.valueOf();
   }
 }
 
 export class ObjectModel<T> extends AbstractModel<T> {
-  [fromStringSymbol] = String;
-  get [defaultValueSymbol]() {
-    return Object.keys(this).reduce((obj: any, key: string) => {
-      obj[key] = ((this as any)[key] as AbstractModel<any>)[defaultValueSymbol];
-      return obj;
-    }, {}) as T;
+  static createEmptyValue() {
+    const modelInstance = new this(undefined as any, defaultValueSymbol, () => {})
+    return Object.keys(modelInstance).reduce(
+      (obj: any, key: keyof any) => {
+        obj[key] = (
+          (modelInstance as any)[key].constructor as ModelConstructor<any, AbstractModel<any>>
+        ).createEmptyValue();
+        return obj;
+      },
+      {}
+    );
   }
+
+  [fromStringSymbol] = String;
 }
 
-// type ReadonlyArrayItem<T> = T extends ReadonlyArray<infer I> ? I : never;
-// export type ReadonlyArrayItemModel<T> = AbstractModel<ReadonlyArray<T>, number>;
-// @ts-ignore
-type ModelType<M extends AbstractModel<any>> = M extends AbstractModel<infer T> ? T : never;
-
 export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<ReadonlyArray<T>> {
-  private [ModelSymbol]: ModelConstructor<M, T>;
+  static createEmptyValue() {
+    return [];
+  }
+
+  private [ModelSymbol]: ModelConstructor<T, M>;
 
   constructor(
     parent: ModelParent<ReadonlyArray<T>>,
     key: keyof any,
-    Model: ModelConstructor<M, T>
+    Model: ModelConstructor<T, M>
   ) {
-    super(parent, key);
+    super(parent, key, ArrayModel.createEmptyValue);
     this[ModelSymbol] = Model;
   }
 
@@ -183,12 +208,8 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     const Model = this[ModelSymbol];
     // @ts-ignore
     for (const [i, _] of array.entries()) {
-      yield new Model(this, i);
+      yield new Model(this, i, Model.createEmptyValue);
     }
-  }
-
-  get [defaultValueSymbol]() {
-    return [] as ReadonlyArray<T>;
   }
 }
 
@@ -234,11 +255,18 @@ export async function validate<T>(model: AbstractModel<T>): Promise<string | und
 }
 
 export function getName(model: AbstractModel<any>) {
-  let name = String(model[keySymbol]);
-  while (!(model[parentSymbol] instanceof Binder)) {
-    model = model[parentSymbol] as AbstractModel<any>;
-    name = `${String(model[keySymbol])}[${name}]`;
+  if (model[parentSymbol] instanceof Binder) {
+    return '';
   }
+
+  let name = String(model[keySymbol]);
+  model = model[parentSymbol] as AbstractModel<any>;
+
+  while (!(model[parentSymbol] instanceof Binder)) {
+    name = `${String(model[keySymbol])}[${name}]`;
+    model = model[parentSymbol] as AbstractModel<any>;
+  }
+
   return name;
 }
 

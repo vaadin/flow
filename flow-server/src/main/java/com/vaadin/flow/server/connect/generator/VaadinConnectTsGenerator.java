@@ -69,6 +69,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.connect.EndpointNameChecker;
+
 import static com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS;
 
 /**
@@ -524,17 +525,17 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String simpleName = getSimpleNameFromImports(dataType, imports);
 
         if (simpleName.matches("Array<(.+)>")) {
-            simpleName = simpleName.replaceFirst("Array<(.+)>",
-                    "Array" + MODEL + "<$1, $1" + MODEL + "<$1>>(this, '" + name
-                            + "', $1" + MODEL + ")");
+            simpleName = simpleName.replaceFirst("Array<(.+)>", "Array" + MODEL
+                    + "(this, '" + name + "', $1" + MODEL + ")");
         } else {
             if ("any".equals(simpleName)) {
                 simpleName = "Object";
             } else if (simpleName.matches("string|number")) {
                 simpleName = GeneratorUtils.capitalize(simpleName);
             }
-            simpleName += MODEL + "(this, '" + name + "'"
-                    + getConstrainsArguments(property) + ")";
+            simpleName += MODEL + "(this, '" + name + "', " + simpleName + MODEL
+                    + ".createEmptyValue()" + getConstrainsArguments(property)
+                    + ")";
         }
         return "new " + simpleName;
     }
