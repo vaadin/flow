@@ -523,31 +523,33 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String simpleName = getSimpleNameFromImports(dataType, imports);
 
         if (simpleName.matches("Array<(.+)>")) {
-            simpleName = simpleName
-                    .replaceFirst("Array<(.+)>", "ArrayModel<$1, $1Model<$1>>(this, '" + name + "', $1Model");
+            simpleName = simpleName.replaceFirst("Array<(.+)>",
+                    "Array" + MODEL + "<$1, $1" + MODEL + "<$1>>(this, '" + name
+                            + "', $1" + MODEL);
         } else {
             if (simpleName.matches("string|number|any")) {
                 simpleName = GeneratorUtils.capitalize(simpleName);
             }
-            simpleName += "Model(this, '" + name + "'" + getConstrainsArguments(property) + ")";
+            simpleName += MODEL + "(this, '" + name + "'"
+                    + getConstrainsArguments(property) + ")";
         }
         return "new " + simpleName + ")";
     }
 
     private String getConstrainsArguments(CodegenProperty property) {
-        String ret = "";
+        StringBuilder ret = new StringBuilder();
         if (property.required) {
-            ret += ", new Required()";
+            ret.append(", new Required()");
         }
       List<String> annotations = (List)property.getVendorExtensions().get("x-annotations");
       if (annotations != null) {
-          ret += "/* ";
+          ret.append("/* ");
           for (String annotation : annotations) {
-              ret += annotation;
+              ret.append(annotation);
           }
-          ret += "*/";
+          ret.append("*/");
       }
-      return ret;
+      return ret.toString();
     }
 
     private String getSimpleNameFromComplexType(String dataType,
