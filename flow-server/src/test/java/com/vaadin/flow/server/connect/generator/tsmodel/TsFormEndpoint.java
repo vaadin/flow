@@ -41,6 +41,7 @@ import javax.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import com.vaadin.flow.server.connect.Endpoint;
 
@@ -71,6 +72,7 @@ public class TsFormEndpoint {
     public static class MyEntity extends MyEntityId {
         String foo;
         MyBaz bar;
+        List<MyBaz> baz;
         @Email String email;
         @Null String isNull;
         @NotNull String notNull;

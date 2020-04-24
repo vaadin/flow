@@ -39,6 +39,7 @@ import io.swagger.codegen.v3.ClientOptInput;
 import io.swagger.codegen.v3.CodegenModel;
 import io.swagger.codegen.v3.CodegenOperation;
 import io.swagger.codegen.v3.CodegenParameter;
+import io.swagger.codegen.v3.CodegenProperty;
 import io.swagger.codegen.v3.CodegenResponse;
 import io.swagger.codegen.v3.CodegenType;
 import io.swagger.codegen.v3.DefaultGenerator;
@@ -515,10 +516,38 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return getSimpleNameFromQualifiedName(dataType);
     }
 
-    private String getModeleName(String dataType,
+    private String getModeleConstructor(CodegenProperty property,
             List<Map<String, String>> imports) {
+        String name = property.name;
+        String dataType = property.datatype;
         String simpleName = getSimpleNameFromImports(dataType, imports);
-        return simpleName.substring(0, 1).toUpperCase() + simpleName.substring(1) + MODEL;
+
+        if (simpleName.matches("Array<(.+)>")) {
+            simpleName = simpleName
+                    .replaceFirst("Array<(.+)>", "ArrayModel<$1, $1Model<$1>>(this, '" + name + "', $1Model");
+        } else {
+            if (simpleName.matches("string|number|any")) {
+                simpleName = GeneratorUtils.capitalize(simpleName);
+            }
+            simpleName += "Model(this, '" + name + "'" + getConstrainsArguments(property) + ")";
+        }
+        return "new " + simpleName + ")";
+    }
+
+    private String getConstrainsArguments(CodegenProperty property) {
+        String ret = "";
+        if (property.required) {
+            ret += ", new Required()";
+        }
+      List<String> annotations = (List)property.getVendorExtensions().get("x-annotations");
+      if (annotations != null) {
+          ret += "/* ";
+          for (String annotation : annotations) {
+              ret += annotation;
+          }
+          ret += "*/";
+      }
+      return ret;
     }
 
     private String getSimpleNameFromComplexType(String dataType,
@@ -638,6 +667,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         codegenModel.setImports(imports);
         return codegenModel;
     }
+
 
     private void printDebugMessage(Object data, String message) {
         if (isDebugConnectMavenPlugin()) {
@@ -934,8 +964,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("multiplelines", getMultipleLinesHelper());
         handlebars.registerHelper("getClassNameFromImports",
                 getClassNameFromImportsHelper());
-        handlebars.registerHelper("getModelName",
-                getModelNameHelper());
+        handlebars.registerHelper("getModelConstructor",
+                getModelConstructorHelper());
     }
 
     private Helper<String> getMultipleLinesHelper() {
@@ -958,9 +988,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         };
     }
 
-    private Helper<String> getModelNameHelper() {
-        return (className, options) -> {
-            return getModeleName(className,
+    private Helper<CodegenProperty> getModelConstructorHelper() {
+        return (prop, options) -> {
+            return getModeleConstructor(prop,
                     (List<Map<String, String>>) options.param(0));
         };
     }

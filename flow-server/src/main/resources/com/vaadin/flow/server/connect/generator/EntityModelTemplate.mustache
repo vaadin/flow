@@ -1,5 +1,6 @@
 {{#each imports}}
 import {{className}}Model from '{{importPath}}Model';
+import {{className}} from '{{importPath}}';
 {{/each}}
 {{#models}}{{#model}}
 import {{{getClassNameFromImports classname ../../imports}}} from './{{{getClassNameFromImports classname ../../imports}}}';
@@ -18,7 +19,7 @@ export default class {{{getClassNameFromImports classname ../../imports}}}Model<
   {{~#parentSchema}} extends {{{getClassNameFromImports parentSchema ../../imports}}}Model<T> { {{/parentSchema}}
   {{~^parentSchema}} extends ObjectModel<T> { {{/parentSchema}}
 {{#vars}}
-  public readonly {{name}} = new {{{getModelName datatype ../../../imports}}}(this, '{{name}}'{{^required}}, new Required(){{/required}});
+  public readonly {{name}} = {{{getModelConstructor this ../../imports}}};
 {{/vars}}
 }
 {{/model}}
