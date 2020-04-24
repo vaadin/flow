@@ -24,3 +24,5 @@ In case you don't use the template, we might not start working on the issue.
     - Java version:
     - OS version:
     - Browser version (if applicable):
+    - Application Server (if applicable):
+    - IDE (if applicable):
