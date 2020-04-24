@@ -525,15 +525,17 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         if (simpleName.matches("Array<(.+)>")) {
             simpleName = simpleName.replaceFirst("Array<(.+)>",
                     "Array" + MODEL + "<$1, $1" + MODEL + "<$1>>(this, '" + name
-                            + "', $1" + MODEL);
+                            + "', $1" + MODEL + ")");
         } else {
-            if (simpleName.matches("string|number|any")) {
+            if ("any".equals(simpleName)) {
+                simpleName = "Object";
+            } if (simpleName.matches("string|number")) {
                 simpleName = GeneratorUtils.capitalize(simpleName);
             }
             simpleName += MODEL + "(this, '" + name + "'"
                     + getConstrainsArguments(property) + ")";
         }
-        return "new " + simpleName + ")";
+        return "new " + simpleName;
     }
 
     private String getConstrainsArguments(CodegenProperty property) {

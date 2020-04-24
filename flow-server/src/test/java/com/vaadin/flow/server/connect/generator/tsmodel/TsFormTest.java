@@ -91,5 +91,6 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertTrue(content.matches("(?s).*import \\{ObjectModel.+\\} from '@vaadin/flow-frontend/Binder'.*"));
         assertTrue(content.matches("(?s).*export default class MyEntityModel<T extends MyEntity> extends MyEntityIdModel<T> \\{.*"));
         assertTrue(content.matches("(?s).*public readonly bar = new MyBazModel\\(this, 'bar'.*"));
+        assertTrue(content.matches("(?s).*public readonly futureOrPresent = new AnyModel.*"));
     }
 }
