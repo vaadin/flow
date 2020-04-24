@@ -107,7 +107,7 @@ public class OpenApiObjectGenerator {
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
 
-    public static final String EXT_VALID = "x-annotations";
+    public static final String CONSTRAINT_ANNOTATIONS = "x-annotations";
 
     private List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
@@ -470,7 +470,7 @@ public class OpenApiObjectGenerator {
                 .map(a -> a.toString().substring(1))
                 .collect(Collectors.toList());
         if (!annotations.isEmpty()) {
-            schema.addExtension(EXT_VALID, annotations);
+            schema.addExtension(CONSTRAINT_ANNOTATIONS, annotations);
         }
     }
 

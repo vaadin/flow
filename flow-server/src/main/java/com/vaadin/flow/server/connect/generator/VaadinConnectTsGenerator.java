@@ -982,17 +982,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private Helper<String> getClassNameFromImportsHelper() {
-        return (className, options) -> {
-            return getSimpleNameFromImports(className,
-                    (List<Map<String, String>>) options.param(0));
-        };
+        return (className, options) -> getSimpleNameFromImports(className,
+                (List<Map<String, String>>) options.param(0));
     }
 
     private Helper<CodegenProperty> getModelConstructorHelper() {
-        return (prop, options) -> {
-            return getModeleConstructor(prop,
-                    (List<Map<String, String>>) options.param(0));
-        };
+        return (prop, options) -> getModeleConstructor(prop,
+                (List<Map<String, String>>) options.param(0));
     }
 
     /**

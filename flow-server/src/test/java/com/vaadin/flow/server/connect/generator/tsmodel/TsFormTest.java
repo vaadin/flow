@@ -26,7 +26,7 @@ import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntityI
 
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator.EXT_VALID;
+import static com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -50,17 +50,17 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 .getObject(modelName).getArray("allOf").getObject(1)
                 .getObject("properties");
 
-        assertFalse(props.getObject("foo").hasKey(EXT_VALID));
+        assertFalse(props.getObject("foo").hasKey(CONSTRAINT_ANNOTATIONS));
         assertEquals("AssertFalse", props.getObject("assertFalse")
-                .getArray(EXT_VALID).getString(0));
+                .getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("AssertTrue",
-                props.getObject("assertTrue").getArray(EXT_VALID).getString(0));
+                props.getObject("assertTrue").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("Digits(integer = 5, fraction = 2)",
-                props.getObject("digits").getArray(EXT_VALID).getString(0));
+                props.getObject("digits").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("NotEmpty",
-                props.getObject("notEmpty").getArray(EXT_VALID).getString(0));
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("NotNull",
-                props.getObject("notEmpty").getArray(EXT_VALID).getString(1));
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
 
     }
 
