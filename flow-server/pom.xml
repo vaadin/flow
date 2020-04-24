@@ -135,6 +135,14 @@
             <version>4.5.2</version>
         </dependency>
 
+        <!-- Bean validation implementation-->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.1.4.Final</version>
+        </dependency>
+
+
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.hsqldb</groupId>
@@ -146,14 +154,6 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Bean Validation implementation -->
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>${hibernate.validator.version}</version>
             <scope>test</scope>
         </dependency>
 
