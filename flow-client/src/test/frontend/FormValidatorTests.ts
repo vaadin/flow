@@ -79,7 +79,11 @@ suite("Validator", () => {
   });
 
   test("Min", () => {
-    const validator = new Min(1);
+    let validator = new Min(1);
+    assert.isTrue(validator.validate(1));
+    assert.isTrue(validator.validate(1.1));
+    assert.isFalse(validator.validate(0.9));
+    validator = new Min({message: 'foo', value: 1});
     assert.isTrue(validator.validate(1));
     assert.isTrue(validator.validate(1.1));
     assert.isFalse(validator.validate(0.9));
@@ -143,7 +147,7 @@ suite("Validator", () => {
 
 
   test("Size", () => {
-    const validator = new Size(2, 4);
+    const validator = new Size({min: 2, max: 4});
     assert.isFalse(validator.validate(""));
     assert.isFalse(validator.validate("a"));
     assert.isTrue(validator.validate("aa"));
@@ -151,7 +155,7 @@ suite("Validator", () => {
   });
 
   test("Digits", () => {
-    const validator = new Digits(2, 3);
+    const validator = new Digits({integer:2, fraction:3});
     assert.isTrue(validator.validate("11.111"));
     assert.isFalse(validator.validate("1.1"));
     assert.isFalse(validator.validate("111.1111"));
@@ -178,14 +182,22 @@ suite("Validator", () => {
   // });
 
   test("Pattern", () => {
-    const validator = new Pattern(/^(\+\d+)?([ -]?\d+){4,14}$/);
+    let validator = new Pattern(/^(\+\d+)?([ -]?\d+){4,14}$/);
     assert.isFalse(validator.validate(""));
     assert.isFalse(validator.validate("123"));
     assert.isFalse(validator.validate("abcdefghijk"));
     assert.isTrue(validator.validate("+35 123 456 789"));
     assert.isTrue(validator.validate("123 456 789"));
     assert.isTrue(validator.validate("123-456-789"));
+    validator = new Pattern("\\d+");
+    assert.isTrue(validator.validate("1"));
+    assert.isFalse(validator.validate("a"));
+    validator = new Pattern({regexp: "\\w+\\\\"});
+    assert.isFalse(validator.validate("a"));
+    assert.isTrue(validator.validate("a\\"));
+    validator = new Pattern({regexp: /\w+\\/});
+    assert.isFalse(validator.validate("a"));
+    assert.isTrue(validator.validate('a\\'));
   });
-
 });
 
