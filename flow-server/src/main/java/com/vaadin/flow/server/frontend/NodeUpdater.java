@@ -281,9 +281,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("raw-loader", "4.0.0");
 
         defaults.put("terser", "4.6.7");
-        
+
         defaults.put("lit-element", "2.3.1");
         defaults.put("lit-html", "1.2.1");
+        defaults.put("@types/validator", "10.11.3");
+        defaults.put("validator", "12.0.0");
+
 
         return defaults;
     }

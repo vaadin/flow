@@ -39,7 +39,6 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
 
     @Test
     public void should_addEntityJavaAnnotations_toOpenApi() {
-
         generateOpenApi(null);
 
         JsonObject apiJson = readJsonFile(openApiJsonOutput);
@@ -61,9 +60,7 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("NotNull",
                 props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
-
     }
-
 
     @Test
     public void should_generate_FormModels() {
@@ -89,8 +86,10 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertTrue(content.matches("(?s).*import MyEntityIdModel from './MyEntityIdModel';.*"));
         assertTrue(content.matches("(?s).*import MyEntity from './MyEntity';.*"));
         assertTrue(content.matches("(?s).*import \\{ObjectModel.+\\} from '@vaadin/flow-frontend/Binder'.*"));
+        assertTrue(content.matches("(?s).*import \\{Email.+\\} from '@vaadin/flow-frontend/FormValidator'.*"));
         assertTrue(content.matches("(?s).*export default class MyEntityModel<T extends MyEntity> extends MyEntityIdModel<T> \\{.*"));
         assertTrue(content.matches("(?s).*public readonly bar = new MyBazModel\\(this, 'bar'.*"));
         assertTrue(content.matches("(?s).*public readonly futureOrPresent = new ObjectModel.*"));
+        assertTrue(content.matches("(?s).*public readonly pattern = new StringModel\\(this, 'pattern', new Required\\(\\), new Pattern\\(\\{regexp:\\\"\\\\\\\\d\\+\\\\\\\\.\\.\\+\"\\}\\)\\);.*"));
     }
 }

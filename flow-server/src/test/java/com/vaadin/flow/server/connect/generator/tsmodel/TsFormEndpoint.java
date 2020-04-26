@@ -73,14 +73,14 @@ public class TsFormEndpoint {
         String foo;
         MyBaz bar;
         List<MyBaz> baz;
-        @Email String email;
+        @Email(message = "foo") String email;
         @Null String isNull;
         @NotNull String notNull;
         @NotEmpty @NotNull String notEmpty;
         @NotBlank String notBlank;
         @AssertTrue String assertTrue;
         @AssertFalse String assertFalse;
-        @Min(1) String min;
+        @Min(value = 1, message = "foo") String min;
         @Max(2) String max;
         @DecimalMin("0.01") double decimalMin;
         @DecimalMax("0.01") double decimalMax;
@@ -94,6 +94,6 @@ public class TsFormEndpoint {
         @PastOrPresent LocalTime pastOrPresent;
         @Future LocalDate future;
         @FutureOrPresent LocalTime futureOrPresent;
-        @Pattern(regexp = ".+") String pattern;
+        @Pattern(regexp = "\\d+\\..+") String pattern;
     }
 }
