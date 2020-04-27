@@ -13,7 +13,7 @@ Good quality bug report increases the likelihood to get the bug fixed. Please us
 ### Description of the bug
 <!-- Explain briefly what is broken or what you want to achieve -->
 ### Minimal reproducible example
-<!-- What are the steps to reproduce the issue -->
+<!-- What are the steps to reproduce the issue, example project or a code snippet without dependencies -->
 ### Expected behavior
 <!-- What should happen -->
 ### Actual behavior
