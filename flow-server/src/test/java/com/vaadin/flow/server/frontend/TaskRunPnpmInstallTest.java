@@ -113,13 +113,13 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runPnpmInstall_userVersionOlderThanPinned_installedOverlayVersionIsSpecifiedByPlatform()
+    public void runPnpmInstall_userVersionOlderThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
         // Write package json file
-        final String customOverlayVersion = "3.0.0";
+        final String customOverlayVersion = "3.1.0";
         FileUtils.write(packageJson,
                 "{\"dependencies\": {"
                         + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
@@ -139,12 +139,12 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // versions file
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
-        Assert.assertEquals(PINNED_VERSION,
+        Assert.assertEquals(customOverlayVersion,
                 overlayPackage.getString("version"));
     }
 
     @Test
-    public void runPnpmInstall_userDefinedVersions_versionOnlyUpdatedWhenNewer()
+    public void runPnpmInstall_userDefinedVersions_versionOnlyUpdatedForNotAddedDependencies()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -157,9 +157,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         FileUtils.write(packageJson, String.format(
                 "{\"dependencies\": {" + "\"@vaadin/vaadin-login\": \"%s\","
                         + "\"@vaadin/vaadin-menu-bar\": \"%s\","
-                        + "\"@vaadin/vaadin-notification\": \"%s\","
                         + "\"@vaadin/vaadin-upload\": \"%s\"}" + "}",
-                loginVersion, menuVersion, notificationVersion, uploadVersion),
+                loginVersion, menuVersion, uploadVersion),
                 StandardCharsets.UTF_8);
 
         // Platform defines a pinned version
