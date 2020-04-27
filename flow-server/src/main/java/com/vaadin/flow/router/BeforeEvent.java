@@ -254,11 +254,11 @@ public abstract class BeforeEvent extends EventObject {
      *            forward target location string
      */
     public void forwardTo(String location) {
-        final Optional<Class<? extends Component>> navigationTarget = getSource()
+        final Optional<Class<? extends Component>> target = getSource()
                 .getRegistry().getNavigationTarget(location);
 
-        if (navigationTarget.isPresent()) {
-            forwardTo(navigationTarget.get());
+        if (target.isPresent()) {
+            forwardTo(target.get());
 
         } else {
             // Inform that forward target location is not known.
@@ -345,11 +345,11 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      */
     public void rerouteTo(String route) {
-        final Optional<Class<? extends Component>> navigationTarget = getSource()
+        final Optional<Class<? extends Component>> target = getSource()
                 .getRegistry().getNavigationTarget(route);
 
-        if (navigationTarget.isPresent()) {
-            rerouteTo(navigationTarget.get());
+        if (target.isPresent()) {
+            rerouteTo(target.get());
 
         } else {
             // Inform that reroute target location is not known.
