@@ -114,13 +114,6 @@ interface HasFromString<T> {
   [fromStringSymbol](value: string): T
 }
 
-export function fromString<T>(
-  model: AbstractModel<T> & HasFromString<T>,
-  value: string
-): T {
-  return model[fromStringSymbol](value);
-}
-
 export abstract class PrimitiveModel<T> extends AbstractModel<T>
   implements PrimitiveCompatible<T> {
   valueOf() {
@@ -159,6 +152,7 @@ export class StringModel extends PrimitiveModel<string>
 }
 
 export class ObjectModel<T> extends AbstractModel<T> {
+  [fromStringSymbol] = String;
   get [defaultValueSymbol]() {
     return Object.keys(this).reduce((obj: any, key: string) => {
       obj[key] = ((this as any)[key] as AbstractModel<any>)[defaultValueSymbol];

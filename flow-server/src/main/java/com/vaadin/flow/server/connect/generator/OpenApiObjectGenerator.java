@@ -466,9 +466,22 @@ public class OpenApiObjectGenerator {
 
     private void addFieldAnnotationsToSchema(FieldDeclaration field,
             Schema<?> schema) {
-        List<String> annotations = field.getAnnotations().stream()
-                .map(a -> a.toString().substring(1))
-                .collect(Collectors.toList());
+        List<String> annotations = new ArrayList<>();
+        field.getAnnotations().stream().forEach(annotation -> {
+            String str = annotation.toString()
+                    // remove annotation character
+                    .replaceFirst("@", "")
+                    // wrap arguments with curly
+                    .replaceFirst("\\(", "({").replaceFirst("\\)$", "})")
+                    // change to json syntax
+                    .replace(" = ", ":");
+            // append parenthesis if not already;
+            str += str.contains("(") ? "" : "()";
+            if (str.matches(
+                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
+                annotations.add(str);
+            }
+        });
         if (!annotations.isEmpty()) {
             schema.addExtension(CONSTRAINT_ANNOTATIONS, annotations);
         }
