@@ -262,7 +262,7 @@ public abstract class BeforeEvent extends EventObject {
 
         } else {
             // Inform that forward target location is not known.
-            forwardToUrl = location;
+            forwardToUrl = trimPath(location);
         }
     }
 
@@ -353,7 +353,7 @@ public abstract class BeforeEvent extends EventObject {
 
         } else {
             // Inform that reroute target location is not known.
-            rerouteToUrl = route;
+            rerouteToUrl = trimPath(route);
         }
 
     }
@@ -578,4 +578,21 @@ public abstract class BeforeEvent extends EventObject {
     public UI getUI() {
         return ui;
     }
+
+    private static String trimPath(String path) {
+        if (path == null) {
+            return "";
+        }
+
+        path = path.trim();
+
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
 }
