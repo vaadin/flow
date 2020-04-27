@@ -53,7 +53,6 @@ public class PwaConfiguration implements Serializable {
     private final String startPath;
     private final boolean enabled;
     private final List<String> offlineResources;
-    private final boolean enableInstallPrompt;
 
     protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
         rootUrl = hasContextPath(servletContext)
@@ -73,7 +72,6 @@ public class PwaConfiguration implements Serializable {
             startPath = pwa.startPath().replaceAll("^/+", "");
             enabled = true;
             offlineResources = Arrays.asList(pwa.offlineResources());
-            enableInstallPrompt = pwa.enableInstallPrompt();
         } else {
             appName = DEFAULT_NAME;
             shortName = "Flow PWA";
@@ -87,7 +85,6 @@ public class PwaConfiguration implements Serializable {
             startPath = "";
             enabled = false;
             offlineResources = Collections.emptyList();
-            enableInstallPrompt = false;
         }
     }
 
@@ -276,16 +273,5 @@ public class PwaConfiguration implements Serializable {
      */
     public boolean isEnabled() {
         return enabled;
-    }
-
-    /**
-     * Is install prompt resources injection enabled.
-     * <p>
-     * If enabled, server will inject required html and js to bootstrap page.
-     *
-     * @return is install prompt resources injection enabled
-     */
-    public boolean isInstallPromptEnabled() {
-        return enableInstallPrompt;
     }
 }
