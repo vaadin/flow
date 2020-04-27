@@ -76,7 +76,7 @@ function createInitResponse(appId: string, changes = '[]', pushScript?: string):
           "debug" : true,
           "v-uiId" : 0,
           "serviceUrl" : "//localhost:8080/flow/",
-          "webComponentMode" : false,
+          "clientRouting" : false,
           "productionMode": false,
           "appId": "${appId}",
           "uidl": {
@@ -166,7 +166,7 @@ suite("Flow", () => {
         assert.isDefined(flow.response.appConfig);
 
         // Check that serverside routing is enabled
-        assert.isFalse(flow.response.appConfig.webComponentMode);
+        assert.isFalse(flow.response.appConfig.clientRouting);
 
         // Check that bootstrap was initialized
         assert.isDefined($wnd.Vaadin.Flow.initApplication);
@@ -196,7 +196,7 @@ suite("Flow", () => {
         assert.isDefined(flow.response.appConfig);
 
         // Check that serverside routing is enabled
-        assert.isFalse(flow.response.appConfig.webComponentMode);
+        assert.isFalse(flow.response.appConfig.clientRouting);
 
         // Check that bootstrap was initialized
         assert.isDefined($wnd.Vaadin.Flow.initApplication);
@@ -232,7 +232,7 @@ suite("Flow", () => {
         assert.isDefined(flow.response.appConfig);
 
         // Check that serverside routing is enabled
-        assert.isFalse(flow.response.appConfig.webComponentMode);
+        assert.isFalse(flow.response.appConfig.clientRouting);
 
         // Check that bootstrap was initialized
         assert.isDefined($wnd.Vaadin.Flow.initApplication);
