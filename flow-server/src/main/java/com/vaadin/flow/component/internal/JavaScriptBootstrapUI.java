@@ -229,7 +229,7 @@ public class JavaScriptBootstrapUI extends UI {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
 
-        NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
+        NavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
 
         clientNavigationStateRenderer.handle(navigationEvent);

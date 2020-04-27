@@ -49,8 +49,9 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
-    private boolean isUnknownRoute = false;
+
     private String forwardToUrl = null;
+    private String rerouteToUrl = null;
 
     /**
      * Construct event from a NavigationEvent.
@@ -105,21 +106,41 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Check if the forward target is client-side route.
+     * Gets if forward route is unknown. This is true only when a forward
+     * route is not found using {@link #forwardTo(String)} method.
      *
-     * @return forward target is client-side route
+     * @return forward route is not found in the route registry.
      */
-    public boolean isUnknownRoute() {
-        return isUnknownRoute;
+    public boolean hasUnknownForward() {
+        return forwardToUrl != null;
     }
 
     /**
-     * Gets the new forward url.
+     * Gets if reroute route is unknown. This is true only when a reroute
+     * route is not found using {@link #rerouteTo(String)} method.
      *
-     * @return the new forward url
+     * @return reroute is not found in the route registry.
      */
-    public String getForwardToUrl() {
+    public boolean hasUnknownReroute() {
+        return rerouteToUrl != null;
+    }
+
+    /**
+     * Gets the unknown forward.
+     *
+     * @return the unknown forward.
+     */
+    public String getUnknownForward() {
         return forwardToUrl;
+    }
+
+    /**
+     * Gets the unknown reroute.
+     * 
+     * @return the unknown reroute.
+     */
+    public String getUnknownReroute() {
+        return rerouteToUrl;
     }
 
     /**
@@ -233,11 +254,14 @@ public abstract class BeforeEvent extends EventObject {
      *            forward target location string
      */
     public void forwardTo(String location) {
-        if(getSource().getRegistry().getNavigationTarget(location).isPresent()) {
-            getSource().getRegistry().getNavigationTarget(location).ifPresent(this::forwardTo);
+        final Optional<Class<? extends Component>> navigationTarget = getSource()
+                .getRegistry().getNavigationTarget(location);
+
+        if (navigationTarget.isPresent()) {
+            forwardTo(navigationTarget.get());
+
         } else {
-            // inform that forward target location is client-side view
-            isUnknownRoute = true;
+            // Inform that forward target location is not known.
             forwardToUrl = location;
         }
     }
@@ -321,8 +345,17 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      */
     public void rerouteTo(String route) {
-        getSource().getRegistry().getNavigationTarget(route)
-                .ifPresent(this::rerouteTo);
+        final Optional<Class<? extends Component>> navigationTarget = getSource()
+                .getRegistry().getNavigationTarget(route);
+
+        if (navigationTarget.isPresent()) {
+            rerouteTo(navigationTarget.get());
+
+        } else {
+            // Inform that reroute target location is not known.
+            rerouteToUrl = route;
+        }
+
     }
 
     /**
