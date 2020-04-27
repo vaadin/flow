@@ -81,15 +81,15 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertTrue(entityFile.exists());
         assertTrue(formModelFile.exists());
 
-        String content = readFile(formModelFile.toPath());//.replace("\n", "");
+        String content = readFile(formModelFile.toPath());
         assertTrue(content.matches("(?s).*import MyBazModel from './MyBazModel';.*"));
         assertTrue(content.matches("(?s).*import MyEntityIdModel from './MyEntityIdModel';.*"));
         assertTrue(content.matches("(?s).*import MyEntity from './MyEntity';.*"));
-        assertTrue(content.matches("(?s).*import \\{ObjectModel.+\\} from '@vaadin/flow-frontend/Binder'.*"));
         assertTrue(content.matches("(?s).*import \\{Email.+\\} from '@vaadin/flow-frontend/FormValidator'.*"));
         assertTrue(content.matches("(?s).*export default class MyEntityModel<T extends MyEntity> extends MyEntityIdModel<T> \\{.*"));
         assertTrue(content.matches("(?s).*public readonly bar = new MyBazModel\\(this, 'bar'.*"));
         assertTrue(content.matches("(?s).*public readonly futureOrPresent = new ObjectModel.*"));
         assertTrue(content.matches("(?s).*public readonly pattern = new StringModel\\(this, 'pattern', new Required\\(\\), new Pattern\\(\\{regexp:\\\"\\\\\\\\d\\+\\\\\\\\.\\.\\+\"\\}\\)\\);.*"));
+        assertTrue(content.matches("(?s).*public readonly baz = new ArrayModel<MyBaz, MyBazModel<MyBaz>>\\(this, 'baz', MyBazModel\\);.*"));
     }
 }
