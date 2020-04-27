@@ -8,8 +8,7 @@ NOTE: Issues concerning certain component should go to the corresponding compone
 
 For feature requests, always include your use case - what are you trying to achieve and why.
 
-Please use the following template to report BUGS:
-In case you don't use the template, we might not start working on the issue.
+Good quality bug report increases the likelihood to get the bug fixed. Please use the following template to report bugs.```
 -->
 ### Description of the bug
 <!-- Explain briefly what is broken or what you want to achieve -->
