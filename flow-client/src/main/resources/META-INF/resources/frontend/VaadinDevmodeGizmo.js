@@ -7,10 +7,10 @@ class VaadinDevmodeGizmo extends LitElement {
        :host {
           --gizmo-border-radius: 1rem;
           
-          --gizmo-active-color: hsl(145, 80%, 42%);
-          --gizmo-inactive-color: hsl(0, 0%, 50%);
-          --gizmo-unavailable-color: hsl(36, 100%, 61%);
-          --gizmo-error-color: hsl(3, 100%, 61%);
+          --gizmo-green-color: hsl(145, 80%, 42%);
+          --gizmo-grey-color: hsl(0, 0%, 50%);
+          --gizmo-yellow-color: hsl(36, 100%, 61%);
+          --gizmo-red-color: hsl(3, 100%, 61%);
           direction: ltr;
        }
 
@@ -62,7 +62,7 @@ class VaadinDevmodeGizmo extends LitElement {
           height: 0.75rem;
           border-radius: 50%;
           z-index: 20001;
-          background-color: var(--gizmo-active-color);
+          background-color: var(--gizmo-green-color);
           transform: translate(-14px, 7px) scale(.5);
           transition: 400ms;
       }
@@ -123,7 +123,7 @@ class VaadinDevmodeGizmo extends LitElement {
       }
 
       .switch input:checked + .slider {
-        background-color: var(--gizmo-active-color);
+        background-color: var(--gizmo-green-color);
       }
 
       .switch input:checked + .slider:before {
@@ -181,7 +181,6 @@ class VaadinDevmodeGizmo extends LitElement {
       
       a {
           font-weight: 600;
-          color: #E80;
       }
 
       .live-reload-text {
@@ -203,6 +202,86 @@ class VaadinDevmodeGizmo extends LitElement {
           opacity: 1;
       }
       
+      .message.warning {
+          --gizmo-notification-color: var(--gizmo-yellow-color);
+      }
+      
+      .message.error {
+          --gizmo-notification-color: var(--gizmo-red-color);
+      }
+      
+      .message .message-content {
+          display: flex;
+          align-items: center;
+      }
+      
+      .message .message-content:before {
+          display: inline-block;
+          color: #000;
+          text-align: center;
+          font-size: 0.875em;
+          font-weight: 600;
+          line-height: 1.25em;
+          width: 1.25em;
+          height: 1.25em;
+          border-radius: 50%;
+          margin-right: .5rem;
+      }
+
+      .message.information .message-content:before {
+          content: "i";
+          color: var(--gizmo-grey-color);
+          box-shadow: inset 0 0 0 1px var(--gizmo-grey-color);
+      }
+            
+      .message.warning .message-content:before {
+          content: "!";
+          background-color: var(--gizmo-notification-color);
+      }
+      
+      .message.error .message-content:before {
+          content: "!";
+          background-color: var(--gizmo-notification-color);
+      }
+      
+      .message .message-details {
+          font-size: .875em;
+          min-width: 200px;
+          padding-bottom: 4px;
+          padding-left: 1.625rem;
+      }
+      
+      .message .message-actions {
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-end;
+          font-size: 1em;
+      }
+      
+      .message .message-actions > *:not(:first-child) {
+          margin-left: .5rem;
+      }
+      
+      .message .message-actions a,
+      .message .message-actions .ahreflike {
+          color: var(--gizmo-notification-color, rgba(255,255,255,.9));
+          text-decoration: none;
+      }
+      
+      .message .message-actions a:hover,
+      .message .message-actions .ahreflike:hover {
+          color: var(--gizmo-notification-color, rgba(255,255,255,1));
+          text-decoration: none;
+      }
+      
+      .message .message-actions .dismiss-message {
+          color: rgba(255,255,255,.6);
+      }
+      
+      .message .message-actions .dismiss-message:hover {
+          color: var(--gizmo-red-color);
+      }
+      
       .notification-tray {
           display: flex;
           flex-direction: column-reverse;
@@ -219,7 +298,7 @@ class VaadinDevmodeGizmo extends LitElement {
       
       .notification-tray .message {
           background-color: rgba(50,50,50);
-          color: rgba(255,255,255,.8);
+          color: rgba(255,255,255,.9);
           width: auto;
           max-width: 400px;
           border-top-left-radius: var(--gizmo-border-radius);
@@ -229,15 +308,27 @@ class VaadinDevmodeGizmo extends LitElement {
           padding-left: .75rem;
           padding-right: .75rem;
           margin-top: .5rem;
+          transition: 400ms;
+          transform-origin: bottom right;
+          animation: slideIn 400ms;
       }
       
-      .notification-tray .message-details {
-          font-size: 85%;
+      .notification-tray .message.animate-out {
+        animation: slideOut forwards 400ms;
+      }
+      
+      .notification-tray .message .message-details {
+          min-width: 200px;
           padding-bottom: 4px;
       }
       
       .message-tray .message {
-          padding: .25rem .5rem;
+          padding: .25em .75em;
+          animation: appendList 400ms ease-in;
+      }
+      
+      .message-tray .message .message-details {
+          font-size: 1em;
       }
 
       .message-tray .message:not(:last-of-type) {
@@ -247,16 +338,41 @@ class VaadinDevmodeGizmo extends LitElement {
       .message-tray .dismiss-message {
           display: none;
       }
-
-      .information:before {
-          content: "ⓘ";
-          margin-right: .5rem;
+      
+      @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0%);
+            opacity: 1;
+          }
       }
-            
-      .warning:before {
-          content: "⚠";
-          color: #E80;
-          margin-right: .5rem;
+      
+      @keyframes slideOut {
+          from {
+            transform: translateX(0%);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+      }
+      
+      @keyframes appendList {
+          0% {
+            font-size: 0;
+            opacity: 0;
+          }
+          50% {
+            font-size: 1em;
+            opacity: 0;
+          }
+          100% {
+            opacity: 1;
+          }
       }
 
     `;
@@ -370,6 +486,7 @@ class VaadinDevmodeGizmo extends LitElement {
     this.expanded = false;
     this.status = VaadinDevmodeGizmo.UNAVAILABLE;
     this.connection = null;
+    this.nextMessageId = 1;
   }
 
   openWebSocketConnection() {
@@ -495,7 +612,7 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   toggleExpanded() {
-    this.notifications.slice().forEach(notification => this.demoteNotification(notification.id));
+    this.notifications.slice().forEach(notification => this.dismissNotification(notification.id));
     this.expanded = !this.expanded;
   }
 
@@ -517,7 +634,7 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   showMessage(type, msg, details = null, link = null) {
-    const id = this.messages.length;
+    const id = this.nextMessageId++;
     this.messages.push({
       id: id,
       type: type,
@@ -530,7 +647,7 @@ class VaadinDevmodeGizmo extends LitElement {
 
   showNotification(type, msg, details = null, link = null, persistentId = null) {
     if (persistentId === null || !VaadinDevmodeGizmo.notificationDismissed(persistentId)) {
-      const id = this.notifications.length;
+      const id = this.nextMessageId++;
       this.notifications.push({
         id: id,
         type: type,
@@ -542,7 +659,7 @@ class VaadinDevmodeGizmo extends LitElement {
       // automatically move notification to message tray after a certain amount of time unless it contains a link
       if (link === null) {
         setTimeout(() => {
-          this.demoteNotification(id);
+          this.dismissNotification(id);
         }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
       }
       this.requestUpdate();
@@ -551,9 +668,9 @@ class VaadinDevmodeGizmo extends LitElement {
     }
   }
 
-  demoteNotification(id, persistently = false) {
+  dismissNotification(id, persistently = false) {
     const index = this.notifications.findIndex(notification => notification.id === id);
-    if (index !== -1) {
+    if (index !== -1 && !this.notifications[index].deleted) {
       const notification = this.notifications[index];
 
       // user is explicitly dismissing a notification---after that we won't bug them with it
@@ -567,9 +684,17 @@ class VaadinDevmodeGizmo extends LitElement {
         window.localStorage.setItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE, dismissed);
       }
 
-      this.notifications.splice(index, 1);
+      notification.deleted = true;
       this.showMessage(notification.type, notification.message, notification.details, notification.link);
-      this.requestUpdate();
+
+      // give some time for the animation
+      setTimeout(() => {
+        const index = this.notifications.findIndex(notification => notification.id === id);
+        if (index != -1) {
+          this.notifications.splice(index, 1);
+          this.requestUpdate();
+        }
+      }, 400);
     }
   }
 
@@ -585,13 +710,13 @@ class VaadinDevmodeGizmo extends LitElement {
 
   getStatusColor() {
     if (this.status === VaadinDevmodeGizmo.ACTIVE) {
-      return 'var(--gizmo-active-color)';
+      return 'var(--gizmo-green-color)';
     } else if (this.status === VaadinDevmodeGizmo.INACTIVE) {
-      return 'var(--gizmo-inactive-color)';
+      return 'var(--gizmo-grey-color)';
     } else if (this.status === VaadinDevmodeGizmo.UNAVAILABLE) {
-      return 'var(--gizmo-unavailable-color)';
+      return 'var(--gizmo-yellow-color)';
     } else if (this.status === VaadinDevmodeGizmo.ERROR) {
-      return 'var(--gizmo-error-color)';
+      return 'var(--gizmo-red-color)';
     } else {
       return 'none';
     }
@@ -599,13 +724,13 @@ class VaadinDevmodeGizmo extends LitElement {
 
   renderMessage(messageObject) {
     return html`
-      <div class="message" @click=${e => this.demoteNotification(messageObject.id)}>
-        <div class="${messageObject.type}">${messageObject.message}</div>
+      <div class="message ${messageObject.type} ${messageObject.deleted ? 'animate-out' : ''}" @click=${e => this.dismissNotification(messageObject.id)}>
+        <div class="message-content">${messageObject.message}</div>
         ${messageObject.details ? html`<div class="message-details">${messageObject.details}</div>` : ''}
-        <span>
+        <div class="message-actions">
             ${messageObject.link ? html`<a href="${messageObject.link}" target="_blank">Read more</a>` : ''}
-            ${messageObject.details ? html`<span class="ahreflike dismiss-message" @click=${e => this.demoteNotification(messageObject.id, true)}>Dismiss</span>` : ''}
-        </span>
+            ${messageObject.persistentId ? html`<span class="ahreflike dismiss-message" @click=${e => this.dismissNotification(messageObject.id, true)}>Don't show again</span>` : ''}
+        </div>
       </div>
       `;
   }
@@ -620,7 +745,7 @@ class VaadinDevmodeGizmo extends LitElement {
                 <input id="toggle" type="checkbox"
                     ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
                     ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
-                @change=${e => this.setActive(e.target.checked)}/>
+                    @change=${e => this.setActive(e.target.checked)}/>
                 <span class="slider"></span>
              </label>
              <span class="live-reload-text">Live-reload</span>
