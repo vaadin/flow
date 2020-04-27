@@ -71,9 +71,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractNavigationStateRenderer
         implements NavigationHandler {
-    private enum TransitionOutcome {
-        FORWARDED, FINISHED, REROUTED, POSTPONED
-    }
 
     private static List<Integer> statusCodes = ReflectTools
             .getConstantIntValues(HttpServletResponse.class);
@@ -282,21 +279,6 @@ public abstract class AbstractNavigationStateRenderer
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> routeTargetType, Router router);
-
-    private Optional<Integer> handleTransactionOutcome(
-            TransitionOutcome transitionOutcome, NavigationEvent event,
-            BeforeEvent beforeNavigation) {
-
-        if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
-            return Optional.of(forward(event, beforeNavigation));
-        }
-
-        if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
-            return Optional.of(reroute(event, beforeNavigation));
-        }
-
-        return Optional.empty();
-    }
 
     // The last element in the returned list is always a Component class
     private List<Class<? extends HasElement>> createTypesChain(
@@ -595,25 +577,6 @@ public abstract class AbstractNavigationStateRenderer
         return false;
     }
 
-    private Optional<TransitionOutcome> getTransitionOutcome(
-            BeforeEvent beforeEvent) {
-        if ((beforeEvent.hasForwardTarget()
-                && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                beforeEvent.getForwardTargetParameters()))
-                || beforeEvent.hasUnknownForward()) {
-            return Optional.of(TransitionOutcome.FORWARDED);
-        }
-
-        if ((beforeEvent.hasRerouteTarget()
-                && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetParameters()))
-                || beforeEvent.hasUnknownReroute()) {
-            return Optional.of(TransitionOutcome.REROUTED);
-        }
-
-        return Optional.empty();
-    }
-
     /**
      * Handle a {@link BeforeEvent} after if has been triggered to an observer.
      * 
@@ -626,6 +589,7 @@ public abstract class AbstractNavigationStateRenderer
      *         {@link Optional} is empty, the process will proceed with next
      *         observer or just move forward, otherwise the process will return
      *         immediately with the provided http code.
+     * @see HttpServletResponse
      */
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
