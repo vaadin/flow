@@ -242,10 +242,6 @@ public abstract class AbstractNavigationStateRenderer
         return statusCode;
     }
 
-    private String removeFirstSlash(String route) {
-        return route.replaceFirst("^/+", "");
-    }
-
     /**
      * Notify the navigation target about the status of the navigation.
      *
@@ -881,10 +877,5 @@ public abstract class AbstractNavigationStateRenderer
             ui.getPage().executeJs(
                     "Vaadin.Flow.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory
-                .getLogger(AbstractNavigationStateRenderer.class.getName());
     }
 }
