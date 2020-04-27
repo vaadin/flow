@@ -48,6 +48,10 @@ import java.lang.annotation.Target;
  * {@literal manifest.webmanifest}. Same applies for service worker and generated
  * icons.
  *
+ * PWA Install Prompt feature will be removed in future versions since this feature
+ * was only supported by Chromium-based browsers, in favour of a more uniform
+ * implementation and experience for all browsers.
+ * 
  * @since 1.2
  *
  * @see <a href=
