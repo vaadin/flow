@@ -83,7 +83,7 @@ public class TsFormEndpoint {
         @Min(value = 1, message = "foo") String min;
         @Max(2) String max;
         @DecimalMin("0.01") double decimalMin;
-        @DecimalMax("0.01") double decimalMax;
+        @DecimalMax(value = "0.01", inclusive = false) double decimalMax;
         @Negative int negative;
         @NegativeOrZero int negativeOrCero;
         @Positive int positive;

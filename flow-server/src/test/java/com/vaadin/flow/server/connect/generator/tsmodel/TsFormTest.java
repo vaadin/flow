@@ -91,5 +91,6 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertTrue(content.matches("(?s).*public readonly futureOrPresent = new ObjectModel.*"));
         assertTrue(content.matches("(?s).*public readonly pattern = new StringModel\\(this, 'pattern', new Required\\(\\), new Pattern\\(\\{regexp:\\\"\\\\\\\\d\\+\\\\\\\\.\\.\\+\"\\}\\)\\);.*"));
         assertTrue(content.matches("(?s).*public readonly baz = new ArrayModel<MyBaz, MyBazModel<MyBaz>>\\(this, 'baz', MyBazModel\\);.*"));
+        assertTrue(content.matches("(?s).*public readonly decimalMax = new NumberModel\\(this, 'decimalMax', new Required\\(\\), new DecimalMax\\(\\{value:\"0.01\", inclusive:false\\}\\)\\);.*"));
     }
 }

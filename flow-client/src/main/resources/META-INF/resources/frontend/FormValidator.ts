@@ -4,10 +4,11 @@ import * as validator from 'validator';
 import {ValidationCallback, Validator} from './Binder';
 
 interface FormOptions {message?: string};
-type ValueNumberOptions = FormOptions & {value: number};
+type ValueNumberOptions = FormOptions & {value: number | string};
 type DigitOptions = FormOptions & {integer: number, fraction: number};
 type SizeOptions = FormOptions & {min?: number, max?: number};
 type PatternOptions = FormOptions & {regexp: RegExp | string};
+type DecimalOptions = ValueNumberOptions & {inclusive: boolean | undefined};
 
 abstract class AbstractValidator<T> implements Validator<T> {
   message = 'invalid';
@@ -20,9 +21,10 @@ abstract class AbstractValidator<T> implements Validator<T> {
 }
 abstract class ValueNumberValidator<T> extends AbstractValidator<T> {
   value: number;
-  constructor(opts: ValueNumberOptions | number) {
-    super(typeof opts === 'number' ? {} : opts);
-    this.value = typeof opts === 'number' ? opts : opts.value;
+  constructor(opts: ValueNumberOptions | number | string) {
+    super(typeof opts === 'number' || typeof opts === 'string' ? {} : opts);
+    const val = typeof opts === 'object' ? opts.value : opts;
+    this.value = typeof val === 'string' ? parseFloat(val) : val;
   }
 }
 
@@ -55,10 +57,15 @@ export class Max extends ValueNumberValidator<any> {
   validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), {max: this.value})
 }
 export class DecimalMin extends ValueNumberValidator<any> {
-  validate = (value: any) => validator.isDecimal(`${value}`, {decimal_digits: `${this.value},`, force_decimal: true});
+  inclusive: boolean;
+  constructor(opts: DecimalOptions | string | number) {
+    super(opts);
+    this.inclusive = typeof opts !== 'object' || opts.inclusive !== false;
+  }
+  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), {[this.inclusive ? 'min' : 'gt']: this.value});
 }
-export class DecimalMax extends ValueNumberValidator<any> {
-  validate = (value: any) => validator.isDecimal(`${value}`, {decimal_digits: `0,${this.value}`});
+export class DecimalMax extends DecimalMin {
+  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), {[this.inclusive ? 'max' : 'lt']: this.value})
 }
 export class Negative extends AbstractValidator<any> {
   validate = (value: any) => validator.toFloat(`${value}`) < 0;
@@ -83,7 +90,6 @@ export class Size extends AbstractValidator<string> {
 }
 
 export class Digits extends AbstractValidator<string> {
-  message = 'invalid';
   value: DigitOptions;
   constructor(opts: FormOptions & DigitOptions) {
     super(opts);
@@ -91,7 +97,7 @@ export class Digits extends AbstractValidator<string> {
   }
   validate = (value: any) =>
       String(validator.toFloat(`${value}`)).replace(/(.*)\.\d+/, "$1").length === this.value.integer
-      && new DecimalMax({value: this.value.fraction}).validate(value);
+      && validator.isDecimal(`${value}`, {decimal_digits: `0,${this.value.fraction}`})
 }
 
 export class Past extends AbstractValidator<any> {

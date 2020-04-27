@@ -97,19 +97,22 @@ suite("Validator", () => {
   });
 
   test("DecimalMin", () => {
-    const validator = new DecimalMin(2);
+    let validator = new DecimalMin("30.1");
     assert.isFalse(validator.validate(1));
-    assert.isFalse(validator.validate(1.1));
-    assert.isTrue(validator.validate(1.11));
-    assert.isTrue(validator.validate(1.111));
+    assert.isTrue(validator.validate(30.1));
+    assert.isTrue(validator.validate(30.2));
+    assert.isTrue(validator.validate("30.2"));
+    validator = new DecimalMin({value: "30.1", inclusive: false});
+    assert.isFalse(validator.validate(30.1));
   });
 
   test("DecimalMax", () => {
-    const validator = new DecimalMax(2);
-    assert.isTrue(validator.validate(1));
-    assert.isTrue(validator.validate(1.1));
-    assert.isTrue(validator.validate(1.11));
-    assert.isFalse(validator.validate(1.111));
+    let validator = new DecimalMax("30.1");
+    assert.isTrue(validator.validate(30));
+    assert.isTrue(validator.validate(30.1));
+    assert.isFalse(validator.validate(30.2));
+    validator = new DecimalMin({value: "30.1", inclusive: false});
+    assert.isFalse(validator.validate(30.1));
   });
 
   test("Negative", () => {

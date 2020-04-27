@@ -478,9 +478,8 @@ public class OpenApiObjectGenerator {
             // append parenthesis if not already;
             str += str.contains("(") ? "" : "()";
             if (str.matches(
-                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern)\\(.+")) {
+                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
                 annotations.add(str);
-            } else if (str.matches("(DecimalMin|DecimalMax)\\(.+")) {
             }
         });
         if (!annotations.isEmpty()) {
