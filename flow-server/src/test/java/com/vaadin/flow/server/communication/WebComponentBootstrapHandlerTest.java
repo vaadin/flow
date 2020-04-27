@@ -117,9 +117,9 @@ public class WebComponentBootstrapHandlerTest {
         Mockito.when(registry.getHeaderIcons())
                 .thenReturn(Collections.singletonList(icon));
 
-        Mockito.when(conf.isInstallPromptEnabled()).thenReturn(true);
+        // Mockito.when(conf.isInstallPromptEnabled()).thenReturn(true);
 
-        Mockito.when(registry.getInstallPrompt()).thenReturn("baz");
+        // Mockito.when(registry.getInstallPrompt()).thenReturn("baz");
 
         VaadinServletService service = new MockVaadinServletService() {
             @Override
