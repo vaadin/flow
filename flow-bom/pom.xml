@@ -60,7 +60,7 @@
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-jrebel-plugin</artifactId>
+                <artifactId>flow-jrebel-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
