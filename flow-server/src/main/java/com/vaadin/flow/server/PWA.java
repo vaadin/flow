@@ -172,7 +172,10 @@ public @interface PWA {
      * required from Chrome 68 upwards.
      *
      * @return are pwa -install prompt resources injected.
+     *
+     * @deprecated Feature being phased out and removed in Flow 3.2.
      */
+    @Deprecated
     boolean enableInstallPrompt() default true;
 
 }
