@@ -498,8 +498,16 @@ class VaadinDevmodeGizmo extends LitElement {
     // try Spring Boot Devtools first, if port is set
     if (this.liveReloadBackend === VaadinDevmodeGizmo.SPRING_BOOT_DEVTOOLS && this.springBootDevToolsPort) {
       const self = this;
-      self.connection = new WebSocket(
-        'ws://' + hostname + ':' + this.springBootDevToolsPort);
+      const wsProtocol = window.location.protocol == 'https:' ? 'wss' : 'ws';
+      if (hostname.endsWith('gitpod.io')) {
+        // Gitpod uses `port-url` instead of `url:port`
+        const hostnameWithoutPort = hostname.replace(/.*?-/, '');
+        self.connection = new WebSocket(
+            wsProtocol + '://' + this.springBootDevToolsPort + '-' + hostnameWithoutPort);
+      } else {
+        self.connection = new WebSocket(
+            wsProtocol + '://' + hostname + ':' + this.springBootDevToolsPort);
+      }
     } else if (this.liveReloadBackend) {
       this.openDedicatedWebSocketConnection();
     } else {
