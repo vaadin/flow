@@ -258,6 +258,7 @@
     <modules>
         <module>test-resources</module>
         <module>test-common</module>
+        <module>test-mixed/pom-pnpm-production.xml</module>
     </modules>
 
     <profiles>
@@ -292,7 +293,6 @@
                 <!-- tests running in both modes -->
                 <module>test-misc</module>
 
-                <module>test-mixed/pom-pnpm-production.xml</module>
                 <module>test-mixed/pom-npm-production.xml</module>
                 <module>test-npm-only-features</module>
                 <module>test-multi-war</module>
