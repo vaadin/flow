@@ -348,17 +348,18 @@ public class JavaScriptBootstrapUI extends UI {
             }
             navigationInProgress = false;
 
-            // if hasForwardTo, url should be a new one, if has postpone, url should not update
-            String url = urlPathShouldBeDisplayed(isUnknownRoute(), postpone, location);
-
-            getPage().executeJs(execJs, url);
+            getPage().executeJs(execJs, routeToBeDisplayed(postpone, location));
         }
     }
 
-    private String urlPathShouldBeDisplayed(boolean hasForwardTo, boolean postpone, Location location) {
-        return hasForwardTo || postpone
-                ? getInternals().getActiveViewLocation().getPathWithQueryParameters()
-                : location.getPathWithQueryParameters();
+    private String routeToBeDisplayed(boolean postpone, Location location) {
+        // if has forwardToUrl, url should be a new one, if has postpone, url
+        // should not update
+        return isUnknownRoute() ? getForwardToUrl()
+                : postpone
+                        ? getInternals().getActiveViewLocation()
+                                .getPathWithQueryParameters()
+                        : location.getPathWithQueryParameters();
     }
 
     private boolean isUnknownRoute() {
