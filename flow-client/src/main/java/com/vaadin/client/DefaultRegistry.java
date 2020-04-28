@@ -112,10 +112,12 @@ public class DefaultRegistry extends Registry {
         set(PushConfiguration.class, new PushConfiguration(this));
         set(ReconnectDialogConfiguration.class,
                 new ReconnectDialogConfiguration(this));
-        if (applicationConfiguration.isWebComponentMode()) {
-            set(ScrollPositionHandler.class, new WebComponentScrollHandler());
-        } else {
-            set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
+        if (!applicationConfiguration.isClientRouting()) {
+            if (applicationConfiguration.isWebComponentMode()) {
+                set(ScrollPositionHandler.class, new WebComponentScrollHandler());
+            } else {
+                set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
+            }
         }
         set(Poller.class, new Poller(this));
     }

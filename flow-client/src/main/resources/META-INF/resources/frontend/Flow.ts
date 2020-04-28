@@ -8,7 +8,7 @@ interface AppConfig {
   productionMode: boolean;
   appId: string;
   uidl: object;
-  webComponentMode: boolean;
+  clientRouting: boolean;
 }
 
 interface AppInitResponse {
@@ -184,7 +184,7 @@ export class Flow {
       this.response = await this.flowInitUi(serverSideRouting);
 
       // Enable or disable server side routing
-      this.response.appConfig.webComponentMode = !serverSideRouting;
+      this.response.appConfig.clientRouting = !serverSideRouting;
 
       const {pushScript, appConfig} = this.response;
 
