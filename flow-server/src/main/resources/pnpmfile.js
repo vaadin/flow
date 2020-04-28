@@ -27,9 +27,9 @@ function readPackage(pkg) {
   const {dependencies} = pkg;
 
   if (dependencies) {
-    for (let key in versions) {
-      if (!dependencies[key]) {
-        pkg.dependencies[key] = versions[key];
+    for (let k in versions) {
+      if (dependencies[k] && dependencies[k] !== versions[k]) {
+        pkg.dependencies[k] = versions[k];
       }
     }
   }

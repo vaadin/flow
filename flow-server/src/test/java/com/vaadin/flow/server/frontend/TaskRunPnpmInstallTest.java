@@ -33,6 +33,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static elemental.json.impl.JsonUtil.stringify;
 
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
@@ -60,14 +61,32 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // Write package json file: dialog doesn't pin its Overlay version which
         // is transitive dependency.
+        // @formatter:off
         FileUtils.write(packageJson,
-                "{\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.2.1\"}}",
+                "{"
+                       + "\"vaadin\": {"
+                         + "\"dependencies\": {"
+                           + "\"@vaadin/vaadin-dialog\": \"2.2.1\""
+                         + "}"
+                       + "},"
+                       + "\"dependencies\": {"
+                         + "\"@vaadin/vaadin-dialog\": \"2.2.1\""
+                       + "}"
+                     + "}",
                 StandardCharsets.UTF_8);
+        // @formatter:on
 
         // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(
-                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
+        // @formatter:off
+        TaskRunNpmInstall task = createTask(String.format(
+                "{"
+                  + "\"vaadin-overlay\": {"
+                    + "\"npmName\": \"@vaadin/vaadin-overlay\","
+                    + "\"jsVersion\": \"%s\""
+                  + "}"
+                + "}", PINNED_VERSION));
+        // @formatter:on
+
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
@@ -89,16 +108,34 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // Write package json file
         final String customOverlayVersion = "3.3.0";
+        // @formatter:off
         FileUtils.write(packageJson,
-                "{\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                        + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\"}"
-                        + "}",
+                "{"
+                        + "\"vaadin\": {"
+                          + "\"dependencies\": {"
+                            + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                            + "\"@vaadin/vaadin-overlay\": \"" + PINNED_VERSION + "\""
+                          + "}"
+                        + "},"
+                        + "\"dependencies\": {"
+                          + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                          + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
+                        + "}"
+                     + "}",
                 StandardCharsets.UTF_8);
+        // @formatter:on
 
         // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(
-                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
+        // @formatter:off
+        TaskRunNpmInstall task = createTask(String.format(
+                "{"
+                  + "\"vaadin-overlay\": {"
+                    + "\"npmName\": \"@vaadin/vaadin-overlay\","
+                    + "\"jsVersion\": \"%s\""
+                  + "}"
+                + "}", PINNED_VERSION));
+        // @formatter:on
+
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
@@ -120,16 +157,34 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // Write package json file
         final String customOverlayVersion = "3.1.0";
+
+        // @formatter:off
         FileUtils.write(packageJson,
-                "{\"dependencies\": {"
+                "{"
+                        + "\"vaadin\": {"
+                        + "\"dependencies\": {"
                         + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                        + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\"}"
+                        + "\"@vaadin/vaadin-overlay\": \"" + PINNED_VERSION + "\""
+                        + "}"
+                        + "},"
+                        + "\"dependencies\": {"
+                        + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                        + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
+                        + "}"
                         + "}",
                 StandardCharsets.UTF_8);
+        // @formatter:on
 
         // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(
-                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
+        // @formatter:off
+        TaskRunNpmInstall task = createTask(String.format(
+                "{"
+                        + "\"vaadin-overlay\": {"
+                        + "\"npmName\": \"@vaadin/vaadin-overlay\","
+                        + "\"jsVersion\": \"%s\""
+                        + "}"
+                        + "}", PINNED_VERSION));
+        // @formatter:on
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
@@ -154,13 +209,28 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String menuVersion = "1.1.0-alpha2";
         String notificationVersion = "1.4.0";
         String uploadVersion = "4.2.0";
+        // @formatter:off
         FileUtils.write(packageJson, String.format(
-                "{\"dependencies\": {" + "\"@vaadin/vaadin-login\": \"%s\","
+                "{"
+                    + "\"vaadin\": {"
+                      + "\"dependencies\": {"
+                        + "\"@vaadin/vaadin-login\": \"%s\","
                         + "\"@vaadin/vaadin-menu-bar\": \"%s\","
-                        + "\"@vaadin/vaadin-upload\": \"%s\"}" + "}",
-                loginVersion, menuVersion, uploadVersion),
-                StandardCharsets.UTF_8);
-
+                        + "\"@vaadin/vaadin-notification\": \"%s\","
+                        + "\"@vaadin/vaadin-upload\": \"%s\""
+                      + "}"
+                    + "},"
+                    + "\"dependencies\": {"
+                      + "\"@vaadin/vaadin-login\": \"%s\","
+                      + "\"@vaadin/vaadin-menu-bar\": \"%s\","
+                      + "\"@vaadin/vaadin-notification\": \"%s\","
+                      + "\"@vaadin/vaadin-upload\": \"%s\""
+                    + "}"
+                + "}",
+                loginVersion, "1.0.0", notificationVersion,
+                "4.0.0", loginVersion, menuVersion, notificationVersion,
+                uploadVersion), StandardCharsets.UTF_8);
+        // @formatter:on
         // Platform defines a pinned version
 
         String versionsLoginVersion = "1.1.0-alpha1";
@@ -168,13 +238,29 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String versionsNotificationVersion = "1.5.0-alpha1";
         String versionsUploadVersion = "4.2.0-beta2";
 
+        // @formatter:off
         TaskRunNpmInstall task = createTask(String.format(
-                "{ \"@vaadin/vaadin-login\":\"%s\","
-                        + "\"@vaadin/vaadin-menu-bar\":\"%s\","
-                        + "\"@vaadin/vaadin-notification\": \"%s\","
-                        + "\"@vaadin/vaadin-upload\": \"%s\" }",
+                "{"
+                    + "\"vaadin-login\": {"
+                        + "\"npmName\": \"@vaadin/vaadin-login\","
+                        + "\"jsVersion\": \"%s\""
+                    + "},"
+                    + "\"vaadin-menu-bar\": {"
+                        + "\"npmName\": \"@vaadin/vaadin-menu-bar\","
+                        + "\"jsVersion\": \"%s\""
+                    + "},"
+                    + "\"vaadin-notification\": {"
+                        + "\"npmName\": \"@vaadin/vaadin-notification\","
+                        + "\"jsVersion\": \"%s\""
+                    + "},"
+                    + "\"vaadin-upload\": {"
+                        + "\"npmName\": \"@vaadin/vaadin-upload\","
+                        + "\"jsVersion\": \"%s\""
+                    + "}"
+                + "}",
                 versionsLoginVersion, versionsMenuBarVersion,
                 versionsNotificationVersion, versionsUploadVersion));
+        // @formatter:on
         task.execute();
 
         verifyVersion("Login version is the same for user and platform.",
@@ -298,10 +384,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             @Override
             protected String generateVersionsJson() {
                 try {
+                    VersionsJsonConverter convert = new VersionsJsonConverter(
+                            Json.parse(versionsContent),
+                            getNodeUpdater().getPackageJson());
+
                     FileUtils.write(
                             new File(getNodeUpdater().npmFolder,
                                     "versions.json"),
-                            versionsContent, StandardCharsets.UTF_8);
+                            stringify(convert.getManagedVersions(), 2), StandardCharsets.UTF_8);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
