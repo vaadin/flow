@@ -1,0 +1,73 @@
+{
+  "core": {
+    "flow": {
+      "javaVersion": "3.0.0.alpha17"
+    },
+    "vaadin-notification": {
+      "component": true,
+      "javaVersion": "2.0.0",
+      "jsVersion": "1.4.0",
+      "npmName": "@vaadin/vaadin-notification"
+    },
+    "vaadin-ordered-layout": {
+      "component": true,
+      "components": [
+        "Horizontal Layout",
+        "Vertical Layout",
+        "Flex Layout"
+      ],
+      "javaVersion": "2.0.0",
+      "jsVersion": "1.1.0",
+      "npmName": "@vaadin/vaadin-ordered-layout"
+    },
+    "vaadin-overlay": {
+      "jsVersion": "3.2.19",
+      "npmName": "@vaadin/vaadin-overlay",
+      "releasenotes": true
+    },
+    "vaadin-progress-bar": {
+      "component": true,
+      "javaVersion": "2.0.2",
+      "jsVersion": "1.1.2",
+      "npmName": "@vaadin/vaadin-progress-bar"
+    },
+    "vaadin-radio-button": {
+      "component": true,
+      "components": [
+        "Radio Button",
+        "Radio Button Group"
+      ],
+      "javaVersion": "2.0.4",
+      "jsVersion": "1.2.6",
+      "npmName": "@vaadin/vaadin-radio-button"
+    },
+    "vaadin-select": {
+      "component": true,
+      "javaVersion": "2.0.3",
+      "jsVersion": "2.1.7",
+      "npmName": "@vaadin/vaadin-select"
+    },
+    "vaadin-split-layout": {
+      "component": true,
+      "javaVersion": "2.0.3",
+      "jsVersion": "4.1.1",
+      "npmName": "@vaadin/vaadin-split-layout"
+    },
+    "vaadin-tabs": {
+      "component": true,
+      "javaVersion": "2.0.4",
+      "jsVersion": "3.0.5",
+      "npmName": "@vaadin/vaadin-tabs"
+    }
+  },
+  "platform": "foo",
+  "vaadin": {
+    "vaadin-confirm-dialog": {
+      "component": true,
+      "javaVersion": "2.0.3",
+      "jsVersion": "1.1.6",
+      "npmName": "@vaadin/vaadin-confirm-dialog",
+      "pro": true
+    }
+  }
+}
