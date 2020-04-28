@@ -1,0 +1,29 @@
+{
+  "name": "no-name",
+  "license": "UNLICENSED",
+  "vaadin": {
+    "dependencies": {
+      "@vaadin/vaadin-notification": "1.4.0",
+      "@vaadin/vaadin-ordered-layout": "1.1.0",
+      "@vaadin/vaadin-overlay": "3.2.10",
+      "@vaadin/vaadin-progress-bar": "1.1.2",
+      "@vaadin/vaadin-radio-button": "1.2.6",
+      "@vaadin/vaadin-select": "2.1.2",
+      "@vaadin/vaadin-split-layout": "4.1.0",
+      "@vaadin/vaadin-tabs": "3.0.2"
+    },
+    "hash": ""
+  },
+  "dependencies": {
+    "@vaadin/vaadin-notification": "1.4.0",
+    "@vaadin/vaadin-overlay": "3.2.10",
+    "@vaadin/vaadin-select": "2.1.2",
+    "@vaadin/vaadin-split-layout": "4.1.0",
+    "@vaadin/vaadin-tabs": "3.0.2",
+
+    "@vaadin/vaadin-ordered-layout": "2.0.0",
+    "@vaadin/vaadin-progress-bar": "2.0.0",
+    "@vaadin/vaadin-radio-button": "2.0.0",
+    "@vaadin/vaadin-confirm-dialog":"1.1.4"
+  }
+}

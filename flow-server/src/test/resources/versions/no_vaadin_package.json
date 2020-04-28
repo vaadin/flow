@@ -1,0 +1,8 @@
+{
+  "name": "no-name",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@polymer/iron-list": "3.0.0",
+    "@vaadin/vaadin-upload": "4.2.0"
+  }
+}
