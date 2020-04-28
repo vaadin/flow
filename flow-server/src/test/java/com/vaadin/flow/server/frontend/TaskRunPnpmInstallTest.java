@@ -141,8 +141,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
                 "@vaadin/vaadin-overlay/package.json");
 
-        // The resulting version should be the one specified via platform
-        // versions file
+        // The resulting version should be the user specified version
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,
@@ -190,8 +189,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
                 "@vaadin/vaadin-overlay/package.json");
 
-        // The resulting version should be the one specified via platform
-        // versions file
+        // The resulting version should be the user specified version
         JsonObject overlayPackage = Json.parse(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,

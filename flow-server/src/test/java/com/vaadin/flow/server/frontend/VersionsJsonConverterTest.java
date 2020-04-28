@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -63,6 +65,7 @@ public class VersionsJsonConverterTest {
         Assert.assertEquals("3.0.2",
                 convertedJson.getString("@polymer/iron-list"));
     }
+
     @Test
     public void convertPlatformVersions_multipleUserChanged_correctlyIgnored() throws IOException {
         String versions = IOUtils.toString(getClass().getClassLoader()
@@ -109,5 +112,29 @@ public class VersionsJsonConverterTest {
                     String.format("Got wrong version for '%s'", entry.getKey()),
                     entry.getValue(), convertedJson.getString(entry.getKey()));
         }
+    }
+
+    @Test
+    public void missingVaadinDependencies_allDependenciesSholdBeUserHandled() throws IOException {
+        String versions = IOUtils.toString(getClass().getClassLoader()
+                        .getResourceAsStream("versions/versions.json"),
+                StandardCharsets.UTF_8);
+        String pkgJson = IOUtils.toString(getClass().getClassLoader()
+                        .getResourceAsStream("versions/no_vaadin_package.json"),
+                StandardCharsets.UTF_8);
+
+        VersionsJsonConverter convert = new VersionsJsonConverter(
+                Json.parse(versions), Json.parse(pkgJson));
+        JsonObject convertedJson = convert.getManagedVersions();
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
+        Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertFalse(convertedJson.hasKey("@polymer/iron-list"));
+
+        Assert.assertFalse(convertedJson.hasKey("flow"));
+        Assert.assertFalse(convertedJson.hasKey("core"));
+        Assert.assertFalse(convertedJson.hasKey("platform"));
+
+        Assert.assertEquals("1.1.2",
+                convertedJson.getString("@vaadin/vaadin-progress-bar"));
     }
 }

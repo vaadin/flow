@@ -102,7 +102,12 @@ class VersionsJsonConverter {
      */
     private JsonObject collectUserManagedDependencies(JsonObject packageJson) {
         JsonObject json = Json.createObject();
-        JsonObject vaadinDep = packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        JsonObject vaadinDep;
+        if(packageJson.hasKey(VAADIN_DEP_KEY) && packageJson.getObject(VAADIN_DEP_KEY).hasKey(DEPENDENCIES)) {
+            vaadinDep = packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
+        } else {
+            vaadinDep = Json.createObject();
+        }
 
         if(packageJson.hasKey(DEPENDENCIES)) {
             JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
@@ -112,8 +117,6 @@ class VersionsJsonConverter {
                     json.put(key, dependencies.getString(key));
                 }
             }
-        } else {
-            return vaadinDep;
         }
 
         return json;
