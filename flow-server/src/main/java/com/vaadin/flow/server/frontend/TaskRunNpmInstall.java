@@ -37,7 +37,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -112,9 +111,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             File versions = new File(packageUpdater.generatedFolder,
                     "versions.json");
-            VersionsJsonConverter convert = new VersionsJsonConverter(Json
-                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
-            FileUtils.write(versions, stringify(convert.convert(), 2) + "\n",
+
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    Json.parse(IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    packageUpdater.getPackageJson());
+            FileUtils.write(versions, stringify(convert.getManagedVersions(), 2) + "\n",
                     StandardCharsets.UTF_8);
             Path versionsPath = versions.toPath();
             if (versions.isAbsolute()) {
