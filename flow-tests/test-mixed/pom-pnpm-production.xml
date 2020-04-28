@@ -54,13 +54,28 @@
                         <goals>
                             <goal>prepare-frontend</goal>
                             <goal>build-frontend</goal>
+			    <goal>lock-dev-deps</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <productionMode>true</productionMode>
+                    <generatedDependencies>${flow.dev.dependencies.folder}/${flow.dev.dependencies.file}</generatedDependencies>
                 </configuration>
             </plugin>
+		<plugin>
+		  <artifactId>maven-war-plugin</artifactId>
+		  <configuration>
+		    <attachClasses>true</attachClasses>
+		  </configuration>
+		</plugin>
+			<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-failsafe-plugin</artifactId>
+			<configuration>
+			  <skipTests>false</skipTests>
+			</configuration>
+                    </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
