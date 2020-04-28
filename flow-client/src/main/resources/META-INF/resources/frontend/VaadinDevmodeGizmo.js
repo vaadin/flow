@@ -494,20 +494,9 @@ class VaadinDevmodeGizmo extends LitElement {
       this.connection.close();
       this.connection = null;
     }
-    const hostname = window.location.hostname;
     // try Spring Boot Devtools first, if port is set
     if (this.liveReloadBackend === VaadinDevmodeGizmo.SPRING_BOOT_DEVTOOLS && this.springBootDevToolsPort) {
-      const self = this;
-      const wsProtocol = window.location.protocol == 'https:' ? 'wss' : 'ws';
-      if (hostname.endsWith('gitpod.io')) {
-        // Gitpod uses `port-url` instead of `url:port`
-        const hostnameWithoutPort = hostname.replace(/.*?-/, '');
-        self.connection = new WebSocket(
-            wsProtocol + '://' + this.springBootDevToolsPort + '-' + hostnameWithoutPort);
-      } else {
-        self.connection = new WebSocket(
-            wsProtocol + '://' + hostname + ':' + this.springBootDevToolsPort);
-      }
+      this.connection = new WebSocket(this.getSpringBootWebSocketUrl(window.location));
     } else if (this.liveReloadBackend) {
       this.openDedicatedWebSocketConnection();
     } else {
@@ -541,6 +530,18 @@ class VaadinDevmodeGizmo extends LitElement {
         self.connection.send('');
       }
     }, VaadinDevmodeGizmo.HEARTBEAT_INTERVAL);
+  }
+
+  getSpringBootWebSocketUrl(location) {
+    const hostname = location.hostname;
+    const wsProtocol = location.protocol == 'https:' ? 'wss' : 'ws';
+    if (hostname.endsWith('gitpod.io')) {
+      // Gitpod uses `port-url` instead of `url:port`
+      const hostnameWithoutPort = hostname.replace(/.*?-/, '');
+      return wsProtocol + '://' + this.springBootDevToolsPort + '-' + hostnameWithoutPort;
+    } else {
+      return wsProtocol + '://' + hostname + ':' + this.springBootDevToolsPort;
+    }
   }
 
   handleMessage(msg) {
