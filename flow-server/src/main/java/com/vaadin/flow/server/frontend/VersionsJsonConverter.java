@@ -18,8 +18,6 @@ package com.vaadin.flow.server.frontend;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
 /**
  * Converts platform versions file to internal format which doesn't contain
@@ -36,29 +34,21 @@ class VersionsJsonConverter {
     private static final String NPM_NAME = "npmName";
     private static final String NPM_VERSION = "npmVersion";
     private final JsonObject convertedObject;
-    private final JsonObject userManagedDependencies;
 
-    VersionsJsonConverter(JsonObject platformVersions, JsonObject packageJson) {
+    VersionsJsonConverter(JsonObject platformVersions) {
         convertedObject = Json.createObject();
 
         collectDependencies(platformVersions);
-        userManagedDependencies = collectUserManagedDependencies(packageJson);
     }
 
     /**
      * Collect framework managed versions to enforce that the user hasn't
      * changed.
      *
-     * @return managed versions json
+     * @return flatten the platform versions Json
      */
-    JsonObject getManagedVersions() {
-        JsonObject json = Json.createObject();
-        for(String key : convertedObject.keys()) {
-            if (!userManagedDependencies.hasKey(key)) {
-                json.put(key, convertedObject.getString(key));
-            }
-        }
-        return json;
+    JsonObject convert() {
+        return convertedObject;
     }
 
     private void collectDependencies(JsonObject obj) {
@@ -86,52 +76,9 @@ class VersionsJsonConverter {
         } else {
             throw new IllegalStateException("Vaadin code versions file "
                     + "contains unexpected data: dependency '" + npmName
-                    + "' has"
-                    + " no 'npmVersion'/'jsVersion' . "
+                    + "' has" + " no 'npmVersion'/'jsVersion' . "
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
     }
 
-    /**
-     * Collect all dependencies that the user has changed that do not match the
-     * flow managed dependency versions.
-     *
-     * @param packageJson
-     *         package.json Json object
-     * @return collection of user managed dependencies
-     */
-    private JsonObject collectUserManagedDependencies(JsonObject packageJson) {
-        JsonObject json = Json.createObject();
-        JsonObject vaadinDep;
-        if(packageJson.hasKey(VAADIN_DEP_KEY) && packageJson.getObject(VAADIN_DEP_KEY).hasKey(DEPENDENCIES)) {
-            vaadinDep = packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
-        } else {
-            vaadinDep = Json.createObject();
-        }
-
-        if(packageJson.hasKey(DEPENDENCIES)) {
-            JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-
-            for (String key : dependencies.keys()) {
-                if (isUserChanged(key, vaadinDep, dependencies)) {
-                    json.put(key, dependencies.getString(key));
-                }
-            }
-        }
-
-        return json;
-    }
-
-    private boolean isUserChanged(String key, JsonObject vaadinDep,
-            JsonObject dependencies) {
-        if (vaadinDep.hasKey(key)) {
-            FrontendVersion vaadin = new FrontendVersion(
-                    vaadinDep.getString(key));
-            FrontendVersion dep = new FrontendVersion(
-                    dependencies.getString(key));
-            return !vaadin.isEqualTo(dep);
-        }
-        // User changed if not in vaadin dependency
-        return true;
-    }
 }

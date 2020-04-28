@@ -28,12 +28,15 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.BuildUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static elemental.json.impl.JsonUtil.stringify;
@@ -44,6 +47,8 @@ import static elemental.json.impl.JsonUtil.stringify;
  * @since 2.0
  */
 public class TaskRunNpmInstall implements FallibleCommand {
+
+    private static final String DEV_DEPENDENCIES_PATH = "dev.dependencies.path";
 
     private static final String MODULES_YAML = ".modules.yaml";
 
@@ -102,17 +107,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .warn("Couldn't find {} file to pin dependency versions."
                             + " Transitive dependencies won't be pinned for pnpm.",
                             Constants.VAADIN_VERSIONS_JSON);
-            return null;
         }
-        try (InputStream content = resource.openStream()) {
+        try (InputStream content = resource == null ? null
+                : resource.openStream()) {
 
             File versions = new File(packageUpdater.generatedFolder,
                     "versions.json");
 
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    packageUpdater.getPackageJson());
-            FileUtils.write(versions, stringify(convert.getManagedVersions(), 2) + "\n",
+            JsonObject versionsJson = getVersions(content);
+            if (versionsJson == null) {
+                return null;
+            }
+            versionsJson = new VersionsJsonFilter(
+                    packageUpdater.getPackageJson())
+                            .getFilteredVersions(versionsJson);
+            FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
             Path versionsPath = versions.toPath();
             if (versions.isAbsolute()) {
@@ -121,6 +130,63 @@ public class TaskRunNpmInstall implements FallibleCommand {
             } else {
                 return FrontendUtils.getUnixPath(versionsPath);
             }
+        }
+    }
+
+    /**
+     * Returns a path inside classpath to the file with dev dependencies locked.
+     * <p>
+     * The file may absent in the classapth.
+     *
+     * @return the path to the dev dependencies file in the classpath, not
+     *         {@code null}
+     */
+    protected String getDevDependenciesFilePath() {
+        return BuildUtil.getBuildProperty(DEV_DEPENDENCIES_PATH);
+    }
+
+    private JsonObject getVersions(InputStream platformVersions)
+            throws IOException {
+        JsonObject versionsJson = null;
+        if (platformVersions != null) {
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    Json.parse(IOUtils.toString(platformVersions,
+                            StandardCharsets.UTF_8)));
+            versionsJson = convert.convert();
+        }
+
+        String genDevDependenciesPath = getDevDependenciesFilePath();
+        if (genDevDependenciesPath == null) {
+            packageUpdater.log().error(
+                    "Couldn't find dev dependencies file path from proeprties file. "
+                            + "Dev dependencies won't be locked");
+            return versionsJson;
+        }
+        JsonObject devDeps = readGeneratedDevDependencies(
+                genDevDependenciesPath);
+        if (devDeps == null) {
+            return versionsJson;
+        }
+        if (versionsJson == null) {
+            return devDeps;
+        }
+        for (String key : versionsJson.keys()) {
+            devDeps.put(key, versionsJson.getString(key));
+        }
+        return devDeps;
+    }
+
+    private JsonObject readGeneratedDevDependencies(String path)
+            throws IOException {
+        URL resource = classFinder.getResource(path);
+        if (resource == null) {
+            packageUpdater.log().warn("Couldn't find  dev dependencies file. "
+                    + "Dev dependencies won't be locked");
+            return null;
+        }
+        try (InputStream content = resource.openStream()) {
+            return Json
+                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8));
         }
     }
 
