@@ -168,6 +168,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonFilter",
                 // connect is stateless
                 "com\\.vaadin\\.flow\\.server\\.connect\\..*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractUpdateImports",
