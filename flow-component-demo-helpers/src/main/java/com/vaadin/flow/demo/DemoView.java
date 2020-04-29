@@ -293,7 +293,8 @@ public abstract class DemoView extends Component
     /**
      * No-op method so that we can use the line <code>add(Component)</code> in vaadin.com demos.
      */
+    @Override
     public void add(Component... components) {
-    	// No-op
+        // No-op
     }
 }
