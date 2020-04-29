@@ -98,8 +98,6 @@ public class ScrollPositionHandler {
 
     private boolean ignoreScrollRestorationOnNextPopStateEvent;
 
-    private HandlerRegistration resetScrollRegistration;
-
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -143,7 +141,8 @@ public class ScrollPositionHandler {
                 jsonString = Browser.getWindow().getSessionStorage()
                         .getItem(createSessionStorageKey(historyResetToken));
             } catch (JavaScriptException e) {
-                Console.error("Failed to get session storage: " + e.getMessage());
+                Console.error(
+                        "Failed to get session storage: " + e.getMessage());
             }
             if (jsonString != null) {
                 JsonObject jsonObject = Json.parse(jsonString);
@@ -187,9 +186,9 @@ public class ScrollPositionHandler {
         Browser.getWindow().getHistory().replaceState(stateObject, "",
                 Browser.getWindow().getLocation().getHref());
         try {
-            Browser.getWindow().getSessionStorage()
-                    .setItem(createSessionStorageKey(historyResetToken),
-                            sessionStorageObject.toJson());
+            Browser.getWindow().getSessionStorage().setItem(
+                    createSessionStorageKey(historyResetToken),
+                    sessionStorageObject.toJson());
         } catch (JavaScriptException e) {
             Console.error("Failed to get session storage: " + e.getMessage());
         }
@@ -204,9 +203,9 @@ public class ScrollPositionHandler {
      * given pop state event.
      * <p>
      * This method behaves differently if there has been a
-     * {@link #beforeNavigation(String, boolean)} before this, and if the pop
-     * state event is caused by a fragment change that doesn't require a server
-     * side round-trip.
+     * {@link #beforeClientNavigation(String)} before this, and if the pop state
+     * event is caused by a fragment change that doesn't require a server side
+     * round-trip.
      *
      * @param event
      *            the pop state event
@@ -270,19 +269,16 @@ public class ScrollPositionHandler {
 
     /**
      * Store scroll positions when there has been navigation triggered by a
-     * click on a link element.
+     * click on a link element and no server round-trip is needed. It means
+     * navigating within the same page.
      * <p>
      * If href for the page navigated into contains a hash (even just #), then
      * the browser will fire a pop state event afterwards.
      *
      * @param newHref
      *            the href of the clicked link
-     * @param triggersServerSideRoundtrip
-     *            <code>true</code> if the navigation will cause a server side
-     *            round-trip, <code>false</code> if not
      */
-    public void beforeNavigation(String newHref,
-            boolean triggersServerSideRoundtrip) {
+    public void beforeClientNavigation(String newHref) {
         captureCurrentScrollPositions();
 
         Browser.getWindow().getHistory().replaceState(
@@ -292,20 +288,10 @@ public class ScrollPositionHandler {
         // move to page top only if there is no fragment so scroll position
         // doesn't bounce around
         if (!newHref.contains("#")) {
-            if (triggersServerSideRoundtrip) {
-                resetScrollAfterResponse();
-            } else {
-                setScrollPosition(new double[] { 0, 0 });
-            }
+            setScrollPosition(new double[] { 0, 0 });
         }
 
         currentHistoryIndex++;
-
-        if (triggersServerSideRoundtrip) {
-            // store new index
-            Browser.getWindow().getHistory().pushState(
-                    createStateObjectWithHistoryIndexAndToken(), "", newHref);
-        }
 
         // remove old stored scroll positions
         xPositions.splice(currentHistoryIndex,
@@ -314,24 +300,15 @@ public class ScrollPositionHandler {
                 yPositions.length() - currentHistoryIndex);
     }
 
-    private void resetScrollAfterResponse() {
-        if (resetScrollRegistration == null) {
-            resetScrollRegistration = registry.getRequestResponseTracker()
-                    .addResponseHandlingEndedHandler(event -> {
-                        resetScrollRegistration.removeHandler();
-                        resetScrollRegistration = null;
-
-                        setScrollPosition(new double[] { 0, 0 });
-                    });
-        }
-
+    private void resetScroll() {
+        setScrollPosition(new double[] { 0, 0 });
     }
 
     private void captureCurrentScrollPositions() {
         double[] xAndYPosition = getScrollPosition();
 
-        xPositions.set(currentHistoryIndex, Double.valueOf(xAndYPosition[0]));
-        yPositions.set(currentHistoryIndex, Double.valueOf(xAndYPosition[1]));
+        xPositions.set(currentHistoryIndex, xAndYPosition[0]);
+        yPositions.set(currentHistoryIndex, xAndYPosition[1]);
     }
 
     private JsonObject createStateObjectWithHistoryIndexAndToken() {
@@ -339,6 +316,48 @@ public class ScrollPositionHandler {
         state.put(HISTORY_INDEX, currentHistoryIndex);
         state.put(HISTORY_TOKEN, historyResetToken);
         return state;
+    }
+
+    /**
+     * Store scroll positions when there has been navigation triggered by a
+     * click on a link element and a server round-trip is needed. This method is
+     * called after server-side part is done.
+     *
+     * @param state
+     *            includes scroll position of the previous page and the complete
+     *            href of the router link that was clicked and caused this
+     *            navigation
+     */
+    public void afterNavigation(JsonObject state) {
+        if (!state.hasKey("scrollPositionX") || !state.hasKey("scrollPositionY")
+                || !state.hasKey("href"))
+            throw new IllegalStateException(
+                    "scrollPositionX, scrollPositionY and href should be available in ScrollPositionHandler.afterNavigation.");
+        xPositions.set(currentHistoryIndex, state.getNumber("scrollPositionX"));
+        yPositions.set(currentHistoryIndex, state.getNumber("scrollPositionY"));
+
+        Browser.getWindow().getHistory().replaceState(
+                createStateObjectWithHistoryIndexAndToken(), "",
+                Browser.getWindow().getLocation().getHref());
+
+        String newHref = state.getString("href");
+        // move to page top only if there is no fragment so scroll position
+        // doesn't bounce around
+        if (!newHref.contains("#")) {
+            resetScroll();
+        }
+
+        currentHistoryIndex++;
+
+        // store new index
+        Browser.getWindow().getHistory().pushState(
+                createStateObjectWithHistoryIndexAndToken(), "", newHref);
+
+        // remove old stored scroll positions
+        xPositions.splice(currentHistoryIndex,
+                xPositions.length() - currentHistoryIndex);
+        yPositions.splice(currentHistoryIndex,
+                yPositions.length() - currentHistoryIndex);
     }
 
     private void restoreScrollPosition(boolean delayAfterResponse) {
@@ -389,7 +408,7 @@ public class ScrollPositionHandler {
        }
     }-*/;
 
-    private static native double[] getScrollPosition()
+    public static native double[] getScrollPosition()
     /*-{
         if ($wnd.Vaadin.Flow.getScrollPosition) {
           return $wnd.Vaadin.Flow.getScrollPosition();

@@ -16,8 +16,11 @@
 package com.vaadin.flow.router;
 
 import java.util.EventObject;
+import java.util.Optional;
 
 import com.vaadin.flow.component.UI;
+
+import elemental.json.JsonValue;
 
 /**
  * Event object with data related to navigation.
@@ -29,6 +32,8 @@ public class NavigationEvent extends EventObject {
     private final Location location;
     private final UI ui;
     private final NavigationTrigger trigger;
+    private boolean forward = false;
+    private JsonValue state = null;
 
     /**
      * Creates a new navigation event.
@@ -54,6 +59,55 @@ public class NavigationEvent extends EventObject {
         this.location = location;
         this.ui = ui;
         this.trigger = trigger;
+    }
+
+    /**
+     * Creates a new navigation event.
+     *
+     * @param router
+     *            the router handling the navigation, not {@code null}
+     * @param location
+     *            the new location, not {@code null}
+     * @param ui
+     *            the UI in which the navigation occurs, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this navigation event,
+     *            not {@code null}
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     */
+    public NavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger, JsonValue state) {
+        this(router, location, ui, trigger);
+
+        this.state = state;
+    }
+
+    /**
+     * Creates a new navigation event.
+     *
+     * @param router
+     *            the router handling the navigation, not {@code null}
+     * @param location
+     *            the new location, not {@code null}
+     * @param ui
+     *            the UI in which the navigation occurs, not {@code null}
+     * @param trigger
+     *            the type of user action that triggered this navigation event,
+     *            not {@code null}
+     * @param state
+     *            includes navigation state info including for example the
+     *            scroll position and the complete href of the RouterLink
+     * @param forward
+     *            indicates if this event is created as a result of
+     *            {@link BeforeEvent#forwardTo} or not
+     */
+    public NavigationEvent(Router router, Location location, UI ui,
+            NavigationTrigger trigger, JsonValue state, boolean forward) {
+        this(router, location, ui, trigger, state);
+
+        this.forward = forward;
     }
 
     @Override
@@ -87,5 +141,26 @@ public class NavigationEvent extends EventObject {
      */
     public NavigationTrigger getTrigger() {
         return trigger;
+    }
+
+    /**
+     * Gets navigation state info including for example the scroll position and
+     * the complete href of the RouterLink
+     * 
+     * @return the navigation state
+     */
+    public Optional<JsonValue> getState() {
+        return state == null ? Optional.empty() : Optional.of(state);
+    }
+
+    /**
+     * Checks whether this event is created as a result of
+     * {@link BeforeEvent#forwardTo} or not
+     * 
+     * @return {@code true} if this event is created as a result calling
+     *         {@link BeforeEvent#forwardTo}, {@code false} otherwise
+     */
+    public boolean isForward() {
+        return forward;
     }
 }
