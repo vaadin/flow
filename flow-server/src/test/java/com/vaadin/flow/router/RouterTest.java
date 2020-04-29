@@ -75,6 +75,9 @@ import com.vaadin.tests.util.MockUI;
 
 import net.jcip.annotations.NotThreadSafe;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
 
@@ -3006,8 +3009,12 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
                 FileNotFound.trigger);
 
+        JsonObject state = Json.createObject();
+        state.put("href", "router_link");
+        state.put("scrollPositionX", 0d);
+        state.put("scrollPositionY", 0d);
         router.navigate(ui, new Location("router_link"),
-                NavigationTrigger.ROUTER_LINK);
+                NavigationTrigger.ROUTER_LINK, state);
 
         Assert.assertEquals(NavigationTrigger.ROUTER_LINK,
                 FileNotFound.trigger);

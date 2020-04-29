@@ -221,7 +221,7 @@ public class Router implements Serializable {
                 return handleNavigation(ui, location, trigger, state);
             } catch (Exception exception) {
                 return handleExceptionNavigation(ui, location, exception,
-                        trigger);
+                        trigger, state);
             } finally {
                 ui.getInternals().clearLastHandledNavigation();
             }
@@ -239,7 +239,7 @@ public class Router implements Serializable {
     }
 
     private int handleNavigation(UI ui, Location location,
-                                 NavigationTrigger trigger, JsonValue state) {
+            NavigationTrigger trigger, JsonValue state) {
         NavigationState newState = getRouteResolver()
                 .resolve(new ResolveRequest(this, location));
         if (newState != null) {
@@ -267,7 +267,7 @@ public class Router implements Serializable {
     }
 
     private int handleExceptionNavigation(UI ui, Location location,
-            Exception exception, NavigationTrigger trigger) {
+            Exception exception, NavigationTrigger trigger, JsonValue state) {
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
                 exception);
 
@@ -283,7 +283,7 @@ public class Router implements Serializable {
                             .build());
 
             ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
-                    this, location, ui, trigger, errorParameter);
+                    this, location, ui, trigger, errorParameter, state);
 
             return handler.handle(navigationEvent);
         } else {
