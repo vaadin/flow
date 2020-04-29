@@ -258,10 +258,15 @@
     <modules>
         <module>test-resources</module>
         <module>test-common</module>
-        <module>test-mixed/pom-pnpm-production.xml</module>
     </modules>
 
     <profiles>
+        <profile>
+            <id>gen-dev-deps</id>
+            <modules>
+                <module>test-mixed/pom-pnpm-production.xml</module>
+            </modules>
+        </profile>
         <profile>
             <id>run-tests</id>
             <activation>
