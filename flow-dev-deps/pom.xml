@@ -24,6 +24,7 @@
             <artifactId>flow-test-pnpm-production</artifactId>
 	        <classifier>classes</classifier>
             <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
 
     </dependencies>
