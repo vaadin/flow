@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
@@ -15,7 +15,7 @@
     <properties>
         <gwt.module>com.vaadin.ClientEngine</gwt.module>
         <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
-        <gwt.module.style>DETAILED</gwt.module.style>
+        <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
     </properties>
 
@@ -187,7 +187,7 @@
                     <style>${gwt.module.style}</style>
                     <htmlunit>FF38</htmlunit>
                     <testTimeOut>300</testTimeOut>
-                    <extraJvmArgs>-Xmx512m -Dvaadin.enableDevServer=true</extraJvmArgs>
+                    <extraJvmArgs>-Xmx512m -Dvaadin.enableDevServer=false</extraJvmArgs>
                 </configuration>
             </plugin>
 
