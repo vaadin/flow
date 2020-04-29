@@ -70,8 +70,8 @@ public abstract class DemoView extends Component
         }
         addClassName("demo-view");
         navBar.addClassName("demo-nav");
-        add(navBar);
-        add(container);
+        HasComponents.super.add(navBar);
+        HasComponents.super.add(container);
 
         populateSources();
         initView();
@@ -288,5 +288,12 @@ public abstract class DemoView extends Component
         return String.format(
                 variantPresent ? "Remove '%s' variant" : "Add '%s' variant",
                 variantName);
+    }
+
+    /**
+     * No-op method so that we can use the line <code>add(Component)</code> in vaadin.com demos.
+     */
+    public void add(Component... components) {
+    	// No-op
     }
 }
