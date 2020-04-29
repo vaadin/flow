@@ -107,6 +107,8 @@ public class OpenApiObjectGenerator {
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
 
+    public static final String CONSTRAINT_ANNOTATIONS = "x-annotations";
+
     private List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
     private Map<String, ResolvedReferenceType> usedTypes;
@@ -190,6 +192,7 @@ public class OpenApiObjectGenerator {
         endpointsJavadoc = new HashMap<>();
         schemaResolver = new SchemaResolver();
         ParserConfiguration parserConfiguration = createParserConfiguration();
+
 
         javaSourcePaths.stream()
                 .map(path -> new SourceRoot(path, parserConfiguration))
@@ -453,11 +456,35 @@ public class OpenApiObjectGenerator {
                     // not required
                     propertySchema.setNullable(true);
                 }
+                addFieldAnnotationsToSchema(field, propertySchema);
                 properties.put(variableDeclarator.getNameAsString(),
                         propertySchema);
             });
         }
         return properties;
+    }
+
+    private void addFieldAnnotationsToSchema(FieldDeclaration field,
+            Schema<?> schema) {
+        List<String> annotations = new ArrayList<>();
+        field.getAnnotations().stream().forEach(annotation -> {
+            String str = annotation.toString()
+                    // remove annotation character
+                    .replaceFirst("@", "")
+                    // wrap arguments with curly
+                    .replaceFirst("\\(", "({").replaceFirst("\\)$", "})")
+                    // change to json syntax
+                    .replace(" = ", ":");
+            // append parenthesis if not already;
+            str += str.contains("(") ? "" : "()";
+            if (str.matches(
+                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
+                annotations.add(str);
+            }
+        });
+        if (!annotations.isEmpty()) {
+            schema.addExtension(CONSTRAINT_ANNOTATIONS, annotations);
+        }
     }
 
     private Map<String, ResolvedReferenceType> collectUsedTypesFromSchema(

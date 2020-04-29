@@ -1,0 +1,29 @@
+{{#each imports}}
+import {{className}}Model from '{{importPath}}Model';
+import {{className}} from '{{importPath}}';
+{{/each}}
+{{#models}}{{#model}}
+import {{{getClassNameFromImports classname ../../imports}}} from './{{{getClassNameFromImports classname ../../imports}}}';
+{{/model}}{{/models}}
+
+// @ts-ignore
+import {ObjectModel, AnyModel, StringModel, NumberModel, ArrayModel, BooleanModel, PrimitiveModel, Required} from '@vaadin/flow-frontend/Binder'
+// @ts-ignore
+import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/flow-frontend/FormValidator'
+
+{{#models}}
+{{#model}}
+/**
+ * This module is generated from {{classname}}.
+ * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
+ */
+export default class {{{getClassNameFromImports classname ../../imports}}}Model<T extends {{{getClassNameFromImports classname ../../imports}}} = {{{getClassNameFromImports classname ../../imports}}}>
+  {{~#parentSchema}} extends {{{getClassNameFromImports parentSchema ../../imports}}}Model<T> { {{/parentSchema}}
+  {{~^parentSchema}} extends ObjectModel<T> { {{/parentSchema}}
+  static createEmptyValue: () => {{{getClassNameFromImports classname ../../imports}}};
+{{#vars}}
+  public readonly {{name}} = {{{getModelConstructor this ../../imports}}};
+{{/vars}}
+}
+{{/model}}
+{{/models}}
