@@ -695,6 +695,7 @@
                 <module>flow-html-components</module>
                 <module>flow-test-util</module>
                 <module>flow-tests</module>
+                <module>flow-dev-deps</module>
                 <module>flow-server-production-mode</module>
                 <module>build-tools</module>
             </modules>
