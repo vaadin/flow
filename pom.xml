@@ -27,7 +27,6 @@
         <module>flow-dnd</module>
         <module>flow-test-util</module>
         <module>flow-tests</module>
-        <module>flow-dev-deps</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
         <module>flow-jrebel-plugin</module>
@@ -698,6 +697,12 @@
                 <module>flow-tests</module>
                 <module>flow-server-production-mode</module>
                 <module>build-tools</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>gen-dev-deps</id>
+            <modules>
+                <module>flow-dev-deps</module>
             </modules>
         </profile>
     </profiles>
