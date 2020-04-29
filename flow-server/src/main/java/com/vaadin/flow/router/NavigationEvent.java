@@ -145,7 +145,7 @@ public class NavigationEvent extends EventObject {
 
     /**
      * Gets navigation state info including for example the scroll position and
-     * the complete href of the RouterLink
+     * the complete href of the RouterLink.
      * 
      * @return the navigation state
      */
@@ -155,7 +155,7 @@ public class NavigationEvent extends EventObject {
 
     /**
      * Checks whether this event is created as a result of
-     * {@link BeforeEvent#forwardTo} or not
+     * {@link BeforeEvent#forwardTo} or not.
      * 
      * @return {@code true} if this event is created as a result calling
      *         {@link BeforeEvent#forwardTo}, {@code false} otherwise

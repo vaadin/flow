@@ -260,6 +260,9 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
+        if(event instanceof ErrorNavigationEvent) {
+            return;
+        }
 
         if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             /*
