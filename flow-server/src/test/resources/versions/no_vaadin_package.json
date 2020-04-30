@@ -4,5 +4,9 @@
   "dependencies": {
     "@polymer/iron-list": "3.0.0",
     "@vaadin/vaadin-upload": "4.2.0"
+  },
+  "devDependencies": {
+    "@polymer/iron-list": "3.0.0",
+    "@vaadin/vaadin-upload": "4.2.0"
   }
 }
