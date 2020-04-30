@@ -118,9 +118,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (versionsJson == null) {
                 return null;
             }
-            versionsJson = new VersionsJsonFilter(
-                    packageUpdater.getPackageJson())
-                            .getFilteredVersions(versionsJson);
             FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
             Path versionsPath = versions.toPath();
@@ -153,6 +150,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     Json.parse(IOUtils.toString(platformVersions,
                             StandardCharsets.UTF_8)));
             versionsJson = convert.convert();
+            versionsJson = new VersionsJsonFilter(
+                    packageUpdater.getPackageJson(), NodeUpdater.DEPENDENCIES)
+                            .getFilteredVersions(versionsJson);
         }
 
         String genDevDependenciesPath = getDevDependenciesFilePath();
@@ -167,6 +167,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         if (devDeps == null) {
             return versionsJson;
         }
+        devDeps = new VersionsJsonFilter(packageUpdater.getPackageJson(),
+                NodeUpdater.DEV_DEPENDENCIES).getFilteredVersions(devDeps);
         if (versionsJson == null) {
             return devDeps;
         }
