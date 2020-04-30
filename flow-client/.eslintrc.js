@@ -17,7 +17,6 @@ module.exports = {
     },
     "overrides": [{
         "files": ["FlowClient.js"],
-
         "rules": {
             "brace-style": "off",
             "camelcase": "off",
@@ -48,6 +47,11 @@ module.exports = {
             "space-infix-ops": "off",
             "no-trailing-spaces": "off",
             "func-call-spacing": "off"
-        }
-    }]
+        }}, {
+        "files": ["VaadinDevmodeGizmo.js"],
+        "rules": {
+            "max-len": "off",
+            "indent": "off"
+        }}
+    ]
 };
