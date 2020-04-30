@@ -32,18 +32,21 @@ import org.apache.maven.project.MavenProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static elemental.json.impl.JsonUtil.stringify;
 
 /**
  * Internal goal to generate dev dependencies versions.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -81,6 +84,53 @@ public class LockDevDepVersionsMojo extends FlowModeAbstractMojo {
                     "Can't make directories for the generated file", exception);
         }
 
+        String content = listDevDependencies();
+
+        JsonObject result = Json.createObject();
+        JsonObject object = Json.parse(content);
+        collectDeps(result, object);
+
+        readVersionsFromPackageJson(result);
+
+        try {
+            FileUtils.write(targetFile, stringify(result, 2) + "\n",
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new MojoFailureException(
+                    "Couldn't write dependencies into the target file", e);
+        }
+    }
+
+    private void readVersionsFromPackageJson(JsonObject versions) {
+        File nodeModules = new File(npmFolder, NODE_MODULES);
+        for (String key : versions.keys()) {
+            File module = new File(nodeModules, key);
+            File pkgJson = new File(module, Constants.PACKAGE_JSON);
+            if (pkgJson.exists()) {
+                setPackageVersion(versions, key, pkgJson);
+            } else {
+                getLog().warn("Couldn't find " + Constants.PACKAGE_JSON
+                        + " for '" + key + "' module");
+            }
+        }
+    }
+
+    private void setPackageVersion(JsonObject versions, String key,
+            File pkgJson) {
+        try {
+            JsonObject pkg = Json.parse(FileUtils.readFileToString(pkgJson,
+                    StandardCharsets.UTF_8));
+            if (pkg.hasKey(VERSION)
+                    && pkg.get(VERSION).getType().equals(JsonType.STRING)) {
+                versions.put(key, pkg.getString(VERSION));
+            }
+        } catch (IOException exception) {
+            getLog().warn("Couldn't read " + Constants.PACKAGE_JSON + " for '"
+                    + key + "' module", exception);
+        }
+    }
+
+    private String listDevDependencies() throws MojoFailureException {
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         List<String> command = tools.getNpmExecutable();
@@ -125,18 +175,7 @@ public class LockDevDepVersionsMojo extends FlowModeAbstractMojo {
                 process.destroyForcibly();
             }
         }
-
-        JsonObject result = Json.createObject();
-        JsonObject object = Json.parse(content.toString());
-        collectDeps(result, object);
-
-        try {
-            FileUtils.write(targetFile, stringify(result, 2) + "\n",
-                    StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new MojoFailureException(
-                    "Couldn't write dependencies into the target file", e);
-        }
+        return content.toString();
     }
 
     private void collectDeps(JsonObject target, JsonObject dep) {
