@@ -196,7 +196,7 @@ public final class ExecuteJavaScriptElementUtils {
     }
 
     /**
-     * Invoke {@link ScrollPositionHandler#afterNavigation(JsonObject)}.
+     * Invoke {@link ScrollPositionHandler#afterServerNavigation(JsonObject)}.
      * 
      * @param registry
      *            the registry
@@ -205,9 +205,9 @@ public final class ExecuteJavaScriptElementUtils {
      *            href of the router link that was clicked and caused this
      *            navigation
      */
-    public static void scrollPositionHandlerAfterNavigation(Registry registry,
-            JsonObject state) {
-        registry.getScrollPositionHandler().afterNavigation(state);
+    public static void scrollPositionHandlerAfterServerNavigation(
+            Registry registry, JsonObject state) {
+        registry.getScrollPositionHandler().afterServerNavigation(state);
     }
 
     private static native boolean isPropertyDefined(Node node, String property)

@@ -217,8 +217,8 @@ public class ExecuteJavaScriptProcessor {
           object.registerUpdatableModelProperties = function(element, properties){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
           };
-          object.scorllPositionHandlerBeforeNavigation = function(state) {
-              @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterNavigation(*)(object.registry, state);
+          object.scrollPositionHandlerAfterServerNavigation = function(state) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
           }
         return object;
     }-*/;

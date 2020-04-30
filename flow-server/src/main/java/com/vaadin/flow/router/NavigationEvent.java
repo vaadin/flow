@@ -32,7 +32,7 @@ public class NavigationEvent extends EventObject {
     private final Location location;
     private final UI ui;
     private final NavigationTrigger trigger;
-    private boolean forward = false;
+    private boolean forwardTo = false;
     private JsonValue state = null;
 
     /**
@@ -99,15 +99,15 @@ public class NavigationEvent extends EventObject {
      * @param state
      *            includes navigation state info including for example the
      *            scroll position and the complete href of the RouterLink
-     * @param forward
+     * @param forwardTo
      *            indicates if this event is created as a result of
      *            {@link BeforeEvent#forwardTo} or not
      */
     public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state, boolean forward) {
+            NavigationTrigger trigger, JsonValue state, boolean forwardTo) {
         this(router, location, ui, trigger, state);
 
-        this.forward = forward;
+        this.forwardTo = forwardTo;
     }
 
     @Override
@@ -144,8 +144,9 @@ public class NavigationEvent extends EventObject {
     }
 
     /**
-     * Gets navigation state info including for example the scroll position and
-     * the complete href of the RouterLink.
+     * Gets navigation state. It may have been captured on client-side. It may
+     * contain info like the scroll position and the complete href of the
+     * RouterLink.
      * 
      * @return the navigation state
      */
@@ -160,7 +161,7 @@ public class NavigationEvent extends EventObject {
      * @return {@code true} if this event is created as a result calling
      *         {@link BeforeEvent#forwardTo}, {@code false} otherwise
      */
-    public boolean isForward() {
-        return forward;
+    public boolean isForwardTo() {
+        return forwardTo;
     }
 }

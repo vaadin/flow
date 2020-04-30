@@ -288,7 +288,7 @@ public class ScrollPositionHandler {
         // move to page top only if there is no fragment so scroll position
         // doesn't bounce around
         if (!newHref.contains("#")) {
-            setScrollPosition(new double[] { 0, 0 });
+            resetScroll();
         }
 
         currentHistoryIndex++;
@@ -320,15 +320,15 @@ public class ScrollPositionHandler {
 
     /**
      * Store scroll positions when there has been navigation triggered by a
-     * click on a link element and a server round-trip is needed. This method is
-     * called after server-side part is done.
+     * click on a link element and a server round-trip was needed. This method
+     * is called after server-side part is done.
      *
      * @param state
      *            includes scroll position of the previous page and the complete
      *            href of the router link that was clicked and caused this
      *            navigation
      */
-    public void afterNavigation(JsonObject state) {
+    public void afterServerNavigation(JsonObject state) {
         if (!state.hasKey("scrollPositionX") || !state.hasKey("scrollPositionY")
                 || !state.hasKey("href"))
             throw new IllegalStateException(
@@ -408,6 +408,11 @@ public class ScrollPositionHandler {
        }
     }-*/;
 
+    /**
+     * Gets the scroll position of the page as an array.
+     * 
+     * @return an array containing scroll position x (left) and y (top) in order
+     */
     public static native double[] getScrollPosition()
     /*-{
         if ($wnd.Vaadin.Flow.getScrollPosition) {
