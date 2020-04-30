@@ -42,7 +42,7 @@ import static org.mockito.Mockito.mock;
 @RunWith(SpringRunner.class)
 @WebMvcTest
 @Import(VaadinConnectTypeConversionEndpoints.class)
-public abstract class BaseTypeConversionIT {
+public abstract class BaseTypeConversionTest {
 
     private MockMvc mockMvc;
 

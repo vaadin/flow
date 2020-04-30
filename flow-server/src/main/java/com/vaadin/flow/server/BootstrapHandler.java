@@ -1515,12 +1515,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             + "    navigator.serviceWorker.register('"
                             + config.getServiceWorkerPath() + "');\n"
                             + "  });\n" + "}");
-
-            // add body injections
-            if (registry.getPwaConfiguration().isInstallPromptEnabled()) {
-                // PWA Install prompt html/js
-                document.body().append(registry.getInstallPrompt());
-            }
         }
     }
 }

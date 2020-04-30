@@ -74,14 +74,6 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         Assert.assertEquals("my-resource", meta.getAttribute("content"));
     }
 
-    @Test
-    public void should_show_pwaDialog() {
-        openTestUrl("/");
-        waitForElementPresent(By.id("pwa-ip"));
-        WebElement pwa = findElement(By.id("pwa-ip"));
-        Assert.assertTrue(pwa.getText().contains("My App"));
-    }
-
     public void indexHtmlRequestListener_openRootURL_shouldDynamicMetaContent() {
         openTestUrl("/");
         waitForElementPresent(By.cssSelector("meta[name]"));

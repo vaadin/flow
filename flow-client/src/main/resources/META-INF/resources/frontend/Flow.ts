@@ -8,7 +8,7 @@ interface AppConfig {
   productionMode: boolean;
   appId: string;
   uidl: object;
-  webComponentMode: boolean;
+  clientRouting: boolean;
   devmodeGizmoEnabled: boolean;
   serviceUrl: string;
   springBootDevToolsPort: number;
@@ -194,7 +194,7 @@ export class Flow {
       this.response = await this.flowInitUi(serverSideRouting);
 
       // Enable or disable server side routing
-      this.response.appConfig.webComponentMode = !serverSideRouting;
+      this.response.appConfig.clientRouting = !serverSideRouting;
 
       const {pushScript, appConfig} = this.response;
 
@@ -235,7 +235,8 @@ export class Flow {
       // (server ensures this parameter is true only in dev mode)
       if (appConfig.devmodeGizmoEnabled) {
         const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
-        await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.liveReloadBackend, appConfig.springBootDevToolsPort);
+        const devmodeGizmo = await devmodeGizmoMod.init(appConfig.serviceUrl, appConfig.liveReloadBackend, appConfig.springBootDevToolsPort);
+        $wnd.Vaadin.Flow.devModeGizmo = devmodeGizmo;
       }
 
       // hide flow progress indicator

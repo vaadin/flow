@@ -5,6 +5,7 @@ module.exports = {
   entry: {
     flow: "./src/test/frontend/FlowTests.ts",
     connect: "./src/test/frontend/ConnectTests.ts",
+    vaadindevmodegizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js",
     binder: "./src/test/frontend/BinderTests.ts",
     validator: "./src/test/frontend/FormValidatorTests.ts"
   },

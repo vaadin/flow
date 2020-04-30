@@ -38,6 +38,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinService;
@@ -587,7 +588,6 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    @Ignore("requires mockito version with plugin for final classes")
     public void should_Return500_When_MapperFailsToSerializeResponse()
             throws Exception {
         ObjectMapper mapperMock = mock(ObjectMapper.class);
@@ -630,7 +630,6 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    @Ignore("requires mockito version with plugin for final classes")
     public void should_ThrowException_When_MapperFailsToSerializeEverything()
             throws Exception {
         ObjectMapper mapperMock = mock(ObjectMapper.class);
@@ -798,11 +797,19 @@ public class VaadinConnectControllerTest {
     public void should_Never_UseSpringObjectMapper() {
         ApplicationContext contextMock = mock(ApplicationContext.class);
         ObjectMapper mockSpringObjectMapper = mock(ObjectMapper.class);
+        ObjectMapper mockOwnObjectMapper = mock(ObjectMapper.class);
+        Jackson2ObjectMapperBuilder mockObjectMapperBuilder = mock(Jackson2ObjectMapperBuilder.class);
         JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
         when(contextMock.getBean(ObjectMapper.class))
                 .thenReturn(mockSpringObjectMapper);
         when(contextMock.getBean(JacksonProperties.class))
                 .thenReturn(mockJacksonProperties);
+        when(contextMock.getBean(Jackson2ObjectMapperBuilder.class))
+                .thenReturn(mockObjectMapperBuilder);
+        when(mockObjectMapperBuilder.createXmlMapper(false))
+                .thenReturn(mockObjectMapperBuilder);
+        when(mockObjectMapperBuilder.build())
+                .thenReturn(mockOwnObjectMapper);
         when(mockJacksonProperties.getVisibility())
                 .thenReturn(Collections.emptyMap());
         new VaadinConnectController(null,
@@ -813,9 +820,46 @@ public class VaadinConnectControllerTest {
                 mock(ServletContext.class));
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
-        verify(mockSpringObjectMapper, never()).setVisibility(
+        verify(contextMock, times(1)).getBean(Jackson2ObjectMapperBuilder.class);
+        verify(contextMock, times(1)).getBean(JacksonProperties.class);
+        verify(mockOwnObjectMapper, times(1)).setVisibility(
                 PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        verify(contextMock, never()).getBean(JacksonProperties.class);
+    }
+
+    @Test
+    public void should_NotOverrideVisibility_When_JacksonPropertiesProvideVisibility() {
+        ApplicationContext contextMock = mock(ApplicationContext.class);
+        ObjectMapper mockDefaultObjectMapper = mock(ObjectMapper.class);
+        ObjectMapper mockOwnObjectMapper = mock(ObjectMapper.class);
+        Jackson2ObjectMapperBuilder mockObjectMapperBuilder = mock(Jackson2ObjectMapperBuilder.class);
+        JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
+        when(contextMock.getBean(ObjectMapper.class))
+                .thenReturn(mockDefaultObjectMapper);
+        when(contextMock.getBean(JacksonProperties.class))
+                .thenReturn(mockJacksonProperties);
+        when(contextMock.getBean(Jackson2ObjectMapperBuilder.class))
+                .thenReturn(mockObjectMapperBuilder);
+        when(mockObjectMapperBuilder.createXmlMapper(false))
+                .thenReturn(mockObjectMapperBuilder);
+        when(mockObjectMapperBuilder.build())
+                .thenReturn(mockOwnObjectMapper);
+        when(mockJacksonProperties.getVisibility())
+                .thenReturn(Collections.singletonMap(PropertyAccessor.ALL,
+                        JsonAutoDetect.Visibility.PUBLIC_ONLY));
+        new VaadinConnectController(null,
+                mock(VaadinConnectAccessChecker.class),
+                mock(EndpointNameChecker.class),
+                mock(ExplicitNullableTypeChecker.class),
+                contextMock,
+                mock(ServletContext.class));
+
+        verify(contextMock, never()).getBean(ObjectMapper.class);
+        verify(contextMock, times(1)).getBean(Jackson2ObjectMapperBuilder.class);
+        verify(mockDefaultObjectMapper, never()).setVisibility(
+                PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        verify(mockOwnObjectMapper, never()).setVisibility(
+                PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        verify(contextMock, times(1)).getBean(JacksonProperties.class);
     }
 
     @Test
