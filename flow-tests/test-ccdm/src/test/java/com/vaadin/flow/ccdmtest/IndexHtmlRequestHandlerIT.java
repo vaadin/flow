@@ -472,10 +472,15 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         // click the link again to trigger `action` of `flow.route`
         findElement(By.linkText("View with all events")).click();
         String mainLayoutContent = findElement(By.id("mainLayout")).getText();
-        String expectedContent = "Main layout\nViewWithAllEvents: 1 "
-                + "setParameter\nViewWithAllEvents: 2 "
-                + "beforeEnter\nViewWithAllEvents: 3 "
-                + "onAttach\nViewWithAllEvents: 4 afterNavigation";
+        String expectedContent = "Main layout\n"
+                + "ViewWithAllEvents: 1 setParameter\n"
+                + "ViewWithAllEvents: 2 beforeEnter\n"
+                + "ViewWithAllEvents: 3 onAttach\n"
+                + "ViewWithAllEvents: 4 afterNavigation\n"
+                + "ViewWithAllEvents: beforeLeave\n"
+                + "ViewWithAllEvents: 1 setParameter\n"
+                + "ViewWithAllEvents: 2 beforeEnter\n"
+                + "ViewWithAllEvents: 4 afterNavigation";
         Assert.assertEquals("Should load view with all events", expectedContent,
                 mainLayoutContent);
 
