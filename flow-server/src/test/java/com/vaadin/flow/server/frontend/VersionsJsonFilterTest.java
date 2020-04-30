@@ -32,36 +32,69 @@ import elemental.json.JsonObject;
 public class VersionsJsonFilterTest {
 
     @Test
-    public void filterPlatformVersions() throws IOException {
+    public void filterPlatformVersions_dependencies() throws IOException {
+        assertFilterPlatformVersions(NodeUpdater.DEPENDENCIES);
+    }
+
+    @Test
+    public void filterPlatformVersions_devDependencies() throws IOException {
+        assertFilterPlatformVersions(NodeUpdater.DEV_DEPENDENCIES);
+    }
+
+    @Test
+    public void filterPlatformDependenciesVersions_multipleUserChanged_correctlyIgnored()
+            throws IOException {
+        assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+                NodeUpdater.DEPENDENCIES);
+    }
+
+    @Test
+    public void filterPlatformDevDependenciesVersions_multipleUserChanged_correctlyIgnored()
+            throws IOException {
+        assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+                NodeUpdater.DEV_DEPENDENCIES);
+    }
+
+    @Test
+    public void missingVaadinDependencies_allDependenciesSholdBeUserHandled()
+            throws IOException {
+        assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
+                NodeUpdater.DEPENDENCIES);
+    }
+
+    @Test
+    public void missingVaadinDevDependencies_allDependenciesSholdBeUserHandled()
+            throws IOException {
+        assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
+                NodeUpdater.DEV_DEPENDENCIES);
+    }
+
+    private void assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
+            String depKey) throws IOException {
         String versions = IOUtils
                 .toString(
                         getClass().getClassLoader()
                                 .getResourceAsStream("versions/versions.json"),
                         StandardCharsets.UTF_8);
-        String pkgJson = IOUtils
-                .toString(
-                        getClass().getClassLoader()
-                                .getResourceAsStream("versions/package.json"),
-                        StandardCharsets.UTF_8);
+        String pkgJson = IOUtils.toString(
+                getClass().getClassLoader()
+                        .getResourceAsStream("versions/no_vaadin_package.json"),
+                StandardCharsets.UTF_8);
 
-        VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson));
+        VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
+                depKey);
         JsonObject filteredJson = filter
                 .getFilteredVersions(Json.parse(versions));
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
-        Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));
+        Assert.assertFalse(filteredJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertFalse(filteredJson.hasKey("@polymer/iron-list"));
 
         Assert.assertEquals("1.1.2",
                 filteredJson.getString("@vaadin/vaadin-progress-bar"));
-        Assert.assertEquals("4.2.2",
-                filteredJson.getString("@vaadin/vaadin-upload"));
-        Assert.assertEquals("2.0.19",
-                filteredJson.getString("@polymer/iron-list"));
     }
 
-    @Test
-    public void filterPlatformVersions_multipleUserChanged_correctlyIgnored()
-            throws IOException {
+    private void assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+            String depKey) throws IOException {
         String versions = IOUtils
                 .toString(
                         getClass().getClassLoader().getResourceAsStream(
@@ -73,7 +106,8 @@ public class VersionsJsonFilterTest {
                                 "versions/user_package.json"),
                         StandardCharsets.UTF_8);
 
-        VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson));
+        VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
+                depKey);
         JsonObject filteredJson = filter
                 .getFilteredVersions(Json.parse(versions));
         List<String> expectedKeys = Arrays.asList("@vaadin/vaadin-notification",
@@ -109,27 +143,32 @@ public class VersionsJsonFilterTest {
         }
     }
 
-    @Test
-    public void missingVaadinDependencies_allDependenciesSholdBeUserHandled()
+    private void assertFilterPlatformVersions(String depKey)
             throws IOException {
         String versions = IOUtils
                 .toString(
                         getClass().getClassLoader()
                                 .getResourceAsStream("versions/versions.json"),
                         StandardCharsets.UTF_8);
-        String pkgJson = IOUtils.toString(
-                getClass().getClassLoader()
-                        .getResourceAsStream("versions/no_vaadin_package.json"),
-                StandardCharsets.UTF_8);
+        String pkgJson = IOUtils
+                .toString(
+                        getClass().getClassLoader()
+                                .getResourceAsStream("versions/package.json"),
+                        StandardCharsets.UTF_8);
 
-        VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson));
+        VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
+                depKey);
         JsonObject filteredJson = filter
                 .getFilteredVersions(Json.parse(versions));
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-progress-bar"));
-        Assert.assertFalse(filteredJson.hasKey("@vaadin/vaadin-upload"));
-        Assert.assertFalse(filteredJson.hasKey("@polymer/iron-list"));
+        Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));
 
         Assert.assertEquals("1.1.2",
                 filteredJson.getString("@vaadin/vaadin-progress-bar"));
+        Assert.assertEquals("4.2.2",
+                filteredJson.getString("@vaadin/vaadin-upload"));
+        Assert.assertEquals("2.0.19",
+                filteredJson.getString("@polymer/iron-list"));
     }
 }
