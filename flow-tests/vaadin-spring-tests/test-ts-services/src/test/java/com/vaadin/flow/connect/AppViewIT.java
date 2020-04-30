@@ -150,12 +150,6 @@ public class AppViewIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void should_show_pwaDialog() {
-        WebElement pwa = findElement(By.id("pwa-ip"));
-        Assert.assertTrue(pwa.getText().contains("My App"));
-    }
-
-    @Test
     public void should_beAble_toLogin_usingSpringForm() {
         // Login by using the Spring Login Form
         openTestUrl("/login");
