@@ -165,15 +165,31 @@ class VaadinDevmodeGizmo extends LitElement {
 
       .window-header {
           display: flex;
-          justify-content: flex-end;
+          justify-content: space-between; 
           align-items: center;
           background-color: rgba(40,40,40,1);
           border-radius: .5rem .5rem 0px 0px;
-          border-bottom: 1px solid rgba(70,70,70,1);
           padding: .25rem .5rem;
-          text-align: right;
       }
-            
+      
+      .window-tabs {
+          display: flex;
+          justify-content: space-between; 
+          background-color: rgba(40,40,40,1);
+          border-bottom: 1px solid rgba(70,70,70,1);
+          text-align: right;
+          padding: .25rem .5rem;
+      }
+      
+      .title {
+          font-weight: 600;
+      }
+      
+      .tab {
+          color: #ccc;
+          font-weight: 600;
+      }   
+                  
       .ahreflike {
           cursor: pointer;
           font-weight: 600;
@@ -748,27 +764,32 @@ class VaadinDevmodeGizmo extends LitElement {
   render() {
     return html`
       <div class="vaadin-live-reload">
-
       <div class="window ${this.expanded ? 'visible' : 'hidden'}">
         <div class="window-header">
+          <span class="title">Vaadin Development Mode</span>
+          <button class="minimize-button" @click=${e => this.toggleExpanded()}>
+            <svg xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px;">
+              <g stroke="#fff" stroke-width="1.25">
+                <rect rx="5" x="0.5" y="0.5" height="16" width="16" fill-opacity="0"/>
+                <line y2="12.1" x2="12.3" y1="3.4" x1="3" />
+                <line y2="8.5" x2="12.1" y1="12.4" x1="12.8" />
+                <line y2="12.1" x2="8.7" y1="12.1" x1="12.8" />
+              </g>
+            </svg>
+          </button>
+        </div>
+        <div class="window-tabs">
+          <span class="tab">Log</span>
+          <div>
             <label class="switch">
                 <input id="toggle" type="checkbox"
                     ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
                     ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
                     @change=${e => this.setActive(e.target.checked)}/>
                 <span class="slider"></span>
-             </label>
-             <span class="live-reload-text">Live-reload</span>
-             <button class="minimize-button" @click=${e => this.toggleExpanded()}>
-               <svg xmlns="http://www.w3.org/2000/svg" style="width: 18px; height: 18px;">
-                 <g stroke="#fff" stroke-width="1.25">
-                   <rect rx="5" x="0.5" y="0.5" height="16" width="16" fill-opacity="0"/>
-                   <line y2="12.1" x2="12.3" y1="3.4" x1="3" />
-                   <line y2="8.5" x2="12.1" y1="12.4" x1="12.8" />
-                   <line y2="12.1" x2="8.7" y1="12.1" x1="12.8" />
-                 </g>
-              </svg>
-            </button>
+            </label>
+            <span class="live-reload-text">Live-reload</span>
+          </div>
         </div>
         <div class="message-tray">
           ${this.messages.map(msg => this.renderMessage(msg))}
