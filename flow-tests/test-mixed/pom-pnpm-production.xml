@@ -95,6 +95,14 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <skipTests>false</skipTests>
+                            <skipITs>false</skipITs>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
                         </configuration>
                     </plugin>
                 </plugins>
