@@ -509,6 +509,7 @@ class VaadinDevmodeGizmo extends LitElement {
     if (this.connection) {
       this.connection.onmessage = msg => this.handleMessage(msg);
       this.connection.onerror = err => this.handleError(err);
+      const self = this;
       this.connection.onclose = _ => {
         self.status = VaadinDevmodeGizmo.UNAVAILABLE;
         self.connection = null;
