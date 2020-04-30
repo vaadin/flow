@@ -48,7 +48,7 @@ import static elemental.json.impl.JsonUtil.stringify;
  *
  */
 @Mojo(name = "lock-dev-deps", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class LockDepDepVersionsMojo extends FlowModeAbstractMojo {
+public class LockDevDepVersionsMojo extends FlowModeAbstractMojo {
 
     private static final String DEPENDENCIES = "dependencies";
     private static final String VERSION = "version";
@@ -111,7 +111,7 @@ public class LockDepDepVersionsMojo extends FlowModeAbstractMojo {
 
             int errorCode = process.waitFor();
             Logger logger = LoggerFactory
-                    .getLogger(LockDepDepVersionsMojo.class);
+                    .getLogger(LockDevDepVersionsMojo.class);
             if (errorCode != 0) {
                 logger.error("Couldn't run npm ls");
             } else {

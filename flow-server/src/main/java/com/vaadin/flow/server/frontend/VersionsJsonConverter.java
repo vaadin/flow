@@ -47,7 +47,7 @@ class VersionsJsonConverter {
      *
      * @return flatten the platform versions Json
      */
-    JsonObject convert() {
+    JsonObject getConvertedJson() {
         return convertedObject;
     }
 

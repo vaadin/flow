@@ -149,7 +149,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     Json.parse(IOUtils.toString(platformVersions,
                             StandardCharsets.UTF_8)));
-            versionsJson = convert.convert();
+            versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(
                     packageUpdater.getPackageJson(), NodeUpdater.DEPENDENCIES)
                             .getFilteredVersions(versionsJson);
