@@ -7,9 +7,19 @@
       "@vaadin/vaadin-progress-bar": "1.1.2",
       "@polymer/iron-list": "3.0.2"
     },
+    "devDependencies": {
+      "@vaadin/vaadin-upload": "4.2.2",
+      "@vaadin/vaadin-progress-bar": "1.1.2",
+      "@polymer/iron-list": "3.0.2"
+    },
     "hash": ""
   },
   "dependencies": {
+    "@polymer/iron-list": "3.0.2",
+    "@vaadin/vaadin-progress-bar": "1.1.2",
+    "@vaadin/vaadin-upload": "4.2.2"
+  },
+  "devDependencies": {
     "@polymer/iron-list": "3.0.2",
     "@vaadin/vaadin-progress-bar": "1.1.2",
     "@vaadin/vaadin-upload": "4.2.2"
