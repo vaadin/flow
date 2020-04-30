@@ -187,12 +187,11 @@ public class Router implements Serializable {
     }
 
     /**
-     * Navigates the given UI to the given location.
+     * Navigates the given UI to the given location. For internal use only.
      * <p>
-     * This method just shows the given {@code location} on the page and doesn't
-     * update the browser location (and page history). Use the
-     * {@link UI#navigate(String, QueryParameters)} method if you want to update
-     * the browser location as well.
+     * This method pushes to the browser history if the <code>trigger</code> is
+     * <code>ROUTER_LINK</code> or if it's called from
+     * {@link UI#navigate(String, QueryParameters)}.
      *
      * @param ui
      *            the UI to update, not <code>null</code>

@@ -285,7 +285,11 @@ public abstract class AbstractNavigationStateRenderer
                                 .equals(ui.getInternals()
                                         .getLastHandledLocation()
                                         .getPathWithQueryParameters()))) {
-            if (NavigationTrigger.PROGRAMMATIC.equals(event.getTrigger())) {
+
+            // If the trigger is PROGRAMMATIC, we push history state if only the
+            // event state is provided. See UI#navigate(String, QueryParameters)
+            if (NavigationTrigger.PROGRAMMATIC.equals(event.getTrigger())
+                    && event.getState().isPresent()) {
                 // Enable navigating back
                 ui.getPage().getHistory().pushState(null, event.getLocation());
             }
