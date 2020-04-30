@@ -169,6 +169,46 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
+    public void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
+            throws IOException, ExecutionFailedException {
+        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // Write package json file
+        FileUtils.write(packageJson, "{}", StandardCharsets.UTF_8);
+
+        File versions = temporaryFolder.newFile();
+        // Platform defines a pinned version
+        // @formatter:off
+        FileUtils.write(versions, String.format(
+                "{"
+                  + "\"vaadin-overlay\": {"
+                    + "\"npmName\": \"@vaadin/vaadin-overlay\","
+                    + "\"jsVersion\": \"%s\""
+                  + "}"
+                + "}", PINNED_VERSION), StandardCharsets.UTF_8);
+        // @formatter:on
+
+        File devDeps = temporaryFolder.newFile();
+        // Platform defines a pinned version
+        // @formatter:off
+        FileUtils.write(devDeps,
+                "{"
+                     + "\"@vaadin/vaadin-notification\":  \"1.3.9\""
+                     + "}", StandardCharsets.UTF_8);
+        // @formatter:on
+
+        JsonObject object = getGeneratedVersionsContent(versions, devDeps);
+        Assert.assertTrue(object.hasKey("@vaadin/vaadin-overlay"));
+        Assert.assertTrue(object.hasKey("@vaadin/vaadin-notification"));
+
+        Assert.assertEquals(PINNED_VERSION,
+                object.getString("@vaadin/vaadin-overlay"));
+        Assert.assertEquals("1.3.9",
+                object.getString("@vaadin/vaadin-notification"));
+    }
+
+    @Test
     public void generateVersionsJson_userVersionNewerThanPinned_installedOverlayVersionIsNotPinned()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
@@ -183,12 +223,19 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                           + "\"dependencies\": {"
                             + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
                             + "\"@vaadin/vaadin-overlay\": \"" + PINNED_VERSION + "\""
-                          + "}"
+
+                          + "},"
+                          + "\"devDependencies\": {"
+                              + "\"@vaadin/vaadin-notification\": \"1.3.9\""
+                          + "},"
                         + "},"
                         + "\"dependencies\": {"
                           + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
                           + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                        + "}"
+                        + "},"
+                        + "\"devDependencies\": {"
+                            + "\"@vaadin/vaadin-notification\": \"1.4.0\""
+                        + "},"
                      + "}",
                 StandardCharsets.UTF_8);
         // @formatter:on
@@ -204,7 +251,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                   + "}"
                 + "}", PINNED_VERSION), StandardCharsets.UTF_8);
         // @formatter:on
-        verifyVersionIsNotPinned(versions);
+
+        File devDeps = temporaryFolder.newFile();
+        // Platform defines a pinned version
+        // @formatter:off
+        FileUtils.write(devDeps,
+                "{"
+                     + "\"@vaadin/vaadin-notification\":  \"1.3.9\""
+                     + "}", StandardCharsets.UTF_8);
+        // @formatter:on
+
+        verifyVersionIsNotPinned(versions, devDeps);
     }
 
     @Test
@@ -221,14 +278,20 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "{"
                         + "\"vaadin\": {"
                         + "\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                        + "\"@vaadin/vaadin-overlay\": \"" + PINNED_VERSION + "\""
-                        + "}"
+                            + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                            + "\"@vaadin/vaadin-overlay\": \"" + PINNED_VERSION + "\""
+                        + "},"
+                        + "\"devDependencies\": {"
+                            + "\"@vaadin/vaadin-notification\": \"1.4.0\""
+                        + "},"
                         + "},"
                         + "\"dependencies\": {"
-                        + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
-                        + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
-                        + "}"
+                            + "\"@vaadin/vaadin-dialog\": \"2.3.0\","
+                            + "\"@vaadin/vaadin-overlay\": \"" + customOverlayVersion + "\""
+                        + "},"
+                            + "\"devDependencies\": {"
+                            + "\"@vaadin/vaadin-notification\": \"1.3.9\""
+                            + "},"
                         + "}",
                 StandardCharsets.UTF_8);
         // @formatter:on
@@ -244,7 +307,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         + "}"
                         + "}", PINNED_VERSION), StandardCharsets.UTF_8);
         // @formatter:on
-        verifyVersionIsNotPinned(versions);
+
+        File devDeps = temporaryFolder.newFile();
+        // Platform defines a pinned version
+        // @formatter:off
+        FileUtils.write(devDeps,
+                "{"
+                     + "\"@vaadin/vaadin-notification\":  \"1.4.0\""
+                     + "}", StandardCharsets.UTF_8);
+        // @formatter:on
+
+        verifyVersionIsNotPinned(versions, devDeps);
     }
 
     @Test
@@ -311,16 +384,18 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 versionsLoginVersion, versionsMenuBarVersion,
                 versionsNotificationVersion, versionsUploadVersion), StandardCharsets.UTF_8);
         // @formatter:on
-        ClassFinder classFinder = getClassFinder();
-        Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
-        TaskRunNpmInstall task = createTask();
 
-        String path = task.generateVersionsJson();
+        File devDeps = temporaryFolder.newFile();
+        // Platform defines a pinned version
+        // @formatter:off
+        FileUtils.write(devDeps,
+                "{"
+                     + "\"@vaadin/vaadin-button\":  \"2.2.2\""
+                     + "}", StandardCharsets.UTF_8);
+        // @formatter:on
 
-        File generatedVersionsFile = new File(path);
-        JsonObject generatedVersions = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
+        JsonObject generatedVersions = getGeneratedVersionsContent(versions,
+                devDeps);
 
         Assert.assertEquals("Login version is the same for user and platform.",
                 loginVersion,
@@ -332,6 +407,16 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 generatedVersions.getString("@vaadin/vaadin-notification"));
         Assert.assertFalse("Upload should not be pinned.",
                 generatedVersions.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertEquals("Button version should use dev dependency", "2.2.2",
+                generatedVersions.getString("@vaadin/vaadin-button"));
+    }
+
+    @Test
+    public void generateVersionsJson_noVersions_noDevDeps_returnNull()
+            throws IOException {
+        TaskRunNpmInstall task = createTask();
+
+        Assert.assertNull(task.generateVersionsJson());
     }
 
     @Override
@@ -363,22 +448,42 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         };
     }
 
-    private void verifyVersionIsNotPinned(File versions)
+    private TaskRunNpmInstall createTaskWithDevDepsLocked(String devDepsPath) {
+        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
+                false) {
+            @Override
+            protected String getDevDependenciesFilePath() {
+                return devDepsPath;
+            }
+        };
+    }
+
+    private JsonObject getGeneratedVersionsContent(File versions, File devDeps)
             throws MalformedURLException, IOException {
+        String devDepsPath = "foo";
+
         ClassFinder classFinder = getClassFinder();
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
-        TaskRunNpmInstall task = createTask();
+        Mockito.when(classFinder.getResource(devDepsPath))
+                .thenReturn(devDeps.toURI().toURL());
+
+        TaskRunNpmInstall task = createTaskWithDevDepsLocked(devDepsPath);
 
         String path = task.generateVersionsJson();
 
         File generatedVersionsFile = new File(path);
-        JsonObject generatedVersions = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
+        return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
+                StandardCharsets.UTF_8));
 
+    }
+
+    private void verifyVersionIsNotPinned(File versions, File devDeps)
+            throws MalformedURLException, IOException {
         Assert.assertEquals(
                 "Generated versions json should not contain anything: package.json overrides the version",
-                0, generatedVersions.keys().length);
+                0,
+                getGeneratedVersionsContent(versions, devDeps).keys().length);
     }
 
 }

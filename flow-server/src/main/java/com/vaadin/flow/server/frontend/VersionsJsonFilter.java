@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 
 /**
@@ -31,7 +30,10 @@ class VersionsJsonFilter {
 
     private final JsonObject userManagedDependencies;
 
-    VersionsJsonFilter(JsonObject packageJson) {
+    private final String dependenciesKey;
+
+    VersionsJsonFilter(JsonObject packageJson, String dependenciesKey) {
+        this.dependenciesKey = dependenciesKey;
         userManagedDependencies = collectUserManagedDependencies(packageJson);
     }
 
@@ -62,16 +64,16 @@ class VersionsJsonFilter {
     private JsonObject collectUserManagedDependencies(JsonObject packageJson) {
         JsonObject json = Json.createObject();
         JsonObject vaadinDep;
-        if (packageJson.hasKey(VAADIN_DEP_KEY)
-                && packageJson.getObject(VAADIN_DEP_KEY).hasKey(DEPENDENCIES)) {
+        if (packageJson.hasKey(VAADIN_DEP_KEY) && packageJson
+                .getObject(VAADIN_DEP_KEY).hasKey(dependenciesKey)) {
             vaadinDep = packageJson.getObject(VAADIN_DEP_KEY)
-                    .getObject(DEPENDENCIES);
+                    .getObject(dependenciesKey);
         } else {
             vaadinDep = Json.createObject();
         }
 
-        if (packageJson.hasKey(DEPENDENCIES)) {
-            JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        if (packageJson.hasKey(dependenciesKey)) {
+            JsonObject dependencies = packageJson.getObject(dependenciesKey);
 
             for (String key : dependencies.keys()) {
                 if (isUserChanged(key, vaadinDep, dependencies)) {
