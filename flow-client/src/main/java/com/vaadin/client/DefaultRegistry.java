@@ -66,7 +66,7 @@ public class DefaultRegistry extends Registry {
         }
 
         @Override
-        public void afterNavigation(JsonObject state) {
+        public void afterServerNavigation(JsonObject state) {
             // don't do anything
         }
     }
