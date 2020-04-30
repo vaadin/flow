@@ -2,7 +2,7 @@ const { suite, test} = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import { AssertFalse, AssertTrue, DecimalMin, DecimalMax, Digits, Email, Future, Max, Min, Negative, NegativeOrCero, NotBlank, NotEmpty, NotNull, Null, Past, Pattern, Positive, PositiveOrCero, Size } from "../../main/resources/META-INF/resources/frontend/FormValidator";
+import { AssertFalse, AssertTrue, DecimalMin, DecimalMax, Digits, Email, Future, Max, Min, Negative, NegativeOrZero, NotBlank, NotEmpty, NotNull, Null, Past, Pattern, Positive, PositiveOrZero, Size } from "../../main/resources/META-INF/resources/frontend/FormValidator";
 import {Required} from "../../main/resources/META-INF/resources/frontend/Binder";
 suite("Validator", () => {
 
@@ -124,8 +124,8 @@ suite("Validator", () => {
   });
 
 
-  test("NegativeOrCero", () => {
-    const validator = new NegativeOrCero();
+  test("NegativeOrZero", () => {
+    const validator = new NegativeOrZero();
     assert.isTrue(validator.validate(-1));
     assert.isTrue(validator.validate(-0.01));
     assert.isTrue(validator.validate(0));
@@ -140,8 +140,8 @@ suite("Validator", () => {
     assert.isTrue(validator.validate(0.01));
   });
 
-  test("PositiveOrCero", () => {
-    const validator = new PositiveOrCero();
+  test("PositiveOrZero", () => {
+    const validator = new PositiveOrZero();
     assert.isFalse(validator.validate(-1));
     assert.isFalse(validator.validate(-0.01));
     assert.isTrue(validator.validate(0));
