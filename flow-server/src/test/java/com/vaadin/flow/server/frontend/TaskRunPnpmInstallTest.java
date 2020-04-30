@@ -194,7 +194,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // @formatter:off
         FileUtils.write(devDeps,
                 "{"
-                     + "\"@vaadin/vaadin-notification\":  \"1.3.9\""
+                     + "\"@vaadin/vaadin-notification\":  \"1.3.9\","
+                     + "\"@vaadin/vaadin-overlay\":  \"3.3.0\""
                      + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
@@ -202,6 +203,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertTrue(object.hasKey("@vaadin/vaadin-overlay"));
         Assert.assertTrue(object.hasKey("@vaadin/vaadin-notification"));
 
+        // Platform version takes precedence over dev deps
         Assert.assertEquals(PINNED_VERSION,
                 object.getString("@vaadin/vaadin-overlay"));
         Assert.assertEquals("1.3.9",
