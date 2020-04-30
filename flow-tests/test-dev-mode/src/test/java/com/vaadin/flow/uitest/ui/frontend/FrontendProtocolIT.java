@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui.frontend;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -43,8 +44,11 @@ import com.vaadin.testbench.TestBenchElement;
 public class FrontendProtocolIT extends ChromeBrowserTest {
 
     @Test
+    @Ignore // https://github.com/vaadin/flow/issues/8063
     public void loadComponentFromEs6Path() {
         openProduction();
+
+        checkLogsForErrors(msg -> msg.contains("HTML Imports is deprecated"));
 
         // will access the frontend-protocol.html file at
         // src/main/webapp/VAADIN/static/frontend/es6/components
@@ -72,9 +76,12 @@ public class FrontendProtocolIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore // https://github.com/vaadin/flow/issues/8063
     public void loadComponentFromEs6Property() {
         openForEs6Url();
 
+        checkLogsForErrors(msg -> msg.contains("HTML Imports is deprecated"));
+        
         // will access the frontend-protocol.html file at
         // src/main/webapp/com/vaadin/flow/uitest/components
         Assert.assertEquals("File loaded from property-defined path",
