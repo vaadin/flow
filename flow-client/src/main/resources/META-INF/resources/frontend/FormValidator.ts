@@ -70,13 +70,13 @@ export class DecimalMax extends DecimalMin {
 export class Negative extends AbstractValidator<any> {
   validate = (value: any) => validator.toFloat(`${value}`) < 0;
 }
-export class NegativeOrCero extends AbstractValidator<any> {
+export class NegativeOrZero extends AbstractValidator<any> {
   validate = (value: any) => validator.toFloat(`${value}`) <= 0;
 }
 export class Positive extends AbstractValidator<any> {
   validate = (value: any) => validator.toFloat(`${value}`) > 0;
 }
-export class PositiveOrCero extends AbstractValidator<any> {
+export class PositiveOrZero extends AbstractValidator<any> {
   validate = (value: any) => validator.toFloat(`${value}`) >= 0;
 }
 
@@ -104,10 +104,13 @@ export class Past extends AbstractValidator<any> {
   validate = (value: any) => validator.isBefore(value);
 }
 export class PastOrPresent extends AbstractValidator<any> {
-  validate = (value: any) => validator.isBefore(value);
+  validate = () => {throw new Error('Form Validator for PastOrPresent not implemented yet')};
 }
 export class Future extends AbstractValidator<any> {
   validate = (value: any) => validator.isAfter(value);
+}
+export class FutureOrPresent extends AbstractValidator<any> {
+  validate = () => {throw new Error('Form Validator for FutureOrPresent not implemented yet')};
 }
 
 export class Pattern extends AbstractValidator<string> {
@@ -120,6 +123,3 @@ export class Pattern extends AbstractValidator<string> {
   }
   validate = (value: any) => validator.matches(value, this.value);
 }
-
-// export class PastOrPresent implements Validator<any>
-// export class FutureOrPresent implements Validator<any>
