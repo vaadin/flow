@@ -29,7 +29,7 @@ import elemental.json.JsonObject;
 public class DevDepsFileTest {
 
     @Test
-    public void devDepsFilePresentsAndHasSomeContent() throws IOException {
+    public void devDepsFilePresent_hasContent() throws IOException {
         InputStream stream = DevDepsFileTest.class
                 .getResourceAsStream("/devDependencies.json");
         Assert.assertNotNull(stream);
