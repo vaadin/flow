@@ -17,6 +17,7 @@ package com.vaadin.flow.testutil;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -324,9 +325,26 @@ public class TestBenchHelpers extends ParallelTest {
      *             if an error is found in the browser logs
      */
     protected void checkLogsForErrors() {
+        checkLogsForErrors(msg -> false);
+    }
+
+    /**
+     * Checks browser's log entries, throws an error for any client-side error
+     * and logs any client-side warnings.
+     *
+     * @param acceptableMessagePredicate
+     *            allows to ignore log entries whose message is accaptable
+     *
+     * @throws AssertionError
+     *             if an error is found in the browser logs
+     */
+    protected void checkLogsForErrors(
+            Predicate<String> acceptableMessagePredicate) {
         getLogEntries(Level.WARNING).forEach(logEntry -> {
-            if (Objects.equals(logEntry.getLevel(), Level.SEVERE)
-                    || logEntry.getMessage().contains("404")) {
+            if ((Objects.equals(logEntry.getLevel(), Level.SEVERE)
+                    || logEntry.getMessage().contains("404"))
+                    && !acceptableMessagePredicate
+                    .test(logEntry.getMessage())) {
                 throw new AssertionError(String.format(
                         "Received error message in browser log console right after opening the page, message: %s",
                         logEntry));
@@ -337,6 +355,7 @@ public class TestBenchHelpers extends ParallelTest {
             }
         });
     }
+
 
     private WebElement getShadowRoot(WebElement webComponent) {
         waitUntil(driver -> getCommandExecutor().executeScript(

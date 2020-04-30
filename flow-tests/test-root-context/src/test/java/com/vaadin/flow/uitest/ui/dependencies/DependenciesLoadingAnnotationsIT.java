@@ -123,6 +123,11 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
         for (int i = 0; i < jsImports.size(); i++) {
             WebElement jsImport = jsImports.get(i);
             String jsUrl = jsImport.getAttribute("src");
+            // TODO: where are these comming from and why do they get async when using driver.
+            if (!jsImport.getAttribute("type").equals("text/javascript")
+                    || jsUrl.startsWith("data:text/javascript")) {
+                continue;
+            }
             if (foundClientEngine) {
                 if (userDependencyMinIndex > i) {
                     userDependencyMinIndex = i;
