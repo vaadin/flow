@@ -477,7 +477,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
                 + "beforeEnter\nViewWithAllEvents: 3 "
                 + "onAttach\nViewWithAllEvents: 4 afterNavigation";
         Assert.assertEquals("Should load view with all events", expectedContent,
-                mainLayoutContent.trim());
+                mainLayoutContent);
 
         findElement(By.linkText("Client view")).click();
         waitForElementPresent(By.id("clientView"));
