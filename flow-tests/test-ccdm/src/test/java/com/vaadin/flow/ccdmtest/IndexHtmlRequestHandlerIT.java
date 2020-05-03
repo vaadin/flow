@@ -461,6 +461,7 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void should_renderServerView_When_ClickSameServerLinkTwiceAndGoToClientView() {
         openTestUrl("/");
         waitForElementPresent(By.id("loadVaadinRouter"));
