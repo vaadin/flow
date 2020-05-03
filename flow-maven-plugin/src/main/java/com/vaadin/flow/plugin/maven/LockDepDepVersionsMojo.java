@@ -42,6 +42,8 @@ import elemental.json.JsonValue;
 import static elemental.json.impl.JsonUtil.stringify;
 
 /**
+ * Internal goal to generate dev dependencies versions.
+ * 
  * @author Vaadin Ltd
  *
  */
