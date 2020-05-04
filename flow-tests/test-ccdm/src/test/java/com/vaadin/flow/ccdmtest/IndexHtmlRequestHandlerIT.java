@@ -18,7 +18,6 @@ package com.vaadin.flow.ccdmtest;
 import java.util.Optional;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -462,7 +461,6 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Test is failing : https://github.com/vaadin/flow/issues/8219")
     public void should_renderServerView_When_ClickSameServerLinkTwiceAndGoToClientView() {
         openTestUrl("/");
         waitForElementPresent(By.id("loadVaadinRouter"));
