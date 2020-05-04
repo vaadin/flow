@@ -199,7 +199,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         }
 
         List<String> command = Arrays.asList(nodePath,
-                webpackExecutable.getAbsolutePath(), "--progress");
+                webpackExecutable.getAbsolutePath());
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
                 .directory(project.getBasedir()).inheritIO();
         getLog().info("Running webpack ...");
