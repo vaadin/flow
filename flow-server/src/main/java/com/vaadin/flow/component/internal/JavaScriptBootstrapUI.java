@@ -107,9 +107,6 @@ public class JavaScriptBootstrapUI extends UI {
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
                               String flowRoute) {
-        // This may not be necessary considering that we have one UI/request
-        forwardToUrl = null;
-
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -151,9 +148,6 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void leaveNavigation(String route) {
-        // This may not be necessary considering that we have one UI/request
-        forwardToUrl = null;
-
         boolean postponed = navigateToPlaceholder(
                 new Location(removeFirstSlash(route)));
 
@@ -236,7 +230,7 @@ public class JavaScriptBootstrapUI extends UI {
 
         clientNavigationStateRenderer.handle(navigationEvent);
 
-        forwardToUrl = clientNavigationStateRenderer.getUnknownForwardRoute();
+        forwardToUrl = clientNavigationStateRenderer.getClientForwardRoute();
 
         adjustPageTitle();
 
@@ -304,9 +298,6 @@ public class JavaScriptBootstrapUI extends UI {
 
     @Override
     public void navigate(String pathname, QueryParameters queryParameters) {
-        // This may not be necessary considering that we have one UI/request
-        forwardToUrl = null;
-
         Location location = new Location(pathname, queryParameters);
         if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
             // server-side routing

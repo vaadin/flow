@@ -39,7 +39,7 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     static final String NOT_SUPPORT_REROUTE = "BeforeEvent.rerouteTo() with a client side route is not supported";
 
-    private String unknownForwardRoute;
+    private String clientForwardRoute;
 
     /**
      * Constructs a new NavigationStateRenderer that handles the given
@@ -53,12 +53,12 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     }
 
     /**
-     * Gets the server unknown forward route.
+     * Gets the client forward route.
      * 
-     * @return the server unknown forward route.
+     * @return the client forward route.
      */
-    public String getUnknownForwardRoute() {
-        return unknownForwardRoute;
+    public String getClientForwardRoute() {
+        return clientForwardRoute;
     }
 
     @Override
@@ -70,7 +70,7 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
                         beforeEvent.getUnknownForward());
 
             } else {
-                unknownForwardRoute = beforeEvent.getUnknownForward();
+                clientForwardRoute = beforeEvent.getUnknownForward();
                 return Optional.of(HttpServletResponse.SC_OK);
             }
         }
