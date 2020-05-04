@@ -90,7 +90,7 @@ export class Binder<T, M extends AbstractModel<T>> {
     this.value = this.defaultValue;
   }
 
-  async submitTo(endpointMethod: (value: T) => Promise<T>): Promise<T> {
+  async submitTo(endpointMethod: (value: T) => Promise<T | any>): Promise<T> {
     this[isSubmittingSymbol] = true;
     this.update(this.value);
     try {
