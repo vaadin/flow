@@ -29,10 +29,10 @@ import com.vaadin.flow.router.internal.RouteUtil;
  * Defines the route template suffix for components that function as
  * navigation targets in routing.
  * <p>
- * The full template of the navigation target is composed of the values of
+ * The route template of the navigation target is composed of the values of
  * all {@link RoutePrefix} annotated on the {@link #layout()} and
  * {@link ParentLayout} class values, starting from the root parent and joined
- * together using slash delimiter to form a url form string.
+ * together using slash delimiter to form a path form string.
  * <p>
  * There is also {@link RouteAlias} annotation which may be declared in addition
  * to this annotation and may be used multiple times.

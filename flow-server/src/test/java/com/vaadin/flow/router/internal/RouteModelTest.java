@@ -19,6 +19,7 @@ package com.vaadin.flow.router.internal;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.flow.component.Component;
@@ -323,12 +324,31 @@ public class RouteModelTest {
      * Creates a parameters map where any even index argument is a key (starting
      * with 0) and any odd index argument is a value (starting with 1)
      *
-     * @param keysAndValues
+     * @param namesAndValues
      *            the keys and values of the map.
      * @return a Map containing the specified arguments.
      */
-    public static RouteParameters parameters(String... keysAndValues) {
-        return new RouteParameters(keysAndValues);
+    public static RouteParameters parameters(String... namesAndValues) {
+        if (namesAndValues.length % 2 == 1) {
+            throw new IllegalArgumentException(
+                    "Input varargs must be of even size.");
+        }
+
+        Map<String, String> paramsMap = new HashMap<>(
+                namesAndValues.length / 2);
+
+        for (int i = 0; i < namesAndValues.length; i += 2) {
+            final String name = namesAndValues[i];
+            if (paramsMap.containsKey(name)) {
+                throw new IllegalArgumentException(
+                        "Parameter " + name + " is specified more than once.");
+            }
+
+            final String value = namesAndValues[i + 1];
+            paramsMap.put(name, value);
+        }
+
+        return new RouteParameters(paramsMap);
     }
 
     /**

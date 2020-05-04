@@ -74,7 +74,7 @@ public class NavigationState implements Serializable {
      * Sets the route target of this state.
      *
      * @param routeTarget
-     *            the route target to set
+     *            the route target to set, not null.
      */
     void setRouteTarget(RouteTarget routeTarget) {
         Objects.requireNonNull(routeTarget,
@@ -127,7 +127,7 @@ public class NavigationState implements Serializable {
      * Sets the route parameters.
      *
      * @param routeParameters
-     *            route parameters.
+     *            route parameters, not null.
      */
     void setRouteParameters(RouteParameters routeParameters) {
         assert routeParameters != null;

@@ -39,6 +39,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
@@ -307,7 +308,8 @@ public class UITest {
         initUI(ui, "", null);
 
         ui.navigate(FooBarParamNavigationTarget.class,
-                new RouteParameters("fooParam", "flu", "barParam", "beer"));
+                new RouteParameters(new RouteParam("fooParam", "flu"),
+                        new RouteParam("barParam", "beer")));
 
         assertEquals("foo/flu/beer/bar",
                 ui.getInternals().getActiveViewLocation().getPath());

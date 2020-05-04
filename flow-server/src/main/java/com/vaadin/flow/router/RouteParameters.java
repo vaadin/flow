@@ -52,41 +52,38 @@ public final class RouteParameters implements Serializable {
     }
 
     /**
-     * Creates a RouteParameters container using the given parameter names and
-     * values. The input argument contains a sequence of pairs where the first
-     * string in the pair represents the parameter name, while the second string
-     * in the pair represents its value.
+     * Creates a RouteParameters container using the given {@link RouteParam}s.
      *
-     * @param namesAndValues
-     *            parameters mapping containing an even size varargs. First and
-     *            odd index elements represents the name of the parameter and
-     *            following even index element represents the value for the
-     *            preceding parameter name.
+     * @param params
+     *            the list of parameters and their values.
      * @throws IllegalArgumentException
-     *             if the varargs size is not a multiple of 2 or the name of a
-     *             parameter is specified more than once.
+     *             if a parameter is given more than once.
      */
-    public RouteParameters(String... namesAndValues) {
-        if (namesAndValues.length % 2 == 1) {
-            throw new IllegalArgumentException(
-                    "Input varargs must be of even size.");
-        }
+    public RouteParameters(RouteParam... params) {
+        Map<String, String> paramsMap = new HashMap<>(params.length);
 
-        Map<String, String> paramsMap = new HashMap<>(
-                namesAndValues.length / 2);
-
-        for (int i = 0; i < namesAndValues.length; i += 2) {
-            final String name = namesAndValues[i];
-            if (paramsMap.containsKey(name)) {
-                throw new IllegalArgumentException(
-                        "Parameter " + name + " is specified more than once.");
+        for (RouteParam param : params) {
+            if (paramsMap.containsKey(param.getName())) {
+                throw new IllegalArgumentException("Parameter "
+                        + param.getName() + " is given more than once.");
             }
 
-            final String value = namesAndValues[i + 1];
-            paramsMap.put(name, value);
+            paramsMap.put(param.getName(), param.getValue());
         }
 
         this.params = Collections.unmodifiableMap(paramsMap);
+    }
+
+    /**
+     * Creates a RouteParameters instance using only one parameter.
+     * 
+     * @param name
+     *            the name of the parameter.
+     * @param value
+     *            the value of the parameter.
+     */
+    public RouteParameters(String name, String value) {
+        this.params = Collections.singletonMap(name, value);
     }
 
     /**

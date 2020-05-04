@@ -121,15 +121,8 @@ public class RouteParametersTest {
     @Test
     public void varargs_initializer_throws_exception() {
         try {
-            new RouteParameters("int", "123", "long");
-
-            Assert.fail(
-                    "RouteParameters initializer should have failed with odd size argument.");
-        } catch (IllegalArgumentException e) {
-        }
-
-        try {
-            new RouteParameters("int", "123", "int", "123");
+            new RouteParameters(new RouteParam("int", "123"),
+                    new RouteParam("int", "123"));
 
             Assert.fail(
                     "RouteParameters initializer should have failed with same parameter defined more than once.");
@@ -138,8 +131,10 @@ public class RouteParametersTest {
     }
 
     private RouteParameters getParameters() {
-        return new RouteParameters("string", "foo", "integer", "123", "long",
-                "12345678900", "varargs", "path/to/foo/bar");
+        return new RouteParameters(new RouteParam("string", "foo"),
+                new RouteParam("integer", "123"),
+                new RouteParam("long", "12345678900"),
+                new RouteParam("varargs", "path/to/foo/bar"));
     }
 
 }

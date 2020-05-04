@@ -19,6 +19,8 @@ package com.vaadin.flow.router;
  * Define the route parameters format flags. This is used when retrieving route
  * information, so that the result may contain the parameters definition
  * represented according with the specified flags.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  */
 public enum RouteParameterFormatOption {
 

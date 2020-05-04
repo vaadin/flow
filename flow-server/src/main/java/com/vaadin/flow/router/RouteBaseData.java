@@ -127,7 +127,7 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     }
 
     /**
-     * Get the full route url of {@link Route}.
+     * Get the full route template of {@link Route}.
      *
      * @return route template.
      */

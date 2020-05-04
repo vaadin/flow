@@ -814,7 +814,7 @@ public class UI extends Component
      *             mandatory parameter.
      * @throws NotFoundException
      *             in case there is no route defined for the given
-     *             navigationTarget matching the parameters.
+     *             navigationTarget.
      * @see #navigate(Class, Object)
      * @see #navigate(Class, RouteParameters)
      */
@@ -926,8 +926,8 @@ public class UI extends Component
      *             if the location or queryParameters are null.
      */
     public void navigate(String location, QueryParameters queryParameters) {
-        Objects.requireNonNull(location, "Location may not be null");
-        Objects.requireNonNull(queryParameters, "Query parameters may not be null");
+        Objects.requireNonNull(location, "Location must not be null");
+        Objects.requireNonNull(queryParameters, "Query parameters must not be null");
 
         Location navigationLocation = new Location(location, queryParameters);
         if (!internals.hasLastHandledLocation()
