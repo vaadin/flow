@@ -50,7 +50,7 @@ export class Binder<T, M extends AbstractModel<T>> {
   constructor(
     public context: Element,
     Model: ModelConstructor<T, M>,
-    public onChange: (oldValue: T) => void
+    public onChange: (oldValue?: T) => void
   ) {
     this.reset(Model.createEmptyValue());
     this.model = new Model(this, 'value');
@@ -90,14 +90,14 @@ export class Binder<T, M extends AbstractModel<T>> {
     this.value = this.defaultValue;
   }
 
-  async submitTo(endpointMethod: (value: T) => Promise<void>) {
+  async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
     this[isSubmittingSymbol] = true;
     this.update(this.value);
     try {
-      await endpointMethod.call(this.context, this.value);
+      return endpointMethod.call(this.context, this.value);
     } finally {
       this[isSubmittingSymbol] = false;
-      this.update(this.value);
+      this.reset(this.value);
     }
   }
 
@@ -203,7 +203,7 @@ export interface Validator<T> {
 }
 
 export class Required implements Validator<string> {
-  message = 'invalid';
+  message = '';
   validate = (value: any) => {
     if (typeof value === 'string' || Array.isArray(value)) {
       return value.length > 0;
@@ -273,11 +273,17 @@ export function setValue<T>(model: AbstractModel<T>, value: T) {
   }
 }
 
-export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item: T) {
+export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item?: T) {
+  if (!item) {
+    item = model[ModelSymbol].createEmptyValue();
+  }
   setValue(model, [...getValue(model), item]);
 }
 
-export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item: T) {
+export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item?: T) {
+  if (!item) {
+    item = model[ModelSymbol].createEmptyValue();
+  }
   setValue(model, [item, ...getValue(model)]);
 }
 
@@ -376,13 +382,7 @@ export const field = directive(<T>(
     element.value = value;
   }
 
-  const required = (
-    (model instanceof StringModel)
-    || (model instanceof NumberModel)
-    || (model instanceof BooleanModel)
-    || (model instanceof ArrayModel)
-  ) && !![getModelValidators(model)].find(val => val instanceof Required);
-
+  const required = !![...getModelValidators(model)].find(val => val instanceof Required);
   if (required !== fieldState.required) {
     fieldState.required = required;
     element.required = required;
