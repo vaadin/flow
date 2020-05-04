@@ -273,11 +273,17 @@ export function setValue<T>(model: AbstractModel<T>, value: T) {
   }
 }
 
-export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item: T) {
+export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item?: T) {
+  if (!item) {
+    item = model[ModelSymbol].createEmptyValue();
+  }
   setValue(model, [...getValue(model), item]);
 }
 
-export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item: T) {
+export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item?: T) {
+  if (!item) {
+    item = model[ModelSymbol].createEmptyValue();
+  }
   setValue(model, [item, ...getValue(model)]);
 }
 
