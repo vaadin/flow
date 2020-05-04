@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import org.junit.Ignore;
+
 /**
  * The test for {@link FrontendInlineApiView}.
  * <p>
@@ -25,6 +27,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
  * @since 1.0
  *
  */
+@Ignore // #8096
 public class FrontendInlineApiIT extends AbstractFrontendInlineIT {
 
 }
