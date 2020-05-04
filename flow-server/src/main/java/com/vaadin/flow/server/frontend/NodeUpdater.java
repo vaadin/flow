@@ -77,6 +77,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_FLOW_JARS = "Flow";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
+    private static final String ROUTER_VERSION = "1.7.1";
     protected static final String POLYMER_VERSION = "3.2.0";
 
     /**
@@ -256,7 +257,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("@vaadin/router", "^1.6.0");
+        defaults.put("@vaadin/router", ROUTER_VERSION);
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
