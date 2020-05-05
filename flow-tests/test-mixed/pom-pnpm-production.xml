@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>flow-tests</artifactId>
@@ -45,7 +45,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
-            <!--  Run flow plugin to build frontend -->
+            <!-- Run flow plugin to build frontend -->
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
@@ -55,12 +55,20 @@
                         <goals>
                             <goal>prepare-frontend</goal>
                             <goal>build-frontend</goal>
+                            <goal>lock-dev-deps</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <bowerMode>false</bowerMode>
                     <productionMode>true</productionMode>
+                    <generatedDependencies>${flow.dev.dependencies.folder}/${flow.dev.dependencies.file}</generatedDependencies>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
@@ -69,9 +77,9 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
                     <webApp>
-                        <!-- We deploy the app with a context in the servlet container in order to test
-                             that bootstrap code resolves correctly the application context and do
-                             not render absolute references to the root path -->
+                        <!-- We deploy the app with a context in the servlet 
+                            container in order to test that bootstrap code resolves correctly the application 
+                            context and do not render absolute references to the root path -->
                         <contextPath>/context-path</contextPath>
                     </webApp>
                 </configuration>
@@ -80,6 +88,42 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>gen-dev-deps</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <skipITs>false</skipITs>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>local-run</id>
             <activation>

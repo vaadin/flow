@@ -219,6 +219,18 @@
 
     <profiles>
         <profile>
+            <id>gen-dev-deps</id>
+            <modules>
+                <module>test-mixed/pom-pnpm-production.xml</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>release</id>
+            <modules>
+                <module>test-mixed/pom-pnpm-production.xml</module>
+            </modules>
+        </profile>
+        <profile>
             <id>run-tests</id>
             <activation>
                 <property>
