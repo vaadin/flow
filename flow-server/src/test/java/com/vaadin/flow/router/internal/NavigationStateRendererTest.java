@@ -476,7 +476,7 @@ public class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("preserved"), ui, NavigationTrigger.ROUTER_LINK,
-                state));
+                state, false));
 
         // then client-side JS was invoked
         Assert.assertTrue("Expected JS invocation", jsInvoked.get());
@@ -485,7 +485,7 @@ public class NavigationStateRendererTest {
                         "scrollPositionHandlerAfterServerNavigation")));
     }
 
-    @Test()
+    @Test
     public void handle_RouterLinkTriggerNullState_IllegalStateException() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
@@ -505,11 +505,16 @@ public class NavigationStateRendererTest {
         expectedException.expect(IllegalStateException.class);
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("regular"), ui, NavigationTrigger.ROUTER_LINK,
-                null));
+                null, false));
     }
 
     @Test
-    public void handle_isForwardTo_noPushState() {
+    // In any of the following criteria, pushState shouldn't be invoked:
+    // - forwardTo is true
+    // - the navigation location is the same as the current location (repeated
+    // navigation)
+    // - navigation trigger is PAGE_LOAD, HISTORY, or PROGRAMMATIC
+    public void handle_variousInputs_noPushState() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -548,15 +553,49 @@ public class NavigationStateRendererTest {
         };
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC,
+                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE,
                 null, true));
 
-        Assert.assertFalse("No pushState invocation is expected.",
+        Assert.assertFalse(
+                "No pushState invocation is expected when forwardTo is true.",
+                pushStateCalled.get());
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC));
+
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigation trigger is PROGRAMMATIC.",
+                pushStateCalled.get());
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.HISTORY));
+
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigation trigger is HISTORY.",
+                pushStateCalled.get());
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.PAGE_LOAD));
+
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigation trigger is PAGE_LOAD.",
+                pushStateCalled.get());
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
+
+        pushStateCalled.set(false);
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
+
+        Assert.assertFalse(
+                "No pushState invocation is expected when navigating to the current location.",
                 pushStateCalled.get());
     }
 
     @Test
-    public void handle_programmaticTriggerWithState_pushStateIsCalled() {
+    public void handle_uiNavigateTrigger_pushStateIsCalled() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -596,116 +635,12 @@ public class NavigationStateRendererTest {
             }
         };
 
-        JsonObject state = Json.createObject();
-
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC,
-                state));
+                new Location("regular"), ui, NavigationTrigger.UI_NAVIGATE));
 
         Assert.assertTrue("pushState invocation is expected.",
                 pushStateCalled.get());
         Assert.assertTrue(pushStateLocations.stream()
                 .anyMatch(location -> location.getPath().equals("regular")));
-    }
-
-    @Test
-    public void handle_programmaticTriggerWithNullState_pushStateIsNotCalled() {
-        // given a service with instantiator
-        MockVaadinServletService service = createMockServiceWithInstantiator();
-
-        // given a locked session
-        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
-
-        // given a NavigationStateRenderer mapping to RegularView
-        new NavigationStateBuilder(router).withTarget(RegularView.class)
-                .build();
-        NavigationStateRenderer renderer = new NavigationStateRenderer(
-                navigationStateFromTarget(RegularView.class));
-
-        // given a UI with an instrumented Page that records
-        // getHistory().pushState calls
-        AtomicBoolean pushStateCalled = new AtomicBoolean(false);
-        MockUI ui = new MockUI(session) {
-            final Page page = new Page(this) {
-                final History history = new History(getUI().get()) {
-                    @Override
-                    public void pushState(JsonValue state, Location location) {
-                        pushStateCalled.set(true);
-                    }
-                };
-
-                @Override
-                public History getHistory() {
-                    return history;
-                }
-            };
-
-            @Override
-            public Page getPage() {
-                return page;
-            }
-        };
-
-        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC,
-                null));
-
-        Assert.assertFalse("pushState being called is not expected.",
-                pushStateCalled.get());
-    }
-
-    @Test
-    public void handle_programmaticTriggerRepeatedLocation_pushStateIsNotCalled() {
-        // given a service with instantiator
-        MockVaadinServletService service = createMockServiceWithInstantiator();
-
-        // given a locked session
-        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
-
-        // given a NavigationStateRenderer mapping to RegularView
-        new NavigationStateBuilder(router).withTarget(RegularView.class)
-                .build();
-        NavigationStateRenderer renderer = new NavigationStateRenderer(
-                navigationStateFromTarget(RegularView.class));
-
-        // given a UI with an instrumented Page that records
-        // getHistory().pushState calls
-        AtomicBoolean pushStateCalled = new AtomicBoolean(false);
-        MockUI ui = new MockUI(session) {
-            final Page page = new Page(this) {
-                final History history = new History(getUI().get()) {
-                    @Override
-                    public void pushState(JsonValue state, Location location) {
-                        pushStateCalled.set(true);
-                    }
-                };
-
-                @Override
-                public History getHistory() {
-                    return history;
-                }
-            };
-
-            @Override
-            public Page getPage() {
-                return page;
-            }
-        };
-
-        JsonObject state = Json.createObject();
-        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC,
-                state));
-
-        pushStateCalled.set(false);
-
-        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.PROGRAMMATIC,
-                state));
-
-        Assert.assertFalse("pushState being called is not expected.",
-                pushStateCalled.get());
     }
 }

@@ -72,7 +72,7 @@ s     */
     public ErrorNavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, ErrorParameter<?> errorParameter,
             JsonValue state) {
-        super(router, location, ui, trigger, state);
+        super(router, location, ui, trigger, state, false);
 
         this.errorParameter = errorParameter;
     }

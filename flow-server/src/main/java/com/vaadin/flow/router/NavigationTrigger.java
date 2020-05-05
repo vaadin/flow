@@ -49,8 +49,12 @@ public enum NavigationTrigger {
 
     /**
      * Navigation was triggered programmatically.
-     *
-     * @see UI#navigate(String, QueryParameters)
      */
-    PROGRAMMATIC
+    PROGRAMMATIC,
+
+    /**
+     * Navigation was triggered via
+     * {@link UI#navigate(String, QueryParameters)}. It's for internal use only.
+     */
+    UI_NAVIGATE
 }

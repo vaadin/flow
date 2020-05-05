@@ -38,7 +38,7 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
 
         findElement(By.id("navigate")).click();
         assertMessageCount(3);
-        assertLastMessage("/navigate", NavigationTrigger.PROGRAMMATIC);
+        assertLastMessage("/navigate", NavigationTrigger.UI_NAVIGATE);
 
         getDriver().navigate().back();
         assertMessageCount(4);
