@@ -69,9 +69,6 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.flow.theme.ThemeUtil;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 /**
  * The topmost component in any component hierarchy. There is one UI for every
  * Vaadin instance in a browser window. A UI may either represent an entire
