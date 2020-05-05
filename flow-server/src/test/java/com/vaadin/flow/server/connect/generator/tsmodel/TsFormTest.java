@@ -86,11 +86,12 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertTrue(content.matches("(?s).*import MyEntityIdModel from './MyEntityIdModel';.*"));
         assertTrue(content.matches("(?s).*import MyEntity from './MyEntity';.*"));
         assertTrue(content.matches("(?s).*import \\{Email.+\\} from '@vaadin/flow-frontend/FormValidator'.*"));
-        assertTrue(content.matches("(?s).*export default class MyEntityModel<T extends MyEntity> extends MyEntityIdModel<T> \\{.*"));
+        assertTrue(content.matches("(?s).*max = new StringModel\\(this, 'max', new Required\\(\\), new Max\\(2\\)\\);.*"));
+        assertTrue(content.matches("(?s).*export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEntityIdModel<T> \\{.*"));
         assertTrue(content.matches("(?s).*public readonly bar = new MyBazModel\\(this, 'bar'.*"));
         assertTrue(content.matches("(?s).*public readonly futureOrPresent = new ObjectModel.*"));
         assertTrue(content.matches("(?s).*public readonly pattern = new StringModel\\(this, 'pattern', new Required\\(\\), new Pattern\\(\\{regexp:\\\"\\\\\\\\d\\+\\\\\\\\.\\.\\+\"\\}\\)\\);.*"));
-        assertTrue(content.matches("(?s).*public readonly baz = new ArrayModel<MyBaz, MyBazModel<MyBaz>>\\(this, 'baz', MyBazModel\\);.*"));
+        assertTrue(content.matches("(?s).*public readonly baz = new ArrayModel\\(this, 'baz', MyBazModel\\);.*"));
         assertTrue(content.matches("(?s).*public readonly decimalMax = new NumberModel\\(this, 'decimalMax', new Required\\(\\), new DecimalMax\\(\\{value:\"0.01\", inclusive:false\\}\\)\\);.*"));
     }
 }
