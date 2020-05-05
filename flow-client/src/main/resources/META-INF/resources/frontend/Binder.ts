@@ -344,7 +344,7 @@ export const field = directive(<T>(
     };
     fieldStateMap.set(propertyPart, fieldState);
     // @ts-ignore
-    element.oninput = element.onchange = (event: Event) => {
+    element.oninput = element.onchange = element.onblur = (event: Event) => {
       fieldState.value = element.value;
       // @ts-ignore
       setValue(model, model[fromStringSymbol](element.value));
