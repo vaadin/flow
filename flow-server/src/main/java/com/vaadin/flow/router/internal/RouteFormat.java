@@ -16,6 +16,7 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.router.RouteParameterFormatOption;
@@ -142,13 +143,15 @@ class RouteFormat implements Serializable {
             wrapRegex = true;
         }
 
-        final String regex = formatSegmentRegex(segment, format);
-        if (!regex.isEmpty() && formatRegex) {
+        final Optional<String> regex = formatRegex
+                ? formatSegmentRegex(segment, format)
+                : Optional.empty();
+        if (regex.isPresent()) {
             if (wrapRegex) {
                 result.append("(");
             }
 
-            result.append(regex);
+            result.append(regex.get());
 
             if (wrapRegex) {
                 result.append(")");
@@ -158,11 +161,11 @@ class RouteFormat implements Serializable {
         return result.toString();
     }
 
-    static String formatSegmentRegex(RouteSegment segment,
+    static Optional<String> formatSegmentRegex(RouteSegment segment,
             Set<RouteParameterFormatOption> format) {
-        final String regex = segment.getRegex();
+        final Optional<String> regex = segment.getRegex();
         if (format.contains(RouteParameterFormatOption.REGEX_NAME)) {
-            return RouteParameterRegex.getName(regex);
+            return Optional.of(RouteParameterRegex.getName(regex.orElse("")));
         } else {
             return regex;
         }
@@ -173,15 +176,15 @@ class RouteFormat implements Serializable {
      */
     static class ParameterInfo implements Serializable {
 
-        private String name;
+        private final String name;
 
-        private String template;
+        private final String template;
 
-        private boolean optional;
+        private final boolean optional;
 
-        private boolean varargs;
+        private final boolean varargs;
 
-        private String regex;
+        private final Optional<String> regex;
 
         ParameterInfo(String template) {
             this.template = template;
@@ -209,11 +212,11 @@ class RouteFormat implements Serializable {
 
                 name = template.substring(0, regexStartIndex);
 
-                regex = template.substring(regexStartIndex + 1,
-                        template.length() - 1);
+                regex = Optional.of(template.substring(regexStartIndex + 1,
+                        template.length() - 1));
             } else {
                 name = template;
-                regex = RouteParameterRegex.STRING;
+                regex = Optional.empty();
             }
         }
 
@@ -233,7 +236,7 @@ class RouteFormat implements Serializable {
             return varargs;
         }
 
-        public String getRegex() {
+        public Optional<String> getRegex() {
             return regex;
         }
     }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Immutable data representing one url parameter.
@@ -24,7 +25,7 @@ public class RouteParameterData implements Serializable {
 
     private final String template;
 
-    private final String regex;
+    private final Optional<String> regex;
 
     /**
      * Creates a parameter data instance.
@@ -34,7 +35,7 @@ public class RouteParameterData implements Serializable {
      * @param regex
      *            the regex as found in the template.
      */
-    public RouteParameterData(String template, String regex) {
+    public RouteParameterData(String template, Optional<String> regex) {
         this.template = template;
         this.regex = regex;
     }
@@ -53,7 +54,7 @@ public class RouteParameterData implements Serializable {
      * 
      * @return the regex of the parameter.
      */
-    public String getRegex() {
+    public Optional<String> getRegex() {
         return regex;
     }
 }

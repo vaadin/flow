@@ -295,19 +295,19 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
                 FooNavigationTarget.class);
 
         Assert.assertEquals("Required parameter didn't match route template.",
-                getTemplate(RouteWithParameter.class),
+                "param/" + HasUrlParameterFormat.PARAMETER,
                 routeConfiguration.getTemplate(RouteWithParameter.class)
                         .orElse(null));
         Assert.assertEquals("Wildcard parameter didn't match route template.",
-                getTemplate(RouteWithMultipleParameters.class),
+                "param/" + HasUrlParameterFormat.PARAMETER + "*",
                 routeConfiguration.getTemplate(RouteWithMultipleParameters.class)
                         .orElse(null));
         Assert.assertEquals("Optional parameter didn't match route template.",
-                getTemplate(OptionalParameter.class),
+                "optional/" + HasUrlParameterFormat.PARAMETER + "?",
                 routeConfiguration.getTemplate(OptionalParameter.class)
                         .orElse(null));
         Assert.assertEquals("Non parameterized url didn't match route template.",
-                getTemplate(FooNavigationTarget.class),
+                "foo",
                 routeConfiguration.getTemplate(FooNavigationTarget.class)
                         .orElse(null));
     }
@@ -698,14 +698,6 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
             return router;
         }
 
-    }
-
-    private String getTemplate(
-            Class<? extends Component> routeWithHasUrlParameterClass) {
-        return HasUrlParameterFormat.getTemplate(
-                routeWithHasUrlParameterClass.getAnnotation(Route.class)
-                        .value(),
-                routeWithHasUrlParameterClass);
     }
 
 }

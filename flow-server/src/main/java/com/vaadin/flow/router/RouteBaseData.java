@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
@@ -144,7 +145,8 @@ public abstract class RouteBaseData<T extends RouteBaseData>
     @Deprecated
     public List<Class<?>> getParameters() {
         final List<String> parametersRegex = parameters.values().stream()
-                .map(RouteParameterData::getRegex).collect(Collectors.toList());
+                .map(RouteParameterData::getRegex).map(Optional::get)
+                .collect(Collectors.toList());
         return HasUrlParameterFormat.getParameterTypes(parametersRegex);
     }
 

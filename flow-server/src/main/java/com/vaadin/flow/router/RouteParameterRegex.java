@@ -37,11 +37,6 @@ public class RouteParameterRegex implements Serializable {
      */
     public static final String BOOLEAN = "^true|false$";
 
-    /**
-     * String type represented by an empty regex matching any parameter value.
-     */
-    public static final String STRING = "";
-
     private RouteParameterRegex() {
     }
 
@@ -53,17 +48,15 @@ public class RouteParameterRegex implements Serializable {
      * @return the regex matching the type.
      */
     public static String getRegex(Class<?> parameterType) {
-        String type = null;
+        String regex = null;
         if (parameterType.isAssignableFrom(Integer.class)) {
-            type = RouteParameterRegex.INTEGER;
+            regex = RouteParameterRegex.INTEGER;
         } else if (parameterType.isAssignableFrom(Long.class)) {
-            type = RouteParameterRegex.LONG;
+            regex = RouteParameterRegex.LONG;
         } else if (parameterType.isAssignableFrom(Boolean.class)) {
-            type = RouteParameterRegex.BOOLEAN;
-        } else {
-            type = RouteParameterRegex.STRING;
+            regex = RouteParameterRegex.BOOLEAN;
         }
-        return type;
+        return regex;
     }
 
     /**

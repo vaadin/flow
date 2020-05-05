@@ -110,10 +110,7 @@ final class RouteSegment implements Serializable {
         if (RouteFormat.isParameter(segmentTemplate)) {
             info = new RouteFormat.ParameterInfo(segmentTemplate);
 
-            final String regex = getRegex();
-            if (!regex.isEmpty()) {
-                pattern = Pattern.compile(regex);
-            }
+            getRegex().ifPresent(s -> pattern = Pattern.compile(s));
 
             this.name = info.getName();
         } else {
@@ -172,8 +169,8 @@ final class RouteSegment implements Serializable {
         return info != null;
     }
 
-    String getRegex() {
-        return isParameter() ? info.getRegex() : null;
+    Optional<String> getRegex() {
+        return isParameter() ? info.getRegex() : Optional.empty();
     }
 
     boolean isOptional() {
@@ -193,15 +190,11 @@ final class RouteSegment implements Serializable {
             return Objects.equals(getName(), value);
         }
 
-        if (getRegex().isEmpty()) {
+        if (pattern == null) {
             return true;
-        }
-
-        if (pattern != null) {
+        } else {
             return pattern.matcher(value).matches();
         }
-
-        return false;
     }
 
     /**
@@ -255,8 +248,9 @@ final class RouteSegment implements Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
-     *         <code>url</code> argument according with the route configuration.
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from
+     *         the <code>url</code> argument according with the route
+     *         configuration.
      */
     NavigationRouteTarget getNavigationRouteTarget(String url) {
 
@@ -569,9 +563,8 @@ final class RouteSegment implements Serializable {
     void matchSegmentTemplates(String template,
             Consumer<RouteSegment> segmentProcessor,
             Consumer<RouteSegment> targetSegmentProcessor) {
-        matchSegmentTemplates(template,
-                PathUtil.getSegmentsList(template), segmentProcessor,
-                targetSegmentProcessor);
+        matchSegmentTemplates(template, PathUtil.getSegmentsList(template),
+                segmentProcessor, targetSegmentProcessor);
     }
 
     private void matchSegmentTemplates(final String template,
@@ -743,16 +736,20 @@ final class RouteSegment implements Serializable {
 
     /**
      * Gets the children mapping, either static segments or parameters, which
-     * are siblings to segmentPattern.
+     * are siblings to segment.
      */
-    private Map<String, RouteSegment> getChildren(String segmentPattern) {
-        return RouteFormat.isVarargsParameter(segmentPattern)
-                ? getVarargsSegments()
-                : RouteFormat.isOptionalParameter(segmentPattern)
-                        ? getOptionalSegments()
-                        : RouteFormat.isParameter(segmentPattern)
-                                ? getParameterSegments()
-                                : getStaticSegments();
+    private Map<String, RouteSegment> getChildren(String segment) {
+        Map<String, RouteSegment> result;
+        if (RouteFormat.isVarargsParameter(segment)) {
+            result = getVarargsSegments();
+        } else if (RouteFormat.isOptionalParameter(segment)) {
+            result = getOptionalSegments();
+        } else if (RouteFormat.isParameter(segment)) {
+            result = getParameterSegments();
+        } else {
+            result = getStaticSegments();
+        }
+        return result;
     }
 
     private Map<String, RouteSegment> getStaticSegments() {

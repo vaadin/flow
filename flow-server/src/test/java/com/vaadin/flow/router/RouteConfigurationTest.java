@@ -171,8 +171,12 @@ public class RouteConfigurationTest {
         Assert.assertEquals("Url should have only been 'parents'", "parents",
                 routeConfiguration.getUrl(MiddleLayout.class));
 
+        Optional<String> template;
+        
+        template = routeConfiguration.getTemplate(MiddleLayout.class);
+        Assert.assertTrue("Missing template", template.isPresent());
         Assert.assertEquals("Url should have only been 'parents'", "parents",
-                routeConfiguration.getTemplate(MiddleLayout.class).get());
+                template.get());
 
         Optional<Class<? extends Component>> pathRoute = routeConfiguration
                 .getRoute("path");
@@ -181,21 +185,25 @@ public class RouteConfigurationTest {
         Assert.assertEquals("'path' registration should be Secondary",
                 Secondary.class, pathRoute.get());
 
-        Assert.assertEquals("Missing or incorrect url with parameters",
-                "double/1234567890/float/12345678900",
+        template = routeConfiguration.getTemplate(ParameterView.class);
+        Assert.assertTrue("Missing template for ParameterView", template.isPresent());
+        Assert.assertEquals(
+                "ParameterView template is not correctly generated from Route and RoutePrefix",
+                "category/:int(" + RouteParameterRegex.INTEGER + ")/item/:long("
+                        + RouteParameterRegex.LONG + ")",
+                template.get());
+
+        Assert.assertTrue("ParameterView template not registered.",
+                routeConfiguration.isPathAvailable("category/:int("
+                        + RouteParameterRegex.INTEGER + ")/item/:long("
+                        + RouteParameterRegex.LONG + ")"));
+        
+        Assert.assertEquals(
+                "ParameterView url with RouteParameters not generated correctly.",
+                "category/1234567890/item/12345678900",
                 routeConfiguration.getUrl(ParameterView.class,
                         new RouteParameters(new RouteParam("int", "1234567890"),
                                 new RouteParam("long", "12345678900"))));
-
-        Assert.assertEquals("Missing or incorrect template",
-                "double/:int(" + RouteParameterRegex.INTEGER + ")/float/:long("
-                        + RouteParameterRegex.LONG + ")",
-                routeConfiguration.getTemplate(ParameterView.class).get());
-
-        Assert.assertTrue("Missing template",
-                routeConfiguration.isPathAvailable("double/:int("
-                        + RouteParameterRegex.INTEGER + ")/float/:long("
-                        + RouteParameterRegex.LONG + ")"));
 
         routeConfiguration.update(() -> {
             routeConfiguration.removeRoute("path");
@@ -234,43 +242,48 @@ public class RouteConfigurationTest {
             routeConfiguration.setAnnotatedRoute(ComponentView.class);
         });
 
-        Assert.assertEquals("Incorrect URL template",
-                "component/:identifier/:path*",
-                routeConfiguration.getTemplate(ComponentView.class).get());
+        // Main template for target.
+        final Optional<String> template = routeConfiguration
+                .getTemplate(ComponentView.class);
+        Assert.assertTrue("Missing template", template.isPresent());
+        Assert.assertEquals("component/:identifier/:path*", template.get());
 
-        Assert.assertEquals("Unexpected URL",
-                "component/button/api/com/vaadin/flow/button",
+        // url produced by @RouteAlias(value = ":tab(api)/:path*")
+        Assert.assertEquals("component/button/api/com/vaadin/flow/button",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
                                 new RouteParam("tab", "api"), new RouteParam(
                                         "path", "com/vaadin/flow/button"))));
 
-        Assert.assertEquals("Unexpected URL",
-                "component/button/com/vaadin/flow/button",
+        // url produced by @Route(value = ":path*")
+        Assert.assertEquals("component/button/com/vaadin/flow/button",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
                                 new RouteParam("path",
                                         "com/vaadin/flow/button"))));
 
-        Assert.assertEquals("Unexpected URL", "component/button/reviews",
+        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        Assert.assertEquals("component/button/reviews",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
                                 new RouteParam("tab", "reviews"))));
 
-        Assert.assertEquals("Unexpected URL", "component/button/overview",
+        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        Assert.assertEquals("component/button/overview",
                 routeConfiguration.getUrl(ComponentView.class,
                         new RouteParameters(
                                 new RouteParam("identifier", "button"),
                                 new RouteParam("tab", "overview"))));
 
         try {
+            // Asking the url of target with invalid parameter values.
             routeConfiguration.getUrl(ComponentView.class,
                     new RouteParameters(new RouteParam("identifier", "button"),
                             new RouteParam("tab", "examples")));
-            Assert.fail("Valid URL returned instead of invalid.");
+            Assert.fail("`tab` parameter doesn't accept `examples` as value.");
         } catch (NotFoundException e) {
         }
     }
@@ -560,12 +573,12 @@ public class RouteConfigurationTest {
         }
     }
 
-    @RoutePrefix("double/:int(" + RouteParameterRegex.INTEGER + ")")
+    @RoutePrefix("category/:int(" + RouteParameterRegex.INTEGER + ")")
     @Tag("div")
     private static class MainView extends Component implements RouterLayout {
     }
 
-    @Route(value = "float/:long(" + RouteParameterRegex.LONG
+    @Route(value = "item/:long(" + RouteParameterRegex.LONG
             + ")", layout = MainView.class)
     @Tag("div")
     private static class ParameterView extends Component {
