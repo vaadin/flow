@@ -192,8 +192,7 @@ public class DevModeInitializer
     // This attribute helps to avoid Dev Mode running twice.
     //
     // Addresses the issue https://github.com/vaadin/spring/issues/502
-    private static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE =
-            "dev-mode-handler-already-started-attribute";
+    private static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE = "dev-mode-handler-already-started-attribute";
 
     @Override
     public void process(Set<Class<?>> classes, ServletContext context)
@@ -203,18 +202,10 @@ public class DevModeInitializer
 
         ServletRegistration vaadinServletRegistration = null;
         for (ServletRegistration registration : registrations) {
-            try {
-                if (registration.getClassName() != null
-                        && isVaadinServletSubClass(
-                                registration.getClassName())) {
-                    vaadinServletRegistration = registration;
-                    break;
-                }
-            } catch (ClassNotFoundException e) {
-                throw new ServletException(
-                        String.format("Servlet class name (%s) can't be found!",
-                                registration.getClassName()),
-                        e);
+            if (registration.getClassName() != null
+                    && isVaadinServletSubClass(registration.getClassName())) {
+                vaadinServletRegistration = registration;
+                break;
             }
         }
 
@@ -232,9 +223,16 @@ public class DevModeInitializer
         setDevModeStarted(context);
     }
 
-    private boolean isVaadinServletSubClass(String className)
-            throws ClassNotFoundException {
-        return VaadinServlet.class.isAssignableFrom(Class.forName(className));
+    private boolean isVaadinServletSubClass(String className) {
+        try {
+            return VaadinServlet.class
+                    .isAssignableFrom(Class.forName(className));
+        } catch (ClassNotFoundException exception) {
+            log().debug(String.format("Servlet class name (%s) can't be found!",
+                    className));
+            return false;
+
+        }
     }
 
     private void setDevModeStarted(ServletContext context) {
@@ -395,11 +393,13 @@ public class DevModeInitializer
     /**
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
-     * @param servletContext The servlet context, not <code>null</code>
-     * @return <code>true</code> if {@link DevModeHandler} has already been started,
-     *         <code>false</code> - otherwise
+     * @param servletContext
+     *            The servlet context, not <code>null</code>
+     * @return <code>true</code> if {@link DevModeHandler} has already been
+     *         started, <code>false</code> - otherwise
      */
-    public static boolean isDevModeAlreadyStarted(ServletContext servletContext) {
+    public static boolean isDevModeAlreadyStarted(
+            ServletContext servletContext) {
         assert servletContext != null;
         return servletContext.getAttribute(
                 DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE) != null;
