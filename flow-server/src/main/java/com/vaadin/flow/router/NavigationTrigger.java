@@ -48,7 +48,7 @@ public enum NavigationTrigger {
     HISTORY,
 
     /**
-     * Navigation was triggered programmatically.
+     * Navigation was triggered programmatically via forward/reroute action.
      */
     PROGRAMMATIC,
 
