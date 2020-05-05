@@ -1,22 +1,6 @@
 {
-  "core": {
-    "flow": {
-      "javaVersion": "3.0.0.alpha17"
-    },
-    "vaadin-progress-bar": {
-      "npmName": "@vaadin/vaadin-progress-bar",
-      "jsVersion": "1.1.2"
-    }
-  },
-  "vaadin-upload": {
-    "npmName": "@vaadin/vaadin-upload",
-    "jsVersion": "4.2.2"
-  },
-  "iron-list": {
-    "npmName": "@polymer/iron-list",
-    "npmVersion": "3.0.2",
-    "javaVersion": "3.0.0.beta1",
-    "jsVersion": "2.0.19"
-  },
+  "@vaadin/vaadin-progress-bar": "1.1.2",
+  "@vaadin/vaadin-upload":  "4.2.2",
+  "@polymer/iron-list":  "2.0.19",
   "platform": "foo"
 }

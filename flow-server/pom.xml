@@ -294,6 +294,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/version.properties</include>
+                    <include>**/build.properties</include>
                 </includes>
             </resource>
             <resource>
