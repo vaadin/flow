@@ -205,9 +205,7 @@ suite("Binder", () => {
     test("should fail validation after adding a synchronous validator", () => {
       class SyncValidator implements Validator<Order>{
         message = "foo";
-        validate = () =>{
-          return false;
-        };
+        validate = () => false;
       }
       getModelValidators(binder.model).add(new SyncValidator());
 
