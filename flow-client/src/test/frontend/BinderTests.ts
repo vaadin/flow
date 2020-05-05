@@ -1,3 +1,5 @@
+/* tslint:disable:max-classes-per-file */
+
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
 
@@ -34,7 +36,6 @@ interface Product extends IdEntity {
   isInStock: boolean;
 }
 
-// tslint:disable-next-line: max-classes-per-file
 class ProductModel<T extends Product = Product> extends IdEntityModel<T> {
   static createEmptyValue: () => Product;
   readonly description = new StringModel(this, 'description');
@@ -46,7 +47,6 @@ interface Customer extends IdEntity {
   fullName: string;
 }
 
-// tslint:disable-next-line: max-classes-per-file
 class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
   static createEmptyValue: () => Customer;
   readonly fullName = new StringModel(this, 'fullName');
@@ -58,7 +58,6 @@ interface Order extends IdEntity {
   products: ReadonlyArray<Product>;
 }
 
-// tslint:disable-next-line: max-classes-per-file
 class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   static createEmptyValue: () => Order;
   readonly customer = new CustomerModel(this, 'customer');
@@ -66,7 +65,6 @@ class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   readonly products = new ArrayModel(this, 'products', ProductModel);
 }
 
-// tslint:disable-next-line: max-classes-per-file
 class OrderView extends LitElement {}
 customElements.define('order-view', OrderView);
 
@@ -205,7 +203,6 @@ suite("Binder", () => {
     });
 
     test("should fail validation after adding a synchronous validator", () => {
-      // tslint:disable-next-line: max-classes-per-file
       class SyncValidator implements Validator<Order>{
         message = "foo";
         validate = () =>{
@@ -220,7 +217,6 @@ suite("Binder", () => {
     });
 
     test("should fail validation after adding an synchronous validator", () => {
-      // tslint:disable-next-line: max-classes-per-file
       class AsyncValidator implements Validator<Order>{
         message = "bar";
         validate = async () =>{
