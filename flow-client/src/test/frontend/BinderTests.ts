@@ -219,7 +219,7 @@ suite("Binder", () => {
       });
     });
 
-    test("should fail validation after adding an ssynchronous validator", () => {
+    test("should fail validation after adding an synchronous validator", () => {
       // tslint:disable-next-line: max-classes-per-file
       class AsyncValidator implements Validator<Order>{
         message = "bar";
