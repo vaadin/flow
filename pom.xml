@@ -108,6 +108,9 @@
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
         <node.version>v8.11.1</node.version>
         <npm.version>6.1.0</npm.version>
+        
+        <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
+        <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
         <jsoup.version>1.12.1</jsoup.version>
@@ -697,8 +700,15 @@
                 <module>flow-html-components</module>
                 <module>flow-test-util</module>
                 <module>flow-tests</module>
+                <module>flow-dev-deps</module>
                 <module>flow-server-production-mode</module>
                 <module>build-tools</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>gen-dev-deps</id>
+            <modules>
+                <module>flow-dev-deps</module>
             </modules>
         </profile>
     </profiles>

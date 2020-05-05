@@ -89,6 +89,7 @@ public class TaskRunNpmInstallTest {
 
         Mockito.verify(logger).info(getRunningMsg());
     }
+
     @Test
     public void runNpmInstall_nodeModulesContainsStaging_npmInstallIsExecuted()
             throws ExecutionFailedException {
