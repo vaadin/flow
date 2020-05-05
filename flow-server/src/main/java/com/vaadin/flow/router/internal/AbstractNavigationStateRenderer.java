@@ -213,6 +213,11 @@ public abstract class AbstractNavigationStateRenderer
         notifyNavigationTarget(componentInstance, event,
                 beforeNavigationActivating, locationChangeEvent);
 
+        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
+        // pushing history state shouldn't be done. So, it's done here to make
+        // sure that when history state is pushed the navigation is not
+        // postponed.
+        // See https://github.com/vaadin/flow/issues/3619 for more info.
         pushHistoryStateIfNeeded(event, ui);
 
         if (beforeNavigationActivating.hasRerouteTarget()) {
@@ -286,10 +291,7 @@ public abstract class AbstractNavigationStateRenderer
                                         .getLastHandledLocation()
                                         .getPathWithQueryParameters()))) {
 
-            // If the trigger is PROGRAMMATIC, we push history state if only the
-            // event state is provided. See UI#navigate(String, QueryParameters)
-            if (NavigationTrigger.PROGRAMMATIC.equals(event.getTrigger())
-                    && event.getState().isPresent()) {
+            if (NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())) {
                 // Enable navigating back
                 ui.getPage().getHistory().pushState(null, event.getLocation());
             }

@@ -893,9 +893,8 @@ public class UI extends Component
         }
 
         Location navigationLocation = new Location(location, queryParameters);
-        JsonObject navigationState = Json.createObject();
         getRouter().navigate(this, navigationLocation,
-                NavigationTrigger.PROGRAMMATIC, navigationState);
+                NavigationTrigger.UI_NAVIGATE);
     }
 
     /**

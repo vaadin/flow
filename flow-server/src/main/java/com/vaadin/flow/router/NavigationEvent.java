@@ -76,37 +76,15 @@ public class NavigationEvent extends EventObject {
      * @param state
      *            includes navigation state info including for example the
      *            scroll position and the complete href of the RouterLink
-     */
-    public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state) {
-        this(router, location, ui, trigger);
-
-        this.state = state;
-    }
-
-    /**
-     * Creates a new navigation event.
-     *
-     * @param router
-     *            the router handling the navigation, not {@code null}
-     * @param location
-     *            the new location, not {@code null}
-     * @param ui
-     *            the UI in which the navigation occurs, not {@code null}
-     * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
-     * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
      * @param forwardTo
      *            indicates if this event is created as a result of
      *            {@link BeforeEvent#forwardTo} or not
      */
     public NavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, JsonValue state, boolean forwardTo) {
-        this(router, location, ui, trigger, state);
+        this(router, location, ui, trigger);
 
+        this.state = state;
         this.forwardTo = forwardTo;
     }
 
@@ -144,9 +122,8 @@ public class NavigationEvent extends EventObject {
     }
 
     /**
-     * Gets navigation state. It may have been captured on client-side. It may
-     * contain info like the scroll position and the complete href of the
-     * RouterLink.
+     * Gets navigation state. It contains for example the scroll position and
+     * the complete href of the RouterLink that triggers this navigation.
      * 
      * @return the navigation state
      */

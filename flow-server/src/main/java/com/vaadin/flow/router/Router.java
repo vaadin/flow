@@ -190,8 +190,8 @@ public class Router implements Serializable {
      * Navigates the given UI to the given location. For internal use only.
      * <p>
      * This method pushes to the browser history if the <code>trigger</code> is
-     * <code>ROUTER_LINK</code> or if it's called from
-     * {@link UI#navigate(String, QueryParameters)}.
+     * {@link NavigationTrigger#ROUTER_LINK} or
+     * {@link NavigationTrigger#UI_NAVIGATE}.
      *
      * @param ui
      *            the UI to update, not <code>null</code>
@@ -243,7 +243,7 @@ public class Router implements Serializable {
                 .resolve(new ResolveRequest(this, location));
         if (newState != null) {
             NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, trigger, state);
+                    location, ui, trigger, state, false);
 
             NavigationHandler handler = new NavigationStateRenderer(newState);
             return handler.handle(navigationEvent);
@@ -253,7 +253,7 @@ public class Router implements Serializable {
                     .resolve(new ResolveRequest(this, slashToggledLocation));
             if (slashToggledState != null) {
                 NavigationEvent navigationEvent = new NavigationEvent(this,
-                        slashToggledLocation, ui, trigger, state);
+                        slashToggledLocation, ui, trigger, state, false);
 
                 NavigationHandler handler = new InternalRedirectHandler(
                         slashToggledLocation);
