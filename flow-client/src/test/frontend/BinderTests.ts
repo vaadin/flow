@@ -1,3 +1,5 @@
+/* tslint:disable:max-classes-per-file */
+
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
 
@@ -8,14 +10,16 @@ const {sinon} = intern.getPlugin('sinon');
 import {
   ArrayModel,
   Binder,
-  NumberModel,
-  ObjectModel,
-  StringModel,
+  BooleanModel,
+  getModelValidators,
   getName,
   getValue,
-  setValue, BooleanModel,
+  NumberModel,
+  ObjectModel, setValue,
+  StringModel, validate, Validator
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
+import { expect } from "chai";
 import {LitElement} from 'lit-element';
 
 interface IdEntity {
@@ -31,6 +35,7 @@ interface Product extends IdEntity {
   price: number;
   isInStock: boolean;
 }
+
 class ProductModel<T extends Product = Product> extends IdEntityModel<T> {
   static createEmptyValue: () => Product;
   readonly description = new StringModel(this, 'description');
@@ -41,6 +46,7 @@ class ProductModel<T extends Product = Product> extends IdEntityModel<T> {
 interface Customer extends IdEntity {
   fullName: string;
 }
+
 class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
   static createEmptyValue: () => Customer;
   readonly fullName = new StringModel(this, 'fullName');
@@ -51,6 +57,7 @@ interface Order extends IdEntity {
   notes: string;
   products: ReadonlyArray<Product>;
 }
+
 class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   static createEmptyValue: () => Order;
   readonly customer = new CustomerModel(this, 'customer');
@@ -179,5 +186,49 @@ suite("Binder", () => {
       sinon.assert.calledOnce(requestUpdateStub);
     });
   });
+
+  suite("validation", () => {
+    let binder: Binder<Order, OrderModel<Order>>;
+
+    beforeEach(() => {
+      binder = new Binder(
+        orderView,
+        OrderModel,
+        () => orderView.requestUpdate()
+      );
+    });
+
+    test("should not have validation errors for a model without validators", () => {
+      assert.isEmpty(validate(binder.model));
+    });
+
+    test("should fail validation after adding a synchronous validator", () => {
+      class SyncValidator implements Validator<Order>{
+        message = "foo";
+        validate = () => false;
+      }
+      getModelValidators(binder.model).add(new SyncValidator());
+
+      return validate(binder.model).then(errMsg => {
+        expect(errMsg).to.equal("foo");
+      });
+    });
+
+    test("should fail validation after adding an synchronous validator", () => {
+      class AsyncValidator implements Validator<Order>{
+        message = "bar";
+        validate = async () =>{
+          await new Promise(resolve => setTimeout(resolve, 10));
+          return false;
+        };
+      }
+      getModelValidators(binder.model).add(new AsyncValidator());
+      return validate(binder.model).then(errMsg => {
+        expect(errMsg).to.equal("bar");
+      });
+    });
+  });
 });
+
+
 
