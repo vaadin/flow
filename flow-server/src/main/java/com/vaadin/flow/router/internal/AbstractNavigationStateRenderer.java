@@ -163,21 +163,8 @@ public abstract class AbstractNavigationStateRenderer
         BeforeLeaveEvent beforeNavigationDeactivating = new BeforeLeaveEvent(
                 event, routeTargetType, parameters, routeLayoutTypes);
 
-        Deque<BeforeLeaveHandler> leaveHandlers;
-        if (postponed != null) {
-            leaveHandlers = postponed.getLeaveObservers();
-            if (!leaveHandlers.isEmpty()) {
-                postponed = null;
-            }
-        } else {
-            List<BeforeLeaveHandler> beforeLeaveHandlers = new ArrayList<>(
-                    ui.getNavigationListeners(BeforeLeaveHandler.class));
-            beforeLeaveHandlers
-                    .addAll(EventUtil.collectBeforeLeaveObservers(ui));
-            leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
-        }
         TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
-                beforeNavigationDeactivating, leaveHandlers);
+                beforeNavigationDeactivating);
 
         Optional<Integer> result = handleTransactionOutcome(transitionOutcome,
                 event, beforeNavigationDeactivating);
@@ -386,13 +373,14 @@ public abstract class AbstractNavigationStateRenderer
      *
      * @param beforeNavigation
      *            navigation event sent to observers
-     * @param leaveHandlers
-     *            handlers for before leave event
      * @return result of observer events
      */
     private TransitionOutcome executeBeforeLeaveNavigation(
-            BeforeLeaveEvent beforeNavigation,
-            Deque<BeforeLeaveHandler> leaveHandlers) {
+            BeforeLeaveEvent beforeNavigation) {
+
+        Deque<BeforeLeaveHandler> leaveHandlers = getBeforeLeaveHandlers(
+                beforeNavigation.getUI());
+
         while (!leaveHandlers.isEmpty()) {
             BeforeLeaveHandler listener = leaveHandlers.remove();
             listener.beforeLeave(beforeNavigation);
@@ -412,6 +400,23 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         return TransitionOutcome.FINISHED;
+    }
+
+    private Deque<BeforeLeaveHandler> getBeforeLeaveHandlers(UI ui) {
+        Deque<BeforeLeaveHandler> leaveHandlers;
+        if (postponed != null) {
+            leaveHandlers = postponed.getLeaveObservers();
+            if (!leaveHandlers.isEmpty()) {
+                postponed = null;
+            }
+        } else {
+            List<BeforeLeaveHandler> beforeLeaveHandlers = new ArrayList<>(
+                    ui.getNavigationListeners(BeforeLeaveHandler.class));
+            beforeLeaveHandlers
+                    .addAll(EventUtil.collectBeforeLeaveObservers(ui));
+            leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
+        }
+        return leaveHandlers;
     }
 
     /**

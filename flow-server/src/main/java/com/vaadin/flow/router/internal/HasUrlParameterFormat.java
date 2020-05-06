@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,6 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.ParameterDeserializer;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.WildcardParameter;
@@ -168,25 +166,25 @@ public class HasUrlParameterFormat implements Serializable {
             return getParameters(parametersList.get(0));
         }
 
-        Map<String, String> map;
+        RouteParameters result;
 
         if (parametersList.isEmpty()) {
-            map = null;
+            result = RouteParameters.empty();
         } else {
-            map = Collections.singletonMap(PARAMETER_NAME,
-                    parametersList.stream().map(T::toString)
-                            .collect(Collectors.joining("/")));
+            result = new RouteParameters(Collections.singletonMap(
+                    PARAMETER_NAME, parametersList.stream().map(T::toString)
+                            .collect(Collectors.joining("/"))));
         }
 
-        return new RouteParameters(map);
+        return result;
     }
 
     /**
-     * Gets the values for the {@link HasUrlParameter} from the specified url
+     * Gets the values for the {@link HasUrlParameter} from the specified route
      * parameters.
      * 
      * @param parameters
-     *            url parameter.
+     *            route parameter.
      * @return HasUrlParameter compatible values.
      */
     public static List<String> getParameterValues(RouteParameters parameters) {
@@ -242,7 +240,7 @@ public class HasUrlParameterFormat implements Serializable {
     }
 
     /**
-     * Returns whether the target argument implements {@link HasUrlParameter}
+     * Returns whether the target argument implements {@link HasUrlParameter}.
      *
      * @param target
      *            target component class.

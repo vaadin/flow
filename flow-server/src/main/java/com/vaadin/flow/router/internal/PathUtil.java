@@ -44,7 +44,7 @@ public class PathUtil implements Serializable {
             return Collections.emptyList();
 
         } else {
-            return Arrays.asList(segments);
+            return Collections.unmodifiableList(Arrays.asList(segments));
         }
     }
 

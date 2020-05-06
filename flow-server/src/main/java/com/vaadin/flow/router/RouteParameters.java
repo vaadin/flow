@@ -63,12 +63,13 @@ public final class RouteParameters implements Serializable {
         Map<String, String> paramsMap = new HashMap<>(params.length);
 
         for (RouteParam param : params) {
-            if (paramsMap.containsKey(param.getName())) {
+            final String existingValue = paramsMap.put(param.getName(),
+                    param.getValue());
+
+            if (existingValue != null) {
                 throw new IllegalArgumentException("Parameter "
                         + param.getName() + " is given more than once.");
             }
-
-            paramsMap.put(param.getName(), param.getValue());
         }
 
         this.params = Collections.unmodifiableMap(paramsMap);

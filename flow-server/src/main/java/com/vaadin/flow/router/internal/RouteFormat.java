@@ -184,7 +184,7 @@ class RouteFormat implements Serializable {
 
         private final boolean varargs;
 
-        private final Optional<String> regex;
+        private final String regex;
 
         ParameterInfo(String template) {
             this.template = template;
@@ -212,11 +212,11 @@ class RouteFormat implements Serializable {
 
                 name = template.substring(0, regexStartIndex);
 
-                regex = Optional.of(template.substring(regexStartIndex + 1,
-                        template.length() - 1));
+                regex = template.substring(regexStartIndex + 1,
+                        template.length() - 1);
             } else {
                 name = template;
-                regex = Optional.empty();
+                regex = null;
             }
         }
 
@@ -237,7 +237,7 @@ class RouteFormat implements Serializable {
         }
 
         public Optional<String> getRegex() {
-            return regex;
+            return Optional.ofNullable(regex);
         }
     }
 

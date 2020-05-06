@@ -228,8 +228,8 @@ final class RouteSegment implements Serializable {
     }
 
     /**
-     * Add a template template following this route segment. If the template
-     * already exists and exception is thrown.
+     * Adds a template following this route segment. If the template already
+     * exists exception is thrown.
      *
      * @param template
      *            a template where parameters are defined by their ids and
@@ -263,7 +263,7 @@ final class RouteSegment implements Serializable {
     }
 
     /**
-     * Gets a simple representation of the path tamplate.
+     * Gets a simple representation of the path template.
      *
      * @param template
      *            the full template.
@@ -407,6 +407,19 @@ final class RouteSegment implements Serializable {
         }
     }
 
+    /**
+     * Searches for the route target using specified segments.
+     * <p>
+     * Input parameters argument will be filled with parameter values found in
+     * segments.
+     * 
+     * @param segments
+     *            input segments from navigation url.
+     * @param parameters
+     *            a map instance used to output the parameters found in the
+     *            input segment values.
+     * @return the {@link RouteTarget} found.
+     */
     private RouteTarget findRouteTarget(List<String> segments,
             Map<String, String> parameters) {
 
