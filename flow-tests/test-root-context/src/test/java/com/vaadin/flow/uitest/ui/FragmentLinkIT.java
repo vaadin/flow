@@ -13,6 +13,9 @@ public class FragmentLinkIT extends ChromeBrowserTest {
 
     @Test
     public void testInsidePageNavigation_noRouterLinkHandling() {
+        if (hasClientIssue("8236")) {
+            return;
+        }
         open();
 
         clickScrollerLink2();
@@ -32,10 +35,10 @@ public class FragmentLinkIT extends ChromeBrowserTest {
 
     @Test
     public void testViewChangeWithFragment_scrollToPageAndHashChangeEventWorks() {
-        open();
         if (hasClientIssue("7575")) {
             return;
         }
+        open();
 
         clickAnotherViewLink();
 
@@ -48,10 +51,10 @@ public class FragmentLinkIT extends ChromeBrowserTest {
 
     @Test
     public void testViewChangeWithFragment_serverOverridesLocation_noScrollOrHashChange() {
-        open();
         if (hasClientIssue("7575")) {
             return;
         }
+        open();
 
         clickOverriddenLink();
 
