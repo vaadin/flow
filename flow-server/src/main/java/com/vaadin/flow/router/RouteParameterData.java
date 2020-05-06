@@ -25,7 +25,7 @@ public class RouteParameterData implements Serializable {
 
     private final String template;
 
-    private final Optional<String> regex;
+    private final String regex;
 
     /**
      * Creates a parameter data instance.
@@ -35,7 +35,7 @@ public class RouteParameterData implements Serializable {
      * @param regex
      *            the regex as found in the template.
      */
-    public RouteParameterData(String template, Optional<String> regex) {
+    public RouteParameterData(String template, String regex) {
         this.template = template;
         this.regex = regex;
     }
@@ -55,6 +55,6 @@ public class RouteParameterData implements Serializable {
      * @return the regex of the parameter.
      */
     public Optional<String> getRegex() {
-        return regex;
+        return Optional.ofNullable(regex);
     }
 }
