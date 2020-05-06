@@ -187,18 +187,10 @@ public class DevModeInitializer
 
         ServletRegistration vaadinServletRegistration = null;
         for (ServletRegistration registration : registrations) {
-            try {
-                if (registration.getClassName() != null
-                        && isVaadinServletSubClass(
-                                registration.getClassName())) {
-                    vaadinServletRegistration = registration;
-                    break;
-                }
-            } catch (ClassNotFoundException e) {
-                throw new ServletException(
-                        String.format("Servlet class name (%s) can't be found!",
-                                registration.getClassName()),
-                        e);
+            if (registration.getClassName() != null
+                    && isVaadinServletSubClass(registration.getClassName())) {
+                vaadinServletRegistration = registration;
+                break;
             }
         }
 
@@ -214,9 +206,16 @@ public class DevModeInitializer
         initDevModeHandler(classes, context, config);
     }
 
-    private boolean isVaadinServletSubClass(String className)
-            throws ClassNotFoundException {
-        return VaadinServlet.class.isAssignableFrom(Class.forName(className));
+    private boolean isVaadinServletSubClass(String className) {
+        try {
+            return VaadinServlet.class
+                    .isAssignableFrom(Class.forName(className));
+        } catch (ClassNotFoundException exception) {// NOSONAR
+            log().debug(String.format("Servlet class name (%s) can't be found!",
+                    className));
+            return false;
+
+        }
     }
 
     /**
