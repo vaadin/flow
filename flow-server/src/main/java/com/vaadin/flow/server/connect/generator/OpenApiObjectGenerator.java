@@ -471,11 +471,13 @@ public class OpenApiObjectGenerator {
             String str = annotation.toString()
                     // remove annotation character
                     .replaceFirst("@", "")
-                    // wrap arguments with curly
-                    .replaceFirst("\\(", "({").replaceFirst("\\)$", "})")
                     // change to json syntax
                     .replace(" = ", ":");
-            // append parenthesis if not already;
+            // wrap arguments with curly if there are json key:value arguments
+            if (str.contains(":")) {
+                str =  str.replaceFirst("\\(", "({").replaceFirst("\\)$", "})");
+            }
+            // append parenthesis if not already
             str += str.contains("(") ? "" : "()";
             if (str.matches(
                     "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
