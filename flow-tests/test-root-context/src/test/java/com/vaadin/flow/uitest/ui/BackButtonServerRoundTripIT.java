@@ -14,10 +14,6 @@ public class BackButtonServerRoundTripIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + baseLoc + "/1?query=foo");
         waitForDevServer();
 
-        if (hasClientIssue("7572")) {
-            return;
-        }
-
         WebElement button = findElement(
                 By.id(BackButtonServerRoundTripView.BUTTON_ID));
         button.click();
