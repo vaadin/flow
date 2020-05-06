@@ -28,6 +28,9 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
+        if (hasClientIssue("8236")) {
+            return;
+        }
         testBench().resizeViewPortTo(700, 800);
         open();
 
