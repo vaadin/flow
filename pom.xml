@@ -56,18 +56,11 @@
     </scm>
 
     <properties>
-        <flow.snapshot.repo.id>vaadin-snapshots</flow.snapshot.repo.id>
-        <flow.snapshot.repo.url>
-            https://oss.sonatype.org/content/repositories/vaadin-snapshots/
-        </flow.snapshot.repo.url>
         <flow.release.repo.id>vaadin-prereleases</flow.release.repo.id>
         <flow.release.repo.url>
             https://maven.vaadin.com/vaadin-prereleases/
         </flow.release.repo.url>
-        <flow.deployment.repo.id>${flow.snapshot.repo.id}</flow.deployment.repo.id>
-        <flow.deployment.repo.url>
-            ${flow.snapshot.repo.url}
-        </flow.deployment.repo.url>
+
         <flow.addons.repo.id>vaadin-addons</flow.addons.repo.id>
         <flow.addons.repo.url>
             https://maven.vaadin.com/vaadin-addons
@@ -141,13 +134,6 @@
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
             <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>${flow.snapshot.repo.id}</id>
-            <url>${flow.snapshot.repo.url}</url>
-            <snapshots>
                 <enabled>true</enabled>
             </snapshots>
         </repository>
@@ -173,13 +159,6 @@
         <pluginRepository>
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>${flow.snapshot.repo.id}</id>
-            <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
