@@ -54,6 +54,10 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -263,7 +267,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
             buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
             buildInfo.remove(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
-
+            buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            buildInfo.remove(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN);
+            buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
+            buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
+            buildInfo.remove(Constants.CONNECT_GENERATED_TS_DIR_TOKEN);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
