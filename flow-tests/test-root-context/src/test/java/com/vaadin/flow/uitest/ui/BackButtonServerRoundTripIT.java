@@ -14,11 +14,8 @@ public class BackButtonServerRoundTripIT extends ChromeBrowserTest {
                 "/view/com.vaadin.flow.uitest.ui.BackButtonServerRoundTripView";
         getDriver().get(getRootURL() + baseLoc + "/1?query=foo");
 
-        if (hasClientIssue("7572")) {
-            return;
-        }
-
-        WebElement button = findElement(By.id(BackButtonServerRoundTripView.BUTTON_ID));
+        WebElement button = findElement(
+                By.id(BackButtonServerRoundTripView.BUTTON_ID));
         button.click();
 
         final String queryValue0 = findElement(

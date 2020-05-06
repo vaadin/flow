@@ -30,10 +30,10 @@ public class ScrollIT extends AbstractScrollIT {
 
     @Test
     public void scrollPositionIsRestoredAfterNavigatingToNewPageAndBack() {
-        open();
         if (hasClientIssue("7584")) {
             return;
         }
+        open();
 
         final String initialPageUrl = driver.getCurrentUrl();
         final int xScrollAmount = 0;
@@ -62,6 +62,10 @@ public class ScrollIT extends AbstractScrollIT {
 
     @Test
     public void anchorUrlsWorkProperly() {
+        if (hasClientIssue("8236")) {
+            return;
+        }
+
         open();
 
         final int xScrollAmount = 0;
@@ -89,10 +93,10 @@ public class ScrollIT extends AbstractScrollIT {
 
     @Test
     public void scrollPositionIsRestoredWhenNavigatingToHistoryWithAnchorLink() {
-        open();
         if (hasClientIssue("7584")) {
             return;
         }
+        open();
 
         clickElementWithJs(ScrollView.ROUTER_ANCHOR_URL_ID);
         assertThat("Expected url to change to anchor one",
@@ -112,10 +116,10 @@ public class ScrollIT extends AbstractScrollIT {
 
     @Test
     public void scrollPositionShouldBeAtAnchorWhenNavigatingFromOtherPage() {
-        open();
         if (hasClientIssue("7584")) {
             return;
         }
+        open();
 
         Point anchorElementLocation = findElement(
                 By.id(ScrollView.ANCHOR_DIV_ID)).getLocation();
