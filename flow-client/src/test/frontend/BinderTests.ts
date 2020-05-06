@@ -2,82 +2,72 @@
 
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
-
 /// <reference types="sinon">
 const {sinon} = intern.getPlugin('sinon');
+import { expect } from "chai";
 
 // API to test
 import {
-  ArrayModel,
   Binder,
-  BooleanModel,
   getModelValidators,
   getName,
   getValue,
-  NumberModel,
-  ObjectModel, setValue,
-  StringModel, validate, Validator
+  setValue,
+  validate,
+  Validator,
+  modelRepeat,
+  field,
+  appendItem
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
-import { expect } from "chai";
-import {LitElement} from 'lit-element';
+import { Order, OrderModel } from "./BinderModels";
 
-interface IdEntity {
-  idString: string;
-}
-class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
-  static createEmptyValue: () => IdEntity;
-  readonly idString = new StringModel(this, 'idString');
-}
+import { customElement, html, LitElement, query, css} from 'lit-element';
 
-interface Product extends IdEntity {
-  description: string;
-  price: number;
-  isInStock: boolean;
-}
+@customElement('lit-order-view')
+class LitOrderView extends LitElement {}
 
-class ProductModel<T extends Product = Product> extends IdEntityModel<T> {
-  static createEmptyValue: () => Product;
-  readonly description = new StringModel(this, 'description');
-  readonly price = new NumberModel(this, 'price');
-  readonly isInStock = new BooleanModel(this, 'isInStock');
-}
+@customElement('order-view')
+export default class OrderView extends LitElement {
+  public binder = new Binder(this, OrderModel, () => this.requestUpdate());
+  @query('#notes') public notes!: Element;
+  @query('#fullName') public fullName!: Element;
+  @query('#add') public add!: Element;
+  @query('#description0') public description!: Element;
+  @query('#price0') public price!: Element;
 
-interface Customer extends IdEntity {
-  fullName: string;
-}
-
-class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
-  static createEmptyValue: () => Customer;
-  readonly fullName = new StringModel(this, 'fullName');
-}
-
-interface Order extends IdEntity {
-  customer: Customer;
-  notes: string;
-  products: ReadonlyArray<Product>;
+  static get styles() {
+    return css`input[invalid] {border: 2px solid red;}`;
+  }
+  render() {
+    return html`
+    <input id="notes" ...="${field(this.binder.model.notes)}" />
+    <input id="fullName" ...="${field(this.binder.model.customer.fullName)}" />
+    <button id="add" @click=${() => appendItem(this.binder.model.products)}>+</button>
+    ${modelRepeat(this.binder.model.products, (model, _product, index) => html`<div>
+        <input id="description${index}" ...="${field(model.description)}" />
+        <input id="price${index}" ...="${field(model.price)}">
+      </div>`)}
+    `;
+  }
 }
 
-class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
-  static createEmptyValue: () => Order;
-  readonly customer = new CustomerModel(this, 'customer');
-  readonly notes = new StringModel(this, 'notes');
-  readonly products = new ArrayModel(this, 'products', ProductModel);
+const sleep = async (t: number) => new Promise(resolve => setTimeout(() => resolve(), t));
+const fireEvent = async (elm: Element, name: string) => {
+  elm.dispatchEvent(new CustomEvent(name));
+  return sleep(0);
 }
-
-class OrderView extends LitElement {}
-customElements.define('order-view', OrderView);
 
 suite("Binder", () => {
-  const orderView = document.createElement('order-view') as OrderView;
-  const requestUpdateStub = sinon.stub(orderView, 'requestUpdate').resolves();
+  const litOrderView = document.createElement('lit-order-view') as LitOrderView;
+  const requestUpdateStub = sinon.stub(litOrderView, 'requestUpdate').resolves();
 
   afterEach(() => {
     requestUpdateStub.reset();
   });
 
   test("should instantiate without type arguments", () => {
-    const binder = new Binder(orderView, OrderModel, () => orderView.requestUpdate());
+    const binder = new Binder(litOrderView, OrderModel, () => litOrderView.requestUpdate());
 
     assert.isDefined(binder);
     assert.isDefined(binder.value.notes);
@@ -87,7 +77,7 @@ suite("Binder", () => {
   });
 
   test("should instantiate model", () => {
-    const binder = new Binder(orderView, OrderModel, () => orderView.requestUpdate());
+    const binder = new Binder(litOrderView, OrderModel, () => litOrderView.requestUpdate());
 
     assert.instanceOf(binder.model, OrderModel);
   });
@@ -102,14 +92,15 @@ suite("Binder", () => {
         fullName: '',
       },
       notes: '',
+      priority: 0,
       products: []
     };
 
     beforeEach(() => {
       binder = new Binder(
-        orderView,
+        litOrderView,
         OrderModel,
-        () => orderView.requestUpdate()
+        () => litOrderView.requestUpdate()
       );
       requestUpdateStub.reset();
     });
@@ -144,7 +135,7 @@ suite("Binder", () => {
 
       setValue(binder.model.customer.fullName, "foo");
       assert.equal(binder.value.customer.fullName, "foo");
-      sinon.assert.calledOnce(orderView.requestUpdate);
+      sinon.assert.calledOnce(litOrderView.requestUpdate);
     });
 
     test("should not change defaultValue on setValue", () => {
@@ -190,11 +181,11 @@ suite("Binder", () => {
   suite("validation", () => {
     let binder: Binder<Order, OrderModel<Order>>;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       binder = new Binder(
-        orderView,
+        litOrderView,
         OrderModel,
-        () => orderView.requestUpdate()
+        () => litOrderView.requestUpdate()
       );
     });
 
@@ -207,14 +198,13 @@ suite("Binder", () => {
         message = "foo";
         validate = () => false;
       }
-      getModelValidators(binder.model).add(new SyncValidator());
-
-      return validate(binder.model).then(errMsg => {
-        expect(errMsg).to.equal("foo");
+      getModelValidators(binder.model.priority).add(new SyncValidator());
+      return validate(binder.model.priority).then(errMsg => {
+        expect(errMsg[0]).to.equal("foo");
       });
     });
 
-    test("should fail validation after adding an synchronous validator", () => {
+    test("should fail validation after adding an asynchronous validator", () => {
       class AsyncValidator implements Validator<Order>{
         message = "bar";
         validate = async () =>{
@@ -222,11 +212,78 @@ suite("Binder", () => {
           return false;
         };
       }
-      getModelValidators(binder.model).add(new AsyncValidator());
-      return validate(binder.model).then(errMsg => {
-        expect(errMsg).to.equal("bar");
+      getModelValidators(binder.model.priority).add(new AsyncValidator());
+      return validate(binder.model.priority).then(errMsg => {
+        expect(errMsg[0]).to.equal("bar");
       });
     });
+
+    suite('field element', () => {
+      let orderView: OrderView;
+
+      beforeEach(async () => {
+        orderView = document.createElement('order-view') as OrderView;
+        binder = new Binder(orderView, OrderModel, () => orderView.requestUpdate());
+        document.body.appendChild(orderView);
+        return sleep(10);
+      });
+
+      afterEach(async () => {
+        document.body.removeChild(orderView)
+      });
+
+      ['input', 'change', 'blur'].forEach(event => {
+        test(`should validate field on ${event}`, async () => {
+          expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+          await fireEvent(orderView.notes, event);
+          expect(orderView.notes.hasAttribute('invalid')).to.be.true;
+        });
+
+        test(`should validate field of nested model on  ${event}`, async () => {
+          await fireEvent(orderView.add, 'click');
+          expect(orderView.description.hasAttribute('invalid')).to.be.false;
+          await fireEvent(orderView.description, event);
+          expect(orderView.description.hasAttribute('invalid')).to.be.true;
+        });
+      });
+
+      test(`should validate fields on submit`, async () => {
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+        expect(orderView.fullName.hasAttribute('invalid')).to.be.false;
+
+        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+
+        expect(orderView.notes.hasAttribute('invalid')).to.be.true;
+        expect(orderView.fullName.hasAttribute('invalid')).to.be.true;
+      });
+
+      test(`should validate fields of nested model on submit`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.false;
+        expect(orderView.price.hasAttribute('invalid')).to.be.false;
+
+        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.true;
+        expect(orderView.price.hasAttribute('invalid')).to.be.true;
+      });
+
+      test(`should validate fields of arrays on submit`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.false;
+        expect(orderView.price.hasAttribute('invalid')).to.be.false;
+
+        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.true;
+        expect(orderView.price.hasAttribute('invalid')).to.be.true;
+      });
+    });
+
   });
 });
 
