@@ -18,14 +18,14 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.commons.io.IOUtils;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.
- * 
+ *
  * @since 3.0
  */
 public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
@@ -35,7 +35,7 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
     /**
      * Create a task to generate <code>index.html</code> if necessary.
-     * 
+     *
      * @param frontendDirectory
      *            frontend directory is to check if the file already exists
      *            there.
@@ -49,8 +49,9 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils
-                .toString(getClass().getResourceAsStream(INDEX_HTML), UTF_8);
+        return IOUtils.toString(
+                TaskGenerateIndexHtml.class.getResourceAsStream(INDEX_HTML),
+                UTF_8);
     }
 
     @Override
