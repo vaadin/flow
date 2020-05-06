@@ -227,7 +227,7 @@ public class DevModeInitializer
         try {
             return VaadinServlet.class
                     .isAssignableFrom(Class.forName(className));
-        } catch (ClassNotFoundException exception) {
+        } catch (ClassNotFoundException exception) {// NOSONAR
             log().debug(String.format("Servlet class name (%s) can't be found!",
                     className));
             return false;
