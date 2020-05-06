@@ -15,7 +15,7 @@
     "build": "npm run client && tsc",
     "compile": "npm run build && npm run lint",
     "test": "npm run build && npm run webpack && intern",
-    "debug": "npm run build && npm run webpack && intern serveOnly"
+    "debug": "npm run build && webpack --config=webpack.tests.config.js -w >&2 | intern serveOnly"
   },
   "homepage": "https://vaadin.com",
   "repository": {
