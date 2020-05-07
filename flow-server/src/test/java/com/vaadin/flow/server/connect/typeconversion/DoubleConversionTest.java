@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-public class DoubleConversionIT extends BaseTypeConversionIT {
+public class DoubleConversionTest extends BaseTypeConversionTest {
     @Test
     public void should_ConvertToDouble_When_ReceiveANumber() {
         assertCallMethodWithExpectedDoubleValue("addOneDouble", "1", "2.0");

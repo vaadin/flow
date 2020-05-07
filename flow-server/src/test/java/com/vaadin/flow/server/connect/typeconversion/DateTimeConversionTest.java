@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.server.connect.typeconversion;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-public class DateTimeConversionIT extends BaseTypeConversionIT {
+public class DateTimeConversionTest extends BaseTypeConversionTest {
 
     // region date tests
     @Test
@@ -58,7 +57,6 @@ public class DateTimeConversionIT extends BaseTypeConversionIT {
     // format
 
     @Test
-    @Ignore("Failing after moved to flow")
     public void should_ConvertToLocalDate_When_ReceiveALocalDate() {
         String inputDate = "\"2019-12-13\"";
         String expectedTimestamp = "\"2019-12-14\"";
@@ -77,7 +75,6 @@ public class DateTimeConversionIT extends BaseTypeConversionIT {
     // LocalDate uses java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME as
     // default format
     @Test
-    @Ignore("Failing after moved to flow")
     public void should_ConvertToLocalDateTime_When_ReceiveALocalDateTime() {
         String inputDate = "\"2019-12-13T12:12:12\"";
         String expectedTimestamp = "\"2019-12-14T13:12:12\"";

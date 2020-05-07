@@ -69,7 +69,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             super(request, response, ui.getInternals().getSession(), ui,
                     callback);
         }
-
     }
 
     /**
@@ -116,7 +115,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
         pushConfiguration.setPushUrl(pushURL);
-        
+
         AppShellRegistry registry = AppShellRegistry
                 .getInstance(session.getService().getContext());
         registry.modifyPushConfiguration(pushConfiguration);

@@ -4,7 +4,6 @@
     <pluginExecution>
       <pluginExecutionFilter>
         <goals>
-          <goal>prepare-frontend</goal>
           <goal>validate</goal>
           <goal>build-frontend</goal>
         </goals>

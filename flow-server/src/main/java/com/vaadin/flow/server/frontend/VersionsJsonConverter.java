@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.IOException;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -25,10 +23,10 @@ import elemental.json.JsonValue;
  * Converts platform versions file to internal format which doesn't contain
  * extra information.
  * <p>
- * The result contains all dependencies as keys and their versions as value.
+ * The result contains all framework dependencies as keys and their versions as
+ * value.
  *
  * @author Vaadin Ltd
- *
  */
 class VersionsJsonConverter {
 
@@ -43,7 +41,13 @@ class VersionsJsonConverter {
         collectDependencies(platformVersions);
     }
 
-    JsonObject convert() throws IOException {
+    /**
+     * Collect framework managed versions to enforce that the user hasn't
+     * changed.
+     *
+     * @return flatten the platform versions Json
+     */
+    JsonObject getConvertedJson() {
         return convertedObject;
     }
 
@@ -72,9 +76,9 @@ class VersionsJsonConverter {
         } else {
             throw new IllegalStateException("Vaadin code versions file "
                     + "contains unexpected data: dependency '" + npmName
-                    + "' has"
-                    + " no 'npmVersion'/'jsVersion' . "
+                    + "' has" + " no 'npmVersion'/'jsVersion' . "
                     + "Please report a bug in https://github.com/vaadin/platform/issues/new");
         }
     }
+
 }

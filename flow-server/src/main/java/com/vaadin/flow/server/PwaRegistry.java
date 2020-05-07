@@ -69,7 +69,6 @@ public class PwaRegistry implements Serializable {
     private String offlineHtml = "";
     private String manifestJson = "";
     private String serviceWorkerJs = "";
-    private String installPrompt = "";
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
@@ -125,9 +124,6 @@ public class PwaRegistry implements Serializable {
 
             // Initialize sw.js
             serviceWorkerJs = initializeServiceWorker(servletContext);
-
-            // Initialize service worker install prompt html/js
-            installPrompt = initializeInstallPrompt(pwaConfiguration);
         }
     }
 
@@ -354,19 +350,6 @@ public class PwaRegistry implements Serializable {
 
     }
 
-    private String initializeInstallPrompt(PwaConfiguration pwaConfiguration) {
-        PwaIcon largest = getIcons().stream().filter(PwaIcon::shouldBeCached)
-                .min((icon1, icon2) -> icon2.getWidth() - icon1.getWidth())
-                .orElse(null);
-        return BootstrapHandler.readResource("default-pwa-prompt.html")
-                .replace("%%%INSTALL%%%", "Install")
-                .replace("%%%LOGO_PATH%%%",
-                        largest == null ? ""
-                                : pwaConfiguration.getRootUrl()
-                                        + largest.getHref())
-                .replace("%%%PROJECT_NAME%%%", pwaConfiguration.getAppName());
-    }
-
     private String getOfflinePageFromContext(URLConnection connection) {
         try (InputStream stream = connection.getInputStream();
                 BufferedReader bf = new BufferedReader(new InputStreamReader(
@@ -429,15 +412,6 @@ public class PwaRegistry implements Serializable {
     private String manifestCache() {
         return String.format(WORKBOX_CACHE_FORMAT,
                 pwaConfiguration.getManifestPath(), manifestJson.hashCode());
-    }
-
-    /**
-     * Html and js needed for pwa install prompt as a plain string.
-     *
-     * @return Html and js needed for pwa install prompt
-     */
-    public String getInstallPrompt() {
-        return installPrompt;
     }
 
     /**

@@ -921,7 +921,7 @@ public abstract class AbstractNavigationStateRenderer
         if (!configuration.isProductionMode()
                 && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
-                    "Vaadin.Flow.devModeGizmo.showNotification('@PreserveOnRefresh: server-side instances are reused on reload')");
+                    "Vaadin.Flow.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }
     }
 

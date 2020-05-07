@@ -1,0 +1,11 @@
+{
+    "@vaadin/vaadin-notification": "1.4.0",
+    "@vaadin/vaadin-ordered-layout": "1.1.0",
+    "@vaadin/vaadin-overlay": "3.2.19",
+    "@vaadin/vaadin-progress-bar":  "1.1.2",
+    "@vaadin/vaadin-radio-button": "1.2.6",
+    "@vaadin/vaadin-select": "2.1.7",
+    "@vaadin/vaadin-split-layout": "4.1.1",
+    "@vaadin/vaadin-tabs": "3.0.5",
+    "@vaadin/vaadin-confirm-dialog":"1.1.6"
+}

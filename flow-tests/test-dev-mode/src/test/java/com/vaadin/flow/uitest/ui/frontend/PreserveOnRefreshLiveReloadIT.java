@@ -55,10 +55,10 @@ public class PreserveOnRefreshLiveReloadIT extends ChromeBrowserTest {
 
         WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
         Assert.assertNotNull(liveReload);
-        WebElement statusDescription = findInShadowRoot(liveReload,
-                By.className("status-description")).get(0);
+        WebElement messageDetails = findInShadowRoot(liveReload,
+                By.className("warning")).get(0);
         Assert.assertTrue(
-                statusDescription.getText().contains("@PreserveOnRefresh"));
+                messageDetails.getText().contains("@PreserveOnRefresh"));
     }
 
 }
