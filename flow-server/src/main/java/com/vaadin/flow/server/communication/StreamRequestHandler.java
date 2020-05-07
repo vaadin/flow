@@ -149,7 +149,7 @@ public class StreamRequestHandler implements RequestHandler {
             builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
             builder.append(id).append(PATH_SEPARATOR);
             builder.append(
-                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()).replace("+", "%20"));
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
             throw new RuntimeException(e);
