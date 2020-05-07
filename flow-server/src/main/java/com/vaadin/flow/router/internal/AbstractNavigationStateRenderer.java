@@ -16,7 +16,6 @@
 package com.vaadin.flow.router.internal;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,8 +59,6 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -71,15 +68,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractNavigationStateRenderer
         implements NavigationHandler {
-    private enum TransitionOutcome {
-        FORWARDED, FINISHED, REROUTED, POSTPONED
-    }
-
-    static final String NOT_SUPPORT_FORWARD_BEFORELEAVE =
-            "The event.forwardTo() API in beforeLeave is not supported, "
-            + "you can use the combination between postpone() and "
-            + "getUI().get().getPage().setLocation(\"{}\") "
-            + " API in order to forward to other location";
 
     private static List<Integer> statusCodes = ReflectTools
             .getConstantIntValues(HttpServletResponse.class);
@@ -89,8 +77,6 @@ public abstract class AbstractNavigationStateRenderer
     private Postpone postponed = null;
 
     private LocationChangeEvent locationChangeEvent = null;
-
-    private String forwardToUrl = null;
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -172,22 +158,10 @@ public abstract class AbstractNavigationStateRenderer
                     .addAll(EventUtil.collectBeforeLeaveObservers(ui));
             leaveHandlers = new ArrayDeque<>(beforeLeaveHandlers);
         }
-        TransitionOutcome transitionOutcome = executeBeforeLeaveNavigation(
+        Optional<Integer> result = executeBeforeLeaveNavigation(event,
                 beforeNavigationDeactivating, leaveHandlers);
-
-        Optional<Integer> result = handleTransactionOutcome(transitionOutcome,
-                event, beforeNavigationDeactivating);
         if (result.isPresent()) {
             return result.get();
-        }
-
-        if (transitionOutcome == TransitionOutcome.POSTPONED) {
-            ContinueNavigationAction currentAction = beforeNavigationDeactivating
-                    .getContinueNavigationAction();
-            currentAction.setReferences(this, event);
-            storeContinueNavigationAction(ui, currentAction);
-
-            return HttpServletResponse.SC_OK;
         }
 
         final ArrayList<HasElement> chain;
@@ -223,11 +197,8 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, routeLayoutTypes);
 
-        transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
+        result = createChainIfEmptyAndExecuteBeforeEnterNavigation(
                 beforeNavigationActivating, event, chain);
-
-        result = handleTransactionOutcome(transitionOutcome, event,
-                beforeNavigationActivating);
         if (result.isPresent()) {
             return result.get();
         }
@@ -245,18 +216,10 @@ public abstract class AbstractNavigationStateRenderer
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        if (forwardToUrl != null) {
-            // Change the UI according to the navigation Component chain.
-            ui.getInternals().showRouteTarget(new Location(removeFirstSlash(forwardToUrl)),
-                    forwardToUrl, componentInstance,
-                    routerLayouts);
-        } else {
-            // Change the UI according to the navigation Component chain.
-            ui.getInternals().showRouteTarget(event.getLocation(),
-                    navigationState.getResolvedPath(), componentInstance,
-                    routerLayouts);
-        }
-
+        // Change the UI according to the navigation Component chain.
+        ui.getInternals().showRouteTarget(event.getLocation(),
+                navigationState.getResolvedPath(), componentInstance,
+                routerLayouts);
 
         updatePageTitle(event, componentInstance);
 
@@ -274,10 +237,6 @@ public abstract class AbstractNavigationStateRenderer
                 afterNavigationHandlers);
 
         return statusCode;
-    }
-
-    private String removeFirstSlash(String route) {
-        return route.replaceFirst("^/+", "");
     }
 
     /**
@@ -313,31 +272,6 @@ public abstract class AbstractNavigationStateRenderer
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> routeTargetType, Router router);
-
-    private Optional<Integer> handleTransactionOutcome(
-            TransitionOutcome transitionOutcome, NavigationEvent event,
-            BeforeEvent beforeNavigation) {
-
-        if (TransitionOutcome.FORWARDED.equals(transitionOutcome)) {
-            // inform that is BeforeEnterEvent
-            if (beforeNavigation instanceof BeforeLeaveEvent) {
-                String forwardOnBeforeLeave = beforeNavigation.getForwardToUrl() != null
-                        ? beforeNavigation.getForwardToUrl() : beforeNavigation.getLocation().getPath();
-                getLogger().warn(NOT_SUPPORT_FORWARD_BEFORELEAVE, forwardOnBeforeLeave);
-            }
-            if (beforeNavigation.isUnknownRoute()) {
-                forwardToUrl = beforeNavigation.getForwardToUrl();
-                return Optional.empty();
-            }
-            return Optional.of(forward(event, beforeNavigation));
-        }
-
-        if (TransitionOutcome.REROUTED.equals(transitionOutcome)) {
-            return Optional.of(reroute(event, beforeNavigation));
-        }
-
-        return Optional.empty();
-    }
 
     // The last element in the returned list is always a Component class
     private List<Class<? extends HasElement>> createTypesChain(
@@ -389,7 +323,7 @@ public abstract class AbstractNavigationStateRenderer
      *            handlers for before leave event
      * @return result of observer events
      */
-    private TransitionOutcome executeBeforeLeaveNavigation(
+    private Optional<Integer> executeBeforeLeaveNavigation(NavigationEvent event,
             BeforeLeaveEvent beforeNavigation,
             Deque<BeforeLeaveHandler> leaveHandlers) {
         while (!leaveHandlers.isEmpty()) {
@@ -398,19 +332,25 @@ public abstract class AbstractNavigationStateRenderer
 
             validateBeforeEvent(beforeNavigation);
 
-            Optional<TransitionOutcome> transitionOutcome = getTransitionOutcome(
+            Optional<Integer> result = handleTriggeredBeforeEvent(event,
                     beforeNavigation);
-            if (transitionOutcome.isPresent()) {
-                return transitionOutcome.get();
+            if (result.isPresent()) {
+                return result;
             }
 
             if (beforeNavigation.isPostponed()) {
                 postponed = Postpone.withLeaveObservers(leaveHandlers);
-                return TransitionOutcome.POSTPONED;
+
+                ContinueNavigationAction currentAction = beforeNavigation
+                        .getContinueNavigationAction();
+                currentAction.setReferences(this, event);
+                storeContinueNavigationAction(event.getUI(), currentAction);
+
+                return Optional.of(HttpServletResponse.SC_OK);
             }
         }
 
-        return TransitionOutcome.FINISHED;
+        return Optional.empty();
     }
 
     /**
@@ -433,7 +373,7 @@ public abstract class AbstractNavigationStateRenderer
      *            instances according with the navigation event's location.
      * @return result of observer events
      */
-    private TransitionOutcome createChainIfEmptyAndExecuteBeforeEnterNavigation(
+    private Optional<Integer> createChainIfEmptyAndExecuteBeforeEnterNavigation(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
             List<HasElement> chain) {
 
@@ -443,10 +383,10 @@ public abstract class AbstractNavigationStateRenderer
                 beforeNavigation.getUI()
                         .getNavigationListeners(BeforeEnterHandler.class));
 
-        Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
+        Optional<Integer> result = sendBeforeEnterEvent(
                 registeredEnterHandlers, event, beforeNavigation, null);
-        if (transitionOutcome.isPresent()) {
-            return transitionOutcome.get();
+        if (result.isPresent()) {
+            return result;
         }
 
         if (chain.isEmpty()) {
@@ -458,10 +398,9 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-    private TransitionOutcome sendBeforeEnterEventAndPopulateChain(
+    private Optional<Integer> sendBeforeEnterEventAndPopulateChain(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
             List<HasElement> chain) {
-        Optional<TransitionOutcome> transitionOutcome;
         List<HasElement> oldChain = event.getUI().getInternals()
                 .getActiveRouterTargetsChain();
 
@@ -479,14 +418,14 @@ public abstract class AbstractNavigationStateRenderer
                                 element, oldChain));
 
                 final boolean lastElement = chain.size() == typesChain.size();
-                transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers,
+                Optional<Integer> result = sendBeforeEnterEvent(chainEnterHandlers,
                         event, beforeNavigation, lastElement ? chain : null);
-                if (transitionOutcome.isPresent()) {
-                    return transitionOutcome.get();
+                if (result.isPresent()) {
+                    return result;
                 }
             }
 
-            return TransitionOutcome.FINISHED;
+            return Optional.empty();
 
         } finally {
 
@@ -499,11 +438,9 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-    private TransitionOutcome sendBeforeEnterEventToExistingChain(
+    private Optional<Integer> sendBeforeEnterEventToExistingChain(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
             List<HasElement> chain) {
-        Optional<TransitionOutcome> transitionOutcome;
-
         // Reverse the chain so that the target is last.
         chain = new ArrayList<>(chain);
         Collections.reverse(chain);
@@ -514,20 +451,20 @@ public abstract class AbstractNavigationStateRenderer
                 EventUtil.collectBeforeEnterObserversFromChain(chain, event
                         .getUI().getInternals().getActiveRouterTargetsChain()));
 
-        transitionOutcome = sendBeforeEnterEvent(chainEnterHandlers, event,
-                beforeNavigation, chain);
+        Optional<Integer> result = sendBeforeEnterEvent(chainEnterHandlers,
+                event, beforeNavigation, chain);
 
-        if (transitionOutcome.isPresent()) {
-            return transitionOutcome.get();
+        if (result.isPresent()) {
+            return result;
         }
 
-        return TransitionOutcome.FINISHED;
+        return Optional.empty();
     }
 
     /*
      * Target component is expected to be the last in the chain.
      */
-    private Optional<TransitionOutcome> sendBeforeEnterEvent(
+    private Optional<Integer> sendBeforeEnterEvent(
             List<BeforeEnterHandler> eventHandlers, NavigationEvent event,
             BeforeEnterEvent beforeNavigation, List<HasElement> chain) {
 
@@ -559,46 +496,46 @@ public abstract class AbstractNavigationStateRenderer
                     && (isComponentElementEqualsOrChild(eventHandler,
                     componentInstance))) {
 
-                Optional<TransitionOutcome> transitionOutcome = notifyNavigationTarget(
+                Optional<Integer> result = notifyNavigationTarget(
                         event, beforeNavigation, locationChangeEvent,
                         componentInstance);
-                if (transitionOutcome.isPresent()) {
-                    return transitionOutcome;
+                if (result.isPresent()) {
+                    return result;
                 }
 
                 notifyNavigationTarget = false;
             }
 
-            Optional<TransitionOutcome> transitionOutcome = sendBeforeEnterEvent(
+            Optional<Integer> result = sendBeforeEnterEvent(event,
                     beforeNavigation, eventHandler);
-            if (transitionOutcome.isPresent()) {
-                return transitionOutcome;
+            if (result.isPresent()) {
+                return result;
             }
         }
 
         // Make sure notifyNavigationTarget is executed.
         if (notifyNavigationTarget) {
 
-            Optional<TransitionOutcome> transitionOutcome = notifyNavigationTarget(
+            Optional<Integer> result = notifyNavigationTarget(
                     event, beforeNavigation, locationChangeEvent,
                     componentInstance);
-            if (transitionOutcome.isPresent()) {
-                return transitionOutcome;
+            if (result.isPresent()) {
+                return result;
             }
         }
 
         return Optional.empty();
     }
 
-    private Optional<TransitionOutcome> sendBeforeEnterEvent(
+    private Optional<Integer> sendBeforeEnterEvent(NavigationEvent event,
             BeforeEnterEvent beforeNavigation,
             BeforeEnterHandler eventHandler) {
         eventHandler.beforeEnter(beforeNavigation);
         validateBeforeEvent(beforeNavigation);
-        return getTransitionOutcome(beforeNavigation);
+        return handleTriggeredBeforeEvent(event, beforeNavigation);
     }
 
-    private Optional<TransitionOutcome> notifyNavigationTarget(
+    private Optional<Integer> notifyNavigationTarget(
             NavigationEvent event, BeforeEnterEvent beforeNavigation,
             LocationChangeEvent locationChangeEvent,
             Component componentInstance) {
@@ -606,7 +543,7 @@ public abstract class AbstractNavigationStateRenderer
         notifyNavigationTarget(componentInstance, event, beforeNavigation,
                 locationChangeEvent);
 
-        return getTransitionOutcome(beforeNavigation);
+        return handleTriggeredBeforeEvent(event, beforeNavigation);
     }
 
     /*
@@ -633,21 +570,35 @@ public abstract class AbstractNavigationStateRenderer
         return false;
     }
 
-    private Optional<TransitionOutcome> getTransitionOutcome(
-            BeforeEvent beforeEvent) {
+    /**
+     * Handle a {@link BeforeEvent} after if has been triggered to an observer.
+     * 
+     * @param event
+     *            the navigation event being handled.
+     * @param beforeEvent
+     *            the {@link BeforeLeaveEvent} or {@link BeforeEnterEvent} being
+     *            triggered to an observer.
+     * @return a HTTP status code wrapped as an {@link Optional}. If the
+     *         {@link Optional} is empty, the process will proceed with next
+     *         observer or just move forward, otherwise the process will return
+     *         immediately with the provided http code.
+     * @see HttpServletResponse
+     */
+    protected Optional<Integer> handleTriggeredBeforeEvent(
+            NavigationEvent event, BeforeEvent beforeEvent) {
+
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                beforeEvent.getForwardTargetParameters())
-                || beforeEvent.isUnknownRoute()) {
-            return Optional.of(TransitionOutcome.FORWARDED);
+                beforeEvent.getForwardTargetParameters())) {
+            return Optional.of(forward(event, beforeEvent));
         }
 
         if (beforeEvent.hasRerouteTarget()
                 && !isSameNavigationState(beforeEvent.getRerouteTargetType(),
                 beforeEvent.getRerouteTargetParameters())) {
-            return Optional.of(TransitionOutcome.REROUTED);
+            return Optional.of(reroute(event, beforeEvent));
         }
-
+        
         return Optional.empty();
     }
 
@@ -923,10 +874,5 @@ public abstract class AbstractNavigationStateRenderer
             ui.getPage().executeJs(
                     "Vaadin.Flow.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory
-                .getLogger(AbstractNavigationStateRenderer.class.getName());
     }
 }

@@ -37,11 +37,9 @@ import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
-import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
@@ -63,8 +61,6 @@ public class JavaScriptBootstrapUI extends UI {
     private boolean navigationInProgress = false;
 
     private String forwardToUrl = null;
-    private boolean isUnknownRoute = false;
-    private boolean hasForwardTo = false;
 
     /**
      * Create UI for client side bootstrapping.
@@ -125,7 +121,7 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeLastSlash(removeFirstSlash(flowRoute))));
 
         // true if the target is client-view and the push mode is disable
-        if(isUnknownRoute && !getPushConfiguration().getPushMode().isEnabled()) {
+        if (isUnknownRoute() && !getPushConfiguration().getPushMode().isEnabled()) {
             wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
                     false, forwardToUrl);
         } else {
@@ -155,7 +151,7 @@ public class JavaScriptBootstrapUI extends UI {
         boolean postponed = navigateToPlaceholder(
                 new Location(removeFirstSlash(route)));
 
-        if (postponed && !isUnknownRoute) {
+        if (postponed && !isUnknownRoute()) {
             getPage().executeJs(CLIENT_PUSHSTATE_TO, getInternals().getActiveViewLocation().getPathWithQueryParameters());
         }
         // Inform the client whether the navigation should be postponed
@@ -229,27 +225,13 @@ public class JavaScriptBootstrapUI extends UI {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
 
-        NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
+        JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
 
         clientNavigationStateRenderer.handle(navigationEvent);
 
-        isUnknownRoute = false;
-        hasForwardTo = false;
-        // true if has forwardTo in server-views
-        if (!getInternals().getActiveRouterTargetsChain().isEmpty()
-                && getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class) != null
-                && !getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class)
-                .value().contains(getInternals().getActiveViewLocation().getPathWithQueryParameters())) {
-            // true if the forwardTo target is client-view
-            isUnknownRoute = !this.getRouter()
-                    .resolveNavigationTarget(new Location(removeFirstSlash(this.getInternals()
-                            .getActiveViewLocation().getPathWithQueryParameters()))).isPresent();
-            if (isUnknownRoute) {
-                forwardToUrl =  this.getInternals().getActiveViewLocation().getPathWithQueryParameters();
-            }
-            hasForwardTo = true;
-        }
+        forwardToUrl = clientNavigationStateRenderer.getClientForwardRoute();
+
         adjustPageTitle();
 
         return getInternals().getContinueNavigationAction() != null;
@@ -332,7 +314,6 @@ public class JavaScriptBootstrapUI extends UI {
             }
 
             navigationInProgress = true;
-            hasForwardTo = false;
             boolean postpone = false;
             String execJs;
             NavigationState navigationState = this.getRouter()
@@ -342,7 +323,7 @@ public class JavaScriptBootstrapUI extends UI {
                 // Navigation can be done in server side without extra
                 // round-trip
                 postpone = handleNavigation(location, navigationState);
-                if (isUnknownRoute) {
+                if (isUnknownRoute()) {
                     navigationInProgress = false;
                     this.navigate(forwardToUrl);
                     return;
@@ -358,17 +339,22 @@ public class JavaScriptBootstrapUI extends UI {
             }
             navigationInProgress = false;
 
-            // if hasForwardTo, url should be a new one, if has postpone, url should not update
-            String url = urlPathShouldBeDisplayed(hasForwardTo, postpone, location);
-
-            getPage().executeJs(execJs, url);
+            getPage().executeJs(execJs, routeToBeDisplayed(postpone, location));
         }
     }
 
-    private String urlPathShouldBeDisplayed(boolean hasForwardTo, boolean postpone, Location location) {
-        return hasForwardTo || postpone
-                ? getInternals().getActiveViewLocation().getPathWithQueryParameters()
-                : location.getPathWithQueryParameters();
+    private String routeToBeDisplayed(boolean postpone, Location location) {
+        // if has forwardToUrl, url should be a new one, if has postpone, url
+        // should not update
+        return isUnknownRoute() ? getForwardToUrl()
+                : postpone
+                        ? getInternals().getActiveViewLocation()
+                                .getPathWithQueryParameters()
+                        : location.getPathWithQueryParameters();
+    }
+
+    private boolean isUnknownRoute() {
+        return forwardToUrl != null;
     }
 
     /**
