@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouterLayout;
 
 /**
  * Route configuration class that is used as a value object.
@@ -88,8 +88,7 @@ public class ConfiguredRoutes implements Serializable {
                 .copyTargetRouteModels(false);
 
         this.routeModel = RouteModel.copy(original.getRouteModel(), false);
-        this.routeMap = originalRouteMap.isEmpty()
-                ? Collections.emptyMap()
+        this.routeMap = originalRouteMap.isEmpty() ? Collections.emptyMap()
                 : Collections.unmodifiableMap(originalRouteMap);
         this.targetRouteMap = originalTargetRouteMap.isEmpty()
                 ? Collections.emptyMap()
@@ -186,8 +185,9 @@ public class ConfiguredRoutes implements Serializable {
      * @param url
      *            the navigation url used to search a route target.
      * @return a {@link NavigationRouteTarget} instance containing the
-     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
-     *         <code>url</code> argument according with the route configuration.
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from
+     *         the <code>url</code> argument according with the route
+     *         configuration.
      */
     public NavigationRouteTarget getNavigationRouteTarget(String url) {
         return getRouteModel().getNavigationRouteTarget(url);
@@ -205,7 +205,7 @@ public class ConfiguredRoutes implements Serializable {
      *         component and route parameters.
      */
     public RouteTarget getRouteTarget(Class<? extends Component> target,
-                                      RouteParameters parameters) {
+            RouteParameters parameters) {
         return iterateTemplates(target, template -> {
             try {
                 return getRouteModel().getRouteTarget(template, parameters);
@@ -282,8 +282,9 @@ public class ConfiguredRoutes implements Serializable {
     protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(
             boolean mutable) {
         Map<Class<? extends Component>, RouteModel> copyMap = new HashMap<>();
-        this.getTargetRouteModelMap().entrySet().forEach(entry -> copyMap
-                .put(entry.getKey(), RouteModel.copy(entry.getValue(), mutable)));
+        this.getTargetRouteModelMap().entrySet()
+                .forEach(entry -> copyMap.put(entry.getKey(),
+                        RouteModel.copy(entry.getValue(), mutable)));
         return copyMap;
     }
 
@@ -310,8 +311,8 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get the route template String for the given navigation target class
-     * and using the specified parameters format.
+     * Get the route template String for the given navigation target class and
+     * using the specified parameters format.
      *
      * @param navigationTarget
      *            navigationTarget to get registered route for
@@ -427,7 +428,8 @@ public class ConfiguredRoutes implements Serializable {
      * 
      * @param template
      *            template to get parameters from.
-     * @return map parameter names with {@link com.vaadin.flow.router.RouteParameterData}.
+     * @return map parameter names with
+     *         {@link com.vaadin.flow.router.RouteParameterData}.
      */
     public Map<String, RouteParameterData> getParameters(String template) {
         return getRouteModel().getParameters(template);
@@ -445,12 +447,10 @@ public class ConfiguredRoutes implements Serializable {
         return getRoutesMap().get(template);
     }
 
-    private <T> T iterateTemplates(
-            Class<? extends Component> navigationTarget,
+    private <T> T iterateTemplates(Class<? extends Component> navigationTarget,
             Function<String, T> templateOutput) {
 
-        final RouteModel model = getTargetRouteModelMap()
-                .get(navigationTarget);
+        final RouteModel model = getTargetRouteModelMap().get(navigationTarget);
         if (model == null) {
             return null;
         }
