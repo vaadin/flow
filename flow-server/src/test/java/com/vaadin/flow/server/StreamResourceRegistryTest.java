@@ -143,7 +143,7 @@ public class StreamResourceRegistryTest {
 
         URI url = registration.getResourceUri();
         String suffix = URLEncoder.encode(resource.getName(),
-                StandardCharsets.UTF_8.name());
+                StandardCharsets.UTF_8.name()).replace("+", "%20");
         Assert.assertTrue("Resource url is not encoded",
                 url.toString().endsWith(suffix));
     }
