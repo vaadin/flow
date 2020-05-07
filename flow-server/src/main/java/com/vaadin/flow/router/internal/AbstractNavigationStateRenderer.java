@@ -218,6 +218,13 @@ public abstract class AbstractNavigationStateRenderer
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, routeLayoutTypes);
 
+        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
+        // pushing history state shouldn't be done. So, it's done here to make
+        // sure that when history state is pushed the navigation is not
+        // postponed.
+        // See https://github.com/vaadin/flow/issues/3619 for more info.
+        pushHistoryStateIfNeeded(event, ui);
+
         TransitionOutcome transitionOutcome = createChainIfEmptyAndExecuteBeforeEnterNavigation(
                 beforeNavigationActivating, event, chain);
 
@@ -228,13 +235,6 @@ public abstract class AbstractNavigationStateRenderer
                 return result.get();
             }
         }
-
-        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
-        // pushing history state shouldn't be done. So, it's done here to make
-        // sure that when history state is pushed the navigation is not
-        // postponed.
-        // See https://github.com/vaadin/flow/issues/3619 for more info.
-        pushHistoryStateIfNeeded(event, ui);
 
         final Component componentInstance = (Component) chain.get(0);
 
