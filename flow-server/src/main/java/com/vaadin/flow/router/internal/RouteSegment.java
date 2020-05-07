@@ -229,7 +229,7 @@ final class RouteSegment implements Serializable {
 
     /**
      * Adds a template following this route segment. If the template already
-     * exists exception is thrown.
+     * exists an exception is thrown.
      *
      * @param template
      *            a template where parameters are defined by their ids and

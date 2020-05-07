@@ -203,7 +203,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
     @Override
     public Optional<Class<? extends Component>> getNavigationTarget(
             String url) {
-        Objects.requireNonNull(url, "pathString must not be null.");
+        Objects.requireNonNull(url, "url must not be null.");
         return getConfiguration().getTarget(url);
     }
 

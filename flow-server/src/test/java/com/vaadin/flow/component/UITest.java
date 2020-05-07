@@ -952,14 +952,14 @@ public class UITest {
             ui.navigate((String) null);
             Assert.fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assert.assertEquals("Location may not be null", e.getMessage());
+            Assert.assertEquals("Location must not be null", e.getMessage());
         }
 
         try {
             ui.navigate((String) null, QueryParameters.empty());
             Assert.fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assert.assertEquals("Location may not be null",
+            Assert.assertEquals("Location must not be null",
                     e.getMessage());
         }
 
@@ -967,7 +967,7 @@ public class UITest {
             ui.navigate("foo-bar", null);
             Assert.fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assert.assertEquals("Query parameters may not be null",
+            Assert.assertEquals("Query parameters must not be null",
                     e.getMessage());
         }
     }

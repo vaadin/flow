@@ -62,14 +62,18 @@ public class RouteParametersTest {
     public void getters_provide_empty_values() {
         RouteParameters parameters = getParameters();
 
-        Assert.assertFalse("Optional should be empty",
+        Assert.assertFalse(
+                "Getting the String value of a non-existing parameter should return empty Optional",
                 parameters.get("foo").isPresent());
-        Assert.assertFalse("Optional should be empty",
+        Assert.assertFalse(
+                "Getting the Integer value of a non-existing parameter should return empty Optional",
                 parameters.getInteger("foo").isPresent());
-        Assert.assertFalse("Optional should be empty",
+        Assert.assertFalse(
+                "Getting the Long value of a non-existing parameter should return empty Optional",
                 parameters.getLong("foo").isPresent());
 
-        Assert.assertTrue("List should be empty",
+        Assert.assertTrue(
+                "Getting the Wildcard value of a non-existing parameter should return empty List",
                 parameters.getWildcard("foo").isEmpty());
     }
 
