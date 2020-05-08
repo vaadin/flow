@@ -402,6 +402,7 @@ class VaadinDevmodeGizmo extends LitElement {
       notifications: {type: Array},
       status: {type: String},
       serviceurl: {type: String},
+      liveReloadPath: {type: String},
       liveReloadBackend: {type: String},
       springBootDevToolsPort: {type: Number}
     };
@@ -534,19 +535,32 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   openDedicatedWebSocketConnection() {
-    const url = this.serviceurl ? this.serviceurl : window.location.toString();
+    const wsUrl = this.getDedicatedWebSocketUrl(window.location);
+    if (wsUrl) {
+      this.connection = new WebSocket(wsUrl);
+      const self = this;
+      setInterval(function() {
+        if (self.connection !== null) {
+          self.connection.send('');
+        }
+      }, VaadinDevmodeGizmo.HEARTBEAT_INTERVAL);
+    }
+  }
+
+  getDedicatedWebSocketUrl(location) {
+    let url;
+    if (this.serviceurl) {
+      url = this.serviceurl;
+    } else if (this.liveReloadPath) {
+      url = location.protocol + '//' + location.host + '/' + this.liveReloadPath;
+    } else {
+      url = location.href;
+    }
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       console.warn('The protocol of the url should be http or https for live reload to work.');
-      return;
+      return null;
     }
-    const wsUrl = url.replace(/^http/, 'ws') + '?refresh_connection';
-    const self = this;
-    this.connection = new WebSocket(wsUrl);
-    setInterval(function() {
-      if (self.connection !== null) {
-        self.connection.send('');
-      }
-    }, VaadinDevmodeGizmo.HEARTBEAT_INTERVAL);
+    return url.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
   }
 
   getSpringBootWebSocketUrl(location) {
@@ -817,12 +831,17 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 }
 
-const init = function(serviceUrl, liveReloadBackend, springBootDevToolsPort) {
+const init = function(serviceUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort) {
   if ('false' !== window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE)) {
-    customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
+    if (customElements.get('vaadin-devmode-gizmo') === undefined) {
+      customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
+    }
     const devmodeGizmo = document.createElement('vaadin-devmode-gizmo');
     if (serviceUrl) {
       devmodeGizmo.setAttribute('serviceurl', serviceUrl);
+    }
+    if (liveReloadPath) {
+      devmodeGizmo.setAttribute('liveReloadPath', liveReloadPath);
     }
     if (liveReloadBackend) {
       devmodeGizmo.setAttribute('liveReloadBackend', liveReloadBackend);
