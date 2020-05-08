@@ -17,7 +17,7 @@ package com.vaadin.flow.server.connect.typeconversion;
 
 import org.junit.Test;
 
-public class ByteConversionIT extends BaseTypeConversionIT {
+public class ByteConversionTest extends BaseTypeConversionTest {
     @Test
     public void should_ConvertNumberToByte_When_ReceiveNumber() {
         assertEqualExpectedValueWhenCallingMethod("addOneByte", "1", "2");

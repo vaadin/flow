@@ -58,20 +58,20 @@ public class VersionsJsonConverterTest {
 
         VersionsJsonConverter convert = new VersionsJsonConverter(
                 Json.parse(json));
-        JsonObject conertedJson = convert.convert();
-        Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-progress-bar"));
-        Assert.assertTrue(conertedJson.hasKey("@vaadin/vaadin-upload"));
-        Assert.assertTrue(conertedJson.hasKey("@polymer/iron-list"));
+        JsonObject convertedJson = convert.getConvertedJson();
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertTrue(convertedJson.hasKey("@polymer/iron-list"));
 
-        Assert.assertFalse(conertedJson.hasKey("flow"));
-        Assert.assertFalse(conertedJson.hasKey("core"));
-        Assert.assertFalse(conertedJson.hasKey("platform"));
+        Assert.assertFalse(convertedJson.hasKey("flow"));
+        Assert.assertFalse(convertedJson.hasKey("core"));
+        Assert.assertFalse(convertedJson.hasKey("platform"));
 
         Assert.assertEquals("1.1.2",
-                conertedJson.getString("@vaadin/vaadin-progress-bar"));
+                convertedJson.getString("@vaadin/vaadin-progress-bar"));
         Assert.assertEquals("4.2.2",
-                conertedJson.getString("@vaadin/vaadin-upload"));
+                convertedJson.getString("@vaadin/vaadin-upload"));
         Assert.assertEquals("3.0.2",
-                conertedJson.getString("@polymer/iron-list"));
+                convertedJson.getString("@polymer/iron-list"));
     }
 }

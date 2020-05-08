@@ -268,4 +268,11 @@ public class LocationTest {
     public void pathShouldBeEmpty() {
         assertEquals("", new Location("").getPathWithQueryParameters());
     }
+
+    @Test
+    public void locationWithUrlEncodedCharacters() {
+        Location location = new Location("foo?bar=a%20b%20%C3%B1%20%26%20%3F");
+        Assert.assertEquals("bar=a b ñ & ?",
+                location.getQueryParameters().getQueryString());
+    }
 }
