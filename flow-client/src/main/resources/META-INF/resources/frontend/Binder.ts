@@ -224,13 +224,13 @@ export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>
 }
 
 export async function validate<T>(model: AbstractModel<T>) {
-  const messages:string[] = [];
+  const errors:string[] = [];
 
   if (model instanceof ArrayModel) {
     for (let itemModel of model) {
-      messages.concat(await validate(itemModel));
+      errors.push(...await validate(itemModel));
     }
-    return messages;
+    return errors;
   }
 
   const props = Object.getOwnPropertyNames(model)
@@ -241,16 +241,16 @@ export async function validate<T>(model: AbstractModel<T>) {
     if (fieldElement) {
       const error = await fieldElement.validate();
       if (error !== undefined) {
-        messages.push(error);
+        errors.push(error);
       }
     } else {
-      messages.concat(await validate(propModel));
+      errors.push(...await validate(propModel));
     }
   }
 
   const parent = model[parentSymbol];
   if (parent === undefined) {
-    return messages;
+    return errors;
   }
 
   const value = getValue(model);
@@ -258,10 +258,10 @@ export async function validate<T>(model: AbstractModel<T>) {
   for (const validator of modelValidators) {
     const valid = await ((async () => validator.validate(value))());
     if (!valid) {
-      messages.push(validator.message);
+      errors.push(validator.message);
     }
   }
-  return messages;
+  return errors;
 }
 
 export function getName(model: AbstractModel<any>) {

@@ -30,11 +30,11 @@ class LitOrderView extends LitElement {}
 @customElement('order-view')
 export default class OrderView extends LitElement {
   public binder = new Binder(this, OrderModel, () => this.requestUpdate());
-  @query('#notes') public notes!: Element;
-  @query('#fullName') public fullName!: Element;
+  @query('#notes') public notes!: HTMLInputElement;
+  @query('#fullName') public fullName!: HTMLInputElement;
   @query('#add') public add!: Element;
-  @query('#description0') public description!: Element;
-  @query('#price0') public price!: Element;
+  @query('#description0') public description!: HTMLInputElement;
+  @query('#price0') public price!: HTMLInputElement;
 
   static get styles() {
     return css`input[invalid] {border: 2px solid red;}`;
@@ -281,6 +281,34 @@ suite("Binder", () => {
 
         expect(orderView.description.hasAttribute('invalid')).to.be.true;
         expect(orderView.price.hasAttribute('invalid')).to.be.true;
+      });
+
+      test(`should not submit when just validation fails`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        orderView.notes.value = 'foo';
+        orderView.fullName.value = 'manuel';
+        orderView.description.value = 'bread';
+
+        const item = await orderView.binder.submitTo(async (item) => item) as Order;
+        expect(item).to.be.undefined;
+      });
+
+      test(`should submit when no validation errors`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        setValue(orderView.binder.model,
+          // @ts-ignore
+          {notes: 'foo', products: [{description: 'bread', price: 10}], customer: {fullName: 'manuel'}});
+
+        const item = await orderView.binder.submitTo(async (item) => item) as Order;
+        expect(item).not.to.be.undefined;
+        expect(item.products[0].description).to.be.equal('bread');
+        expect(item.products[0].price).to.be.equal(10);
+        expect(item.notes).to.be.equal('foo');
+        expect(item.customer.fullName).to.be.equal('manuel');
       });
     });
 
