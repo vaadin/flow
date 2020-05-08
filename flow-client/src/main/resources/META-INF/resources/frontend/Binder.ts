@@ -208,14 +208,14 @@ export interface Validator<T> {
 }
 
 export class Required implements Validator<string> {
-  message = 'required';
+  message = '';
   validate = (value: any) => {
     if (typeof value === 'string' || Array.isArray(value)) {
       return value.length > 0;
     } else if (typeof value === 'number') {
       return Number.isFinite(value);
     }
-    return false;
+    return value !== undefined;
   }
 }
 
@@ -227,7 +227,7 @@ export async function validate<T>(model: AbstractModel<T>) {
   const errors:string[] = [];
 
   if (model instanceof ArrayModel) {
-    for (let itemModel of model) {
+    for (const itemModel of model) {
       errors.push(...await validate(itemModel));
     }
     return errors;
@@ -361,18 +361,15 @@ interface FieldElement extends Field {
 }
 
 class VaadinFieldElement implements FieldElement {
-  element: Element & Field;
+  constructor(public element: Element & Field) {}
   validate = async () => undefined;
   set required(value: boolean) { this.element.required = value }
   set invalid(value: boolean) { this.element.invalid = value }
   set errorMessage(value: string) { this.element.errorMessage = value }
-  constructor(element: Element) {
-    this.element = element as any;
-  }
 }
 
 class GenericFieldElement implements FieldElement {
-  element: Element;
+  constructor(public element: Element) {}
   validate = async () => undefined;
   set required(value: boolean) { this.setAttribute('required', value) }
   set invalid(value: boolean) { this.setAttribute('invalid', value) }
@@ -384,12 +381,10 @@ class GenericFieldElement implements FieldElement {
       this.element.removeAttribute(key);
     }
   }
-  constructor(element: Element) {
-    this.element = element;
-  }
 }
 
-const isVaadinElement = (elm: Element) => elm.constructor.prototype.version;
+// vaadin elements have a `version` static property in the class
+const isVaadinElement = (elm: Element) => (elm.constructor as any).version;
 
 export const field = directive(<T>(
   model: AbstractModel<T>,
@@ -401,7 +396,7 @@ export const field = directive(<T>(
   }
 
   let fieldState: FieldState;
-  const element = propertyPart.committer.element as HTMLInputElement;
+  const element = propertyPart.committer.element as HTMLInputElement & Field;
 
   if (!fieldStateMap.has(propertyPart)) {
     fieldState = { name: '', value: '', required: false, invalid: false, errorMessage: ''};
