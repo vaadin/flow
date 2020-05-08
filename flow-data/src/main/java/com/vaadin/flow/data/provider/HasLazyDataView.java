@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
+
 /**
  * Interface that defines methods for setting in memory data.
  * This will return a {@link LazyDataView}.
@@ -25,7 +27,8 @@ package com.vaadin.flow.data.provider;
  *         DataView type
  * @since
  */
-public interface HasLazyDataView<T, V extends LazyDataView<T>> {
+public interface HasLazyDataView<T, V extends LazyDataView<T>> extends
+        Serializable {
     /**
      * Supply data through a callback provider.
      *

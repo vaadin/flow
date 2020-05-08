@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.shared.Registration;
@@ -28,7 +29,7 @@ import com.vaadin.flow.shared.Registration;
  *         data type
  * @since
  */
-public interface DataView<T> {
+public interface DataView<T> extends Serializable {
 
     /**
      * Get the full data available to the component.

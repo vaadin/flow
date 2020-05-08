@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
+
 /**
  * Listener interface for getting updates on data set size changes.
  *
@@ -24,7 +26,7 @@ package com.vaadin.flow.data.provider;
  * @since
  */
 @FunctionalInterface
-public interface SizeChangeListener {
+public interface SizeChangeListener extends Serializable {
 
     /**
      * Invoked for changes in the data size.

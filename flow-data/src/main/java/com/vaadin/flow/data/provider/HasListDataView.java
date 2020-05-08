@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.stream.Stream;
 
@@ -28,7 +29,8 @@ import java.util.stream.Stream;
  *         DataView type
  * @since
  */
-public interface HasListDataView<T, V extends ListDataView<T>> {
+public interface HasListDataView<T, V extends ListDataView<T>> extends
+        Serializable {
 
     /**
      * Sets a ListDataProvider for the component to use.
