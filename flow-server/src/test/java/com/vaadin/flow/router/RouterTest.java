@@ -3228,16 +3228,6 @@ public class RouterTest extends RoutingTestBase {
                 exceptionText2, exceptionText3);
     }
 
-    @Test
-    public void navigate_withState_() {
-        setNavigationTargets(RootNavigationTarget.class);
-
-        RootNavigationTarget.events.clear();
-        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(1, RootNavigationTarget.events.size());
-
-    }
-
     private void setNavigationTargets(
             Class<? extends Component>... navigationTargets)
             throws InvalidRouteConfigurationException {
