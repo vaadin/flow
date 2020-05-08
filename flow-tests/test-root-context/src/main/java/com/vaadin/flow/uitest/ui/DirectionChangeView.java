@@ -65,16 +65,19 @@ public class DirectionChangeView extends AbstractDivView
             @OptionalParameter String parameter) {
         String queryString = event.getLocation().getQueryParameters()
                 .getQueryString();
-        if ("rtl".equals(queryString)) {
+        if (queryString == null || queryString.isEmpty()) {
+            return;
+        }
+        if (queryString.startsWith("rtl")) {
             event.getUI().setDirection(Direction.RIGHT_TO_LEFT);
-        } else if ("ltr".equals(queryString)) {
+        } else if (queryString.startsWith("ltr")) {
             event.getUI().setDirection(Direction.LEFT_TO_RIGHT);
         }
     }
 
     @Override
     public void localeChange(LocaleChangeEvent event) {
-        if (event.getLocale()== Locale.SIMPLIFIED_CHINESE) {
+        if (event.getLocale() == Locale.SIMPLIFIED_CHINESE) {
             event.getUI().setDirection(Direction.RIGHT_TO_LEFT);
         }
         locale.setText(event.getLocale().toString());
