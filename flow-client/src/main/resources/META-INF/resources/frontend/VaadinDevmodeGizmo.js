@@ -132,6 +132,10 @@ class VaadinDevmodeGizmo extends LitElement {
         transform: translateX(10px);
       }
 
+     .switch input:disabled + .slider:before {
+        background-color: var(--gizmo-grey-color);
+      }
+
       .window.hidden {
           opacity: 0;
           transform: scale(0.1,0.4);
