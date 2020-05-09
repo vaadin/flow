@@ -109,7 +109,7 @@ suite("Binder", () => {
 
     test("should have name for models", () => {
       assert.equal(getName(binder.model.notes), "notes");
-      assert.equal(getName(binder.model.customer.fullName), "customer[fullName]");
+      assert.equal(getName(binder.model.customer.fullName), "customer.fullName");
     });
 
     test("should have initial defaultValue", () => {
@@ -319,18 +319,18 @@ suite("Binder", () => {
       );
     });
 
-    test("should not have validation errors for a model without validators", () => {
-      assert.isEmpty(validate(binder.model));
+    test("should not have validation errors for a model without validators", async () => {
+      assert.isEmpty(await validate(binder.model.priority));
     });
 
-    test("should fail validation after adding a synchronous validator", () => {
+    test("should fail validation after adding a synchronous validator", async () => {
       class SyncValidator implements Validator<Order>{
         message = "foo";
         validate = () => false;
       }
       getModelValidators(binder.model.priority).add(new SyncValidator());
       return validate(binder.model.priority).then(errMsg => {
-        expect(errMsg[0]).to.equal("foo");
+        expect(errMsg[0].error).to.equal("foo");
       });
     });
 
@@ -344,7 +344,7 @@ suite("Binder", () => {
       }
       getModelValidators(binder.model.priority).add(new AsyncValidator());
       return validate(binder.model.priority).then(errMsg => {
-        expect(errMsg[0]).to.equal("bar");
+        expect(errMsg[0].error).to.equal("bar");
       });
     });
 
@@ -362,7 +362,7 @@ suite("Binder", () => {
         document.body.removeChild(orderView)
       });
 
-      ['input', 'change', 'blur'].forEach(event => {
+      ['change', 'blur'].forEach(event => {
         test(`should validate field on ${event}`, async () => {
           expect(orderView.notes.hasAttribute('invalid')).to.be.false;
           await fireEvent(orderView.notes, event);
@@ -377,11 +377,31 @@ suite("Binder", () => {
         });
       });
 
+      test(`should not validate field on input when first visit`, async () => {
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+        await fireEvent(orderView.notes, 'input');
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+      });
+
+      test(`should validate field on input after first visit`, async () => {
+        orderView.notes.value = 'foo';
+        await fireEvent(orderView.notes, 'blur');
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+
+        orderView.notes.value = '';
+        await fireEvent(orderView.notes, 'input');
+        expect(orderView.notes.hasAttribute('invalid')).to.be.true;
+      });
+
       test(`should validate fields on submit`, async () => {
         expect(orderView.notes.hasAttribute('invalid')).to.be.false;
         expect(orderView.fullName.hasAttribute('invalid')).to.be.false;
 
-        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+        }
 
         expect(orderView.notes.hasAttribute('invalid')).to.be.true;
         expect(orderView.fullName.hasAttribute('invalid')).to.be.true;
@@ -394,7 +414,11 @@ suite("Binder", () => {
         expect(orderView.description.hasAttribute('invalid')).to.be.false;
         expect(orderView.price.hasAttribute('invalid')).to.be.false;
 
-        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+        }
 
         expect(orderView.description.hasAttribute('invalid')).to.be.true;
         expect(orderView.price.hasAttribute('invalid')).to.be.true;
@@ -403,11 +427,16 @@ suite("Binder", () => {
       test(`should validate fields of arrays on submit`, async () => {
         expect(orderView.description).to.be.null;
         await fireEvent(orderView.add, 'click');
+        await fireEvent(orderView.add, 'click');
 
         expect(orderView.description.hasAttribute('invalid')).to.be.false;
         expect(orderView.price.hasAttribute('invalid')).to.be.false;
 
-        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+        }
 
         expect(orderView.description.hasAttribute('invalid')).to.be.true;
         expect(orderView.price.hasAttribute('invalid')).to.be.true;
@@ -418,20 +447,31 @@ suite("Binder", () => {
         await fireEvent(orderView.add, 'click');
 
         orderView.notes.value = 'foo';
+        await fireEvent(orderView.notes, 'change');
         orderView.fullName.value = 'manuel';
+        await fireEvent(orderView.fullName, 'change');
         orderView.description.value = 'bread';
+        await fireEvent(orderView.description, 'change');
 
-        const item = await orderView.binder.submitTo(async (item) => item) as Order;
-        expect(item).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+        }
       });
 
       test(`should submit when no validation errors`, async () => {
         expect(orderView.description).to.be.null;
         await fireEvent(orderView.add, 'click');
 
-        setValue(orderView.binder.model,
-          // @ts-ignore
-          {notes: 'foo', products: [{description: 'bread', price: 10}], customer: {fullName: 'manuel'}});
+        orderView.notes.value = 'foo';
+        await fireEvent(orderView.notes, 'change');
+        orderView.fullName.value = 'manuel';
+        await fireEvent(orderView.fullName, 'change');
+        orderView.description.value = 'bread';
+        await fireEvent(orderView.description, 'change');
+        orderView.price.value = '10';
+        await fireEvent(orderView.price, 'change');
 
         const item = await orderView.binder.submitTo(async (item) => item) as Order;
         expect(item).not.to.be.undefined;
