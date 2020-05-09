@@ -4,8 +4,8 @@ import {
   ArrayModel,
   BooleanModel,
   NumberModel,
-  ObjectModel, 
-  StringModel, 
+  ObjectModel,
+  StringModel,
   Required
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
@@ -49,7 +49,7 @@ export interface Order extends IdEntity {
 }
 export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   static createEmptyValue: () => Order;
-  readonly customer = new CustomerModel(this, 'customer');
+  readonly customer = new CustomerModel(this, 'customer', new Required());
   readonly notes = new StringModel(this, 'notes', new Required());
   readonly priority = new NumberModel(this, 'priority');
   readonly products = new ArrayModel(this, 'products', ProductModel);
