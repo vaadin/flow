@@ -34,6 +34,12 @@ export abstract class AbstractModel<T> {
     this[keySymbol] = key;
     validators.forEach(validator => this[validatorsSymbol].add(validator));
   }
+  toString() {
+    return String(this.valueOf());
+  }
+  valueOf():T {
+    return getValue(this);
+  }
 }
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {
@@ -115,40 +121,26 @@ export class Binder<T, M extends AbstractModel<T>> {
   }
 }
 
-interface PrimitiveCompatible<T> {
-  valueOf(): T;
-}
-
 interface HasFromString<T> {
   [fromStringSymbol](value: string): T
 }
 
-export abstract class PrimitiveModel<T> extends AbstractModel<T>
-  implements PrimitiveCompatible<T> {
-  valueOf() {
-    return getValue(this);
-  }
+export abstract class PrimitiveModel<T> extends AbstractModel<T> {
 }
 
-export class BooleanModel extends PrimitiveModel<boolean>
-  implements PrimitiveCompatible<boolean>, HasFromString<boolean> {
+export class BooleanModel extends PrimitiveModel<boolean> implements HasFromString<boolean> {
   static createEmptyValue = Boolean;
   [fromStringSymbol] = Boolean;
 }
 
-export class NumberModel extends PrimitiveModel<number>
-  implements PrimitiveCompatible<number>, HasFromString<number> {
+export class NumberModel extends PrimitiveModel<number> implements HasFromString<number> {
   static createEmptyValue = Number;
   [fromStringSymbol] = Number;
 }
 
-export class StringModel extends PrimitiveModel<string>
-  implements PrimitiveCompatible<string>, HasFromString<string> {
+export class StringModel extends PrimitiveModel<string> implements HasFromString<string> {
   static createEmptyValue = String;
   [fromStringSymbol] = String;
-  toString() {
-    return this.valueOf();
-  }
 }
 
 export class ObjectModel<T> extends AbstractModel<T> {
@@ -203,7 +195,6 @@ export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
 export interface Validator<T> {
   validate: ValidationCallback<T>,
   message: string,
-  // Limit
   value?: any
 }
 
