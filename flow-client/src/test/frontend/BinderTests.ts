@@ -116,6 +116,16 @@ suite("Binder", () => {
       assert.deepEqual(binder.defaultValue, expectedEmptyOrder);
     });
 
+    test("should have valueOf", () => {
+      assert.equal(binder.model.notes.valueOf(), "");
+      assert.equal(binder.model.priority.valueOf(), 0);
+    });
+
+    test("should have toString", () => {
+      assert.equal(binder.model.notes.valueOf(), "");
+      assert.equal(binder.model.priority.toString(), "0");
+    });
+
     test("should have initial value", () => {
       assert.equal(binder.value, binder.defaultValue);
       assert.equal(getValue(binder.model), binder.value);
@@ -271,12 +281,12 @@ suite("Binder", () => {
         validate = () => false;
       }
       getModelValidators(binder.model.priority).add(new SyncValidator());
-      return validate(binder.model.priority).then(errMsg => {
-        expect(errMsg[0].error).to.equal("foo");
+      return validate(binder.model.priority).then(errors => {
+        expect(errors[0].error).to.equal("foo");
       });
     });
 
-    test("should fail validation after adding an asynchronous validator", () => {
+    test("should fail validation after adding an asynchronous validator", async () => {
       class AsyncValidator implements Validator<Order>{
         message = "bar";
         validate = async () =>{
@@ -285,8 +295,41 @@ suite("Binder", () => {
         };
       }
       getModelValidators(binder.model.priority).add(new AsyncValidator());
-      return validate(binder.model.priority).then(errMsg => {
-        expect(errMsg[0].error).to.equal("bar");
+      return validate(binder.model.priority).then(errors => {
+        expect(errors[0].error).to.equal("bar");
+      });
+    });
+
+    test("should run all validators per model", async () => {
+      return validate(binder.model.customer).then(errors => {
+        expect(errors[0].type).to.equal("Required");
+        expect(errors[1].type).to.equal("Size");
+      });
+    });
+
+    test("should run all nested validations per model", async () => {
+      return validate(binder.model).then(errors => {
+        expect(errors.map(e => e.property)).to.eql([
+          "customer.fullName",
+          "customer.fullName",
+          "notes"
+        ]);
+      });
+    });
+
+    test("should run all validations per array items", async () => {
+      appendItem(binder.model.products);
+      appendItem(binder.model.products);
+      return validate(binder.model).then(errors => {
+        expect(errors.map(e => e.property)).to.eql([
+          "customer.fullName",
+          "customer.fullName",
+          "notes",
+          "products.0.description",
+          "products.0.price",
+          "products.1.description",
+          "products.1.price"
+        ]);
       });
     });
 
