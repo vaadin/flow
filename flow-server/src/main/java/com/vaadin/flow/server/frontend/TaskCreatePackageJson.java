@@ -57,9 +57,6 @@ public class TaskCreatePackageJson extends NodeUpdater {
         try {
             modified = false;
             JsonObject mainContent = getMainPackageJson();
-            if (mainContent == null) {
-                mainContent = Json.createObject();
-            }
             modified = updateMainDefaultDependencies(mainContent,
                     polymerVersion);
             if (modified) {

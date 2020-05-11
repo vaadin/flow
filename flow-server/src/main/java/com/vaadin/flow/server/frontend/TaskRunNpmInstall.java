@@ -19,16 +19,22 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
+
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.FallibleCommand;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.HASH_KEY;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -41,8 +47,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final NodeUpdater packageUpdater;
 
+    // .vaadin/vaadin.json contains local installation data inside node_modules
+    // This will hep us know to execute even when another developer has pushed
+    // a new hash to the code repository.
+    private static final String INSTALL_HASH = ".vaadin/vaadin.json";
+
     private final List<String> ignoredNodeFolders = Arrays
-            .asList(".bin",".staging");
+            .asList(".bin", ".staging", ".vaadin");
 
     /**
      * Create an instance of the command.
@@ -62,9 +73,44 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     + "resolve and optionally download frontend dependencies. "
                     + "This may take a moment, please stand by...");
             runNpmInstall();
+
+            updateLocalHash();
         } else {
             packageUpdater.log().info(SKIPPING_NPM_INSTALL);
         }
+    }
+
+
+    /**
+     * Updates the local hash to node_modules.
+     * <p>
+     * This is for handling updated package to the code repository by another
+     * developer as then the hash is updated and we may just be missing one
+     * module.
+     */
+    private void updateLocalHash() {
+        try {
+            if(!packageUpdater.getMainPackageJson().hasKey(HASH_KEY)) {
+                packageUpdater.log().warn("No hash found for full package.json.");
+                return;
+            }
+            final String hash = packageUpdater.getMainPackageJson().getString(HASH_KEY);
+
+            final JsonObject localHash = Json.createObject();
+            localHash.put(HASH_KEY, hash);
+
+            final File localHashFile = getLocalHashFile();
+            FileUtils.forceMkdirParent(localHashFile);
+            String content = JsonUtil.stringify(localHash, 2) + "\n";
+            FileUtils.writeStringToFile(localHashFile, content, UTF_8.name());
+
+        } catch (IOException e) {
+            packageUpdater.log().warn("Failed to update node_modules hash.", e);
+        }
+    }
+
+    private File getLocalHashFile() {
+        return new File(packageUpdater.nodeModulesFolder, INSTALL_HASH);
     }
 
     private boolean shouldRunNpmInstall() {
@@ -76,7 +122,32 @@ public class TaskRunNpmInstall implements FallibleCommand {
             assert installedPackages != null;
             return installedPackages.length == 0
                     || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName()));
+                            .startsWith(installedPackages[0].getName()))
+                    ||  (installedPackages.length > 0 && isVaadinHashUpdated());
+        }
+        return true;
+    }
+
+    private boolean isVaadinHashUpdated() {
+        final File localHashFile = getLocalHashFile();
+        if (localHashFile.exists()) {
+            try {
+                String fileContent = FileUtils
+                        .readFileToString(localHashFile, UTF_8.name());
+                JsonObject content = Json.parse(fileContent);
+                if (content.hasKey(HASH_KEY)) {
+                    final JsonObject packageJson = packageUpdater
+                            .getMainPackageJson();
+                    if(packageJson == null || !packageJson.hasKey(HASH_KEY)){
+                        return false;
+                    }
+                    return !content.getString(HASH_KEY)
+                            .equals(packageJson.getString(HASH_KEY));
+                }
+            } catch (IOException e) {
+                packageUpdater.log()
+                        .warn("Failed to load hashes forcing npm execution", e);
+            }
         }
         return true;
     }
@@ -114,7 +185,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             StringBuilder toolOutput = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream(),
-                            StandardCharsets.UTF_8))) {
+                            UTF_8))) {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
                     packageUpdater.log().debug(stdoutLine);
