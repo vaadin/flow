@@ -617,6 +617,7 @@ class VaadinDevmodeGizmo extends LitElement {
   handleError(msg) {
     console.error(msg);
     this.status = VaadinDevmodeGizmo.ERROR;
+    this.showMessage(VaadinDevmodeGizmo.ERROR, msg);
   }
 
   connectedCallback() {
