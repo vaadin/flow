@@ -237,7 +237,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private boolean shouldRunNpmInstall() {
-        boolean shouldRun = true;
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
             // Ignore .bin and pnpm folders as those are always installed for
             // pnpm execution
@@ -245,18 +244,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .listFiles(
                             (dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
-            shouldRun = installedPackages.length == 0 || (
+            return installedPackages.length == 0 || (
                     installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName()));
-            if (!shouldRun && installedPackages.length > 0) {
-                shouldRun = isVaadinHashUpdated();
-            }
+                            .startsWith(installedPackages[0].getName())) || (
+                    installedPackages.length > 0 && isVaadinHashUpdated());
         }
-        return shouldRun;
+        return true;
     }
 
     private boolean isVaadinHashUpdated() {
-        boolean shouldRun;
         final File localHashFile = getLocalHashFile();
         if (localHashFile.exists()) {
             try {
@@ -266,23 +262,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 if (content.hasKey(HASH_KEY)) {
                     final JsonObject packageJson = packageUpdater
                             .getPackageJson();
-                    shouldRun = !content.getString(HASH_KEY)
-                            .equals(packageJson
-                                    .getObject(VAADIN_DEP_KEY)
+                    return !content.getString(HASH_KEY)
+                            .equals(packageJson.getObject(VAADIN_DEP_KEY)
                                     .getString(HASH_KEY));
-                } else {
-                    shouldRun = true;
                 }
             } catch (IOException e) {
                 packageUpdater.log()
-                        .warn("Failed to load hashes forcing npm execution",
-                                e);
-                shouldRun = true;
+                        .warn("Failed to load hashes forcing npm execution", e);
             }
-        } else {
-            shouldRun = true;
         }
-        return shouldRun;
+        return true;
     }
 
     /**
