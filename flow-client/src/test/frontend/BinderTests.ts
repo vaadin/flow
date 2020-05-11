@@ -11,16 +11,19 @@ import {
   ArrayModel,
   Binder,
   BooleanModel,
+  field,
   getModelValidators,
   getName,
   getValue,
   NumberModel,
-  ObjectModel, setValue,
-  StringModel, validate, Validator
+  ObjectModel,
+  setValue,
+  StringModel,
+  validate,
+  Validator
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
-import { expect } from "chai";
-import {LitElement} from 'lit-element';
+import {customElement, html, LitElement, query} from 'lit-element';
 
 interface IdEntity {
   idString: string;
@@ -65,8 +68,8 @@ class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   readonly products = new ArrayModel(this, 'products', ProductModel);
 }
 
+@customElement('order-view')
 class OrderView extends LitElement {}
-customElements.define('order-view', OrderView);
 
 suite("Binder", () => {
   const orderView = document.createElement('order-view') as OrderView;
@@ -210,7 +213,7 @@ suite("Binder", () => {
       getModelValidators(binder.model).add(new SyncValidator());
 
       return validate(binder.model).then(errMsg => {
-        expect(errMsg).to.equal("foo");
+        assert.equal(errMsg, "foo");
       });
     });
 
@@ -224,8 +227,173 @@ suite("Binder", () => {
       }
       getModelValidators(binder.model).add(new AsyncValidator());
       return validate(binder.model).then(errMsg => {
-        expect(errMsg).to.equal("bar");
+        assert.equal(errMsg, "bar");
       });
+    });
+  });
+
+  suite('field', () => {
+    @customElement('mock-text-field')
+    class MockTextFieldElement extends HTMLElement {
+      __value = '';
+
+      valueSpy = sinon.spy(this, 'value', ['get', 'set']);
+
+      setAttributeSpy = sinon.spy(this, 'setAttribute');
+
+      get value() {
+        return this.__value;
+      }
+
+      set value(value) {
+        this.__value = value;
+      }
+    }
+
+    @customElement('order-view-with-text-field')
+    class OrderViewWithTextField extends LitElement {
+      requestUpdateSpy = sinon.spy(this, 'requestUpdate');
+
+      binder = new Binder(this, OrderModel,() => this.requestUpdate());
+
+      @query('#notesField')
+      notesField?: MockTextFieldElement;
+
+      @query('#customerFullNameField')
+      customerFullNameField?: MockTextFieldElement;
+
+      render() {
+        return html`
+          <mock-text-field
+           id="notesField"
+           ...="${field(this.binder.model.notes)}"
+           ></mock-text-field>
+
+          <mock-text-field
+           id="customerFullNameField"
+           ...="${field(this.binder.model.customer.fullName)}"
+           ></mock-text-field>
+        `;
+      }
+    }
+
+    let orderViewWithTextField: OrderViewWithTextField;
+
+    beforeEach(async () => {
+      orderViewWithTextField = document.createElement('order-view-with-text-field') as OrderViewWithTextField;
+      document.body.appendChild(orderViewWithTextField);
+      await orderViewWithTextField.updateComplete;
+    });
+
+    afterEach(async () => {
+      document.body.removeChild(orderViewWithTextField);
+    });
+
+    test('should set name attribute', () => {
+      sinon.assert.calledWith(orderViewWithTextField.notesField!.setAttributeSpy, 'name', 'notes');
+      sinon.assert.calledWith(orderViewWithTextField.customerFullNameField!.setAttributeSpy, 'name', 'customer[fullName]');
+    });
+
+    test('should set value property on setValue', async() => {
+      setValue(orderViewWithTextField.binder.model.notes, 'foo');
+      await orderViewWithTextField.updateComplete;
+      sinon.assert.calledWith(orderViewWithTextField.notesField!.valueSpy.set, 'foo');
+    });
+
+    test('should set given non-empty value on reset with argument', async() => {
+      const emptyOrder = OrderModel.createEmptyValue();
+      orderViewWithTextField.binder.reset({
+        ...emptyOrder,
+        notes: "foo",
+        customer: {
+          ...emptyOrder.customer,
+          fullName: "bar"
+        }
+      });
+      await orderViewWithTextField.updateComplete;
+
+      sinon.assert.calledWith(orderViewWithTextField.notesField!.valueSpy.set, 'foo');
+      sinon.assert.calledWith(orderViewWithTextField.customerFullNameField!.valueSpy.set, 'bar');
+    });
+
+    test('should set given empty value on reset with argument', async() => {
+      const emptyOrder = OrderModel.createEmptyValue();
+      orderViewWithTextField.binder.reset({
+        ...emptyOrder,
+        notes: "foo",
+        customer: {
+          ...emptyOrder.customer,
+          fullName: "bar"
+        }
+      });
+      await orderViewWithTextField.updateComplete;
+      orderViewWithTextField.notesField!.valueSpy.set.resetHistory();
+
+      orderViewWithTextField.binder.reset(OrderModel.createEmptyValue());
+      await orderViewWithTextField.updateComplete;
+
+      sinon.assert.calledWith(orderViewWithTextField.notesField!.valueSpy.set, '');
+      sinon.assert.calledWith(orderViewWithTextField.customerFullNameField!.valueSpy.set, '');
+    });
+
+    test('should set default value on reset without argument', async() => {
+      setValue(orderViewWithTextField.binder.model.notes, 'foo');
+      await orderViewWithTextField.updateComplete;
+      orderViewWithTextField.notesField!.valueSpy.set.resetHistory();
+
+      orderViewWithTextField.binder.reset();
+      await orderViewWithTextField.updateComplete;
+
+      sinon.assert.calledWith(orderViewWithTextField.notesField!.valueSpy.set, '');
+    });
+
+    test('should update binder value on setValue', async() => {
+      orderViewWithTextField.requestUpdateSpy.resetHistory();
+
+      setValue(orderViewWithTextField.binder.model.notes, 'foo');
+      await orderViewWithTextField.updateComplete;
+
+      assert.equal(orderViewWithTextField.binder.value.notes, 'foo');
+      sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
+    });
+
+    test('should update binder value on input event', async() => {
+      orderViewWithTextField.requestUpdateSpy.resetHistory();
+      orderViewWithTextField.notesField!.value = 'foo';
+      orderViewWithTextField.notesField!.dispatchEvent(new CustomEvent(
+        'input',
+        {bubbles: true, composed: true, cancelable: false}
+      ));
+      await orderViewWithTextField.updateComplete;
+
+      assert.equal(orderViewWithTextField.binder.value.notes, 'foo');
+      sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
+    });
+
+    test('should update binder value on change event', async() => {
+      orderViewWithTextField.requestUpdateSpy.resetHistory();
+      orderViewWithTextField.notesField!.value = 'foo';
+      orderViewWithTextField.notesField!.dispatchEvent(new CustomEvent(
+        'change',
+        {bubbles: true, composed: true, cancelable: false}
+      ));
+      await orderViewWithTextField.updateComplete;
+
+      assert.equal(orderViewWithTextField.binder.value.notes, 'foo');
+      sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
+    });
+
+    test('should update binder value on blur event', async() => {
+      orderViewWithTextField.requestUpdateSpy.resetHistory();
+      orderViewWithTextField.notesField!.value = 'foo';
+      orderViewWithTextField.notesField!.dispatchEvent(new CustomEvent(
+        'blur',
+        {bubbles: true, composed: true, cancelable: false}
+      ));
+      await orderViewWithTextField.updateComplete;
+
+      assert.equal(orderViewWithTextField.binder.value.notes, 'foo');
+      sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
     });
   });
 });

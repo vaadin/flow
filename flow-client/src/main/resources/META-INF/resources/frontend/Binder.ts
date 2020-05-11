@@ -379,6 +379,7 @@ export const field = directive(<T>(
 
   const value = String(getValue(model));
   if (value !== fieldState.value) {
+    fieldState.value = value;
     element.value = value;
   }
 
@@ -388,4 +389,3 @@ export const field = directive(<T>(
     element.required = required;
   }
 });
-
