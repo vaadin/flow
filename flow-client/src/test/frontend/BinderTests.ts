@@ -19,7 +19,8 @@ import {
   field,
   appendItem,
   keySymbol,
-  prependItem
+  prependItem,
+  ValidationError
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
 import { Order, OrderModel, ProductModel } from "./BinderModels";
@@ -244,7 +245,6 @@ suite("Binder", () => {
       for (let i = 0; i < models_1.length; i++) {
         expect((models_1[i] as any)[keySymbol]).to.be.equal(i)
       }
-      debugger
     });
   });
 
@@ -461,6 +461,15 @@ suite("Binder", () => {
           await orderView.binder.submitTo(async (item) => item);
           expect.fail();
         } catch (error) {
+          expect((error as ValidationError).errors.map(e => e.property)).to.be.eql([
+            'customer.fullName',
+            'customer.fullName',
+            'notes',
+            'products.0.description',
+            'products.0.price',
+            'products.1.description',
+            'products.1.price'
+          ]);
         }
 
         expect(orderView.description.hasAttribute('invalid')).to.be.true;
