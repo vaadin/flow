@@ -37,7 +37,7 @@ describe('VaadinDevmodeGizmo', () => {
       'link': null
     };
     assert.equal(gizmo.status, 'error');
-    assert.equal(gizmo.messages.length, 2);
+    assert.equal(gizmo.messages.length, 1);
     assert.equal(gizmo.messages[1], message);
   });
 });
