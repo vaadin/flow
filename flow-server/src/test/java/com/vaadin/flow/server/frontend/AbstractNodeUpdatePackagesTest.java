@@ -43,6 +43,7 @@ import elemental.json.JsonValue;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.HASH_KEY;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -439,7 +440,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void generateAppPackageJson_noDependencies_updaterIsNotModified() {
+    public void generateAppPackageJson_noDependencies_updaterIsNotModified()
+            throws IOException {
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -593,4 +595,16 @@ public abstract class AbstractNodeUpdatePackagesTest
         return packageJson;
     }
 
+    public void writeLocalHash(String hash) throws IOException {
+        final JsonObject localHash = Json.createObject();
+        localHash.put(HASH_KEY, hash);
+
+        final File localHashFile = new File(baseDir,
+                ".vaadin/vaadin.json");
+        FileUtils.forceMkdirParent(localHashFile);
+
+        FileUtils.forceMkdirParent(localHashFile);
+        String content = stringify(localHash, 2) + "\n";
+        FileUtils.writeStringToFile(localHashFile, content, UTF_8.name());
+    }
 }

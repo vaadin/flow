@@ -198,7 +198,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     JsonObject getPackageJson(File packageFile) throws IOException {
-        JsonObject packageJson = null;
+        JsonObject packageJson = Json.createObject();
         if (packageFile.exists()) {
             String fileContent = FileUtils.readFileToString(packageFile,
                     UTF_8.name());

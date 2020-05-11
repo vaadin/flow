@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +31,16 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.TaskRunNpmInstall.SKIPPING_NPM_INSTALL;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.HASH_KEY;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TaskRunNpmInstallTest {
 
@@ -89,7 +100,7 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_nonEmptyDir_npmInstallIsNotExecuted()
+    public void runNpmInstall_nonEmptyDirNoLocalHash_npmInstallIsExecuted()
             throws IOException, ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
@@ -97,12 +108,12 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger).info(TaskRunNpmInstall.SKIPPING_NPM_INSTALL);
+        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test
     public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
-            throws IOException, ExecutionFailedException {
+            throws ExecutionFailedException {
         File nodeModules = new File(npmFolder, NODE_MODULES);
         nodeModules.mkdir();
         new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
@@ -116,6 +127,132 @@ public class TaskRunNpmInstallTest {
     public void runNpmInstall_modified_npmInstallIsExecuted()
             throws ExecutionFailedException {
         nodeUpdater.modified = true;
+        task.execute();
+
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstall_nonEmptyDirNoHashMatch_npmInstallIsExecuted()
+            throws IOException, ExecutionFailedException {
+        File nodeModules = nodeUpdater.nodeModulesFolder;
+        nodeModules.mkdir();
+        JsonObject packageJson = Json.createObject();
+        packageJson.put("name", "no-name");
+        packageJson.put("license", "UNLICENSED");
+        packageJson.put(HASH_KEY, "");
+        nodeUpdater.writeMainPackageFile(packageJson);
+        new File(nodeModules, "foo").createNewFile();
+        writeLocalHash("faulty");
+        nodeUpdater.modified = false;
+        task.execute();
+
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstall_matchingHash_npmInstallIsNotExecuted()
+            throws IOException, ExecutionFailedException {
+        File nodeModules = nodeUpdater.nodeModulesFolder;
+        nodeModules.mkdir();
+
+        new File(nodeModules, "foo").createNewFile();
+
+        writeLocalHash("");
+        nodeUpdater.modified = false;
+        task.execute();
+
+        Mockito.verify(logger).info(SKIPPING_NPM_INSTALL);
+    }
+
+    @Test
+    public void runNpmInstall_matchingHashButEmptyModules_npmInstallIsExecuted()
+            throws IOException, ExecutionFailedException {
+        File nodeModules = nodeUpdater.nodeModulesFolder;
+        nodeModules.mkdir();
+
+        writeLocalHash("");
+        nodeUpdater.modified = false;
+        task.execute();
+
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    public void writeLocalHash(String hash) throws IOException {
+        final JsonObject localHash = Json.createObject();
+        localHash.put(HASH_KEY, hash);
+
+        final File localHashFile = new File(nodeUpdater.nodeModulesFolder,
+                ".vaadin/vaadin.json");
+        FileUtils.forceMkdirParent(localHashFile);
+        nodeUpdater.writePackageFile(localHash, localHashFile);
+    }
+
+    @Test
+    public void runNpmInstall_externalUpdateOfPackages_npmInstallIsRerun()
+            throws ExecutionFailedException, IOException {
+        nodeUpdater.modified = true;
+
+        // Prefill packageJson files and  manually fake TaskUpdatePackages.
+        JsonObject appPackage = nodeUpdater.getAppPackageJson();
+        nodeUpdater.updateAppDefaultDependencies(appPackage);
+        nodeUpdater
+                .addDependency(appPackage, DEPENDENCIES, "@vaadin/vaadin-crud",
+                        "1.1.0");
+        nodeUpdater
+                .addDependency(appPackage, DEPENDENCIES, "@vaadin/vaadin-icons",
+                        "4.3.1");
+        nodeUpdater
+                .addDependency(appPackage, DEPENDENCIES, "@vaadin/vaadin-grid",
+                        "5.5.2");
+
+        final String appHash = TaskUpdatePackages
+                .calculatePackageHash(appPackage);
+
+        JsonObject mainPackage = nodeUpdater.getMainPackageJson();
+        nodeUpdater.updateMainDefaultDependencies(mainPackage, "3.2.0");
+        mainPackage.put(APP_PACKAGE_HASH, appHash);
+        mainPackage.put(HASH_KEY,
+                TaskUpdatePackages.calculatePackageHash(mainPackage));
+        // Clear dependencies to not actually install anything with npm
+        mainPackage.remove(DEPENDENCIES);
+        mainPackage.remove(DEV_DEPENDENCIES);
+        nodeUpdater.writePackageFile(mainPackage,
+                new File(npmFolder, PACKAGE_JSON));
+
+        task.execute();
+
+        final File localHashFile = new File(nodeUpdater.nodeModulesFolder,
+                ".vaadin/vaadin.json");
+        Assert.assertTrue("Local has file was not created after install.",
+                localHashFile.exists());
+
+        String fileContent = FileUtils
+                .readFileToString(localHashFile, UTF_8.name());
+        JsonObject localHash = Json.parse(fileContent);
+        Assert.assertNotEquals("We should have a non empty hash key", "",
+                localHash.getString(HASH_KEY));
+
+        // Update package json and hash as if someone had pushed to code repo.
+        mainPackage = nodeUpdater.getMainPackageJson();
+
+        String hash = mainPackage.getString(HASH_KEY);
+
+        nodeUpdater.updateMainDefaultDependencies(mainPackage, "3.2.0");
+        mainPackage.getObject(DEPENDENCIES).put("a-avataaar", "^1.2.5");
+        mainPackage.put(HASH_KEY,
+                TaskUpdatePackages.calculatePackageHash(mainPackage));
+        // Clear dependencies to not actually install anything with npm
+        mainPackage.remove(DEPENDENCIES);
+        mainPackage.remove(DEV_DEPENDENCIES);
+
+        Assert.assertNotEquals("Hash should have been updated", hash,
+                mainPackage.getString(HASH_KEY));
+
+        nodeUpdater.writePackageFile(mainPackage,
+                new File(npmFolder, PACKAGE_JSON));
+        logger = Mockito.mock(Logger.class);
+
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());

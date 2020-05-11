@@ -23,6 +23,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.APP_PACKAGE_HASH;
+import static com.vaadin.flow.server.frontend.TaskUpdatePackages.HASH_KEY;
 
 /**
  * Creates the <code>package.json</code> if missing.
@@ -57,9 +58,6 @@ public class TaskCreatePackageJson extends NodeUpdater {
         try {
             modified = false;
             JsonObject mainContent = getMainPackageJson();
-            if (mainContent == null) {
-                mainContent = Json.createObject();
-            }
             modified = updateMainDefaultDependencies(mainContent,
                     polymerVersion);
             if (modified) {
@@ -69,11 +67,12 @@ public class TaskCreatePackageJson extends NodeUpdater {
                     mainContent.put(APP_PACKAGE_HASH, FORCE_INSTALL_HASH);
                 } else {
                     mainContent.put(APP_PACKAGE_HASH, "");
+                    mainContent.put(HASH_KEY, TaskUpdatePackages.calculatePackageHash(mainContent));
                 }
                 writeMainPackageFile(mainContent);
             }
             JsonObject customContent = getAppPackageJson();
-            if (customContent == null) {
+            if (customContent.keys().length == 0) {
                 customContent = Json.createObject();
                 updateAppDefaultDependencies(customContent);
                 writeAppPackageFile(customContent);
