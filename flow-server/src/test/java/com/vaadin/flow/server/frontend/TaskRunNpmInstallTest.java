@@ -33,6 +33,14 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @NotThreadSafe
 public class TaskRunNpmInstallTest {
 
@@ -131,7 +139,7 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_nonEmptyDir_npmInstallIsNotExecuted()
+    public void runNpmInstall_nonEmptyDirNoLocalHash_npmInstallIsExecuted()
             throws IOException, ExecutionFailedException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
@@ -139,8 +147,59 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstall_nonEmptyDirNoHashMatch_npmInstallIsExecuted()
+            throws IOException, ExecutionFailedException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+        new File(nodeModules, "foo").createNewFile();
+        writeLocalHash("faulty");
+        nodeUpdater.modified = false;
+        task.execute();
+
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    @Test
+    public void runNpmInstall_matchingHash_npmInstallIsNotExecuted()
+            throws IOException, ExecutionFailedException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        new File(nodeModules, "foo").createNewFile();
+
+        writeLocalHash("");
+        nodeUpdater.modified = false;
+        task.execute();
+
         Mockito.verify(logger)
                 .info("Skipping `" + getToolName() + " install`.");
+    }
+
+    @Test
+    public void runNpmInstall_matchingHashButEmptyModules_npmInstallIsExecuted()
+            throws IOException, ExecutionFailedException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+
+        writeLocalHash("");
+        nodeUpdater.modified = false;
+        task.execute();
+
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    public void writeLocalHash(String hash) throws IOException {
+        final JsonObject localHash = Json.createObject();
+        localHash.put(HASH_KEY, hash);
+
+        final File localHashFile = new File(getNodeUpdater().nodeModulesFolder,
+                ".vaadin/vaadin.json");
+        FileUtils.forceMkdirParent(localHashFile);
+        getNodeUpdater().writePackageFile(localHash, localHashFile);
     }
 
     @Test
@@ -173,6 +232,79 @@ public class TaskRunNpmInstallTest {
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
                 getClassFinder(), nodeUpdater, false, true));
+    }
+
+    @Test
+    public void runNpmInstall_externalUpdateOfPackages_npmInstallIsRerun()
+            throws ExecutionFailedException, IOException {
+        nodeUpdater.modified = true;
+
+        // manually fake TaskUpdatePackages.
+        JsonObject packageJson = getNodeUpdater().getPackageJson();
+        updatePackageHash(packageJson);
+        getNodeUpdater().writePackageFile(packageJson);
+
+        task.execute();
+
+        final File localHashFile = new File(getNodeUpdater().nodeModulesFolder,
+                ".vaadin/vaadin.json");
+        Assert.assertTrue("Local has file was not created after install.",
+                localHashFile.exists());
+
+        String fileContent = FileUtils
+                .readFileToString(localHashFile, UTF_8.name());
+        JsonObject localHash = Json.parse(fileContent);
+        Assert.assertNotEquals("We should have a non empty hash key", "",
+                localHash.getString(HASH_KEY));
+
+        // Update package json and hash as if someone had pushed to code repo.
+        packageJson = getNodeUpdater().getPackageJson();
+        packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES)
+                .put("a-avataaar", "^1.2.5");
+        String hash = packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
+        updatePackageHash(packageJson);
+
+        Assert.assertNotEquals("Hash should have been updated", hash,
+                packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
+
+        getNodeUpdater().writePackageFile(packageJson);
+        logger = Mockito.mock(Logger.class);
+
+        task.execute();
+
+        Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    /**
+     * Update the vaadin package hash to match dependencies.
+     * The hash is calculated from dependencies and devDependencies
+     * but not from the vaadin object. We copy the vaadin object dependencies
+     * and calculate the hash, then we remove the dependencies and
+     * devDependencies to not have to install anything for the test to keep the
+     * running time in ~1.4s instead of ~50s
+     *
+     * @param packageJson
+     *         package.json json object
+     */
+    public void updatePackageHash(JsonObject packageJson) {
+        final JsonObject vaadinDep = packageJson.getObject(VAADIN_DEP_KEY)
+                .getObject(DEPENDENCIES);
+        JsonObject dependencies = Json.createObject();
+        for (String key : vaadinDep.keys()) {
+            dependencies.put(key, vaadinDep.getString(key));
+        }
+        JsonObject vaadinDevDep = packageJson.getObject(VAADIN_DEP_KEY)
+                .getObject(DEV_DEPENDENCIES);
+        JsonObject devDependencies = Json.createObject();
+        for (String key : vaadinDevDep.keys()) {
+            devDependencies.put(key, vaadinDevDep.getString(key));
+        }
+        packageJson.put(DEPENDENCIES, dependencies);
+        packageJson.put(DEV_DEPENDENCIES, devDependencies);
+        packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY,
+                TaskUpdatePackages.generatePackageJsonHash(packageJson));
+        packageJson.remove(DEPENDENCIES);
+        packageJson.remove(DEV_DEPENDENCIES);
     }
 
     protected void assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
