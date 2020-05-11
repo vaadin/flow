@@ -30,11 +30,11 @@ describe('VaadinDevmodeGizmo', () => {
     let gizmo = init(undefined, '','SPRING_BOOT_DEVTOOLS', 35729);
     gizmo.connection.onerror('TEST');
     let message = {
-      id: 2,
-      type: 'error',
-      message: 'TEST',
-      details: null,
-      link: null
+      'id': 2,
+      'type': 'error',
+      'message': 'TEST',
+      'details': null,
+      'link': null
     };
     assert.equal(gizmo.status, 'error');
     assert.equal(gizmo.messages.length, 2);
