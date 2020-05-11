@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  *         DataView type
  * @since
  */
-public interface HasListDataView<T, V extends ListDataView<T>> extends
+public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
         Serializable {
 
     /**

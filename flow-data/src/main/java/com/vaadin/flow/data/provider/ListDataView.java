@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
 /**
@@ -24,7 +25,7 @@ import com.vaadin.flow.function.SerializablePredicate;
  *         data type
  * @since
  */
-public interface ListDataView<T> extends DataView<T> {
+public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T> {
     /**
      * Check if the given item has a next item in the filtered and sorted data.
      *
@@ -68,6 +69,23 @@ public interface ListDataView<T> extends DataView<T> {
      *
      * @param filter
      *         filter to add for the data
+     *
+     * @return ListDataView instance
      */
-    void withFilter(SerializablePredicate<T> filter);
+    V withFilter(SerializablePredicate<T> filter);
+
+    /**
+     * Sets the comparator to use as the default sorting for data.
+     * This overrides the sorting set by any other method that manipulates the
+     * default sorting of the data.
+     *
+     * @param sortComparator
+     *            a comparator to use, or <code>null</code> to clear any
+     *            previously set sort order
+     *
+     * @return ListDataView instance
+     */
+    V withSortComparator(SerializableComparator<T> sortComparator);
+
+    // TODO: add a 8 extra methods for filtering and sorting from InMemoryDataProvider
 }
