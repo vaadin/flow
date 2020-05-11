@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-const keySymbol = Symbol('key');
+export const keySymbol = Symbol('key');
 const parentSymbol = Symbol('parent');
 const valueSymbol = Symbol('value');
 const defaultValueSymbol = Symbol('defaultValue');
@@ -185,6 +185,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
         model = new Model(this,i);
         this.models.set(item, model);
       }
+      model[keySymbol] = i;
       yield model;
     }
   }
