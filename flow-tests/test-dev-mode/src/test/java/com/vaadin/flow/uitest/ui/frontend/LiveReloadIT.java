@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import net.jcip.annotations.NotThreadSafe;
 import java.util.List;
 
 import org.junit.Assert;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+@NotThreadSafe
 public class LiveReloadIT extends AbstractLiveReloadIT {
 
     @Test

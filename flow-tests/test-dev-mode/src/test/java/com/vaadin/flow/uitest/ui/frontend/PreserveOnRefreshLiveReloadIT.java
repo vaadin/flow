@@ -16,11 +16,14 @@
 
 package com.vaadin.flow.uitest.ui.frontend;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+@NotThreadSafe
 public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
 
     @Test
