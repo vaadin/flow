@@ -23,8 +23,10 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
 @NotThreadSafe
-public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
+public class PreserveOnRefreshLiveReloadIT extends ChromeBrowserTest {
 
     @Test
     public void notificationShownWhenLoadingPreserveOnRefreshView() {
