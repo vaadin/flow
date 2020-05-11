@@ -178,6 +178,64 @@ suite("Binder", () => {
       assert.equal(binder.value.customer.fullName, "bar");
       sinon.assert.calledOnce(requestUpdateStub);
     });
+
+    test("should reuse model instance for the same array item", async () => {
+      const products = [
+        ProductModel.createEmptyValue(),
+        ProductModel.createEmptyValue()
+      ]
+      setValue(binder.model.products, products.slice());
+      const models_1 = [...binder.model.products].slice();
+      [0, 1].forEach(i => expect(models_1[i].valueOf()).to.be.equal(products[i]));
+
+      setValue(binder.model.products, products);
+      const models_2 = [...binder.model.products].slice();
+      [0, 1].forEach(i => {
+        expect(models_1[i]).to.be.equal(models_2[i]);
+        expect(models_2[i].valueOf()).to.be.equal(products[i]);
+      });
+    });
+
+    test("should reuse model instance for the same array item after it is modified", async () => {
+      const products = [
+        ProductModel.createEmptyValue(),
+        ProductModel.createEmptyValue()
+      ]
+      setValue(binder.model.products, products);
+      const models_1 = [...binder.model.products].slice();
+      [0, 1].forEach(i => expect(models_1[i].valueOf()).to.be.equal(products[i]));
+
+      setValue(models_1[0].description, 'foo');
+      setValue(models_1[1].description, 'bar');
+
+      setValue(binder.model.products, products.slice());
+      const models_2 = [...binder.model.products].slice();
+      [0, 1].forEach(i => {
+        expect(models_1[i]).to.be.equal(models_2[i]);
+        expect(models_2[i].valueOf()).to.be.equal(products[i]);
+      });
+    });
+
+    test("should update model keySymbol when inserting items", async () => {
+      const products = [
+        ProductModel.createEmptyValue(),
+        ProductModel.createEmptyValue()
+      ]
+      setValue(binder.model.products, products);
+
+      let models_1 = [...binder.model.products].slice();
+      for (let i = 0; i < models_1.length; i++) {
+        expect((models_1[i] as any)[keySymbol]).to.be.equal(i)
+      }
+
+      prependItem(binder.model.products);
+      models_1 = [...binder.model.products].slice();
+      expect(models_1.length).to.be.equal(3);
+      for (let i = 0; i < models_1.length; i++) {
+        expect((models_1[i] as any)[keySymbol]).to.be.equal(i)
+      }
+      debugger
+    });
   });
 
   suite('array-model', () => {
