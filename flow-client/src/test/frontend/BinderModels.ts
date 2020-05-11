@@ -10,7 +10,7 @@ import {
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
 import {
-   Positive, Size
+   Positive, Size, Email
 } from "../../main/resources/META-INF/resources/frontend/FormValidator";
 
 interface IdEntity {

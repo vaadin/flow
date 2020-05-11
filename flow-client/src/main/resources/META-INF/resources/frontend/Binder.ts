@@ -197,7 +197,10 @@ export interface ValueError {
 
 export class ValidationError extends Error {
   constructor(public errors:ValueError[]) {
-    super(`\nThere are validation errors the form.\n - ${errors.map(e => e.type + ' ' + e.property + ' ' + e.error).join('\n - ')}`);
+    super([
+      "There are validation errors in the form.",
+      ...errors.map(e => `${e.property} - ${e.type}${e.error ? ': ' + e.error : ''}`)
+    ].join('\n - '));
     this.name = this.constructor.name;
   }
 }
@@ -226,8 +229,8 @@ export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>
   return model[validatorsSymbol];
 }
 
-function validateModel(model: any) {
-  const fieldElement = model[fieldSymbol] as FieldElement;
+function validateModel<T>(model: AbstractModel<T>) {
+  const fieldElement = (model as any)[fieldSymbol] as FieldElement;
   return fieldElement ? fieldElement.validate() : validate(model);
 }
 
@@ -339,12 +342,12 @@ const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
 
 interface FieldElement extends Field {
   element: Element;
-  validate: () => Promise<ValueError|undefined>;
+  validate: () => Promise<ValueError[]>;
 }
 
 class VaadinFieldElement implements FieldElement {
   constructor(public element: Element & Field) {}
-  validate = async () => undefined;
+  validate = async () => [];
   set required(value: boolean) { this.element.required = value }
   set invalid(value: boolean) { this.element.invalid = value }
   set errorMessage(value: string) { this.element.errorMessage = value }
@@ -352,7 +355,7 @@ class VaadinFieldElement implements FieldElement {
 
 class GenericFieldElement implements FieldElement {
   constructor(public element: Element) {}
-  validate = async () => undefined;
+  validate = async () => [];
   set required(value: boolean) { this.setAttribute('required', value) }
   set invalid(value: boolean) { this.setAttribute('invalid', value) }
   set errorMessage(_: string) { }
@@ -391,14 +394,16 @@ export const field = directive(<T>(
       fieldState.visited = true;
       setValue(model, (model as any)[fromStringSymbol](element.value));
 
-      const error = (await validate(model))[0];
-      fieldElement.invalid = fieldState.invalid = error !== undefined;
-      fieldElement.errorMessage = fieldState.errorMessage = error?.error || '';
+      const errors = await validate(model);
+
+      const displayedError = errors[0];
+      fieldElement.invalid = fieldState.invalid = displayedError !== undefined;
+      fieldElement.errorMessage = fieldState.errorMessage = displayedError?.error || '';
 
       if (effect !== undefined) {
         effect.call(element, element);
       }
-      return error;
+      return errors;
     };
 
     element.oninput = () => fieldState.visited && fieldElement.validate();
