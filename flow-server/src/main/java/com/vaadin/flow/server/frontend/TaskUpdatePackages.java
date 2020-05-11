@@ -27,11 +27,11 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
@@ -53,6 +53,10 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 public class TaskUpdatePackages extends NodeUpdater {
 
     static final String APP_PACKAGE_HASH = "vaadinAppPackageHash";
+    static final String HASH_KEY = "hash";
+    static final String DEPENDENCIES = "dependencies";
+    static final String DEV_DEPENDENCIES = "devDependencies";
+
     private static final String VERSION = "version";
     private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
     private boolean forceCleanUp;
@@ -102,9 +106,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         try {
             Map<String, String> deps = frontDeps.getPackages();
             JsonObject packageJson = getAppPackageJson();
-            if (packageJson == null) {
-                packageJson = Json.createObject();
-            }
             boolean isModified = updatePackageJsonDependencies(packageJson,
                     deps);
             if (isModified) {
@@ -128,17 +129,7 @@ public class TaskUpdatePackages extends NodeUpdater {
      */
     private boolean checkPackageHash(JsonObject packageJson)
             throws IOException {
-        String content = "";
-        // If we have dependencies generate hash on ordered content.
-        if (packageJson.hasKey("dependencies")) {
-            JsonObject dependencies = packageJson.getObject("dependencies");
-            content = Stream.of(dependencies.keys())
-                    .map(key -> String.format("\"%s\": \"%s\"", key,
-                            dependencies.get(key).asString()))
-                    .sorted(String::compareToIgnoreCase)
-                    .collect(Collectors.joining(",\n  "));
-        }
-        return updateAppPackageHash(getHash(content));
+        return updateAppPackageHash(calculatePackageHash(packageJson));
     }
 
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
@@ -269,8 +260,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         return new File(npmFolder, "package-lock.json");
     }
 
-    private String getShrinkWrapVersion(JsonObject packageJson)
-            throws IOException {
+    private String getShrinkWrapVersion(JsonObject packageJson) {
         if (packageJson == null) {
             return null;
         }
@@ -284,7 +274,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         return null;
     }
 
-    private String getHash(String content) {
+    private static String getHash(String content) {
         if (content.isEmpty()) {
             return content;
         }
@@ -308,12 +298,67 @@ public class TaskUpdatePackages extends NodeUpdater {
                 || !hash.equals(mainContent.getString(APP_PACKAGE_HASH));
         if (modified) {
             mainContent.put(APP_PACKAGE_HASH, hash);
+        }
+        String mainHash = calculatePackageHash(mainContent);
+        if (!mainContent.hasKey(HASH_KEY) || !mainContent.getString(HASH_KEY)
+                .equals(mainHash)) {
+            mainContent.put(HASH_KEY, mainHash);
+            modified = true;
+        }
+        if(modified) {
             writeMainPackageFile(mainContent);
         }
         return modified;
     }
 
-    private String bytesToHex(byte[] hash) {
+    /**
+     * Calculate a full hash of dependencies, devDependencies and application
+     * package.json hash.
+     *
+     * @param packageJson
+     *         package.json to create hash for
+     * @return hash for given packageJson
+     */
+    static String calculatePackageHash(JsonObject packageJson) {
+        StringBuilder hashContent = new StringBuilder();
+        final String entryFormat = "\"%s\": \"%s\"";
+        if (packageJson.hasKey(DEPENDENCIES)) {
+            JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+            hashContent.append("\"dependencies\": {");
+            String sortedDependencies = Arrays.stream(dependencies.keys())
+                    .sorted(String::compareToIgnoreCase).map(key -> String
+                            .format(entryFormat, key,
+                                    dependencies.getString(key)))
+                    .collect(Collectors.joining(",\n  "));
+            hashContent.append(sortedDependencies);
+            hashContent.append("}");
+        }
+        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
+            if (hashContent.length() > 0) {
+                hashContent.append(",\n");
+            }
+            JsonObject devDependencies = packageJson
+                    .getObject(DEV_DEPENDENCIES);
+            hashContent.append("\"devDependencies\": {");
+            String sortedDevDependencies = Arrays.stream(devDependencies.keys())
+                    .sorted(String::compareToIgnoreCase).map(key -> String
+                            .format(entryFormat, key,
+                                    devDependencies.getString(key)))
+                    .collect(Collectors.joining(",\n  "));
+            hashContent.append(sortedDevDependencies);
+            hashContent.append("}");
+        }
+        if (packageJson.hasKey(APP_PACKAGE_HASH)) {
+            if (hashContent.length() > 0) {
+                hashContent.append(",\n");
+            }
+            hashContent.append(String.format(entryFormat, APP_PACKAGE_HASH,
+                    packageJson.getString(APP_PACKAGE_HASH)));
+        }
+        return getHash(hashContent.toString());
+    }
+
+    private static String bytesToHex(byte[] hash) {
         StringBuilder result = new StringBuilder();
         for (byte bit : hash) {
             String hex = Integer.toHexString(0xff & bit);
