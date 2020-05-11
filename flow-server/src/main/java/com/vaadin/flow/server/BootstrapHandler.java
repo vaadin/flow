@@ -1054,7 +1054,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return A non-null {@link JsonObject} with application parameters.
          */
         public JsonObject getApplicationParameters(BootstrapContext context) {
-            JsonObject appConfig = getApplicationParameters(
+            JsonObject appConfig = getApplicationParameters(context,
                     context.getRequest(), context.getSession());
 
             appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
@@ -1062,7 +1062,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return appConfig;
         }
 
-        private JsonObject getApplicationParameters(VaadinRequest request,
+        private JsonObject getApplicationParameters(BootstrapContext context, VaadinRequest request,
                 VaadinSession session) {
             DeploymentConfiguration deploymentConfiguration = session
                     .getConfiguration();
@@ -1093,6 +1093,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 if (liveReload != null && liveReload.getBackend() != null) {
                     appConfig.put("liveReloadBackend",
                             liveReload.getBackend().toString());
+                    String pushURL = session.getConfiguration().getPushURL();
+                    if (pushURL != null) {
+                        appConfig.put("liveReloadPath", context
+                                .getUriResolver().resolveVaadinUri(pushURL));
+                    }
                 }
 
                 // make configurable when fixing #7847
