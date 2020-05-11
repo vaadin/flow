@@ -37,6 +37,7 @@
         <!-- TODO remove and do not push to master -->
         <module>vaadin-grid-flow</module>
         <module>vaadin-combo-box-flow</module>
+        <module>vaadin-checkbox-flow</module>
     </modules>
 
     <organization>
