@@ -40,7 +40,7 @@ interface Customer extends IdEntity {
 export class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
   static createEmptyValue: () => Customer;
   readonly fullName = new StringModel(this, 'fullName', new Size({min: 4}), new Required());
-  readonly nickName = new StringModel(this, 'fullName', new Pattern("....*"));
+  readonly nickName = new StringModel(this, 'nickName', new Pattern("....*"));
 }
 
 export interface Order extends IdEntity {
