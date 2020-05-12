@@ -536,7 +536,9 @@ class VaadinDevmodeGizmo extends LitElement {
       this.connection.onerror = err => this.handleError(err);
       const self = this;
       this.connection.onclose = _ => {
-        self.status = VaadinDevmodeGizmo.UNAVAILABLE;
+        if (self.status !== VaadinDevmodeGizmo.ERROR) {
+          self.status = VaadinDevmodeGizmo.UNAVAILABLE;
+        }
         self.connection = null;
       };
     }
@@ -589,6 +591,7 @@ class VaadinDevmodeGizmo extends LitElement {
       json = JSON.parse(msg.data);
     } catch (e) {
       this.handleError(`[${e.name}: ${e.message}`);
+      return;
     }
     const command = json['command'];
     switch (command) {
