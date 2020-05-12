@@ -76,12 +76,12 @@ public class TsFormEndpoint {
         @Email(message = "foo") String email;
         @Null String isNull;
         @NotNull String notNull;
-        @NotEmpty @NotNull String notEmpty;
+        @NotNull @NotEmpty String notEmpty;
         @NotBlank String notBlank;
         @AssertTrue String assertTrue;
         @AssertFalse String assertFalse;
-        @Min(value = 1, message = "foo") String min;
-        @Max(2) String max;
+        @Min(value = 1, message = "foo") Integer min;
+        @Max(2) Integer max;
         @DecimalMin("0.01") double decimalMin;
         @DecimalMax(value = "0.01", inclusive = false) double decimalMax;
         @Negative int negative;
@@ -89,6 +89,7 @@ public class TsFormEndpoint {
         @Positive int positive;
         @PositiveOrZero int positiveOrCero;
         @Size String size;
+        @Size(min = 1) String size1;
         @Digits(integer=5, fraction = 2) String digits;
         @Past LocalDate past;
         @PastOrPresent LocalTime pastOrPresent;
