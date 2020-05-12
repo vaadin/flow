@@ -541,9 +541,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private String getConstrainsArguments(CodegenProperty property) {
         StringBuilder ret = new StringBuilder();
-        if (property.required) {
-            ret.append(", new Required()");
-        }
         List<String> annotations = (List) property.getVendorExtensions()
                 .get(CONSTRAINT_ANNOTATIONS);
         if (annotations != null) {

@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -101,6 +102,7 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  * produces OpenApi json.
  */
 public class OpenApiObjectGenerator {
+    private static final String REQUIRED_VALIDATOR = "Required()";
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
     public static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
 
@@ -466,7 +468,7 @@ public class OpenApiObjectGenerator {
 
     private void addFieldAnnotationsToSchema(FieldDeclaration field,
             Schema<?> schema) {
-        List<String> annotations = new ArrayList<>();
+        Set<String> annotations = new LinkedHashSet<>();
         field.getAnnotations().stream().forEach(annotation -> {
             String str = annotation.toString()
                     // remove annotation character
@@ -479,13 +481,22 @@ public class OpenApiObjectGenerator {
             }
             // append parenthesis if not already
             str += str.contains("(") ? "" : "()";
+
             if (str.matches(
                     "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
                 annotations.add(str);
             }
+            if (str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
+                    || str.matches("Size\\(\\{.*min:[^0].+")) {
+                annotations.add(REQUIRED_VALIDATOR);
+            }
         });
         if (!annotations.isEmpty()) {
-            schema.addExtension(CONSTRAINT_ANNOTATIONS, annotations);
+            schema.addExtension(CONSTRAINT_ANNOTATIONS,
+                    annotations.stream()
+                            .sorted((a, b) -> REQUIRED_VALIDATOR.equals(a) ? -1
+                                    : REQUIRED_VALIDATOR.equals(b) ? 1 : a.compareTo(b))
+                            .collect(Collectors.toList()));
         }
     }
 
