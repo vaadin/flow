@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -132,7 +133,7 @@ public class SessionRouteRegistryTest {
                 registry.getNavigationTarget("home", Collections.emptyList())
                         .get());
         Assert.assertEquals(
-                "Expected HasUrlParameters class for request with segments.",
+                "Expected HasRouteParameters class for request with segments.",
                 Parameter.class,
                 registry.getNavigationTarget("home", Arrays.asList("param"))
                         .get());
@@ -147,12 +148,16 @@ public class SessionRouteRegistryTest {
                 registry.getTargetUrl(MyRoute.class).isPresent());
         Assert.assertTrue(
                 "Parameter class should have been available from the registry",
-                registry.getTargetUrl(Parameter.class).isPresent());
+                registry.getTargetUrl(Parameter.class,
+                        HasUrlParameterFormat.getParameters("foo"))
+                        .isPresent());
+        Assert.assertTrue(
+                "Parameter class should have been available from the registry",
+                registry.getTemplate(Parameter.class).isPresent());
         Assert.assertEquals("Parameter route should have been available.",
                 Parameter.class,
                 registry.getNavigationTarget("home", Arrays.asList("param"))
                         .get());
-
     }
 
     @Test
