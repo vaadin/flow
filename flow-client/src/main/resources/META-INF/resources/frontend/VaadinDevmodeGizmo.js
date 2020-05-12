@@ -627,7 +627,7 @@ class VaadinDevmodeGizmo extends LitElement {
     console.error(msg);
     this.status = VaadinDevmodeGizmo.ERROR;
     if (msg instanceof Event) {
-      this.showMessage(VaadinDevmodeGizmo.WEBSOCKET_ERROR_MESSAGE + this.connection.url);
+      this.showMessage(VaadinDevmodeGizmo.ERROR, VaadinDevmodeGizmo.WEBSOCKET_ERROR_MESSAGE + this.connection.url);
     } else {
       this.showMessage(VaadinDevmodeGizmo.ERROR, msg);
     }
