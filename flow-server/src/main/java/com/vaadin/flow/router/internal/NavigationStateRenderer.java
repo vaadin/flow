@@ -16,7 +16,6 @@
 package com.vaadin.flow.router.internal;
 
 import java.util.List;
-import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -66,30 +65,30 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
     protected void notifyNavigationTarget(Component componentInstance,
             NavigationEvent navigationEvent, BeforeEnterEvent beforeEnterEvent,
             LocationChangeEvent locationChangeEvent) {
+
+        if (!(componentInstance instanceof HasUrlParameter)) {
+            return;
+        }
+
         NavigationState navigationState = getNavigationState();
         Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
-        Optional<List<String>> urlParameters = navigationState
-                .getUrlParameters();
-        if (urlParameters.isPresent()) {
-            Object deserializedParameter = null;
-            try {
-                deserializedParameter = ParameterDeserializer
-                        .deserializeUrlParameters(routeTargetType,
-                                urlParameters.get());
+        List<String> parameters = navigationState.getUrlParameters()
+                .orElse(null);
 
-            } catch (Exception e) {
-                beforeEnterEvent.rerouteToError(NotFoundException.class,
-                        String.format(
-                                "Failed to parse url parameter, exception: %s",
-                                e));
-            }
-            @SuppressWarnings("unchecked")
-            HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
-            hasUrlParameter.setParameter(beforeEnterEvent,
-                    deserializedParameter);
+        Object deserializedParameter = null;
+        try {
+            deserializedParameter = ParameterDeserializer
+                    .deserializeRouteParameters(routeTargetType, parameters);
+        } catch (Exception e) {
+            beforeEnterEvent.rerouteToError(NotFoundException.class, String
+                    .format("Failed to parse url parameter, exception: %s", e));
+            return;
         }
+
+        HasUrlParameter<Object> hasUrlParameter = (HasUrlParameter<Object>) componentInstance;
+        hasUrlParameter.setParameter(beforeEnterEvent, deserializedParameter);
     }
 
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,8 +63,7 @@ public class RouteConfigurationTest {
     /**
      * Get registry by handing the session lock correctly.
      *
-     * @param session
-     *            target vaadin session
+     * @param session target vaadin session
      * @return session route registry for session if exists or new.
      */
     private SessionRouteRegistry getRegistry(VaadinSession session) {
@@ -155,20 +155,28 @@ public class RouteConfigurationTest {
             routeConfiguration.setRoute("path", Secondary.class);
             routeConfiguration.setRoute("parents", MiddleLayout.class,
                     MainLayout.class);
+            routeConfiguration.setAnnotatedRoute(ParameterView.class);
         });
 
         Assert.assertEquals(
                 "After unlock registry should be updated for others to configure with new data",
-                3, routeConfiguration.getAvailableRoutes().size());
+                4, routeConfiguration.getAvailableRoutes().size());
         Assert.assertTrue("Expected path '' to be registered",
-                routeConfiguration.isPathRegistered(""));
+                routeConfiguration.isPathAvailable(""));
         Assert.assertTrue("Expected path 'path' to be registered",
-                routeConfiguration.isPathRegistered("path"));
+                routeConfiguration.isPathAvailable("path"));
         Assert.assertTrue("Expected path 'parents' to be registered",
-                routeConfiguration.isPathRegistered("parents"));
+                routeConfiguration.isPathAvailable("parents"));
 
         Assert.assertEquals("Url should have only been 'parents'", "parents",
                 routeConfiguration.getUrl(MiddleLayout.class));
+
+        Optional<String> template;
+        
+        template = routeConfiguration.getTemplate(MiddleLayout.class);
+        Assert.assertTrue("Missing template", template.isPresent());
+        Assert.assertEquals("Url should have only been 'parents'", "parents",
+                template.get());
 
         Optional<Class<? extends Component>> pathRoute = routeConfiguration
                 .getRoute("path");
@@ -177,6 +185,26 @@ public class RouteConfigurationTest {
         Assert.assertEquals("'path' registration should be Secondary",
                 Secondary.class, pathRoute.get());
 
+        template = routeConfiguration.getTemplate(ParameterView.class);
+        Assert.assertTrue("Missing template for ParameterView", template.isPresent());
+        Assert.assertEquals(
+                "ParameterView template is not correctly generated from Route and RoutePrefix",
+                "category/:int(" + RouteParameterRegex.INTEGER + ")/item/:long("
+                        + RouteParameterRegex.LONG + ")",
+                template.get());
+
+        Assert.assertTrue("ParameterView template not registered.",
+                routeConfiguration.isPathAvailable("category/:int("
+                        + RouteParameterRegex.INTEGER + ")/item/:long("
+                        + RouteParameterRegex.LONG + ")"));
+        
+        Assert.assertEquals(
+                "ParameterView url with RouteParameters not generated correctly.",
+                "category/1234567890/item/12345678900",
+                routeConfiguration.getUrl(ParameterView.class,
+                        new RouteParameters(new RouteParam("int", "1234567890"),
+                                new RouteParam("long", "12345678900"))));
+
         routeConfiguration.update(() -> {
             routeConfiguration.removeRoute("path");
             routeConfiguration.setRoute("url", Url.class);
@@ -184,10 +212,12 @@ public class RouteConfigurationTest {
 
         Assert.assertFalse(
                 "Removing the path 'path' should have cleared it from the registry",
-                routeConfiguration.isPathRegistered("path"));
+                routeConfiguration.isPathAvailable("path"));
 
         Assert.assertTrue("Expected path 'url' to be registered",
-                routeConfiguration.isPathRegistered("url"));
+                routeConfiguration
+                        .isPathAvailable(HasUrlParameterFormat
+                                .getTemplate("url", Url.class)));
 
         Optional<Class<? extends Component>> urlRoute = routeConfiguration
                 .getRoute("url");
@@ -202,6 +232,60 @@ public class RouteConfigurationTest {
                 urlRoute.isPresent());
         Assert.assertEquals("'url' registration should be Url", Url.class,
                 urlRoute.get());
+    }
+    @Test
+    public void routeConfiguration_routeTemplatesWorkCorrectly() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        routeConfiguration.update(() -> {
+            routeConfiguration.setAnnotatedRoute(ComponentView.class);
+        });
+
+        // Main template for target.
+        final Optional<String> template = routeConfiguration
+                .getTemplate(ComponentView.class);
+        Assert.assertTrue("Missing template", template.isPresent());
+        Assert.assertEquals("component/:identifier/:path*", template.get());
+
+        // url produced by @RouteAlias(value = ":tab(api)/:path*")
+        Assert.assertEquals("component/button/api/com/vaadin/flow/button",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new RouteParameters(
+                                new RouteParam("identifier", "button"),
+                                new RouteParam("tab", "api"), new RouteParam(
+                                        "path", "com/vaadin/flow/button"))));
+
+        // url produced by @Route(value = ":path*")
+        Assert.assertEquals("component/button/com/vaadin/flow/button",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new RouteParameters(
+                                new RouteParam("identifier", "button"),
+                                new RouteParam("path",
+                                        "com/vaadin/flow/button"))));
+
+        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        Assert.assertEquals("component/button/reviews",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new RouteParameters(
+                                new RouteParam("identifier", "button"),
+                                new RouteParam("tab", "reviews"))));
+
+        // url produced by @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+        Assert.assertEquals("component/button/overview",
+                routeConfiguration.getUrl(ComponentView.class,
+                        new RouteParameters(
+                                new RouteParam("identifier", "button"),
+                                new RouteParam("tab", "overview"))));
+
+        try {
+            // Asking the url of target with invalid parameter values.
+            routeConfiguration.getUrl(ComponentView.class,
+                    new RouteParameters(new RouteParam("identifier", "button"),
+                            new RouteParam("tab", "examples")));
+            Assert.fail("`tab` parameter doesn't accept `examples` as value.");
+        } catch (NotFoundException e) {
+        }
     }
 
     @Test
@@ -487,6 +571,25 @@ public class RouteConfigurationTest {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
+    }
+
+    @RoutePrefix("category/:int(" + RouteParameterRegex.INTEGER + ")")
+    @Tag("div")
+    private static class MainView extends Component implements RouterLayout {
+    }
+
+    @Route(value = "item/:long(" + RouteParameterRegex.LONG
+            + ")", layout = MainView.class)
+    @Tag("div")
+    private static class ParameterView extends Component {
+    }
+
+    @Route(value = ":path*")
+    @RouteAlias(value = ":tab(api)/:path*")
+    @RouteAlias(value = ":tab(overview|samples|links|reviews|discussions)")
+    @RoutePrefix("component/:identifier")
+    @Tag("div")
+    public static class ComponentView extends Component {
     }
 
     /**

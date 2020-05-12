@@ -2,7 +2,6 @@ package com.vaadin.flow.component;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,14 +9,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
@@ -43,11 +34,16 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.ListenerPriority;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -62,6 +58,13 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
+import org.hamcrest.CoreMatchers;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -82,6 +85,19 @@ public class UITest {
 
     }
 
+    @Route(value = ":barParam/bar", layout = FooBarParamParentNavigationTarget.class)
+    @Tag(Tag.DIV)
+    public static class FooBarParamNavigationTarget extends Component {
+
+    }
+
+    @RoutePrefix("foo/:fooParam")
+    @Tag(Tag.DIV)
+    public static class FooBarParamParentNavigationTarget extends Component
+            implements RouterLayout {
+
+    }
+
     @Route("foo-bar")
     @Tag(Tag.DIV)
     public static class Parameterized extends Component
@@ -89,10 +105,20 @@ public class UITest {
 
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            System.out.println("xxxxxxxxxx");
         }
 
     }
+
+    @Tag(Tag.DIV)
+    public static class ParameterizedNotRoute extends Component
+            implements HasUrlParameter<Integer> {
+
+        @Override
+        public void setParameter(BeforeEvent event, Integer parameter) {
+        }
+
+    }
+
 
     private static class AttachableComponent extends Component {
         public AttachableComponent() {
@@ -157,7 +183,7 @@ public class UITest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-            ArgumentCaptor<Integer> statusCodeCaptor)
+                               ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
             VaadinServletRequest request = Mockito
@@ -196,7 +222,8 @@ public class UITest {
             routeConfiguration.update(() -> {
                 routeConfiguration.getHandledRegistry().clean();
                 Arrays.asList(RootNavigationTarget.class,
-                        FooBarNavigationTarget.class, Parameterized.class)
+                        FooBarNavigationTarget.class, Parameterized.class,
+                        FooBarParamNavigationTarget.class)
                         .forEach(routeConfiguration::setAnnotatedRoute);
             });
 
@@ -273,6 +300,28 @@ public class UITest {
         Assert.assertEquals(route, value.getPath());
         Assert.assertEquals(params, value.getQueryParameters());
     }
+
+    @Test
+    public void navigateWithParameters_afterServerNavigation()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate(FooBarParamNavigationTarget.class,
+                new RouteParameters(new RouteParam("fooParam", "flu"),
+                        new RouteParam("barParam", "beer")));
+
+        assertEquals("foo/flu/beer/bar",
+                ui.getInternals().getActiveViewLocation().getPath());
+        List<HasElement> chain = ui.getInternals()
+                .getActiveRouterTargetsChain();
+        Assert.assertEquals(2, chain.size());
+        Assert.assertThat(chain.get(0),
+                CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
+        Assert.assertThat(chain.get(1), CoreMatchers
+                .instanceOf(FooBarParamParentNavigationTarget.class));
+    }
+
 
     @Test
     public void localeSet_directionUpdated() {
@@ -859,4 +908,93 @@ public class UITest {
         ui.navigate(Parameterized.class, "baz");
         Assert.assertEquals("foo-bar/baz", loc.get());
     }
+
+    @Test
+    public void navigate_throws_illegal_argument_exception() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        try {
+            ui.navigate(Parameterized.class);
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
+
+        try {
+            ui.navigate(Parameterized.class, (String) null);
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
+
+        try {
+            ui.navigate(Parameterized.class, RouteParameters.empty());
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
+
+        try {
+            ui.navigate(Parameterized.class, new RouteParameters("some", "value"));
+            Assert.fail("IllegalArgumentException expected.");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
+        }
+    }
+
+    @Test
+    public void navigate_throws_null_pointer_exception() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        try {
+            ui.navigate((String) null);
+            Assert.fail("NullPointerException expected.");
+        } catch (NullPointerException e) {
+            Assert.assertEquals("Location must not be null", e.getMessage());
+        }
+
+        try {
+            ui.navigate((String) null, QueryParameters.empty());
+            Assert.fail("NullPointerException expected.");
+        } catch (NullPointerException e) {
+            Assert.assertEquals("Location must not be null",
+                    e.getMessage());
+        }
+
+        try {
+            ui.navigate("foo-bar", null);
+            Assert.fail("NullPointerException expected.");
+        } catch (NullPointerException e) {
+            Assert.assertEquals("Query parameters must not be null",
+                    e.getMessage());
+        }
+    }
+
+    @Test
+    public void navigate_throws_not_found_exception() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        try {
+            ui.navigate(FooBarParamNavigationTarget.class);
+            Assert.fail("NotFoundException expected.");
+        } catch (NotFoundException e) {
+        }
+
+        try {
+            ui.navigate(ParameterizedNotRoute.class, 1);
+            Assert.fail("NotFoundException expected.");
+        } catch (NotFoundException e) {
+        }
+
+        try {
+            ui.navigate(FooBarParamNavigationTarget.class,
+                    new RouteParameters("fooParam", "123"));
+            Assert.fail("NotFoundException expected.");
+        } catch (NotFoundException e) {
+        }
+    }
+
 }
