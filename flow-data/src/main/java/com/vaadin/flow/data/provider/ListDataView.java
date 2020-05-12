@@ -23,6 +23,10 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @param <T>
  *         data type
+ *
+ * @param <V>
+ *         ListDataView type
+ *
  * @since
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T> {
@@ -86,6 +90,4 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * @return ListDataView instance
      */
     V withSortComparator(SerializableComparator<T> sortComparator);
-
-    // TODO: add a 8 extra methods for filtering and sorting from InMemoryDataProvider
 }
