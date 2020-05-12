@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import com.vaadin.flow.server.VaadinServletService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -50,10 +51,11 @@ public class StreamResourceHandlerTest {
         ServletConfig servletConfig = new MockServletConfig();
         VaadinServlet servlet = new VaadinServlet();
         servlet.init(servletConfig);
-        VaadinService service = servlet.getService();
+        VaadinServletService service = servlet.getService();
 
         session = new AlwaysLockedVaadinSession(service);
         request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
         ServletContext context = Mockito.mock(ServletContext.class);
         Mockito.when(request.getServletContext()).thenReturn(context);
         response = Mockito.mock(VaadinServletResponse.class);

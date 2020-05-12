@@ -18,21 +18,20 @@ package com.vaadin.flow.function;
 import java.io.Serializable;
 import java.util.function.BiFunction;
 
-import javax.servlet.ServletContext;
-
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * Content type resolver.
  * <p>
  * Allows to get content type for the given {@link StreamResource} instance
- * using the current {@link ServletContext}.
+ * using the current {@link VaadinService}.
  *
  * @author Vaadin Ltd
  * @since 1.0
  *
  */
 public interface ContentTypeResolver extends
-        BiFunction<StreamResource, ServletContext, String>, Serializable {
+        BiFunction<StreamResource, VaadinService, String>, Serializable {
 
 }

@@ -133,7 +133,7 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     public String getMimeType(String resourceName) {
-        return getServlet().getServletContext().getMimeType(resourceName);
+        return getServletContext().getMimeType(resourceName);
     }
 
     @Override
@@ -233,7 +233,7 @@ public class VaadinServletService extends VaadinService {
     @Override
     public URL getStaticResource(String path) {
         try {
-            return getServlet().getServletContext().getResource(path);
+            return getServletContext().getResource(path);
         } catch (MalformedURLException e) {
             getLogger().warn("Error finding resource for '{}'", path, e);
         }
@@ -259,7 +259,7 @@ public class VaadinServletService extends VaadinService {
      *         found
      */
     public URL getResourceInServletContext(String path) {
-        ServletContext servletContext = getServlet().getServletContext();
+        ServletContext servletContext = getServletContext();
         try {
             return servletContext.getResource(path);
         } catch (MalformedURLException e) {
@@ -279,20 +279,19 @@ public class VaadinServletService extends VaadinService {
      *         found
      */
     private InputStream getResourceInServletContextAsStream(String path) {
-        ServletContext servletContext = getServlet().getServletContext();
+        ServletContext servletContext = getServletContext();
         return servletContext.getResourceAsStream(path);
     }
 
     @Override
     public String getContextRootRelativePath(VaadinRequest request) {
-        assert request instanceof VaadinServletRequest;
         // Generate location from the request by finding how many "../" should
         // be added to the servlet path before we get to the context root
 
         // Should not take pathinfo into account because the base URI refers to
         // the servlet path
 
-        String servletPath = ((VaadinServletRequest) request).getServletPath();
+        String servletPath = request.getServletPath();
         assert servletPath != null;
         if (!servletPath.endsWith("/")) {
             servletPath += "/";
@@ -300,8 +299,19 @@ public class VaadinServletService extends VaadinService {
         return HandlerHelper.getCancelingRelativePath(servletPath) + "/";
     }
 
+    /**
+     * Returns a reference to the {@link ServletContext} in which this
+     * servlet {@link #getServlet()} is running.
+     *
+     *
+     * @return the ServletContext object
+     */
+    protected ServletContext getServletContext() {
+        return getServlet().getServletContext();
+    }
+
     @Override
     protected VaadinContext constructVaadinContext() {
-        return new VaadinServletContext(getServlet().getServletContext());
+        return new VaadinServletContext(getServletContext());
     }
 }

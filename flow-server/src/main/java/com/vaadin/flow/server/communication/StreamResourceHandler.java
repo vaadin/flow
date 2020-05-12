@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -60,10 +59,9 @@ public class StreamResourceHandler implements Serializable {
         StreamResourceWriter writer;
         session.lock();
         try {
-            ServletContext context = ((VaadinServletRequest) request)
-                    .getServletContext();
+            VaadinService service = request.getService();
             response.setContentType(streamResource.getContentTypeResolver()
-                    .apply(streamResource, context));
+                    .apply(streamResource, service));
             response.setCacheTime(streamResource.getCacheTime());
             writer = streamResource.getWriter();
             if (writer == null) {

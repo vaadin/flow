@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,8 +51,8 @@ public class StreamResource extends AbstractStreamResource {
     private static class DefaultResolver implements ContentTypeResolver {
 
         @Override
-        public String apply(StreamResource resource, ServletContext context) {
-            return Optional.ofNullable(context.getMimeType(resource.getName()))
+        public String apply(StreamResource resource, VaadinService service) {
+            return Optional.ofNullable(service.getMimeType(resource.getName()))
                     .orElse(DEFAULT_CONTENT_TYPE);
         }
 

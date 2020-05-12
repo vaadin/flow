@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.ContentTypeResolver;
-import com.vaadin.flow.server.StreamResource;
 
 public class StreamResourceTest {
 
@@ -64,9 +63,9 @@ public class StreamResourceTest {
 
     private void assertContentType(StreamResource resource,
             ContentTypeResolver resolver) {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(context.getMimeType("foo")).thenReturn("bar");
-        String mimeType = resolver.apply(resource, context);
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getMimeType("foo")).thenReturn("bar");
+        String mimeType = resolver.apply(resource, service);
 
         Assert.assertEquals("bar", mimeType);
     }

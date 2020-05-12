@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.testnpmonlyfeatures.bytecodescanning;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 
@@ -48,9 +45,7 @@ public class RemoveFallbackChunkInfo implements VaadinServiceInitListener {
 
     boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) {
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        HttpServletRequest httpRequest = servletRequest.getHttpServletRequest();
-        String query = httpRequest.getQueryString();
+        String query = request.getQueryString();
         if ("drop-fallback".equals(query)) {
             // self check
             FallbackChunk chunk = session.getService().getContext()
