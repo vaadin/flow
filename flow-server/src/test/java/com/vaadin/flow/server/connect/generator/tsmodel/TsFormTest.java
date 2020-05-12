@@ -20,6 +20,7 @@ import java.util.Collections;
 
 import org.junit.Test;
 
+import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGeneratorBaseTest;
 import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity;
 import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntityId;
@@ -50,16 +51,18 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 .getObject("properties");
 
         assertFalse(props.getObject("foo").hasKey(CONSTRAINT_ANNOTATIONS));
-        assertEquals("AssertFalse", props.getObject("assertFalse")
+        assertEquals("AssertFalse()", props.getObject("assertFalse")
                 .getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("AssertTrue",
+        assertEquals("AssertTrue()",
                 props.getObject("assertTrue").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("Digits(integer = 5, fraction = 2)",
+        assertEquals("Digits({integer:5, fraction:2})",
                 props.getObject("digits").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("NotEmpty",
+        assertEquals("Required()",
                 props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("NotNull",
+        assertEquals("NotEmpty()",
                 props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
+        assertEquals("NotNull()",
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(2));
     }
 
     @Test
@@ -82,16 +85,9 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertTrue(formModelFile.exists());
 
         String content = readFile(formModelFile.toPath());
-        assertTrue(content.matches("(?s).*import MyBazModel from './MyBazModel';.*"));
-        assertTrue(content.matches("(?s).*import MyEntityIdModel from './MyEntityIdModel';.*"));
-        assertTrue(content.matches("(?s).*import MyEntity from './MyEntity';.*"));
-        assertTrue(content.matches("(?s).*import \\{Email.+\\} from '@vaadin/flow-frontend/FormValidator'.*"));
-        assertTrue(content.matches("(?s).*max = new StringModel\\(this, 'max', new Required\\(\\), new Max\\(2\\)\\);.*"));
-        assertTrue(content.matches("(?s).*export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEntityIdModel<T> \\{.*"));
-        assertTrue(content.matches("(?s).*public readonly bar = new MyBazModel\\(this, 'bar'.*"));
-        assertTrue(content.matches("(?s).*public readonly futureOrPresent = new ObjectModel.*"));
-        assertTrue(content.matches("(?s).*public readonly pattern = new StringModel\\(this, 'pattern', new Required\\(\\), new Pattern\\(\\{regexp:\\\"\\\\\\\\d\\+\\\\\\\\.\\.\\+\"\\}\\)\\);.*"));
-        assertTrue(content.matches("(?s).*public readonly baz = new ArrayModel\\(this, 'baz', MyBazModel\\);.*"));
-        assertTrue(content.matches("(?s).*public readonly decimalMax = new NumberModel\\(this, 'decimalMax', new Required\\(\\), new DecimalMax\\(\\{value:\"0.01\", inclusive:false\\}\\)\\);.*"));
+        String expected = TestUtils.readResource(
+                getClass().getResource("expected-TsFormEndpoint.ts"));
+
+        assertEquals(expected, content);
     }
 }
