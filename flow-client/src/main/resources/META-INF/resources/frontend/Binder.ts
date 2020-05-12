@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-const keySymbol = Symbol('key');
+export const keySymbol = Symbol('key');
 const parentSymbol = Symbol('parent');
 const valueSymbol = Symbol('value');
 const defaultValueSymbol = Symbol('defaultValue');
@@ -8,6 +8,7 @@ const fromStringSymbol = Symbol('fromString');
 const validatorsSymbol = Symbol('validators');
 const isSubmittingSymbol = Symbol('isSubmitting');
 const ModelSymbol = Symbol('Model');
+const fieldSymbol = Symbol('field');
 
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
@@ -32,6 +33,12 @@ export abstract class AbstractModel<T> {
     this[parentSymbol] = parent;
     this[keySymbol] = key;
     validators.forEach(validator => this[validatorsSymbol].add(validator));
+  }
+  toString() {
+    return String(this.valueOf());
+  }
+  valueOf():T {
+    return getValue(this);
   }
 }
 
@@ -86,11 +93,15 @@ export class Binder<T, M extends AbstractModel<T>> {
     if (defaultValue !== undefined) {
       this.defaultValue = defaultValue;
     }
-
     this.value = this.defaultValue;
   }
 
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
+    const errors = await validate(this.model);
+    if (errors.length) {
+      return;
+    }
+
     this[isSubmittingSymbol] = true;
     this.update(this.value);
     try {
@@ -110,44 +121,26 @@ export class Binder<T, M extends AbstractModel<T>> {
   }
 }
 
-interface PrimitiveCompatible<T> {
-  valueOf(): T;
-}
-
 interface HasFromString<T> {
   [fromStringSymbol](value: string): T
 }
 
-export abstract class PrimitiveModel<T> extends AbstractModel<T>
-  implements PrimitiveCompatible<T> {
-  valueOf() {
-    return getValue(this);
-  }
+export abstract class PrimitiveModel<T> extends AbstractModel<T> {
 }
 
-export class BooleanModel extends PrimitiveModel<boolean>
-  implements PrimitiveCompatible<boolean>, HasFromString<boolean> {
+export class BooleanModel extends PrimitiveModel<boolean> implements HasFromString<boolean> {
   static createEmptyValue = Boolean;
-
   [fromStringSymbol] = Boolean;
 }
 
-export class NumberModel extends PrimitiveModel<number>
-  implements PrimitiveCompatible<number>, HasFromString<number> {
+export class NumberModel extends PrimitiveModel<number> implements HasFromString<number> {
   static createEmptyValue = Number;
-
   [fromStringSymbol] = Number;
 }
 
-export class StringModel extends PrimitiveModel<string>
-  implements PrimitiveCompatible<string>, HasFromString<string> {
+export class StringModel extends PrimitiveModel<string> implements HasFromString<string> {
   static createEmptyValue = String;
-
   [fromStringSymbol] = String;
-
-  toString() {
-    return this.valueOf();
-  }
 }
 
 export class ObjectModel<T> extends AbstractModel<T> {
@@ -163,7 +156,6 @@ export class ObjectModel<T> extends AbstractModel<T> {
       {}
     );
   }
-
   [fromStringSymbol] = String;
 }
 
@@ -173,6 +165,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   }
 
   private [ModelSymbol]: ModelConstructor<T, M>;
+  private models = new WeakMap<any, M>();
 
   constructor(
     parent: ModelParent<ReadonlyArray<T>>,
@@ -186,9 +179,14 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   *[Symbol.iterator](): IterableIterator<M> {
     const array = getValue(this);
     const Model = this[ModelSymbol];
-    // @ts-ignore
-    for (const [i, _] of array.entries()) {
-      yield new Model(this, i);
+    for (const [i, item] of array.entries()) {
+      let model = this.models.get(item);
+      if (!model) {
+        model = new Model(this,i);
+        this.models.set(item, model);
+      }
+      model[keySymbol] = i;
+      yield model;
     }
   }
 }
@@ -198,7 +196,6 @@ export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
 export interface Validator<T> {
   validate: ValidationCallback<T>,
   message: string,
-  // Limit
   value?: any
 }
 
@@ -210,7 +207,7 @@ export class Required implements Validator<string> {
     } else if (typeof value === 'number') {
       return Number.isFinite(value);
     }
-    return false;
+    return value !== undefined;
   }
 }
 
@@ -218,20 +215,45 @@ export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>
   return model[validatorsSymbol];
 }
 
-export async function validate<T>(model: AbstractModel<T>): Promise<string | undefined> {
+export async function validate<T>(model: AbstractModel<T>) {
+  const errors:string[] = [];
+
+  if (model instanceof ArrayModel) {
+    for (const itemModel of model) {
+      errors.push(...await validate(itemModel));
+    }
+    return errors;
+  }
+
+  const props = Object.getOwnPropertyNames(model)
+    .filter(name => (model as any)[name] instanceof AbstractModel);
+  for (const prop of props) {
+    const propModel = (model as any)[prop];
+    const fieldElement = propModel[fieldSymbol] as FieldElement;
+    if (fieldElement) {
+      const error = await fieldElement.validate();
+      if (error !== undefined) {
+        errors.push(error);
+      }
+    } else {
+      errors.push(...await validate(propModel));
+    }
+  }
+
   const parent = model[parentSymbol];
   if (parent === undefined) {
-    return;
+    return errors;
   }
+
   const value = getValue(model);
   const modelValidators = getModelValidators(model);
   for (const validator of modelValidators) {
     const valid = await ((async () => validator.validate(value))());
     if (!valid) {
-      return validator.message;
+      errors.push(validator.message);
     }
   }
-  return;
+  return errors;
 }
 
 export function getName(model: AbstractModel<any>) {
@@ -314,14 +336,47 @@ export const modelRepeat = <T, M extends AbstractModel<T>>(
     (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index)
     );
 
-interface FieldState {
-  name: string,
-  value: string,
+interface Field {
   required: boolean,
   invalid: boolean,
   errorMessage: string
 }
+interface FieldState extends Field {
+  name: string,
+  value: string
+}
 const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
+
+interface FieldElement extends Field {
+  element: Element;
+  validate: () => Promise<string | undefined>;
+}
+
+class VaadinFieldElement implements FieldElement {
+  constructor(public element: Element & Field) {}
+  validate = async () => undefined;
+  set required(value: boolean) { this.element.required = value }
+  set invalid(value: boolean) { this.element.invalid = value }
+  set errorMessage(value: string) { this.element.errorMessage = value }
+}
+
+class GenericFieldElement implements FieldElement {
+  constructor(public element: Element) {}
+  validate = async () => undefined;
+  set required(value: boolean) { this.setAttribute('required', value) }
+  set invalid(value: boolean) { this.setAttribute('invalid', value) }
+  set errorMessage(_: string) { }
+  setAttribute(key: string, val: any) {
+    if (val) {
+      this.element.setAttribute(key, '');
+    } else {
+      this.element.removeAttribute(key);
+    }
+  }
+}
+
+// vaadin elements have a `version` static property in the class
+const isVaadinElement = (elm: Element) => (elm.constructor as any).version;
 
 export const field = directive(<T>(
   model: AbstractModel<T>,
@@ -333,39 +388,31 @@ export const field = directive(<T>(
   }
 
   let fieldState: FieldState;
-  const element = propertyPart.committer.element as HTMLInputElement;
+  const element = propertyPart.committer.element as HTMLInputElement & Field;
+
   if (!fieldStateMap.has(propertyPart)) {
-    fieldState = {
-      name: '',
-      value: '',
-      required: false,
-      invalid: false,
-      errorMessage: ''
-    };
+    fieldState = { name: '', value: '', required: false, invalid: false, errorMessage: ''};
     fieldStateMap.set(propertyPart, fieldState);
-    // @ts-ignore
-    element.oninput = element.onchange = element.onblur = (event: Event) => {
+
+    const fieldElement:FieldElement = (model as any)[fieldSymbol] =
+      isVaadinElement(element) ? new VaadinFieldElement(element) : new GenericFieldElement(element);
+
+    fieldElement.validate = async () => {
       fieldState.value = element.value;
-      // @ts-ignore
-      setValue(model, model[fromStringSymbol](element.value));
-      validate(model).then((message?: string) => {
-        fieldState.invalid = message !== undefined;
-        fieldState.errorMessage = message || '';
-        // @ts-ignore
-        if (element.invalid !== fieldState.invalid) {
-          // @ts-ignore
-          element.invalid = fieldState.invalid;
-        }
-        // @ts-ignore
-        if (element.errorMessage !== fieldState.errorMessage) {
-          // @ts-ignore
-          element.errorMessage = fieldState.errorMessage;
-        }
-      });
+      setValue(model, (model as any)[fromStringSymbol](element.value));
+
+      const message = (await validate(model))[0];
+      fieldElement.invalid = fieldState.invalid = message !== undefined;
+      fieldElement.errorMessage = fieldState.errorMessage = message || '';
+
       if (effect !== undefined) {
         effect.call(element, element);
       }
+      return message;
     };
+
+    element.oninput = element.onchange = element.onblur = fieldElement.validate;
+
     element.checkValidity = () => !fieldState.invalid;
   } else {
     fieldState = fieldStateMap.get(propertyPart)!;

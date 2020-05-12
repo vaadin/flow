@@ -2,82 +2,74 @@
 
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
-
 /// <reference types="sinon">
 const {sinon} = intern.getPlugin('sinon');
+import { expect } from "chai";
 
 // API to test
 import {
-  ArrayModel,
   Binder,
-  BooleanModel,
   getModelValidators,
   getName,
   getValue,
-  NumberModel,
-  ObjectModel, setValue,
-  StringModel, validate, Validator
+  setValue,
+  validate,
+  Validator,
+  modelRepeat,
+  field,
+  appendItem,
+  keySymbol,
+  prependItem
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
-import { expect } from "chai";
-import {LitElement} from 'lit-element';
+import { Order, OrderModel, ProductModel } from "./BinderModels";
 
-interface IdEntity {
-  idString: string;
-}
-class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
-  static createEmptyValue: () => IdEntity;
-  readonly idString = new StringModel(this, 'idString');
-}
+import { customElement, html, LitElement, query, css} from 'lit-element';
 
-interface Product extends IdEntity {
-  description: string;
-  price: number;
-  isInStock: boolean;
-}
+@customElement('lit-order-view')
+class LitOrderView extends LitElement {}
 
-class ProductModel<T extends Product = Product> extends IdEntityModel<T> {
-  static createEmptyValue: () => Product;
-  readonly description = new StringModel(this, 'description');
-  readonly price = new NumberModel(this, 'price');
-  readonly isInStock = new BooleanModel(this, 'isInStock');
-}
+@customElement('order-view')
+export default class OrderView extends LitElement {
+  public binder = new Binder(this, OrderModel, () => this.requestUpdate());
+  @query('#notes') public notes!: HTMLInputElement;
+  @query('#fullName') public fullName!: HTMLInputElement;
+  @query('#add') public add!: Element;
+  @query('#description0') public description!: HTMLInputElement;
+  @query('#price0') public price!: HTMLInputElement;
 
-interface Customer extends IdEntity {
-  fullName: string;
-}
-
-class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
-  static createEmptyValue: () => Customer;
-  readonly fullName = new StringModel(this, 'fullName');
-}
-
-interface Order extends IdEntity {
-  customer: Customer;
-  notes: string;
-  products: ReadonlyArray<Product>;
+  static get styles() {
+    return css`input[invalid] {border: 2px solid red;}`;
+  }
+  render() {
+    return html`
+    <input id="notes" ...="${field(this.binder.model.notes)}" />
+    <input id="fullName" ...="${field(this.binder.model.customer.fullName)}" />
+    <button id="add" @click=${() => appendItem(this.binder.model.products)}>+</button>
+    ${modelRepeat(this.binder.model.products, (model, _product, index) => html`<div>
+        <input id="description${index}" ...="${field(model.description)}" />
+        <input id="price${index}" ...="${field(model.price)}">
+      </div>`)}
+    `;
+  }
 }
 
-class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
-  static createEmptyValue: () => Order;
-  readonly customer = new CustomerModel(this, 'customer');
-  readonly notes = new StringModel(this, 'notes');
-  readonly products = new ArrayModel(this, 'products', ProductModel);
+const sleep = async (t: number) => new Promise(resolve => setTimeout(() => resolve(), t));
+const fireEvent = async (elm: Element, name: string) => {
+  elm.dispatchEvent(new CustomEvent(name));
+  return sleep(0);
 }
-
-class OrderView extends LitElement {}
-customElements.define('order-view', OrderView);
 
 suite("Binder", () => {
-  const orderView = document.createElement('order-view') as OrderView;
-  const requestUpdateStub = sinon.stub(orderView, 'requestUpdate').resolves();
+  const litOrderView = document.createElement('lit-order-view') as LitOrderView;
+  const requestUpdateStub = sinon.stub(litOrderView, 'requestUpdate').resolves();
 
   afterEach(() => {
     requestUpdateStub.reset();
   });
 
   test("should instantiate without type arguments", () => {
-    const binder = new Binder(orderView, OrderModel, () => orderView.requestUpdate());
+    const binder = new Binder(litOrderView, OrderModel, () => litOrderView.requestUpdate());
 
     assert.isDefined(binder);
     assert.isDefined(binder.value.notes);
@@ -87,7 +79,7 @@ suite("Binder", () => {
   });
 
   test("should instantiate model", () => {
-    const binder = new Binder(orderView, OrderModel, () => orderView.requestUpdate());
+    const binder = new Binder(litOrderView, OrderModel, () => litOrderView.requestUpdate());
 
     assert.instanceOf(binder.model, OrderModel);
   });
@@ -102,14 +94,15 @@ suite("Binder", () => {
         fullName: '',
       },
       notes: '',
+      priority: 0,
       products: []
     };
 
     beforeEach(() => {
       binder = new Binder(
-        orderView,
+        litOrderView,
         OrderModel,
-        () => orderView.requestUpdate()
+        () => litOrderView.requestUpdate()
       );
       requestUpdateStub.reset();
     });
@@ -144,7 +137,7 @@ suite("Binder", () => {
 
       setValue(binder.model.customer.fullName, "foo");
       assert.equal(binder.value.customer.fullName, "foo");
-      sinon.assert.calledOnce(orderView.requestUpdate);
+      sinon.assert.calledOnce(litOrderView.requestUpdate);
     });
 
     test("should not change defaultValue on setValue", () => {
@@ -187,14 +180,84 @@ suite("Binder", () => {
     });
   });
 
-  suite("validation", () => {
+  suite('array-model', () => {
     let binder: Binder<Order, OrderModel<Order>>;
 
     beforeEach(() => {
+      binder = new Binder(litOrderView, OrderModel, () => { });
+    });
+
+    test("should reuse model instance for the same array item", async () => {
+      const products = [
+        ProductModel.createEmptyValue(),
+        ProductModel.createEmptyValue()
+      ]
+      setValue(binder.model.products, products.slice());
+      const models_1 = [...binder.model.products].slice();
+      [0, 1].forEach(i => expect(models_1[i].valueOf()).to.be.equal(products[i]));
+
+      setValue(binder.model.products, products);
+      const models_2 = [...binder.model.products].slice();
+      [0, 1].forEach(i => {
+        expect(models_1[i]).to.be.equal(models_2[i]);
+        expect(models_2[i].valueOf()).to.be.equal(products[i]);
+      });
+    });
+
+    test("should reuse model instance for the same array item after it is modified", async () => {
+      const products = [
+        ProductModel.createEmptyValue(),
+        ProductModel.createEmptyValue()
+      ]
+      setValue(binder.model.products, products);
+      const models_1 = [...binder.model.products].slice();
+      [0, 1].forEach(i => expect(models_1[i].valueOf()).to.be.equal(products[i]));
+
+      setValue(models_1[0].description, 'foo');
+      setValue(models_1[1].description, 'bar');
+
+      setValue(binder.model.products, products.slice());
+      const models_2 = [...binder.model.products].slice();
+      [0, 1].forEach(i => {
+        expect(models_1[i]).to.be.equal(models_2[i]);
+        expect(models_2[i].valueOf()).to.be.equal(products[i]);
+      });
+    });
+
+    test("should update model keySymbol when inserting items", async () => {
+      const products = [
+        ProductModel.createEmptyValue(),
+        ProductModel.createEmptyValue()
+      ]
+      setValue(binder.model.products, products);
+
+      const models_1 = [...binder.model.products].slice();
+      for (let i = 0; i < models_1.length; i++) {
+        expect((models_1[i] as any)[keySymbol]).to.be.equal(i)
+      }
+
+      setValue(models_1[0].description, 'foo');
+      expect(binder.model.products.valueOf()[0].description).to.be.equal('foo');
+
+      prependItem(binder.model.products);
+      expect(binder.model.products.valueOf()[1].description).to.be.equal('foo');
+
+      const models_2 = [...binder.model.products].slice();
+      expect(models_2.length).to.be.equal(3);
+      for (let i = 0; i < models_2.length; i++) {
+        expect((models_2[i] as any)[keySymbol]).to.be.equal(i)
+      }
+    });
+  });
+
+  suite("validation", () => {
+    let binder: Binder<Order, OrderModel<Order>>;
+
+    beforeEach(async () => {
       binder = new Binder(
-        orderView,
+        litOrderView,
         OrderModel,
-        () => orderView.requestUpdate()
+        () => litOrderView.requestUpdate()
       );
     });
 
@@ -207,14 +270,13 @@ suite("Binder", () => {
         message = "foo";
         validate = () => false;
       }
-      getModelValidators(binder.model).add(new SyncValidator());
-
-      return validate(binder.model).then(errMsg => {
-        expect(errMsg).to.equal("foo");
+      getModelValidators(binder.model.priority).add(new SyncValidator());
+      return validate(binder.model.priority).then(errMsg => {
+        expect(errMsg[0]).to.equal("foo");
       });
     });
 
-    test("should fail validation after adding an synchronous validator", () => {
+    test("should fail validation after adding an asynchronous validator", () => {
       class AsyncValidator implements Validator<Order>{
         message = "bar";
         validate = async () =>{
@@ -222,11 +284,106 @@ suite("Binder", () => {
           return false;
         };
       }
-      getModelValidators(binder.model).add(new AsyncValidator());
-      return validate(binder.model).then(errMsg => {
-        expect(errMsg).to.equal("bar");
+      getModelValidators(binder.model.priority).add(new AsyncValidator());
+      return validate(binder.model.priority).then(errMsg => {
+        expect(errMsg[0]).to.equal("bar");
       });
     });
+
+    suite('field element', () => {
+      let orderView: OrderView;
+
+      beforeEach(async () => {
+        orderView = document.createElement('order-view') as OrderView;
+        binder = new Binder(orderView, OrderModel, () => orderView.requestUpdate());
+        document.body.appendChild(orderView);
+        return sleep(10);
+      });
+
+      afterEach(async () => {
+        document.body.removeChild(orderView)
+      });
+
+      ['input', 'change', 'blur'].forEach(event => {
+        test(`should validate field on ${event}`, async () => {
+          expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+          await fireEvent(orderView.notes, event);
+          expect(orderView.notes.hasAttribute('invalid')).to.be.true;
+        });
+
+        test(`should validate field of nested model on  ${event}`, async () => {
+          await fireEvent(orderView.add, 'click');
+          expect(orderView.description.hasAttribute('invalid')).to.be.false;
+          await fireEvent(orderView.description, event);
+          expect(orderView.description.hasAttribute('invalid')).to.be.true;
+        });
+      });
+
+      test(`should validate fields on submit`, async () => {
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+        expect(orderView.fullName.hasAttribute('invalid')).to.be.false;
+
+        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+
+        expect(orderView.notes.hasAttribute('invalid')).to.be.true;
+        expect(orderView.fullName.hasAttribute('invalid')).to.be.true;
+      });
+
+      test(`should validate fields of nested model on submit`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.false;
+        expect(orderView.price.hasAttribute('invalid')).to.be.false;
+
+        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.true;
+        expect(orderView.price.hasAttribute('invalid')).to.be.true;
+      });
+
+      test(`should validate fields of arrays on submit`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.false;
+        expect(orderView.price.hasAttribute('invalid')).to.be.false;
+
+        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+
+        expect(orderView.description.hasAttribute('invalid')).to.be.true;
+        expect(orderView.price.hasAttribute('invalid')).to.be.true;
+      });
+
+      test(`should not submit when just validation fails`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        orderView.notes.value = 'foo';
+        orderView.fullName.value = 'manuel';
+        orderView.description.value = 'bread';
+
+        const item = await orderView.binder.submitTo(async (item) => item) as Order;
+        expect(item).to.be.undefined;
+      });
+
+      test(`should submit when no validation errors`, async () => {
+        expect(orderView.description).to.be.null;
+        await fireEvent(orderView.add, 'click');
+
+        setValue(orderView.binder.model,
+          // @ts-ignore
+          {notes: 'foo', products: [{description: 'bread', price: 10}], customer: {fullName: 'manuel'}});
+
+        const item = await orderView.binder.submitTo(async (item) => item) as Order;
+        expect(item).not.to.be.undefined;
+        expect(item.products[0].description).to.be.equal('bread');
+        expect(item.products[0].price).to.be.equal(10);
+        expect(item.notes).to.be.equal('foo');
+        expect(item.customer.fullName).to.be.equal('manuel');
+      });
+    });
+
   });
 });
 
