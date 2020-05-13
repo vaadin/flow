@@ -196,7 +196,7 @@ export interface ValueError<T> {
 }
 
 export class ValidationError extends Error {
-  constructor(public errors:Array<ValueError<any>>) {
+  constructor(public errors:ValueError<any>[]) {
     super([
       "There are validation errors in the form.",
       ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.validator.message? ': ' + e.validator.message : ''}`)
@@ -234,8 +234,8 @@ function validateModel<T>(model: AbstractModel<T>) {
   return fieldElement ? fieldElement.validate() : validate(model);
 }
 
-export async function validate<T>(model: AbstractModel<T>): Promise<Array<ValueError<any>>> {
-  const promises: Array<Promise<Array<ValueError<any>> | ValueError<any> | undefined>> = [];
+export async function validate<T>(model: AbstractModel<T>): Promise<ValueError<any>[]> {
+  const promises: Array<Promise<ValueError<any>[] | ValueError<any> | undefined>> = [];
   // validate each model in the array model
   if (model instanceof ArrayModel) {
     promises.push(...[...model].map(validateModel));
@@ -247,7 +247,7 @@ export async function validate<T>(model: AbstractModel<T>): Promise<Array<ValueE
   if (parent) {
     promises.push(...[...getModelValidators(model)].map(validator =>
       (async() => validator.validate(getValue(model)))().then(
-        valid => valid ? undefined : {property: getName(model), value: getValue(model), validator})
+        valid => valid ? undefined : {property: getName(model), value: getValue(model), validator: validator})
     ));
   }
   // wait for all promises and return errors
@@ -342,7 +342,7 @@ const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
 
 interface FieldElement extends Field {
   element: Element;
-  validate: () => Promise<Array<ValueError<any>>>;
+  validate: () => Promise<ValueError<any>[]>;
 }
 
 class VaadinFieldElement implements FieldElement {
