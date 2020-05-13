@@ -342,6 +342,66 @@ suite("Binder", () => {
       });
     });
 
+    suite('submitTo', () => {
+      test("should throw on validation failure", async () => {
+        try {
+          await binder.submitTo(async() => {});
+          expect.fail();
+        } catch (error) {
+          expect(error.errors.length).to.gt(0);
+        }
+      });
+
+      test("should re-throw on server failure", async () => {
+        setValue(binder.model.customer.fullName, 'foobar');
+        setValue(binder.model.notes, 'whatever');
+        try {
+          await binder.submitTo(async() => {throw new Error('whatever')});
+          expect.fail();
+        } catch (error) {
+          expect(error.message).to.be.equal('whatever');
+        }
+      });
+
+      test("should wrap server validation error", async () => {
+        setValue(binder.model.customer.fullName, 'foobar');
+        setValue(binder.model.notes, 'whatever');
+        try {
+          await binder.submitTo(async() => {throw {
+            message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
+            validationErrorData: {
+              message: "Object of type 'com.example.MyBean' has invalid property 'foo' with value 'baz', validation error: 'custom message'",
+              parameterName: "foo",
+            }
+          }});
+          expect.fail();
+        } catch (error) {
+          expect(error.errors[0].validator.message).to.be.equal('custom message');
+          expect(error.errors[0].value).to.be.equal('baz');
+          expect(error.errors[0].property).to.be.equal('foo');
+        }
+      });
+
+      test("should wrap server validation error with any message", async () => {
+        setValue(binder.model.customer.fullName, 'foobar');
+        setValue(binder.model.notes, 'whatever');
+        try {
+          await binder.submitTo(async() => {throw {
+            message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
+            validationErrorData: {
+              message: "Custom server message",
+              parameterName: "bar",
+            }
+          }});
+          expect.fail();
+        } catch (error) {
+          expect(error.errors[0].validator.message).to.be.equal('Custom server message');
+          expect(error.errors[0].value).to.be.undefined;
+          expect(error.errors[0].property).to.be.equal('bar');
+        }
+      });
+    });
+
     suite('field element', () => {
       let orderView: OrderView;
 

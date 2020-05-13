@@ -107,7 +107,14 @@ export class Binder<T, M extends AbstractModel<T>> {
     this[isSubmittingSymbol] = true;
     this.update(this.value);
     try {
-      return endpointMethod.call(this.context, this.value);
+      return await endpointMethod.call(this.context, this.value);
+    } catch (error) {
+      if (error.validationErrorData) {
+        const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(error.validationErrorData.message);
+        const [property, value, message] = res ? res.splice(2) : [error.validationErrorData.parameterName, undefined,   error.validationErrorData.message];
+        error = new ValidationError([{ property, value, validator: new ServerValidator(message) }]);
+      }
+      throw (error);
     } finally {
       this[isSubmittingSymbol] = false;
       this.reset(this.value);
@@ -229,6 +236,12 @@ export class Required implements Validator<string> {
   }
 }
 
+class ServerValidator implements Validator<any> {
+  constructor(public message: string) {
+  }
+  validate = () => false;
+}
+
 export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
   return model[validatorsSymbol];
 }
@@ -245,7 +258,7 @@ async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>)
     return undefined;
   }
   return (async() => validator.validate(value))()
-    .then(valid => valid ? undefined 
+    .then(valid => valid ? undefined
       : {property: getName(model), value, validator});
 }
 
