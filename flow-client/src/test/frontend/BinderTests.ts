@@ -9,7 +9,6 @@ import { expect } from "chai";
 // API to test
 import {
   Binder,
-  getModelValidators,
   getName,
   getValue,
   setValue,
@@ -35,6 +34,7 @@ export default class OrderView extends LitElement {
   public binder = new Binder(this, OrderModel, () => this.requestUpdate());
   @query('#notes') public notes!: HTMLInputElement;
   @query('#fullName') public fullName!: HTMLInputElement;
+  @query('#nickName') public nickName!: HTMLInputElement;
   @query('#add') public add!: Element;
   @query('#description0') public description!: HTMLInputElement;
   @query('#price0') public price!: HTMLInputElement;
@@ -46,6 +46,7 @@ export default class OrderView extends LitElement {
     return html`
     <input id="notes" ...="${field(this.binder.model.notes)}" />
     <input id="fullName" ...="${field(this.binder.model.customer.fullName)}" />
+    <input id="nickName" ...="${field(this.binder.model.customer.nickName)}" />
     <button id="add" @click=${() => appendItem(this.binder.model.products)}>+</button>
     ${modelRepeat(this.binder.model.products, (model, _product, index) => html`<div>
         <input id="description${index}" ...="${field(model.description)}" />
@@ -93,6 +94,7 @@ suite("Binder", () => {
       customer: {
         idString: '',
         fullName: '',
+        nickName: ''
       },
       notes: '',
       priority: 0,
@@ -281,7 +283,7 @@ suite("Binder", () => {
         message = "foo";
         validate = () => false;
       }
-      getModelValidators(binder.model.priority).add(new SyncValidator());
+      binder.model.priority.addValidator(new SyncValidator());
       return validate(binder.model.priority).then(errors => {
         expect(errors[0].error).to.equal("foo");
       });
@@ -295,7 +297,7 @@ suite("Binder", () => {
           return false;
         };
       }
-      getModelValidators(binder.model.priority).add(new AsyncValidator());
+      binder.model.priority.addValidator(new AsyncValidator());
       return validate(binder.model.priority).then(errors => {
         expect(errors[0].error).to.equal("bar");
       });
@@ -303,8 +305,10 @@ suite("Binder", () => {
 
     test("should run all validators per model", async () => {
       return validate(binder.model.customer).then(errors => {
-        expect(errors[0].type).to.equal("Required");
-        expect(errors[1].type).to.equal("Size");
+        expect(errors.map(e => e.type).sort()).to.eql([
+          "Required",
+          "Size"
+        ]);
       });
     });
 
@@ -382,6 +386,7 @@ suite("Binder", () => {
       test(`should validate fields on submit`, async () => {
         expect(orderView.notes.hasAttribute('invalid')).to.be.false;
         expect(orderView.fullName.hasAttribute('invalid')).to.be.false;
+        expect(orderView.nickName.hasAttribute('invalid')).to.be.false;
 
         try {
           await orderView.binder.submitTo(async (item) => item);
@@ -391,6 +396,7 @@ suite("Binder", () => {
 
         expect(orderView.notes.hasAttribute('invalid')).to.be.true;
         expect(orderView.fullName.hasAttribute('invalid')).to.be.true;
+        expect(orderView.nickName.hasAttribute('invalid')).to.be.false;
       });
 
       test(`should validate fields of nested model on submit`, async () => {

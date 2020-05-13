@@ -9,6 +9,7 @@ const validatorsSymbol = Symbol('validators');
 const isSubmittingSymbol = Symbol('isSubmitting');
 const ModelSymbol = Symbol('Model');
 const fieldSymbol = Symbol('field');
+const requiredSymbol = Symbol('required');
 
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
@@ -23,6 +24,7 @@ export abstract class AbstractModel<T> {
   private [parentSymbol]: ModelParent<T>;
   private [keySymbol]: keyof any;
   private [validatorsSymbol] = new Set<Validator<T>>();
+  private [requiredSymbol] = false;
 
   constructor(
     parent: ModelParent<T>,
@@ -31,13 +33,17 @@ export abstract class AbstractModel<T> {
   ) {
     this[parentSymbol] = parent;
     this[keySymbol] = key;
-    validators.forEach(validator => this[validatorsSymbol].add(validator));
+    validators.forEach(val => this.addValidator(val));
   }
   toString() {
     return String(this.valueOf());
   }
   valueOf():T {
     return getValue(this);
+  }
+  addValidator(validator:Validator<T>) {
+    this[validatorsSymbol].add(validator);
+    this[requiredSymbol] = this[requiredSymbol] || validator instanceof Required;
   }
 }
 
@@ -225,13 +231,20 @@ export class Required implements Validator<string> {
   }
 }
 
-export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
-  return model[validatorsSymbol];
-}
-
 function validateModel<T>(model: AbstractModel<T>) {
   const fieldElement = (model as any)[fieldSymbol] as FieldElement;
   return fieldElement ? fieldElement.validate() : validate(model);
+}
+
+async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>): Promise<ValueError | undefined> {
+  const value = getValue(model);
+  // if model is not required and value empty, do not run any validator
+  if (!model[requiredSymbol] && !new Required().validate(value)) {
+    return undefined;
+  }
+  return (async() => validator.validate(value))()
+    .then(valid => valid ? undefined 
+      : {property: getName(model), error: validator.message, type: validator.constructor.name});
 }
 
 export async function validate<T>(model: AbstractModel<T>): Promise<ValueError[]> {
@@ -245,10 +258,7 @@ export async function validate<T>(model: AbstractModel<T>): Promise<ValueError[]
   promises.push(...[...properties].map(prop => (model as any)[prop]).map(validateModel));
   // run all model validators
   if (parent) {
-    promises.push(...[...getModelValidators(model)].map(validator =>
-      (async() => validator.validate(getValue(model)))().then(
-        valid => valid ? undefined : {property: getName(model), error: validator.message, type: validator.constructor.name})
-    ));
+    promises.push(...[...model[validatorsSymbol]].map(validator => runValidator(model, validator)));
   }
   // wait for all promises and return errors
   return((await Promise.all(promises) as any).flat()).filter(Boolean);
@@ -425,7 +435,7 @@ export const field = directive(<T>(
     element.value = value;
   }
 
-  const required = !![...getModelValidators(model)].find(val => val instanceof Required);
+  const required = model[requiredSymbol];
   if (required !== fieldState.required) {
     fieldState.required = required;
     element.required = required;
