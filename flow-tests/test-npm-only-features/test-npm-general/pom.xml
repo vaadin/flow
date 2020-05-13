@@ -21,7 +21,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-test-npm-only-features</artifactId>
-        <version>3.2.dataprovider-SNAPSHOT</version>
+        <version>3.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

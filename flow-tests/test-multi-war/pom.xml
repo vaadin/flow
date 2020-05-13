@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>3.2.dataprovider-SNAPSHOT</version>
+        <version>3.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-multi-war</artifactId>
     <name>Flow tests with more than one war deployed at the same time</name>
