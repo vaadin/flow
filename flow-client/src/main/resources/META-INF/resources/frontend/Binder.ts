@@ -12,8 +12,7 @@ const fieldSymbol = Symbol('field');
 
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
-// @ts-ignore
-import { AttributeCommitter, AttributePart, directive, Part,  PropertyPart } from 'lit-html';
+import { directive, Part,  PropertyPart } from 'lit-html';
 import { repeat } from 'lit-html/directives/repeat';
 
 export abstract class AbstractModel<T> {
@@ -44,7 +43,6 @@ export abstract class AbstractModel<T> {
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {
   createEmptyValue: () => T;
-
   new (parent: ModelParent<T>, key: keyof any, ...args: any[]): M;
 }
 
@@ -99,7 +97,7 @@ export class Binder<T, M extends AbstractModel<T>> {
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
     const errors = await validate(this.model);
     if (errors.length) {
-      return;
+      throw new ValidationError(errors);
     }
 
     this[isSubmittingSymbol] = true;
@@ -191,6 +189,22 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   }
 }
 
+export interface ValueError<T> {
+  property: string,
+  value: T,
+  validator: Validator<T>
+}
+
+export class ValidationError extends Error {
+  constructor(public errors:Array<ValueError<any>>) {
+    super([
+      "There are validation errors in the form.",
+      ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.validator.message? ': ' + e.validator.message : ''}`)
+    ].join('\n - '));
+    this.name = this.constructor.name;
+  }
+}
+
 export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
 
 export interface Validator<T> {
@@ -215,45 +229,29 @@ export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>
   return model[validatorsSymbol];
 }
 
-export async function validate<T>(model: AbstractModel<T>) {
-  const errors:string[] = [];
+function validateModel<T>(model: AbstractModel<T>) {
+  const fieldElement = (model as any)[fieldSymbol] as FieldElement;
+  return fieldElement ? fieldElement.validate() : validate(model);
+}
 
+export async function validate<T>(model: AbstractModel<T>): Promise<Array<ValueError<any>>> {
+  const promises: Array<Promise<Array<ValueError<any>> | ValueError<any> | undefined>> = [];
+  // validate each model in the array model
   if (model instanceof ArrayModel) {
-    for (const itemModel of model) {
-      errors.push(...await validate(itemModel));
-    }
-    return errors;
+    promises.push(...[...model].map(validateModel));
   }
-
-  const props = Object.getOwnPropertyNames(model)
-    .filter(name => (model as any)[name] instanceof AbstractModel);
-  for (const prop of props) {
-    const propModel = (model as any)[prop];
-    const fieldElement = propModel[fieldSymbol] as FieldElement;
-    if (fieldElement) {
-      const error = await fieldElement.validate();
-      if (error !== undefined) {
-        errors.push(error);
-      }
-    } else {
-      errors.push(...await validate(propModel));
-    }
+  // validate each model property
+  const properties = Object.getOwnPropertyNames(model).filter(name => (model as any)[name] instanceof AbstractModel);
+  promises.push(...[...properties].map(prop => (model as any)[prop]).map(validateModel));
+  // run all model validators
+  if (parent) {
+    promises.push(...[...getModelValidators(model)].map(validator =>
+      (async() => validator.validate(getValue(model)))().then(
+        valid => valid ? undefined : {property: getName(model), value: getValue(model), validator})
+    ));
   }
-
-  const parent = model[parentSymbol];
-  if (parent === undefined) {
-    return errors;
-  }
-
-  const value = getValue(model);
-  const modelValidators = getModelValidators(model);
-  for (const validator of modelValidators) {
-    const valid = await ((async () => validator.validate(value))());
-    if (!valid) {
-      errors.push(validator.message);
-    }
-  }
-  return errors;
+  // wait for all promises and return errors
+  return((await Promise.all(promises) as any).flat()).filter(Boolean);
 }
 
 export function getName(model: AbstractModel<any>) {
@@ -265,7 +263,7 @@ export function getName(model: AbstractModel<any>) {
   model = model[parentSymbol] as AbstractModel<any>;
 
   while (!(model[parentSymbol] instanceof Binder)) {
-    name = `${String(model[keySymbol])}[${name}]`;
+    name = `${String(model[keySymbol])}.${name}`;
     model = model[parentSymbol] as AbstractModel<any>;
   }
 
@@ -325,15 +323,9 @@ export const modelRepeat = <T, M extends AbstractModel<T>>(
   model: ArrayModel<T, M>,
   keyFnOrTemplate: KeyFn<T, M> | ItemTemplate<T, M>,
   itemTemplate?: ItemTemplate<T, M>) =>
-  (itemTemplate !== undefined)
-    ? repeat(
-      model,
-    (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
-    (itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index)
-    )
-    : repeat(
-      model,
-    (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index)
+    repeat(model,
+      (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
+      itemTemplate && ((itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index))
     );
 
 interface Field {
@@ -343,18 +335,19 @@ interface Field {
 }
 interface FieldState extends Field {
   name: string,
-  value: string
+  value: string,
+  visited: boolean
 }
 const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
 
 interface FieldElement extends Field {
   element: Element;
-  validate: () => Promise<string | undefined>;
+  validate: () => Promise<Array<ValueError<any>>>;
 }
 
 class VaadinFieldElement implements FieldElement {
   constructor(public element: Element & Field) {}
-  validate = async () => undefined;
+  validate = async () => [];
   set required(value: boolean) { this.element.required = value }
   set invalid(value: boolean) { this.element.invalid = value }
   set errorMessage(value: string) { this.element.errorMessage = value }
@@ -362,7 +355,7 @@ class VaadinFieldElement implements FieldElement {
 
 class GenericFieldElement implements FieldElement {
   constructor(public element: Element) {}
-  validate = async () => undefined;
+  validate = async () => [];
   set required(value: boolean) { this.setAttribute('required', value) }
   set invalid(value: boolean) { this.setAttribute('invalid', value) }
   set errorMessage(_: string) { }
@@ -391,27 +384,30 @@ export const field = directive(<T>(
   const element = propertyPart.committer.element as HTMLInputElement & Field;
 
   if (!fieldStateMap.has(propertyPart)) {
-    fieldState = { name: '', value: '', required: false, invalid: false, errorMessage: ''};
+    fieldState = { name: '', value: '', required: false, invalid: false, errorMessage: '', visited: false};
     fieldStateMap.set(propertyPart, fieldState);
-
     const fieldElement:FieldElement = (model as any)[fieldSymbol] =
       isVaadinElement(element) ? new VaadinFieldElement(element) : new GenericFieldElement(element);
 
     fieldElement.validate = async () => {
       fieldState.value = element.value;
+      fieldState.visited = true;
       setValue(model, (model as any)[fromStringSymbol](element.value));
 
-      const message = (await validate(model))[0];
-      fieldElement.invalid = fieldState.invalid = message !== undefined;
-      fieldElement.errorMessage = fieldState.errorMessage = message || '';
+      const errors = await validate(model);
+
+      const displayedError = errors[0];
+      fieldElement.invalid = fieldState.invalid = displayedError !== undefined;
+      fieldElement.errorMessage = fieldState.errorMessage = displayedError?.validator.message || '';
 
       if (effect !== undefined) {
         effect.call(element, element);
       }
-      return message;
+      return errors;
     };
 
-    element.oninput = element.onchange = element.onblur = fieldElement.validate;
+    element.oninput = () => fieldState.visited && fieldElement.validate();
+    element.onchange = element.onblur= fieldElement.validate;
 
     element.checkValidity = () => !fieldState.invalid;
   } else {
@@ -435,4 +431,3 @@ export const field = directive(<T>(
     element.required = required;
   }
 });
-

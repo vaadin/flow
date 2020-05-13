@@ -19,7 +19,8 @@ import {
   field,
   appendItem,
   keySymbol,
-  prependItem
+  prependItem,
+  ValidationError
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
 import { Order, OrderModel, ProductModel } from "./BinderModels";
@@ -109,11 +110,21 @@ suite("Binder", () => {
 
     test("should have name for models", () => {
       assert.equal(getName(binder.model.notes), "notes");
-      assert.equal(getName(binder.model.customer.fullName), "customer[fullName]");
+      assert.equal(getName(binder.model.customer.fullName), "customer.fullName");
     });
 
     test("should have initial defaultValue", () => {
       assert.deepEqual(binder.defaultValue, expectedEmptyOrder);
+    });
+
+    test("should have valueOf", () => {
+      assert.equal(binder.model.notes.valueOf(), "");
+      assert.equal(binder.model.priority.valueOf(), 0);
+    });
+
+    test("should have toString", () => {
+      assert.equal(binder.model.notes.valueOf(), "");
+      assert.equal(binder.model.priority.toString(), "0");
     });
 
     test("should have initial value", () => {
@@ -261,22 +272,25 @@ suite("Binder", () => {
       );
     });
 
-    test("should not have validation errors for a model without validators", () => {
-      assert.isEmpty(validate(binder.model));
+    test("should not have validation errors for a model without validators", async () => {
+      assert.isEmpty(await validate(binder.model.priority));
     });
 
-    test("should fail validation after adding a synchronous validator", () => {
+    test("should fail validation after adding a synchronous validator", async () => {
       class SyncValidator implements Validator<Order>{
         message = "foo";
         validate = () => false;
       }
       getModelValidators(binder.model.priority).add(new SyncValidator());
-      return validate(binder.model.priority).then(errMsg => {
-        expect(errMsg[0]).to.equal("foo");
+      setValue(binder.model.priority, 4);
+      return validate(binder.model.priority).then(errors => {
+        expect(errors[0].validator.message).to.equal("foo");
+        expect(errors[0].property).to.equal("priority");
+        expect(errors[0].value).to.equal(4);
       });
     });
 
-    test("should fail validation after adding an asynchronous validator", () => {
+    test("should fail validation after adding an asynchronous validator", async () => {
       class AsyncValidator implements Validator<Order>{
         message = "bar";
         validate = async () =>{
@@ -285,8 +299,41 @@ suite("Binder", () => {
         };
       }
       getModelValidators(binder.model.priority).add(new AsyncValidator());
-      return validate(binder.model.priority).then(errMsg => {
-        expect(errMsg[0]).to.equal("bar");
+      return validate(binder.model.priority).then(errors => {
+        expect(errors[0].validator.message).to.equal("bar");
+      });
+    });
+
+    test("should run all validators per model", async () => {
+      return validate(binder.model.customer).then(errors => {
+        expect(errors[0].validator.constructor.name).to.equal("Required");
+        expect(errors[1].validator.constructor.name).to.equal("Size");
+      });
+    });
+
+    test("should run all nested validations per model", async () => {
+      return validate(binder.model).then(errors => {
+        expect(errors.map(e => e.property)).to.eql([
+          "customer.fullName",
+          "customer.fullName",
+          "notes"
+        ]);
+      });
+    });
+
+    test("should run all validations per array items", async () => {
+      appendItem(binder.model.products);
+      appendItem(binder.model.products);
+      return validate(binder.model).then(errors => {
+        expect(errors.map(e => e.property)).to.eql([
+          "customer.fullName",
+          "customer.fullName",
+          "notes",
+          "products.0.description",
+          "products.0.price",
+          "products.1.description",
+          "products.1.price"
+        ]);
       });
     });
 
@@ -304,7 +351,7 @@ suite("Binder", () => {
         document.body.removeChild(orderView)
       });
 
-      ['input', 'change', 'blur'].forEach(event => {
+      ['change', 'blur'].forEach(event => {
         test(`should validate field on ${event}`, async () => {
           expect(orderView.notes.hasAttribute('invalid')).to.be.false;
           await fireEvent(orderView.notes, event);
@@ -319,11 +366,31 @@ suite("Binder", () => {
         });
       });
 
+      test(`should not validate field on input when first visit`, async () => {
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+        await fireEvent(orderView.notes, 'input');
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+      });
+
+      test(`should validate field on input after first visit`, async () => {
+        orderView.notes.value = 'foo';
+        await fireEvent(orderView.notes, 'blur');
+        expect(orderView.notes.hasAttribute('invalid')).to.be.false;
+
+        orderView.notes.value = '';
+        await fireEvent(orderView.notes, 'input');
+        expect(orderView.notes.hasAttribute('invalid')).to.be.true;
+      });
+
       test(`should validate fields on submit`, async () => {
         expect(orderView.notes.hasAttribute('invalid')).to.be.false;
         expect(orderView.fullName.hasAttribute('invalid')).to.be.false;
 
-        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+        }
 
         expect(orderView.notes.hasAttribute('invalid')).to.be.true;
         expect(orderView.fullName.hasAttribute('invalid')).to.be.true;
@@ -332,11 +399,25 @@ suite("Binder", () => {
       test(`should validate fields of nested model on submit`, async () => {
         expect(orderView.description).to.be.null;
         await fireEvent(orderView.add, 'click');
+        await fireEvent(orderView.add, 'click');
 
         expect(orderView.description.hasAttribute('invalid')).to.be.false;
         expect(orderView.price.hasAttribute('invalid')).to.be.false;
 
-        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+          expect((error as ValidationError).errors.map(e => e.property)).to.be.eql([
+            'customer.fullName',
+            'customer.fullName',
+            'notes',
+            'products.0.description',
+            'products.0.price',
+            'products.1.description',
+            'products.1.price'
+          ]);
+        }
 
         expect(orderView.description.hasAttribute('invalid')).to.be.true;
         expect(orderView.price.hasAttribute('invalid')).to.be.true;
@@ -345,11 +426,16 @@ suite("Binder", () => {
       test(`should validate fields of arrays on submit`, async () => {
         expect(orderView.description).to.be.null;
         await fireEvent(orderView.add, 'click');
+        await fireEvent(orderView.add, 'click');
 
         expect(orderView.description.hasAttribute('invalid')).to.be.false;
         expect(orderView.price.hasAttribute('invalid')).to.be.false;
 
-        expect(await orderView.binder.submitTo(async (item) => item)).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+        }
 
         expect(orderView.description.hasAttribute('invalid')).to.be.true;
         expect(orderView.price.hasAttribute('invalid')).to.be.true;
@@ -360,20 +446,31 @@ suite("Binder", () => {
         await fireEvent(orderView.add, 'click');
 
         orderView.notes.value = 'foo';
+        await fireEvent(orderView.notes, 'change');
         orderView.fullName.value = 'manuel';
+        await fireEvent(orderView.fullName, 'change');
         orderView.description.value = 'bread';
+        await fireEvent(orderView.description, 'change');
 
-        const item = await orderView.binder.submitTo(async (item) => item) as Order;
-        expect(item).to.be.undefined;
+        try {
+          await orderView.binder.submitTo(async (item) => item);
+          expect.fail();
+        } catch (error) {
+        }
       });
 
       test(`should submit when no validation errors`, async () => {
         expect(orderView.description).to.be.null;
         await fireEvent(orderView.add, 'click');
 
-        setValue(orderView.binder.model,
-          // @ts-ignore
-          {notes: 'foo', products: [{description: 'bread', price: 10}], customer: {fullName: 'manuel'}});
+        orderView.notes.value = 'foo';
+        await fireEvent(orderView.notes, 'change');
+        orderView.fullName.value = 'manuel';
+        await fireEvent(orderView.fullName, 'change');
+        orderView.description.value = 'bread';
+        await fireEvent(orderView.description, 'change');
+        orderView.price.value = '10';
+        await fireEvent(orderView.price, 'change');
 
         const item = await orderView.binder.submitTo(async (item) => item) as Order;
         expect(item).not.to.be.undefined;

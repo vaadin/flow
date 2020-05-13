@@ -4,13 +4,13 @@ import {
   ArrayModel,
   BooleanModel,
   NumberModel,
-  ObjectModel, 
-  StringModel, 
+  ObjectModel,
+  StringModel,
   Required
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
 import {
-   Positive, Size
+   Positive, Size, Email
 } from "../../main/resources/META-INF/resources/frontend/FormValidator";
 
 interface IdEntity {
@@ -38,7 +38,7 @@ interface Customer extends IdEntity {
 }
 export class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
   static createEmptyValue: () => Customer;
-  readonly fullName = new StringModel(this, 'fullName', new Size({min: 4}));
+  readonly fullName = new StringModel(this, 'fullName', new Required(), new Size({min: 4}));
 }
 
 export interface Order extends IdEntity {
@@ -49,7 +49,7 @@ export interface Order extends IdEntity {
 }
 export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   static createEmptyValue: () => Order;
-  readonly customer = new CustomerModel(this, 'customer');
+  readonly customer = new CustomerModel(this, 'customer', new Required());
   readonly notes = new StringModel(this, 'notes', new Required());
   readonly priority = new NumberModel(this, 'priority');
   readonly products = new ArrayModel(this, 'products', ProductModel);
