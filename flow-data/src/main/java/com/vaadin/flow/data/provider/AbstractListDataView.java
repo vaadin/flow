@@ -20,11 +20,10 @@ import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -102,7 +101,7 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
 
     @Override
     public int getDataSize() {
-        return itemsSize = getDataProvider().getItems().size();
+        return filteredItemsSize = (int) getItems().count();
     }
 
     @Override
@@ -115,11 +114,12 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
         if (row < 0) {
             throw new IndexOutOfBoundsException("Row number should be zero or greater");
         }
-        Collection<T> items = getDataProvider().getItems();
-        if (items.isEmpty()) {
+
+        List<T> filteredItems = getItemsAsList();
+        if (filteredItems.isEmpty()) {
             throw new IndexOutOfBoundsException("Item requested on an empty data set");
         }
-        return new ArrayList<>(items).get(row);
+        return filteredItems.get(row);
     }
 
     /**
@@ -147,7 +147,7 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
     }
 
     private List<T> getItemsAsList() {
-        return new ArrayList<>(getDataProvider().getItems());
+        return getItems().collect(Collectors.toList());
     }
 
     private T notNull(T item) {

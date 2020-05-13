@@ -35,7 +35,7 @@ import java.util.Set;
 public abstract class AbstractDataView<T, F, C extends Component> implements DataView<T, F>,
         SizeChangeHandler {
 
-    protected int itemsSize = 0;
+    protected int filteredItemsSize = 0;
     protected C component;
     protected Set<SizeChangeListener> sizeChangeListeners;
 
@@ -54,10 +54,10 @@ public abstract class AbstractDataView<T, F, C extends Component> implements Dat
 
     @Override
     public void sizeEvent(int size) {
-        if (size != itemsSize && sizeChangeListeners != null) {
+        if (size != filteredItemsSize && sizeChangeListeners != null) {
             sizeChangeListeners.forEach(listener -> listener.sizeChanged(
                     new SizeChangeEvent<>(component, size)));
         }
-        itemsSize = size;
+        filteredItemsSize = size;
     }
 }
