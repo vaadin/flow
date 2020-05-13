@@ -18,6 +18,7 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -220,6 +221,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
 
         Console.log("Establishing push connection");
+        uri = pushUrl;
         socket = doConnect(pushUrl, getConfig());
     }
 
@@ -349,6 +351,7 @@ public class AtmospherePushConnection implements PushConnection {
         case CONNECTED:
             // Normal disconnect
             Console.log("Closing push connection");
+            Console.error("ssssssssssss " + uri);
             doDisconnect(uri);
             state = State.DISCONNECTED;
             command.execute();
