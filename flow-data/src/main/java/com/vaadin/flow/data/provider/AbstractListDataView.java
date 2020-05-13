@@ -70,7 +70,7 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
     public AbstractListDataView<T, C> withFilter(SerializablePredicate<T> filter) {
         return withFilterOrOrder(dataProvider -> {
             dataProvider.setFilter(filter);
-            sizeEvent((int) getItems().count());
+            sizeEvent(getDataSize());
         });
     }
 
@@ -86,7 +86,7 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
 
     @Override
     public Stream<T> getItems(SerializablePredicate<T> filter) {
-        return getDataProvider().fetch(new Query<>(filter));
+        return getItems(new Query<>(filter));
     }
 
     @Override
@@ -96,7 +96,7 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
 
     @Override
     public Stream<T> getItems() {
-        return getDataProvider().fetch(new Query<>());
+        return getItems(new Query<>());
     }
 
     @Override
