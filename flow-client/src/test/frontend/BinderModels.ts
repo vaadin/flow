@@ -10,7 +10,7 @@ import {
 } from "../../main/resources/META-INF/resources/frontend/Binder";
 
 import {
-   Positive, Size, Email
+   Positive, Size, Pattern
 } from "../../main/resources/META-INF/resources/frontend/FormValidator";
 
 interface IdEntity {
@@ -35,10 +35,12 @@ export class ProductModel<T extends Product = Product> extends IdEntityModel<T> 
 
 interface Customer extends IdEntity {
   fullName: string;
+  nickName: string;
 }
 export class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
   static createEmptyValue: () => Customer;
-  readonly fullName = new StringModel(this, 'fullName', new Required(), new Size({min: 4}));
+  readonly fullName = new StringModel(this, 'fullName', new Size({min: 4}), new Required());
+  readonly nickName = new StringModel(this, 'fullName', new Pattern("....*"));
 }
 
 export interface Order extends IdEntity {
