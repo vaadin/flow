@@ -27,7 +27,7 @@ import java.io.Serializable;
  *         DataView type
  * @since
  */
-public interface HasLazyDataView<T, V extends LazyDataView<T>> extends
+public interface HasLazyDataView<T, V extends LazyDataView<T, ?>> extends
         Serializable {
     /**
      * Supply data through a callback provider.

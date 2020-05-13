@@ -18,6 +18,8 @@ package com.vaadin.flow.data.provider;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
+import java.util.stream.Stream;
+
 /**
  * DataView for a in-memory data.
  *
@@ -29,7 +31,19 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @since
  */
-public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T> {
+public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T, SerializablePredicate<T>> {
+    /**
+     * Get the data available to the component using given
+     * {@link SerializablePredicate} {@code filter}.
+     * Data will use set filters and sorting.
+     *
+     * @param filter
+     *         given predicate filter to request data
+     *
+     * @return filtered and sorted data set
+     */
+    Stream<T> getItems(SerializablePredicate<T> filter);
+
     /**
      * Check if the given item has a next item in the filtered and sorted data.
      *

@@ -31,7 +31,6 @@ import java.util.stream.Stream;
  */
 public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
         Serializable {
-
     /**
      * Sets a ListDataProvider for the component to use.
      *
@@ -50,7 +49,9 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
      *         the data items to display, not {@code null}
      * @return ListDataView instance
      */
-    V setDataProvider(Collection<T> items);
+    default V setDataProvider(Collection<T> items) {
+        return setDataProvider(DataProvider.ofCollection(items));
+    }
 
     /**
      * Sets the data items from the given Stream.
@@ -59,7 +60,9 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
      *         the data items to display, not {@code null}
      * @return ListDataView instance
      */
-    V setDataProvider(Stream<T> items);
+    default V setDataProvider(Stream<T> items) {
+        return setDataProvider(DataProvider.fromStream(items));
+    }
 
     /**
      * Sets the data items of this listing.
@@ -68,7 +71,9 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
      *         the data items to display, not {@code null}
      * @return ListDataView instance
      */
-    V setDataProvider(T... items);
+    default V setDataProvider(T... items) {
+        return setDataProvider(DataProvider.ofItems(items));
+    }
 
     /**
      * Get the ListDataView for the component. Throws if the data is not
