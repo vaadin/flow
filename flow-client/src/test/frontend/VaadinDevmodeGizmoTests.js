@@ -25,4 +25,19 @@ describe('VaadinDevmodeGizmo', () => {
     assert.equal(gizmo.getDedicatedWebSocketUrl(location),
       'ws://localhost:8080/context/vaadinServlet?v-r=push&refresh_connection');
   });
+
+  it('should have a new message on tray when error occurs', () => {
+    let gizmo = init(undefined, '','SPRING_BOOT_DEVTOOLS', 35729);
+    gizmo.connection.onerror('TEST');
+    let message = {
+      'id': 1,
+      'type': 'error',
+      'message': 'TEST',
+      'details': null,
+      'link': null
+    };
+    assert.equal(gizmo.status, 'error');
+    assert.equal(gizmo.messages.length, 1);
+    assert.deepEqual(gizmo.messages[0], message);
+  });
 });
