@@ -9,6 +9,7 @@ const validatorsSymbol = Symbol('validators');
 const isSubmittingSymbol = Symbol('isSubmitting');
 const ModelSymbol = Symbol('Model');
 const fieldSymbol = Symbol('field');
+const requiredSymbol = Symbol('required');
 
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
@@ -38,6 +39,9 @@ export abstract class AbstractModel<T> {
   }
   valueOf():T {
     return getValue(this);
+  }
+  get [requiredSymbol]() {
+    return !![...this[validatorsSymbol]].find(val => val instanceof Required)
   }
 }
 
@@ -234,6 +238,17 @@ function validateModel<T>(model: AbstractModel<T>) {
   return fieldElement ? fieldElement.validate() : validate(model);
 }
 
+async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>) {
+  const value = getValue(model);
+  // if model is not required and value empty, do not run any validator
+  if (!model[requiredSymbol] && !new Required().validate(value)) {
+    return undefined;
+  }
+  return (async() => validator.validate(value))()
+    .then(valid => valid ? undefined 
+      : {property: getName(model), error: validator.message, type: validator.constructor.name});
+}
+
 export async function validate<T>(model: AbstractModel<T>): Promise<ValueError[]> {
   const promises: Array<Promise<ValueError[] | ValueError | undefined>> = [];
   // validate each model in the array model
@@ -245,10 +260,7 @@ export async function validate<T>(model: AbstractModel<T>): Promise<ValueError[]
   promises.push(...[...properties].map(prop => (model as any)[prop]).map(validateModel));
   // run all model validators
   if (parent) {
-    promises.push(...[...getModelValidators(model)].map(validator =>
-      (async() => validator.validate(getValue(model)))().then(
-        valid => valid ? undefined : {property: getName(model), error: validator.message, type: validator.constructor.name})
-    ));
+    promises.push(...[...model[validatorsSymbol]].map(validator => runValidator(model, validator)));
   }
   // wait for all promises and return errors
   return((await Promise.all(promises) as any).flat()).filter(Boolean);
@@ -425,7 +437,7 @@ export const field = directive(<T>(
     element.value = value;
   }
 
-  const required = !![...getModelValidators(model)].find(val => val instanceof Required);
+  const required = model[requiredSymbol];
   if (required !== fieldState.required) {
     fieldState.required = required;
     element.required = required;
