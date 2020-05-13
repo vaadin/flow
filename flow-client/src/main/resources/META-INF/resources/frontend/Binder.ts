@@ -195,15 +195,15 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
 
 export interface ValueError {
   property: string,
-  error: string,
-  type: string
+  value: any,
+  validator: Validator<any>
 }
 
 export class ValidationError extends Error {
   constructor(public errors:ValueError[]) {
     super([
       "There are validation errors in the form.",
-      ...errors.map(e => `${e.property} - ${e.type}${e.error ? ': ' + e.error : ''}`)
+      ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.validator.message? ': ' + e.validator.message : ''}`)
     ].join('\n - '));
     this.name = this.constructor.name;
   }
@@ -246,7 +246,7 @@ async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>)
   }
   return (async() => validator.validate(value))()
     .then(valid => valid ? undefined 
-      : {property: getName(model), error: validator.message, type: validator.constructor.name});
+      : {property: getName(model), value: value, validator: validator});
 }
 
 export async function validate<T>(model: AbstractModel<T>): Promise<ValueError[]> {
@@ -408,7 +408,7 @@ export const field = directive(<T>(
 
       const displayedError = errors[0];
       fieldElement.invalid = fieldState.invalid = displayedError !== undefined;
-      fieldElement.errorMessage = fieldState.errorMessage = displayedError?.error || '';
+      fieldElement.errorMessage = fieldState.errorMessage = displayedError?.validator.message || '';
 
       if (effect !== undefined) {
         effect.call(element, element);

@@ -285,8 +285,11 @@ suite("Binder", () => {
         validate = () => false;
       }
       getModelValidators(binder.model.priority).add(new SyncValidator());
+      setValue(binder.model.priority, 4);
       return validate(binder.model.priority).then(errors => {
-        expect(errors[0].error).to.equal("foo");
+        expect(errors[0].validator.message).to.equal("foo");
+        expect(errors[0].property).to.equal("priority");
+        expect(errors[0].value).to.equal(4);
       });
     });
 
@@ -300,13 +303,13 @@ suite("Binder", () => {
       }
       getModelValidators(binder.model.priority).add(new AsyncValidator());
       return validate(binder.model.priority).then(errors => {
-        expect(errors[0].error).to.equal("bar");
+        expect(errors[0].validator.message).to.equal("bar");
       });
     });
 
     test("should run all validators per model", async () => {
       return validate(binder.model.customer).then(errors => {
-        expect(errors.map(e => e.type).sort()).to.eql([
+        expect(errors.map(e => e.validator.constructor.name).sort()).to.eql([
           "Required",
           "Size"
         ]);
