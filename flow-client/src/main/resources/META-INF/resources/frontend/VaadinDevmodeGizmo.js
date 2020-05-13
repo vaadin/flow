@@ -484,6 +484,10 @@ class VaadinDevmodeGizmo extends LitElement {
     return 'warning';
   }
 
+  static get WEBSOCKET_ERROR_MESSAGE() {
+    return 'Error in WebSocket connection to ';
+  }
+
   static get isEnabled() {
     const enabled = window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE);
     return enabled === null || enabled !== 'false';
@@ -532,7 +536,9 @@ class VaadinDevmodeGizmo extends LitElement {
       this.connection.onerror = err => this.handleError(err);
       const self = this;
       this.connection.onclose = _ => {
-        self.status = VaadinDevmodeGizmo.UNAVAILABLE;
+        if (self.status !== VaadinDevmodeGizmo.ERROR) {
+          self.status = VaadinDevmodeGizmo.UNAVAILABLE;
+        }
         self.connection = null;
       };
     }
@@ -580,7 +586,13 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   handleMessage(msg) {
-    const json = JSON.parse(msg.data);
+    let json;
+    try {
+      json = JSON.parse(msg.data);
+    } catch (e) {
+      this.handleError(`[${e.name}: ${e.message}`);
+      return;
+    }
     const command = json['command'];
     switch (command) {
       case 'hello': {
@@ -617,6 +629,11 @@ class VaadinDevmodeGizmo extends LitElement {
   handleError(msg) {
     console.error(msg);
     this.status = VaadinDevmodeGizmo.ERROR;
+    if (msg instanceof Event) {
+      this.showMessage(VaadinDevmodeGizmo.ERROR, VaadinDevmodeGizmo.WEBSOCKET_ERROR_MESSAGE + this.connection.url);
+    } else {
+      this.showMessage(VaadinDevmodeGizmo.ERROR, msg);
+    }
   }
 
   connectedCallback() {
