@@ -189,17 +189,17 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   }
 }
 
-export interface ValueError {
+export interface ValueError<T> {
   property: string,
-  error: string,
-  type: string
+  value: T,
+  validator: Validator<T>
 }
 
 export class ValidationError extends Error {
-  constructor(public errors:ValueError[]) {
+  constructor(public errors:Array<ValueError<any>>) {
     super([
       "There are validation errors in the form.",
-      ...errors.map(e => `${e.property} - ${e.type}${e.error ? ': ' + e.error : ''}`)
+      ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.validator.message? ': ' + e.validator.message : ''}`)
     ].join('\n - '));
     this.name = this.constructor.name;
   }
@@ -234,8 +234,8 @@ function validateModel<T>(model: AbstractModel<T>) {
   return fieldElement ? fieldElement.validate() : validate(model);
 }
 
-export async function validate<T>(model: AbstractModel<T>): Promise<ValueError[]> {
-  const promises: Array<Promise<ValueError[] | ValueError | undefined>> = [];
+export async function validate<T>(model: AbstractModel<T>): Promise<Array<ValueError<any>>> {
+  const promises: Array<Promise<Array<ValueError<any>> | ValueError<any> | undefined>> = [];
   // validate each model in the array model
   if (model instanceof ArrayModel) {
     promises.push(...[...model].map(validateModel));
@@ -247,7 +247,7 @@ export async function validate<T>(model: AbstractModel<T>): Promise<ValueError[]
   if (parent) {
     promises.push(...[...getModelValidators(model)].map(validator =>
       (async() => validator.validate(getValue(model)))().then(
-        valid => valid ? undefined : {property: getName(model), error: validator.message, type: validator.constructor.name})
+        valid => valid ? undefined : {property: getName(model), value: getValue(model), validator})
     ));
   }
   // wait for all promises and return errors
@@ -342,7 +342,7 @@ const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
 
 interface FieldElement extends Field {
   element: Element;
-  validate: () => Promise<ValueError[]>;
+  validate: () => Promise<Array<ValueError<any>>>;
 }
 
 class VaadinFieldElement implements FieldElement {
@@ -398,7 +398,7 @@ export const field = directive(<T>(
 
       const displayedError = errors[0];
       fieldElement.invalid = fieldState.invalid = displayedError !== undefined;
-      fieldElement.errorMessage = fieldState.errorMessage = displayedError?.error || '';
+      fieldElement.errorMessage = fieldState.errorMessage = displayedError?.validator.message || '';
 
       if (effect !== undefined) {
         effect.call(element, element);
