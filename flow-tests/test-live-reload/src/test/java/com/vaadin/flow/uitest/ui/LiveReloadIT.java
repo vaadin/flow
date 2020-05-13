@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.html5.WebStorage;
 
 @NotThreadSafe
 public class LiveReloadIT extends AbstractLiveReloadIT {
@@ -53,33 +52,6 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         WebElement window2 = findInShadowRoot(liveReload, By.className("gizmo"))
                 .get(0);
         Assert.assertTrue(window2.isDisplayed());
-    }
-
-    @Test
-    public void overlayShouldNotBeRenderedAfterDisable() {
-        open();
-        disableLiveReloadInLocalStorage();
-        driver.navigate().refresh();
-
-        Assert.assertEquals(0,
-                findElements(By.tagName("vaadin-devmode-gizmo")).size());
-    }
-
-    @Test
-    public void liveReloadShouldNotTriggerAfterDisable() {
-        open();
-        disableLiveReloadInLocalStorage();
-        driver.navigate().refresh();
-
-        String instanceId = findElement(By.id("elementId")).getText();
-
-        WebElement liveReloadTrigger = findElement(
-                By.id("live-reload-trigger-button"));
-        liveReloadTrigger.click();
-
-        String instanceId2 = findElement(By.id("elementId")).getText();
-
-        Assert.assertEquals(instanceId, instanceId2);
     }
 
     @Test
@@ -140,8 +112,4 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 
-    private void disableLiveReloadInLocalStorage() {
-        ((WebStorage) getDriver()).getLocalStorage()
-                .setItem("vaadin.live-reload.enabled", "false");
-    }
 }
