@@ -45,7 +45,7 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
     }
 
     @Test
-    public void navigateToNonRefreshing_refreshInDifferentWindow_componentIsRecreated() {
+    public void navigateToNonRefreshing_componentIsRecreated() {
         open();
         if (hasClientIssue("7587")) {
             return;
@@ -55,9 +55,14 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
         final String notificationId = getString(NOTIFICATION_ID);
 
         // navigate to some other page in between
-        getDriver()
-                .get(getRootURL() + "/view/com.vaadin.flow.uitest.ui.PageView");
+        getDriver().get(getRootURL() +
+                "/view/com.vaadin.flow.uitest.ui.PageView");
+        WebElement loadingIndicator = findElement(
+                By.className("v-loading-indicator"));
+        waitUntil(driver -> loadingIndicator.isDisplayed());
+        waitUntil(driver -> !loadingIndicator.isDisplayed());
 
+        // navigate back
         open();
         final String newComponentId = getString(COMPONENT_ID);
         final String newNotificationId = getString(NOTIFICATION_ID);
