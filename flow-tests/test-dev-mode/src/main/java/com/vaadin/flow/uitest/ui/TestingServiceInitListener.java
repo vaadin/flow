@@ -44,13 +44,6 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
             }
             return dependencies;
         });
-
-        // just set a fake backend to trigger live-reload client-side
-        BrowserLiveReloadAccess liveReloadAccess = VaadinService.getCurrent()
-                .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
-        BrowserLiveReload browserLiveReload = liveReloadAccess
-                .getLiveReload(VaadinService.getCurrent());
-        browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);
     }
 
 }

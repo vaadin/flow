@@ -13,22 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.uitest.ui;
 
-package com.vaadin.flow.uitest.ui.frontend;
-
-import net.jcip.annotations.NotThreadSafe;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 @NotThreadSafe
-public class LiveReloadIT extends ChromeBrowserTest {
+public class LiveReloadIT extends AbstractLiveReloadIT {
 
     @Test
     public void overlayShouldRender() {
@@ -56,58 +52,6 @@ public class LiveReloadIT extends ChromeBrowserTest {
         WebElement window2 = findInShadowRoot(liveReload, By.className("gizmo"))
                 .get(0);
         Assert.assertTrue(window2.isDisplayed());
-    }
-
-    @Test
-    @Ignore
-    public void overlayShouldNotBeRenderedAfterDisable() {
-        open();
-        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
-        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
-        liveReload.click();
-
-        WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo")).get(0);
-        liveReloadIcon.click();
-
-        WebElement button = findInShadowRoot(liveReload, By.id("disable"))
-                .get(0);
-        button.click();
-
-        Assert.assertEquals(0,
-                findElements(By.tagName("vaadin-devmode-gizmo")).size());
-
-        driver.navigate().refresh();
-
-        Assert.assertEquals(0,
-                findElements(By.tagName("vaadin-devmode-gizmo")).size());
-    }
-
-    @Test
-    @Ignore
-    public void liveReloadShouldNotTriggerAfterDisable() {
-        open();
-        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
-        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
-        liveReload.click();
-
-        String instanceId = findElement(By.id("elementId")).getText();
-
-        WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo")).get(0);
-        liveReloadIcon.click();
-
-        WebElement button = findInShadowRoot(liveReload, By.id("disable"))
-                .get(0);
-        button.click();
-
-        WebElement liveReloadTrigger = findElement(
-                By.id("live-reload-trigger-button"));
-        liveReloadTrigger.click();
-
-        String instanceId2 = findElement(By.id("elementId")).getText();
-
-        Assert.assertEquals(instanceId, instanceId2);
     }
 
     @Test
@@ -167,4 +111,5 @@ public class LiveReloadIT extends ChromeBrowserTest {
                 gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
+
 }
