@@ -27,38 +27,17 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <T>
  *         data type
- * @param <F>
- *         filter type
- *
  * @since
  */
-public interface DataView<T, F> extends Serializable {
+public interface DataView<T> extends Serializable {
+
     /**
      * Get the full data available to the component.
-     * Data won't use any filters or sorting.
+     * Data will use set filters and sorting.
      *
-     * @return full data set
+     * @return filtered and sorted data set
      */
     Stream<T> getAllItems();
-
-    /**
-     * Get the data available to the component using given {@code query}.
-     * Data will use set filters and sorting.
-     *
-     * @param query
-     *         given query to request data
-     *
-     * @return filtered and sorted data set
-     */
-    Stream<T> getItems(Query<T, F> query);
-
-    /**
-     * Get the data available to the component.
-     * Data will use set filters and sorting.
-     *
-     * @return filtered and sorted data set
-     */
-    Stream<T> getItems();
 
     /**
      * Get the full data size with filters is any set.
@@ -77,17 +56,6 @@ public interface DataView<T, F> extends Serializable {
      * @return true if item is found in the available data
      */
     boolean isItemPresent(T item);
-
-    /**
-     * Get the item at the given row in the sorted and filtered data set.
-     *
-     * @param row
-     *         row number
-     * @return item on row
-     * @throws IndexOutOfBoundsException
-     *         requested row is outside of the available data set.
-     */
-    T getItemOnIndex(int row);
 
     /**
      * Add a size change listener that is fired when the data set size changes.

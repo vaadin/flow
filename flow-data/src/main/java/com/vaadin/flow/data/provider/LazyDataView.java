@@ -22,11 +22,9 @@ import java.util.Optional;
  *
  * @param <T>
  *         data type
- * @param <F>
- *         filter type
  * @since
  */
-public interface LazyDataView<T, F> extends DataView<T, F> {
+public interface LazyDataView<T> extends DataView<T> {
 
     /**
      * Get the item after the given item if available on the server. Server

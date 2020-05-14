@@ -18,8 +18,7 @@ package com.vaadin.flow.data.provider;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.Registration;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Objects;
 
 /**
  * Abstract data view implementation which takes care of processing
@@ -27,37 +26,43 @@ import java.util.Set;
  *
  * @param <T>
  *        data type
- * @param <F>
- *        filter type
+ *
  * @param <C>
  *        component type
  */
-public abstract class AbstractDataView<T, F, C extends Component> implements DataView<T, F>,
-        SizeChangeHandler {
+public abstract class AbstractDataView<T, C extends Component> implements DataView<T> {
 
-    protected int filteredItemsSize = 0;
-    protected C component;
-    protected Set<SizeChangeListener> sizeChangeListeners;
+    protected DataController<T> dataController;
 
-    public AbstractDataView(C component) {
-        this.component = component;
+    public AbstractDataView(DataController<T> dataController) {
+        Objects.requireNonNull(dataController, "DataController cannot be null");
+        this.dataController = dataController;
+        validateDataProvider(dataController.getDataProvider());
     }
 
     @Override
     public Registration addSizeChangeListener(SizeChangeListener listener) {
-        if (sizeChangeListeners == null) {
-            sizeChangeListeners = new HashSet<>();
-        }
-        sizeChangeListeners.add(listener);
-        return () -> sizeChangeListeners.remove(listener);
+        Objects.requireNonNull(listener, "SizeChangeListener cannot be null");
+        return dataController.addSizeChangeListener(listener);
     }
 
-    @Override
-    public void sizeEvent(int size) {
-        if (size != filteredItemsSize && sizeChangeListeners != null) {
-            sizeChangeListeners.forEach(listener -> listener.sizeChanged(
-                    new SizeChangeEvent<>(component, size)));
-        }
-        filteredItemsSize = size;
-    }
+    /**
+     * Validates an obtained {@link DataProvider} instance type is appropriate for current Data View type.
+     *
+     * @return true, if data provider type successfully validated
+     *
+     * @throws IllegalStateException if data provider type is incompatible
+     */
+    protected abstract void validateDataProvider(final DataProvider<T, ?> dataProvider);
+
+    /**
+     * Obtains an appropriate {@link DataProvider} instance from {@link DataController}.
+     * Throws a runtime exception otherwise, if the {@link DataProvider} instance is incompatible
+     * with current implementation of {@link DataView}.
+     *
+     * @return data provider instance
+     *
+     * @throws IllegalStateException if data provider type is incompatible
+     */
+    protected abstract DataProvider<T, ?> getDataProvider();
 }

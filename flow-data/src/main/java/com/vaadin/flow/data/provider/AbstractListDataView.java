@@ -35,43 +35,40 @@ import java.util.stream.Stream;
  * @param <C>
  *        component type
  */
-public abstract class AbstractListDataView<T, C extends Component> extends AbstractDataView<T, SerializablePredicate<T>, C>
+public abstract class AbstractListDataView<T, C extends Component> extends AbstractDataView<T, C>
         implements ListDataView<T, AbstractListDataView<T, C>> {
 
-    public AbstractListDataView(C component) {
-        super(component);
+    public AbstractListDataView(DataController<T> dataController) {
+        super(dataController);
     }
 
     @Override
     public boolean hasNextItem(T item) {
-        return getNextItemIndex(notNull(item), getItemsAsList()).isPresent();
+        return getNextItemIndex(notNull(item), getAllItemsAsList()).isPresent();
     }
 
     @Override
     public T getNextItem(T item) {
-        List<T> items = getItemsAsList();
+        List<T> items = getAllItemsAsList();
         Optional<Integer> nextItemIndex = getNextItemIndex(notNull(item), items);
         return nextItemIndex.map(items::get).orElse(null);
     }
 
     @Override
     public boolean hasPreviousItem(T item) {
-        return getPreviousItemIndex(notNull(item), getItemsAsList()).isPresent();
+        return getPreviousItemIndex(notNull(item), getAllItemsAsList()).isPresent();
     }
 
     @Override
     public T getPreviousItem(T item) {
-        List<T> items = getItemsAsList();
+        List<T> items = getAllItemsAsList();
         Optional<Integer> previousItemIndex = getPreviousItemIndex(notNull(item), items);
         return previousItemIndex.map(items::get).orElse(null);
     }
 
     @Override
     public AbstractListDataView<T, C> withFilter(SerializablePredicate<T> filter) {
-        return withFilterOrOrder(dataProvider -> {
-            dataProvider.setFilter(filter);
-            sizeEvent(getDataSize());
-        });
+        return withFilterOrOrder(dataProvider -> dataProvider.setFilter(filter));
     }
 
     @Override
@@ -81,53 +78,40 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
 
     @Override
     public Stream<T> getAllItems() {
-        return getDataProvider().getItems().stream();
-    }
-
-    @Override
-    public Stream<T> getItems(SerializablePredicate<T> filter) {
-        return getItems(new Query<>(filter));
-    }
-
-    @Override
-    public Stream<T> getItems(Query<T, SerializablePredicate<T>> query) {
-        return getDataProvider().fetch(query);
-    }
-
-    @Override
-    public Stream<T> getItems() {
-        return getItems(new Query<>());
+        return dataController.getAllItems();
     }
 
     @Override
     public int getDataSize() {
-        return filteredItemsSize = (int) getItems().count();
+        return dataController.getDataSize();
     }
 
     @Override
     public boolean isItemPresent(T item) {
-        return getItems().anyMatch(i -> Objects.equals(i, item));
+        return getAllItems().anyMatch(i -> Objects.equals(i, item));
     }
 
     @Override
-    public T getItemOnIndex(int row) {
-        if (row < 0) {
-            throw new IndexOutOfBoundsException("Row number should be zero or greater");
+    protected void validateDataProvider(final DataProvider<T, ?> dataProvider) {
+        Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
+        if (!(dataProvider instanceof ListDataProvider)) {
+            throw new IllegalStateException(
+                    String.format("ListDataView is incompatible with %s instance",
+                            dataProvider.getClass().getCanonicalName()));
         }
-
-        List<T> filteredItems = getItemsAsList();
-        if (filteredItems.isEmpty()) {
-            throw new IndexOutOfBoundsException("Item requested on an empty data set");
-        }
-        return filteredItems.get(row);
     }
 
-    /**
-     * Provides a {@link ListDataProvider} instance of the component related to this data view.
-     *
-     * @return component's {@link ListDataProvider} instance
-     */
-    protected abstract ListDataProvider<T> getDataProvider();
+    @SuppressWarnings("unchecked")
+    @Override
+    protected ListDataProvider<T> getDataProvider() {
+        final DataProvider<T, ?> dataProvider = this.dataController.getDataProvider();
+        validateDataProvider(dataProvider);
+        return (ListDataProvider<T>) dataProvider;
+    }
+
+    protected List<T> getAllItemsAsList() {
+        return getAllItems().collect(Collectors.toList());
+    }
 
     private AbstractListDataView<T, C> withFilterOrOrder(
             SerializableConsumer<ListDataProvider<T>> filterOrOrderConsumer) {
@@ -144,10 +128,6 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
     private Optional<Integer> getPreviousItemIndex(T item, List<T> items) {
         int itemIndex = items.indexOf(item);
         return (itemIndex > 0) ? Optional.of(itemIndex - 1) : Optional.empty();
-    }
-
-    private List<T> getItemsAsList() {
-        return getItems().collect(Collectors.toList());
     }
 
     private T notNull(T item) {
