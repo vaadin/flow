@@ -170,7 +170,7 @@ public class StreamRequestHandler implements RequestHandler {
         name = name.replace('+', ' ');
         try {
             URI uri = new URI(prefix
-                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()).replace("+", "%20"));
             return Optional.of(uri);
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
