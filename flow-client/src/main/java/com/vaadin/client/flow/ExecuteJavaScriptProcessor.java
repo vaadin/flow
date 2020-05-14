@@ -199,7 +199,7 @@ public class ExecuteJavaScriptProcessor {
     }
 
     private native JsonObject getContextExecutionObject(
-            JsMap<Object, StateNode> nodeParameters, Runnable runnable)
+            JsMap<Object, StateNode> nodeParameters, Runnable stopApplication)
     /*-{
           var object = {};
           object.getNode = $entry(function (element){
