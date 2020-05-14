@@ -13,10 +13,10 @@ import {
    Positive, Size, Pattern
 } from "../../main/resources/META-INF/resources/frontend/FormValidator";
 
-interface IdEntity {
+export interface IdEntity {
   idString: string;
 }
-class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
+export class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
   static createEmptyValue: () => IdEntity;
   readonly idString = new StringModel(this, 'idString');
 }
