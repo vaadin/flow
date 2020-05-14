@@ -1,9 +1,10 @@
-/* tslint:disable:max-classes-per-file */
+import { AbstractModel, defaultValueSymbol, ModelConstructor} from "./Models";
+import { ServerValidator, validate, ValidationError } from "./Validation";
 
-import { validate, ValidationError } from "./FormValidator";
-import { AbstractModel, defaultValueSymbol, isSubmittingSymbol, ModelConstructor, valueSymbol } from "./Models";
+const isSubmittingSymbol = Symbol('isSubmitting');
+const valueSymbol = Symbol('value');
 
-export class Binder<T, M extends AbstractModel<T>>{
+export class Binder<T, M extends AbstractModel<T>> {
   model: M;
   private [defaultValueSymbol]: T;
   private [valueSymbol]: T;
@@ -60,7 +61,14 @@ export class Binder<T, M extends AbstractModel<T>>{
     this[isSubmittingSymbol] = true;
     this.update(this.value);
     try {
-      return endpointMethod.call(this.context, this.value);
+      return await endpointMethod.call(this.context, this.value);
+    } catch (error) {
+      if (error.validationErrorData) {
+        const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(error.validationErrorData.message);
+        const [property, value, message] = res ? res.splice(2) : [error.validationErrorData.parameterName, undefined,   error.validationErrorData.message];
+        error = new ValidationError([{ property, value, validator: new ServerValidator(message) }]);
+      }
+      throw (error);
     } finally {
       this[isSubmittingSymbol] = false;
       this.reset(this.value);

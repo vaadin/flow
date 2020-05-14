@@ -17,13 +17,14 @@ import {
   keySymbol,
   modelRepeat,
   prependItem,
+  Required,
   setValue,
   validate,
   ValidationError,
   Validator
-} from "../../main/resources/META-INF/resources/frontend/forms/Forms";
+} from "../../main/resources/META-INF/resources/frontend/form/Form";
 
-import { Order, OrderModel, ProductModel } from "./BinderModels";
+import { IdEntity, IdEntityModel,  Order, OrderModel, ProductModel } from "./BinderModels";
 
 import { css, customElement, html, LitElement, query} from 'lit-element';
 
@@ -275,38 +276,6 @@ suite("Binder", () => {
       );
     });
 
-    test("should not have validation errors for a model without validators", async () => {
-      assert.isEmpty(await validate(binder.model.priority));
-    });
-
-    test("should fail validation after adding a synchronous validator", async () => {
-      class SyncValidator implements Validator<Order>{
-        message = "foo";
-        validate = () => false;
-      }
-      getModelValidators(binder.model.priority).add(new SyncValidator());
-      setValue(binder.model.priority, 4);
-      return validate(binder.model.priority).then(errors => {
-        expect(errors[0].validator.message).to.equal("foo");
-        expect(errors[0].property).to.equal("priority");
-        expect(errors[0].value).to.equal(4);
-      });
-    });
-
-    test("should fail validation after adding an asynchronous validator", async () => {
-      class AsyncValidator implements Validator<Order>{
-        message = "bar";
-        validate = async () => {
-          await new Promise(resolve => setTimeout(resolve, 10));
-          return false;
-        };
-      }
-      getModelValidators(binder.model.priority).add(new AsyncValidator());
-      return validate(binder.model.priority).then(errors => {
-        expect(errors[0].validator.message).to.equal("bar");
-      });
-    });
-
     test("should run all validators per model", async () => {
       return validate(binder.model.customer).then(errors => {
         expect(errors.map(e => e.validator.constructor.name).sort()).to.eql([
@@ -339,6 +308,127 @@ suite("Binder", () => {
           "products.1.description",
           "products.1.price"
         ]);
+      });
+    });
+
+    suite('submitTo', () => {
+      test("should throw on validation failure", async () => {
+        try {
+          await binder.submitTo(async() => {});
+          expect.fail();
+        } catch (error) {
+          expect(error.errors.length).to.gt(0);
+        }
+      });
+
+      test("should re-throw on server failure", async () => {
+        setValue(binder.model.customer.fullName, 'foobar');
+        setValue(binder.model.notes, 'whatever');
+        try {
+          await binder.submitTo(async() => {throw new Error('whatever')});
+          expect.fail();
+        } catch (error) {
+          expect(error.message).to.be.equal('whatever');
+        }
+      });
+
+      test("should wrap server validation error", async () => {
+        setValue(binder.model.customer.fullName, 'foobar');
+        setValue(binder.model.notes, 'whatever');
+        try {
+          await binder.submitTo(async() => {throw {
+            message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
+            validationErrorData: {
+              message: "Object of type 'com.example.MyBean' has invalid property 'foo' with value 'baz', validation error: 'custom message'",
+              parameterName: "foo",
+            }
+          }});
+          expect.fail();
+        } catch (error) {
+          expect(error.errors[0].validator.message).to.be.equal('custom message');
+          expect(error.errors[0].value).to.be.equal('baz');
+          expect(error.errors[0].property).to.be.equal('foo');
+        }
+      });
+
+      test("should wrap server validation error with any message", async () => {
+        setValue(binder.model.customer.fullName, 'foobar');
+        setValue(binder.model.notes, 'whatever');
+        try {
+          await binder.submitTo(async() => {throw {
+            message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
+            validationErrorData: {
+              message: "Custom server message",
+              parameterName: "bar",
+            }
+          }});
+          expect.fail();
+        } catch (error) {
+          expect(error.errors[0].validator.message).to.be.equal('Custom server message');
+          expect(error.errors[0].value).to.be.undefined;
+          expect(error.errors[0].property).to.be.equal('bar');
+        }
+      });
+    });
+
+    suite('model add validator', () => {
+      let binder: Binder<IdEntity, IdEntityModel<IdEntity>>;
+
+      beforeEach(async () => {
+        binder = new Binder(
+          document.createElement('div'),
+          IdEntityModel,
+          () => litOrderView.requestUpdate()
+        );
+      });
+
+      test("should not have validation errors for a model without validators", async () => {
+        assert.isEmpty(await validate(binder.model));
+      });
+
+      test("should fail validation after adding a synchronous validator to the model", async () => {
+        getModelValidators(binder.model).add({message: 'foo', validate: () => false});
+        return validate(binder.model).then(errors => {
+          expect(errors[0].validator.message).to.equal("foo");
+          expect(errors[0].property).to.equal('');
+          expect(errors[0].value).to.eql({idString: ''});
+        });
+      });
+
+      test("should fail validation after adding an asynchronous validator to the model", async () => {
+        class AsyncValidator implements Validator<Order>{
+          message = "bar";
+          validate = async () => {
+            await sleep(10);
+            return false;
+          };
+        }
+        getModelValidators(binder.model).add(new AsyncValidator());
+        return validate(binder.model).then(errors => {
+          expect(errors[0].validator.message).to.equal("bar");
+        });
+      });
+
+      test("should not have validations errors after adding validators to properties if property is not required", async () => {
+        getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
+        const errors = await validate(binder.model);
+        assert.isEmpty(errors);
+      });
+
+      test("should fail after adding validators to properties if property is not required but it has a value", async () => {
+        setValue(binder.model.idString, 'bar');
+        getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
+        const errors = await validate(binder.model);
+        expect(errors[0].validator.message).to.equal("foo");
+        expect(errors[0].property).to.equal('idString');
+        expect(errors[0].value).to.eql('bar');
+      });
+
+      test("should fail after adding validators to properties if required and not value", async () => {
+        getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
+        getModelValidators(binder.model.idString).add(new Required());
+        const errors = await validate(binder.model);
+        expect(errors.length).to.equal(2);
       });
     });
 

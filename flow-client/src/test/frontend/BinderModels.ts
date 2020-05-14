@@ -5,18 +5,15 @@ import {
   BooleanModel,
   NumberModel,
   ObjectModel,
-  Required,
-  StringModel
-} from "../../main/resources/META-INF/resources/frontend/forms/Forms";
+  Pattern,
+  Positive,
+  Required, Size, StringModel
+} from "../../main/resources/META-INF/resources/frontend/form/Form";
 
-import {
-   Pattern, Positive, Size
-} from "../../main/resources/META-INF/resources/frontend/FormValidator";
-
-interface IdEntity {
+export interface IdEntity {
   idString: string;
 }
-class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
+export class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
   static createEmptyValue: () => IdEntity;
   readonly idString = new StringModel(this, 'idString');
 }

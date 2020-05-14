@@ -1,9 +1,10 @@
 /* tslint:disable:max-classes-per-file */
 
 import { directive, Part, PropertyPart } from "lit-html";
-import { validate, ValueError } from "./FormValidator";
-import { AbstractModel, fieldSymbol, fromStringSymbol, getName, getValue, requiredSymbol, setValue } from "./Models";
+import { AbstractModel, fromStringSymbol, getName, getValue, requiredSymbol, setValue } from "./Models";
+import { validate, ValueError } from "./Validation";
 
+export const fieldSymbol = Symbol('field');
 
 interface Field {
   required: boolean,
@@ -47,7 +48,6 @@ class GenericFieldElement implements FieldElement {
 
 // vaadin elements have a `version` static property in the class
 const isVaadinElement = (elm: Element) => (elm.constructor as any).version;
-
 
 export const field = directive(<T>(
   model: AbstractModel<T>,

@@ -2,18 +2,20 @@
 
 import { repeat } from "lit-html/directives/repeat";
 import { Binder } from "./Binder";
-import { Required, Validator } from "./FormValidator";
+import { Required, Validator } from "./Validation";
+
+const ModelSymbol = Symbol('Model');
+const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
-export const parentSymbol = Symbol('parent');
-export const valueSymbol = Symbol('value');
 export const defaultValueSymbol = Symbol('defaultValue');
 export const fromStringSymbol = Symbol('fromString');
 export const validatorsSymbol = Symbol('validators');
-export const isSubmittingSymbol = Symbol('isSubmitting');
-export const ModelSymbol = Symbol('Model');
 export const requiredSymbol = Symbol('required');
-export const fieldSymbol = Symbol('field');
+
+interface HasFromString<T> {
+  [fromStringSymbol](value: string): T
+}
 
 export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
@@ -49,10 +51,6 @@ export abstract class AbstractModel<T> {
   get [requiredSymbol]() {
     return !![...this[validatorsSymbol]].find(val => val instanceof Required)
   }
-}
-
-interface HasFromString<T> {
-  [fromStringSymbol](value: string): T
 }
 
 export abstract class PrimitiveModel<T> extends AbstractModel<T> {
@@ -121,6 +119,22 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   }
 }
 
+export function getName(model: AbstractModel<any>) {
+  if (model[parentSymbol] instanceof Binder) {
+    return '';
+  }
+
+  let name = String(model[keySymbol]);
+  model = model[parentSymbol] as AbstractModel<any>;
+
+  while (!(model[parentSymbol] instanceof Binder)) {
+    name = `${String(model[keySymbol])}.${name}`;
+    model = model[parentSymbol] as AbstractModel<any>;
+  }
+
+  return name;
+}
+
 export function getValue<T>(model: AbstractModel<T>): T {
   const parent = model[parentSymbol];
   return (parent instanceof Binder)
@@ -142,22 +156,6 @@ export function setValue<T>(model: AbstractModel<T>, value: T) {
       [model[keySymbol]]: value
     });
   }
-}
-
-export function getName(model: AbstractModel<any>) {
-  if (model[parentSymbol] instanceof Binder) {
-    return '';
-  }
-
-  let name = String(model[keySymbol]);
-  model = model[parentSymbol] as AbstractModel<any>;
-
-  while (!(model[parentSymbol] instanceof Binder)) {
-    name = `${String(model[keySymbol])}.${name}`;
-    model = model[parentSymbol] as AbstractModel<any>;
-  }
-
-  return name;
 }
 
 export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item?: T) {
@@ -194,7 +192,6 @@ export const modelRepeat = <T, M extends AbstractModel<T>>(
       (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
       itemTemplate && ((itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index))
     );
-
 
 export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
   return model[validatorsSymbol];
