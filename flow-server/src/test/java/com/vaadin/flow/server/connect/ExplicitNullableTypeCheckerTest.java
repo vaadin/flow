@@ -417,7 +417,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     static private abstract class AbstractEntity<ID> {
         private ID id;
-    
+
         public ID getId() {
             return id;
         }
@@ -428,10 +428,8 @@ public class ExplicitNullableTypeCheckerTest {
     }
 
     static private class Person extends AbstractEntity<Integer> {
-
         private String name;
-    
-    
+
         public String getName() {
             return name;
         }
