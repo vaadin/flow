@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,6 +63,8 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
             String text = lines.stream().collect(Collectors.joining());
             Assert.assertEquals("foo", text);
         }
+
+        Assert.assertEquals("filename%2B%2B", FilenameUtils.getName(url));
     }
 
 }

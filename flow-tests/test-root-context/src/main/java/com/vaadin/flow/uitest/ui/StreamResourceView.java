@@ -29,7 +29,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class StreamResourceView extends Div {
 
     public StreamResourceView() {
-        StreamResource resource = new StreamResource("filename",
+        StreamResource resource = new StreamResource("filename++",
                 () -> new ByteArrayInputStream(
                         "foo".getBytes(StandardCharsets.UTF_8)));
         Anchor download = new Anchor("", "Download file");
