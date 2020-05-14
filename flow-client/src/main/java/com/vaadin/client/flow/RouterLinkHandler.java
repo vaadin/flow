@@ -20,6 +20,7 @@ import java.util.Objects;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ScrollPositionHandler;
 import com.vaadin.client.URIResolver;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -262,12 +263,12 @@ public class RouterLinkHandler {
         assert registry != null;
         assert location != null;
 
-        // If the server tells us the session has expired, we send the
-        // navigation message again after the new session is created.
+        // If the server tells us the session has expired, we redirect to the
+        // new location.
         registry.getMessageHandler()
-                .setNextResponseSessionExpiredHandler(() -> registry
-                        .getServerConnector().sendNavigationMessage(location,
-                                stateObject, routerLinkEvent));
+                .setNextResponseSessionExpiredHandler(() -> {
+                    WidgetUtil.redirect(location);
+                });
         registry.getServerConnector().sendNavigationMessage(location,
                 stateObject, routerLinkEvent);
 
