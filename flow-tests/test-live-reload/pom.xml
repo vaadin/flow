@@ -69,7 +69,7 @@
                                 <property>
                                     <!-- make sure live reload is enabled -->
                                     <name>vaadin.devmode.liveReload.enabled</name>
-                                    <value>true</value>-->
+                                    <value>true</value>
                                 </property>
                             </properties>
                         </configuration>
