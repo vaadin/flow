@@ -338,10 +338,10 @@ suite("Binder", () => {
         try {
           await binder.submitTo(async() => {throw {
             message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
-            validationErrorData: {
+            validationErrorData: [{
               message: "Object of type 'com.example.MyBean' has invalid property 'foo' with value 'baz', validation error: 'custom message'",
               parameterName: "foo",
-            }
+            }]
           }});
           expect.fail();
         } catch (error) {
@@ -357,10 +357,10 @@ suite("Binder", () => {
         try {
           await binder.submitTo(async() => {throw {
             message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
-            validationErrorData: {
+            validationErrorData: [{
               message: "Custom server message",
               parameterName: "bar",
-            }
+            }]
           }});
           expect.fail();
         } catch (error) {
