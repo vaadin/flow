@@ -262,6 +262,51 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
+     * This is the latest DataProvider size informed to the client or fetched
+     * from the DataProvider if client data has not been sent.
+     *
+     * @return size of available data
+     */
+    public int getDataSize() {
+        if (resendEntireRange || assumeEmptyClient) {
+            return getDataProviderSize();
+        }
+        return assumedSize;
+    }
+
+    /**
+     * Get the active keys and order on active data on the client.
+     *
+     * @return list of active client data as ordered keys
+     */
+    public List<String> getActiveKeyOrdering() {
+        return Collections.unmodifiableList(activeKeyOrder);
+    }
+
+    /**
+     * Get the current client item range.
+     *
+     * @return range of items on client
+     */
+    public Range getRequestedRange() {
+        return requestedRange;
+    }
+
+    /**
+     * Generate a data query with component sorting and filtering.
+     *
+     * @param offset
+     *         first index to fetch
+     * @param limit
+     *         fetched item count
+     * @return {@link Query} for component state
+     */
+    public Query buildQuery(int offset, int limit) {
+        return new QueryTrace(offset, limit, getBackEndSorting(),
+                getInMemorySorting(), getFilter());
+    }
+
+    /**
      * Gets the {@link DataKeyMapper} used by this {@link DataCommunicator}. Key
      * mapper can be used to map keys sent to the client-side back to their
      * respective data objects.
