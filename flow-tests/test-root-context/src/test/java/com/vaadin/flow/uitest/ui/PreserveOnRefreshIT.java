@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -31,7 +32,7 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void navigateToNonRefreshing_refreshInDifferentWindow_componentIsRecreated() {
+    public void navigateToNonRefreshing_componentIsRecreated() {
         open();
         final String componentId = getString(COMPONENT_ID);
         final String notificationId = getString(NOTIFICATION_ID);
@@ -39,7 +40,12 @@ public class PreserveOnRefreshIT extends ChromeBrowserTest {
         // navigate to some other page in between
         getDriver().get(getRootURL() +
                 "/view/com.vaadin.flow.uitest.ui.PageView");
+        WebElement loadingIndicator = findElement(
+                By.className("v-loading-indicator"));
+        waitUntil(driver -> loadingIndicator.isDisplayed());
+        waitUntil(driver -> !loadingIndicator.isDisplayed());
 
+        // navigate back
         open();
         final String newComponentId = getString(COMPONENT_ID);
         final String newNotificationId = getString(NOTIFICATION_ID);
