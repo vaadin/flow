@@ -1,5 +1,5 @@
 import { AbstractModel, defaultValueSymbol, ModelConstructor} from "./Models";
-import { ServerValidator, validate, ValidationError } from "./Validation";
+import { ServerValidator, validate, ValidationError, ValueError } from "./Validation";
 
 const isSubmittingSymbol = Symbol('isSubmitting');
 const valueSymbol = Symbol('value');
@@ -63,10 +63,14 @@ export class Binder<T, M extends AbstractModel<T>> {
     try {
       return await endpointMethod.call(this.context, this.value);
     } catch (error) {
-      if (error.validationErrorData) {
-        const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(error.validationErrorData.message);
-        const [property, value, message] = res ? res.splice(2) : [error.validationErrorData.parameterName, undefined,   error.validationErrorData.message];
-        error = new ValidationError([{ property, value, validator: new ServerValidator(message) }]);
+      if (error.validationErrorData && error.validationErrorData.length) {
+        const valueErrors:Array<ValueError<any>> = [];
+        error.validationErrorData.forEach((data:any) => {
+          const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(data.message);
+          const [property, value, message] = res ? res.splice(2) : [data.parameterName, undefined, data.message];
+          valueErrors.push({ property, value, validator: new ServerValidator(message) });
+        });
+        error = new ValidationError(valueErrors);
       }
       throw (error);
     } finally {
