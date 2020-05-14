@@ -13,20 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package com.vaadin.flow.uitest.ui.frontend;
+package com.vaadin.flow.uitest.ui;
 
 import net.jcip.annotations.NotThreadSafe;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 @NotThreadSafe
-public class PreserveOnRefreshLiveReloadIT extends ChromeBrowserTest {
+public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
 
     @Test
     public void notificationShownWhenLoadingPreserveOnRefreshView() {

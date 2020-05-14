@@ -13,41 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.uitest.ui;
 
-package com.vaadin.flow.uitest.ui.frontend;
-
-import java.util.Random;
-
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 
-@Route(value = "com.vaadin.flow.uitest.ui.frontend.LiveReloadView", layout = ViewTestLayout.class)
-public class LiveReloadView extends Div {
-
-    Integer instanceIdentifier = new Random().nextInt();
-
-    public LiveReloadView() {
-        Label label = new Label(Integer.toString(instanceIdentifier));
-        label.setId("elementId");
-        NativeButton reloadButton = new NativeButton("Trigger live reload");
-        reloadButton.addClickListener(this::handleClickLiveReload);
-        reloadButton.setId("live-reload-trigger-button");
-        add(label);
-        add(reloadButton);
-    }
-
-    private void handleClickLiveReload(ClickEvent event) {
+public class TestingServiceInitListener implements VaadinServiceInitListener {
+    @Override
+    public void serviceInit(ServiceInitEvent event) {
+        // just set a fake backend to trigger live-reload client-side
         BrowserLiveReloadAccess liveReloadAccess = VaadinService.getCurrent()
                 .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
         BrowserLiveReload browserLiveReload = liveReloadAccess
                 .getLiveReload(VaadinService.getCurrent());
-        browserLiveReload.reload();
+        browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);
     }
+
 }

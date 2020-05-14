@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.frontend;
+package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.PreserveOnRefresh;
@@ -21,7 +21,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 
-@Route(value = "com.vaadin.flow.uitest.ui.frontend.PreserveOnRefreshLiveReloadView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.PreserveOnRefreshLiveReloadView", layout = ViewTestLayout.class)
 @PreserveOnRefresh
 public class PreserveOnRefreshLiveReloadView extends Div {
 }
