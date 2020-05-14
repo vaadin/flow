@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
+
 /**
  * Monitors the component data size change and delegates a new size value
  * handling to {@link SizeChangeHandler}.
@@ -23,7 +25,7 @@ package com.vaadin.flow.data.provider;
  *
  * @since
  */
-public interface SizeChangeAware {
+public interface SizeChangeAware extends Serializable {
 
     /**
      * Sets the handler to be invoked if new data size value has been obtained.

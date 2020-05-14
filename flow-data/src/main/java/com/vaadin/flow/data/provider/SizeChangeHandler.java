@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.io.Serializable;
+
 /**
  * Base interface for all component data size change handlers.
  *
  * @since
  */
-public interface SizeChangeHandler {
+public interface SizeChangeHandler extends Serializable {
 
     /**
      * Handles the data size and triggers {@link SizeChangeEvent} if

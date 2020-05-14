@@ -29,11 +29,11 @@ import java.util.Objects;
  *
  * @since
  */
-public class SizeChangeAwareDataProvider<T> extends ListDataProvider<T> implements SizeChangeAware {
+public class SizeChangeAwareListDataProvider<T> extends ListDataProvider<T> implements SizeChangeAware {
 
     private SizeChangeHandler sizeChangeHandler = size -> {};
 
-    public SizeChangeAwareDataProvider(Collection<T> items) {
+    public SizeChangeAwareListDataProvider(Collection<T> items) {
         super(items);
     }
 
@@ -50,7 +50,7 @@ public class SizeChangeAwareDataProvider<T> extends ListDataProvider<T> implemen
     }
 
     /**
-     * Creates a new instance of {@link SizeChangeAwareDataProvider}
+     * Creates a new instance of {@link SizeChangeAwareListDataProvider}
      * on top of given {@link ListDataProvider} instance.
      *
      * @param dataProvider
@@ -58,10 +58,10 @@ public class SizeChangeAwareDataProvider<T> extends ListDataProvider<T> implemen
      * @param <T>
      *        data type
      * @return
-     *        new instance of {@link SizeChangeAwareDataProvider}
+     *        new instance of {@link SizeChangeAwareListDataProvider}
      */
-    public static <T> SizeChangeAwareDataProvider<T> fromListDataProvider(ListDataProvider<T> dataProvider) {
+    public static <T> SizeChangeAwareListDataProvider<T> fromListDataProvider(ListDataProvider<T> dataProvider) {
         Objects.requireNonNull(dataProvider, "ListDataProvider cannot be null");
-        return new SizeChangeAwareDataProvider<>(dataProvider.getItems());
+        return new SizeChangeAwareListDataProvider<>(dataProvider.getItems());
     }
 }
