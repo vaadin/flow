@@ -193,6 +193,22 @@ suite("Binder", () => {
       assert.equal(binder.value.customer.fullName, "bar");
       sinon.assert.calledOnce(requestUpdateStub);
     });
+
+    test("should clear value", () => {
+      binder.reset({
+        ...expectedEmptyOrder,
+        notes: "bar",
+        customer: {
+          ...expectedEmptyOrder.customer,
+          fullName: "bar"
+        }
+      });
+      assert.notDeepEqual(binder.value, expectedEmptyOrder);
+
+      binder.clear();
+
+      assert.deepEqual(binder.value, expectedEmptyOrder);
+    });
   });
 
   suite('array-model', () => {

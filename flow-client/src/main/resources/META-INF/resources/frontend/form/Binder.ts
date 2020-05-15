@@ -3,11 +3,13 @@ import { ServerValidator, validate, ValidationError, ValueError } from "./Valida
 
 const isSubmittingSymbol = Symbol('isSubmitting');
 const valueSymbol = Symbol('value');
+const emptyValueSymbol = Symbol('emptyValue');
 
 export class Binder<T, M extends AbstractModel<T>> {
   model: M;
   private [defaultValueSymbol]: T;
   private [valueSymbol]: T;
+  private [emptyValueSymbol]: T
   private [isSubmittingSymbol]: boolean = false;
 
   constructor(
@@ -15,7 +17,8 @@ export class Binder<T, M extends AbstractModel<T>> {
     Model: ModelConstructor<T, M>,
     public onChange: (oldValue?: T) => void
   ) {
-    this.reset(Model.createEmptyValue());
+    this[emptyValueSymbol] = Model.createEmptyValue()
+    this.reset(this[emptyValueSymbol]);
     this.model = new Model(this, 'value');
   }
 
@@ -50,6 +53,10 @@ export class Binder<T, M extends AbstractModel<T>> {
       this.defaultValue = defaultValue;
     }
     this.value = this.defaultValue;
+  }
+
+  clear() {
+    this.value = this[emptyValueSymbol];
   }
 
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
