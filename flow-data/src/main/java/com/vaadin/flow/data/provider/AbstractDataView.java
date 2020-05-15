@@ -37,7 +37,9 @@ public abstract class AbstractDataView<T, C extends Component> implements DataVi
     public AbstractDataView(DataController<T> dataController) {
         Objects.requireNonNull(dataController, "DataController cannot be null");
         this.dataController = dataController;
-        validateDataProvider(dataController.getDataProvider());
+        DataProvider<T, ?> dataProvider = dataController.getDataProvider();
+        Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
+        verifyDataProviderType(dataProvider.getClass());
     }
 
     @Override
@@ -47,15 +49,40 @@ public abstract class AbstractDataView<T, C extends Component> implements DataVi
     }
 
     /**
-     * Validates an obtained {@link DataProvider} instance type is appropriate for current Data View type.
+     * Returns supported {@link DataProvider} type for this {@link DataView}.
      *
-     * @param dataProvider
-     *              data provider instance to be validated
+     * @return supported data provider type
+     */
+    protected abstract Class<?> getSupportedDataProviderType();
+
+    /**
+     * Returns a base {@link DataView} class type for this data view.
+     *
+     * @return base data view type
+     */
+    protected abstract Class<?> getDataViewType();
+
+    /**
+     * Validates an obtained {@link DataProvider} type is appropriate
+     * for current Data View type.
+     *
+     * @param dataProviderType
+     *              data provider type to be validated
      *
      * @throws IllegalStateException
      *              if data provider type is incompatible with data view type
      */
-    protected abstract void validateDataProvider(final DataProvider<T, ?> dataProvider);
+    protected void verifyDataProviderType(Class<?> dataProviderType) {
+        Class<?> supportedDataProviderType = getSupportedDataProviderType();
+        Class<?> dataViewType = getDataViewType();
+        if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {
+            final String message = String
+                    .format("%s only supports '%s' or it's subclasses, but was given a '%s'",
+                            dataViewType.getSimpleName(), supportedDataProviderType.getSimpleName(),
+                            dataProviderType.getSuperclass().getSimpleName());
+            throw new IllegalArgumentException(message);
+        }
+    }
 
     /**
      * Obtains an appropriate {@link DataProvider} instance from {@link DataController}.

@@ -17,6 +17,7 @@ package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.shared.Registration;
 
+import java.io.Serializable;
 import java.util.stream.Stream;
 
 /**
@@ -26,7 +27,7 @@ import java.util.stream.Stream;
  * @param <T>
  *        data type
  */
-public interface DataController<T> {
+public interface DataController<T> extends Serializable {
 
     /**
      * Returns {@link DataProvider} instance tied with component/data communicator.

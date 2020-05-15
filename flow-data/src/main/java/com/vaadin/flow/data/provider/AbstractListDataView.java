@@ -92,20 +92,21 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
     }
 
     @Override
-    protected void validateDataProvider(final DataProvider<T, ?> dataProvider) {
-        Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
-        if (!(dataProvider instanceof ListDataProvider)) {
-            throw new IllegalStateException(
-                    String.format("ListDataView is incompatible with %s instance",
-                            dataProvider.getClass().getCanonicalName()));
-        }
+    protected Class<?> getSupportedDataProviderType() {
+        return ListDataProvider.class;
+    }
+
+    @Override
+    protected Class<?> getDataViewType() {
+        return ListDataView.class;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected ListDataProvider<T> getDataProvider() {
         final DataProvider<T, ?> dataProvider = this.dataController.getDataProvider();
-        validateDataProvider(dataProvider);
+        Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
+        verifyDataProviderType(dataProvider.getClass());
         return (ListDataProvider<T>) dataProvider;
     }
 
