@@ -32,6 +32,7 @@ import com.vaadin.client.flow.ExecuteJavaScriptProcessor;
 import com.vaadin.client.flow.StateTree;
 
 import elemental.events.PopStateEvent;
+import elemental.json.JsonObject;
 
 /**
  * A registry implementation used by {@link ApplicationConnection}.
@@ -60,11 +61,14 @@ public class DefaultRegistry extends Registry {
         }
 
         @Override
-        public void beforeNavigation(String newHref,
-                boolean triggersServerSideRoundtrip) {
+        public void beforeClientNavigation(String newHref) {
             // don't do anything
         }
 
+        @Override
+        public void afterServerNavigation(JsonObject state) {
+            // don't do anything
+        }
     }
 
     /**
