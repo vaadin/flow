@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-import { FieldElement, fieldSymbol } from "./Field";
+import { FieldStrategy, fieldSymbol } from "./Field";
 import { AbstractModel, ArrayModel, getName, getValue, requiredSymbol, validatorsSymbol } from "./Models";
 
 export interface ValueError<T> {
@@ -50,8 +50,8 @@ export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>
 }
 
 function validateModel<T>(model: AbstractModel<T>) {
-  const fieldElement = (model as any)[fieldSymbol] as FieldElement;
-  return fieldElement ? fieldElement.validate() : validate(model);
+  const fieldStrategy = (model as any)[fieldSymbol] as FieldStrategy;
+  return fieldStrategy ? fieldStrategy.validate() : validate(model);
 }
 
 async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>) {
