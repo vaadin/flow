@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,6 +30,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -47,6 +49,8 @@ public class NodeUpdaterTest {
 
     private File npmFolder;
 
+    private File resourceFolder;
+
     private ClassFinder finder;
 
     private URL url;
@@ -55,16 +59,23 @@ public class NodeUpdaterTest {
     public void setUp() throws IOException {
         url = new URL("file://bar");
         npmFolder = temporaryFolder.newFolder();
+        resourceFolder = temporaryFolder.newFolder();
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File(""), null) {
+                new File(""), resourceFolder) {
 
             @Override
             public void execute() {
             }
 
         };
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        npmFolder.delete();
+        resourceFolder.delete();
     }
 
     @Test
@@ -186,6 +197,35 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(packageJson);
         Assert.assertEquals("4.6.7", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("terser"));
+    }
+
+    @Test
+    public void assertFormResourcesPackageJson() throws IOException {
+        JsonObject formPackageJson = nodeUpdater.getFormResourcesPackageJson();
+        Assert.assertEquals("@vaadin/form", formPackageJson
+                .getString("name"));
+        Assert.assertEquals("UNLICENSED", formPackageJson
+                .getString("license"));
+        Assert.assertEquals("Form", formPackageJson
+                .getString("main"));
+        Assert.assertEquals("1.0.0", formPackageJson
+                .getString("version"));
+    }
+
+    @Test
+    public void assertWriteFormResourcesPackageFile() throws IOException {
+        File formPackageJsonFile = new File(nodeUpdater.formResourcesFolder, Constants.PACKAGE_JSON);
+        Assert.assertFalse(formPackageJsonFile.exists());
+
+        JsonObject formPackageJson = Json.createObject();
+        formPackageJson.put("foo", "bar");
+
+        nodeUpdater.writeFormResourcesPackageFile(formPackageJson);
+
+        Assert.assertTrue(formPackageJsonFile.exists());
+        JsonObject packageJson = NodeUpdater.getJsonFileContent(
+                formPackageJsonFile);
+        Assert.assertEquals("bar", packageJson.getString("foo"));
     }
 
     private String getPolymerVersion(JsonObject object) {

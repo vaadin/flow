@@ -74,7 +74,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
+    protected static final String DEP_NAME_FORM_JARS = "@vaadin/form";
+    private static final String FORM_FOLDER = "form";
     private static final String DEP_MAIN_FLOW_JARS = "Flow";
+    private static final String DEP_MAIN_FORM_JARS = "Form";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     protected static final String POLYMER_VERSION = "3.2.0";
@@ -99,6 +102,11 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Base directory for flow dependencies coming from jars.
      */
     protected final File flowResourcesFolder;
+
+    /**
+     * Base directory for form dependencies coming from jars.
+     */
+    protected final File formResourcesFolder;
 
     /**
      * The {@link FrontendDependencies} object representing the application
@@ -133,6 +141,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
         this.flowResourcesFolder = flowResourcesPath;
+        this.formResourcesFolder = new File(flowResourcesPath, FORM_FOLDER);
     }
 
     private File getPackageJsonFile() {
@@ -211,6 +220,19 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
             packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FLOW_JARS);
+            packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
+        }
+        return packageJson;
+    }
+
+    JsonObject getFormResourcesPackageJson() throws IOException {
+        JsonObject packageJson = getJsonFileContent(
+                new File(formResourcesFolder, PACKAGE_JSON));
+        if (packageJson == null) {
+            packageJson = Json.createObject();
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_FORM_JARS);
+            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FORM_JARS);
             packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         }
         return packageJson;
@@ -394,6 +416,12 @@ public abstract class NodeUpdater implements FallibleCommand {
             throws IOException {
         return writePackageFile(packageJson,
                 new File(flowResourcesFolder, PACKAGE_JSON));
+    }
+
+    String writeFormResourcesPackageFile(JsonObject packageJson)
+            throws IOException {
+        return writePackageFile(packageJson,
+                new File(formResourcesFolder, PACKAGE_JSON));
     }
 
     String writePackageFile(JsonObject json, File packageFile)

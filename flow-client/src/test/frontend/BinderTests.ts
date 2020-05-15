@@ -8,38 +8,38 @@ import { expect } from "chai";
 
 // API to test
 import {
+  appendItem,
   Binder,
+  field,
+  getModelValidators,
   getName,
   getValue,
+  keySymbol,
+  modelRepeat,
+  prependItem,
+  Required,
   setValue,
   validate,
-  Validator,
-  modelRepeat,
-  field,
-  appendItem,
-  keySymbol,
-  prependItem,
-  getModelValidators,
   ValidationError,
-  Required
-} from "../../main/resources/META-INF/resources/frontend/Binder";
+  Validator
+} from "../../main/resources/META-INF/resources/frontend/form/Form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel, ProductModel } from "./BinderModels";
 
-import { customElement, html, LitElement, query, css} from 'lit-element';
+import { css, customElement, html, LitElement, query} from 'lit-element';
 
 @customElement('lit-order-view')
 class LitOrderView extends LitElement {}
 
 @customElement('order-view')
 export default class OrderView extends LitElement {
-  public binder = new Binder(this, OrderModel, () => this.requestUpdate());
-  @query('#notes') public notes!: HTMLInputElement;
-  @query('#fullName') public fullName!: HTMLInputElement;
-  @query('#nickName') public nickName!: HTMLInputElement;
-  @query('#add') public add!: Element;
-  @query('#description0') public description!: HTMLInputElement;
-  @query('#price0') public price!: HTMLInputElement;
+  binder = new Binder(this, OrderModel, () => this.requestUpdate());
+  @query('#notes') notes!: HTMLInputElement;
+  @query('#fullName') fullName!: HTMLInputElement;
+  @query('#nickName') nickName!: HTMLInputElement;
+  @query('#add') add!: Element;
+  @query('#description0') description!: HTMLInputElement;
+  @query('#price0') price!: HTMLInputElement;
 
   static get styles() {
     return css`input[invalid] {border: 2px solid red;}`;

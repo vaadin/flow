@@ -5,13 +5,10 @@ import {
   BooleanModel,
   NumberModel,
   ObjectModel,
-  StringModel,
-  Required
-} from "../../main/resources/META-INF/resources/frontend/Binder";
-
-import {
-   Positive, Size, Pattern
-} from "../../main/resources/META-INF/resources/frontend/FormValidator";
+  Pattern,
+  Positive,
+  Required, Size, StringModel
+} from "../../main/resources/META-INF/resources/frontend/form/Form";
 
 export interface IdEntity {
   idString: string;
