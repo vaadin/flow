@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.Objects;
@@ -26,14 +25,22 @@ import java.util.Objects;
  *
  * @param <T>
  *        data type
- *
- * @param <C>
- *        component type
  */
-public abstract class AbstractDataView<T, C extends Component> implements DataView<T> {
+public abstract class AbstractDataView<T> implements DataView<T> {
 
     protected DataController<T> dataController;
 
+    /**
+     * Creates a new instance of {@link AbstractDataView} subclass
+     * and verifies the passed data controller is compatible with this
+     * data view implementation.
+     * <p>
+     * Data controller reference is stored then internally and used for
+     * data set manipulations.
+     *
+     * @param dataController
+     *          data controller reference
+     */
     public AbstractDataView(DataController<T> dataController) {
         Objects.requireNonNull(dataController, "DataController cannot be null");
         this.dataController = dataController;
@@ -63,16 +70,16 @@ public abstract class AbstractDataView<T, C extends Component> implements DataVi
     protected abstract Class<?> getDataViewType();
 
     /**
-     * Validates an obtained {@link DataProvider} type is appropriate
+     * Verifies an obtained {@link DataProvider} type is appropriate
      * for current Data View type.
      *
      * @param dataProviderType
-     *              data provider type to be validated
+     *              data provider type to be verified
      *
      * @throws IllegalStateException
      *              if data provider type is incompatible with data view type
      */
-    protected void verifyDataProviderType(Class<?> dataProviderType) {
+    protected final void verifyDataProviderType(Class<?> dataProviderType) {
         Class<?> supportedDataProviderType = getSupportedDataProviderType();
         Class<?> dataViewType = getDataViewType();
         if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {

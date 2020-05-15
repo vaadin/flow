@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -32,12 +31,17 @@ import java.util.stream.Stream;
  *
  * @param <T>
  *        data type
- * @param <C>
- *        component type
  */
-public abstract class AbstractListDataView<T, C extends Component> extends AbstractDataView<T, C>
-        implements ListDataView<T, AbstractListDataView<T, C>> {
+public abstract class AbstractListDataView<T> extends AbstractDataView<T>
+        implements ListDataView<T, AbstractListDataView<T>> {
 
+    /**
+     * Creates a new instance of {@link AbstractListDataView} subclass
+     * which rely on in-memory data set, i.e. data set stored in a collection.
+     *
+     * @param dataController
+     *          data controller reference
+     */
     public AbstractListDataView(DataController<T> dataController) {
         super(dataController);
     }
@@ -67,12 +71,12 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
     }
 
     @Override
-    public AbstractListDataView<T, C> withFilter(SerializablePredicate<T> filter) {
+    public AbstractListDataView<T> withFilter(SerializablePredicate<T> filter) {
         return withFilterOrOrder(dataProvider -> dataProvider.setFilter(filter));
     }
 
     @Override
-    public AbstractListDataView<T, C> withSortComparator(SerializableComparator<T> sortComparator) {
+    public AbstractListDataView<T> withSortComparator(SerializableComparator<T> sortComparator) {
         return withFilterOrOrder(dataProvider -> dataProvider.setSortComparator(sortComparator));
     }
 
@@ -114,7 +118,7 @@ public abstract class AbstractListDataView<T, C extends Component> extends Abstr
         return getAllItems().collect(Collectors.toList());
     }
 
-    private AbstractListDataView<T, C> withFilterOrOrder(
+    private AbstractListDataView<T> withFilterOrOrder(
             SerializableConsumer<ListDataProvider<T>> filterOrOrderConsumer) {
         ListDataProvider<T> dataProvider = getDataProvider();
         filterOrOrderConsumer.accept(dataProvider);
