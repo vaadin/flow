@@ -92,17 +92,14 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public boolean isItemPresent(T item) {
+        // TODO: delegate this to the data communicator/component, since the equality could be
+        //  determined by the provided identity checker (the default is equals).
         return getAllItems().anyMatch(i -> Objects.equals(i, item));
     }
 
     @Override
     protected Class<?> getSupportedDataProviderType() {
         return ListDataProvider.class;
-    }
-
-    @Override
-    protected Class<?> getDataViewType() {
-        return ListDataView.class;
     }
 
     @SuppressWarnings("unchecked")

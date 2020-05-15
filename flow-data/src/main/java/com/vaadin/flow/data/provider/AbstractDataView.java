@@ -63,13 +63,6 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     protected abstract Class<?> getSupportedDataProviderType();
 
     /**
-     * Returns a base {@link DataView} class type for this data view.
-     *
-     * @return base data view type
-     */
-    protected abstract Class<?> getDataViewType();
-
-    /**
      * Verifies an obtained {@link DataProvider} type is appropriate
      * for current Data View type.
      *
@@ -81,13 +74,12 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      */
     protected final void verifyDataProviderType(Class<?> dataProviderType) {
         Class<?> supportedDataProviderType = getSupportedDataProviderType();
-        Class<?> dataViewType = getDataViewType();
         if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {
             final String message = String
                     .format("%s only supports '%s' or it's subclasses, but was given a '%s'",
-                            dataViewType.getSimpleName(), supportedDataProviderType.getSimpleName(),
+                            this.getClass().getSimpleName(), supportedDataProviderType.getSimpleName(),
                             dataProviderType.getSuperclass().getSimpleName());
-            throw new IllegalArgumentException(message);
+            throw new IllegalStateException(message);
         }
     }
 
