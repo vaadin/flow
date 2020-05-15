@@ -19,7 +19,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinResponse;
@@ -57,7 +56,8 @@ public class StreamRequestHandlerTest {
         streamResourceRegistry = new StreamResourceRegistry(session);
         request = Mockito.mock(VaadinServletRequest.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getMimeType(Mockito.anyString())).thenReturn(null);
+        Mockito.when(servletContext.getMimeType(Mockito.anyString()))
+                .thenReturn(null);
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         response = Mockito.mock(VaadinResponse.class);
         ui = new MockUI();
@@ -70,16 +70,81 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void streamResourceNameContainsPlusses_resourceIsStreamed()
+    public void streamResourceNameEndsWithPlusses_streamFactory_resourceIsStreamed()
             throws IOException {
-        final String testString = "test";
+        testStreamResourceInputStreamFactory("end with multiple plusses",
+                "readme++.md");
+    }
+
+    @Test
+    public void streamResourceNameEndsWithPlusses_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("end with multiple plusses",
+                "readme++.md");
+    }
+
+    @Test
+    public void streamResourceNameContainsSpaceEndsWithPlusses_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory(
+                "end with space and multiple plusses", "readme ++.md");
+    }
+
+    @Test
+    public void streamResourceNameContainsSpaceEndsWithPlusses_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter(
+                "end with space and multiple plusses", "readme ++.md");
+    }
+
+    @Test
+    public void streamResourceNameEndsInPlus_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory("end in plus", "readme+.md");
+    }
+
+    @Test
+    public void streamResourceNameEndsInPlus_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("end in plus", "readme+.md");
+    }
+
+    @Test
+    public void streamResourceNameContainsPlus_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory("plus in middle",
+                "readme+mine.md");
+    }
+
+    @Test
+    public void streamResourceNameContainsPlus_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("plus in middle",
+                "readme+mine.md");
+    }
+
+    @Test
+    public void streamResourceNameContainsPlusAndSpaces_streamFactory_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceInputStreamFactory("plus surrounded by spaces",
+                "readme + mine.md");
+    }
+
+    @Test
+    public void streamResourceNameContainsPlusAndSpaces_resourceWriter_resourceIsStreamed()
+            throws IOException {
+        testStreamResourceStreamResourceWriter("plus surrounded by spaces",
+                "readme + mine.md");
+    }
+
+    private void testStreamResourceInputStreamFactory(String testString,
+            String fileName) throws IOException {
 
         final byte[] testBytes = testString.getBytes();
-        StreamResource res = new StreamResource("readme ++.md",
+        StreamResource res = new StreamResource(fileName,
                 () -> new ByteArrayInputStream(testBytes));
 
-        final StreamRegistration streamRegistration = streamResourceRegistry
-                .registerResource(res);
+        streamResourceRegistry.registerResource(res);
 
         ServletOutputStream outputStream = Mockito
                 .mock(ServletOutputStream.class);
@@ -105,4 +170,34 @@ public class StreamRequestHandlerTest {
         Mockito.verify(response).setCacheTime(Mockito.anyInt());
         Mockito.verify(response).setContentType("application/octet-stream");
     }
+
+    private void testStreamResourceStreamResourceWriter(String testString,
+            String fileName) throws IOException {
+
+        final byte[] testBytes = testString.getBytes();
+        StreamResource res = new StreamResource(fileName,
+                (stream, session) -> stream.write(testBytes));
+
+        streamResourceRegistry.registerResource(res);
+
+        ServletOutputStream outputStream = Mockito
+                .mock(ServletOutputStream.class);
+        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(request.getPathInfo()).thenReturn(
+                String.format("/%s%s/%s/%s", DYN_RES_PREFIX,
+                        ui.getId().orElse("-1"), res.getId(), res.getName()));
+
+        handler.handleRequest(session, request, response);
+
+        Mockito.verify(response).getOutputStream();
+
+        ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
+        Mockito.verify(outputStream).write(argument.capture());
+
+        Assert.assertArrayEquals("Output differed from expected", testBytes,
+                argument.getValue());
+        Mockito.verify(response).setCacheTime(Mockito.anyInt());
+        Mockito.verify(response).setContentType("application/octet-stream");
+    }
+
 }
