@@ -1054,16 +1054,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return A non-null {@link JsonObject} with application parameters.
          */
         public JsonObject getApplicationParameters(BootstrapContext context) {
-            JsonObject appConfig = getApplicationParameters(context,
-                    context.getRequest(), context.getSession());
-
-            appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
-                    context.getUI().getUIId());
-            return appConfig;
-        }
-
-        private JsonObject getApplicationParameters(BootstrapContext context, VaadinRequest request,
-                VaadinSession session) {
+            VaadinRequest request = context.getRequest();
+            VaadinSession session = context.getSession();
             DeploymentConfiguration deploymentConfiguration = session
                     .getConfiguration();
             final boolean productionMode = deploymentConfiguration
@@ -1144,6 +1136,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appConfig.put("sendUrlsAsParameters", false);
             }
 
+            appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
+                    context.getUI().getUIId());
             return appConfig;
         }
 
