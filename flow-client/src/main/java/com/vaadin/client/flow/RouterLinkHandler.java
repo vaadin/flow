@@ -265,7 +265,7 @@ public class RouterLinkHandler {
         // If the server tells us the session has expired, we refresh (using the
         // new location) instead.
         registry.getMessageHandler().setNextResponseSessionExpiredHandler(
-                () -> WidgetUtil.refresh());
+                () -> WidgetUtil.redirect(location));
         registry.getServerConnector().sendNavigationMessage(location,
                 stateObject, routerLinkEvent);
 
