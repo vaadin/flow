@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -40,6 +41,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -58,8 +62,8 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import elemental.json.JsonValue;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
@@ -267,7 +271,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 Router router = new Router(getRouteRegistry()) {
                     @Override
                     public int navigate(UI ui, Location location,
-                            NavigationTrigger trigger) {
+                            NavigationTrigger trigger, JsonValue state) {
+                        ui.getPage().getHistory().pushState(null, location);
                         return HttpServletResponse.SC_OK;
                     }
                 };

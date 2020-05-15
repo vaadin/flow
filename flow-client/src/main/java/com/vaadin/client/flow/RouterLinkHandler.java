@@ -18,6 +18,7 @@ package com.vaadin.client.flow;
 import java.util.Objects;
 
 import com.vaadin.client.Registry;
+import com.vaadin.client.ScrollPositionHandler;
 import com.vaadin.client.URIResolver;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -28,6 +29,8 @@ import elemental.events.Event;
 import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Handler for click events originating from application navigation link
@@ -87,9 +90,10 @@ public class RouterLinkHandler {
             // there is no pop state if the hashes are exactly the same
             String currentHash = Browser.getDocument().getLocation().getHash();
             if (!currentHash.equals(anchor.getHash())) {
-                registry.getScrollPositionHandler().beforeNavigation(href,
-                        false);
+                registry.getScrollPositionHandler()
+                        .beforeClientNavigation(href);
             }
+
             // the browser triggers a fragment change & pop state event
             registry.getScrollPositionHandler()
                     .setIgnoreScrollRestorationOnNextPopStateEvent(true);
@@ -116,9 +120,19 @@ public class RouterLinkHandler {
             // don't send hash to server
             location = location.split("#", 2)[0];
         }
-        registry.getScrollPositionHandler().beforeNavigation(href, true);
 
-        sendServerNavigationEvent(registry, location, null, true);
+        JsonObject state = createNavigationEventState(href);
+
+        sendServerNavigationEvent(registry, location, state, true);
+    }
+
+    private static JsonObject createNavigationEventState(String href) {
+        double[] scrollPosition = ScrollPositionHandler.getScrollPosition();
+        JsonObject state = Json.createObject();
+        state.put("href", href);
+        state.put("scrollPositionX", scrollPosition[0]);
+        state.put("scrollPositionY", scrollPosition[1]);
+        return state;
     }
 
     /**
@@ -249,10 +263,10 @@ public class RouterLinkHandler {
         assert registry != null;
         assert location != null;
 
-        // If the server tells us the session has expired, we refresh (using the
-        // new location) instead.
+        // If the server tells us the session has expired, we redirect to the
+        // new location.
         registry.getMessageHandler().setNextResponseSessionExpiredHandler(
-                () -> WidgetUtil.refresh());
+                () -> WidgetUtil.redirect(location));
         registry.getServerConnector().sendNavigationMessage(location,
                 stateObject, routerLinkEvent);
 
