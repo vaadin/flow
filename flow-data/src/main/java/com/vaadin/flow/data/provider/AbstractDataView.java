@@ -49,9 +49,11 @@ public abstract class AbstractDataView<T, C extends Component> implements DataVi
     /**
      * Validates an obtained {@link DataProvider} instance type is appropriate for current Data View type.
      *
-     * @return true, if data provider type successfully validated
+     * @param dataProvider
+     *              data provider instance to be validated
      *
-     * @throws IllegalStateException if data provider type is incompatible
+     * @throws IllegalStateException
+     *              if data provider type is incompatible with data view type
      */
     protected abstract void validateDataProvider(final DataProvider<T, ?> dataProvider);
 
