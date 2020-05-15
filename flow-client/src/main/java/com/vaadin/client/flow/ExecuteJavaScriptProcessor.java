@@ -202,25 +202,29 @@ public class ExecuteJavaScriptProcessor {
             JsMap<Object, StateNode> nodeParameters, Runnable stopApplication)
     /*-{
           var object = {};
-          object.getNode = $entry(function (element){
+          object.getNode = $entry(function (element) {
               var node = nodeParameters.get(element);
-              if ( node == null ){
+              if (node == null) {
                   throw new ReferenceError("There is no a StateNode for the given argument.");
               }
               return node;
           });
           object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
-          object.attachExistingElement = $entry(function(parent, previousSibling, tagName, id){
+          object.registry = this.@ExecuteJavaScriptProcessor::registry;
+          object.attachExistingElement = $entry(function(parent, previousSibling, tagName, id) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
           });
-          object.populateModelProperties = $entry(function(element, properties){
+          object.populateModelProperties = $entry(function(element, properties) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(object.getNode(element), properties);
           });
-          object.registerUpdatableModelProperties = $entry(function(element, properties){
+          object.registerUpdatableModelProperties = $entry(function(element, properties) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
           });
-          object.stopApplication = $entry(function(){
+          object.stopApplication = $entry(function() {
               stopApplication.@java.lang.Runnable::run(*)();
+          });
+          object.scrollPositionHandlerAfterServerNavigation = $entry(function(state) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
           });
           return object;
     }-*/;

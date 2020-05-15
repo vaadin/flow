@@ -19,6 +19,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 
 /**
@@ -47,8 +48,11 @@ public class InternalRedirectHandler implements NavigationHandler {
         UI ui = event.getUI();
         Router router = event.getSource();
 
-        ui.getPage().getHistory().replaceState(null, target);
+        if (NavigationTrigger.PAGE_LOAD.equals(event.getTrigger())) {
+            ui.getPage().getHistory().replaceState(null, target);
+        }
 
-        return router.navigate(ui, target, event.getTrigger());
+        return router.navigate(ui, target, event.getTrigger(),
+                event.getState().orElse(null));
     }
 }

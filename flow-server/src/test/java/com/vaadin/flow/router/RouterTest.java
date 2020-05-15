@@ -16,6 +16,7 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +38,7 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -54,9 +56,12 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.UpdateThemedImportsTest;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -1260,7 +1265,7 @@ public class RouterTest extends RoutingTestBase {
      * children components used in the assertion of the event order, as being
      * children of the layout in the chain instead of being part of the layout
      * chain itself.
-     * 
+     *
      * So any children of an instance of this class should receive the
      * navigation events right after the instance of this class receives them
      * and in the order they are added.
@@ -2703,6 +2708,37 @@ public class RouterTest extends RoutingTestBase {
                 FooBarNavigationTarget.events.size());
     }
 
+    @Test // 3384
+    public void theme_is_gotten_from_the_super_class()
+            throws InvalidRouteConfigurationException, Exception {
+
+        // TODO: this might fail
+        setNavigationTargets(ExtendingView.class);
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Field theme = UIInternals.class.getDeclaredField("theme");
+        theme.setAccessible(true);
+        Object themeObject = theme.get(ui.getInternals());
+
+        Assert.assertEquals(UpdateThemedImportsTest.MyTheme.class, themeObject.getClass());
+    }
+
+    @Test
+    public void theme_is_not_gotten_from_the_super_class_when_in_npm_mode()
+            throws InvalidRouteConfigurationException, Exception {
+
+        setNavigationTargets(ExtendingView.class);
+
+        router.navigate(ui, new Location(""), NavigationTrigger.PROGRAMMATIC);
+
+        Field theme = UIInternals.class.getDeclaredField("theme");
+        theme.setAccessible(true);
+        Object themeObject = theme.get(ui.getInternals());
+
+        Assert.assertNull(themeObject);
+    }
+
     @Test
     public void postpone_then_resume_with_multiple_listeners()
             throws InvalidRouteConfigurationException, InterruptedException {
@@ -3132,8 +3168,12 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
                 FileNotFound.trigger);
 
+        JsonObject state = Json.createObject();
+        state.put("href", "router_link");
+        state.put("scrollPositionX", 0d);
+        state.put("scrollPositionY", 0d);
         router.navigate(ui, new Location("router_link"),
-                NavigationTrigger.ROUTER_LINK);
+                NavigationTrigger.ROUTER_LINK, state);
 
         Assert.assertEquals(NavigationTrigger.ROUTER_LINK,
                 FileNotFound.trigger);
@@ -3446,13 +3486,13 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("event/flower"),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         ProcessEventsBase.clear();
 
         final String parameter = "green";
         router.navigate(ui, new Location("event/leaf/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         assertEventOrder(Arrays.asList("ProcessEventsLeaf", "leafChild"),
                 getProcessEventsBranchChainNames("ProcessEventsFlower"),
                 getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf", "leafChild"),
@@ -3473,7 +3513,7 @@ public class RouterTest extends RoutingTestBase {
         // This is expected after reroute.
         final List<String> expectedOnReroute = getProcessEventsBranchChainNames(
                 "ProcessEventsFlower");
-        
+
         // This is expected on init and BeforeEnter since the ProcessEventsRotten
         // parent of ProcessEventsTwig will reroute, so ProcessEventsTwig and
         // ProcessEventsStick won't be created.

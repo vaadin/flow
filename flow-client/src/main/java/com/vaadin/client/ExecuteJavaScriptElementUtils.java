@@ -28,6 +28,7 @@ import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.json.JsonObject;
 
 /**
  * Utility class which handles javascript execution context (see
@@ -192,6 +193,21 @@ public final class ExecuteJavaScriptElementUtils {
             return fromMap;
         }
         return existingId;
+    }
+
+    /**
+     * Invoke {@link ScrollPositionHandler#afterServerNavigation(JsonObject)}.
+     * 
+     * @param registry
+     *            the registry
+     * @param state
+     *            includes scroll position of the previous page and the complete
+     *            href of the router link that was clicked and caused this
+     *            navigation
+     */
+    public static void scrollPositionHandlerAfterServerNavigation(
+            Registry registry, JsonObject state) {
+        registry.getScrollPositionHandler().afterServerNavigation(state);
     }
 
     private static native boolean isPropertyDefined(Node node, String property)
