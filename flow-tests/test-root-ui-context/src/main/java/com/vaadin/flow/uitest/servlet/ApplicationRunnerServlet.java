@@ -21,7 +21,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -42,9 +41,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -62,6 +58,10 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
+import elemental.json.JsonValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
@@ -272,7 +272,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 Router router = new Router(getRouteRegistry()) {
                     @Override
                     public int navigate(UI ui, Location location,
-                            NavigationTrigger trigger) {
+                            NavigationTrigger trigger, JsonValue state) {
+                        ui.getPage().getHistory().pushState(null, location);
                         return HttpServletResponse.SC_OK;
                     }
                 };

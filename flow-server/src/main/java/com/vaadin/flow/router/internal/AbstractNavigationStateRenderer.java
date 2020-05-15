@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -59,6 +60,8 @@ import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.server.VaadinSession;
+
+import elemental.json.JsonValue;
 
 /**
  * Base class for navigation handlers that target a navigation state.
@@ -187,6 +190,13 @@ public abstract class AbstractNavigationStateRenderer
             clearAllPreservedChains(ui);
         }
 
+        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
+        // pushing history state shouldn't be done. So, it's done here to make
+        // sure that when history state is pushed the navigation is not
+        // postponed.
+        // See https://github.com/vaadin/flow/issues/3619 for more info.
+        pushHistoryStateIfNeeded(event, ui);
+
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, parameters, routeLayoutTypes);
 
@@ -230,6 +240,40 @@ public abstract class AbstractNavigationStateRenderer
                 afterNavigationHandlers);
 
         return statusCode;
+    }
+
+    private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
+        if (event instanceof ErrorNavigationEvent) {
+            return;
+        }
+
+        if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+            /*
+             * When the event trigger is a RouterLink, pushing history state
+             * should be done in client-side. See
+             * ScrollPositionHandler#afterNavigation(JsonObject).
+             */
+            JsonValue state = event.getState()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "When the navigation trigger is ROUTER_LINK, event state should not be null."));
+
+            ui.getPage().executeJs(
+                    "this.scrollPositionHandlerAfterServerNavigation($0);",
+                    state);
+        } else if (!event.isForwardTo()
+                && (!ui.getInternals().hasLastHandledLocation()
+                        || !event.getLocation().getPathWithQueryParameters()
+                                .equals(ui.getInternals()
+                                        .getLastHandledLocation()
+                                        .getPathWithQueryParameters()))) {
+
+            if (NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())) {
+                // Enable navigating back
+                ui.getPage().getHistory().pushState(null, event.getLocation());
+            }
+
+            ui.getInternals().setLastHandledNavigation(event.getLocation());
+        }
     }
 
     /**
@@ -685,7 +729,7 @@ public abstract class AbstractNavigationStateRenderer
                 event.getLocation().getQueryParameters());
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
-                NavigationTrigger.PROGRAMMATIC);
+                NavigationTrigger.PROGRAMMATIC, null, true);
     }
 
     /**

@@ -48,11 +48,15 @@ public enum NavigationTrigger {
     HISTORY,
 
     /**
-     * Navigation was triggered programmatically.
-     *
-     * @see UI#navigate(String, QueryParameters)
+     * Navigation was triggered programmatically via forward/reroute action.
      */
     PROGRAMMATIC,
+
+    /**
+     * Navigation was triggered via
+     * {@link UI#navigate(String, QueryParameters)}. It's for internal use only.
+     */
+    UI_NAVIGATE,
 
     /**
      * Navigation was triggered by client-side.
