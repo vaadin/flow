@@ -18,12 +18,12 @@ interface FieldState extends Field {
 }
 const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
 
-export interface FieldElement extends Field {
+export interface FieldStrategy extends Field {
   element: Element;
   validate: () => Promise<Array<ValueError<any>>>;
 }
 
-class VaadinFieldElement implements FieldElement {
+class VaadinFieldStrategy implements FieldStrategy {
   constructor(public element: Element & Field) {}
   validate = async () => [];
   set required(value: boolean) { this.element.required = value }
@@ -31,7 +31,7 @@ class VaadinFieldElement implements FieldElement {
   set errorMessage(value: string) { this.element.errorMessage = value }
 }
 
-class GenericFieldElement implements FieldElement {
+class GenericFieldStrategy implements FieldStrategy {
   constructor(public element: Element) {}
   validate = async () => [];
   set required(value: boolean) { this.setAttribute('required', value) }
@@ -61,22 +61,31 @@ export const field = directive(<T>(
   let fieldState: FieldState;
   const element = propertyPart.committer.element as HTMLInputElement & Field;
 
-  if (!fieldStateMap.has(propertyPart)) {
-    fieldState = { name: '', value: '', required: false, invalid: false, errorMessage: '', visited: false};
-    fieldStateMap.set(propertyPart, fieldState);
-    const fieldElement:FieldElement = (model as any)[fieldSymbol] =
-      isVaadinElement(element) ? new VaadinFieldElement(element) : new GenericFieldElement(element);
+  let fieldStrategy: FieldStrategy;
 
-    fieldElement.validate = async () => {
-      fieldState.value = element.value;
+  if (!fieldStateMap.has(propertyPart)) {
+    fieldState = {
+      name: '',
+      value: '',
+      required: false,
+      invalid: false,
+      errorMessage: '',
+      visited: false
+    };
+    fieldStateMap.set(propertyPart, fieldState);
+    fieldStrategy = isVaadinElement(element) ? new VaadinFieldStrategy(element) : new GenericFieldStrategy(element);
+    (model as any)[fieldSymbol] = fieldStrategy;
+
+    fieldStrategy.validate = async () => {
+
       fieldState.visited = true;
-      setValue(model, (model as any)[fromStringSymbol](element.value));
+
 
       const errors = await validate(model);
 
       const displayedError = errors[0];
-      fieldElement.invalid = fieldState.invalid = displayedError !== undefined;
-      fieldElement.errorMessage = fieldState.errorMessage = displayedError?.validator.message || '';
+      fieldStrategy.invalid = fieldState.invalid = displayedError !== undefined;
+      fieldStrategy.errorMessage = fieldState.errorMessage = displayedError?.validator.message || '';
 
       if (effect !== undefined) {
         effect.call(element, element);
@@ -84,12 +93,30 @@ export const field = directive(<T>(
       return errors;
     };
 
-    element.oninput = () => fieldState.visited && fieldElement.validate();
-    element.onchange = element.onblur= fieldElement.validate;
+    const updateValueFromElement = () => {
+      fieldState.value = element.value;
+      setValue(model, (model as any)[fromStringSymbol](element.value));
+      if (effect !== undefined) {
+        effect.call(element, element);
+      }
+    };
+
+    element.oninput = () => {
+      updateValueFromElement();
+      if (fieldState.visited) {
+        fieldStrategy.validate();
+      }
+    };
+
+    element.onchange = element.onblur = () => {
+      updateValueFromElement();
+      fieldStrategy.validate();
+    };
 
     element.checkValidity = () => !fieldState.invalid;
   } else {
     fieldState = fieldStateMap.get(propertyPart)!;
+    fieldStrategy = (model as any)[fieldSymbol] as FieldStrategy;
   }
 
   const name = getName(model);
@@ -100,12 +127,13 @@ export const field = directive(<T>(
 
   const value = String(getValue(model));
   if (value !== fieldState.value) {
+    fieldState.value = value;
     element.value = value;
   }
 
   const required = model[requiredSymbol];
   if (required !== fieldState.required) {
     fieldState.required = required;
-    element.required = required;
+    fieldStrategy.required = required;
   }
 });
