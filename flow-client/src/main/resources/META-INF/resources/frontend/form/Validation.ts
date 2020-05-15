@@ -1,6 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
-import { FieldElement, fieldSymbol } from "./Field";
+import { FieldStrategy, fieldSymbol } from "./Field";
 import { AbstractModel, ArrayModel, getName, getValue, requiredSymbol, validatorsSymbol } from "./Models";
 
 export interface ValueError<T> {
