@@ -70,31 +70,31 @@ public class StreamRequestHandlerTest {
     }
 
     @Test
-    public void streamResourceNameEndsWithPlusses_streamFactory_resourceIsStreamed()
+    public void streamResourceNameEndsWithPluses_streamFactory_resourceIsStreamed()
             throws IOException {
-        testStreamResourceInputStreamFactory("end with multiple plusses",
+        testStreamResourceInputStreamFactory("end with multiple pluses",
                 "readme++.md");
     }
 
     @Test
-    public void streamResourceNameEndsWithPlusses_resourceWriter_resourceIsStreamed()
+    public void streamResourceNameEndsWithPluses_resourceWriter_resourceIsStreamed()
             throws IOException {
-        testStreamResourceStreamResourceWriter("end with multiple plusses",
+        testStreamResourceStreamResourceWriter("end with multiple pluses",
                 "readme++.md");
     }
 
     @Test
-    public void streamResourceNameContainsSpaceEndsWithPlusses_streamFactory_resourceIsStreamed()
+    public void streamResourceNameContainsSpaceEndsWithPluses_streamFactory_resourceIsStreamed()
             throws IOException {
         testStreamResourceInputStreamFactory(
-                "end with space and multiple plusses", "readme ++.md");
+                "end with space and multiple pluses", "readme ++.md");
     }
 
     @Test
-    public void streamResourceNameContainsSpaceEndsWithPlusses_resourceWriter_resourceIsStreamed()
+    public void streamResourceNameContainsSpaceEndsWithPluses_resourceWriter_resourceIsStreamed()
             throws IOException {
         testStreamResourceStreamResourceWriter(
-                "end with space and multiple plusses", "readme ++.md");
+                "end with space and multiple pluses", "readme ++.md");
     }
 
     @Test

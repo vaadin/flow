@@ -15,16 +15,13 @@
  */
 package com.vaadin.flow.server;
 
+import javax.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import javax.servlet.ServletException;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,8 +30,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class StreamResourceRegistryTest {
@@ -148,14 +143,17 @@ public class StreamResourceRegistryTest {
         assertResourceUriIsEncoded("my file.png", "my%20file.png");
     }
 
-    private void assertResourceUriIsEncoded(String resourceName, String suffix) {
+    private void assertResourceUriIsEncoded(String resourceName,
+            String suffix) {
         StreamResourceRegistry registry = new StreamResourceRegistry(session);
 
-        StreamResource resource = new StreamResource(resourceName, this::makeEmptyStream);
+        StreamResource resource = new StreamResource(resourceName,
+                this::makeEmptyStream);
         StreamRegistration registration = registry.registerResource(resource);
 
         URI uri = registration.getResourceUri();
-        Assert.assertTrue("Resource URI is not properly encoded", uri.toString().endsWith(suffix));
+        Assert.assertTrue("Resource URI is not properly encoded",
+                uri.toString().endsWith(suffix));
     }
 
     private InputStream makeEmptyStream() {
