@@ -43,7 +43,7 @@ public class TaskGeneratePackageJsonTest {
         flowResourcesFolder = temporaryFolder.newFolder();
 
         task = Mockito.spy(new TaskGeneratePackageJson(npmFolder, null, flowResourcesFolder));
-        
+
         Mockito.doReturn(null).when(task).getPackageJson();
         Mockito.doReturn(false).when(task).updateDefaultDependencies(Mockito.any());
         Mockito.doReturn(null).when(task).writePackageFile(Mockito.any());
@@ -65,7 +65,6 @@ public class TaskGeneratePackageJsonTest {
         Mockito.doReturn(formReSourcePackageJson).when(task).getFormResourcesPackageJson();
 
         task.execute();
-        
 
         verify(task).writeResourcesPackageFile(resourcePackageJson);
         verify(task).writeFormResourcesPackageFile(formReSourcePackageJson);
