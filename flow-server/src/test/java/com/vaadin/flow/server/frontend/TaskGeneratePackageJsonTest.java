@@ -58,7 +58,7 @@ public class TaskGeneratePackageJsonTest {
     }
 
     @Test
-    public void should_call_riteFormResourcesPackageFile() throws IOException {
+    public void should_witeFlowAndFormResourcesPackageFiles() throws IOException {
         JsonObject resourcePackageJson = Mockito.mock(JsonObject.class);
         JsonObject formReSourcePackageJson = Mockito.mock(JsonObject.class);
         Mockito.doReturn(resourcePackageJson).when(task).getResourcesPackageJson();
