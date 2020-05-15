@@ -8,25 +8,25 @@ import { expect } from "chai";
 
 // API to test
 import {
+  appendItem,
   Binder,
+  field,
+  getModelValidators,
   getName,
   getValue,
+  keySymbol,
+  modelRepeat,
+  prependItem,
+  Required,
   setValue,
   validate,
-  Validator,
-  modelRepeat,
-  field,
-  appendItem,
-  keySymbol,
-  prependItem,
-  getModelValidators,
   ValidationError,
-  Required
-} from "../../main/resources/META-INF/resources/frontend/Binder";
+  Validator
+} from "../../main/resources/META-INF/resources/frontend/form/Form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel, ProductModel } from "./BinderModels";
 
-import { customElement, html, LitElement, query, css} from 'lit-element';
+import { css, customElement, html, LitElement, query} from 'lit-element';
 
 @customElement('lit-order-view')
 class LitOrderView extends LitElement {}

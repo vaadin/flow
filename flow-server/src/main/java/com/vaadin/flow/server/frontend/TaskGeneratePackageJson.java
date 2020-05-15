@@ -22,6 +22,7 @@ import java.io.UncheckedIOException;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FORM_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
@@ -60,6 +61,12 @@ public class TaskGeneratePackageJson extends NodeUpdater {
                     NODE_MODULES + FLOW_NPM_PACKAGE_NAME)
                             .equals(flowResourcesFolder)) {
                 writeResourcesPackageFile(getResourcesPackageJson());
+            }
+
+            if (formResourcesFolder != null && !new File(npmFolder,
+                    NODE_MODULES + FORM_NPM_PACKAGE_NAME)
+                            .equals(formResourcesFolder)) {
+                writeFormResourcesPackageFile(getFormResourcesPackageJson());
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

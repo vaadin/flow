@@ -120,6 +120,13 @@ public class FrontendUtils {
     public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
 
     /**
+     * The NPM package name that will be used for the javascript files present
+     * in jar resources that will to be copied to the npm folder so as they are
+     * accessible to webpack.
+     */
+    public static final String FORM_NPM_PACKAGE_NAME = "@vaadin/form/";
+
+    /**
      * Default folder for copying front-end resources present in the classpath
      * jars.
      */

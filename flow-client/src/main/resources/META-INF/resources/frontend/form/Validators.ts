@@ -1,7 +1,7 @@
 /* tslint:disable:max-classes-per-file */
 
 import * as validator from 'validator';
-import {ValidationCallback, Validator} from './Binder';
+import { ValidationCallback, Validator } from './Validation';
 
 interface FormOptions {message?: string};
 type ValueNumberOptions = FormOptions & {value: number | string};
