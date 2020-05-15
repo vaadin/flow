@@ -95,10 +95,8 @@ public class VaadinConnectControllerConfiguration {
      */
     private RequestMappingInfo prependConnectPrefixUrl(
             RequestMappingInfo mapping) {
-        String customEnpointPrefixName = FrontendUtils.getCustomEndpointPrefix();
         PatternsRequestCondition connectEndpointPattern =
                 new PatternsRequestCondition(
-                        customEnpointPrefixName != null ? customEnpointPrefixName :
                 vaadinEndpointProperties.getVaadinEndpointPrefix())
                         .combine(mapping.getPatternsCondition());
 
