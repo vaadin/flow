@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
@@ -286,6 +288,19 @@ public class PushHandler {
         if (resource == null) {
             return;
         }
+
+        // In development mode we may have a live-reload push channel
+        // that should be closed.
+
+        if (isLiveReloadConnection(resource)) {
+            BrowserLiveReloadAccess access = service.getInstantiator()
+                    .getOrCreate(BrowserLiveReloadAccess.class);
+            BrowserLiveReload liveReload = access.getLiveReload(service);
+            if (liveReload.isLiveReload(resource)) {
+                liveReload.onDisconnect(resource);
+                return;
+            }
+        }
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
         VaadinSession session;
@@ -466,7 +481,14 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
-        callWithUi(resource, establishCallback);
+        if (isLiveReloadConnection(resource)) {
+            BrowserLiveReloadAccess access = service.getInstantiator()
+                    .getOrCreate(BrowserLiveReloadAccess.class);
+            BrowserLiveReload liveReload = access.getLiveReload(service);
+            liveReload.onConnect(resource);
+        } else {
+            callWithUi(resource, establishCallback);
+        }
     }
 
     /**
@@ -477,6 +499,14 @@ public class PushHandler {
      */
     void onMessage(AtmosphereResource resource) {
         callWithUi(resource, receiveCallback);
+    }
+
+    private boolean isLiveReloadConnection(AtmosphereResource resource) {
+        String refreshConnection = resource.getRequest()
+                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
+        return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
+                && refreshConnection != null
+                && TRANSPORT.WEBSOCKET.equals(resource.transport());
     }
 
     /**

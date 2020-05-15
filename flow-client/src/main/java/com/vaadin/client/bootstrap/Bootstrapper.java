@@ -172,6 +172,15 @@ public class Bootstrapper implements EntryPoint {
                 jsoConfiguration.getConfigBoolean("requestTiming"));
         conf.setExportedWebComponents(
                 jsoConfiguration.getConfigStringArray("webcomponents"));
+
+        conf.setDevmodeGizmoEnabled(jsoConfiguration
+                .getConfigBoolean(ApplicationConstants.DEVMODE_GIZMO_ENABLED));
+        conf.setLiveReloadPath(
+                jsoConfiguration.getConfigString("liveReloadPath"));
+        conf.setLiveReloadBackend(
+                jsoConfiguration.getConfigString("liveReloadBackend"));
+        conf.setSpringBootDevToolsPort(
+                jsoConfiguration.getConfigString("springBootDevToolsPort"));
     }
 
     private static void doStartApplication(final String applicationId) {

@@ -373,6 +373,13 @@ public final class Constants implements Serializable {
      */
     public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
+    /**
+     * Configuration parameter name for enabling live reload.
+     *
+     * @since
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
+
     private Constants() {
         // prevent instantiation constants class only
     }

@@ -60,6 +60,8 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
@@ -1347,16 +1349,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * @return A non-null {@link JsonObject} with application parameters.
          */
         public JsonObject getApplicationParameters(BootstrapContext context) {
-            JsonObject appConfig = getApplicationParameters(
-                    context.getRequest(), context.getSession());
-
-            appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
-                    context.getUI().getUIId());
-            return appConfig;
-        }
-
-        private JsonObject getApplicationParameters(VaadinRequest request,
-                VaadinSession session) {
+            VaadinRequest request = context.getRequest();
+            VaadinSession session = context.getSession();
             DeploymentConfiguration deploymentConfiguration = session
                     .getConfiguration();
             final boolean productionMode = deploymentConfiguration
@@ -1378,6 +1372,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
+
+                appConfig.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED,
+                        deploymentConfiguration.isDevModeLiveReloadEnabled());
+
+                VaadinService service = session.getService();
+                BrowserLiveReloadAccess liveReloadAccess = service
+                        .getInstantiator()
+                        .getOrCreate(BrowserLiveReloadAccess.class);
+                BrowserLiveReload liveReload = liveReloadAccess != null
+                        ? liveReloadAccess.getLiveReload(service)
+                        : null;
+                if (liveReload != null && liveReload.getBackend() != null) {
+                    appConfig.put("liveReloadBackend",
+                            liveReload.getBackend().toString());
+                    String pushURL = session.getConfiguration().getPushURL();
+                    if (pushURL != null) {
+                        appConfig.put("liveReloadPath", context
+                                .getUriResolver().resolveVaadinUri(pushURL));
+                    }
+                }
+
+                // make configurable when fixing #7847
+                appConfig.put("springBootDevToolsPort", 35729);
             }
 
             // Use locale from session if set, else from the request
@@ -1419,7 +1436,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!sendUrlsAsParameters) {
                 appConfig.put("sendUrlsAsParameters", false);
             }
-
+            appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
+                    context.getUI().getUIId());
             return appConfig;
         }
 

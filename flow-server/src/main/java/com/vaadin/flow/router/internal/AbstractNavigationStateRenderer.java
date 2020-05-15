@@ -34,6 +34,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
@@ -232,6 +233,7 @@ public abstract class AbstractNavigationStateRenderer
         // on the UI.
         if (preserveOnRefreshTarget) {
             setPreservedChain(chain, event);
+            warnAboutPreserveOnRefreshAndLiveReloadCombo(ui);
         }
 
         @SuppressWarnings("unchecked")
@@ -906,5 +908,14 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-
+    private static void warnAboutPreserveOnRefreshAndLiveReloadCombo(UI ui) {
+        // Show a warning that live-reload may work counter-intuitively
+        DeploymentConfiguration configuration = ui.getSession()
+                .getConfiguration();
+        if (!configuration.isProductionMode()
+                && configuration.isDevModeLiveReloadEnabled()) {
+            ui.getPage().executeJs(
+                    "Vaadin.Flow.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
+        }
+    }
 }
