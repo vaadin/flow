@@ -3,10 +3,10 @@ import MyEntityIdModel from './MyEntityIdModel';
 import MyEntity from './MyEntity';
 
 // @ts-ignore
-import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,PrimitiveModel,Required} from '@vaadin/flow-frontend/Binder';
+import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,PrimitiveModel,Required} from '@vaadin/form';
 
 // @ts-ignore
-import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/flow-frontend/FormValidator';
+import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
 
 /**
  * This module is generated from com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity.

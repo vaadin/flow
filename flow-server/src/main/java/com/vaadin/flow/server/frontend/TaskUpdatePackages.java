@@ -107,7 +107,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         // Update the dependency for the folder with resources
-        updateFrontendDependency(dependencies);
+        updateFrontendDependency(dependencies, DEP_NAME_FLOW_JARS, flowResourcesFolder);
+        updateFrontendDependency(dependencies, DEP_NAME_FORM_JARS, formResourcesFolder);
 
         // Add application dependencies
         for (Entry<String, String> dep : deps.entrySet()) {
@@ -159,27 +160,23 @@ public class TaskUpdatePackages extends NodeUpdater {
         return added > 0 || removed > 0 || !oldHash.equals(newHash);
     }
 
-
-    private int updateFrontendDependency(JsonObject json) {
-        if (flowResourcesFolder != null
+    private void updateFrontendDependency(JsonObject json, String dependecyName, File resourceFolder) {
+        if (resourceFolder != null
                 // Skip if deps are copied directly to `node_modules` folder
-                && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
+                && !resourceFolder.toString().contains(NODE_MODULES)) {
 
             String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),
-                    flowResourcesFolder.getAbsoluteFile().toPath());
-            if (!json.hasKey(DEP_NAME_FLOW_JARS) || !depsPkg.equals(json.getString(DEP_NAME_FLOW_JARS))) {
-                json.put(DEP_NAME_FLOW_JARS, depsPkg);
-                return 1;
+                    resourceFolder.getAbsoluteFile().toPath());
+            if (!json.hasKey(dependecyName) || !depsPkg.equals(json.getString(dependecyName))) {
+                json.put(dependecyName, depsPkg);
             }
         } else {
-            if (json.hasKey(DEP_NAME_FLOW_JARS)) {
-                json.remove(DEP_NAME_FLOW_JARS);
-                return 1;
+            if (json.hasKey(dependecyName)) {
+                json.remove(dependecyName);
             }
         }
 
-        return 0;
     }
 
     /**
