@@ -29,13 +29,21 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class StreamResourceView extends Div {
 
     public StreamResourceView() {
-        StreamResource resource = new StreamResource("filename++",
+        StreamResource resource = new StreamResource("filename",
                 () -> new ByteArrayInputStream(
                         "foo".getBytes(StandardCharsets.UTF_8)));
-        Anchor download = new Anchor("", "Download file");
+        Anchor download = new Anchor("", "Download filename");
         download.setHref(resource);
         download.setId("link");
-        add(download);
+
+        StreamResource plusResource = new StreamResource("file+.jpg",
+                () -> new ByteArrayInputStream(
+                        "foo".getBytes(StandardCharsets.UTF_8)));
+        Anchor plusDownload = new Anchor("", "Download file+.jpg");
+        plusDownload.setHref(plusResource);
+        plusDownload.setId("plus-link");
+
+        add(download, plusDownload);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {
