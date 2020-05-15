@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Properties;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.apache.commons.io.FileUtils;
@@ -115,14 +114,8 @@ public class OpenApiSpecGenerator {
 
     private OpenApiConfiguration extractOpenApiConfiguration(
             Properties applicationProperties) {
-        String customEnpointPrefixName = FrontendUtils.getCustomEndpointPrefix();
         String prefix = (String) applicationProperties.getOrDefault(PREFIX,
-                customEnpointPrefixName != null
-                        ? customEnpointPrefixName
-                        : DEFAULT_PREFIX);
-        if(!prefix.startsWith(("/"))) {
-            prefix = "/" + prefix;
-        }
+                DEFAULT_PREFIX);
         String server = GeneratorUtils.removeEnd((String) applicationProperties
                 .getOrDefault(SERVER, DEFAULT_SERVER), "/");
         String serverDescription = (String) applicationProperties
