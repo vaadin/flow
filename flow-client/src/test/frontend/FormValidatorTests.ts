@@ -4,7 +4,7 @@ const { assert } = intern.getPlugin("chai");
 // API to test
 import { AssertFalse, AssertTrue, DecimalMax, DecimalMin, Digits, Email, Future, Max, Min, Negative, NegativeOrZero, 
   NotBlank, NotEmpty, NotNull, Null, Past, Pattern, Positive, PositiveOrZero, Required, Size } 
-from "../../main/resources/META-INF/resources/frontend/form/Form";
+from "../../main/resources/META-INF/resources/frontend/form";
 
   suite("Validator", () => {
 

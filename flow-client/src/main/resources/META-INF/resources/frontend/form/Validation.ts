@@ -45,10 +45,6 @@ export class Required implements Validator<string> {
   }
 }
 
-export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
-  return model[validatorsSymbol];
-}
-
 function validateModel<T>(model: AbstractModel<T>) {
   const fieldStrategy = (model as any)[fieldSymbol] as FieldStrategy;
   return fieldStrategy ? fieldStrategy.validate() : validate(model);

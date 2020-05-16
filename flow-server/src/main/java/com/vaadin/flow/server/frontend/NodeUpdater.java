@@ -77,7 +77,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     protected static final String DEP_NAME_FORM_JARS = "@vaadin/form";
     private static final String FORM_FOLDER = "form";
     private static final String DEP_MAIN_FLOW_JARS = "Flow";
-    private static final String DEP_MAIN_FORM_JARS = "Form";
+    private static final String DEP_MAIN_FORM_JARS = "index";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     protected static final String POLYMER_VERSION = "3.2.0";
