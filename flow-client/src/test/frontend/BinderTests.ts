@@ -22,7 +22,7 @@ import {
   validate,
   ValidationError,
   Validator
-} from "../../main/resources/META-INF/resources/frontend/form/Form";
+} from "../../main/resources/META-INF/resources/frontend/form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel, ProductModel } from "./BinderModels";
 
