@@ -74,6 +74,7 @@ public class TsFormEndpoint {
         MyBaz bar;
         List<MyBaz> baz;
         Boolean bool;
+        @NotEmpty List<String> list;
         @Email(message = "foo") String email;
         @Null String isNull;
         @NotNull String notNull;

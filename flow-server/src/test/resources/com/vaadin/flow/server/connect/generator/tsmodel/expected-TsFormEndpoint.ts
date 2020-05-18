@@ -12,7 +12,7 @@ import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,Neg
  * This module is generated from com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity.
  * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  */
-export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEntityIdModel<T> { 
+export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEntityIdModel<T> {
   static createEmptyValue: () => MyEntity;
   public readonly assertFalse = new StringModel(this, 'assertFalse', new AssertFalse());
   public readonly assertTrue = new StringModel(this, 'assertTrue', new AssertTrue());
@@ -27,6 +27,7 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
   public readonly future = new StringModel(this, 'future', new Future());
   public readonly futureOrPresent = new ObjectModel(this, 'futureOrPresent', new FutureOrPresent());
   public readonly isNull = new StringModel(this, 'isNull', new Null());
+  public readonly list = new ArrayModel(this, 'list', StringModel, new Required(), new NotEmpty());
   public readonly max = new NumberModel(this, 'max', new Max(2));
   public readonly min = new NumberModel(this, 'min', new Min({value:1, message:"foo"}));
   public readonly negative = new NumberModel(this, 'negative', new Negative());

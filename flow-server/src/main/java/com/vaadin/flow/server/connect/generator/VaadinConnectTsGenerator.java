@@ -523,20 +523,26 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String name = property.name;
         String dataType = property.datatype;
         String simpleName = getSimpleNameFromImports(dataType, imports);
+        String validators = getConstrainsArguments(property);
 
-        if (simpleName.matches("Array<(.+)>")) {
-            simpleName = simpleName.replaceFirst("Array<(.+)>", "Array" + MODEL
-                    + "(this, '" + name + "', $1" + MODEL + ")");
+        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
+        if (matcher.find()) {
+            simpleName = "Array" + MODEL + "(this, '" + name + "', "
+                    + fixNameForModel(matcher.group(1)) + MODEL + validators + ")";
         } else {
-            if ("any".equals(simpleName)) {
-                simpleName = "Object";
-            } else if (simpleName.matches("string|number|boolean")) {
-                simpleName = GeneratorUtils.capitalize(simpleName);
-            }
-            simpleName += MODEL + "(this, '" + name + "'"
-                    + getConstrainsArguments(property) + ")";
+            simpleName = fixNameForModel(simpleName) + MODEL + "(this, '" + name
+                    + "'" + validators + ")";
         }
         return "new " + simpleName;
+    }
+
+    private String fixNameForModel(String name) {
+        if ("any".equals(name)) {
+            name = "Object";
+        } else if (name.matches("string|number|boolean")) {
+            name = GeneratorUtils.capitalize(name);
+        }
+        return name;
     }
 
     private String getConstrainsArguments(CodegenProperty property) {
