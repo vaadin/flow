@@ -18,8 +18,6 @@ package com.vaadin.flow.server.connect;
 
 import java.lang.reflect.Method;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
