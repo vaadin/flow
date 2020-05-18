@@ -36,7 +36,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
@@ -126,11 +125,6 @@ public class StateNode implements Serializable {
                             Integer.valueOf(mappings.size())));
         }
     }
-
-    private static class ReplacedViaPreserveOnRefresh {
-    }
-
-    private static final ReplacedViaPreserveOnRefresh REPLACED_MARKER = new ReplacedViaPreserveOnRefresh();
 
     /**
      * Cache of immutable node feature type set instances.
@@ -375,10 +369,6 @@ public class StateNode implements Serializable {
      * the state tree.
      */
     public void removeFromTree() {
-        if (getOwner() instanceof StateTree) {
-            ComponentUtil.setData(((StateTree) getOwner()).getUI(),
-                    ReplacedViaPreserveOnRefresh.class, REPLACED_MARKER);
-        }
         visitNodeTree(StateNode::reset);
         setParent(null);
     }
@@ -703,25 +693,16 @@ public class StateNode implements Serializable {
     }
 
     private void doSetTree(StateTree tree) {
-        if (tree == getOwner()) {
+        if (tree == owner) {
             return;
         }
 
-        if (getOwner() instanceof StateTree) {
-            boolean isOwnerAttached = ((StateTree) getOwner()).getRootNode()
-                    .isAttached();
-            boolean isNotReplaced = ComponentUtil.getData(
-                    ((StateTree) getOwner()).getUI(),
-                    ReplacedViaPreserveOnRefresh.class) == null;
-            if (isOwnerAttached || isNotReplaced) {
-                throw new IllegalStateException(
-                        "Can't move a node from one state tree to another. "
-                                + "If this is intentional, first remove the "
-                                + "node from its current state tree by calling "
-                                + "removeFromTree");
-            } else {
-                id = -1;
-            }
+        if (owner instanceof StateTree) {
+            throw new IllegalStateException(
+                    "Can't move a node from one state tree to another. "
+                            + "If this is intentional, first remove the "
+                            + "node from its current state tree by calling "
+                            + "removeFromTree");
         }
         owner = tree;
     }
