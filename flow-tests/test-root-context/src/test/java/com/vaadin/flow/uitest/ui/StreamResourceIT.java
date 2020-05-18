@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,7 +35,14 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
     public void getDynamicVaadinResource() throws IOException {
         open();
 
-        assertDownloadedContent();
+        assertDownloadedContent("link", "filename");
+    }
+
+    @Test
+    public void getDynamicVaadinPlusResource() throws IOException {
+        open();
+
+        assertDownloadedContent("plus-link", "file%2B.jpg");
     }
 
     @Test
@@ -44,11 +52,11 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
 
         findElement(By.id("detach-attach")).click();
 
-        assertDownloadedContent();
+        assertDownloadedContent("link", "filename");
     }
 
-    private void assertDownloadedContent() throws IOException {
-        WebElement link = findElement(By.id("link"));
+    private void assertDownloadedContent(String downloadId, String filename) throws IOException {
+        WebElement link = findElement(By.id(downloadId));
         Assert.assertEquals("Anchor element should have router-ignore " +
                         "attribute", "",
                 link.getAttribute("router-ignore"));
@@ -62,6 +70,8 @@ public class StreamResourceIT extends AbstractStreamResourceIT {
             String text = lines.stream().collect(Collectors.joining());
             Assert.assertEquals("foo", text);
         }
+
+        Assert.assertEquals(filename, FilenameUtils.getName(url));
     }
 
 }
