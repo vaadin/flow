@@ -1,10 +1,11 @@
 /* tslint:disable:max-classes-per-file */
 
 import { directive, Part, PropertyPart } from "lit-html";
-import { AbstractModel, fromStringSymbol, getName, getValue, requiredSymbol, setValue } from "./Models";
-import { validate, ValueError } from "./Validation";
-
-export const fieldSymbol = Symbol('field');
+import {
+  AbstractModel,
+  fromStringSymbol,
+  getBinderNode
+} from "./Models";
 
 interface Field {
   required: boolean,
@@ -14,13 +15,12 @@ interface Field {
 }
 interface FieldState extends Field {
   name: string,
-  visited: boolean
+  strategy: FieldStrategy
 }
 const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
 
 export interface FieldStrategy extends Field {
   element: Element;
-  validate: () => Promise<Array<ValueError<any>>>;
 }
 
 export abstract class AbstractFieldStrategy implements FieldStrategy {
@@ -94,7 +94,8 @@ export const field = directive(<T>(
   }
   let fieldState: FieldState;
   const element = propertyPart.committer.element as HTMLInputElement & Field;
-  const fieldStrategy = getFieldStrategy(element);
+
+  const binderNode = getBinderNode(model);
 
   if (fieldStateMap.has(propertyPart)) {
     fieldState = fieldStateMap.get(propertyPart)!;
@@ -105,29 +106,14 @@ export const field = directive(<T>(
       required: false,
       invalid: false,
       errorMessage: '',
-      visited: false
+      strategy: getFieldStrategy(element)
     };
     fieldStateMap.set(propertyPart, fieldState);
-    (model as any)[fieldSymbol] = fieldStrategy;
-
-    fieldStrategy.validate = async () => {
-      fieldState.visited = true;
-      const errors = await validate(model);
-
-      const displayedError = errors[0];
-      fieldStrategy.invalid = fieldState.invalid = displayedError !== undefined;
-      fieldStrategy.errorMessage = fieldState.errorMessage = displayedError?.validator.message || '';
-
-      if (effect !== undefined) {
-        effect.call(element, element);
-      }
-      return errors;
-    };
 
     const updateValueFromElement = () => {
-      fieldState.value = fieldStrategy.value;
+      fieldState.value = fieldState.strategy.value;
       const convert = typeof fieldState.value === 'string' && (model as any)[fromStringSymbol];
-      setValue(model, convert ? convert(fieldState.value) : fieldState.value);
+      binderNode.value = convert ? convert(fieldState.value) : fieldState.value;
       if (effect !== undefined) {
         effect.call(element, element);
       }
@@ -135,34 +121,40 @@ export const field = directive(<T>(
 
     element.oninput = () => {
       updateValueFromElement();
-      if (fieldState.visited) {
-        fieldStrategy.validate();
-      }
     };
 
     element.onchange = element.onblur = () => {
       updateValueFromElement();
-      fieldStrategy.validate();
+      binderNode.visited = true;
     };
 
     element.checkValidity = () => !fieldState.invalid;
   }
 
-  const name = getName(model);
+  const name = binderNode.name;
   if (name !== fieldState.name) {
     fieldState.name = name;
     element.setAttribute('name', name);
   }
 
-  const value = getValue(model);
+  const value = binderNode.value;
   if (value !== fieldState.value) {
-    fieldState.value = value;
-    fieldStrategy.value = value;
+    fieldState.strategy.value = fieldState.value = value;
   }
 
-  const required = model[requiredSymbol];
+  const required = binderNode.required;
   if (required !== fieldState.required) {
-    fieldState.required = required;
-    fieldStrategy.required = required;
+    fieldState.strategy.required = fieldState.required = required;
+  }
+
+  const firstError = binderNode.ownErrors[0];
+  const errorMessage = firstError && firstError.validator.message || '';
+  if (errorMessage !== fieldState.errorMessage) {
+    fieldState.strategy.errorMessage = fieldState.errorMessage = errorMessage;
+  }
+
+  const invalid = binderNode.invalid;
+  if (invalid !== fieldState.invalid) {
+    fieldState.strategy.invalid = fieldState.invalid = invalid;
   }
 });

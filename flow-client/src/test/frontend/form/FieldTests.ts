@@ -11,17 +11,15 @@ import {
   Binder,
   field,
   setValue,
-  fieldSymbol,
-  GenericFieldStrategy,
-  CheckedFieldStrategy,
-  SelectedFieldStrategy,
-  VaadinFieldStrategy,
-  getModelValidators,
+  // GenericFieldStrategy,
+  // CheckedFieldStrategy,
+  // SelectedFieldStrategy,
+  // VaadinFieldStrategy,
   Required,
   AbstractModel
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import { OrderModel, TestModel, TestEntity, IdEntity } from "./TestModels";
+import { OrderModel, TestModel } from "./TestModels";
 
 import { customElement, html, LitElement, query} from 'lit-element';
 import { PropertyPart, AttributeCommitter } from "lit-html";
@@ -309,17 +307,19 @@ suite("form/Field", () => {
       test(`GenericFieldStrategy ${tag}`, async() => {
         const element: Element & {value?: any} = document.createElement(tag);
         const model = binder.model.fieldString;
-        setValue(model, 'foo');
-        getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
+        const binderNode = binder.for(model);
+        binderNode.value = 'foo';
+        binderNode.addValidator({message: 'any-err-msg', validate: () => false});
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
-        const strategy = (model as any)[fieldSymbol];
+        // const strategy = (model as any)[fieldSymbol];
+        //
+        // expect(strategy instanceof GenericFieldStrategy).to.be.true;
+        // expect(strategy.value).to.be.equal('foo');
 
-        expect(strategy instanceof GenericFieldStrategy).to.be.true;
-        expect(strategy.value).to.be.equal('foo');
-
-        await strategy.validate();
+        await binderNode.validate();
+        field(model)(part);
         expect(element.hasAttribute('invalid')).to.be.true;
         expect(element.hasAttribute('errorMessage')).to.be.false;
       });
@@ -334,19 +334,21 @@ suite("form/Field", () => {
         const element: Element & {checked?: boolean} = document.createElement(tag);
         type && element.setAttribute('type', type);
         const model = binder.model.fieldBoolean;
+        const binderNode = binder.for(model);
 
-        setValue(model, true);
-        getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
+        binderNode.value = true;
+        binderNode.addValidator({message: 'any-err-msg', validate: () => false});
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
-        const strategy = (model as any)[fieldSymbol];
-
-        expect(strategy instanceof CheckedFieldStrategy).to.be.true;
-        expect(strategy.value).to.be.true;
+        // const strategy = (model as any)[fieldSymbol];
+        //
+        // expect(strategy instanceof CheckedFieldStrategy).to.be.true;
+        // expect(strategy.value).to.be.true;
         expect(element.checked).to.be.true;
 
-        await strategy.validate();
+        await binderNode.validate();
+        field(model)(part);
         expect(element.hasAttribute('invalid')).to.be.true;
         expect(element.hasAttribute('errorMessage')).to.be.false;
       });
@@ -355,19 +357,21 @@ suite("form/Field", () => {
     test(`SelectedFieldStrategy`, async () => {
       const element: Element & {selected?: boolean} = document.createElement('vaadin-list-box');
       const model = binder.model.fieldBoolean;
+      const binderNode = binder.for(model);
 
-      setValue(model, true);
-      getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
+      binderNode.value = true;
+      binderNode.addValidator({message: 'any-err-msg', validate: () => false});
 
       const part = new PropertyPart(new AttributeCommitter(element, '..', []));
       field(model)(part);
-      const strategy = (model as any)[fieldSymbol];
+      // const strategy = (model as any)[fieldSymbol];
 
-      expect(strategy instanceof SelectedFieldStrategy).to.be.true;
-      expect(strategy.value).to.be.true;
+      // expect(strategy instanceof SelectedFieldStrategy).to.be.true;
+      // expect(strategy.value).to.be.true;
       expect(element.selected).to.be.true;
 
-      await strategy.validate();
+      await binderNode.validate();
+      field(model)(part);
       expect(element.hasAttribute('invalid')).to.be.true;
       expect(element.hasAttribute('errorMessage')).to.be.false;
     });
@@ -387,24 +391,26 @@ suite("form/Field", () => {
           required?: boolean,
           errorMessage?: string} = document.createElement('any-vaadin-element-tag');
         (element.constructor as any).version = '1.0';
+        const binderNode = binder.for(model);
 
-        setValue(model, value);
-        getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
-        getModelValidators(model).add(new Required());
+        binderNode.value = value;
+        binderNode.addValidator({message: 'any-err-msg', validate: () => false});
+        binderNode.addValidator(new Required());
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
-        const strategy = (model as any)[fieldSymbol];
+        // const strategy = (model as any)[fieldSymbol];
         delete (element.constructor as any).version;
 
-        expect(strategy instanceof VaadinFieldStrategy).to.be.true;
-        expect(strategy.value).to.be.equal(value);
+        // expect(strategy instanceof VaadinFieldStrategy).to.be.true;
+        // expect(strategy.value).to.be.equal(value);
         expect(element.value).to.be.equal(value);
         expect(element.required).to.be.true;
         expect(element.invalid).to.be.undefined;
         expect(element.errorMessage).to.be.undefined;
 
-        await strategy.validate();
+        await binderNode.validate();
+        field(model)(part);
         expect(element.invalid).to.be.true;
         expect(element.errorMessage).to.be.equal('any-err-msg');
       });
