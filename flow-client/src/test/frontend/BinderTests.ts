@@ -332,6 +332,18 @@ suite("Binder", () => {
     });
 
     suite('submitTo', () => {
+      test("should be able to call submit() if onSubmit is pre configured", async () => {
+        let foo = 'bar';
+        const binder = new Binder(litOrderView, OrderModel, {
+          onSubmit: async () => {
+            foo = 'baz';
+          }
+        });
+        const binderSubmitToSpy = sinon.spy(binder, 'submitTo');
+        await binder.submit();
+        sinon.assert.calledOnce(binderSubmitToSpy);
+      });
+
       test("should throw on validation failure", async () => {
         try {
           await binder.submitTo(async() => {});
