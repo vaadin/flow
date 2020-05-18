@@ -58,10 +58,6 @@ public class NavigationTriggerView extends AbstractDivView
                 rerouteButton);
     }
 
-    public static String buildMessage(String path, NavigationTrigger trigger) {
-        return "Navigated to " + path + " with trigger " + trigger.name();
-    }
-
     public static String buildMessage(String path, NavigationTrigger trigger,
                                       String parameter) {
         return "Navigated to " + path + " with trigger " + trigger.name()
