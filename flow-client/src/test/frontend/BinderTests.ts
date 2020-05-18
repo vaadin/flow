@@ -408,9 +408,7 @@ suite("Binder", () => {
 
       beforeEach(async () => {
         binder = new Binder(
-          {
-            requestUpdate: ()=>{}
-          },
+          document.createElement('div'),
           IdEntityModel
         );
       });

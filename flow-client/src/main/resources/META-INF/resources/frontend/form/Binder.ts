@@ -15,11 +15,13 @@ export class Binder<T, M extends AbstractModel<T>> {
   private [onSubmitSymbol]: (value: T) => Promise<T|void>;
 
   constructor(
-    public context: Updatable<T>,
+    public context: Element,
     Model: ModelConstructor<T, M>,
     config?: BinderConfiguration<T>
   ) {
-    this[onChangeSymbol] = () => context.requestUpdate();
+    if(typeof (context as any).requestUpdate === 'function'){
+      this[onChangeSymbol] = () => (context as any).requestUpdate();
+    }
     if (config !== undefined) {
       if(config.onChange !== undefined){
         this[onChangeSymbol] = config.onChange;  
@@ -99,7 +101,9 @@ export class Binder<T, M extends AbstractModel<T>> {
   }
 
   private update(oldValue: T) {
-    this[onChangeSymbol].call(this.context, oldValue);
+    if(this[onChangeSymbol]){
+      this[onChangeSymbol].call(this.context, oldValue);
+    }
   }
 
   get isSubmitting() {
@@ -112,6 +116,3 @@ export interface BinderConfiguration<T>{
   onSubmit?: (value: T) => Promise<T|void>
 }
 
-export interface Updatable<T>{
-  requestUpdate(name?: PropertyKey, oldValue?: T): any;
-}
