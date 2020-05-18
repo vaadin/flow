@@ -11,7 +11,6 @@ import {
   appendItem,
   Binder,
   field,
-  getModelValidators,
   getName,
   getValue,
   keySymbol,
@@ -19,10 +18,9 @@ import {
   prependItem,
   Required,
   setValue,
-  validate,
   ValidationError,
   Validator,
-  BinderConfiguration
+  BinderConfiguration,
 } from "../../main/resources/META-INF/resources/frontend/form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel, ProductModel } from "./BinderModels";
@@ -313,47 +311,42 @@ suite("Binder", () => {
     });
 
     test("should run all validators per model", async () => {
-      return validate(binder.model.customer).then(errors => {
-        expect(errors.map(e => e.validator.constructor.name).sort()).to.eql([
-          "Required",
-          "Size"
-        ]);
-      });
+      const binderNode = binder.for(binder.model.customer);
+      await binderNode.validate();
+      expect(binderNode.errors.map(e => e.validator.constructor.name).sort()).to.eql([
+        "Required",
+        "Size"
+      ]);
     });
 
     test("should run all nested validations per model", async () => {
-      return validate(binder.model).then(errors => {
-        expect(errors.map(e => e.property)).to.eql([
-          "customer.fullName",
-          "customer.fullName",
-          "notes"
-        ]);
-      });
+      await binder.validate();
+      expect(binder.errors.map(e => e.property)).to.eql([
+        "customer.fullName",
+        "customer.fullName",
+        "notes"
+      ]);
     });
 
     test("should run all validations per array items", async () => {
       appendItem(binder.model.products);
       appendItem(binder.model.products);
-      return validate(binder.model).then(errors => {
-        expect(errors.map(e => e.property)).to.eql([
-          "customer.fullName",
-          "customer.fullName",
-          "notes",
-          "products.0.description",
-          "products.0.price",
-          "products.1.description",
-          "products.1.price"
-        ]);
-      });
+      await binder.validate();
+      expect(binder.errors.map(e => e.property)).to.eql([
+        "customer.fullName",
+        "customer.fullName",
+        "notes",
+        "products.0.description",
+        "products.0.price",
+        "products.1.description",
+        "products.1.price"
+      ]);
     });
 
     suite('submitTo', () => {
       test("should be able to call submit() if onSubmit is pre configured", async () => {
-        let foo = 'bar';
         const binder = new Binder(litOrderView, OrderModel, {
-          onSubmit: async () => {
-            foo = 'baz';
-          }
+          onSubmit: async () => {}
         });
         const binderSubmitToSpy = sinon.spy(binder, 'submitTo');
         await binder.submit();
@@ -430,16 +423,20 @@ suite("Binder", () => {
       });
 
       test("should not have validation errors for a model without validators", async () => {
-        assert.isEmpty(await validate(binder.model));
+        await binder.validate();
+        assert.isEmpty(binder.errors);
       });
 
       test("should fail validation after adding a synchronous validator to the model", async () => {
-        getModelValidators(binder.model).add({message: 'foo', validate: () => false});
-        return validate(binder.model).then(errors => {
-          expect(errors[0].validator.message).to.equal("foo");
-          expect(errors[0].property).to.equal('');
-          expect(errors[0].value).to.eql({idString: ''});
-        });
+        const binderNode = binder.for(binder.model);
+        binderNode.addValidator({message: 'foo', validate: () => false});
+        await binder.validate();
+        expect(binderNode.errors[0].validator.message).to.equal("foo");
+        expect(binderNode.errors[0].property).to.equal('');
+        expect(binderNode.errors[0].value).to.eql({idString: ''});
+        expect(binderNode.ownErrors[0].validator.message).to.equal("foo");
+        expect(binderNode.ownErrors[0].property).to.equal('');
+        expect(binderNode.ownErrors[0].value).to.eql({idString: ''});
       });
 
       test("should fail validation after adding an asynchronous validator to the model", async () => {
@@ -450,32 +447,34 @@ suite("Binder", () => {
             return false;
           };
         }
-        getModelValidators(binder.model).add(new AsyncValidator());
-        return validate(binder.model).then(errors => {
-          expect(errors[0].validator.message).to.equal("bar");
-        });
+        const binderNode = binder.for(binder.model);
+        binderNode.addValidator(new AsyncValidator());
+        await binder.validate();
+        expect(binderNode.errors[0].validator.message).to.equal("bar");
       });
 
       test("should not have validations errors after adding validators to properties if property is not required", async () => {
-        getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
-        const errors = await validate(binder.model);
-        assert.isEmpty(errors);
+        const binderNode = binder.for(binder.model.idString);
+        binderNode.addValidator({message: 'foo', validate: () => false});
+        await binder.validate();
+        assert.isEmpty(binderNode.errors);
       });
 
       test("should fail after adding validators to properties if property is not required but it has a value", async () => {
         setValue(binder.model.idString, 'bar');
-        getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
-        const errors = await validate(binder.model);
-        expect(errors[0].validator.message).to.equal("foo");
-        expect(errors[0].property).to.equal('idString');
-        expect(errors[0].value).to.eql('bar');
+        const binderNode = binder.for(binder.model.idString);
+        binderNode.addValidator({message: 'foo', validate: () => false});
+        expect(binderNode.errors[0].validator.message).to.equal("foo");
+        expect(binderNode.errors[0].property).to.equal('idString');
+        expect(binderNode.errors[0].value).to.eql('bar');
       });
 
       test("should fail after adding validators to properties if required and not value", async () => {
-        getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
-        getModelValidators(binder.model.idString).add(new Required());
-        const errors = await validate(binder.model);
-        expect(errors.length).to.equal(2);
+        const binderNode = binder.for(binder.model.idString);
+        binderNode.addValidator({message: 'foo', validate: () => false});
+        binderNode.addValidator(new Required());
+        await binder.validate();
+        expect(binderNode.errors.length).to.equal(2);
       });
     });
 
