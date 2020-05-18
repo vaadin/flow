@@ -160,19 +160,19 @@ public class ErrorStateRendererTest {
                 .setErrorNavigationTargets(
                         Collections.singleton(InfiniteLoopErrorTarget.class));
 
-        JsonObject routerLinkstate = Json.createObject();
-        routerLinkstate.put("href", "router_link");
-        routerLinkstate.put("scrollPositionX", 0d);
-        routerLinkstate.put("scrollPositionY", 0d);
         NavigationEvent event = new NavigationEvent(ui.getRouter(),
                 new Location("npe"), ui, NavigationTrigger.CLIENT_SIDE);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
         renderer.handle(event);
 
-        // TODO: didn't know what to choose CLIENT_SIDE vs ROUTER_LINK
+        JsonObject routerLinkState = Json.createObject();
+        routerLinkState.put("href", "router_link");
+        routerLinkState.put("scrollPositionX", 0d);
+        routerLinkState.put("scrollPositionY", 0d);
+
         event = new NavigationEvent(ui.getRouter(), new Location("npe"), ui,
-                NavigationTrigger.ROUTER_LINK, routerLinkstate, false);
+                NavigationTrigger.ROUTER_LINK, routerLinkState, false);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
         renderer.handle(event);
