@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -112,7 +113,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false) {
+                fallBackData, false, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;
@@ -231,7 +232,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
-                false) {
+                false, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;
@@ -300,7 +301,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false) {
+                tokenFile, null, false, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;
@@ -345,7 +346,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false) {
+                tokenFile, null, false, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;

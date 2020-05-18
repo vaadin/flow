@@ -76,6 +76,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final JsonObject tokenFileData;
 
     private final boolean disablePnpm;
+    private final List<String> additionalFrontendModules;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 
@@ -156,7 +157,15 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected List<String> getModules() {
-            return frontDeps.getModules();
+            if (!additionalFrontendModules.isEmpty()) {
+                List<String> frontendModules = new ArrayList<>(
+                        frontDeps.getModules());
+                frontendModules
+                        .add("@vaadin/flow-frontend/VaadinDevmodeGizmo.js");
+                return frontendModules;
+            } else {
+                return frontDeps.getModules();
+            }
         }
 
         @Override
@@ -320,7 +329,8 @@ public class TaskUpdateImports extends NodeUpdater {
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, boolean disablePnpm) {
         this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
-                generatedPath, frontendDirectory, tokenFile, null, disablePnpm);
+                generatedPath, frontendDirectory, tokenFile, null, disablePnpm,
+                Collections.emptyList());
     }
 
     /**
@@ -350,7 +360,8 @@ public class TaskUpdateImports extends NodeUpdater {
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, JsonObject tokenFileData, boolean disablePnpm) {
+            File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
+            List<String> additionalFrontendModules) {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
@@ -358,6 +369,7 @@ public class TaskUpdateImports extends NodeUpdater {
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
         this.disablePnpm = disablePnpm;
+        this.additionalFrontendModules = additionalFrontendModules;
     }
 
     @Override
