@@ -127,7 +127,7 @@ public class StateNode implements Serializable {
         }
     }
 
-    private static class ReplacedViaPreserveOnRefresh {
+    private static class ReplacedViaPreserveOnRefresh implements Serializable {
     }
 
     private static final ReplacedViaPreserveOnRefresh REPLACED_MARKER = new ReplacedViaPreserveOnRefresh();
