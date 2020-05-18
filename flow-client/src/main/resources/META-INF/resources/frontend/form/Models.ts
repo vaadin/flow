@@ -98,9 +98,10 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   constructor(
     parent: ModelParent<ReadonlyArray<T>>,
     key: keyof any,
-    Model: ModelConstructor<T, M>
+    Model: ModelConstructor<T, M>,
+    ...validators: any
   ) {
-    super(parent, key);
+    super(parent, key, ...validators);
     this[ModelSymbol] = Model;
   }
 
@@ -111,6 +112,9 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
       let model = this.models.get(item);
       if (!model) {
         model = new Model(this,i);
+        if (model instanceof PrimitiveModel) {
+          break;
+        }
         this.models.set(item, model);
       }
       model[keySymbol] = i;
