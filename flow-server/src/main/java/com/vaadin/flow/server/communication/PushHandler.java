@@ -498,7 +498,11 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onMessage(AtmosphereResource resource) {
-        callWithUi(resource, receiveCallback);
+        if (isLiveReloadConnection(resource)) {
+            getLogger().debug("Received live reload heartbeat");
+        } else {
+            callWithUi(resource, receiveCallback);
+        }
     }
 
     private boolean isLiveReloadConnection(AtmosphereResource resource) {
