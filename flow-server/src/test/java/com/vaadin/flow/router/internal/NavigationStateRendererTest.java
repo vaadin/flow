@@ -361,7 +361,7 @@ public class NavigationStateRendererTest {
     }
 
     @Test
-    public void handle_preserveOnRefreshView_routerLayoutIsPreserved_oldUiIsClosed() {
+    public void handle_preserveOnRefreshView_routerLayoutIsPreserved() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
 
@@ -382,10 +382,6 @@ public class NavigationStateRendererTest {
         // given the session has a cache of PreservedNestedView at this location
         final PreservedLayout layout = new PreservedLayout();
         final PreservedNestedView nestedView = new PreservedNestedView();
-
-        MockUI previousUi = new MockUI(session);
-        previousUi.add(nestedView);
-
         AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
                 new Location("preservedNested"),
                 new ArrayList<>(Arrays.asList(nestedView, layout)));
@@ -407,8 +403,6 @@ public class NavigationStateRendererTest {
                 ui.getInternals().getActiveRouterTargetsChain().get(0));
         Assert.assertEquals("Expected same router layout", layout,
                 ui.getInternals().getActiveRouterTargetsChain().get(1));
-
-        Assert.assertTrue(previousUi.isClosing());
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {
