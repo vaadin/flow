@@ -530,7 +530,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         } else {
             if ("any".equals(simpleName)) {
                 simpleName = "Object";
-            } else if (simpleName.matches("string|number")) {
+            } else if (simpleName.matches("string|number|boolean")) {
                 simpleName = GeneratorUtils.capitalize(simpleName);
             }
             simpleName += MODEL + "(this, '" + name + "'"
