@@ -30,6 +30,7 @@ public class PreserveOnRefreshReAddView extends Div {
         Text text2 = new Text("Another Text");
 
         Div container = new Div();
+        container.setId("container");
 
         NativeButton setText = new NativeButton("Set text", e -> {
             container.removeAll();
