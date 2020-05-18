@@ -6,3 +6,7 @@
 	path = vaadin-combo-box-flow
 	url = git@github.com:vaadin/vaadin-combo-box-flow.git
 	branch = feature/dataprovider
+[submodule "vaadin-checkbox-flow"]
+	path = vaadin-checkbox-flow
+	url = git@github.com:vaadin/vaadin-checkbox-flow.git
+	branch = feature/dataprovider

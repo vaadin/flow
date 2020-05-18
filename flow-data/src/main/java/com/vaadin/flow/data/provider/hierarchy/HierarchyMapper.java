@@ -188,6 +188,8 @@ public class HierarchyMapper<T, F> implements Serializable {
      *
      * @param item
      *            the item to collapse
+     * @return {@code true} if item has been collapsed,
+     *         {@code false} if item is empty or already collapsed
      */
     public boolean collapse(T item) {
         if (item == null) {
