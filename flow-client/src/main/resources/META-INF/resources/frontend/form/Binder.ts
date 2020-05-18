@@ -3,18 +3,31 @@ import { ServerValidator, validate, ValidationError, ValueError } from "./Valida
 
 const isSubmittingSymbol = Symbol('isSubmitting');
 const valueSymbol = Symbol('value');
+const onChangeSymbol = Symbol('onChange');
+const onSubmitSymbol = Symbol('onSubmit');
 
 export class Binder<T, M extends AbstractModel<T>> {
   model: M;
   private [defaultValueSymbol]: T;
   private [valueSymbol]: T;
   private [isSubmittingSymbol]: boolean = false;
+  private [onChangeSymbol]: (oldValue?: T) => void;
+  private [onSubmitSymbol]: (value: T) => Promise<T|void>;
 
   constructor(
-    public context: Element,
+    public context: Updatable<T>,
     Model: ModelConstructor<T, M>,
-    public onChange: (oldValue?: T) => void
+    config?: BinderConfiguration<T>
   ) {
+    this[onChangeSymbol] = () => context.requestUpdate();
+    if (config !== undefined) {
+      if(config.onChange !== undefined){
+        this[onChangeSymbol] = config.onChange;  
+      }
+      if(config.onSubmit !== undefined){
+        this[onSubmitSymbol] = config.onSubmit;  
+      }
+    }
     this.reset(Model.createEmptyValue());
     this.model = new Model(this, 'value');
   }
@@ -52,6 +65,12 @@ export class Binder<T, M extends AbstractModel<T>> {
     this.value = this.defaultValue;
   }
 
+  async submit(): Promise<T|void>{
+    if(this[onSubmitSymbol]!==undefined){
+      this.submitTo(this[onSubmitSymbol]);
+    }
+  }
+
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
     const errors = await validate(this.model);
     if (errors.length) {
@@ -80,10 +99,19 @@ export class Binder<T, M extends AbstractModel<T>> {
   }
 
   private update(oldValue: T) {
-    this.onChange.call(this.context, oldValue);
+    this[onChangeSymbol].call(this.context, oldValue);
   }
 
   get isSubmitting() {
     return this[isSubmittingSymbol];
   }
+}
+
+export interface BinderConfiguration<T>{
+  onChange?: (oldValue?: T) => void,
+  onSubmit?: (value: T) => Promise<T|void>
+}
+
+export interface Updatable<T>{
+  requestUpdate(name?: PropertyKey, oldValue?: T): any;
 }

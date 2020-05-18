@@ -21,7 +21,8 @@ import {
   setValue,
   validate,
   ValidationError,
-  Validator
+  Validator,
+  BinderConfiguration
 } from "../../main/resources/META-INF/resources/frontend/form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel, ProductModel } from "./BinderModels";
@@ -33,7 +34,7 @@ class LitOrderView extends LitElement {}
 
 @customElement('order-view')
 class OrderView extends LitElement {
-  public binder = new Binder(this, OrderModel, () => this.requestUpdate());
+  public binder = new Binder(this, OrderModel);
   @query('#notes') public notes!: HTMLInputElement;
   @query('#fullName') public fullName!: HTMLInputElement;
   @query('#nickName') public nickName!: HTMLInputElement;
@@ -73,7 +74,7 @@ suite("Binder", () => {
   });
 
   test("should instantiate without type arguments", () => {
-    const binder = new Binder(litOrderView, OrderModel, () => litOrderView.requestUpdate());
+    const binder = new Binder(litOrderView, OrderModel);
 
     assert.isDefined(binder);
     assert.isDefined(binder.value.notes);
@@ -83,9 +84,30 @@ suite("Binder", () => {
   });
 
   test("should instantiate model", () => {
-    const binder = new Binder(litOrderView, OrderModel, () => litOrderView.requestUpdate());
+    const binder = new Binder(litOrderView, OrderModel);
 
     assert.instanceOf(binder.model, OrderModel);
+  });
+
+  test("should be able to create a binder with a default onchang listener", () => {
+    const binder = new Binder(litOrderView, OrderModel);
+
+    setValue(binder.model.notes, "foo");
+
+    sinon.assert.calledTwice(requestUpdateStub);
+  });
+
+  test("should be able to create a binder with a custom onchang listener", () => {
+    let foo = 'bar';
+    const config: BinderConfiguration<Order> = {
+      onChange: () => { foo = 'baz' }
+    }
+
+    const binder = new Binder(litOrderView, OrderModel, config);
+
+    setValue(binder.model.notes, "foo");
+
+    assert.equal(foo, 'baz');
   });
 
   suite("name value", () => {
@@ -106,8 +128,7 @@ suite("Binder", () => {
     beforeEach(() => {
       binder = new Binder(
         litOrderView,
-        OrderModel,
-        () => litOrderView.requestUpdate()
+        OrderModel
       );
       requestUpdateStub.reset();
     });
@@ -199,7 +220,7 @@ suite("Binder", () => {
     let binder: Binder<Order, OrderModel<Order>>;
 
     beforeEach(() => {
-      binder = new Binder(litOrderView, OrderModel, () => { });
+      binder = new Binder(litOrderView, OrderModel);
     });
 
     test("should reuse model instance for the same array item", async () => {
@@ -271,8 +292,7 @@ suite("Binder", () => {
     beforeEach(async () => {
       binder = new Binder(
         litOrderView,
-        OrderModel,
-        () => litOrderView.requestUpdate()
+        OrderModel
       );
     });
 
@@ -376,9 +396,10 @@ suite("Binder", () => {
 
       beforeEach(async () => {
         binder = new Binder(
-          document.createElement('div'),
-          IdEntityModel,
-          () => litOrderView.requestUpdate()
+          {
+            requestUpdate: ()=>{}
+          },
+          IdEntityModel
         );
       });
 
@@ -437,7 +458,7 @@ suite("Binder", () => {
 
       beforeEach(async () => {
         orderView = document.createElement('order-view') as OrderView;
-        binder = new Binder(orderView, OrderModel, () => orderView.requestUpdate());
+        binder = new Binder(orderView, OrderModel);
         document.body.appendChild(orderView);
         return sleep(10);
       });
@@ -615,7 +636,7 @@ suite("Binder", () => {
     class OrderViewWithTextField extends LitElement {
       requestUpdateSpy = sinon.spy(this, 'requestUpdate');
 
-      binder = new Binder(this, OrderModel,() => this.requestUpdate());
+      binder = new Binder(this, OrderModel);
 
       @query('#notesField')
       notesField?: MockTextFieldElement;
@@ -801,7 +822,7 @@ suite("Binder", () => {
     @customElement('order-view-with-input')
     class OrderViewWithInput extends LitElement {
       requestUpdateSpy = sinon.spy(this, 'requestUpdate');
-      binder = new Binder(this, OrderModel, () => this.requestUpdate());
+      binder = new Binder(this, OrderModel);
 
       @query('#notesField')
       notesField?: MockInputElement;
