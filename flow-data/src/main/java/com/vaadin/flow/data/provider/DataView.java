@@ -55,18 +55,7 @@ public interface DataView<T> extends Serializable {
      *         item to search for
      * @return true if item is found in the available data
      */
-    boolean dataContainsItem(T item);
-
-    /**
-     * Get the item at the given row in the sorted and filetered data set.
-     *
-     * @param row
-     *         row number
-     * @return item on row
-     * @throws IndexOutOfBoundsException
-     *         requested row is outside of the available data set.
-     */
-    T getItemOnRow(int row);
+    boolean isItemPresent(T item);
 
     /**
      * Add a size change listener that is fired when the data set size changes.
