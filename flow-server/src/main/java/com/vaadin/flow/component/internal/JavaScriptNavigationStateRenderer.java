@@ -18,10 +18,13 @@ package com.vaadin.flow.component.internal;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
+import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,8 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     static final String NOT_SUPPORT_REROUTE = "BeforeEvent.rerouteTo() with a client side route is not supported";
 
     private String clientForwardRoute;
+
+    private ContinueNavigationAction continueNavigationAction;
 
     /**
      * Constructs a new NavigationStateRenderer that handles the given
@@ -62,6 +67,15 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     }
 
     @Override
+    public int handle(NavigationEvent event) {
+
+        continueNavigationAction = event.getUI()
+                .getInternals().getContinueNavigationAction();
+
+        return super.handle(event);
+    }
+
+    @Override
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
         if (beforeEvent.hasUnknownForward()) {
@@ -80,6 +94,29 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
         }
 
         return super.handleTriggeredBeforeEvent(event, beforeEvent);
+    }
+
+    @Override
+    protected boolean shouldPushHistoryState(NavigationEvent event, UI ui) {
+        if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())) {
+            return true;
+        } else {
+            return super.shouldPushHistoryState(event, ui);
+        }
+    }
+
+    @Override
+    protected void pushHistoryState(NavigationEvent event, UI ui) {
+        super.pushHistoryState(event, ui);
+
+        if (ui instanceof JavaScriptBootstrapUI) {
+            JavaScriptBootstrapUI jsUI = (JavaScriptBootstrapUI) ui;
+
+            if (continueNavigationAction != null) {
+                jsUI.notifyClient(event.getLocation().getPathWithQueryParameters());
+            }
+        }
+
     }
 
     private static Logger getLogger() {
