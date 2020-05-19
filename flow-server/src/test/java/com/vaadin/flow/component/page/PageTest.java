@@ -16,6 +16,8 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -301,20 +303,25 @@ public class PageTest {
     }
 
     @Test
-    public void open_openInSameWidnow_closeTheClientApplication() {
+    public void open_openInSameWindow_closeTheClientApplication() {
         AtomicReference<String> capture = new AtomicReference<>();
+        List<Serializable> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
                     Serializable[] parameters) {
                 capture.set(expression);
+                params.addAll(Arrays.asList(parameters));
                 return Mockito.mock(PendingJavaScriptResult.class);
             }
         };
 
-        page.open("foo");
+        page.setLocation("foo");
 
-        Assert.assertThat(capture.get(),
-                CoreMatchers.containsString("this.stopApplication"));
+        // self check
+        Assert.assertEquals("_self", params.get(1));
+
+        Assert.assertThat(capture.get(), CoreMatchers
+                .startsWith("if ($1 == '_self') this.stopApplication();"));
     }
 }
