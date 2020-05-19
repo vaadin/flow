@@ -146,7 +146,7 @@ module.exports = {
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
     // Give some feedback when heavy builds
-    new ProgressPlugin(true),
+    devMode && new ProgressPlugin(true),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {

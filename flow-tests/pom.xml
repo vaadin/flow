@@ -263,6 +263,18 @@
 
     <profiles>
         <profile>
+            <id>gen-dev-deps</id>
+            <modules>
+                <module>test-mixed/pom-pnpm-production.xml</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>release</id>
+            <modules>
+                <module>test-mixed/pom-pnpm-production.xml</module>
+            </modules>
+        </profile>
+        <profile>
             <id>run-tests</id>
             <activation>
                 <property>
@@ -278,6 +290,7 @@
                 <module>test-subcontext</module>
                 <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
+                <module>test-live-reload</module>
 
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>

@@ -28,15 +28,20 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.BuildUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static elemental.json.impl.JsonUtil.stringify;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -45,12 +50,20 @@ import static elemental.json.impl.JsonUtil.stringify;
  */
 public class TaskRunNpmInstall implements FallibleCommand {
 
+    private static final String DEV_DEPENDENCIES_PATH = "dev.dependencies.path";
+
     private static final String MODULES_YAML = ".modules.yaml";
+
+    // .vaadin/vaadin.json contains local installation data inside node_modules
+    // This will hep us know to execute even when another developer has pushed
+    // a new hash to the code repository.
+    private static final String INSTALL_HASH = ".vaadin/vaadin.json";
 
     private final NodeUpdater packageUpdater;
 
-    private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
-            "pnpm", ".ignored_pnpm", ".pnpm", ".staging", MODULES_YAML);
+    private final List<String> ignoredNodeFolders = Arrays
+            .asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".staging",
+                    ".vaadin", MODULES_YAML);
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final ClassFinder classFinder;
@@ -84,9 +97,45 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     + "resolve and optionally download frontend dependencies. "
                     + "This may take a moment, please stand by...");
             runNpmInstall();
+
+            updateLocalHash();
         } else {
             packageUpdater.log().info("Skipping `" + toolName + " install`.");
         }
+    }
+
+    /**
+     * Updates the local hash to node_modules.
+     * <p>
+     * This is for handling updated package to the code repository by another
+     * developer as then the hash is updated and we may just be missing one
+     * module.
+     */
+    private void updateLocalHash() {
+        try {
+            final JsonObject vaadin = packageUpdater.getPackageJson()
+                    .getObject(VAADIN_DEP_KEY);
+            if(vaadin == null) {
+                packageUpdater.log().warn("No vaadin object in package.json");
+                return;
+            }
+            final String hash = vaadin.getString(HASH_KEY);
+
+            final JsonObject localHash = Json.createObject();
+            localHash.put(HASH_KEY, hash);
+
+            final File localHashFile = getLocalHashFile();
+            FileUtils.forceMkdirParent(localHashFile);
+            String content = stringify(localHash, 2) + "\n";
+            FileUtils.writeStringToFile(localHashFile, content, UTF_8.name());
+
+        } catch (IOException e) {
+            packageUpdater.log().warn("Failed to update node_modules hash.", e);
+        }
+    }
+
+    private File getLocalHashFile() {
+        return new File(packageUpdater.nodeModulesFolder, INSTALL_HASH);
     }
 
     /**
@@ -102,17 +151,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .warn("Couldn't find {} file to pin dependency versions."
                             + " Transitive dependencies won't be pinned for pnpm.",
                             Constants.VAADIN_VERSIONS_JSON);
-            return null;
         }
-        try (InputStream content = resource.openStream()) {
+        try (InputStream content = resource == null ? null
+                : resource.openStream()) {
 
             File versions = new File(packageUpdater.generatedFolder,
                     "versions.json");
 
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    packageUpdater.getPackageJson());
-            FileUtils.write(versions, stringify(convert.getManagedVersions(), 2) + "\n",
+            JsonObject versionsJson = getVersions(content);
+            if (versionsJson == null) {
+                return null;
+            }
+            FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                     StandardCharsets.UTF_8);
             Path versionsPath = versions.toPath();
             if (versions.isAbsolute()) {
@@ -124,6 +174,68 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
     }
 
+    /**
+     * Returns a path inside classpath to the file with dev dependencies locked.
+     * <p>
+     * The file may absent in the classapth.
+     *
+     * @return the path to the dev dependencies file in the classpath, not
+     *         {@code null}
+     */
+    protected String getDevDependenciesFilePath() {
+        return BuildUtil.getBuildProperty(DEV_DEPENDENCIES_PATH);
+    }
+
+    private JsonObject getVersions(InputStream platformVersions)
+            throws IOException {
+        JsonObject versionsJson = null;
+        if (platformVersions != null) {
+            VersionsJsonConverter convert = new VersionsJsonConverter(
+                    Json.parse(IOUtils.toString(platformVersions,
+                            StandardCharsets.UTF_8)));
+            versionsJson = convert.getConvertedJson();
+            versionsJson = new VersionsJsonFilter(
+                    packageUpdater.getPackageJson(), NodeUpdater.DEPENDENCIES)
+                            .getFilteredVersions(versionsJson);
+        }
+
+        String genDevDependenciesPath = getDevDependenciesFilePath();
+        if (genDevDependenciesPath == null) {
+            packageUpdater.log().error(
+                    "Couldn't find dev dependencies file path from proeprties file. "
+                            + "Dev dependencies won't be locked");
+            return versionsJson;
+        }
+        JsonObject devDeps = readGeneratedDevDependencies(
+                genDevDependenciesPath);
+        if (devDeps == null) {
+            return versionsJson;
+        }
+        devDeps = new VersionsJsonFilter(packageUpdater.getPackageJson(),
+                NodeUpdater.DEV_DEPENDENCIES).getFilteredVersions(devDeps);
+        if (versionsJson == null) {
+            return devDeps;
+        }
+        for (String key : versionsJson.keys()) {
+            devDeps.put(key, versionsJson.getString(key));
+        }
+        return devDeps;
+    }
+
+    private JsonObject readGeneratedDevDependencies(String path)
+            throws IOException {
+        URL resource = classFinder.getResource(path);
+        if (resource == null) {
+            packageUpdater.log().warn("Couldn't find  dev dependencies file. "
+                    + "Dev dependencies won't be locked");
+            return null;
+        }
+        try (InputStream content = resource.openStream()) {
+            return Json
+                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8));
+        }
+    }
+
     private boolean shouldRunNpmInstall() {
         if (packageUpdater.nodeModulesFolder.isDirectory()) {
             // Ignore .bin and pnpm folders as those are always installed for
@@ -132,9 +244,32 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .listFiles(
                             (dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
-            return installedPackages.length == 0
-                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName()));
+            return installedPackages.length == 0 || (
+                    installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                            .startsWith(installedPackages[0].getName())) || (
+                    installedPackages.length > 0 && isVaadinHashUpdated());
+        }
+        return true;
+    }
+
+    private boolean isVaadinHashUpdated() {
+        final File localHashFile = getLocalHashFile();
+        if (localHashFile.exists()) {
+            try {
+                String fileContent = FileUtils
+                        .readFileToString(localHashFile, UTF_8.name());
+                JsonObject content = Json.parse(fileContent);
+                if (content.hasKey(HASH_KEY)) {
+                    final JsonObject packageJson = packageUpdater
+                            .getPackageJson();
+                    return !content.getString(HASH_KEY)
+                            .equals(packageJson.getObject(VAADIN_DEP_KEY)
+                                    .getString(HASH_KEY));
+                }
+            } catch (IOException e) {
+                packageUpdater.log()
+                        .warn("Failed to load hashes forcing npm execution", e);
+            }
         }
         return true;
     }

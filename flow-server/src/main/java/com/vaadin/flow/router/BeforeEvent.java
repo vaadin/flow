@@ -28,6 +28,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 
 /**
@@ -45,81 +46,153 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationHandler rerouteTarget;
 
     private final Class<?> navigationTarget;
+    private final RouteParameters parameters;
     private final List<Class<? extends RouterLayout>> layouts;
     private NavigationState forwardTargetState;
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
-    private boolean isUnknownRoute = false;
+
     private String forwardToUrl = null;
+    private String rerouteToUrl = null;
 
     /**
-     * Construct event from a NavigationEvent.
+     * Constructs event from a NavigationEvent.
      *
      * @param event
-     *            NavigationEvent that is on-going
+     *            NavigationEvent that is on-going, not <code>null</code>
      * @param navigationTarget
-     *            Navigation target
+     *            navigation target, not <code>null</code>
      * @param layouts
-     *            Navigation layout chain
+     *            Navigation layout chain, not <code>null</code>
      */
     public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
                        List<Class<? extends RouterLayout>> layouts) {
         this(event.getSource(), event.getTrigger(), event.getLocation(),
                 navigationTarget, event.getUI(), layouts);
+    }
+
+    /**
+     * Constructs event from a NavigationEvent.
+     *
+     * @param event
+     *            NavigationEvent that is on-going, not <code>null</code>
+     * @param navigationTarget
+     *            navigation target, not <code>null</code>
+     * @param parameters
+     *            route parameters, not <code>null</code>
+     * @param layouts
+     *            Navigation layout chain, not <code>null</code>
+     */
+    public BeforeEvent(NavigationEvent event, Class<?> navigationTarget,
+            RouteParameters parameters,
+            List<Class<? extends RouterLayout>> layouts) {
+        this(event.getSource(), event.getTrigger(), event.getLocation(),
+                navigationTarget, parameters, event.getUI(), layouts);
 
     }
 
     /**
-     * Constructs a new BeforeNavigation Event.
+     * Constructs a new BeforeEvent.
      *
      * @param router
-     *            the router that triggered the change, not {@code null}
+     *            the router that triggered the change, not <code>null</code>
      * @param trigger
      *            the type of user action that triggered this location change,
      *            not <code>null</code>
      * @param location
-     *            the new location, not {@code null}
+     *            the new location, not <code>null</code>
      * @param navigationTarget
-     *            navigation target class
+     *            navigation target class, not <code>null</code>
      * @param ui
-     *            the UI related to the navigation
+     *            the UI related to the navigation, not <code>null</code>
      * @param layouts
-     *            the layout chain for the navigation target
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
      */
     public BeforeEvent(Router router, NavigationTrigger trigger,
-                       Location location, Class<?> navigationTarget, UI ui,
-                       List<Class<? extends RouterLayout>> layouts) {
+            Location location, Class<?> navigationTarget, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
+        this(router, trigger, location, navigationTarget, RouteParameters.empty(),
+                ui, layouts);
+    }
+
+    /**
+     * Constructs a new BeforeEvent.
+     *
+     * @param router
+     *            the router that triggered the change, not <code>null</code>
+     * @param trigger
+     *            the type of user action that triggered this location change,
+     *            not <code>null</code>
+     * @param location
+     *            the new location, not <code>null</code>
+     * @param navigationTarget
+     *            navigation target class, not <code>null</code>
+     * @param parameters
+     *            route parameters, not <code>null</code>
+     * @param ui
+     *            the UI related to the navigation, not <code>null</code>
+     * @param layouts
+     *            the layout chain for the navigation target, not
+     *            <code>null</code>
+     */
+    public BeforeEvent(Router router, NavigationTrigger trigger,
+            Location location, Class<?> navigationTarget,
+            RouteParameters parameters, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
         super(router);
 
         assert trigger != null;
         assert location != null;
         assert navigationTarget != null;
+        assert parameters != null;
         assert ui != null;
         assert layouts != null;
 
         this.trigger = trigger;
         this.location = location;
         this.navigationTarget = navigationTarget;
+        this.parameters = parameters;
         this.ui = ui;
         this.layouts = Collections.unmodifiableList(new ArrayList<>(layouts));
     }
 
     /**
-     * Check if the forward target is client-side route.
+     * Gets if forward route is unknown. This is true only when a forward
+     * route is not found using {@link #forwardTo(String)} method.
      *
-     * @return forward target is client-side route
+     * @return forward route is not found in the route registry.
      */
-    public boolean isUnknownRoute() {
-        return isUnknownRoute;
+    public boolean hasUnknownForward() {
+        return forwardToUrl != null;
     }
 
     /**
-     * Gets the new forward url.
+     * Gets if reroute route is unknown. This is true only when a reroute
+     * route is not found using {@link #rerouteTo(String)} method.
      *
-     * @return the new forward url
+     * @return reroute is not found in the route registry.
      */
-    public String getForwardToUrl() {
+    public boolean hasUnknownReroute() {
+        return rerouteToUrl != null;
+    }
+
+    /**
+     * Gets the unknown forward.
+     *
+     * @return the unknown forward.
+     */
+    public String getUnknownForward() {
         return forwardToUrl;
+    }
+
+    /**
+     * Gets the unknown reroute.
+     * 
+     * @return the unknown reroute.
+     */
+    public String getUnknownReroute() {
+        return rerouteToUrl;
     }
 
     /**
@@ -221,8 +294,24 @@ public abstract class BeforeEvent extends EventObject {
     public void forwardTo(Class<? extends Component> forwardTargetComponent) {
         Objects.requireNonNull(forwardTargetComponent,
                 "forwardTargetComponent cannot be null");
-        forwardTo(new NavigationStateBuilder(ui.getRouter())
-                .withTarget(forwardTargetComponent).build());
+        forwardTo(getNavigationState(forwardTargetComponent,
+                RouteParameters.empty(), null));
+    }
+
+    /**
+     * Forward the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
+     *
+     * @param forwardTargetComponent
+     *            the component type to display, not {@code null}
+     * @param parameters
+     *            parameters for the target url.
+     */
+    public void forwardTo(Class<? extends Component> forwardTargetComponent,
+            RouteParameters parameters) {
+        Objects.requireNonNull(forwardTargetComponent,
+                "forwardTargetComponent cannot be null");
+        forwardTo(getNavigationState(forwardTargetComponent, parameters, null));
     }
 
     /**
@@ -233,12 +322,15 @@ public abstract class BeforeEvent extends EventObject {
      *            forward target location string
      */
     public void forwardTo(String location) {
-        if(getSource().getRegistry().getNavigationTarget(location).isPresent()) {
-            getSource().getRegistry().getNavigationTarget(location).ifPresent(this::forwardTo);
+        final Optional<Class<? extends Component>> target = getSource()
+                .getRegistry().getNavigationTarget(location);
+
+        if (target.isPresent()) {
+            forwardTo(getNavigationState(target.get(), RouteParameters.empty(),
+                    location));
         } else {
-            // inform that forward target location is client-side view
-            isUnknownRoute = true;
-            forwardToUrl = location;
+            // Inform that forward target location is not known.
+            forwardToUrl = trimPath(location);
         }
     }
 
@@ -309,8 +401,24 @@ public abstract class BeforeEvent extends EventObject {
     public void rerouteTo(Class<? extends Component> routeTargetType) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
-        rerouteTo(new NavigationStateBuilder(ui.getRouter())
-                .withTarget(routeTargetType).build());
+        rerouteTo(getNavigationState(routeTargetType, RouteParameters.empty(),
+                null));
+    }
+
+    /**
+     * Reroutes the navigation to show the given component instead of the
+     * component that is currently about to be displayed.
+     *
+     * @param routeTargetType
+     *            the component type to display, not {@code null}
+     * @param parameters
+     *            parameters for the target url.
+     */
+    public void rerouteTo(Class<? extends Component> routeTargetType,
+            RouteParameters parameters) {
+        Objects.requireNonNull(routeTargetType,
+                "routeTargetType cannot be null");
+        rerouteTo(getNavigationState(routeTargetType, parameters, null));
     }
 
     /**
@@ -321,8 +429,16 @@ public abstract class BeforeEvent extends EventObject {
      *            reroute target location string
      */
     public void rerouteTo(String route) {
-        getSource().getRegistry().getNavigationTarget(route)
-                .ifPresent(this::rerouteTo);
+        final Optional<Class<? extends Component>> target = getSource()
+                .getRegistry().getNavigationTarget(route);
+
+        if (target.isPresent()) {
+            rerouteTo(getNavigationState(target.get(), RouteParameters.empty(),
+                    route));
+        } else {
+            // Inform that reroute target location is not known.
+            rerouteToUrl = trimPath(route);
+        }
     }
 
     /**
@@ -379,37 +495,77 @@ public abstract class BeforeEvent extends EventObject {
         }
     }
 
-    private <T> NavigationState getNavigationState(String route,
-                                                   List<T> routeParams) {
+    private <T> NavigationState getNavigationState(String url,
+            List<T> routeParams) {
         List<String> segments = routeParams.stream().map(Object::toString)
                 .collect(Collectors.toList());
-        Class<? extends Component> target = getTargetOrThrow(route, segments);
+        Class<? extends Component> target = getTargetOrThrow(url, segments);
 
         if (!routeParams.isEmpty()) {
             checkUrlParameterType(routeParams.get(0), target);
         }
 
+        return getNavigationState(target,
+                HasUrlParameterFormat.getParameters(segments),
+                HasUrlParameterFormat.getUrl(url, routeParams));
+    }
+
+    private NavigationState getNavigationState(
+            Class<? extends Component> target, RouteParameters parameters,
+            String resolvedUrl) {
         return new NavigationStateBuilder(ui.getRouter())
-                .withTarget(target, segments).build();
+                .withTarget(target, parameters).withPath(resolvedUrl).build();
     }
 
     /**
      * Get the forward target type for forwarding.
      *
      * @return forward target type
+     * @throws NullPointerException
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
      */
     public Class<? extends Component> getForwardTargetType() {
         return forwardTargetState.getNavigationTarget();
     }
 
     /**
-     * Get the URL parameters of the forward target.
+     * Gets the URL parameters of the forward target.
      *
      * @return URL parameters of forward target
+     * @throws NullPointerException
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
+     * @deprecated use {@link #getForwardTargetRouteParameters()} instead.
      */
+    @Deprecated
     public List<String> getForwardTargetParameters() {
         return forwardTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Gets the URL parameters of the forward target.
+     *
+     * @return URL parameters of forward target
+     * @throws NullPointerException
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
+     */
+    public RouteParameters getForwardTargetRouteParameters() {
+        return forwardTargetState.getRouteParameters();
+    }
+
+    /**
+     * Gets the reroute url.
+     *
+     * @return the reroute url.
+     * @throws NullPointerException
+     *             if no forward target is set. Check
+     *             {@link #hasForwardTarget()} before accessing this method.
+     */
+    public String getForwardUrl() {
+        return forwardTargetState.getResolvedPath();
     }
 
     /**
@@ -428,6 +584,9 @@ public abstract class BeforeEvent extends EventObject {
      * Get the route target type for rerouting.
      *
      * @return route target type
+     * @throws NullPointerException
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
      */
     public Class<? extends Component> getRerouteTargetType() {
         return rerouteTargetState.getNavigationTarget();
@@ -437,10 +596,39 @@ public abstract class BeforeEvent extends EventObject {
      * Get the URL parameters of the reroute target.
      *
      * @return URL parameters of reroute target
+     * @throws NullPointerException
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
+     * @deprecated use {@link #getRerouteTargetRouteParameters()} instead.
      */
+    @Deprecated
     public List<String> getRerouteTargetParameters() {
         return rerouteTargetState.getUrlParameters()
                 .orElse(Collections.emptyList());
+    }
+
+    /**
+     * Get the URL parameters of the reroute target.
+     *
+     * @return URL parameters of reroute target
+     * @throws NullPointerException
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
+     */
+    public RouteParameters getRerouteTargetRouteParameters() {
+        return rerouteTargetState.getRouteParameters();
+    }
+
+    /**
+     * Gets the reroute url.
+     * 
+     * @return the reroute url.
+     * @throws NullPointerException
+     *             if no reroute target is set. Check
+     *             {@link #hasRerouteTarget()} before accessing this method.
+     */
+    public String getRerouteUrl() {
+        return rerouteTargetState.getResolvedPath();
     }
 
     /**
@@ -450,6 +638,15 @@ public abstract class BeforeEvent extends EventObject {
      */
     public Class<?> getNavigationTarget() {
         return navigationTarget;
+    }
+
+    /**
+     * Gets the route parameters associated with this event.
+     * 
+     * @return route parameters retrieved from the navigation url.
+     */
+    public RouteParameters getRouteParameters() {
+        return parameters;
     }
 
     /**
@@ -545,4 +742,21 @@ public abstract class BeforeEvent extends EventObject {
     public UI getUI() {
         return ui;
     }
+
+    private static String trimPath(String path) {
+        if (path == null) {
+            return "";
+        }
+
+        path = path.trim();
+
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path;
+    }
+
 }

@@ -350,6 +350,16 @@ public class ExplicitNullableTypeCheckerTest {
                 String.class);
     }
 
+    @Test
+    public void should_ReturnNull_When_GivenNonNull_Generic_BeanProperties() {
+        final Person person = new Person();
+        person.setName("foo");
+        person.setId(1);
+
+        Assert.assertNull(explicitNullableTypeChecker.checkValueForType(person,
+                Person.class));
+    }
+
     public List<String> parametrizedListMethod(String... args) {
         final List<String> list = new ArrayList<String>();
         for (String arg : args) {
@@ -402,6 +412,30 @@ public class ExplicitNullableTypeCheckerTest {
 
         public void setTitle(String title) {
             this.title = title;
+        }
+    }
+
+    static private abstract class AbstractEntity<ID> {
+        private ID id;
+
+        public ID getId() {
+            return id;
+        }
+    
+        public void setId(ID id) {
+            this.id = id;
+        }
+    }
+
+    static private class Person extends AbstractEntity<Integer> {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
     }
 }
