@@ -75,12 +75,18 @@ public class ShortcutRegistration implements Registration, Serializable {
         if (listenOnComponents == null) {
             listenOnComponents = registerOwnerListeners();
         }
+        for (Component component : listenOnComponents) {
+            component.addDetachListener(event -> {
+                removeAllListenerRegistrations();
+            });
+        }
 
         for (int i = 0; i < listenOnComponents.length; i++) {
             updateHandlerListenerRegistration(i);
         }
 
         markClean();
+
     };
 
     /**
