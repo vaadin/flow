@@ -153,8 +153,9 @@ public class ExecuteJavaScriptProcessor {
         try {
             NativeFunction function = new NativeFunction(parameterNamesAndCode);
 
-            function.apply(getContextExecutionObject(nodeParameters),
-                    parameters);
+            function.apply(
+                    getContextExecutionObject(nodeParameters, () -> registry
+                            .getUILifecycle().setState(UIState.TERMINATED)),
         } catch (Exception exception) {
             Console.reportStacktrace(exception);
             Console.error(
@@ -196,7 +197,7 @@ public class ExecuteJavaScriptProcessor {
     }
 
     private native JsonObject getContextExecutionObject(
-            JsMap<Object, StateNode> nodeParameters)
+            JsMap<Object, StateNode> nodeParameters, Runnable stopApplication)
     /*-{
           var object = {};
           object.getNode = function (element){
@@ -220,6 +221,10 @@ public class ExecuteJavaScriptProcessor {
           object.scrollPositionHandlerAfterServerNavigation = function(state) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
           }
+          object.stopApplication = $entry(function(){
+              stopApplication.@java.lang.Runnable::run(*)();
+          });
+
         return object;
     }-*/;
 }
