@@ -22,14 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
-
-    private void openTestUrl(String url) {
-        getDriver().get(getRootURL() + "/foo" + url);
-        waitForDevServer();
-    }
+public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
     @Test
     public void indexHtmlRequestHandler_openRootURL_shouldResponseIndexHtml() {
