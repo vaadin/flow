@@ -76,9 +76,6 @@ public abstract class AbstractNavigationStateRenderer
     private static List<Integer> statusCodes = ReflectTools
             .getConstantIntValues(HttpServletResponse.class);
 
-    private static final EnumSet<NavigationTrigger> PUSH_STATE_TRIGGERS = EnumSet
-            .of(NavigationTrigger.UI_NAVIGATE, NavigationTrigger.CLIENT_SIDE);
-
     private final NavigationState navigationState;
 
     private List<Class<? extends RouterLayout>> routeLayoutTypes;
@@ -273,13 +270,21 @@ public abstract class AbstractNavigationStateRenderer
                                         .getLastHandledLocation()
                                         .getPathWithQueryParameters()))) {
 
-            if (PUSH_STATE_TRIGGERS.contains(event.getTrigger())) {
-                // Enable navigating back
-                ui.getPage().getHistory().pushState(null, event.getLocation());
+            if (shouldPushHistoryState(event, ui)) {
+                pushHistoryState(event, ui);
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
         }
+    }
+
+    protected void pushHistoryState(NavigationEvent event, UI ui) {
+        // Enable navigating back
+        ui.getPage().getHistory().pushState(null, event.getLocation());
+    }
+
+    protected boolean shouldPushHistoryState(NavigationEvent event, UI ui) {
+        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
     }
 
     /**
