@@ -160,8 +160,7 @@ public class TaskUpdateImports extends NodeUpdater {
             if (!additionalFrontendModules.isEmpty()) {
                 List<String> frontendModules = new ArrayList<>(
                         frontDeps.getModules());
-                frontendModules
-                        .add("@vaadin/flow-frontend/VaadinDevmodeGizmo.js");
+                frontendModules.addAll(additionalFrontendModules);
                 return frontendModules;
             } else {
                 return frontDeps.getModules();
