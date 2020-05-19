@@ -302,7 +302,7 @@ public class DataCommunicator<T> implements Serializable {
      * @return {@link Query} for component state
      */
     public Query buildQuery(int offset, int limit) {
-        return new QueryTrace(offset, limit, getBackEndSorting(),
+        return new Query(offset, limit, getBackEndSorting(),
                 getInMemorySorting(), getFilter());
     }
 
