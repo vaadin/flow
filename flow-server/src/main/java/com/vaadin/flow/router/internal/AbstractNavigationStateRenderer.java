@@ -726,8 +726,10 @@ public abstract class AbstractNavigationStateRenderer
 
                 // Transfer all remaining UI child elements (typically dialogs
                 // and notifications) to the new UI
-                maybePrevUI.ifPresent(
-                        prevUi -> ui.getInternals().moveElementsFrom(prevUi));
+                maybePrevUI.ifPresent(prevUi -> {
+                    ui.getInternals().moveElementsFrom(prevUi);
+                    prevUi.close();
+                });
 
                 return Optional.of(chain);
             }
