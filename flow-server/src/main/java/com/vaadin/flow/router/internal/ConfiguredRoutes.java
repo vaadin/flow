@@ -16,39 +16,53 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.RouteParameterData;
+import com.vaadin.flow.router.RouteParameterFormatOption;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.startup.RouteTarget;
 
 /**
  * Route configuration class that is used as a value object.
  * <p>
- * Note! This is always immutable and any changes should be made from {@link
- * ConfigureRoutes}.
+ * Note! This is always immutable and any changes should be made from
+ * {@link ConfigureRoutes}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */
 public class ConfiguredRoutes implements Serializable {
 
-    private final Map<String, RouteTarget> routes;
-    private final Map<Class<? extends Component>, String> targetRoutes;
-    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargets;
+    // Stores targets accessed by urls with parameters.
+    private final RouteModel routeModel;
+
+    private final Map<String, RouteTarget> routeMap;
+    private final Map<Class<? extends Component>, String> targetRouteMap;
+
+    private final Map<Class<? extends Component>, RouteModel> targetRouteModelMap;
+
+    private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
 
     /**
      * Create an immutable RouteConfiguration.
      */
     public ConfiguredRoutes() {
-        routes = Collections.emptyMap();
-        targetRoutes = Collections.emptyMap();
-        exceptionTargets = Collections.emptyMap();
+        routeModel = RouteModel.create(false);
+        routeMap = Collections.emptyMap();
+        targetRouteMap = Collections.emptyMap();
+        targetRouteModelMap = Collections.emptyMap();
+        exceptionTargetMap = Collections.emptyMap();
     }
 
     /**
@@ -56,33 +70,43 @@ public class ConfiguredRoutes implements Serializable {
      * information.
      *
      * @param original
-     *         original configuration to get data from
+     *            original configuration to get data from
      */
     public ConfiguredRoutes(ConfigureRoutes original) {
-        Map<String, RouteTarget> routeMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRouteMap = new HashMap<>();
-        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap = new HashMap<>();
+        Map<String, RouteTarget> originalRouteMap = new HashMap<>();
+        Map<Class<? extends Component>, String> originalTargetRouteMap = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> originalExceptionTargetMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routeMap.put(route.getKey(), route.getValue().copy(false));
+            originalRouteMap.put(route.getKey(), route.getValue());
         }
-        targetRouteMap.putAll(original.getTargetRoutes());
-        exceptionTargetMap.putAll(original.getExceptionHandlers());
+        originalTargetRouteMap.putAll(original.getTargetRoutes());
+        originalExceptionTargetMap.putAll(original.getExceptionHandlers());
 
-        this.routes = routeMap.isEmpty() ?
-                Collections.emptyMap() :
-                Collections.unmodifiableMap(routeMap);
-        this.targetRoutes = targetRouteMap.isEmpty() ?
-                Collections.emptyMap() :
-                Collections.unmodifiableMap(targetRouteMap);
-        this.exceptionTargets = exceptionTargetMap.isEmpty() ?
-                Collections.emptyMap() :
-                Collections.unmodifiableMap(exceptionTargetMap);
+        Map<Class<? extends Component>, RouteModel> originalTargetRouteModelMap = original
+                .copyTargetRouteModels(false);
+
+        this.routeModel = RouteModel.copy(original.getRouteModel(), false);
+        this.routeMap = originalRouteMap.isEmpty() ? Collections.emptyMap()
+                : Collections.unmodifiableMap(originalRouteMap);
+        this.targetRouteMap = originalTargetRouteMap.isEmpty()
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(originalTargetRouteMap);
+        this.targetRouteModelMap = originalTargetRouteModelMap.isEmpty()
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(originalTargetRouteModelMap);
+        this.exceptionTargetMap = originalExceptionTargetMap.isEmpty()
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(originalExceptionTargetMap);
     }
 
     protected Map<String, RouteTarget> getRoutesMap() {
-        return routes;
+        return routeMap;
+    }
+
+    RouteModel getRouteModel() {
+        return routeModel;
     }
 
     /*---------------------------------*/
@@ -90,13 +114,13 @@ public class ConfiguredRoutes implements Serializable {
     /*---------------------------------*/
 
     /**
-     * Collect all routes for which given routeTarget is registered.
-     * This is mainly for handling route aliases as reading from the class
-     * annotations doesn't specifically return the actual registrations as they
-     * can change during runtime.
+     * Collect all routes for which given routeTarget is registered. This is
+     * mainly for handling route aliases as reading from the class annotations
+     * doesn't specifically return the actual registrations as they can change
+     * during runtime.
      *
      * @param routeTarget
-     *         route target to collect registered paths for
+     *            route target to collect registered paths for
      * @return list of routes this routeTarget is registered for
      */
     protected List<String> getRoutePaths(
@@ -110,57 +134,116 @@ public class ConfiguredRoutes implements Serializable {
      * See if configuration contains a registered route for given path.
      *
      * @param path
-     *         path to check
+     *            path to check
      * @return true if configuration contains route
      */
     public boolean hasRoute(String path) {
-        return getRoutesMap().containsKey(path);
+        return hasTemplate(path);
+    }
+
+    /**
+     * See if configuration contains a registered route for given template.
+     *
+     * @param template
+     *            template to check
+     * @return true if configuration contains route
+     */
+    public boolean hasTemplate(String template) {
+        return getRoutesMap().containsKey(template);
     }
 
     /**
      * Check if configuration holds a route for given path with possible path
      * segments.
      *
-     * @param pathString
-     *         path string to check
+     * @param path
+     *            path string to check
      * @param segments
-     *         path segments for route
+     *            path segments for route
      * @return true if a route is found, else false
      */
-    public boolean hasRoute(String pathString, List<String> segments) {
-        if (hasRoute(pathString)) {
-            return getRouteTarget(pathString).getTarget(segments) != null;
-        }
-        return false;
+    public boolean hasRoute(String path, List<String> segments) {
+        return getNavigationRouteTarget(PathUtil.getPath(path, segments))
+                .hasTarget();
     }
 
     /**
      * Check it the given route target has been registered to the configuration.
      *
-     * @param targetRoute
-     *         target to check registration status for
+     * @param target
+     *            target to check registration status for
      * @return true if target is found in configuration
      */
-    public boolean hasRouteTarget(Class<? extends Component> targetRoute) {
-        return getTargetRoutes().containsKey(targetRoute);
+    public boolean hasRouteTarget(Class<? extends Component> target) {
+        return getTargetRoutes().containsKey(target);
+    }
+
+    /**
+     * Search for a route target using given navigation <code>url</code>
+     * argument.
+     *
+     * @param url
+     *            the navigation url used to search a route target.
+     * @return a {@link NavigationRouteTarget} instance containing the
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from
+     *         the <code>url</code> argument according with the route
+     *         configuration.
+     */
+    public NavigationRouteTarget getNavigationRouteTarget(String url) {
+        return getRouteModel().getNavigationRouteTarget(url);
+    }
+
+    /**
+     * Gets the {@link RouteTarget} instance matching the given target component
+     * and route parameters.
+     *
+     * @param target
+     *            a component class which is a navigation target.
+     * @param parameters
+     *            parameter values that may be used with given target.
+     * @return the {@link RouteTarget} instance matching the given target
+     *         component and route parameters.
+     */
+    public RouteTarget getRouteTarget(Class<? extends Component> target,
+            RouteParameters parameters) {
+        return iterateTemplates(target, template -> {
+            try {
+                return getRouteModel().getRouteTarget(template, parameters);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Get the target class matching the given url.
+     *
+     * @param url
+     *            string to get the route for
+     * @return {@link Optional} containing the navigationTarget class if found
+     */
+    public Optional<Class<? extends Component>> getTarget(String url) {
+        final NavigationRouteTarget result = getNavigationRouteTarget(url);
+        if (result.hasTarget()) {
+            final RouteTarget routeTarget = result.getRouteTarget();
+            return Optional.ofNullable(routeTarget.getTarget());
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
      * Get the route class matching the given path and path segments.
      *
-     * @param pathString
-     *         string to get the route for
+     * @param url
+     *            string to get the route for
      * @param segments
-     *         possible path segments
+     *            possible path segments
      * @return {@link Optional} containing the navigationTarget class if found
      */
-    public Optional<Class<? extends Component>> getRoute(String pathString,
+    public Optional<Class<? extends Component>> getRoute(String url,
             List<String> segments) {
-        if (hasRoute(pathString)) {
-            RouteTarget routeTarget = getRouteTarget(pathString);
-            return Optional.ofNullable(routeTarget.getTarget(segments));
-        }
-        return Optional.empty();
+        return getTarget(PathUtil.getPath(url, segments));
     }
 
     /**
@@ -173,30 +256,134 @@ public class ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Get all registered target routes for this configuration.
+     * Get all registered target routes for this configuration mapping the main
+     * template.
      *
      * @return component-to-path map of all target routes
      */
     public Map<Class<? extends Component>, String> getTargetRoutes() {
-        return targetRoutes;
+        return targetRouteMap;
     }
 
     /**
-     * Get the route path String for the given navigation target class.
+     * Get all registered target routes for this configuration.
+     *
+     * @return component-to-path map of all target routes
+     */
+    Map<Class<? extends Component>, RouteModel> getTargetRouteModelMap() {
+        return targetRouteModelMap;
+    }
+
+    /**
+     * Make a copy of the target and route models mapping.
+     * 
+     * @return a copy of the target and route models mapping.
+     */
+    protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(
+            boolean mutable) {
+        Map<Class<? extends Component>, RouteModel> copyMap = new HashMap<>();
+        this.getTargetRouteModelMap().entrySet()
+                .forEach(entry -> copyMap.put(entry.getKey(),
+                        RouteModel.copy(entry.getValue(), mutable)));
+        return copyMap;
+    }
+
+    /**
+     * Get the route template String for the given navigation target class.
      *
      * @param navigationTarget
-     *         navigationTarget to get registered route for
+     *            navigationTarget to get registered route for
      * @return base route string if target class found
      */
     public String getTargetRoute(Class<? extends Component> navigationTarget) {
+        return getTemplate(navigationTarget);
+    }
+
+    /**
+     * Get the route template String for the given navigation target class.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @return base route string if target class found
+     */
+    public String getTemplate(Class<? extends Component> navigationTarget) {
         return getTargetRoutes().get(navigationTarget);
+    }
+
+    /**
+     * Get the route template String for the given navigation target class and
+     * using the specified parameters format.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @param format
+     *            settings used to format the result parameters. If all of
+     *            {@link RouteParameterFormatOption#NAME},
+     *            {@link RouteParameterFormatOption#MODIFIER} and
+     *            {@link RouteParameterFormatOption#REGEX} are provided, the
+     *            unformatted template will be provided.
+     * @return base route string if target class found
+     */
+    public String getTemplate(Class<? extends Component> navigationTarget,
+            Set<RouteParameterFormatOption> format) {
+        final String template = getTemplate(navigationTarget);
+        if (template == null) {
+            return null;
+        }
+
+        return getRouteModel().formatTemplate(template, format);
+    }
+
+    /**
+     * Get the url path String for the given navigation target class.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @return route string if target class found
+     */
+    public String getTargetUrl(Class<? extends Component> navigationTarget) {
+        return iterateTemplates(navigationTarget, template -> {
+            if (RouteFormat.hasRequiredParameter(template)) {
+                return null;
+
+            } else if (RouteFormat.hasParameters(template)) {
+                // In case all parameters are optional or wildcard, this will
+                // return successfully.
+                return getRouteModel().getUrl(template,
+                        RouteParameters.empty());
+            }
+
+            return template;
+        });
+    }
+
+    /**
+     * Get the url path String for the given navigation target class and
+     * parameters.
+     *
+     * @param navigationTarget
+     *            navigationTarget to get registered route for
+     * @param parameters
+     *            route parameters
+     * @return url String populated with parameters for the given
+     *         navigationTarget
+     */
+    public String getTargetUrl(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        return iterateTemplates(navigationTarget, template -> {
+            try {
+                return getRouteModel().getUrl(template, parameters);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        });
     }
 
     /**
      * Get a exception handler by exception class.
      *
      * @param exceptionClass
-     *         exception class to get exception handler for
+     *            exception class to get exception handler for
      * @return exception handler if found
      */
     public Class<? extends Component> getExceptionHandlerByClass(
@@ -210,7 +397,7 @@ public class ConfiguredRoutes implements Serializable {
      * @return all registered exception handlers
      */
     public Map<Class<? extends Exception>, Class<? extends Component>> getExceptionHandlers() {
-        return exceptionTargets;
+        return exceptionTargetMap;
     }
 
     /**
@@ -218,25 +405,65 @@ public class ConfiguredRoutes implements Serializable {
      * path.
      *
      * @param path
-     *         path to get parent layout chain for
+     *            path to get parent layout chain for.
      * @param navigationTarget
-     *         navigation target on path to get parent layout chain for
-     * @return list of parent layout chain
+     *            navigation target on path to get parent layout chain for.
+     * @return list of parent layout chain.
+     * @deprecated use {@link #getNavigationRouteTarget(String)} instead.
      */
+    @Deprecated
     public List<Class<? extends RouterLayout>> getParentLayouts(String path,
             Class<? extends Component> navigationTarget) {
-        return getRouteTarget(path).getParentLayouts(navigationTarget);
+        final NavigationRouteTarget result = getNavigationRouteTarget(path);
+
+        if (result.hasTarget()) {
+            return result.getRouteTarget().getParentLayouts();
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**
-     * Get the RouteTarget stored for the given path.
-     *
-     * @param path
-     *         path to get route target for
-     * @return route target for path, <code>null</code> if nothing registered
+     * Gets the parameters defined by the given template.
+     * 
+     * @param template
+     *            template to get parameters from.
+     * @return map parameter names with
+     *         {@link com.vaadin.flow.router.RouteParameterData}.
      */
-    protected RouteTarget getRouteTarget(String path) {
-        return getRoutesMap().get(path);
+    public Map<String, RouteParameterData> getParameters(String template) {
+        return getRouteModel().getParameters(template);
+    }
+
+    /**
+     * Get the RouteTarget stored for the given template.
+     *
+     * @param template
+     *            template to get route target for
+     * @return route target for template, <code>null</code> if nothing
+     *         registered
+     */
+    protected RouteTarget getRouteTarget(String template) {
+        return getRoutesMap().get(template);
+    }
+
+    private <T> T iterateTemplates(Class<? extends Component> navigationTarget,
+            Function<String, T> templateOutput) {
+
+        final RouteModel model = getTargetRouteModelMap().get(navigationTarget);
+        if (model == null) {
+            return null;
+        }
+
+        final Collection<String> templates = model.getRoutes().keySet();
+        for (String template : templates) {
+            final T result = templateOutput.apply(template);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        return null;
     }
 
 }

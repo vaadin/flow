@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.RouteTarget;
 
 /**
  * Contains all relevant information related to a valid navigation.
@@ -31,7 +33,8 @@ import com.vaadin.flow.component.Component;
 public class NavigationState implements Serializable {
 
     private Class<? extends Component> navigationTarget;
-    private List<String> urlParameters;
+    private RouteTarget routeTarget;
+    private RouteParameters routeParameters = RouteParameters.empty();
     private String resolvedPath;
     private final Router router;
 
@@ -51,20 +54,49 @@ public class NavigationState implements Serializable {
      * @return the navigation target of this state
      */
     public Class<? extends Component> getNavigationTarget() {
-        return navigationTarget;
+        return navigationTarget != null ? navigationTarget
+                : routeTarget != null ? routeTarget.getTarget() : null;
     }
 
     /**
      * Sets the navigation target of this state.
      *
      * @param navigationTarget
-     *            the navigation target to set
+     *            navigation target
      */
-    public void setNavigationTarget(
-            Class<? extends Component> navigationTarget) {
+    public void setNavigationTarget(Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
+    }
+
+    /**
+     * Sets the route target of this state.
+     *
+     * @param routeTarget
+     *            the route target to set, not null.
+     */
+    void setRouteTarget(RouteTarget routeTarget) {
+        Objects.requireNonNull(routeTarget,
+                "routeTarget cannot be null");
+        this.routeTarget = routeTarget;
+    }
+
+    /**
+     * Gets the route target for this navigation state.
+     * 
+     * @return the route target to navigate to.
+     */
+    public RouteTarget getRouteTarget() {
+        if (routeTarget == null && navigationTarget != null) {
+            routeTarget = router.getRegistry().getRouteTarget(navigationTarget,
+                    routeParameters);
+
+            if (routeTarget != null) {
+                assert navigationTarget.equals(routeTarget.getTarget());
+            }
+        }
+        return routeTarget;
     }
 
     /**
@@ -84,10 +116,32 @@ public class NavigationState implements Serializable {
      */
     public String getResolvedPath() {
         if (resolvedPath == null) {
-            resolvedPath = RouteConfiguration.forRegistry(router.getRegistry())
-                    .getUrlBase(navigationTarget).orElse(null);
+            resolvedPath = router.getRegistry()
+                    .getTargetUrl(getNavigationTarget(), getRouteParameters())
+                    .orElse(null);
         }
         return resolvedPath;
+    }
+
+    /**
+     * Sets the route parameters.
+     *
+     * @param routeParameters
+     *            route parameters, not null.
+     */
+    void setRouteParameters(RouteParameters routeParameters) {
+        assert routeParameters != null;
+
+        this.routeParameters = routeParameters;
+    }
+
+    /**
+     * Gets the route parameters map.
+     * 
+     * @return route parameters.
+     */
+    public RouteParameters getRouteParameters() {
+        return routeParameters;
     }
 
     /**
@@ -97,16 +151,19 @@ public class NavigationState implements Serializable {
      * @return the url parameters of this navigation state
      */
     public Optional<List<String>> getUrlParameters() {
-        return Optional.ofNullable(urlParameters);
+        return Optional.of(HasUrlParameterFormat
+                .getParameterValues(getRouteParameters()));
     }
 
     /**
-     * Set the list of strings that correspond to the raw string url parameters.
+     * Set the list of strings that correspond to the raw string route parameters.
      *
-     * @param urlParameters
+     * @param parameters
      *            the url parameters to set
+     * @deprecated use {@link #setRouteParameters(RouteParameters)} instead.
      */
-    public void setUrlParameters(List<String> urlParameters) {
-        this.urlParameters = urlParameters;
+    @Deprecated
+    public void setUrlParameters(List<String> parameters) {
+        setRouteParameters(HasUrlParameterFormat.getParameters(parameters));
     }
 }
