@@ -53,7 +53,6 @@ public class JavaScriptBootstrapUI extends UI {
 
     static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => window.history.pushState(null, '', $0))";
     static final String CLIENT_REPLACESTATE_TO = "setTimeout(() => window.history.replaceState(null, '', $0))";
-    static final String SERVER_CONNECTED = "this.serverConnected($0)";
     static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
     Element wrapperElement;
@@ -106,7 +105,7 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-                              String flowRoute) {
+            String flowRoute) {
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -121,14 +120,15 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeLastSlash(removeFirstSlash(flowRoute))));
 
         // true if the target is client-view and the push mode is disable
-        if (isUnknownRoute() && !getPushConfiguration().getPushMode().isEnabled()) {
-            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))",
-                    false, forwardToUrl);
+        if (forwardToUrl != null) {
+            notifyClient(forwardToUrl);
+
         } else {
             navigationInProgress = false;
-            // Update browser URL
-            getPage().executeJs(CLIENT_REPLACESTATE_TO, getInternals().getActiveViewLocation().getPathWithQueryParameters());
-            wrapperElement.executeJs(SERVER_CONNECTED, false);
+            // Update browser URL ?
+            getPage().executeJs(CLIENT_REPLACESTATE_TO, getInternals()
+                    .getActiveViewLocation().getPathWithQueryParameters());
+            notifyClient();
         }
 
         // If this call happens, there is a client-side routing, thus
@@ -151,23 +151,47 @@ public class JavaScriptBootstrapUI extends UI {
         boolean postponed = navigateToPlaceholder(
                 new Location(removeFirstSlash(route)));
 
-        if (postponed && !isUnknownRoute()) {
-            getPage().executeJs(CLIENT_PUSHSTATE_TO, getInternals().getActiveViewLocation().getPathWithQueryParameters());
-        }
+        // TODO: Handle forward to server view.
+
         // Inform the client whether the navigation should be postponed
-        wrapperElement.executeJs(SERVER_CONNECTED, postponed);
+        if (postponed) { // && forward
+            notifyClientCancel();
+        } else {
+            notifyClient();
+        }
     }
 
     private boolean navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     this.getRouter()).withTarget(ClientViewPlaceholder.class)
-                    .build();
+                            .build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
         return handleNavigation(location, clientViewNavigationState);
     }
+
+    void notifyClient() {
+        notifyClient(false, null);
+    }
+
+    void notifyClient(String clientUrl) {
+        notifyClient(false, clientUrl);
+    }
+
+    private void notifyClientCancel() {
+        notifyClient(true, null);
+    }
+
+    private void notifyClient(boolean cancel, String clientUrl) {
+        if (clientUrl == null) {
+            wrapperElement.executeJs("this.serverConnected($0)", cancel);
+        } else {
+            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))", cancel, clientUrl);
+        }
+    }
+
 
     private boolean renderViewForRoute(Location location) {
         if (!shouldHandleNavigation(location)) {
@@ -189,8 +213,7 @@ public class JavaScriptBootstrapUI extends UI {
                 }
 
                 // Route does not exist, and current view does not prevent
-                // navigation
-                // thus an error page is shown
+                // navigation thus an error page is shown
                 handleErrorNavigation(location);
             }
         } catch (Exception exception) {
@@ -204,7 +227,7 @@ public class JavaScriptBootstrapUI extends UI {
     private boolean shouldHandleNavigation(Location location) {
         return !getInternals().hasLastHandledLocation()
                 || !sameLocation(getInternals().getLastHandledLocation(),
-                location);
+                        location);
     }
 
     private boolean sameLocation(Location oldLocation, Location newLocation) {
@@ -221,7 +244,7 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean handleNavigation(Location location,
-                                     NavigationState navigationState) {
+            NavigationState navigationState) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
 
@@ -237,9 +260,10 @@ public class JavaScriptBootstrapUI extends UI {
         return getInternals().getContinueNavigationAction() != null;
     }
 
-    private boolean handleExceptionNavigation(Location location, Exception exception) {
-        Optional<ErrorTargetEntry> maybeLookupResult = this.getRouter().getErrorNavigationTarget(
-                exception);
+    private boolean handleExceptionNavigation(Location location,
+            Exception exception) {
+        Optional<ErrorTargetEntry> maybeLookupResult = this.getRouter()
+                .getErrorNavigationTarget(exception);
         if (maybeLookupResult.isPresent()) {
             ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
@@ -252,7 +276,8 @@ public class JavaScriptBootstrapUI extends UI {
                             .build());
 
             ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                    this.getRouter(), location, this, NavigationTrigger.CLIENT_SIDE, errorParameter);
+                    this.getRouter(), location, this,
+                    NavigationTrigger.CLIENT_SIDE, errorParameter);
 
             errorStateRenderer.handle(errorNavigationEvent);
         } else {
@@ -309,40 +334,33 @@ public class JavaScriptBootstrapUI extends UI {
             // prevent looping
             if (navigationInProgress || getInternals().hasLastHandledLocation()
                     && sameLocation(getInternals().getLastHandledLocation(),
-                    location)) {
+                            location)) {
                 return;
             }
 
             navigationInProgress = true;
-            String execJs = null;
-            NavigationState navigationState = this.getRouter()
-                    .resolveNavigationTarget(location).orElse(null);
+            Optional<NavigationState>  navigationState = this.getRouter()
+                    .resolveNavigationTarget(location);
 
-            if (navigationState != null) {
+            if (navigationState.isPresent()) {
                 // Navigation can be done in server side without extra
                 // round-trip
-                handleNavigation(location, navigationState);
-                if (isUnknownRoute()) {
+                handleNavigation(location, navigationState.get());
+                if (forwardToUrl != null) {
                     navigationInProgress = false;
-                    this.navigate(forwardToUrl);
+                    // Server is forwarding to a client route from a
+                    // BeforeEnter.
+                    getPage().executeJs(CLIENT_NAVIGATE_TO, forwardToUrl);
                     return;
                 }
             } else {
                 // Server cannot resolve navigation, let client-side to handle
-                // it
-                getPage().executeJs(CLIENT_NAVIGATE_TO, getForwardToUrl());
+                // it.
+                getPage().executeJs(CLIENT_NAVIGATE_TO,
+                        location.getPathWithQueryParameters());
             }
             navigationInProgress = false;
         }
-    }
-
-    private String routeToBeDisplayed(Location location) {
-        return isUnknownRoute() ? getForwardToUrl()
-                : location.getPathWithQueryParameters();
-    }
-
-    private boolean isUnknownRoute() {
-        return forwardToUrl != null;
     }
 
     /**
