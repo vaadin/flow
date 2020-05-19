@@ -3,6 +3,7 @@ import { ServerValidator, validate, ValidationError, ValueError } from "./Valida
 
 const isSubmittingSymbol = Symbol('isSubmitting');
 const valueSymbol = Symbol('value');
+const emptyValueSymbol = Symbol('emptyValue');
 const onChangeSymbol = Symbol('onChange');
 const onSubmitSymbol = Symbol('onSubmit');
 
@@ -10,6 +11,7 @@ export class Binder<T, M extends AbstractModel<T>> {
   model: M;
   private [defaultValueSymbol]: T;
   private [valueSymbol]: T;
+  private [emptyValueSymbol]: T;
   private [isSubmittingSymbol]: boolean = false;
   private [onChangeSymbol]: (oldValue?: T) => void;
   private [onSubmitSymbol]: (value: T) => Promise<T|void>;
@@ -22,15 +24,10 @@ export class Binder<T, M extends AbstractModel<T>> {
     if(typeof (context as any).requestUpdate === 'function'){
       this[onChangeSymbol] = () => (context as any).requestUpdate();
     }
-    if (config !== undefined) {
-      if(config.onChange !== undefined){
-        this[onChangeSymbol] = config.onChange;  
-      }
-      if(config.onSubmit !== undefined){
-        this[onSubmitSymbol] = config.onSubmit;  
-      }
-    }
-    this.reset(Model.createEmptyValue());
+    this[onChangeSymbol] = config?.onChange || this[onChangeSymbol];
+    this[onSubmitSymbol] = config?.onSubmit || this[onSubmitSymbol];
+    this[emptyValueSymbol] = Model.createEmptyValue();
+    this.reset(this[emptyValueSymbol]);
     this.model = new Model(this, 'value');
   }
 
@@ -65,6 +62,10 @@ export class Binder<T, M extends AbstractModel<T>> {
       this.defaultValue = defaultValue;
     }
     this.value = this.defaultValue;
+  }
+
+  clear() {
+    this.value = this[emptyValueSymbol];
   }
 
   async submit(): Promise<T|void>{
