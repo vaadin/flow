@@ -39,7 +39,7 @@ export class NotNull extends AbstractValidator<any> {
   validate = (value: any) => !new Null().validate(value);
 }
 export class NotEmpty extends AbstractValidator<any> {
-  validate = (value: any) => new NotNull().validate(value) && !validator.isEmpty(value);
+  validate = (value: any) => new NotNull().validate(value) && (value.length || value !== '');
 }
 export class NotBlank extends AbstractValidator<any> {
   validate = (value: any) => new NotEmpty().validate(value);
