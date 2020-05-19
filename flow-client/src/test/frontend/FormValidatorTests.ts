@@ -42,8 +42,10 @@ from "../../main/resources/META-INF/resources/frontend/form";
   test("NotEmpty", () => {
     const validator = new NotEmpty();
     assert.isTrue(validator.validate('a'));
+    assert.isTrue(validator.validate(['a']));
     assert.isFalse(validator.validate(''));
     assert.isFalse(validator.validate(undefined));
+    assert.isFalse(validator.validate([]));
   });
 
   test("NotBlank", () => {
