@@ -458,7 +458,9 @@ public class Page implements Serializable {
      *            the name of the window.
      */
     public void open(String url, String windowName) {
-        executeJs("window.open($0, $1)", url, windowName);
+        executeJs(
+                "if ($1 == '_self') this.stopApplication(); window.open($0, $1)",
+                url, windowName);
     }
 
     /**
