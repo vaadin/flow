@@ -28,6 +28,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -96,7 +97,8 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false) {
+                null, false,
+                Collections.singletonList(FrontendUtils.DEVMODE_GIZMO_MODULE)) {
             @Override
             Logger log() {
                 if (useMockLog) {
@@ -263,6 +265,13 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "Frontend/foo.js");
         assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
                 "styles/styles.js");
+    }
+
+    @Test
+    public void additionalJsModuleSpecified_importIsAdded()
+            throws Exception {
+        updater.execute();
+        assertContainsImports(true, FrontendUtils.DEVMODE_GIZMO_MODULE);
     }
 
     private void assertContainsImports(boolean contains, String... imports)

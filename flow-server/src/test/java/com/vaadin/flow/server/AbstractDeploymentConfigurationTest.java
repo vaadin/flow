@@ -136,6 +136,11 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
+        public boolean isDevModeLiveReloadEnabled() {
+            return false;
+        }
+
+        @Override
         public boolean isSendUrlsAsParameters() {
             return DefaultDeploymentConfiguration.DEFAULT_SEND_URLS_AS_PARAMETERS;
         }

@@ -27,6 +27,7 @@ public class MockDeploymentConfiguration
     private boolean syncIdCheckEnabled = true;
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
+    private boolean devModeLiveReloadEnabled = false;
 
     @Override
     public boolean isProductionMode() {
@@ -171,4 +172,12 @@ public class MockDeploymentConfiguration
         compatibilityMode = compatibility;
     }
 
+    @Override
+    public boolean isDevModeLiveReloadEnabled() {
+        return devModeLiveReloadEnabled;
+    }
+
+    public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
+        this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
+    }
 }

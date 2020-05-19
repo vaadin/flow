@@ -312,7 +312,10 @@ public class DevModeInitializer
                     .enableImportsUpdate(true).runNpmInstall(true)
                     .populateTokenFileData(tokenFileData)
                     .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                    .withHomeNodeExecRequired(useHomeNodeExec).build()
+                    .withHomeNodeExecRequired(useHomeNodeExec)
+                    .withAdditionalFrontendModules(
+                            Collections.singletonList(FrontendUtils.DEVMODE_GIZMO_MODULE))
+                    .build()
                     .execute();
 
             FallbackChunk chunk = FrontendUtils

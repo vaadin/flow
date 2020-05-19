@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -85,6 +86,8 @@ public class NodeTasks implements FallibleCommand {
         private boolean enablePnpm;
 
         private boolean requireHomeNodeExec;
+
+        private List<String> additionalFrontendModules = new ArrayList<>();
 
         /**
          * Directory for for npm and folders and files.
@@ -357,6 +360,23 @@ public class NodeTasks implements FallibleCommand {
             this.requireHomeNodeExec = requireHomeNodeExec;
             return this;
         }
+
+        /**
+         * JS modules to be included in the webpack bundle, in addition to those
+         * discovered by class scanning. Currently only the development mode
+         * gizmo module
+         * (<code>@vaadin/flow-frontend/VaadinDevModeGizmo.js</code>) is added
+         * via this mechanism.
+         * 
+         * @param frontendModules
+         *            List of module names.
+         * @return the builder, for chaining
+         */
+        public Builder withAdditionalFrontendModules(
+                List<String> frontendModules) {
+            additionalFrontendModules.addAll(frontendModules);
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -424,7 +444,8 @@ public class NodeTasks implements FallibleCommand {
                             finder -> getFallbackScanner(builder, finder),
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData, builder.enablePnpm));
+                            builder.tokenFileData, builder.enablePnpm,
+                            builder.additionalFrontendModules));
         }
     }
 

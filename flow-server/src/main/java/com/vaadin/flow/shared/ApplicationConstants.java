@@ -184,4 +184,15 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String FRONTEND_URL_ES5 = "frontendUrlEs5";
 
+    /**
+     * Web socket parameter which identifies connection as live reload
+     * connection.
+     */
+    public static final String LIVE_RELOAD_CONNECTION = "refresh_connection";
+
+    /**
+     * Boolean client configuration parameter enabling the development mode
+     * gizmo.
+     */
+    public static final String DEVMODE_GIZMO_ENABLED = "devmodeGizmoEnabled";
 }

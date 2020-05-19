@@ -124,6 +124,12 @@ public class FrontendUtils {
             + "flow-frontend";
 
     /**
+     * Development mode gizmo JS module.
+     */
+    public static final String DEVMODE_GIZMO_MODULE = FLOW_NPM_PACKAGE_NAME
+            + "VaadinDevmodeGizmo.js";
+
+    /**
      * Default folder name for flow generated stuff relative to the
      * {@link FrontendUtils#TARGET}.
      */

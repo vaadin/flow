@@ -45,6 +45,11 @@ public class ApplicationConfiguration {
     private String atmosphereJSVersion;
     private String[] exportedWebComponents;
 
+    private boolean devmodeGizmoEnabled;
+    private String liveReloadPath;
+    private String liveReloadBackend;
+    private String springBootDevToolsPort;
+
     /**
      * Gets the id generated for the application.
      *
@@ -354,5 +359,37 @@ public class ApplicationConfiguration {
      */
     public String[] getExportedWebComponents() {
         return exportedWebComponents;
+    }
+
+    public boolean isDevmodeGizmoEnabled() {
+        return devmodeGizmoEnabled;
+    }
+
+    public void setDevmodeGizmoEnabled(boolean devmodeGizmoEnabled) {
+        this.devmodeGizmoEnabled = devmodeGizmoEnabled;
+    }
+
+    public String getLiveReloadPath() {
+        return liveReloadPath;
+    }
+
+    public void setLiveReloadPath(String liveReloadPath) {
+        this.liveReloadPath = liveReloadPath;
+    }
+
+    public String getLiveReloadBackend() {
+        return liveReloadBackend;
+    }
+
+    public void setLiveReloadBackend(String liveReloadBackend) {
+        this.liveReloadBackend = liveReloadBackend;
+    }
+
+    public String getSpringBootDevToolsPort() {
+        return springBootDevToolsPort;
+    }
+
+    public void setSpringBootDevToolsPort(String springBootDevToolsPort) {
+        this.springBootDevToolsPort = springBootDevToolsPort;
     }
 }

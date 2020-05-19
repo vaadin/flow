@@ -243,6 +243,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
         defaults.put("@webcomponents/webcomponentsjs", "^2.2.10");
+        defaults.put("lit-element", "^2.2.1");
 
         return defaults;
     }

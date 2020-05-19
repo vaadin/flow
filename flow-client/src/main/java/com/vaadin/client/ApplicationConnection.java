@@ -93,10 +93,25 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
+
+            if (applicationConfiguration.isDevmodeGizmoEnabled()) {
+                createDevModeGizmo(applicationConfiguration.getServiceUrl(),
+                        applicationConfiguration.getLiveReloadPath(),
+                        applicationConfiguration.getLiveReloadBackend(),
+                        applicationConfiguration.getSpringBootDevToolsPort());
+            }
         }
 
         registry.getLoadingIndicator().show();
     }
+
+    private native void createDevModeGizmo(String serviceUrl,
+            String liveReloadPath, String liveReloadBackend,
+            String springBootDevToolsPort)
+    /*-{
+      $wnd.Vaadin.Flow.devModeGizmo = $wnd.Vaadin.Flow.initDevModeGizmo(
+        serviceUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort);
+    }-*/;
 
     /**
      * Starts this application.
