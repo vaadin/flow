@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router.internal;
 
+import javax.servlet.http.HttpServletResponse;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,8 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -191,8 +191,8 @@ public abstract class AbstractNavigationStateRenderer
                 routeTargetType, routeLayoutTypes);
 
         if (preserveOnRefreshTarget) {
-            final Optional<ArrayList<HasElement>> maybeChain =
-                    getPreservedChain(event);
+            final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
+                    event);
             if (!maybeChain.isPresent()) {
                 // We're returning because the preserved chain is not ready to
                 // be used as is, and requires client data requested within
@@ -365,7 +365,8 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     // The last element in the returned list is always a Component class
-    private List<Class<? extends HasElement>> createTypesChain(NavigationEvent event) {
+    private List<Class<? extends HasElement>> createTypesChain(
+            NavigationEvent event) {
         final Class<? extends Component> routeTargetType = navigationState
                 .getNavigationTarget();
 
@@ -490,8 +491,7 @@ public abstract class AbstractNavigationStateRenderer
                 .getActiveRouterTargetsChain();
 
         // Create the chain components if missing.
-        List<Class<? extends HasElement>> typesChain = createTypesChain(
-                event);
+        List<Class<? extends HasElement>> typesChain = createTypesChain(event);
 
         try {
             for (Class<? extends HasElement> elementType : typesChain) {
@@ -581,7 +581,8 @@ public abstract class AbstractNavigationStateRenderer
             // sending the event to the navigation target or any of its
             // children.
             if (notifyNavigationTarget
-                    && (isComponentElementEqualsOrChild(eventHandler, componentInstance))) {
+                    && (isComponentElementEqualsOrChild(eventHandler,
+                            componentInstance))) {
 
                 Optional<TransitionOutcome> transitionOutcome = notifyNavigationTarget(
                         event, beforeNavigation, locationChangeEvent,
@@ -674,7 +675,8 @@ public abstract class AbstractNavigationStateRenderer
         return Optional.empty();
     }
 
-    private boolean isSameNavigationState(Class<? extends Component> targetType, List<String> targetParameters) {
+    private boolean isSameNavigationState(Class<? extends Component> targetType,
+            List<String> targetParameters) {
         final boolean sameTarget = navigationState.getNavigationTarget()
                 .equals(targetType);
 
@@ -769,8 +771,8 @@ public abstract class AbstractNavigationStateRenderer
         } else {
             final String windowName = ui.getInternals()
                     .getExtendedClientDetails().getWindowName();
-            final Optional<ArrayList<HasElement>> maybePreserved =
-                    getPreservedChain(session, windowName, event.getLocation());
+            final Optional<ArrayList<HasElement>> maybePreserved = getPreservedChain(
+                    session, windowName, event.getLocation());
             if (maybePreserved.isPresent()) {
                 // Re-use preserved chain for this route
                 ArrayList<HasElement> chain = maybePreserved.get();
@@ -783,8 +785,10 @@ public abstract class AbstractNavigationStateRenderer
 
                 // Transfer all remaining UI child elements (typically dialogs
                 // and notifications) to the new UI
-                maybePrevUI.ifPresent(prevUi ->
-                        moveElementsToNewUI(prevUi, ui));
+                maybePrevUI.ifPresent(prevUi -> {
+                    moveElementsToNewUI(prevUi, ui);
+                    prevUi.close();
+                });
 
                 return Optional.of(chain);
             }
@@ -873,14 +877,12 @@ public abstract class AbstractNavigationStateRenderer
             Class<? extends Component> routeTargetType,
             List<Class<? extends RouterLayout>> routeLayoutTypes) {
         return routeTargetType.isAnnotationPresent(PreserveOnRefresh.class)
-                || routeLayoutTypes.stream().anyMatch(layoutType ->
-                layoutType.isAnnotationPresent(PreserveOnRefresh.class)
-        );
+                || routeLayoutTypes.stream().anyMatch(layoutType -> layoutType
+                        .isAnnotationPresent(PreserveOnRefresh.class));
     }
 
     private void moveElementsToNewUI(UI prevUi, UI newUi) {
-        final List<Element> uiChildren = prevUi.getElement()
-                .getChildren()
+        final List<Element> uiChildren = prevUi.getElement().getChildren()
                 .collect(Collectors.toList());
         uiChildren.forEach(element -> {
             element.removeFromTree();
@@ -889,31 +891,30 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     // maps window.name to (location, chain)
-    private static class PreservedComponentCache extends
-            HashMap<String, Pair<String, ArrayList<HasElement>>> {
+    private static class PreservedComponentCache
+            extends HashMap<String, Pair<String, ArrayList<HasElement>>> {
     }
 
     static boolean hasPreservedChain(VaadinSession session) {
-        final PreservedComponentCache cache =
-                session.getAttribute(PreservedComponentCache.class);
-        return cache!=null && !cache.isEmpty();
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        return cache != null && !cache.isEmpty();
     }
 
-    static boolean hasPreservedChainOfLocation(
-            VaadinSession session, Location location) {
-        final PreservedComponentCache cache =
-                session.getAttribute(PreservedComponentCache.class);
-        return cache != null &&
-                cache.values().stream().anyMatch(entry ->
-                        entry.getFirst().equals(location.getPath()));
+    static boolean hasPreservedChainOfLocation(VaadinSession session,
+            Location location) {
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        return cache != null && cache.values().stream()
+                .anyMatch(entry -> entry.getFirst().equals(location.getPath()));
     }
 
     static Optional<ArrayList<HasElement>> getPreservedChain(
             VaadinSession session, String windowName, Location location) {
-        final PreservedComponentCache cache =
-                session.getAttribute(PreservedComponentCache.class);
-        if (cache!=null && cache.containsKey(windowName) &&
-                cache.get(windowName).getFirst().equals(location.getPath())) {
+        final PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && cache.containsKey(windowName) && cache
+                .get(windowName).getFirst().equals(location.getPath())) {
             return Optional.of(cache.get(windowName).getSecond());
         } else {
             return Optional.empty();
@@ -921,10 +922,9 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     static void setPreservedChain(VaadinSession session, String windowName,
-                                  Location location,
-                                  ArrayList<HasElement> chain) {
-        PreservedComponentCache cache =
-                session.getAttribute(PreservedComponentCache.class);
+            Location location, ArrayList<HasElement> chain) {
+        PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
         if (cache == null) {
             cache = new PreservedComponentCache();
         }
@@ -940,8 +940,8 @@ public abstract class AbstractNavigationStateRenderer
             ui.getPage().retrieveExtendedClientDetails(details -> {
                 final String windowName = ui.getInternals()
                         .getExtendedClientDetails().getWindowName();
-                final PreservedComponentCache cache =
-                        session.getAttribute(PreservedComponentCache.class);
+                final PreservedComponentCache cache = session
+                        .getAttribute(PreservedComponentCache.class);
                 if (cache != null) {
                     cache.remove(windowName);
                 }

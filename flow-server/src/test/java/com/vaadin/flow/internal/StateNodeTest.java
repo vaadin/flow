@@ -1103,7 +1103,7 @@ public class StateNodeTest {
         Assert.assertNull(parent.getParent());
 
         // then parent and its descendants are reset
-        assertNodesReset(parent,child);
+        assertNodesReset(parent, child);
     }
 
     /**
@@ -1129,7 +1129,72 @@ public class StateNodeTest {
         parent.setParent(null);
 
         // then parent and its descendants are reset
-        assertNodesReset(parent,child);
+        assertNodesReset(parent, child);
+    }
+
+    @Test
+    public void removeFromTree_closeUI_allowsToSetANewTree() {
+        UI ui = new UI();
+
+        AtomicBoolean isRootAttached = new AtomicBoolean();
+        isRootAttached.set(true);
+
+        StateNode root = new StateNode(ElementChildrenList.class) {
+            @Override
+            public boolean isAttached() {
+                return isRootAttached.get();
+            }
+
+        };
+
+        StateTree stateTree = new StateTree(ui.getInternals(),
+                ElementChildrenList.class) {
+
+            @Override
+            public StateNode getRootNode() {
+                return root;
+            }
+
+            @Override
+            public boolean hasNode(StateNode node) {
+                if (getRootNode().equals(node)) {
+                    return true;
+                }
+                return super.hasNode(node);
+            }
+        };
+
+        root.setTree(stateTree);
+
+        StateNode child = createEmptyNode("child");
+        StateNode anotherChild = createEmptyNode("anotherChild");
+
+        addChild(root, child);
+        addChild(root, anotherChild);
+
+        // remove the second child from its parent (don't remove it from the
+        // tree!)
+        removeFromParent(anotherChild);
+
+        // Once a child is added to a tree its id is not negative
+        Assert.assertNotEquals(-1, anotherChild.getId());
+
+        // Remove the first child from the tree (as it's done on preserve on
+        // refresh)
+        child.removeFromTree();
+        // emulate closed UI
+        isRootAttached.set(false);
+
+        // At this point the second child still refers to the stateTree and
+        // normally it's not allowed to move nodes from one tree to another but
+        // <code>stateTree</code> is "detached" and marked as replaced on
+        // preserve on refresh via <code>removeFromTree</code> called on another
+        // node
+        anotherChild.setTree(new TestStateTree());
+
+        // It's possible to set a new tree for the child whose owner is detached
+        // as marked replaced via preserved on refresh, its id is reset to -1
+        Assert.assertEquals(-1, anotherChild.getId());
     }
 
     private void assertNodesReset(StateNode... nodes) {
