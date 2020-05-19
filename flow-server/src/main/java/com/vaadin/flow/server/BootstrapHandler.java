@@ -1393,7 +1393,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     }
                 }
 
-                // make configurable when fixing #7847
+                // make configurable when fixing #7970
                 appConfig.put("springBootDevToolsPort", 35729);
             }
 
