@@ -4,20 +4,29 @@ import { ServerValidator, validate, ValidationError, ValueError } from "./Valida
 const isSubmittingSymbol = Symbol('isSubmitting');
 const valueSymbol = Symbol('value');
 const emptyValueSymbol = Symbol('emptyValue');
+const onChangeSymbol = Symbol('onChange');
+const onSubmitSymbol = Symbol('onSubmit');
 
 export class Binder<T, M extends AbstractModel<T>> {
   model: M;
   private [defaultValueSymbol]: T;
   private [valueSymbol]: T;
-  private [emptyValueSymbol]: T
+  private [emptyValueSymbol]: T;
   private [isSubmittingSymbol]: boolean = false;
+  private [onChangeSymbol]: (oldValue?: T) => void;
+  private [onSubmitSymbol]: (value: T) => Promise<T|void>;
 
   constructor(
     public context: Element,
     Model: ModelConstructor<T, M>,
-    public onChange: (oldValue?: T) => void
+    config?: BinderConfiguration<T>
   ) {
-    this[emptyValueSymbol] = Model.createEmptyValue()
+    if(typeof (context as any).requestUpdate === 'function'){
+      this[onChangeSymbol] = () => (context as any).requestUpdate();
+    }
+    this[onChangeSymbol] = config?.onChange || this[onChangeSymbol];
+    this[onSubmitSymbol] = config?.onSubmit || this[onSubmitSymbol];
+    this[emptyValueSymbol] = Model.createEmptyValue();
     this.reset(this[emptyValueSymbol]);
     this.model = new Model(this, 'value');
   }
@@ -59,6 +68,12 @@ export class Binder<T, M extends AbstractModel<T>> {
     this.value = this[emptyValueSymbol];
   }
 
+  async submit(): Promise<T|void>{
+    if(this[onSubmitSymbol]!==undefined){
+      this.submitTo(this[onSubmitSymbol]);
+    }
+  }
+
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
     const errors = await validate(this.model);
     if (errors.length) {
@@ -87,10 +102,18 @@ export class Binder<T, M extends AbstractModel<T>> {
   }
 
   private update(oldValue: T) {
-    this.onChange.call(this.context, oldValue);
+    if(this[onChangeSymbol]){
+      this[onChangeSymbol].call(this.context, oldValue);
+    }
   }
 
   get isSubmitting() {
     return this[isSubmittingSymbol];
   }
 }
+
+export interface BinderConfiguration<T>{
+  onChange?: (oldValue?: T) => void,
+  onSubmit?: (value: T) => Promise<T|void>
+}
+
