@@ -29,7 +29,6 @@
         <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
-        <module>flow-jrebel-plugin</module>
         <module>flow-maven-plugin</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
@@ -57,19 +56,11 @@
     </scm>
 
     <properties>
-        <flow.snapshot.repo.id>vaadin-snapshots</flow.snapshot.repo.id>
-        <flow.snapshot.repo.url>
-            https://oss.sonatype.org/content/repositories/vaadin-snapshots/
-        </flow.snapshot.repo.url>
         <flow.release.repo.id>vaadin-prereleases</flow.release.repo.id>
         <flow.release.repo.url>
             https://maven.vaadin.com/vaadin-prereleases/
         </flow.release.repo.url>
-        <flow.deployment.repo.id>${flow.snapshot.repo.id}
-        </flow.deployment.repo.id>
-        <flow.deployment.repo.url>
-            ${flow.snapshot.repo.url}
-        </flow.deployment.repo.url>
+
         <flow.addons.repo.id>vaadin-addons</flow.addons.repo.id>
         <flow.addons.repo.url>
             https://maven.vaadin.com/vaadin-addons
@@ -114,6 +105,9 @@
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
         <node.version>v8.11.1</node.version>
         <npm.version>6.1.0</npm.version>
+        
+        <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
+        <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
         <jsoup.version>1.12.1</jsoup.version>
@@ -147,13 +141,6 @@
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
             <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>${flow.snapshot.repo.id}</id>
-            <url>${flow.snapshot.repo.url}</url>
-            <snapshots>
                 <enabled>true</enabled>
             </snapshots>
         </repository>
@@ -179,13 +166,6 @@
         <pluginRepository>
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>${flow.snapshot.repo.id}</id>
-            <url>${flow.snapshot.repo.url}</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -692,8 +672,15 @@
                 <module>flow-html-components</module>
                 <module>flow-test-util</module>
                 <module>flow-tests</module>
+                <module>flow-dev-deps</module>
                 <module>flow-server-production-mode</module>
                 <module>build-tools</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>gen-dev-deps</id>
+            <modules>
+                <module>flow-dev-deps</module>
             </modules>
         </profile>
     </profiles>
