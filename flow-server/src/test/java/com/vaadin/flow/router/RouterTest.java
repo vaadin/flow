@@ -2553,7 +2553,7 @@ public class RouterTest extends RoutingTestBase {
         long historyInvocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations().stream()
                 .filter(js -> js.getInvocation().getExpression()
-                        .startsWith("history.pushState"))
+                        .contains("history.pushState"))
                 .count();
         assertEquals(1, historyInvocations);
 
