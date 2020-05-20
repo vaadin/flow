@@ -52,16 +52,6 @@ import elemental.json.JsonValue;
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
 
-    /**
-     * @see com.vaadin.flow.component.page.History#pushState(JsonValue, Location)
-     */
-    static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => window.history.pushState(null, '', $0))";
-
-    /**
-     * @see com.vaadin.flow.component.page.History#replaceState(JsonValue, Location)
-     */
-    static final String CLIENT_REPLACESTATE_TO = "setTimeout(() => window.history.replaceState(null, '', $0))";
-
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
     static final String SERVER_CONNECTED_URL = "this.serverConnected($0, new URL($1, document.baseURI))";
     static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
@@ -133,14 +123,17 @@ public class JavaScriptBootstrapUI extends UI {
                 new Location(removeLastSlash(removeFirstSlash(flowRoute))));
 
         // true if the target is client-view and the push mode is disable
-        if (forwardToClientUrl != null) {
-            navigateToClient(forwardToClientUrl);
+        if (getForwardToClientUrl() != null) {
+            navigateToClient(getForwardToClientUrl());
+            acknowledgeClient();
 
+            // TODO: Handle forward to server view.
+
+        } else if (isPostponed()) {
+            cancelClient();
         } else {
-            navigationInProgress = false;
+            acknowledgeClient();
         }
-
-        acknowledgeClient();
 
         // If this call happens, there is a client-side routing, thus
         // it's needed to remove the flag that might be set in
@@ -161,15 +154,14 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void leaveNavigation(String route) {
-        boolean postponed = navigateToPlaceholder(
-                new Location(removeFirstSlash(route)));
+        navigateToPlaceholder(new Location(removeFirstSlash(route)));
 
         // TODO: Handle forward to server view which may happen in a
         // BeforeLeaveEvent or deny the forward or reroute to a server view in
         // BeforeLeaveEvent.
 
         // Inform the client whether the navigation should be postponed
-        if (postponed) {
+        if (isPostponed()) {
             cancelClient();
         } else {
             acknowledgeClient();
@@ -204,11 +196,11 @@ public class JavaScriptBootstrapUI extends UI {
                 // Navigation can be done in server side without extra
                 // round-trip
                 handleNavigation(location, navigationState.get());
-                if (forwardToClientUrl != null) {
+                if (getForwardToClientUrl() != null) {
                     navigationInProgress = false;
                     // Server is forwarding to a client route from a
                     // BeforeEnter.
-                    navigateToClient(forwardToClientUrl);
+                    navigateToClient(getForwardToClientUrl());
                     return;
                 }
             } else {
@@ -216,6 +208,7 @@ public class JavaScriptBootstrapUI extends UI {
                 // it.
                 navigateToClient(location.getPathWithQueryParameters());
             }
+
             navigationInProgress = false;
         }
     }
@@ -244,7 +237,7 @@ public class JavaScriptBootstrapUI extends UI {
         }
     }
 
-    private boolean navigateToPlaceholder(Location location) {
+    private void navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     this.getRouter()).withTarget(ClientViewPlaceholder.class)
@@ -252,12 +245,12 @@ public class JavaScriptBootstrapUI extends UI {
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
-        return handleNavigation(location, clientViewNavigationState);
+        handleNavigation(location, clientViewNavigationState);
     }
 
-    private boolean renderViewForRoute(Location location) {
+    private void renderViewForRoute(Location location) {
         if (!shouldHandleNavigation(location)) {
-            return false;
+            return;
         }
         try {
             getInternals().setLastHandledNavigation(location);
@@ -265,25 +258,29 @@ public class JavaScriptBootstrapUI extends UI {
                     .resolveNavigationTarget(location);
             if (navigationState.isPresent()) {
                 // There is a valid route in flow.
-                return handleNavigation(location, navigationState.get());
+                handleNavigation(location, navigationState.get());
             } else {
                 // When route does not exist, try to navigate to current route
                 // in order to check if current view can be left before showing
                 // the error page
-                if (navigateToPlaceholder(location)) {
-                    return true;
+                navigateToPlaceholder(location);
+
+                // TODO: Handle forward to server view which may happen in a
+                // BeforeLeaveEvent or deny the forward or reroute to a server view in
+                // BeforeLeaveEvent.
+
+                if (!isPostponed()) {
+                    // Route does not exist, and current view does not prevent
+                    // navigation thus an error page is shown
+                    handleErrorNavigation(location);
                 }
 
-                // Route does not exist, and current view does not prevent
-                // navigation thus an error page is shown
-                handleErrorNavigation(location);
             }
         } catch (Exception exception) {
-            return handleExceptionNavigation(location, exception);
+            handleExceptionNavigation(location, exception);
         } finally {
             getInternals().clearLastHandledNavigation();
         }
-        return false;
     }
 
     private boolean shouldHandleNavigation(Location location) {
@@ -305,7 +302,7 @@ public class JavaScriptBootstrapUI extends UI {
         return route.replaceFirst("/+$", "");
     }
 
-    private boolean handleNavigation(Location location,
+    private void handleNavigation(Location location,
             NavigationState navigationState) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
                 location, this, NavigationTrigger.CLIENT_SIDE);
@@ -318,8 +315,6 @@ public class JavaScriptBootstrapUI extends UI {
         forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
 
         adjustPageTitle();
-
-        return getInternals().getContinueNavigationAction() != null;
     }
 
     private boolean handleExceptionNavigation(Location location,
@@ -345,6 +340,10 @@ public class JavaScriptBootstrapUI extends UI {
         } else {
             throw new RuntimeException(exception);
         }
+        return isPostponed();
+    }
+
+    private boolean isPostponed() {
         return getInternals().getContinueNavigationAction() != null;
     }
 
