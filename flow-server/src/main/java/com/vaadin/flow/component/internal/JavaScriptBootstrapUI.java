@@ -43,6 +43,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import elemental.json.JsonValue;
 
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
@@ -51,15 +52,25 @@ import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
 
+    /**
+     * @see com.vaadin.flow.component.page.History#pushState(JsonValue, Location)
+     */
     static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => window.history.pushState(null, '', $0))";
+
+    /**
+     * @see com.vaadin.flow.component.page.History#replaceState(JsonValue, Location)
+     */
     static final String CLIENT_REPLACESTATE_TO = "setTimeout(() => window.history.replaceState(null, '', $0))";
+
+    static final String SERVER_CONNECTED = "this.serverConnected($0)";
+    static final String SERVER_CONNECTED_URL = "this.serverConnected($0, new URL($1, document.baseURI))";
     static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
     Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 
-    private String forwardToUrl = null;
+    private String forwardToClientUrl = null;
 
     /**
      * Create UI for client side bootstrapping.
@@ -89,12 +100,13 @@ public class JavaScriptBootstrapUI extends UI {
      *
      * @return the new forward url
      */
-    public String getForwardToUrl() {
-        return forwardToUrl;
+    public String getForwardToClientUrl() {
+        return forwardToClientUrl;
     }
 
     /**
-     * Connect a client with the server side UI.
+     * Connect a client with the server side UI. This method is invoked each
+     * time client router navigates to a server route.
      *
      * @param clientElementTag
      *            client side element tag
@@ -115,21 +127,20 @@ public class JavaScriptBootstrapUI extends UI {
                     getElement().getNode(), wrapperElement,
                     NodeProperties.INJECT_BY_ID, clientElementId);
         }
+
         // Render the flow view that the user wants to navigate to.
         renderViewForRoute(
                 new Location(removeLastSlash(removeFirstSlash(flowRoute))));
 
         // true if the target is client-view and the push mode is disable
-        if (forwardToUrl != null) {
-            notifyClient(forwardToUrl);
+        if (forwardToClientUrl != null) {
+            navigateToClient(forwardToClientUrl);
 
         } else {
             navigationInProgress = false;
-            // Update browser URL ?
-            getPage().executeJs(CLIENT_REPLACESTATE_TO, getInternals()
-                    .getActiveViewLocation().getPathWithQueryParameters());
-            notifyClient();
         }
+
+        acknowledgeClient();
 
         // If this call happens, there is a client-side routing, thus
         // it's needed to remove the flag that might be set in
@@ -138,7 +149,9 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     /**
-     * Check that the view can be leave.
+     * Check that the view can be leave. This method is invoked when the client
+     * router tries to navigate to a client route while the current route is a
+     * server route.
      *
      * This is only called when client route navigates from a server to a client
      * view.
@@ -151,13 +164,83 @@ public class JavaScriptBootstrapUI extends UI {
         boolean postponed = navigateToPlaceholder(
                 new Location(removeFirstSlash(route)));
 
-        // TODO: Handle forward to server view.
+        // TODO: Handle forward to server view which may happen in a
+        // BeforeLeaveEvent or deny the forward or reroute to a server view in
+        // BeforeLeaveEvent.
 
         // Inform the client whether the navigation should be postponed
-        if (postponed) { // && forward
-            notifyClientCancel();
+        if (postponed) {
+            cancelClient();
         } else {
-            notifyClient();
+            acknowledgeClient();
+        }
+    }
+
+    /*
+     * Navigate to a path triggered by a server view.
+     */
+    @Override
+    public void navigate(String pathname, QueryParameters queryParameters) {
+        Location location = new Location(pathname, queryParameters);
+        if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
+            // server-side routing
+            renderViewForRoute(location);
+        } else {
+            // client-side routing
+
+            // There is an in-progress navigation or there are no changes,
+            // prevent looping
+            if (navigationInProgress || getInternals().hasLastHandledLocation()
+                    && sameLocation(getInternals().getLastHandledLocation(),
+                    location)) {
+                return;
+            }
+
+            navigationInProgress = true;
+            Optional<NavigationState>  navigationState = this.getRouter()
+                    .resolveNavigationTarget(location);
+
+            if (navigationState.isPresent()) {
+                // Navigation can be done in server side without extra
+                // round-trip
+                handleNavigation(location, navigationState.get());
+                if (forwardToClientUrl != null) {
+                    navigationInProgress = false;
+                    // Server is forwarding to a client route from a
+                    // BeforeEnter.
+                    navigateToClient(forwardToClientUrl);
+                    return;
+                }
+            } else {
+                // Server cannot resolve navigation, let client-side to handle
+                // it.
+                navigateToClient(location.getPathWithQueryParameters());
+            }
+            navigationInProgress = false;
+        }
+    }
+
+    void navigateToClient(String clientRoute) {
+        getPage().executeJs(CLIENT_NAVIGATE_TO, clientRoute);
+    }
+
+    private void acknowledgeClient() {
+        serverConnected(false, null);
+    }
+
+    private void acknowledgeClient(String serverRoute) {
+        serverConnected(false, serverRoute);
+    }
+
+    private void cancelClient() {
+        serverConnected(true, null);
+    }
+
+    private void serverConnected(boolean cancel, String serverRoute) {
+        if (serverRoute == null) {
+            wrapperElement.executeJs(SERVER_CONNECTED, cancel);
+        } else {
+            wrapperElement.executeJs(SERVER_CONNECTED_URL, cancel, serverRoute);
         }
     }
 
@@ -165,33 +248,12 @@ public class JavaScriptBootstrapUI extends UI {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     this.getRouter()).withTarget(ClientViewPlaceholder.class)
-                            .build();
+                    .build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
         return handleNavigation(location, clientViewNavigationState);
     }
-
-    void notifyClient() {
-        notifyClient(false, null);
-    }
-
-    void notifyClient(String clientUrl) {
-        notifyClient(false, clientUrl);
-    }
-
-    private void notifyClientCancel() {
-        notifyClient(true, null);
-    }
-
-    private void notifyClient(boolean cancel, String clientUrl) {
-        if (clientUrl == null) {
-            wrapperElement.executeJs("this.serverConnected($0)", cancel);
-        } else {
-            wrapperElement.executeJs("this.serverConnected($0, new URL($1, document.baseURI))", cancel, clientUrl);
-        }
-    }
-
 
     private boolean renderViewForRoute(Location location) {
         if (!shouldHandleNavigation(location)) {
@@ -253,7 +315,7 @@ public class JavaScriptBootstrapUI extends UI {
 
         clientNavigationStateRenderer.handle(navigationEvent);
 
-        forwardToUrl = clientNavigationStateRenderer.getClientForwardRoute();
+        forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
 
         adjustPageTitle();
 
@@ -319,48 +381,6 @@ public class JavaScriptBootstrapUI extends UI {
     private NavigationState getDefaultNavigationError() {
         return new NavigationStateBuilder(this.getRouter())
                 .withTarget(RouteNotFoundError.class).build();
-    }
-
-    @Override
-    public void navigate(String pathname, QueryParameters queryParameters) {
-        Location location = new Location(pathname, queryParameters);
-        if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
-            // server-side routing
-            renderViewForRoute(location);
-        } else {
-            // client-side routing
-
-            // There is an in-progress navigation or there are no changes,
-            // prevent looping
-            if (navigationInProgress || getInternals().hasLastHandledLocation()
-                    && sameLocation(getInternals().getLastHandledLocation(),
-                            location)) {
-                return;
-            }
-
-            navigationInProgress = true;
-            Optional<NavigationState>  navigationState = this.getRouter()
-                    .resolveNavigationTarget(location);
-
-            if (navigationState.isPresent()) {
-                // Navigation can be done in server side without extra
-                // round-trip
-                handleNavigation(location, navigationState.get());
-                if (forwardToUrl != null) {
-                    navigationInProgress = false;
-                    // Server is forwarding to a client route from a
-                    // BeforeEnter.
-                    getPage().executeJs(CLIENT_NAVIGATE_TO, forwardToUrl);
-                    return;
-                }
-            } else {
-                // Server cannot resolve navigation, let client-side to handle
-                // it.
-                getPage().executeJs(CLIENT_NAVIGATE_TO,
-                        location.getPathWithQueryParameters());
-            }
-            navigationInProgress = false;
-        }
     }
 
     /**

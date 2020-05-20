@@ -113,7 +113,8 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
             JavaScriptBootstrapUI jsUI = (JavaScriptBootstrapUI) ui;
 
             if (continueNavigationAction != null) {
-                jsUI.notifyClient(event.getLocation().getPathWithQueryParameters());
+                // TODO: make sure the location is client side.
+                jsUI.navigateToClient(event.getLocation().getPathWithQueryParameters());
             }
         }
 
