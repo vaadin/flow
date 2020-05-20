@@ -19,6 +19,8 @@ import com.vaadin.flow.component.Text;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Optional;
+
 public class AnchorTest extends ComponentTest {
 
     @Test
@@ -35,7 +37,24 @@ public class AnchorTest extends ComponentTest {
     public void createWithComponent() {
         Anchor anchor = new Anchor("#", new Text("Home"));
         Assert.assertEquals(anchor.getElement().getAttribute("href"), "#");
+        Assert.assertEquals(anchor.getHref(), "#");
         Assert.assertEquals(anchor.getElement().getText(), "Home");
+        Assert.assertEquals(anchor.getText(), "Home");
+    }
+
+    @Test
+    public void createWithTarget() {
+        Anchor anchor = new Anchor("#", "Home");
+        Assert.assertEquals(anchor.getTargetEnum(), Optional.empty());
+        Assert.assertEquals(anchor.getTarget(), Optional.empty());
+
+        anchor.setTargetEnum(AnchorTarget.BLANK);
+
+        Assert.assertEquals(anchor.getTargetEnum(), Optional.of(AnchorTarget.BLANK));
+        Assert.assertEquals(anchor.getTarget(), Optional.of(AnchorTarget.BLANK.getValue()));
+
+        Assert.assertEquals(anchor.getTargetEnum(), new Anchor("#", "Home", AnchorTarget.BLANK).getTargetEnum());
+        Assert.assertEquals(anchor.getTarget(), new Anchor("#", "Home", AnchorTarget.BLANK).getTarget());
     }
 
     @Test
