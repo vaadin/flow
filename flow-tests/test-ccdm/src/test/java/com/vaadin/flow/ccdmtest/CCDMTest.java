@@ -12,18 +12,18 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.ccdmtest;
 
 import java.util.List;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+@Ignore
 public class CCDMTest extends ChromeBrowserTest {
 
     protected final void openTestUrl(String url) {
