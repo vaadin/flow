@@ -242,21 +242,21 @@ public class JavaScriptBootstrapUITest  {
     public void should_handle_forward_to_client_side_view_on_beforeEnter() {
         ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeEnter");
 
-        assertEquals("client-view", ui.getForwardToUrl());
+        assertEquals("client-view", ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_not_handle_forward_to_client_side_view_on_beforeLeave() {
         ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeLeave");
 
-        assertNull(ui.getForwardToUrl());
+        assertNull(ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_not_handle_forward_to_client_side_view_on_reroute() {
         ui.connectClient("foo", "bar", "/forwardToClientSideViewOnReroute");
 
-        assertNull(ui.getForwardToUrl());
+        assertNull(ui.getForwardToClientUrl());
     }
 
     @Test
