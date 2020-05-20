@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,9 +40,8 @@ public class FaviconHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        boolean isFavicon = request.getContextPath().isEmpty()
-                && request.getServletPath().isEmpty()
-                && "/favicon.ico".equals(request.getPathInfo());
+        String uri = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8.name());
+        boolean isFavicon = uri.equals("/favicon.ico");
         if (isFavicon) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }

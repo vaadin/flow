@@ -133,21 +133,6 @@ public interface VaadinRequest {
     String getContextPath();
 
     /**
-     * Returns the part of this request's URL that calls the servlet. This path
-     * starts with a "/" character and includes either the servlet name or a
-     * path to the servlet, but does not include any extra path information or
-     * a query string.
-     *
-     * @see javax.servlet.http.HttpServletRequest#getServletPath()
-     *
-     * @return a String containing the name or path of the servlet being called,
-     *         as specified in the request URL, decoded, or an empty string if
-     *         the servlet used to process the request is matched using the
-     *         "/*" pattern.
-     */
-    String getServletPath();
-
-    /**
      * Reconstructs the URL the client used to make the request. The returned
      * URL contains a protocol, server name, port number, and server path, but
      * it does not include query string parameters.

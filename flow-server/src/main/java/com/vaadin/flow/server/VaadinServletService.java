@@ -291,7 +291,7 @@ public class VaadinServletService extends VaadinService {
         // Should not take pathinfo into account because the base URI refers to
         // the servlet path
 
-        String servletPath = request.getServletPath();
+        String servletPath = ((VaadinServletRequest)request).getServletPath();
         assert servletPath != null;
         if (!servletPath.endsWith("/")) {
             servletPath += "/";
