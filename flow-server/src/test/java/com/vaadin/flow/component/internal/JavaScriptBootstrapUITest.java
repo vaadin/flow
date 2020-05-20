@@ -1,8 +1,10 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
+import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.InternalServerError;
@@ -34,7 +36,6 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NAVIGATE_TO;
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_PUSHSTATE_TO;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,6 +43,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class JavaScriptBootstrapUITest  {
+
+    private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => window.history.pushState($0, '', $1))";
+
     private MockServletServiceSessionSetup mocks;
     private JavaScriptBootstrapUI ui;
 
@@ -334,9 +338,7 @@ public class JavaScriptBootstrapUITest  {
     @Test
     public void should_invoke_clientRoute_when_navigationHasNotBeenStarted() {
         ui = Mockito.spy(ui);
-        Page page = Mockito.mock(Page.class);
-
-        Mockito.when(ui.getPage()).thenReturn(page);
+        Page page = mockPage();
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
@@ -351,10 +353,9 @@ public class JavaScriptBootstrapUITest  {
     @Test
     public void should_update_pushState_when_navigationHasBeenAlreadyStarted() {
         ui = Mockito.spy(ui);
-        Page page = Mockito.mock(Page.class);
-        UIInternals internals = Mockito.mock(UIInternals.class);
+        Page page = mockPage();
 
-        Mockito.when(ui.getPage()).thenReturn(page);
+        UIInternals internals = Mockito.mock(UIInternals.class);
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
@@ -374,16 +375,19 @@ public class JavaScriptBootstrapUITest  {
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
         assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+
+        final List<String> execValues = execArg.getAllValues();
+        assertEquals(2, execValues.size());
+        assertNull(execValues.get(0));
         assertEquals("clean/1", execArg.getValue());
     }
 
     @Test
     public void should_not_notify_clientRoute_when_navigatingToTheSame() {
         ui = Mockito.spy(ui);
-        Page page = Mockito.mock(Page.class);
-        UIInternals internals = Mockito.mock(UIInternals.class);
+        Page page = mockPage();
 
-        Mockito.when(ui.getPage()).thenReturn(page);
+        UIInternals internals = Mockito.mock(UIInternals.class);
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
@@ -401,8 +405,8 @@ public class JavaScriptBootstrapUITest  {
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         ui = Mockito.spy(ui);
-        Page page = Mockito.mock(Page.class);
-        Mockito.when(ui.getPage()).thenReturn(page);
+        Page page = mockPage();
+
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
 
@@ -413,6 +417,10 @@ public class JavaScriptBootstrapUITest  {
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
         assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+
+        final List<String> execValues = execArg.getAllValues();
+        assertEquals(2, execValues.size());
+        assertNull(execValues.get(0));
         assertEquals("dirty", execArg.getValue());
     }
 
@@ -497,4 +505,15 @@ public class JavaScriptBootstrapUITest  {
                     + exceptionText + "'", errorText.contains(exceptionText));
         }
     }
+
+    private Page mockPage() {
+        Page page = Mockito.mock(Page.class);
+        Mockito.when(ui.getPage()).thenReturn(page);
+
+        History history = new History(ui);
+        Mockito.when(page.getHistory()).thenReturn(history);
+
+        return page;
+    }
+
 }

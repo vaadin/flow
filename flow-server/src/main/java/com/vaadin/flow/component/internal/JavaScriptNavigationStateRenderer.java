@@ -112,9 +112,16 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
         if (ui instanceof JavaScriptBootstrapUI) {
             JavaScriptBootstrapUI jsUI = (JavaScriptBootstrapUI) ui;
 
-            if (continueNavigationAction != null) {
-                // TODO: make sure the location is client side.
-                jsUI.navigateToClient(event.getLocation().getPathWithQueryParameters());
+            if (continueNavigationAction != null
+                    // We're trying to navigate to a client view.
+                    && JavaScriptBootstrapUI.ClientViewPlaceholder.class
+                            .isAssignableFrom(getNavigationState()
+                                    .getNavigationTarget())) {
+
+                // FIXME: This could be invoked from ClientViewPlaceholder or
+                // another client placeholder view type.
+                jsUI.navigateToClient(
+                        event.getLocation().getPathWithQueryParameters());
             }
         }
 
