@@ -15,7 +15,12 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.vaadin.flow.shared.Registration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,15 +28,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.vaadin.flow.shared.Registration;
 
 public class AbstractListDataViewTest {
 
-    private final static Collection<String> ITEMS = Arrays.asList(
-            "first", "middle", "last");
+    private Collection<String> ITEMS;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -44,6 +45,7 @@ public class AbstractListDataViewTest {
 
     @Before
     public void init() {
+        ITEMS = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = DataProvider.ofCollection(ITEMS);
         dataController = new DataControllerStub();
         dataView = new ListDataViewImpl(dataController);
@@ -166,6 +168,26 @@ public class AbstractListDataViewTest {
                 dataView.isItemPresent("absent item"));
     }
 
+    @Test
+    public void addItem_itemInDataset() {
+        final String newItem = "new Item";
+        dataView.addItem(newItem);
+
+        Assert.assertEquals(4, dataView.getDataSize());
+        Assert.assertTrue(dataView.isItemPresent(newItem));
+        Assert.assertEquals(newItem, dataView.getNextItem("last"));
+
+    }
+
+    @Test
+    public void removeItem_itemRemovedFromDataset() {
+        dataView.removeItem("middle");
+
+        Assert.assertEquals(2, dataView.getDataSize());
+        Assert.assertFalse(dataView.isItemPresent("middle"));
+        Assert.assertEquals("last", dataView.getNextItem("first"));
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
         public ListDataViewImpl(DataController<String> dataController) {
             super(dataController);
@@ -175,15 +197,23 @@ public class AbstractListDataViewTest {
     private class DataControllerStub implements DataController<String> {
 
         @Override
-        public DataProvider<String, ?> getDataProvider() { return dataProvider; }
+        public DataProvider<String, ?> getDataProvider() {
+            return dataProvider;
+        }
 
         @Override
-        public Registration addSizeChangeListener(SizeChangeListener listener) { return null; }
+        public Registration addSizeChangeListener(SizeChangeListener listener) {
+            return null;
+        }
 
         @Override
-        public int getDataSize() { return dataProvider.size(new Query<>()); }
+        public int getDataSize() {
+            return dataProvider.size(new Query<>());
+        }
 
         @Override
-        public Stream<String> getAllItems() { return dataProvider.fetch(new Query<>()); }
+        public Stream<String> getAllItems() {
+            return dataProvider.fetch(new Query<>());
+        }
     }
 }

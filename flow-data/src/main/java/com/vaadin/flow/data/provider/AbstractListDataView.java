@@ -25,6 +25,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * Abstract list data view implementation which provides common methods
  * for fetching, filtering and sorting in-memory data to all {@link ListDataView} subclasses.
@@ -109,6 +111,22 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
         verifyDataProviderType(dataProvider.getClass());
         return (ListDataProvider<T>) dataProvider;
+    }
+
+    @Override
+    public AbstractListDataView<T> addItem(T item) {
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        dataProvider.getItems().add(item);
+        dataProvider.refreshAll();
+        return this;
+    }
+
+    @Override
+    public AbstractListDataView<T> removeItem(T item) {
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        dataProvider.getItems().remove(item);
+        dataProvider.refreshAll();
+        return this;
     }
 
     protected List<T> getAllItemsAsList() {
