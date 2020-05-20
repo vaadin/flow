@@ -10,10 +10,10 @@ interface Field {
   required: boolean,
   invalid: boolean,
   errorMessage: string
+  value: any,
 }
 interface FieldState extends Field {
   name: string,
-  value: string,
   visited: boolean
 }
 const fieldStateMap = new WeakMap<PropertyPart, FieldState>();
@@ -23,19 +23,13 @@ export interface FieldStrategy extends Field {
   validate: () => Promise<Array<ValueError<any>>>;
 }
 
-class VaadinFieldStrategy implements FieldStrategy {
+export abstract class AbstractFieldStrategy implements FieldStrategy {
+  abstract required: boolean;
+  abstract invalid: boolean;
   constructor(public element: Element & Field) {}
   validate = async () => [];
-  set required(value: boolean) { this.element.required = value }
-  set invalid(value: boolean) { this.element.invalid = value }
-  set errorMessage(value: string) { this.element.errorMessage = value }
-}
-
-class GenericFieldStrategy implements FieldStrategy {
-  constructor(public element: Element) {}
-  validate = async () => [];
-  set required(value: boolean) { this.setAttribute('required', value) }
-  set invalid(value: boolean) { this.setAttribute('invalid', value) }
+  get value() {return this.element.value}
+  set value(value) {this.element.value = value}
   set errorMessage(_: string) { }
   setAttribute(key: string, val: any) {
     if (val) {
@@ -46,8 +40,49 @@ class GenericFieldStrategy implements FieldStrategy {
   }
 }
 
-// vaadin elements have a `version` static property in the class
-const isVaadinElement = (elm: Element) => (elm.constructor as any).version;
+class VaadinFieldStrategy extends AbstractFieldStrategy {
+  set required(value: boolean) { this.element.required = value }
+  set invalid(value: boolean) { this.element.invalid = value }
+  set errorMessage(value: string) { this.element.errorMessage = value }
+}
+
+class GenericFieldStrategy extends AbstractFieldStrategy {
+  set required(value: boolean) { this.setAttribute('required', value) }
+  set invalid(value: boolean) { this.setAttribute('invalid', value) }
+}
+
+class CheckedFieldStrategy extends GenericFieldStrategy {
+  set value(val: any) {
+    (this.element as any).checked = /^(true|on)$/i.test(String(val));
+  }
+  get value() {
+    return (this.element as any).checked;
+  }
+}
+
+class SelectedFieldStrategy extends GenericFieldStrategy {
+  set value(val: any) {
+    (this.element as any).selected = val;
+  }
+  get value() {
+    return (this.element as any).selected;
+  }
+}
+
+function getFieldStrategy(elm: any): FieldStrategy {
+  switch(elm.localName) {
+    case 'vaadin-checkbox': case 'vaadin-radio-button':
+      return new CheckedFieldStrategy(elm);
+    case 'vaadin-list-box':
+      return new SelectedFieldStrategy(elm);
+    case 'vaadin-rich-text-editor':
+      return new GenericFieldStrategy(elm);
+    case 'input': if (/^(input|radio)$/.test(elm.type)) {
+      return new CheckedFieldStrategy(elm);
+    }
+  }
+  return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
+}
 
 export const field = directive(<T>(
   model: AbstractModel<T>,
@@ -60,10 +95,11 @@ export const field = directive(<T>(
 
   let fieldState: FieldState;
   const element = propertyPart.committer.element as HTMLInputElement & Field;
+  const fieldStrategy = getFieldStrategy(element);
 
-  let fieldStrategy: FieldStrategy;
-
-  if (!fieldStateMap.has(propertyPart)) {
+  if (fieldStateMap.has(propertyPart)) {
+    fieldState = fieldStateMap.get(propertyPart)!;
+  } else {
     fieldState = {
       name: '',
       value: '',
@@ -73,7 +109,6 @@ export const field = directive(<T>(
       visited: false
     };
     fieldStateMap.set(propertyPart, fieldState);
-    fieldStrategy = isVaadinElement(element) ? new VaadinFieldStrategy(element) : new GenericFieldStrategy(element);
     (model as any)[fieldSymbol] = fieldStrategy;
 
     fieldStrategy.validate = async () => {
@@ -94,8 +129,9 @@ export const field = directive(<T>(
     };
 
     const updateValueFromElement = () => {
-      fieldState.value = element.value;
-      setValue(model, (model as any)[fromStringSymbol](element.value));
+      fieldState.value = fieldStrategy.value;
+      const convert = typeof fieldState.value === 'string' && (model as any)[fromStringSymbol];
+      setValue(model, convert ? convert(fieldState.value) : fieldState.value);
       if (effect !== undefined) {
         effect.call(element, element);
       }
@@ -114,9 +150,6 @@ export const field = directive(<T>(
     };
 
     element.checkValidity = () => !fieldState.invalid;
-  } else {
-    fieldState = fieldStateMap.get(propertyPart)!;
-    fieldStrategy = (model as any)[fieldSymbol] as FieldStrategy;
   }
 
   const name = getName(model);
@@ -125,10 +158,10 @@ export const field = directive(<T>(
     element.setAttribute('name', name);
   }
 
-  const value = String(getValue(model));
+  const value = getValue(model);
   if (value !== fieldState.value) {
     fieldState.value = value;
-    element.value = value;
+    fieldStrategy.value = value;
   }
 
   const required = model[requiredSymbol];

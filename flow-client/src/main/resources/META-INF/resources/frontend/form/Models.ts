@@ -42,6 +42,7 @@ export abstract class AbstractModel<T> {
     this[keySymbol] = key;
     validators.forEach(validator => this[validatorsSymbol].add(validator));
   }
+
   toString() {
     return String(this.valueOf());
   }
@@ -76,15 +77,12 @@ export class ObjectModel<T> extends AbstractModel<T> {
     const modelInstance = new this(undefined as any, defaultValueSymbol)
     return Object.keys(modelInstance).reduce(
       (obj: any, key: keyof any) => {
-        obj[key] = (
+        (obj = (obj || {}))[key] = (
           (modelInstance as any)[key].constructor as ModelConstructor<any, AbstractModel<any>>
         ).createEmptyValue();
         return obj;
-      },
-      {}
-    );
+      }, null);
   }
-  [fromStringSymbol] = String;
 }
 
 export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<ReadonlyArray<T>> {
