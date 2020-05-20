@@ -30,6 +30,7 @@ public class PreserveOnRefreshShortcutView extends Div {
                 "Press ENTER, reload the page, and press ENTER again",
                 event -> handleClick());
         button.addClickShortcut(Key.ENTER);
+        button.setId("trigger");
         add(button);
     }
 

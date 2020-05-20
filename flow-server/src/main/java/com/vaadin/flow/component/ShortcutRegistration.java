@@ -17,6 +17,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,15 +71,23 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     private ShortcutEventListener eventListener;
 
+    private List<Registration> registrations = new ArrayList<>();
+
     // beforeClientResponse callback
     private final SerializableConsumer<ExecutionContext> beforeClientResponseConsumer = executionContext -> {
         if (listenOnComponents == null) {
-            listenOnComponents = registerOwnerListeners();
+            initListenOnComponent();
         }
+        boolean reinit = false;
         for (Component component : listenOnComponents) {
-            component.addDetachListener(event -> {
-                removeAllListenerRegistrations();
-            });
+            if (component.getUI().isPresent()
+                    && component.getUI().get().isClosing()) {
+                reinit = true;
+            }
+        }
+        if (reinit) {
+            removeAllListenerRegistrations();
+            initListenOnComponent();
         }
 
         for (int i = 0; i < listenOnComponents.length; i++) {
@@ -632,6 +641,8 @@ public class ShortcutRegistration implements Registration, Serializable {
             }
             listenOnAttachListenerRegistrations = null;
         }
+        registrations.forEach(Registration::remove);
+        registrations.clear();
         removeListenerRegistration();
         listenOnComponents = null;
     }
@@ -749,6 +760,16 @@ public class ShortcutRegistration implements Registration, Serializable {
                         : "null",
                 builder.toString(), allowDefaultBehavior,
                 allowEventPropagation);
+    }
+
+    private void initListenOnComponent() {
+        listenOnComponents = registerOwnerListeners();
+        for (Component component : listenOnComponents) {
+            Registration registration = component.addDetachListener(event -> {
+                removeAllListenerRegistrations();
+            });
+            registrations.add(registration);
+        }
     }
 
     /**
