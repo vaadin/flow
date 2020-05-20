@@ -109,8 +109,15 @@ public class ApplicationConnection {
             String liveReloadPath, String liveReloadBackend,
             String springBootDevToolsPort)
     /*-{
-      $wnd.Vaadin.Flow.devModeGizmo = $wnd.Vaadin.Flow.initDevModeGizmo(
-        serviceUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort);
+      if ($wnd.Vaadin.Flow.initDevModeGizmo !== undefined) {
+        $wnd.Vaadin.Flow.devModeGizmo = $wnd.Vaadin.Flow.initDevModeGizmo(
+          serviceUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort);
+      } else {
+        // This should normally not happen, as conditions during which
+        // live-reload is disabled (configuration, production and/or
+        // compatibility mode) are detected on the server side.
+        console.warn('Live reload UI not available');
+      }
     }-*/;
 
     /**
