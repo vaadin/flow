@@ -53,3 +53,21 @@ export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   readonly priority = new NumberModel(this, 'priority');
   readonly products = new ArrayModel(this, 'products', ProductModel);
 }
+
+export interface TestEntity {
+  fieldString: string;
+  fieldNumber: number;
+  fieldBoolean: boolean;
+  fieldObject: object;
+  fieldArrayString: string[];
+  fieldArrayModel: IdEntity[];
+}
+export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T> {
+  static createEmptyValue: () => TestEntity;
+  fieldString = new StringModel(this, 'fieldString');
+  fieldNumber = new NumberModel(this, 'fieldNumber');
+  fieldBoolean = new BooleanModel(this, 'fieldBoolean');
+  fieldObject = new ObjectModel(this, 'fieldObject');
+  fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel);
+  fieldArrayModel = new ArrayModel(this, 'fieldString', IdEntityModel);
+}

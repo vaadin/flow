@@ -4,17 +4,27 @@ const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
 /// <reference types="sinon">
 const {sinon} = intern.getPlugin('sinon');
+import { expect } from "chai";
 
 // API to test
 import {
   Binder,
   field,
-  setValue
+  setValue,
+  fieldSymbol,
+  GenericFieldStrategy,
+  CheckedFieldStrategy,
+  SelectedFieldStrategy,
+  VaadinFieldStrategy,
+  getModelValidators,
+  Required,
+  AbstractModel
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import { OrderModel} from "./TestModels";
+import { OrderModel, TestModel, TestEntity, IdEntity } from "./TestModels";
 
 import { customElement, html, LitElement, query} from 'lit-element';
+import { PropertyPart, AttributeCommitter } from "lit-html";
 
 suite("form/Field", () => {
 
@@ -288,4 +298,116 @@ suite("form/Field", () => {
     });
   });
 
+
+  suite('field/Strategy', () => {
+    const binder = new Binder(document.createElement('div'), TestModel);
+
+    ['div',
+     'input',
+     'vaadin-rich-text-editor'
+    ].forEach(tag => {
+      test(`GenericFieldStrategy ${tag}`, async() => {
+        const element: Element & {value?: any} = document.createElement(tag);
+        const model = binder.model.fieldString;
+        setValue(model, 'foo');
+        getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
+
+        const part = new PropertyPart(new AttributeCommitter(element, '..', []));
+        field(model)(part);
+        const strategy = (model as any)[fieldSymbol];
+
+        expect(strategy instanceof GenericFieldStrategy).to.be.true;
+        expect(strategy.value).to.be.equal('foo');
+
+        await strategy.validate();
+        expect(element.hasAttribute('invalid')).to.be.true;
+        expect(element.hasAttribute('errorMessage')).to.be.false;
+      });
+    });
+
+    [{tag: 'input', type: 'checkbox'},
+     {tag: 'input', type: 'radio'},
+     {tag: 'vaadin-checkbox', type: ''},
+     {tag: 'vaadin-radio-button', type: ''}
+    ].forEach(({tag, type}) => {
+      test(`CheckedFieldStrategy ${tag} ${type}`, async() => {
+        const element: Element & {checked?: boolean} = document.createElement(tag);
+        type && element.setAttribute('type', type);
+        const model = binder.model.fieldBoolean;
+
+        setValue(model, true);
+        getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
+
+        const part = new PropertyPart(new AttributeCommitter(element, '..', []));
+        field(model)(part);
+        const strategy = (model as any)[fieldSymbol];
+
+        expect(strategy instanceof CheckedFieldStrategy).to.be.true;
+        expect(strategy.value).to.be.true;
+        expect(element.checked).to.be.true;
+
+        await strategy.validate();
+        expect(element.hasAttribute('invalid')).to.be.true;
+        expect(element.hasAttribute('errorMessage')).to.be.false;
+      });
+    });
+
+    test(`SelectedFieldStrategy`, async () => {
+      const element: Element & {selected?: boolean} = document.createElement('vaadin-list-box');
+      const model = binder.model.fieldBoolean;
+
+      setValue(model, true);
+      getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
+
+      const part = new PropertyPart(new AttributeCommitter(element, '..', []));
+      field(model)(part);
+      const strategy = (model as any)[fieldSymbol];
+
+      expect(strategy instanceof SelectedFieldStrategy).to.be.true;
+      expect(strategy.value).to.be.true;
+      expect(element.selected).to.be.true;
+
+      await strategy.validate();
+      expect(element.hasAttribute('invalid')).to.be.true;
+      expect(element.hasAttribute('errorMessage')).to.be.false;
+    });
+
+
+    [{model: binder.model.fieldString as AbstractModel<any>, value: 'a-string-value'},
+     {model: binder.model.fieldBoolean as AbstractModel<any>, value: true},
+     {model: binder.model.fieldNumber as AbstractModel<any>, value: 10},
+     {model: binder.model.fieldObject as AbstractModel<any>, value: {foo: true}},
+     {model: binder.model.fieldArrayString as AbstractModel<any>, value: ['a', 'b']},
+     {model: binder.model.fieldArrayModel as AbstractModel<any>, value: [{idString: 'id'}]}
+    ].forEach(async ({model, value}, idx) => {
+      test(`VaadinFieldStrategy ${model.constructor.name} ${idx}`, async () => {
+        const element: Element & {
+          value?: any,
+          invalid?: boolean,
+          required?: boolean,
+          errorMessage?: string} = document.createElement('any-vaadin-element-tag');
+        (element.constructor as any).version = '1.0';
+
+        setValue(model, value);
+        getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
+        getModelValidators(model).add(new Required());
+
+        const part = new PropertyPart(new AttributeCommitter(element, '..', []));
+        field(model)(part);
+        const strategy = (model as any)[fieldSymbol];
+        delete (element.constructor as any).version;
+
+        expect(strategy instanceof VaadinFieldStrategy).to.be.true;
+        expect(strategy.value).to.be.equal(value);
+        expect(element.value).to.be.equal(value);
+        expect(element.required).to.be.true;
+        expect(element.invalid).to.be.undefined;
+        expect(element.errorMessage).to.be.undefined;
+
+        await strategy.validate();
+        expect(element.invalid).to.be.true;
+        expect(element.errorMessage).to.be.equal('any-err-msg');
+      });
+    });
+  })
 });
