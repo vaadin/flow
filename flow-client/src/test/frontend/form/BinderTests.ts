@@ -17,7 +17,7 @@ import {
   BinderConfiguration
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import { Order, OrderModel, ProductModel } from "./Models";
+import { Order, OrderModel, ProductModel } from "./TestModels";
 
 import { customElement, LitElement} from 'lit-element';
 

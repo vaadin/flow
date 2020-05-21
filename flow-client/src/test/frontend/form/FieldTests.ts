@@ -12,7 +12,7 @@ import {
   setValue
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import { OrderModel} from "./Models";
+import { OrderModel} from "./TestModels";
 
 import { customElement, html, LitElement, query} from 'lit-element';
 
@@ -287,4 +287,5 @@ suite("form/Field", () => {
       sinon.assert.calledOnce(orderViewWithInput.customerNickNameField!.setAttributeSpy);
     });
   });
+
 });

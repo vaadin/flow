@@ -7,7 +7,7 @@ import {
   ObjectModel,
   Pattern,
   Positive,
-  Required, Size, StringModel
+  Required, Size, StringModel, AbstractModel
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
 export interface IdEntity {
@@ -53,4 +53,3 @@ export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   readonly priority = new NumberModel(this, 'priority');
   readonly products = new ArrayModel(this, 'products', ProductModel);
 }
-

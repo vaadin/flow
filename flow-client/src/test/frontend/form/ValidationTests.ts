@@ -20,7 +20,7 @@ import {
   Validator
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import { IdEntity, IdEntityModel,  Order, OrderModel } from "./Models";
+import { IdEntity, IdEntityModel,  Order, OrderModel } from "./TestModels";
 
 import { css, customElement, html, LitElement, query} from 'lit-element';
 
