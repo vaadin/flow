@@ -68,6 +68,28 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
     T getPreviousItem(T item);
 
     /**
+     * Add an item to the data list.
+     *
+     * @param item
+     *         item to add
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     */
+    V addItem(T item);
+
+    /**
+     * Remove an item from the data list.
+     *
+     * @param item
+     *         item to remove
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     */
+    V removeItem(T item);
+
+    /**
      * Set a filter to be applied to the data. Given filter replaces any
      * previous filter. Setting {@code null} clears filtering.
      *
