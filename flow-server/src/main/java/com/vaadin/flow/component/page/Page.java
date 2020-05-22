@@ -163,7 +163,7 @@ public class Page implements Serializable {
      * Relative URLs are interpreted as relative to the static web resources
      * directory. So if the {@code url} value is {@code "some.js"} and
      * {@code src/main/webapp} is used as a location for static web resources
-     * then (which is the default location) then the file system path for the
+     * (which is the default location) then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
@@ -190,7 +190,7 @@ public class Page implements Serializable {
      * Relative URLs are interpreted as relative to the static web resources
      * directory. So if the {@code url} value is {@code "some.js"} and
      * {@code src/main/webapp} is used as a location for static web resources
-     * then (which is the default location) then the file system path for the
+     * (which is the default location) then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
@@ -217,7 +217,7 @@ public class Page implements Serializable {
      * Relative URLs are interpreted as relative to the static web resources
      * directory. So if the {@code url} value is {@code "some.js"} and
      * {@code src/main/webapp} is used as a location for static web resources
-     * then (which is the default location) then the file system path for the
+     * (which is the default location) then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
@@ -244,7 +244,7 @@ public class Page implements Serializable {
      * Relative URLs are interpreted as relative to the static web resources
      * directory. So if the {@code url} value is {@code "some.js"} and
      * {@code src/main/webapp} is used as a location for static web resources
-     * then (which is the default location) then the file system path for the
+     * (which is the default location) then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
