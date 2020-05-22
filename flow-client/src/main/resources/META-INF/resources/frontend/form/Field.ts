@@ -40,18 +40,18 @@ export abstract class AbstractFieldStrategy implements FieldStrategy {
   }
 }
 
-class VaadinFieldStrategy extends AbstractFieldStrategy {
+export class VaadinFieldStrategy extends AbstractFieldStrategy {
   set required(value: boolean) { this.element.required = value }
   set invalid(value: boolean) { this.element.invalid = value }
   set errorMessage(value: string) { this.element.errorMessage = value }
 }
 
-class GenericFieldStrategy extends AbstractFieldStrategy {
+export class GenericFieldStrategy extends AbstractFieldStrategy {
   set required(value: boolean) { this.setAttribute('required', value) }
   set invalid(value: boolean) { this.setAttribute('invalid', value) }
 }
 
-class CheckedFieldStrategy extends GenericFieldStrategy {
+export class CheckedFieldStrategy extends GenericFieldStrategy {
   set value(val: any) {
     (this.element as any).checked = /^(true|on)$/i.test(String(val));
   }
@@ -60,7 +60,7 @@ class CheckedFieldStrategy extends GenericFieldStrategy {
   }
 }
 
-class SelectedFieldStrategy extends GenericFieldStrategy {
+export class SelectedFieldStrategy extends GenericFieldStrategy {
   set value(val: any) {
     (this.element as any).selected = val;
   }
@@ -77,7 +77,7 @@ function getFieldStrategy(elm: any): FieldStrategy {
       return new SelectedFieldStrategy(elm);
     case 'vaadin-rich-text-editor':
       return new GenericFieldStrategy(elm);
-    case 'input': if (/^(input|radio)$/.test(elm.type)) {
+    case 'input': if (/^(checkbox|radio)$/.test(elm.type)) {
       return new CheckedFieldStrategy(elm);
     }
   }
@@ -92,7 +92,6 @@ export const field = directive(<T>(
   if (!(part instanceof PropertyPart) || propertyPart.committer.name !== '..') {
     throw new Error('Only supports ...="" syntax');
   }
-
   let fieldState: FieldState;
   const element = propertyPart.committer.element as HTMLInputElement & Field;
   const fieldStrategy = getFieldStrategy(element);
@@ -112,10 +111,7 @@ export const field = directive(<T>(
     (model as any)[fieldSymbol] = fieldStrategy;
 
     fieldStrategy.validate = async () => {
-
       fieldState.visited = true;
-
-
       const errors = await validate(model);
 
       const displayedError = errors[0];
