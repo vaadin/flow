@@ -32,7 +32,7 @@ import com.vaadin.flow.shared.Registration;
 
 public class AbstractListDataViewTest {
 
-    private Collection<String> ITEMS;
+    private Collection<String> items;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -45,8 +45,8 @@ public class AbstractListDataViewTest {
 
     @Before
     public void init() {
-        ITEMS = new ArrayList<>(Arrays.asList("first", "middle", "last"));
-        dataProvider = DataProvider.ofCollection(ITEMS);
+        items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
+        dataProvider = DataProvider.ofCollection(items);
         dataController = new DataControllerStub();
         dataView = new ListDataViewImpl(dataController);
     }
@@ -118,7 +118,7 @@ public class AbstractListDataViewTest {
 
     @Test
     public void withFilter_filterIsSet_filteredItemsObtained() {
-        Assert.assertEquals(ITEMS.size(), dataController.getDataSize());
+        Assert.assertEquals(items.size(), dataController.getDataSize());
         dataView.withFilter(item -> item.equals("first"));
         Assert.assertEquals("Filter was not applied to data size",
                 1, dataController.getDataSize());
@@ -131,9 +131,9 @@ public class AbstractListDataViewTest {
         ((ListDataProvider) dataProvider).setFilter(item -> item.equals("first"));
         dataView.withFilter(null);
         Assert.assertEquals("Filter reset was not applied to data size",
-                ITEMS.size(), dataController.getDataSize());
+                items.size(), dataController.getDataSize());
         Assert.assertArrayEquals("Filter reset was not applied to data set",
-                ITEMS.toArray(), dataController.getAllItems().toArray());
+                items.toArray(), dataController.getAllItems().toArray());
     }
 
     @Test
@@ -146,13 +146,13 @@ public class AbstractListDataViewTest {
     @Test
     public void getAllItems_noFiltersSet_allItemsObtained() {
         Stream<String> allItems = dataView.getAllItems();
-        Assert.assertArrayEquals("Unexpected data set", ITEMS.toArray(),
+        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
                 allItems.toArray());
     }
 
     @Test
     public void getDataSize_noFiltersSet_dataSizeObtained() {
-        Assert.assertEquals("Unexpected size for data", ITEMS.size(),
+        Assert.assertEquals("Unexpected size for data", items.size(),
                 dataView.getDataSize());
     }
 

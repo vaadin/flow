@@ -25,8 +25,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * Abstract list data view implementation which provides common methods
  * for fetching, filtering and sorting in-memory data to all {@link ListDataView} subclasses.
