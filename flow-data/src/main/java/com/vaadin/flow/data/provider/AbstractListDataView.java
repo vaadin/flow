@@ -90,12 +90,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public Stream<T> getAllItems() {
-        return dataController.getAllItems();
+        return getDataController().getAllItems();
     }
 
     @Override
     public int getDataSize() {
-        return dataController.getDataSize();
+        return getDataController().getDataSize();
     }
 
     @Override
@@ -114,7 +114,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @SuppressWarnings("unchecked")
     @Override
     protected ListDataProvider<T> getDataProvider() {
-        final DataProvider<T, ?> dataProvider = this.dataController
+        final DataProvider<T, ?> dataProvider = getDataController()
                 .getDataProvider();
         Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
         verifyDataProviderType(dataProvider.getClass());

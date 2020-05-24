@@ -28,7 +28,7 @@ import java.util.Objects;
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
 
-    protected DataController<T> dataController;
+    private DataController<T> dataController;
 
     /**
      * Creates a new instance of {@link AbstractDataView} subclass
@@ -93,4 +93,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * @throws IllegalStateException if data provider type is incompatible
      */
     protected abstract DataProvider<T, ?> getDataProvider();
+
+    protected DataController<T> getDataController() {
+        return dataController;
+    }
 }
