@@ -35,7 +35,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *
      * @param item
      *         item to check if it has a next item
-     * @return true if the item is not the last item
+     * @return true if the item is present and it is not the last item
      */
     boolean hasNextItem(T item);
 
@@ -54,7 +54,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *
      * @param item
      *         item to check if it has a previous item
-     * @return true if the item is not the first item
+     * @return true if the item is present and it is not the first item
      */
     boolean hasPreviousItem(T item);
 
