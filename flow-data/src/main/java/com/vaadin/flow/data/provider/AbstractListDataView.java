@@ -121,6 +121,22 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return (ListDataProvider<T>) dataProvider;
     }
 
+    @Override
+    public AbstractListDataView<T> addItem(T item) {
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        dataProvider.getItems().add(item);
+        dataProvider.refreshAll();
+        return this;
+    }
+
+    @Override
+    public AbstractListDataView<T> removeItem(T item) {
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        dataProvider.getItems().remove(item);
+        dataProvider.refreshAll();
+        return this;
+    }
+
     private AbstractListDataView<T> withFilterOrOrder(
             SerializableConsumer<ListDataProvider<T>> filterOrOrderConsumer) {
         ListDataProvider<T> dataProvider = getDataProvider();

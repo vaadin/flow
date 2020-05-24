@@ -76,6 +76,10 @@
   * `context://` tests for Compatibility mode
 * test-themes
   * Custom Theme tests for NPM and Compatibility modes
+* test-live-reload
+  * Tests the live reload feature in development mode. Run sequentially in their own
+    module as live reload affects all open UIs and would cause interference between 
+    parallelly executing tests.
 
 ### Common test resource modules
 

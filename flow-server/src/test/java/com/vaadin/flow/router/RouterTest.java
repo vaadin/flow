@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,15 +29,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -56,6 +46,7 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Enter;
 import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
@@ -66,7 +57,17 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
+import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
+import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
@@ -1442,6 +1443,161 @@ public class RouterTest extends RoutingTestBase {
 
     }
 
+    @Tag(Tag.DIV)
+    public static class RouteParametersBase extends Component
+            implements BeforeEnterObserver {
+
+        static RouteParameters parameters;
+
+        static Class<? extends Component> target;
+
+        static void clear() {
+            parameters = null;
+            target = null;
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            parameters = event.getRouteParameters();
+            target = getClass();
+        }
+    }
+
+    @RoutePrefix(":parentID")
+    public static class ParentWithParameter extends RouteParametersBase
+            implements RouterLayout {
+    }
+
+    @Route(value = "", layout = ParentWithParameter.class)
+    @RoutePrefix("link/:chainLinkID")
+    @ParentLayout(ParentWithParameter.class)
+    public static class ChainLinkWithParameter extends RouteParametersBase
+            implements RouterLayout {
+    }
+
+    @Route(value = "target/:targetChainLinkID/bar", layout = ChainLinkWithParameter.class)
+    public static class TargetWithParameter extends RouteParametersBase {
+    }
+
+    @Route(value = ":optional?/:anotherOptional?", layout = ChainLinkWithParameter.class)
+    public static class TargetWithOptionalParameters extends RouteParametersBase {
+    }
+
+    @Route(value = ":targetChainLinkID", layout = ParentWithParameter.class)
+    @RoutePrefix("targetLink/:chainLinkID?/chainLink")
+    @ParentLayout(ParentWithParameter.class)
+    public static class ChainLinkWithParameterAndTarget
+            extends RouteParametersBase implements RouterLayout {
+    }
+
+    @Route(value = ":anotherTargetID/:yetAnotherID/foo/:varargsFoo*", layout = ChainLinkWithParameterAndTarget.class)
+    public static class AnotherTargetWithParameter extends RouteParametersBase {
+    }
+
+    @Route(":intType(" + RouteParameterRegex.INTEGER + ")")
+    @RouteAlias(":stringType")
+    @RouteAlias(":intType?(" + RouteParameterRegex.INTEGER + ")"
+            + "/:stringType?/:varargs*(thinking|of|U|and|I)")
+    @RoutePrefix("param/types")
+    public static class ParameterTypesView extends RouteParametersBase
+            implements RouterLayout {
+    }
+
+    @Route(":something?")
+    @RouteAlias(":messageID(" + RouteParameterRegex.INTEGER + ")")
+    @RouteAlias("last")
+    @RoutePrefix("forum/thread/:threadID(" + RouteParameterRegex.INTEGER + ")")
+    public static class ParametersForumThreadView extends RouteParametersBase
+            implements RouterLayout {
+    }
+
+    @Route(":alias(framework|platform|vaadin-spring|vaadin-spring-boot)/:version?(v?\\d.*)/:path*")
+    @RouteAlias(":groupId(\\w[\\w\\d]+\\.[\\w\\d\\-\\.]+)/:artifactId/:version?(v?\\d.*)/:path*")
+    @RouteAlias(":path*")
+    @RoutePrefix("api")
+    public static class ParametersApiView extends RouteParametersBase
+            implements RouterLayout {
+    }
+
+    @Route(":tabIdentifier?(api)/:apiPath*")
+    @RouteAlias(":tabIdentifier?(overview|samples|links|reviews|discussions)")
+    @RoutePrefix("directory/component/:urlIdentifier/:versionIdentifier?(v?\\d.*)")
+    public static class DetailsView extends RouteParametersBase
+            implements RouterLayout {
+    }
+
+    @Route("")
+    @RouteAlias("param/:regex?([0-9]*)")
+    @RouteAlias("param/:regex?([0-9]*)/edit")
+    public static class ParametersRegexView extends RouteParametersBase {
+    }
+
+    @Route("")
+    @RouteAlias(":search?")
+    @RoutePrefix("search")
+    public static class SearchView extends RouteParametersBase {
+    }
+
+    @Route("show")
+    public static class ShowAllView extends RouteParametersBase {
+    }
+
+    @Route("show/:filter?")
+    public static class RedirectRouteParametersView extends RouteParametersBase {
+
+        static boolean doForward = false;
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            super.beforeEnter(event);
+
+            event.getRouteParameters().get("filter").ifPresent(value -> {
+                
+                if (!value.equals("original")) {
+                    RouteParametersBase.clear();
+
+                    if (value.equals("wrong")) {
+                        redirect(event, RedirectWithRouteParametersView.class,
+                                new RouteParameters("noParameter", value));
+                    } else if (value.equals("all")) {
+                        redirect(event, RedirectToView.class);
+                    } else {
+                        redirect(event, RedirectWithRouteParametersView.class,
+                                new RouteParameters("text", value));
+                    }
+                }
+            });
+        }
+
+        private void redirect(BeforeEnterEvent event,
+                Class<? extends Component> target) {
+            if (doForward) {
+                // These methods without parameters should be tested.
+                event.forwardTo(target);
+            } else {
+                event.rerouteTo(target);
+            }
+        }
+
+        private void redirect(BeforeEnterEvent event,
+                Class<? extends Component> target, RouteParameters parameters) {
+            if (doForward) {
+                event.forwardTo(target, parameters);
+            } else {
+                event.rerouteTo(target, parameters);
+            }
+        }
+    }
+
+    @Route("filter")
+    public static class RedirectToView extends RouteParametersBase {
+    }
+
+    @Route("filter/:text")
+    public static class RedirectWithRouteParametersView
+            extends RouteParametersBase {
+    }
+    
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -1790,7 +1946,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_with_multiple_url_parameters()
+    public void reroute_with_multiple_route_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 RouteWithMultipleParameters.class,
@@ -1806,7 +1962,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_fails_with_faulty_url_parameters()
+    public void reroute_fails_with_faulty_route_parameters()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 RouteWithMultipleParameters.class, FailRerouteWithParams.class);
@@ -1825,7 +1981,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_with_multiple_url_parameters_fails_to_parameterless_target()
+    public void reroute_with_multiple_route_parameters_fails_to_parameterless_target()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 ParameterRouteNoParameter.class,
@@ -1845,7 +2001,7 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void reroute_with_multiple_url_parameters_fails_to_single_parameter_target()
+    public void reroute_with_multiple_route_parameters_fails_to_single_parameter_target()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(GreetingNavigationTarget.class,
                 RouteWithParameter.class,
@@ -2115,9 +2271,8 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText1 = String.format("Could not navigate to '%s'",
                 locationString);
         String exceptionText2 = String.format(
-                "Reason: Failed to parse url parameter, exception: %s",
-                new NumberFormatException(
-                        "For input string: \"unsupportedParam\""));
+                "Reason: Couldn't find route for '%s'",
+                locationString);
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2);
@@ -2936,7 +3091,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(OptionalParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", null,
                 OptionalParameter.param);
-        ui.navigate(OptionalParameter.class, null);
+        ui.navigate(OptionalParameter.class, (String) null);
         Assert.assertEquals(OptionalParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", null,
                 OptionalParameter.param);
@@ -2950,7 +3105,7 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(WildParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", "",
                 WildParameter.param);
-        ui.navigate(WildParameter.class, null);
+        ui.navigate(WildParameter.class, (String) null);
         Assert.assertEquals(WildParameter.class, getUIComponent());
         Assert.assertEquals("Before navigation event was wrong.", "",
                 WildParameter.param);
@@ -3165,9 +3320,13 @@ public class RouterTest extends RoutingTestBase {
                 locationString);
 
         String exceptionText2 = String
-                .format("Reason: Couldn't find route for '%s'", locationString);
+                .format("Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 = "<li><a href=\"optional\">optional (supports optional parameter)</a></li>";
+        String optionalTemplate = HasUrlParameterFormat
+                .getTemplate("optional", OptionalParameter.class);
+
+        String exceptionText3 = "<li>" + optionalTemplate
+                + " (supports optional parameter)</li>";
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2, exceptionText3);
@@ -3190,7 +3349,11 @@ public class RouterTest extends RoutingTestBase {
         String exceptionText2 = String
                 .format("Reason: Couldn't find route for '%s'", locationString);
 
-        String exceptionText3 = "<li>optional (requires parameter)</li>";
+        String template = HasUrlParameterFormat
+                .getTemplate("optional", WithoutOptionalParameter.class);
+
+        String exceptionText3 = "<li>" + template
+                + " (requires parameter)</li>";
 
         assertExceptionComponent(RouteNotFoundError.class, exceptionText1,
                 exceptionText2, exceptionText3);
@@ -3355,7 +3518,303 @@ public class RouterTest extends RoutingTestBase {
                 getProcessEventsBranchChainNames(parameter,
                         "needleChild"),
                 ProcessEventsBase.beforeEnter);
+    }
 
+    @Test // #2740 #4213
+    public void navigate_incorrectParameter_shouldNotBeResolved() {
+        setNavigationTargets(ChainLinkWithParameter.class,
+                TargetWithOptionalParameters.class,
+                TargetWithParameter.class,
+                AnotherTargetWithParameter.class,
+                ChainLinkWithParameterAndTarget.class);
+
+        assertRouteParameters("qwe/123/link", null);
+
+        assertRouteParameters("link/qwe/123/456", null);
+
+        assertRouteParameters("123/link/456/789/target/bar", null);
+
+        assertRouteParameters(
+                "123/targetLink/456/789/chainLink/987/foo/a/b/c/d/e/f", null);
+
+        assertRouteParameters("987/765/targetLink/chainLink/543", null);
+    }
+
+    @Test // #2740 #4213
+    public void navigateToChainLinkWithParameter_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(ChainLinkWithParameter.class);
+
+        assertRouteParameters("qwe/link/123",
+                parameters("parentID", "qwe", "chainLinkID", "123"));
+    }
+    
+    @Test // #2740 #4213
+    public void navigateToTargetWithOptionalParameters_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(TargetWithOptionalParameters.class);
+
+        assertRouteParameters("qwe/link/123/456", parameters("parentID", "qwe",
+                "chainLinkID", "123", "optional", "456"));
+        assertRouteParameters("qwe/link/123/456/789",
+                parameters("parentID", "qwe", "chainLinkID", "123", "optional",
+                        "456", "anotherOptional", "789"));
+    }
+
+    @Test // #2740 #4213
+    public void navigateToTargetWithParameter_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(TargetWithParameter.class);
+
+        assertRouteParameters("123/link/456/target/789/bar",
+                parameters("parentID", "123", "chainLinkID", "456",
+                        "targetChainLinkID", "789"));
+    }
+
+    @Test // #2740 #4213
+    public void navigateToAnotherTargetWithParameter_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(AnotherTargetWithParameter.class);
+
+        assertRouteParameters(
+                "123/targetLink/456/chainLink/789/987/foo/a/b/c/d/e/f",
+                parameters("parentID", "123", "chainLinkID", "456",
+                        "anotherTargetID", "789", "yetAnotherID", "987",
+                        "varargsFoo", varargs("a", "b", "c", "d", "e", "f")));
+        assertRouteParameters("abc/targetLink/def/chainLink/ghi/jkl/foo",
+                parameters("parentID", "abc", "chainLinkID", "def",
+                        "anotherTargetID", "ghi", "yetAnotherID", "jkl"));
+
+        assertRouteParameters("012/targetLink/chainLink/345/678/foo/1/2/3/4",
+                parameters("parentID", "012", "anotherTargetID", "345",
+                        "yetAnotherID", "678", "varargsFoo",
+                        varargs("1", "2", "3", "4")));
+        assertRouteParameters("012/targetLink/chainLink/345/678/foo",
+                parameters("parentID", "012", "anotherTargetID", "345",
+                        "yetAnotherID", "678"));
+    }
+
+    @Test // #2740 #4213
+    public void navigateToChainLinkWithParameterAndTarget_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(ChainLinkWithParameterAndTarget.class);
+
+        assertRouteParameters("987/targetLink/765/chainLink/543",
+                parameters("parentID", "987", "chainLinkID", "765",
+                        "targetChainLinkID", "543"));
+        assertRouteParameters("987/targetLink/chainLink/543",
+                parameters("parentID", "987", "targetChainLinkID", "543"));
+    }
+
+    @Test // #2740 #4213
+    public void navigateToParameterTypesView_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(ParameterTypesView.class);
+
+        assertRouteParameters("param/types/123", parameters("intType", "123"));
+
+        assertRouteParameters("param/types/thinking",
+                parameters("stringType", "thinking"));
+
+        assertRouteParameters("param/types/1/am/thinking/of/U/and/I",
+                parameters("intType", "1", "stringType", "am", "varargs",
+                        "thinking/of/U/and/I"));
+        Assert.assertEquals("Invalid varargs",
+                Arrays.asList("thinking", "of", "U", "and", "I"),
+                RouteParametersBase.parameters.getWildcard("varargs"));
+
+        assertRouteParameters("param/types/12345678900/long",
+                parameters("intType", "12345678900", "stringType", "long"));
+
+        assertRouteParameters("param/types/long/12345678900", null);
+
+        assertRouteParameters("param/types/thinking/of/U/and/I",
+                parameters("stringType", "thinking", "varargs", "of/U/and/I"));
+
+        assertRouteParameters("param/types/I/am/thinking", null);
+    }
+
+    @Test // #2740 #4213
+    public void navigateToParametersForumThreadView_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(ParametersForumThreadView.class);
+
+        assertRouteParameters("forum/thread/123/456",
+                parameters("threadID", "123", "messageID", "456"));
+        assertRouteParameters("forum/thread/123/last",
+                parameters("threadID", "123"));
+        assertRouteParameters("forum/thread/123", parameters("threadID", "123"));
+        assertRouteParameters("forum/thread/123/thread-name",
+                parameters("threadID", "123", "something", "thread-name"));
+    }
+
+    @Test // #2740 #4213
+    public void navigateToParametersApiView_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(ParametersApiView.class);
+
+        // path is empty
+        assertRouteParameters("api", parameters());
+
+        // with path
+        assertRouteParameters("api/com/vaadin/client/package-summary.html",
+                parameters("path", varargs("com", "vaadin", "client",
+                        "package-summary.html")));
+
+        // alias=framework, version is empty
+        assertRouteParameters("api/framework/com/vaadin/client/package-summary.html",
+                parameters("alias", "framework", "path", varargs("com",
+                        "vaadin", "client", "package-summary.html")));
+
+        // alias=framework, version=8.9.4
+        assertRouteParameters(
+                "api/framework/8.9.4/com/vaadin/client/package-summary.html",
+                parameters("alias", "framework", "version", "8.9.4", "path",
+                        varargs("com", "vaadin", "client",
+                                "package-summary.html")));
+
+        // groupId=com.vaadin, artifactId=vaadin-all, version is empty
+        assertRouteParameters(
+                "api/com.vaadin/vaadin-all/com/vaadin/client/package-summary.html",
+                parameters("groupId", "com.vaadin", "artifactId", "vaadin-all",
+                        "path", varargs("com", "vaadin", "client",
+                                "package-summary.html")));
+
+        // groupId=com.vaadin, artifactId=vaadin-all, version=8.9.4
+        assertRouteParameters(
+                "api/com.vaadin/vaadin-all/8.9.4/com/vaadin/client/package-summary.html",
+                parameters("groupId", "com.vaadin", "version", "8.9.4",
+                        "artifactId", "vaadin-all", "path", varargs("com",
+                                "vaadin", "client", "package-summary.html")));
+    }
+
+    @Test // #2740 #4213
+    public void navigateToDetailsView_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(DetailsView.class);
+
+        assertRouteParameters("directory/component/url-parameter-mapping",
+                parameters("urlIdentifier", "url-parameter-mapping"));
+        assertRouteParameters(
+                "directory/component/url-parameter-mapping/discussions",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "tabIdentifier", "discussions"));
+        assertRouteParameters(
+                "directory/component/url-parameter-mapping/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "tabIdentifier", "api", "apiPath",
+                        varargs("org", "vaadin", "flow", "helper",
+                                "HasAbsoluteUrlParameterMapping.html")));
+
+        assertRouteParameters(
+                "directory/component/url-parameter-mapping/1.0.0-alpha7/api/org/vaadin/flow/helper/HasAbsoluteUrlParameterMapping.html",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "versionIdentifier", "1.0.0-alpha7", "tabIdentifier",
+                        "api", "apiPath",
+                        varargs("org", "vaadin", "flow", "helper",
+                                "HasAbsoluteUrlParameterMapping.html")));
+        assertRouteParameters(
+                "directory/component/url-parameter-mapping/1.0.0-alpha7/discussions",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "versionIdentifier", "1.0.0-alpha7", "tabIdentifier",
+                        "discussions"));
+        assertRouteParameters("directory/component/url-parameter-mapping/1.0.0-alpha7",
+                parameters("urlIdentifier", "url-parameter-mapping",
+                        "versionIdentifier", "1.0.0-alpha7"));
+
+        // Assert url failure
+        assertRouteParameters("directory/component", null);
+    }
+
+    @Test // #2740 #4213
+    public void navigateToParametersRegexView_routeParametersAreExtractedCorrectly() {
+        setNavigationTargets(ParametersRegexView.class);
+
+        assertRouteParameters("param/123", parameters("regex", "123"));
+        assertRouteParameters("param/abc", null);
+        assertRouteParameters("param/-123", null);
+
+        assertRouteParameters("param/123/edit", parameters("regex", "123"));
+        assertRouteParameters("param/abc/edit", null);
+        assertRouteParameters("param/-123/edit", null);
+
+        assertRouteParameters("param", parameters());
+        assertRouteParameters("param/edit", parameters());
+    }
+
+    @Test // #2740 #4213
+    public void routes_withAlternateOptionalParameter_failToRegister() {
+        assertFailingRouteConfiguration(SearchView.class);
+        assertFailingRouteConfiguration(ShowAllView.class, RedirectRouteParametersView.class);
+        assertFailingRouteConfiguration(RedirectRouteParametersView.class, ShowAllView.class);
+    }
+
+    @Test // #2740 #4213
+    public void reroute_withRouteParameters_succeed() {
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
+
+        assertRouteParametersRedirect();
+    }
+
+    @Test // #2740 #4213
+    public void forward_withRouteParameters_succeed() {
+        RedirectRouteParametersView.doForward = true;
+
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
+
+        assertRouteParametersRedirect();
+    }
+
+    @Test // #2740 #4213
+    public void reroute_withWrongRouteParameters_fails() {
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
+
+        assertWrongRouteParametersRedirect();
+    }
+
+    @Test // #2740 #4213
+    public void forward_withWrongRouteParameters_fails() {
+        RedirectRouteParametersView.doForward = true;
+
+        setNavigationTargets(RedirectRouteParametersView.class, RedirectToView.class,
+                RedirectWithRouteParametersView.class);
+
+        assertWrongRouteParametersRedirect();
+    }
+
+    private void assertWrongRouteParametersRedirect() {
+        assertRouteParameters("show/wrong", null, null);
+    }
+
+    private void assertRouteParametersRedirect() {
+        assertRouteParameters("show/all", parameters(), RedirectToView.class);
+        assertRouteParameters("show/some", parameters("text", "some"),
+                RedirectWithRouteParametersView.class);
+        assertRouteParameters("show", parameters(), RedirectRouteParametersView.class);
+        assertRouteParameters("show/original", parameters("filter", "original"),
+                RedirectRouteParametersView.class);
+    }
+
+    private void assertFailingRouteConfiguration(
+            Class<? extends Component>... navigationTargets) {
+        try {
+            setNavigationTargets(navigationTargets);
+            Assert.fail("Route configuration should fail");
+        } catch (InvalidRouteConfigurationException e) {
+        }
+    }
+
+    private void assertRouteParameters(String url, RouteParameters parameters) {
+        assertRouteParameters(url, parameters, null);
+    }
+
+    private void assertRouteParameters(String url, RouteParameters parameters,
+            Class<? extends Component> target) {
+        RouteParametersBase.clear();
+
+        navigate(url);
+
+        Assert.assertEquals("Incorrect parameters", parameters,
+                RouteParametersBase.parameters);
+        
+        if (target != null) {
+            Assert.assertEquals("Incorrect target", target,
+                    RouteParametersBase.target);
+        }
     }
 
     private List<String> getProcessEventsTrunkChainNames(String... leaf) {
@@ -3457,8 +3916,10 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(errorClass, routeNotFoundError.getClass());
         String errorText = getErrorText(routeNotFoundError);
         for (String exceptionText : exceptionTexts) {
-            Assert.assertTrue("Expected the error text to contain '"
-                    + exceptionText + "'", errorText.contains(exceptionText));
+            Assert.assertTrue(
+                    "Expected the error text to contain '" + exceptionText
+                            + "', but it is '" + errorText + "'",
+                    errorText.contains(exceptionText));
         }
     }
 
@@ -3472,4 +3933,9 @@ public class RouterTest extends RoutingTestBase {
             return routeNotFoundError.getElement().getText();
         }
     }
+
+    private void navigate(String url) {
+        router.navigate(ui, new Location(url), NavigationTrigger.PROGRAMMATIC);
+    }
+
 }

@@ -25,9 +25,13 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedListener;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
+import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -42,9 +46,9 @@ import com.vaadin.flow.shared.Registration;
 public interface RouteRegistry extends Serializable {
 
     /**
-     * Register a navigation target with specified path and given parent layout
-     * chain. Any {@link ParentLayout}, {@link Route} or {@link RouteAlias} will
-     * be ignored in route handling.
+     * Register a navigation target with specified path and given parent
+     * layout chain. Any {@link ParentLayout}, {@link Route} or
+     * {@link RouteAlias} will be ignored in route handling.
      *
      * @param path
      *            path to register navigation target to
@@ -59,10 +63,7 @@ public interface RouteRegistry extends Serializable {
             List<Class<? extends RouterLayout>> parentChain);
 
     /**
-     * Remove the given navigation target route registration. Path where the
-     * navigation target was may still be usable, e.g. we remove target with url
-     * param and there is left a non param target, but will not return the
-     * removed target.
+     * Remove the given navigation target route registration.
      * <p>
      * Note! this will remove target route and if possible any
      * {@link RouteAlias} route that can be found for the class.
@@ -73,33 +74,30 @@ public interface RouteRegistry extends Serializable {
     void removeRoute(Class<? extends Component> navigationTarget);
 
     /**
-     * Remove all registrations for given path. This means that any navigation
-     * target registered on the given path will be removed. But if a removed
-     * navigationTarget for the path exists it is then stored with a new main
-     * path so it can still get a resolved url.
+     * Remove the registration for given path.
      * <p>
-     * E.g. path "home" contains HomeView and DetailsView[String path param]
-     * both will be removed.
-     * <p>
-     * Note! The restored path will be the first found match for all paths that
-     * are registered.
+     * In case navigationTarget is a
+     * {@link com.vaadin.flow.router.HasUrlParameter}, path argument needs to
+     * include the parameter placeholder which is added automatically.
+     * Otherwise, using {@link #removeRoute(String, Class)} is preferred in such
+     * a case.
      *
      * @param path
-     *            path for which to remove all navigation targets
+     *            path for which to remove the navigation target.
      */
     void removeRoute(String path);
 
     /**
-     * Remove only the specified navigationTarget from the path and not the
-     * whole path if other targets exist for path. If no other targets exist
-     * whole route will be cleared.
+     * Remove navigationTarget for the path.
      * <p>
-     * This will leave any other targets for path e.g. removing the wildcard
-     * path will still leave the optional target.
+     * This method will check if indeed navigationTarget is registered with
+     * path.
      * <p>
-     * Note! If another path exists for the removed navigation target it will
-     * get a new main path so it can still get a resolved url. The restored path
-     * will be the first found match for all paths that are registered.
+     * In case navigationTarget is a
+     * {@link com.vaadin.flow.router.HasUrlParameter}, the path needs to be
+     * specified exactly as it is in the {@link Route} annotation or as it was
+     * registered using {@link #setRoute(String, Class, List)}, without the
+     * parameter placeholder which is automatically added.
      *
      * @param path
      *            path to remove from registry
@@ -116,26 +114,46 @@ public interface RouteRegistry extends Serializable {
     List<RouteData> getRegisteredRoutes();
 
     /**
-     * Gets the optional navigation target class for a given path. Returns an
-     * empty optional if no navigation target corresponds to the given path.
-     * <p>
-     * Note! If a path has been specifically removed from a registry it will not
-     * be served from possible higher lever registries either.
+     * Search for a route target using given navigation <code>url</code>
+     * argument.
      *
-     * @param pathString
+     * @param url
+     *            the navigation url used to search a route target.
+     * @return a {@link NavigationRouteTarget} instance containing the
+     *         {@link RouteTarget} and {@link RouteParameters} extracted from the
+     *         <code>url</code> argument according with the route configuration.
+     */
+    NavigationRouteTarget getNavigationRouteTarget(String url);
+
+    /**
+     * Gets the {@link RouteTarget} instance matching the given target component
+     * and route parameters.
+     * 
+     * @param target
+     *            a component class which is a navigation target.
+     * @param parameters
+     *            parameter values that may be used with given target.
+     * @return the {@link RouteTarget} instance matching the given target
+     *         component and route parameters.
+     */
+    RouteTarget getRouteTarget(Class<? extends Component> target,
+            RouteParameters parameters);
+
+    /**
+     * Gets the optional navigation target class for a given path. Returns an
+     * empty optional if no navigation target corresponds to the given url.
+     *
+     * @param url
      *            the path to get the navigation target for, not {@code null}
      * @return optional of the navigation target corresponding to the given path
      */
-    Optional<Class<? extends Component>> getNavigationTarget(String pathString);
+    Optional<Class<? extends Component>> getNavigationTarget(String url);
 
     /**
      * Gets the optional navigation target class for a given Location matching
      * with path segments.
-     * <p>
-     * Note! If a path has been specifically removed from a registry it will not
-     * be served from possible higher lever registries either.
      *
-     * @param pathString
+     * @param url
      *            path to get navigation target for, not {@code null}
      * @param segments
      *            segments given for path
@@ -143,20 +161,49 @@ public interface RouteRegistry extends Serializable {
      *         with given segments if any applicable targets found.
      * @see Location
      */
-    Optional<Class<? extends Component>> getNavigationTarget(String pathString,
+    Optional<Class<? extends Component>> getNavigationTarget(String url,
             List<String> segments);
 
     /**
      * Get the url string for given navigation target.
-     * <p>
-     * Will return Optional.empty is navigation target was not found.
      *
      * @param navigationTarget
      *            navigation target to get registered route for, not
      *            {@code null}
-     * @return optional navigation target url string
+     * @return {@link Optional} navigation target url string or
+     *         {@link Optional#empty()} if navigation target was not found
      */
     Optional<String> getTargetUrl(Class<? extends Component> navigationTarget);
+
+    /**
+     * Get the url string for given navigation target.
+     *
+     * @param navigationTarget
+     *            navigation target to get registered route for, not
+     *            {@code null}
+     * @param parameters
+     *            parameters for the target url.
+     * @return {@link Optional} navigation target url string or
+     *         {@link Optional#empty()} if navigation target was not found
+     */
+    Optional<String> getTargetUrl(Class<? extends Component> navigationTarget,
+            RouteParameters parameters);
+
+    /**
+     * Get the main template for given navigation target.
+     * <p>
+     * In case of annotated target the main template is composed of the
+     * {@link Route} annotation value prefixed by all {@link RoutePrefix} values
+     * of the parent {@link RouterLayout}s chain.
+     *
+     * @param navigationTarget
+     *            navigation target to get route definition for, not
+     *            {@code null}
+     * @return {@link Optional} navigation target template string or
+     *         {@link Optional#empty()} if navigation target was not found
+     */
+    Optional<String> getTemplate(
+            Class<? extends Component> navigationTarget);
 
     /**
      * Get the layout chain for given navigation target on the targeted path.
@@ -168,7 +215,13 @@ public interface RouteRegistry extends Serializable {
      * @param navigationTarget
      *            navigation target to get layout chain for
      * @return layout chain of target
+     * @deprecated instead use {@link #getNavigationRouteTarget(String)} and
+     *             retrieve the list of route layouts from the
+     *             {@link RouteTarget} contained in the
+     *             {@link NavigationRouteTarget}.
+     * @see RouteTarget#getParentLayouts()
      */
+    @Deprecated
     List<Class<? extends RouterLayout>> getRouteLayouts(String path,
             Class<? extends Component> navigationTarget);
 

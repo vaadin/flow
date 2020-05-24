@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.internal.RouteTarget;
 
 /**
  * A builder class for constructing new {@link NavigationState} instances.
@@ -43,20 +44,57 @@ public class NavigationStateBuilder {
     }
 
     /**
+     * Assigns the given navigation target with the given route parameters to the
+     * navigation state being built.
+     *
+     * @param navigationTarget
+     *            the navigation target
+     * @param parameters
+     *            the route parameters of the navigation target
+     * @return this builder, for chaining
+     * @deprecated use {@link #withTarget(Class, RouteParameters)} instead.
+     */
+    @Deprecated
+    public NavigationStateBuilder withTarget(
+            Class<? extends Component> navigationTarget,
+            List<String> parameters) {
+        currentState.setNavigationTarget(navigationTarget);
+        currentState.setUrlParameters(parameters);
+        return this;
+    }
+
+    /**
      * Assigns the given navigation target with the given url parameter to the
      * navigation state being built.
      *
      * @param navigationTarget
      *            the navigation target
-     * @param urlParameters
-     *            the url parameter of the navigation target
+     * @param parameters
+     *            the route parameters of the navigation target
      * @return this builder, for chaining
      */
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget,
-            List<String> urlParameters) {
+            RouteParameters parameters) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setUrlParameters(urlParameters);
+        currentState.setRouteParameters(parameters);
+        return this;
+    }
+
+    /**
+     * Assigns the given route target with the given route parameters to the
+     * navigation state being built.
+     *
+     * @param routeTarget
+     *            the route target
+     * @param parameters
+     *            the route parameters of the navigation target
+     * @return this builder, for chaining
+     */
+    public NavigationStateBuilder withTarget(RouteTarget routeTarget,
+            RouteParameters parameters) {
+        currentState.setRouteTarget(routeTarget);
+        currentState.setRouteParameters(parameters);
         return this;
     }
 
@@ -70,7 +108,6 @@ public class NavigationStateBuilder {
     public NavigationStateBuilder withTarget(
             Class<? extends Component> navigationTarget) {
         currentState.setNavigationTarget(navigationTarget);
-        currentState.setUrlParameters(null);
         return this;
     }
 

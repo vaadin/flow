@@ -26,6 +26,9 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -806,11 +809,17 @@ public class UI extends Component
      *
      * @param navigationTarget
      *            navigation target to navigate to
+     * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget.
+     * @see #navigate(Class, Object)
+     * @see #navigate(Class, RouteParameters)
      */
     public void navigate(Class<? extends Component> navigationTarget) {
-        RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
-        navigate(configuration.getUrl(navigationTarget));
+        navigate(navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -833,14 +842,51 @@ public class UI extends Component
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
      */
     public <T, C extends Component & HasUrlParameter<T>> void navigate(
             Class<? extends C> navigationTarget, T parameter) {
-        RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
-        navigate(configuration.getUrl(navigationTarget, parameter));
+        navigate(navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameters. The parameters needs to comply with
+     * the ones defined in one of the {@link com.vaadin.flow.router.Route} or
+     * {@link com.vaadin.flow.router.RouteAlias} annotating the navigationTarget
+     * and with any {@link com.vaadin.flow.router.RoutePrefix} annotating the
+     * parent layouts of the navigationTarget.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to.
+     * @param parameters
+     *            parameters to pass to view.
+     * @throws IllegalArgumentException
+     *             if navigationTarget is a {@link HasUrlParameter} with a
+     *             mandatory parameter, but parameters argument doesn't
+     *             provide {@link HasUrlParameterFormat#PARAMETER_NAME}
+     *             parameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    public void navigate(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getRouter().getRegistry());
+        navigate(configuration.getUrl(navigationTarget, parameters));
+    }
+    
     /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
@@ -853,6 +899,8 @@ public class UI extends Component
      *
      * @param location
      *            the location to navigate to, not {@code null}
+     * @throws NullPointerException
+     *             if the location is null.
      */
     public void navigate(String location) {
         navigate(location, QueryParameters.empty());
@@ -874,15 +922,12 @@ public class UI extends Component
      * @param queryParameters
      *            query parameters that are used for navigation, not
      *            {@code null}
+     * @throws NullPointerException
+     *             if the location or queryParameters are null.
      */
     public void navigate(String location, QueryParameters queryParameters) {
-        if (location == null) {
-            throw new IllegalArgumentException("Location may not be null");
-        }
-        if (queryParameters == null) {
-            throw new IllegalArgumentException(
-                    "Query parameters may not be null");
-        }
+        Objects.requireNonNull(location, "Location must not be null");
+        Objects.requireNonNull(queryParameters, "Query parameters must not be null");
 
         Location navigationLocation = new Location(location, queryParameters);
         if (!internals.hasLastHandledLocation()
