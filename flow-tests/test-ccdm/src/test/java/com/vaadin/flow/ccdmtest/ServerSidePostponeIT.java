@@ -35,6 +35,9 @@ public class ServerSidePostponeIT extends CCDMTest {
         assertPostponeNavigationFromButton("serverview", "serverView",
                 "Server view", "goToServerView");
 
+        assertPostponeNavigationFromRouterLink("serverview", "serverView",
+                "Server view", "RouterLink Server View");
+
         assertPostponeNavigationFromHref("serverview", "serverView",
                 "Server view");
     }
@@ -72,6 +75,19 @@ public class ServerSidePostponeIT extends CCDMTest {
         assertPostponeNavigation(destinationViewRoute, destinationViewDiv,
                 destinationViewText,
                 () -> findElement(By.id(goToDestinationButtonId)));
+    }
+
+    private void assertPostponeNavigationFromRouterLink(
+            String destinationViewRoute, String destinationViewDiv,
+            String destinationViewText, String goToDestinationRouterLinkText) {
+        assertPostponeNavigation(destinationViewRoute, destinationViewDiv,
+                destinationViewText, () -> {
+                    final WebElement routerLinkElement = findElement(
+                            By.linkText(goToDestinationRouterLinkText));
+                    return routerLinkElement.getAttribute("router-link") != null
+                            ? routerLinkElement
+                            : null;
+                });
     }
 
     private void assertPostponeNavigationFromHref(String goToDestinationHref,
