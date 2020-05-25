@@ -79,10 +79,19 @@ public class ShortcutRegistration implements Registration, Serializable {
             initListenOnComponent();
         }
         boolean reinit = false;
+        /*
+         * In PreserveOnRefersh case the UI instance is not detached immediately
+         * (once detach happens the initialization is rerun in
+         * initListenOnComponent via removeAllListenerRegistrations), so we may
+         * not rely on detach event only: the check whether UI is already marked
+         * as closing is done here which should rerun the initialization
+         * immediately.
+         */
         for (Component component : listenOnComponents) {
             if (component.getUI().isPresent()
                     && component.getUI().get().isClosing()) {
                 reinit = true;
+                break;
             }
         }
         if (reinit) {
@@ -765,9 +774,8 @@ public class ShortcutRegistration implements Registration, Serializable {
     private void initListenOnComponent() {
         listenOnComponents = registerOwnerListeners();
         for (Component component : listenOnComponents) {
-            Registration registration = component.addDetachListener(event -> {
-                removeAllListenerRegistrations();
-            });
+            Registration registration = component.addDetachListener(
+                    event -> removeAllListenerRegistrations());
             registrations.add(registration);
         }
     }

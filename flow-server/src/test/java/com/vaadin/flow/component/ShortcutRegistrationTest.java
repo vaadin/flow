@@ -218,12 +218,12 @@ public class ShortcutRegistrationTest {
     public void listenOnComponentIsChanged_eventIsPopulatedForANewListenOnComponent() {
         UI ui = Mockito.spy(UI.class);
         Component owner = new FakeComponent();
-        Component comp = new FakeComponent();
+        Component initialComponentToListenOn = new FakeComponent();
 
-        Component[] components = new Component[] { comp };
+        Component[] components = new Component[] { initialComponentToListenOn };
 
         ui.add(owner);
-        ui.add(comp);
+        ui.add(initialComponentToListenOn);
         new ShortcutRegistration(owner, () -> components, event -> {
         }, Key.KEY_A);
 
@@ -240,13 +240,15 @@ public class ShortcutRegistrationTest {
 
         // Once the shortcut listener is registered the expression should
         // contain KeyA
-        Assert.assertTrue(hasKeyAInKeyDownExpression(comp));
+        Assert.assertTrue(
+                hasKeyAInKeyDownExpression(initialComponentToListenOn));
 
+        Component replacementComponentToListenOn = new FakeComponent();
         components[0] = new FakeComponent();
         ui.add(components[0]);
         // detach the original "listen on" component: the new one replaces the
         // old one
-        ui.remove(comp);
+        ui.remove(initialComponentToListenOn);
 
         // now re-attach the owner
         ui.remove(owner);
@@ -255,7 +257,8 @@ public class ShortcutRegistrationTest {
 
         consumer.accept(mock(ExecutionContext.class));
         // the new component should now also have expression with KeyA
-        Assert.assertTrue(hasKeyAInKeyDownExpression(components[0]));
+        Assert.assertTrue(
+                hasKeyAInKeyDownExpression(replacementComponentToListenOn));
     }
 
     @Test
