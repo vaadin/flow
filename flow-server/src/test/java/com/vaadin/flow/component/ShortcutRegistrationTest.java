@@ -244,7 +244,7 @@ public class ShortcutRegistrationTest {
                 hasKeyAInKeyDownExpression(initialComponentToListenOn));
 
         Component replacementComponentToListenOn = new FakeComponent();
-        components[0] = new FakeComponent();
+        components[0] = replacementComponentToListenOn;
         ui.add(components[0]);
         // detach the original "listen on" component: the new one replaces the
         // old one
