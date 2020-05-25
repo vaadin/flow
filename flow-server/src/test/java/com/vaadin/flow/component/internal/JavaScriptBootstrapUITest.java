@@ -112,6 +112,33 @@ public class JavaScriptBootstrapUITest  {
         }
     }
 
+    @Route("forwardToClientSideViewOnBeforeLeave")
+    @Tag(Tag.DIV)
+    public static class ForwardToClientSideViewOnBeforeLeave extends Component
+            implements BeforeLeaveObserver {
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            event.forwardTo("client-view");
+        }
+    }
+
+    @Route("rerouteToClientSideViewOnReroute")
+    @Tag(Tag.DIV)
+    public static class ForwardToClientSideViewOnReroute extends Component
+            implements BeforeLeaveObserver, BeforeEnterObserver {
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            event.rerouteTo("client-view");
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            event.rerouteTo("client-view");
+        }
+    }
+
     @Route("forwardToServerSideViewOnBeforeEnter")
     @Tag(Tag.DIV)
     public static class ForwardToServerViewOnBeforeEnter extends Component implements BeforeEnterObserver {
@@ -134,6 +161,10 @@ public class JavaScriptBootstrapUITest  {
                 FailOnException.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("forwardToClientSideViewOnBeforeEnter",
                 ForwardToClientSideViewOnBeforeEnter.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("forwardToClientSideViewOnBeforeLeave",
+                ForwardToClientSideViewOnBeforeLeave.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("rerouteToClientSideViewOnReroute",
+                ForwardToClientSideViewOnReroute.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("forwardToServerSideViewOnBeforeEnter",
                 ForwardToServerViewOnBeforeEnter.class, Collections.emptyList());
         ui = new JavaScriptBootstrapUI();
@@ -212,6 +243,20 @@ public class JavaScriptBootstrapUITest  {
         ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeEnter");
 
         assertEquals("client-view", ui.getForwardToUrl());
+    }
+
+    @Test
+    public void should_not_handle_forward_to_client_side_view_on_beforeLeave() {
+        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeLeave");
+
+        assertNull(ui.getForwardToUrl());
+    }
+
+    @Test
+    public void should_not_handle_forward_to_client_side_view_on_reroute() {
+        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnReroute");
+
+        assertNull(ui.getForwardToUrl());
     }
 
     @Test

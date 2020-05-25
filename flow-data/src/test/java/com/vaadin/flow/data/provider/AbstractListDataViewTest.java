@@ -15,7 +15,12 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.vaadin.flow.shared.Registration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,15 +28,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.vaadin.flow.shared.Registration;
 
 public class AbstractListDataViewTest {
 
-    private final static Collection<String> ITEMS = Arrays.asList(
-            "first", "middle", "last");
+    private Collection<String> items;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
@@ -44,7 +45,8 @@ public class AbstractListDataViewTest {
 
     @Before
     public void init() {
-        dataProvider = DataProvider.ofCollection(ITEMS);
+        items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
+        dataProvider = DataProvider.ofCollection(items);
         dataController = new DataControllerStub();
         dataView = new ListDataViewImpl(dataController);
     }
@@ -116,7 +118,7 @@ public class AbstractListDataViewTest {
 
     @Test
     public void withFilter_filterIsSet_filteredItemsObtained() {
-        Assert.assertEquals(ITEMS.size(), dataController.getDataSize());
+        Assert.assertEquals(items.size(), dataController.getDataSize());
         dataView.withFilter(item -> item.equals("first"));
         Assert.assertEquals("Filter was not applied to data size",
                 1, dataController.getDataSize());
@@ -129,9 +131,9 @@ public class AbstractListDataViewTest {
         ((ListDataProvider) dataProvider).setFilter(item -> item.equals("first"));
         dataView.withFilter(null);
         Assert.assertEquals("Filter reset was not applied to data size",
-                ITEMS.size(), dataController.getDataSize());
+                items.size(), dataController.getDataSize());
         Assert.assertArrayEquals("Filter reset was not applied to data set",
-                ITEMS.toArray(), dataController.getAllItems().toArray());
+                items.toArray(), dataController.getAllItems().toArray());
     }
 
     @Test
@@ -144,13 +146,13 @@ public class AbstractListDataViewTest {
     @Test
     public void getAllItems_noFiltersSet_allItemsObtained() {
         Stream<String> allItems = dataView.getAllItems();
-        Assert.assertArrayEquals("Unexpected data set", ITEMS.toArray(),
+        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
                 allItems.toArray());
     }
 
     @Test
     public void getDataSize_noFiltersSet_dataSizeObtained() {
-        Assert.assertEquals("Unexpected size for data", ITEMS.size(),
+        Assert.assertEquals("Unexpected size for data", items.size(),
                 dataView.getDataSize());
     }
 
@@ -166,6 +168,26 @@ public class AbstractListDataViewTest {
                 dataView.isItemPresent("absent item"));
     }
 
+    @Test
+    public void addItem_itemInDataset() {
+        final String newItem = "new Item";
+        dataView.addItem(newItem);
+
+        Assert.assertEquals(4, dataView.getDataSize());
+        Assert.assertTrue(dataView.isItemPresent(newItem));
+        Assert.assertEquals(newItem, dataView.getNextItem("last"));
+
+    }
+
+    @Test
+    public void removeItem_itemRemovedFromDataset() {
+        dataView.removeItem("middle");
+
+        Assert.assertEquals(2, dataView.getDataSize());
+        Assert.assertFalse(dataView.isItemPresent("middle"));
+        Assert.assertEquals("last", dataView.getNextItem("first"));
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
         public ListDataViewImpl(DataController<String> dataController) {
             super(dataController);
@@ -175,15 +197,23 @@ public class AbstractListDataViewTest {
     private class DataControllerStub implements DataController<String> {
 
         @Override
-        public DataProvider<String, ?> getDataProvider() { return dataProvider; }
+        public DataProvider<String, ?> getDataProvider() {
+            return dataProvider;
+        }
 
         @Override
-        public Registration addSizeChangeListener(SizeChangeListener listener) { return null; }
+        public Registration addSizeChangeListener(SizeChangeListener listener) {
+            return null;
+        }
 
         @Override
-        public int getDataSize() { return dataProvider.size(new Query<>()); }
+        public int getDataSize() {
+            return dataProvider.size(new Query<>());
+        }
 
         @Override
-        public Stream<String> getAllItems() { return dataProvider.fetch(new Query<>()); }
+        public Stream<String> getAllItems() {
+            return dataProvider.fetch(new Query<>());
+        }
     }
 }

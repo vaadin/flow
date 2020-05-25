@@ -82,7 +82,8 @@ public class DeadlockDetectingCompletableFuture<T>
              * complete the result
              */
             throw new IllegalStateException(
-                    "Cannot do a blocking operation from the thread that has locked  the session is locked since the result cannot be made available while the session is locked.");
+                    "Cannot block on the value from the thread that has locked the session. "
+                            + "This is because the request that delivers the value cannot be processed while this thread holds the session lock.");
         }
     }
 }

@@ -16,37 +16,43 @@
 package com.vaadin.flow.router.internal;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.server.startup.RouteTarget;
+import com.vaadin.flow.router.RouterLayout;
 
 /**
- * Configuration class for editing routes. After editing the class should
- * always
+ * Configuration class for editing routes. After editing the class should always
  * be set as a {@link ConfiguredRoutes} read only value object.
  * <p>
  * {@link ConfigureRoutes} is always mutable where as {@link ConfiguredRoutes}
- * is always
- * immutable.
+ * is always immutable.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @since 1.3
  */
 public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
 
+    // Stores targets accessed by urls with parameters.
+    private final RouteModel routeModel;
+
     private final Map<String, RouteTarget> routeMap;
     private final Map<Class<? extends Component>, String> targetRouteMap;
+    private final Map<Class<? extends Component>, RouteModel> targetRouteModelMap;
     private final Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetMap;
 
     /**
      * Create an immutable RouteConfiguration.
      */
     public ConfigureRoutes() {
+        routeModel = RouteModel.create(true);
         routeMap = new HashMap<>();
         targetRouteMap = new HashMap<>();
+        targetRouteModelMap = new HashMap<>();
         exceptionTargetMap = new HashMap<>();
     }
 
@@ -55,23 +61,29 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * information.
      *
      * @param original
-     *         original configuration to get data from
+     *            original configuration to get data from
      */
     public ConfigureRoutes(ConfiguredRoutes original) {
-        Map<String, RouteTarget> routesMap = new HashMap<>();
-        Map<Class<? extends Component>, String> targetRoutesMap = new HashMap<>();
-        Map<Class<? extends Exception>, Class<? extends Component>> exceptionTargetsMap = new HashMap<>();
+        Map<String, RouteTarget> originalRouteMap = new HashMap<>();
+        Map<Class<? extends Component>, String> originalTargetRouteMap = new HashMap<>();
+        Map<Class<? extends Exception>, Class<? extends Component>> originalExceptionTargetsMap = new HashMap<>();
 
         for (Map.Entry<String, RouteTarget> route : original.getRoutesMap()
                 .entrySet()) {
-            routesMap.put(route.getKey(), route.getValue().copy(true));
+            originalRouteMap.put(route.getKey(), route.getValue());
         }
-        targetRoutesMap.putAll(original.getTargetRoutes());
-        exceptionTargetsMap.putAll(original.getExceptionHandlers());
+        originalTargetRouteMap.putAll(original.getTargetRoutes());
+        originalExceptionTargetsMap.putAll(original.getExceptionHandlers());
 
-        this.routeMap = routesMap;
-        this.targetRouteMap = targetRoutesMap;
-        this.exceptionTargetMap = exceptionTargetsMap;
+        Map<Class<? extends Component>, RouteModel> originalTargetRouteModelMap = original
+                .copyTargetRouteModels(true);
+
+        this.routeModel = RouteModel.copy(original.getRouteModel(), true);
+
+        this.routeMap = originalRouteMap;
+        this.targetRouteMap = originalTargetRouteMap;
+        this.targetRouteModelMap = originalTargetRouteModelMap;
+        this.exceptionTargetMap = originalExceptionTargetsMap;
     }
 
     /**
@@ -82,6 +94,11 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     @Override
     protected Map<String, RouteTarget> getRoutesMap() {
         return routeMap;
+    }
+
+    @Override
+    RouteModel getRouteModel() {
+        return routeModel;
     }
 
     /**
@@ -106,7 +123,7 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /*-----------------------------------*/
-    /* Mutation functions                */
+    /* Mutation functions */
     /*-----------------------------------*/
 
     /**
@@ -118,23 +135,53 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Set a new {@link RouteTarget} for the given path.
+     * Set a new {@link RouteTarget} for the given template.
      * <p>
      * Note! this will override any previous value.
      *
-     * @param path
-     *         path for which to set route target for
+     * @param template
+     *            template for which to set route target for
      * @param navigationTarget
-     *         navigation target to add
+     *            navigation target to add
      */
-    public void setRoute(String path,
+    public void setRoute(String template,
             Class<? extends Component> navigationTarget) {
-        if (hasRoute(path)) {
-            getRoutesMap().get(path).addRoute(navigationTarget);
-        } else {
-            getRoutesMap().computeIfAbsent(path,
-                    key -> new RouteTarget(navigationTarget, true));
+        setRoute(template, navigationTarget, null);
+    }
+
+    /**
+     * Set a new {@link RouteTarget} for the given template.
+     * <p>
+     * Note! this will override any previous value.
+     *
+     * @param template
+     *            template for which to set route target for
+     * @param navigationTarget
+     *            navigation target to add
+     * @param parentChain
+     *            chain of parent layouts that should be used with this target
+     */
+    public void setRoute(String template,
+            Class<? extends Component> navigationTarget,
+            List<Class<? extends RouterLayout>> parentChain) {
+
+        template = PathUtil.trimPath(template);
+
+        final RouteTarget target = new RouteTarget(navigationTarget,
+                parentChain);
+
+        getRouteModel().addRoute(template, target);
+
+        if (!hasRouteTarget(navigationTarget)) {
+            setTargetRoute(navigationTarget, template);
         }
+
+        getTargetRouteModelMap().computeIfAbsent(navigationTarget,
+                aClass -> RouteModel.create(true));
+        getTargetRouteModelMap().get(navigationTarget).addRoute(template,
+                target);
+
+        getRoutesMap().put(template, target);
     }
 
     /**
@@ -144,9 +191,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * parameters, for the main route of this navigation target.
      *
      * @param navigationTarget
-     *         navigation target to map
+     *            navigation target to map
      * @param path
-     *         path for given navigation target
+     *            path for given navigation target
      */
     public void setTargetRoute(Class<? extends Component> navigationTarget,
             String path) {
@@ -160,9 +207,9 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
      * exception handler.
      *
      * @param exception
-     *         exception handled by error route
+     *            exception handled by error route
      * @param errorTarget
-     *         error navigation target
+     *            error navigation target
      */
     public void setErrorRoute(Class<? extends Exception> exception,
             Class<? extends Component> errorTarget) {
@@ -170,106 +217,89 @@ public class ConfigureRoutes extends ConfiguredRoutes implements Serializable {
     }
 
     /**
-     * Remove the targetRoute completely from the configuration.
+     * Remove the target completely from the configuration.
      *
-     * @param targetRoute
-     *         target registered route to remove
+     * @param target
+     *            target registered route to remove
      */
-    public void removeRoute(Class<? extends Component> targetRoute) {
-        if (!hasRouteTarget(targetRoute)) {
+    public void removeRoute(Class<? extends Component> target) {
+        if (!hasRouteTarget(target)) {
             return;
         }
 
         // Remove target route from class-to-string map
-        getTargetRoutes().remove(targetRoute);
+        getTargetRoutes().remove(target);
 
-        List<String> emptyRoutes = new ArrayList<>();
-        // Remove all instances of the route class for any path
-        // that it may be registered to
-        getRoutesMap().forEach((route, routeTarget) -> {
-            routeTarget.remove(targetRoute);
-
-            if (routeTarget.isEmpty()) {
-                emptyRoutes.add(route);
-            }
-        });
-        emptyRoutes.forEach(getRoutesMap()::remove);
+        getTargetRouteModelMap().remove(target).getRoutes().keySet()
+                .forEach(template -> {
+                    getRouteModel().removeRoute(template);
+                    getRoutesMap().remove(template);
+                });
     }
 
     /**
-     * Remove route for given path. This will remove all targets registered for
-     * given path.
+     * Remove route for given template. This will remove all targets registered
+     * for given template.
      * <p>
-     * In case there exists another path mapping for any of the removed route
-     * targets the main class-to-string mapping will be updated to the first
-     * found.
+     * In case there exists another template mapping for any of the removed
+     * route targets the main class-to-string mapping will be updated to the
+     * first found.
      *
-     * @param path
-     *         path from which to remove routes from
+     * @param template
+     *            template from which to remove routes from
      */
-    public void removeRoute(String path) {
-        if (!hasRoute(path)) {
+    public void removeRoute(String template) {
+        if (!hasTemplate(template)) {
             return;
         }
 
-        RouteTarget removedRoute = getRoutesMap().remove(path);
-        for (Class<? extends Component> targetRoute : removedRoute
-                .getRoutes()) {
-            updateMainRouteTarget(targetRoute);
+        RouteTarget removedRoute = getRoutesMap().remove(template);
+        if (removedRoute != null) {
+            final Class<? extends Component> target = removedRoute.getTarget();
+
+            final RouteModel targetRouteModel = getTargetRouteModelMap()
+                    .get(target);
+            targetRouteModel.removeRoute(template);
+
+            if (targetRouteModel.isEmpty()) {
+                getTargetRouteModelMap().remove(target);
+            }
+
+            final String mainTemplate = getTargetRoutes().get(target);
+            if (Objects.equals(template, mainTemplate)) {
+                if (targetRouteModel.isEmpty()) {
+                    getTargetRoutes().remove(target);
+                } else {
+                    getTargetRoutes().put(target, targetRouteModel.getRoutes()
+                            .keySet().iterator().next());
+                }
+            }
         }
+
+        getRouteModel().removeRoute(template);
     }
 
     /**
-     * Remove specific navigation target for given route. The path will still
-     * exist if there is another target with different parameters registered to
-     * it. If no targets remain the path will be removed completely.
-     * <p>
-     * In case there exists another path mapping for the removed route
-     * target the main class-to-string mapping will be updated to the first
-     * found.
+     * Remove navigation target for given template.
      *
-     * @param path
-     *         path to remove target from
+     * @param template
+     *            template to remove target from.
      * @param targetRoute
-     *         target route to remove from path
+     *            target route to remove from template.
      */
-    public void removeRoute(String path,
+    public void removeRoute(String template,
             Class<? extends Component> targetRoute) {
-        if (!hasRoute(path) || !getRoutesMap().get(path)
-                .containsTarget(targetRoute)) {
+        if (!hasTemplate(template)
+                || !getRoutesMap().get(template).containsTarget(targetRoute)) {
             return;
         }
 
-        RouteTarget routeTarget = getRoutesMap().get(path);
-        routeTarget.remove(targetRoute);
-
-        if (routeTarget.isEmpty()) {
-            getRoutesMap().remove(path);
-        }
-
-        if (getTargetRoutes().containsKey(targetRoute) && getTargetRoutes()
-                .get(targetRoute).equals(path)) {
-            updateMainRouteTarget(targetRoute);
-        }
+        removeRoute(template);
     }
 
-    /**
-     * Update the main route target for the navigationTarget if another route
-     * for the class is found.
-     *
-     * @param navigationTarget
-     *         navigation target to update the main route for
-     */
-    private void updateMainRouteTarget(
-            Class<? extends Component> navigationTarget) {
-        getTargetRoutes().remove(navigationTarget);
-
-        // Update Class-to-string map with a new mapping if removed route exists for another path
-        for (Map.Entry<String, RouteTarget> entry : getRoutesMap().entrySet()) {
-            if (entry.getValue().containsTarget(navigationTarget)) {
-                getTargetRoutes().put(navigationTarget, entry.getKey());
-                return;
-            }
-        }
+    @Override
+    Map<Class<? extends Component>, RouteModel> getTargetRouteModelMap() {
+        return targetRouteModelMap;
     }
+
 }

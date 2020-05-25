@@ -20,14 +20,13 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -48,9 +47,6 @@ import com.vaadin.flow.shared.Registration;
 public class RouteConfiguration implements Serializable {
 
     private RouteRegistry handledRegistry;
-
-    private static final Pattern PARAMETER_PATTERN = Pattern
-            .compile("/\\{[\\s\\S]*}");
 
     private RouteConfiguration(RouteRegistry registry) {
         handledRegistry = registry;
@@ -115,17 +111,30 @@ public class RouteConfiguration implements Serializable {
      * @param path
      *         path to check for route registration
      * @return true if there exists a route for the given path
+     * @deprecated Use {@link #isPathAvailable(String)}
      */
+    @Deprecated
     public boolean isPathRegistered(String path) {
+        return isPathAvailable(path);
+    }
+
+    /**
+     * Check if the given path is available.
+     *
+     * @param path
+     *         path to check for availability
+     * @return true if there exists a route for the given path
+     */
+    public boolean isPathAvailable(String path) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
-                    .hasRoute(path);
+                    .hasTemplate(path);
         }
         return getAvailableRoutes().stream().anyMatch(
-                routeData -> routeData.getUrl().equals(path) || routeData
-                        .getRouteAliases().stream().anyMatch(
-                                routeAliasData -> routeAliasData.getUrl()
-                                        .equals(path)));
+                routeData -> routeData.getTemplate().equals(path)
+                        || routeData.getRouteAliases().stream()
+                        .anyMatch(routeAliasData -> routeAliasData
+                                .getTemplate().equals(path)));
     }
 
     /**
@@ -136,35 +145,36 @@ public class RouteConfiguration implements Serializable {
      * @return true if class is registered
      */
     public boolean isRouteRegistered(Class<? extends Component> route) {
-        return handledRegistry.getTargetUrl(route).isPresent();
+        return handledRegistry.getTemplate(route).isPresent();
     }
 
     /**
      * Gets the registered route class for a given path. Returns an empty
      * optional if no navigation target corresponds to the given path.
      *
-     * @param pathString
+     * @param path
      *         path to get route for
      * @return optional containing the path component or empty if not found
      */
-    public Optional<Class<? extends Component>> getRoute(String pathString) {
-        return getRoute(pathString, Collections.emptyList());
+    public Optional<Class<? extends Component>> getRoute(String path) {
+        return getRoute(path, Collections.emptyList());
     }
 
     /**
      * Gets the optional navigation target class for a given Location matching
      * with path segments.
      *
-     * @param pathString
+     * @param path
      *         path to get navigation target for, not {@code null}
      * @param segments
      *         segments given for path
      * @return optional navigation target corresponding to the given path and
      * segments
      */
-    public Optional<Class<? extends Component>> getRoute(String pathString,
+    public Optional<Class<? extends Component>> getRoute(String path,
             List<String> segments) {
-        return handledRegistry.getNavigationTarget(pathString, segments);
+        return handledRegistry
+                .getNavigationTarget(PathUtil.getPath(path, segments));
     }
 
     /**
@@ -308,10 +318,10 @@ public class RouteConfiguration implements Serializable {
      * @throws InvalidRouteConfigurationException
      *         thrown if exact route already defined in this scope
      */
-    // This method is unchecked for the type due to varargs
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             Class<? extends RouterLayout>... parentChain) {
+        // This method is unchecked for the type due to varargs
         handledRegistry
                 .setRoute(path, navigationTarget, Arrays.asList(parentChain));
     }
@@ -343,30 +353,32 @@ public class RouteConfiguration implements Serializable {
      * <p>
      * Note! The restored path will be the first found match for all paths that
      * are registered.
+     * <p>
+     * In case navigationTarget is a
+     * {@link com.vaadin.flow.router.HasUrlParameter}, path argument needs to
+     * include the parameter placeholder which is added automatically.
+     * Otherwise, using {@link #removeRoute(String, Class)} is preferred in such
+     * a case.
      *
      * @param path
-     *         path for which to remove all navigation targets
+     *            path for which to remove all navigation targets
      */
     public void removeRoute(String path) {
         handledRegistry.removeRoute(path);
     }
 
     /**
-     * Remove only the specified navigationTarget from the path and not the
-     * whole path if other targets exist for path. If no other targets exist
-     * whole route will be cleared.
-     * <p>
-     * This will leave any other targets for path e.g. removing the wildcard
-     * path will still leave the optional target.
+     * Remove only the specified navigationTarget from the path and not other
+     * targets if they exist for the same path.
      * <p>
      * Note! If another path exists for the removed navigation target it will
      * get a new main path so it can still get a resolved url. The restored path
      * will be the first found match for all paths that are registered.
      *
      * @param path
-     *         path to remove from registry
+     *            path to remove from registry
      * @param navigationTarget
-     *         path navigation target to remove
+     *            path navigation target to remove
      */
     public void removeRoute(String path,
             Class<? extends Component> navigationTarget) {
@@ -386,7 +398,7 @@ public class RouteConfiguration implements Serializable {
      * Get the registered url string for given navigation target.
      * <p>
      * Note! If the navigation target has a url parameter that is required then
-     * this method will throw and IllegalArgumentException.
+     * this method will throw an IllegalArgumentException.
      *
      * @param navigationTarget
      *         navigation target to get url for
@@ -395,33 +407,38 @@ public class RouteConfiguration implements Serializable {
      *         if the navigation target requires a parameter
      */
     public String getUrl(Class<? extends Component> navigationTarget) {
-        if (HasUrlParameter.class.isAssignableFrom(navigationTarget)
-                && !isAnnotatedParameter(navigationTarget,
-                OptionalParameter.class, WildcardParameter.class)) {
-            String message = String
-                    .format("Navigation target '%s' requires a parameter and can not be resolved. "
-                            + "Use 'public <T, C extends Component & HasUrlParameter<T>> "
-                            + "String getUrl(Class<? extends C> navigationTarget, T parameter)' "
-                            + "instead", navigationTarget.getName());
-            throw new IllegalArgumentException(message);
-        }
-        return getUrlBase(navigationTarget,
-                getUrlForTarget(navigationTarget, handledRegistry));
+        return getUrl(navigationTarget, RouteParameters.empty());
     }
 
     /**
-     * Return the url base without any url parameters.
+     * Return the url base without any route parameters.
      *
      * @param navigationTarget
-     *         navigation target to get url for
-     * @return optional url base without url parameters or empty if there is no
-     * registered route for {@code navigationTarget}, not {@code null}
+     *            navigation target to get url for
+     * @return optional url base without route parameters or empty if there is no
+     *         registered route for {@code navigationTarget}, not {@code null}
      */
     public Optional<String> getUrlBase(
             Class<? extends Component> navigationTarget) {
-        Optional<String> targetUrl = handledRegistry
-                .getTargetUrl(navigationTarget);
-        return targetUrl.map(url -> getUrlBase(navigationTarget, url));
+        final Optional<String> template = getTemplate(navigationTarget);
+        if (template.isPresent()) {
+            return Optional
+                    .of(HasUrlParameterFormat.getUrlBase(template.get()));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Gets the route template for the given target.
+     * 
+     * @param navigationTarget
+     *            target class.
+     * @return main template for the given target.
+     */
+    public Optional<String> getTemplate(
+            Class<? extends Component> navigationTarget) {
+        return handledRegistry.getTemplate(navigationTarget);
     }
 
     /**
@@ -444,10 +461,8 @@ public class RouteConfiguration implements Serializable {
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, T parameter) {
-        if (parameter == null) {
-            return getUrl(navigationTarget);
-        }
-        return getUrl(navigationTarget, Collections.singletonList(parameter));
+        return getUrl(navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -470,37 +485,34 @@ public class RouteConfiguration implements Serializable {
      */
     public <T, C extends Component & HasUrlParameter<T>> String getUrl(
             Class<? extends C> navigationTarget, List<T> parameters) {
-        List<String> serializedParameters = serializeUrlParameters(
-                Objects.requireNonNull(parameters));
+        return getUrl(navigationTarget,
+                HasUrlParameterFormat.getParameters(parameters));
+    }
 
-        String routeString = getUrlForTarget(navigationTarget, handledRegistry);
+    /**
+     * Gets the url which navigates to given navigationTarget using given
+     * parameters.
+     * 
+     * @param navigationTarget
+     *            navigation target.
+     * @param parameters
+     *            route parameters.
+     * @return the url which navigates to given navigationTarget using given
+     *         parameters.
+     * @throws NotFoundException
+     *             in case the navigationTarget is not registered with a url
+     *             template matching the given parameters.
+     */
+    public String getUrl(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
 
-        if (!parameters.isEmpty()) {
-            routeString = routeString.replace(
-                    "{" + parameters.get(0).getClass().getSimpleName() + "}",
-                    serializedParameters.stream()
-                            .collect(Collectors.joining("/")));
-        } else if (ParameterDeserializer
-                .isAnnotatedParameter(navigationTarget, OptionalParameter.class)
-                || ParameterDeserializer.isAnnotatedParameter(navigationTarget,
-                WildcardParameter.class)) {
-            routeString = PARAMETER_PATTERN.matcher(routeString).replaceAll("");
-        } else {
-            throw new NotFoundException(String.format(
-                    "The navigation target '%s' has a non optional parameter that needs to be given.",
-                    navigationTarget.getName()));
+        Optional<String> targetUrl = handledRegistry
+                .getTargetUrl(navigationTarget, parameters);
+        if (!targetUrl.isPresent()) {
+            throw new NotFoundException(
+                    "No route found for the given navigation target and parameters!");
         }
-        Optional<Class<? extends Component>> registryTarget = handledRegistry
-                .getNavigationTarget(routeString, serializedParameters);
-
-        if (registryTarget.isPresent() && !hasUrlParameters(
-                registryTarget.get()) && !registryTarget.get()
-                .equals(navigationTarget)) {
-            throw new NotFoundException(String.format(
-                    "Url matches existing navigation target '%s' with higher priority.",
-                    registryTarget.get().getName()));
-        }
-        return trimRouteString(routeString);
+        return targetUrl.get();
     }
 
     /* Private methods */
@@ -515,31 +527,6 @@ public class RouteConfiguration implements Serializable {
                 .getSessionRegistry(VaadinSession.getCurrent());
     }
 
-    private String getUrlForTarget(Class<? extends Component> navigationTarget,
-            RouteRegistry registry) {
-        Optional<String> targetUrl = registry.getTargetUrl(navigationTarget);
-        if (!targetUrl.isPresent()) {
-            throw new NotFoundException(
-                    "No route found for given navigation target!");
-        }
-        return targetUrl.get();
-    }
-
-    /**
-     * Trim the given route string of extra characters that can be left in
-     * special cases like root target containing optional parameter.
-     *
-     * @param routeString
-     *         route string to trim
-     * @return trimmed route
-     */
-    private String trimRouteString(String routeString) {
-        if (routeString.startsWith("/")) {
-            routeString = routeString.substring(1);
-        }
-        return routeString;
-    }
-
     @SafeVarargs
     private final boolean isAnnotatedParameter(
             Class<? extends Component> navigationTarget,
@@ -551,27 +538,6 @@ public class RouteConfiguration implements Serializable {
             }
         }
         return false;
-    }
-
-    private boolean hasUrlParameters(
-            Class<? extends Component> navigationTarget) {
-        return HasUrlParameter.class.isAssignableFrom(navigationTarget);
-    }
-
-    private <T> List<String> serializeUrlParameters(List<T> urlParameters) {
-        return urlParameters.stream().filter(Objects::nonNull).map(T::toString)
-                .collect(Collectors.toList());
-    }
-
-    private String getUrlBase(Class<? extends Component> navigationTarget,
-            String targetUrl) {
-        String routeString = targetUrl;
-        if (isAnnotatedParameter(navigationTarget, OptionalParameter.class,
-                WildcardParameter.class) || HasUrlParameter.class
-                .isAssignableFrom(navigationTarget)) {
-            routeString = PARAMETER_PATTERN.matcher(routeString).replaceAll("");
-        }
-        return trimRouteString(routeString);
     }
 
 }
