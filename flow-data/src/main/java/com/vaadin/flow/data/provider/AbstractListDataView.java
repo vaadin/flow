@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.data.provider;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializableSupplier;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,15 +37,10 @@ import java.util.stream.Stream;
 public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         implements ListDataView<T, AbstractListDataView<T>> {
 
-    /**
-     * Creates a new instance of {@link AbstractListDataView} subclass
-     * which rely on in-memory data set, i.e. data set stored in a collection.
-     *
-     * @param dataController
-     *          data controller reference
-     */
-    public AbstractListDataView(DataController<T> dataController) {
-        super(dataController);
+    public AbstractListDataView(
+            SerializableSupplier<DataProvider<T, ?>> dataProviderSupplier,
+            SerializableSupplier<? extends Component> componentSupplier) {
+        super(dataProviderSupplier, componentSupplier);
     }
 
     @Override
@@ -81,16 +78,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public Stream<T> getAllItems() {
-        return dataController.getAllItems();
-    }
-
-    @Override
-    public int getDataSize() {
-        return dataController.getDataSize();
-    }
-
-    @Override
     public boolean isItemPresent(T item) {
         // TODO: delegate this to the data communicator/component, since the equality could be
         //  determined by the provided identity checker (the default is equals).
@@ -102,10 +89,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return ListDataProvider.class;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
     protected ListDataProvider<T> getDataProvider() {
-        final DataProvider<T, ?> dataProvider = this.dataController.getDataProvider();
+        final DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
         Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
         verifyDataProviderType(dataProvider.getClass());
         return (ListDataProvider<T>) dataProvider;

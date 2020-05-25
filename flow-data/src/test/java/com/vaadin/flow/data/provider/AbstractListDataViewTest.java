@@ -26,9 +26,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableSupplier;
 
 public class AbstractListDataViewTest {
 
@@ -37,9 +37,7 @@ public class AbstractListDataViewTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-    private DataProvider dataProvider;
-
-    private DataController<String> dataController;
+    private ListDataProvider<String> dataProvider;
 
     private AbstractListDataView<String> dataView;
 
@@ -47,8 +45,7 @@ public class AbstractListDataViewTest {
     public void init() {
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = DataProvider.ofCollection(items);
-        dataController = new DataControllerStub();
-        dataView = new ListDataViewImpl(dataController);
+        dataView = new ListDataViewImpl(() -> dataProvider, () -> null);
     }
 
     @Test
@@ -57,11 +54,9 @@ public class AbstractListDataViewTest {
                 .fromCallbacks(query -> Stream.of("one"), query -> 1);
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage(
-                "ListDataViewImpl only supports 'ListDataProvider' " +
-                        "or it's subclasses, but was given a 'AbstractBackEndDataProvider'");
-        DataController<String> dataController = Mockito.mock(DataController.class);
-        Mockito.when(dataController.getDataProvider()).thenReturn(dataProvider);
-        new ListDataViewImpl(dataController);
+                "ListDataViewImpl only supports 'ListDataProvider' "
+                        + "or it's subclasses, but was given a 'AbstractBackEndDataProvider'");
+        new ListDataViewImpl(() -> dataProvider, () -> null);
     }
 
     @Test
@@ -80,8 +75,8 @@ public class AbstractListDataViewTest {
 
     @Test
     public void getNextItem_nextItemAvailable_nextItemFound() {
-        Assert.assertEquals("Faulty next item",
-                "last", dataView.getNextItem("middle"));
+        Assert.assertEquals("Faulty next item", "last",
+                dataView.getNextItem("middle"));
     }
 
     @Test
@@ -100,14 +95,15 @@ public class AbstractListDataViewTest {
 
     @Test
     public void hasPrevItem_prevItemUnavailable_prevItemNotFound() {
-        Assert.assertFalse("No previous item for first item should be available",
+        Assert.assertFalse(
+                "No previous item for first item should be available",
                 dataView.hasPreviousItem("first"));
     }
 
     @Test
     public void getPrevItem_prevItemAvailable_prevItemFound() {
-        Assert.assertEquals("Item in middle should have previous item",
-                "first", dataView.getPreviousItem("middle"));
+        Assert.assertEquals("Item in middle should have previous item", "first",
+                dataView.getPreviousItem("middle"));
     }
 
     @Test
@@ -118,29 +114,30 @@ public class AbstractListDataViewTest {
 
     @Test
     public void withFilter_filterIsSet_filteredItemsObtained() {
-        Assert.assertEquals(items.size(), dataController.getDataSize());
+        Assert.assertEquals(items.size(), dataView.getDataSize());
         dataView.withFilter(item -> item.equals("first"));
-        Assert.assertEquals("Filter was not applied to data size",
-                1, dataController.getDataSize());
+        Assert.assertEquals("Filter was not applied to data size", 1,
+                dataView.getDataSize());
         Assert.assertEquals("Expected item is missing from filtered data",
-                "first", dataController.getAllItems().findFirst().get());
+                "first", dataView.getAllItems().findFirst().get());
     }
 
     @Test
     public void withFilter_filterReset_allItemsObtained() {
-        ((ListDataProvider) dataProvider).setFilter(item -> item.equals("first"));
+        ((ListDataProvider) dataProvider)
+                .setFilter(item -> item.equals("first"));
         dataView.withFilter(null);
         Assert.assertEquals("Filter reset was not applied to data size",
-                items.size(), dataController.getDataSize());
+                items.size(), dataView.getDataSize());
         Assert.assertArrayEquals("Filter reset was not applied to data set",
-                items.toArray(), dataController.getAllItems().toArray());
+                items.toArray(), dataView.getAllItems().toArray());
     }
 
     @Test
     public void withSortComparator_sortIsSet_sortedItemsObtained() {
         dataView.withSortComparator(String::compareTo);
         Assert.assertEquals("Unexpected data set order", "first,last,middle",
-                dataController.getAllItems().collect(Collectors.joining(",")));
+                dataView.getAllItems().collect(Collectors.joining(",")));
     }
 
     @Test
@@ -189,31 +186,11 @@ public class AbstractListDataViewTest {
     }
 
     private static class ListDataViewImpl extends AbstractListDataView<String> {
-        public ListDataViewImpl(DataController<String> dataController) {
-            super(dataController);
-        }
-    }
 
-    private class DataControllerStub implements DataController<String> {
-
-        @Override
-        public DataProvider<String, ?> getDataProvider() {
-            return dataProvider;
-        }
-
-        @Override
-        public Registration addSizeChangeListener(SizeChangeListener listener) {
-            return null;
-        }
-
-        @Override
-        public int getDataSize() {
-            return dataProvider.size(new Query<>());
-        }
-
-        @Override
-        public Stream<String> getAllItems() {
-            return dataProvider.fetch(new Query<>());
+        public ListDataViewImpl(
+                SerializableSupplier<DataProvider<String, ?>> dataProviderSupplier,
+                SerializableSupplier<Component> componentSupplier) {
+            super(dataProviderSupplier, componentSupplier);
         }
     }
 }

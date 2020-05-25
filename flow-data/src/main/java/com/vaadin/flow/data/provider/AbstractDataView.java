@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.vaadin.flow.shared.Registration;
-
 import java.util.Objects;
+import java.util.stream.Stream;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Abstract data view implementation which takes care of processing
@@ -27,8 +32,6 @@ import java.util.Objects;
  *        data type
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
-
-    protected DataController<T> dataController;
 
     /**
      * Creates a new instance of {@link AbstractDataView} subclass
@@ -41,18 +44,23 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * @param dataController
      *          data controller reference
      */
-    public AbstractDataView(DataController<T> dataController) {
-        Objects.requireNonNull(dataController, "DataController cannot be null");
-        this.dataController = dataController;
-        DataProvider<T, ?> dataProvider = dataController.getDataProvider();
-        Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
-        verifyDataProviderType(dataProvider.getClass());
+
+    protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
+    protected SerializableSupplier<? extends Component> componentSupplier;
+
+    public AbstractDataView(SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier, SerializableSupplier<? extends Component> componentSupplier){
+        this.dataProviderSupplier = dataProviderSupplier;
+        this.componentSupplier = componentSupplier;
+        verifyDataProviderType(dataProviderSupplier.get().getClass());
     }
 
     @Override
-    public Registration addSizeChangeListener(SizeChangeListener listener) {
+    public Registration addSizeChangeListener(
+            ComponentEventListener<SizeChangeEvent<?>> listener) {
         Objects.requireNonNull(listener, "SizeChangeListener cannot be null");
-        return dataController.addSizeChangeListener(listener);
+        return ComponentUtil
+                .addListener(componentSupplier.get(), SizeChangeEvent.class,
+                        (ComponentEventListener) listener);
     }
 
     /**
@@ -83,14 +91,14 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         }
     }
 
-    /**
-     * Obtains an appropriate {@link DataProvider} instance from {@link DataController}.
-     * Throws a runtime exception otherwise, if the {@link DataProvider} instance is incompatible
-     * with current implementation of {@link DataView}.
-     *
-     * @return data provider instance
-     *
-     * @throws IllegalStateException if data provider type is incompatible
-     */
-    protected abstract DataProvider<T, ?> getDataProvider();
+
+    @Override
+    public Stream<T> getAllItems() {
+        return dataProviderSupplier.get().fetch(new Query<>());
+    }
+
+    @Override
+    public int getDataSize() {
+        return dataProviderSupplier.get().size(new Query<>());
+    }
 }
