@@ -438,7 +438,12 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return {@code true} if dev mode live reload is enabled, {@code false} otherwise
      */
-    boolean isDevModeLiveReloadEnabled();
+    default boolean isDevModeLiveReloadEnabled() {
+        return !isProductionMode() && !isCompatibilityMode()
+                && getBooleanProperty(
+                        Constants.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD,
+                        true);
+    }
 
     /**
      * Returns whether pnpm is enabled or not.

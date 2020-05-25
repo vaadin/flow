@@ -221,18 +221,4 @@ public class PropertyDeploymentConfiguration
     public Properties getInitParameters() {
         return initParameters;
     }
-
-    /**
-     * Checks if dev mode live reload is enabled or not. It is always disabled
-     * in production mode. In development mode, it is enabled by default.
-     *
-     * @return {@code true} if dev mode live reload is enabled, {@code false}
-     *         otherwise
-     */
-    @Override
-    public boolean isDevModeLiveReloadEnabled() {
-        return !isProductionMode() && !isCompatibilityMode()
-                && getBooleanProperty(
-                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true);
-    }
 }
