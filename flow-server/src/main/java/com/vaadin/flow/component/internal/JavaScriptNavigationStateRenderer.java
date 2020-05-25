@@ -97,29 +97,26 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     }
 
     @Override
-    protected boolean shouldPushHistoryState(NavigationEvent event, UI ui) {
+    protected boolean shouldPushHistoryState(NavigationEvent event) {
         if (NavigationTrigger.CLIENT_SIDE.equals(event.getTrigger())) {
             return true;
         } else {
-            return super.shouldPushHistoryState(event, ui);
+            return super.shouldPushHistoryState(event);
         }
     }
 
     @Override
-    protected void pushHistoryState(NavigationEvent event, UI ui) {
-        super.pushHistoryState(event, ui);
+    protected void pushHistoryState(NavigationEvent event) {
+        super.pushHistoryState(event);
 
-        if (ui instanceof JavaScriptBootstrapUI) {
-            JavaScriptBootstrapUI jsUI = (JavaScriptBootstrapUI) ui;
+        if (event.getUI() instanceof JavaScriptBootstrapUI) {
+            JavaScriptBootstrapUI jsUI = (JavaScriptBootstrapUI) event.getUI();
 
             if (continueNavigationAction != null
                     // We're trying to navigate to a client view.
                     && JavaScriptBootstrapUI.ClientViewPlaceholder.class
                             .isAssignableFrom(getNavigationState()
                                     .getNavigationTarget())) {
-
-                // FIXME: This could be invoked from ClientViewPlaceholder or
-                // another client placeholder view type.
                 jsUI.navigateToClient(
                         event.getLocation().getPathWithQueryParameters());
             }

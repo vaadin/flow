@@ -44,7 +44,6 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
-import elemental.json.JsonValue;
 
 /**
  * Custom UI for {@link JavaScriptBootstrapHandler}. This class is intended for
@@ -54,7 +53,6 @@ public class JavaScriptBootstrapUI extends UI {
     public static final String SERVER_ROUTING = "clientRoutingMode";
 
     static final String SERVER_CONNECTED = "this.serverConnected($0)";
-    static final String SERVER_CONNECTED_URL = "this.serverConnected($0, new URL($1, document.baseURI))";
     static final String CLIENT_NAVIGATE_TO = "window.dispatchEvent(new CustomEvent('vaadin-router-go', {detail: new URL($0, document.baseURI)}))";
 
     Element wrapperElement;
@@ -132,9 +130,7 @@ public class JavaScriptBootstrapUI extends UI {
         if (getForwardToClientUrl() != null) {
             navigateToClient(getForwardToClientUrl());
             acknowledgeClient();
-
-            // TODO: Handle forward to server view.
-
+            
         } else if (isPostponed()) {
             cancelClient();
         } else {
@@ -161,10 +157,6 @@ public class JavaScriptBootstrapUI extends UI {
     @ClientCallable
     public void leaveNavigation(String route) {
         navigateToPlaceholder(new Location(PathUtil.trimPath(route)));
-
-        // TODO: Handle forward to server view which may happen in a
-        // BeforeLeaveEvent or deny the forward or reroute to a server view in
-        // BeforeLeaveEvent.
 
         // Inform the client whether the navigation should be postponed
         if (isPostponed()) {
@@ -224,23 +216,15 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private void acknowledgeClient() {
-        serverConnected(false, null);
+        serverConnected(false);
     }
-
-    private void acknowledgeClient(String serverRoute) {
-        serverConnected(false, serverRoute);
-    }
-
+    
     private void cancelClient() {
-        serverConnected(true, null);
+        serverConnected(true);
     }
 
-    private void serverConnected(boolean cancel, String serverRoute) {
-        if (serverRoute == null) {
-            wrapperElement.executeJs(SERVER_CONNECTED, cancel);
-        } else {
-            wrapperElement.executeJs(SERVER_CONNECTED_URL, cancel, serverRoute);
-        }
+    private void serverConnected(boolean cancel) {
+        wrapperElement.executeJs(SERVER_CONNECTED, cancel);
     }
 
     private void navigateToPlaceholder(Location location) {

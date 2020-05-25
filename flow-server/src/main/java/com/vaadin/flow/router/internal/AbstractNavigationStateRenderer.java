@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -268,20 +267,20 @@ public abstract class AbstractNavigationStateRenderer
                                         .getLastHandledLocation()
                                         .getPathWithQueryParameters()))) {
 
-            if (shouldPushHistoryState(event, ui)) {
-                pushHistoryState(event, ui);
+            if (shouldPushHistoryState(event)) {
+                pushHistoryState(event);
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
         }
     }
 
-    protected void pushHistoryState(NavigationEvent event, UI ui) {
+    protected void pushHistoryState(NavigationEvent event) {
         // Enable navigating back
-        ui.getPage().getHistory().pushState(null, event.getLocation());
+        event.getUI().getPage().getHistory().pushState(null, event.getLocation());
     }
 
-    protected boolean shouldPushHistoryState(NavigationEvent event, UI ui) {
+    protected boolean shouldPushHistoryState(NavigationEvent event) {
         return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
     }
 
