@@ -24,6 +24,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 
 @Route(value = "serverpostponeview", layout = MainLayout.class)
 public class ServerSidePostponeView extends Div implements BeforeLeaveObserver {
@@ -43,6 +44,8 @@ public class ServerSidePostponeView extends Div implements BeforeLeaveObserver {
                 });
         serverViewButton.setId("goToServerView");
         add(serverViewButton);
+
+        add(new RouterLink("RouterLink Server View", ServerSideView.class));
 
         final NativeButton clientViewButton = new NativeButton("Client View",
                 buttonClickEvent -> {
