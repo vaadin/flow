@@ -86,7 +86,7 @@ public class PathUtil implements Serializable {
      * @return a String representing the input path without any leading and
      *         trailing whitespaces and slashes.
      */
-    static String trimPath(String path) {
+    public static String trimPath(String path) {
         if (path == null) {
             return "";
         }
