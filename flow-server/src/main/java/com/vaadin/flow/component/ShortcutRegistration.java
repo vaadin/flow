@@ -17,6 +17,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,11 +69,33 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     private ShortcutEventListener eventListener;
 
+    private List<Registration> registrations = new ArrayList<>();
+
     // beforeClientResponse callback
     private final SerializableConsumer<ExecutionContext>
             beforeClientResponseConsumer = executionContext -> {
         if (listenOnComponents == null) {
-            listenOnComponents = registerOwnerListeners();
+            initListenOnComponent();
+        }
+        boolean reinit = false;
+        /*
+         * In PreserveOnRefersh case the UI instance is not detached immediately
+         * (once detach happens the initialization is rerun in
+         * initListenOnComponent via removeAllListenerRegistrations), so we may
+         * not rely on detach event only: the check whether UI is already marked
+         * as closing is done here which should rerun the initialization
+         * immediately.
+         */
+        for (Component component : listenOnComponents) {
+            if (component.getUI().isPresent()
+                    && component.getUI().get().isClosing()) {
+                reinit = true;
+                break;
+            }
+        }
+        if (reinit) {
+            removeAllListenerRegistrations();
+            initListenOnComponent();
         }
 
         for (Component component: listenOnComponents) {
@@ -80,6 +103,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         }
 
         markClean();
+
     };
 
     /**
@@ -585,6 +609,8 @@ public class ShortcutRegistration implements Registration, Serializable {
             listenOnAttachListenerRegistration.remove();
             listenOnAttachListenerRegistration = null;
         }
+        registrations.forEach(Registration::remove);
+        registrations.clear();
         removeListenerRegistration();
         listenOnComponents = null;
     }
@@ -701,6 +727,15 @@ public class ShortcutRegistration implements Registration, Serializable {
                 builder.toString(),
                 allowDefaultBehavior,
                 allowEventPropagation);
+    }
+
+    private void initListenOnComponent() {
+        listenOnComponents = registerOwnerListeners();
+        for (Component component : listenOnComponents) {
+            Registration registration = component.addDetachListener(
+                    event -> removeAllListenerRegistrations());
+            registrations.add(registration);
+        }
     }
 
     /**
