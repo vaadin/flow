@@ -231,4 +231,17 @@ public class DefaultDeploymentConfigurationTest {
                 initParameters);
         assertEquals(5000, config.getMaxMessageSuspendTimeout());
     }
+
+    @Test
+    public void devModeLiveReload_compatibilityMode_forcedDisabled() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, "true");
+        initParameters.setProperty(
+                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertFalse("Live reload must be disabled in compatibility mode",
+                config.isDevModeLiveReloadEnabled());
+    }
 }
