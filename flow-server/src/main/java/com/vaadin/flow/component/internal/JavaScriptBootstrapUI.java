@@ -40,6 +40,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
@@ -118,9 +119,14 @@ public class JavaScriptBootstrapUI extends UI {
                     NodeProperties.INJECT_BY_ID, clientElementId);
         }
 
+        final String trimmedRoute = PathUtil.trimPath(flowRoute);
+        if (!trimmedRoute.equals(flowRoute)) {
+            // See InternalRedirectHandler invoked via Router.
+            getPage().getHistory().replaceState(null, trimmedRoute);
+        }
+
         // Render the flow view that the user wants to navigate to.
-        renderViewForRoute(
-                new Location(removeLastSlash(removeFirstSlash(flowRoute))));
+        renderViewForRoute(new Location(trimmedRoute));
 
         // true if the target is client-view and the push mode is disable
         if (getForwardToClientUrl() != null) {
@@ -154,7 +160,7 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void leaveNavigation(String route) {
-        navigateToPlaceholder(new Location(removeFirstSlash(route)));
+        navigateToPlaceholder(new Location(PathUtil.trimPath(route)));
 
         // TODO: Handle forward to server view which may happen in a
         // BeforeLeaveEvent or deny the forward or reroute to a server view in
@@ -290,16 +296,9 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private boolean sameLocation(Location oldLocation, Location newLocation) {
-        return removeLastSlash(newLocation.getPathWithQueryParameters()).equals(
-                removeLastSlash(oldLocation.getPathWithQueryParameters()));
-    }
-
-    private String removeFirstSlash(String route) {
-        return route.replaceFirst("^/+", "");
-    }
-
-    private String removeLastSlash(String route) {
-        return route.replaceFirst("/+$", "");
+        return PathUtil.trimPath(newLocation.getPathWithQueryParameters())
+                .equals(PathUtil
+                        .trimPath(oldLocation.getPathWithQueryParameters()));
     }
 
     private void handleNavigation(Location location,
