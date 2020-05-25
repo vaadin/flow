@@ -51,7 +51,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -365,7 +365,7 @@ public class DevModeHandlerTest {
             FileUtils.forceMkdir(node);
 
             configuration.setApplicationOrSystemProperty(
-                    Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                    InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                     Boolean.TRUE.toString());
             DevModeHandler.start(configuration, npmFolder,
                     CompletableFuture.completedFuture(null)).join();

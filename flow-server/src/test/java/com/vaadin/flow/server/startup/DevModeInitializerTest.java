@@ -34,8 +34,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.connect.generator.VaadinConnectClientGenerator;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -43,8 +43,8 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_GENERATED_TS_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
@@ -264,7 +264,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        initParams.put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+        initParams.put(InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         final Set<Class<?>> classes = new HashSet<>();
@@ -365,15 +365,15 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 .thenReturn(Collections.emptyMap());
         Mockito.when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.enumeration(new HashSet<>(
-                        Arrays.asList(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                        Arrays.asList(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                                 FrontendUtils.PROJECT_BASEDIR))));
         Mockito.when(
                 servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
                 .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
         Mockito.when(servletContext
-                .getInitParameter(Constants.SERVLET_PARAMETER_ENABLE_PNPM))
+                .getInitParameter(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
                 .thenReturn(initParams
-                        .get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+                        .get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }

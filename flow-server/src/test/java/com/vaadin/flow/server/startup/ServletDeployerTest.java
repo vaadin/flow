@@ -33,7 +33,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -126,7 +126,7 @@ public class ServletDeployerTest {
                 getServletRegistration("testServlet", TestServlet.class,
                         singletonList("/test/*"),
                         singletonMap(
-                                Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION,
+                                InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION,
                                 "true"))));
 
         assertMappingsCount(0, 0);
