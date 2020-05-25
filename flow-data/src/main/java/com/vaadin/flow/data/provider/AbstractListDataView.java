@@ -47,32 +47,35 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public boolean hasNextItem(T item) {
-        int index = getItemIndex(item);
-        if(index < 0)
+        Stream<T> allItems = getAllItems();
+        int index = getItemIndex(allItems, item);
+        if (index < 0)
             return false;
-        return getAllItems().skip(index + 1).findAny().isPresent();
+        return allItems.skip(index + 1).findAny().isPresent();
     }
 
     @Override
     public T getNextItem(T item) {
-        int index = getItemIndex(item);
+        Stream<T> allItems = getAllItems();
+        int index = getItemIndex(allItems, item);
         if (index < 0)
             return null;
-        return getAllItems().skip(index + 1).findFirst().orElse(null);
+        return allItems.skip(index + 1).findFirst().orElse(null);
     }
 
     @Override
     public boolean hasPreviousItem(T item) {
-        int index = getItemIndex(item);
+        int index = getItemIndex(getAllItems(), item);
         return index > 0;
     }
 
     @Override
     public T getPreviousItem(T item) {
-        int index = getItemIndex(item);
+        Stream<T> allItems = getAllItems();
+        int index = getItemIndex(allItems, item);
         if (index <= 0)
             return null;
-        return getAllItems().skip(index - 1).findFirst().orElse(null);
+        return allItems.skip(index - 1).findFirst().orElse(null);
     }
 
     @Override
@@ -128,10 +131,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(T item) {
+    private int getItemIndex(Stream<T> stream, T item) {
         Objects.requireNonNull(item, "item cannot be null");
         AtomicInteger index = new AtomicInteger(-1);
-        if (!getAllItems().peek(t -> index.incrementAndGet())
+        if (!stream.peek(t -> index.incrementAndGet())
                 .filter(t -> Objects.equals(item, t)).findFirst().isPresent()) {
             return -1;
         }
