@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.UI;
+
 /**
  * Constants for all servlet init parameters. Keeping them in a separate class
  * allows using reflection to expose the parameters in the Spring add-on.
@@ -29,6 +31,13 @@ import java.io.Serializable;
  * @since
  */
 public class InitParameters implements Serializable {
+
+    /**
+     * The name of the parameter that is by default used in e.g. web.xml to
+     * define the name of the default {@link UI} class.
+     */
+    // javadoc in UI should be updated if this value is changed
+    public static final String UI_PARAMETER = "UI";
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 

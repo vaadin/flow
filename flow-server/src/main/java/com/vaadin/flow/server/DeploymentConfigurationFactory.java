@@ -473,7 +473,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
         if (enclosingClass != null
                 && UI.class.isAssignableFrom(enclosingClass)) {
-            initParameters.put(VaadinSession.UI_PARAMETER,
+            initParameters.put(InitParameters.UI_PARAMETER,
                     enclosingClass.getName());
         }
     }

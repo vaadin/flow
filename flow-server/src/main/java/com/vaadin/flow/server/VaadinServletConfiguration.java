@@ -81,7 +81,7 @@ public @interface VaadinServletConfiguration {
      *
      * @return the UI class
      */
-    @InitParameterName(VaadinSession.UI_PARAMETER)
+    @InitParameterName(InitParameters.UI_PARAMETER)
     Class<? extends UI> ui() default UI.class;
 
     /**
