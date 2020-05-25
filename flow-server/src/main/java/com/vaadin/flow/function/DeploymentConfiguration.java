@@ -28,6 +28,7 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_POLYFILLS;
 
 /**
@@ -438,7 +439,12 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return {@code true} if dev mode live reload is enabled, {@code false} otherwise
      */
-    boolean isDevModeLiveReloadEnabled();
+    default boolean isDevModeLiveReloadEnabled() {
+        return !isProductionMode() && !isCompatibilityMode()
+                && getBooleanProperty(
+                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
+                && enableDevServer(); // gizmo excluded from prod bundle
+    }
 
     /**
      * Returns whether pnpm is enabled or not.
