@@ -25,7 +25,6 @@ import com.vaadin.flow.shared.communication.PushMode;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_BOWER_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
@@ -221,20 +220,5 @@ public class PropertyDeploymentConfiguration
     @Override
     public Properties getInitParameters() {
         return initParameters;
-    }
-
-    /**
-     * Checks if dev mode live reload is enabled or not. It is always disabled
-     * in production mode. In development mode, it is enabled by default.
-     *
-     * @return {@code true} if dev mode live reload is enabled, {@code false}
-     *         otherwise
-     */
-    @Override
-    public boolean isDevModeLiveReloadEnabled() {
-        return !isProductionMode() && !isCompatibilityMode()
-                && getBooleanProperty(
-                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
-                && enableDevServer(); // gizmo excluded from prod bundle
     }
 }
