@@ -35,6 +35,11 @@ export class ServerValidator implements Validator<any> {
 
 export class Required implements Validator<string> {
   message = '';
+  constructor(message?: string){
+    if(message){
+      this.message = message;
+    }
+  }
   validate = (value: any) => {
     if (typeof value === 'string' || Array.isArray(value)) {
       return value.length > 0;

@@ -89,5 +89,7 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 getClass().getResource("expected-TsFormEndpoint.ts"));
 
         assertEquals(expected, content);
+
+        
     }
 }

@@ -102,7 +102,8 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  * produces OpenApi json.
  */
 public class OpenApiObjectGenerator {
-    private static final String REQUIRED_VALIDATOR = "Required()";
+    private static final String REQUIRED = "Required";
+    private static final String REQUIRED_VALIDATOR = REQUIRED + "(%s)";
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
     public static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
 
@@ -347,7 +348,7 @@ public class OpenApiObjectGenerator {
 
         // detect the endpoint value name
         if (endpointName.equals(classDeclaration.getNameAsString()) && endpointAnnotation != null) {
-            String endpointValueName = getEndpointValueName(endpointAnnotation);
+            String endpointValueName = getParameterValueFromAnnotation(endpointAnnotation, "value");
             if (endpointValueName != null) {
                 endpointName = endpointValueName.substring(1, endpointValueName.length() - 1);
             }
@@ -362,10 +363,10 @@ public class OpenApiObjectGenerator {
         return endpointName;
     }
 
-    private String getEndpointValueName(AnnotationExpr endpointAnnotation) {
+    private String getParameterValueFromAnnotation(AnnotationExpr endpointAnnotation, String paramName) {
         return endpointAnnotation.getChildNodes().stream().filter(node ->
                 node.getTokenRange().isPresent() &&
-                        "value".equals(node.getTokenRange().get().getBegin().getText()))
+                paramName.equals(node.getTokenRange().get().getBegin().getText()))
                 .map(node -> node.getTokenRange().get().getEnd().getText()).findFirst().orElse(null);
     }
 
@@ -488,14 +489,16 @@ public class OpenApiObjectGenerator {
             }
             if (str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
                     || str.matches("Size\\(\\{.*min:[^0].+")) {
-                annotations.add(REQUIRED_VALIDATOR);
+                String message = getParameterValueFromAnnotation(annotation, "message");
+                String requiredValidator = String.format(REQUIRED_VALIDATOR, message == null ? "" : message);
+                annotations.add(requiredValidator);
             }
         });
         if (!annotations.isEmpty()) {
             schema.addExtension(CONSTRAINT_ANNOTATIONS,
                     annotations.stream()
-                            .sorted((a, b) -> REQUIRED_VALIDATOR.equals(a) ? -1
-                                    : REQUIRED_VALIDATOR.equals(b) ? 1 : a.compareTo(b))
+                            .sorted((a, b) -> a.startsWith(REQUIRED) ? -1
+                                    : b.startsWith(REQUIRED) ? 1 : a.compareTo(b))
                             .collect(Collectors.toList()));
         }
     }
