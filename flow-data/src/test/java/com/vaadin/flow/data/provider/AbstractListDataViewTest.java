@@ -18,6 +18,7 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -210,6 +211,8 @@ public class AbstractListDataViewTest {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         exceptionRule.expectMessage("Requested index 5 on empty data.");
 
+        dataProvider = DataProvider.ofCollection(Collections.emptyList());
+        dataView = new ListDataViewImpl(() -> dataProvider, null);
         dataView.validateItemIndex(5);
     }
     private static class ListDataViewImpl extends AbstractListDataView<String> {
