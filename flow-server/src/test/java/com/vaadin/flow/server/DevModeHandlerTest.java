@@ -48,7 +48,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -299,7 +299,7 @@ public class DevModeHandlerTest {
             FileUtils.forceMkdir(node);
 
             configuration.setApplicationOrSystemProperty(
-                    Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                    InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                     Boolean.TRUE.toString());
             DevModeHandler.start(configuration, npmFolder);
         } finally {
@@ -318,14 +318,14 @@ public class DevModeHandlerTest {
         Mockito.doAnswer(invocation -> ctx).when(cfg).getServletContext();
 
         List<String> paramNames = new ArrayList<>();
-        paramNames.add(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
+        paramNames.add(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE);
         paramNames.add(FrontendUtils.PARAM_TOKEN_FILE);
 
         Mockito.doAnswer(invocation -> Collections.enumeration(paramNames))
                 .when(cfg).getInitParameterNames();
         Mockito.doAnswer(invocation -> Boolean.FALSE.toString()).when(cfg)
                 .getInitParameter(
-                        Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE);
+                        InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE);
 
         File tokenFile = new File(temporaryFolder.getRoot(),
                 "flow-build-info.json");

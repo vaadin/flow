@@ -47,7 +47,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 

@@ -32,7 +32,7 @@ public class MockServletConfig implements ServletConfig {
     private static final Properties DEFAULT_PROPERTIES = new Properties();
     {
         DEFAULT_PROPERTIES.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
     }
 

@@ -21,6 +21,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.DevModeHandlerTest;
@@ -30,9 +31,9 @@ import com.vaadin.flow.server.frontend.NodeUpdater;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -79,7 +80,8 @@ public class DevModeInitializerTestBase {
 
         initParams = new HashMap<>();
         initParams.put(FrontendUtils.PROJECT_BASEDIR, baseDir);
-        initParams.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, enablePnpm.toString());
+        initParams.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                enablePnpm.toString());
 
         Mockito.when(vaadinServletRegistration.getInitParameters())
                 .thenReturn(initParams);

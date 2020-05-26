@@ -18,7 +18,7 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.io.Writer;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT;
 
 /**

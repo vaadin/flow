@@ -41,7 +41,7 @@ public class I18NProviderTest {
 
     {
         DEFAULT_PARAMS.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
     }
 
@@ -58,7 +58,7 @@ public class I18NProviderTest {
     public void property_defined_should_init_registy_with_provider()
             throws ServletException, ServiceException {
         Properties initParams = new Properties(DEFAULT_PARAMS);
-        initParams.setProperty(Constants.I18N_PROVIDER,
+        initParams.setProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
         initServletAndService(initParams);
@@ -72,7 +72,7 @@ public class I18NProviderTest {
     public void with_defined_provider_locale_should_be_the_available_one()
             throws ServletException, ServiceException {
         Properties initParams = new Properties(DEFAULT_PARAMS);
-        initParams.setProperty(Constants.I18N_PROVIDER,
+        initParams.setProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
 
         initServletAndService(initParams);

@@ -38,7 +38,7 @@ public class DefaultDeploymentConfigurationTest {
 
     {
         DEFAULT_PARAMS.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
     }
 
@@ -73,7 +73,7 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueReadIgnoreTheCase_true() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "tRUe");
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "tRUe");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -86,7 +86,7 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueReadIgnoreTheCase_false() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "FaLsE");
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "FaLsE");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -100,7 +100,7 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueRead_emptyIsTrue() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "");
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -113,7 +113,7 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueRead_exceptionOnNonBooleanValue() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 "incorrectValue");
 
         createDeploymentConfig(initParameters);
@@ -183,7 +183,7 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void pushUrl() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
-        initParameters.setProperty(Constants.SERVLET_PARAMETER_PUSH_URL, "foo");
+        initParameters.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "foo");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -205,7 +205,7 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
-        initParameters.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
+        initParameters.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
                 "true");
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -215,7 +215,7 @@ public class DefaultDeploymentConfigurationTest {
     public void maxMessageSuspendTimeout_validValue_accepted() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
-                Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                 "2700");
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -226,7 +226,7 @@ public class DefaultDeploymentConfigurationTest {
     public void maxMessageSuspendTimeout_invalidValue_defaultValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
-                Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT, "kk");
+                InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT, "kk");
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertEquals(5000, config.getMaxMessageSuspendTimeout());

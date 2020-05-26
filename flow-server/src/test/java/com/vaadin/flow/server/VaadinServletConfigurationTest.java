@@ -45,10 +45,10 @@ public class VaadinServletConfigurationTest {
     @Test
     public void testValuesFromAnnotation() throws ServletException {
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
+        servletInitParams.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
         servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();
@@ -75,15 +75,15 @@ public class VaadinServletConfigurationTest {
 
         Properties servletInitParams = new Properties();
         servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 Boolean.toString(expectedBoolean));
         servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(expectedInt));
-        servletInitParams.setProperty(Constants.USE_ORIGINAL_FRONTEND_RESOURCES,
+        servletInitParams.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
         servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();

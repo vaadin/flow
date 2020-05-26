@@ -49,7 +49,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 
 /**
@@ -113,7 +113,7 @@ public final class OSGiAccess {
         public String getInitParameter(String name) {
             // OSGi is supported in compatibiity mode only. So set it by default
             // for every ServletContainerInitializer
-            if (Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE.equals(name)) {
+            if (InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE.equals(name)) {
                 return Boolean.TRUE.toString();
             }
             return null;
@@ -122,7 +122,7 @@ public final class OSGiAccess {
         @Override
         public Enumeration<String> getInitParameterNames() {
             return Collections.enumeration(Collections.singletonList(
-                    Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE));
+                    InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE));
         }
 
         @Override

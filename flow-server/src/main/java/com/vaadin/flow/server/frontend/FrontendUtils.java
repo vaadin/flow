@@ -51,7 +51,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 

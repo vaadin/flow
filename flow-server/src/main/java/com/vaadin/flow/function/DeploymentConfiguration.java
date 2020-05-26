@@ -23,11 +23,12 @@ import java.util.Properties;
 import java.util.function.Function;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_POLYFILLS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_POLYFILLS;
 
 /**
  * A collection of properties configured at deploy time as well as a way of
@@ -318,14 +319,14 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Determines if webJars mechanism is enabled. It is disabled if the user
-     * have explicitly set the {@link Constants#DISABLE_WEBJARS} property to
+     * have explicitly set the {@link InitParameters#DISABLE_WEBJARS} property to
      * {@code true}, or the user have not set the property at all and the
      * {@link #useCompiledFrontendResources()} returns false.
      *
      * @return {@code true} if webJars are enabled, {@code false} otherwise
      */
     default boolean areWebJarsEnabled() {
-        return !getBooleanProperty(Constants.DISABLE_WEBJARS,
+        return !getBooleanProperty(InitParameters.DISABLE_WEBJARS,
                 useCompiledFrontendResources());
     }
 
@@ -333,14 +334,14 @@ public interface DeploymentConfiguration extends Serializable {
      * Determines if Flow should use compiled or original frontend resources.
      *
      * User can explicitly disable bundled resources usage by setting the
-     * {@link Constants#USE_ORIGINAL_FRONTEND_RESOURCES} property to
+     * {@link InitParameters#USE_ORIGINAL_FRONTEND_RESOURCES} property to
      * {@code true}.
      *
      * @return {@code true} if Flow should use compiled frontend resources.
      */
     default boolean useCompiledFrontendResources() {
         return isProductionMode() && !getBooleanProperty(
-                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, false);
+                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES, false);
     }
 
     /**
@@ -349,7 +350,7 @@ public interface DeploymentConfiguration extends Serializable {
      * {@link com.vaadin.flow.server.startup.ServletDeployer} javadoc.
      *
      * User can explicitly disable automatic servlet registration by setting the
-     * {@link Constants#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} property to
+     * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION} property to
      * {@code true}.
      *
      * @return {@code true} if Flow should not automatically register servlets
@@ -357,7 +358,7 @@ public interface DeploymentConfiguration extends Serializable {
      */
     default boolean disableAutomaticServletRegistration() {
         return getBooleanProperty(
-                Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
+                InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION, false);
     }
 
     /**
@@ -367,21 +368,20 @@ public interface DeploymentConfiguration extends Serializable {
      *         <code>false</code> to not serve Brotli files.
      */
     default boolean isBrotli() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_BROTLI, false);
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_BROTLI, false);
     }
 
     default String getCompiledWebComponentsPath() {
-        return getStringProperty(Constants.COMPILED_WEB_COMPONENTS_PATH,
+        return getStringProperty(InitParameters.COMPILED_WEB_COMPONENTS_PATH,
                 "vaadin-web-components");
     }
 
     /**
      * Returns an array with polyfills to be loaded when the app is loaded.
      *
-     * The default value is
-     * <code>build/webcomponentsjs/webcomponents-loader.js</code> but it can be
-     * changed by setting the {@link Constants#SERVLET_PARAMETER_POLYFILLS} as a
-     * comma separated list of JS files to load.
+     * The default value is empty, but it can be changed by setting the
+     * {@link InitParameters#SERVLET_PARAMETER_POLYFILLS} as a comma separated list
+     * of JS files to load.
      *
      * @return polyfills to load
      */
@@ -396,7 +396,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if dev server should be used
      */
     default boolean enableDevServer() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
                 true);
     }
 
@@ -408,7 +408,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if dev server should be reused
      */
     default boolean reuseDevServer() {
-        return getBooleanProperty(Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER,
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER,
                 true);
     }
 
@@ -447,7 +447,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 2.2
      */
     default boolean isPnpmEnabled() {
-        return getBooleanProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM, false);
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                false);
     }
 }

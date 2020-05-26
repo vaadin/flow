@@ -50,10 +50,10 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
 import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
@@ -276,18 +276,18 @@ public final class DeploymentConfigurationFactory implements Serializable {
         // read dev mode properties from the token and set init parameter only
         // if it's not yet set
         if (initParameters
-                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM) == null
-                && buildInfo.hasKey(Constants.SERVLET_PARAMETER_ENABLE_PNPM)) {
-            initParameters.setProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM) == null
+                && buildInfo.hasKey(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            initParameters.setProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                     String.valueOf(buildInfo.getBoolean(
-                            Constants.SERVLET_PARAMETER_ENABLE_PNPM)));
+                            InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)));
         }
         if (initParameters
-                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE) == null
-                && buildInfo.hasKey(Constants.REQUIRE_HOME_NODE_EXECUTABLE)) {
-            initParameters.setProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE) == null
+                && buildInfo.hasKey(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
+            initParameters.setProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                     String.valueOf(buildInfo.getBoolean(
-                            Constants.REQUIRE_HOME_NODE_EXECUTABLE)));
+                            InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)));
         }
     }
 
@@ -495,7 +495,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
         if (enclosingClass != null
                 && UI.class.isAssignableFrom(enclosingClass)) {
-            initParameters.put(VaadinSession.UI_PARAMETER,
+            initParameters.put(InitParameters.UI_PARAMETER,
                     enclosingClass.getName());
         }
     }
