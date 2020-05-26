@@ -13,7 +13,7 @@ package com.vaadin.flow.component;
  */
 public interface HasLabel extends HasElement{
 
-	 static final String LABEL_PROPERTY_NAME = "label";
+	 String LABEL_PROPERTY_NAME = "label";
 
 	/**
      * Set the label of the component to the given text.
@@ -23,7 +23,7 @@ public interface HasLabel extends HasElement{
      * @param label
      *            the label text to set
      */
-    default public void setLabel(String label) {
+    default void setLabel(String label) {
         getElement().setProperty(LABEL_PROPERTY_NAME, label == null ? "" : label);
     }
 
