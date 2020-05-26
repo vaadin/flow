@@ -15,15 +15,16 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * Abstract list data view implementation which provides common methods
@@ -37,13 +38,18 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     /**
      * Creates a new instance of {@link AbstractListDataView} subclass
-     * which rely on in-memory data set, i.e. data set stored in a collection.
+     * and verifies the passed data provider is compatible with this
+     * data view implementation.
      *
-     * @param dataController
-     *          data controller reference
+     * @param dataProviderSupplier
+     *         supplier from which the DataProvider can be gotten
+     * @param component
+     *         the component that the dataView is bound to
      */
-    public AbstractListDataView(DataController<T> dataController) {
-        super(dataController);
+    public AbstractListDataView(
+            SerializableSupplier<DataProvider<T, ?>> dataProviderSupplier,
+            Component component) {
+        super(dataProviderSupplier, component);
     }
 
     @Override
@@ -81,16 +87,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public Stream<T> getAllItems() {
-        return dataController.getAllItems();
-    }
-
-    @Override
-    public int getDataSize() {
-        return dataController.getDataSize();
-    }
-
-    @Override
     public boolean isItemPresent(T item) {
         // TODO: delegate this to the data communicator/component, since the equality could be
         //  determined by the provided identity checker (the default is equals).
@@ -102,10 +98,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return ListDataProvider.class;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
     protected ListDataProvider<T> getDataProvider() {
-        final DataProvider<T, ?> dataProvider = this.dataController.getDataProvider();
+        final DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
         Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
         verifyDataProviderType(dataProvider.getClass());
         return (ListDataProvider<T>) dataProvider;
