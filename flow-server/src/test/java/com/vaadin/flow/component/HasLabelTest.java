@@ -30,7 +30,7 @@ public class HasLabelTest {
 
     @Test
     public void withoutLabelComponent_getLabelReturnsEmptyString() {
-        TestComponent component = new TestComponent();
+       TestComponent component = new TestComponent();
 
        assertEquals("",component.getLabel());
     }
