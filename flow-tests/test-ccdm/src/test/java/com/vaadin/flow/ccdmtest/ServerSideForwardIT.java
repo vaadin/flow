@@ -21,10 +21,6 @@ import org.openqa.selenium.By;
 
 public class ServerSideForwardIT extends CCDMTest {
 
-    private static final String SERVER_POSTPONE_VIEW_ROUTE = "serverforwardview";
-
-    private static final By PROCEED_BUTTON = By.id("proceedAfterPostpone");
-
     @Test
     public void should_openClientPage_when_forwardFromServerToClientUrl() {
         openVaadinRouter();
