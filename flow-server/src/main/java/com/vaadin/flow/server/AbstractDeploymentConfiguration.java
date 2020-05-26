@@ -31,7 +31,7 @@ public abstract class AbstractDeploymentConfiguration
 
     @Override
     public String getUIClassName() {
-        return getStringProperty(VaadinSession.UI_PARAMETER,
+        return getStringProperty(InitParameters.UI_PARAMETER,
                 UI.class.getName());
     }
 

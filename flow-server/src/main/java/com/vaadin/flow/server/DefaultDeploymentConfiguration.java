@@ -296,7 +296,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkProductionMode(boolean log) {
         productionMode = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
+                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (log) {
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
@@ -315,7 +315,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkV14Bootsrapping(boolean log) {
         useDeprecatedV14Bootstrapping = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
         if (log) {
             if (useDeprecatedV14Bootstrapping) {
                 warnings.add(WARNING_V14_BOOTSTRAP);
@@ -370,7 +370,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkRequestTiming() {
         requestTiming = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
+                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
     }
 
     /**
@@ -378,7 +378,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkXsrfProtection(boolean loggWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
-                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
         if (!xsrfProtectionEnabled && loggWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -387,7 +387,7 @@ public class DefaultDeploymentConfiguration
     private void checkHeartbeatInterval() {
         try {
             heartbeatInterval = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                    InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                     DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
             warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
@@ -398,7 +398,7 @@ public class DefaultDeploymentConfiguration
     private void checkMaxMessageSuspendTimeout() {
         try {
             maxMessageSuspendTimeout = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                    InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                     DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT, Integer::parseInt);
         } catch (NumberFormatException e) {
             String warning = "WARNING: maxMessageSuspendInterval has been set to an illegal value."
@@ -412,7 +412,7 @@ public class DefaultDeploymentConfiguration
     private void checkWebComponentDisconnectTimeout() {
         try {
             webComponentDisconnect = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT,
+                    InitParameters.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT,
                     DEFAULT_WEB_COMPONENT_DISCONNECT, Integer::parseInt);
 
         } catch (NumberFormatException e) {
@@ -423,14 +423,14 @@ public class DefaultDeploymentConfiguration
 
     private void checkCloseIdleSessions() {
         closeIdleSessions = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
+                InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
                 DEFAULT_CLOSE_IDLE_SESSIONS);
     }
 
     private void checkPushMode() {
         try {
             pushMode = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
+                    InitParameters.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
                     stringMode -> Enum.valueOf(PushMode.class,
                             stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
@@ -440,18 +440,18 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkPushURL() {
-        pushURL = getStringProperty(Constants.SERVLET_PARAMETER_PUSH_URL, "");
+        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "");
     }
 
     private void checkSyncIdCheck() {
         syncIdCheck = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
+                InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK,
                 DEFAULT_SYNC_ID_CHECK);
     }
 
     private void checkSendUrlsAsParameters() {
         sendUrlsAsParameters = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
 }
