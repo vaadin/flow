@@ -29,9 +29,12 @@ import com.vaadin.flow.shared.Registration;
  * component data size change events.
  *
  * @param <T>
- *        data type
+ *         data type
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
+
+    protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
+    protected SerializableSupplier<? extends Component> componentSupplier;
 
     /**
      * Creates a new instance of {@link AbstractDataView} subclass
@@ -41,14 +44,14 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * Data controller reference is stored then internally and used for
      * data set manipulations.
      *
-     * @param dataController
-     *          data controller reference
+     * @param dataProviderSupplier
+     *         supplier from which the DataProvider can be gotten
+     * @param componentSupplier
+     *         supplier from which the DataView component can be gotten from
      */
-
-    protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
-    protected SerializableSupplier<? extends Component> componentSupplier;
-
-    public AbstractDataView(SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier, SerializableSupplier<? extends Component> componentSupplier){
+    public AbstractDataView(
+            SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
+            SerializableSupplier<? extends Component> componentSupplier) {
         this.dataProviderSupplier = dataProviderSupplier;
         this.componentSupplier = componentSupplier;
         verifyDataProviderType(dataProviderSupplier.get().getClass());
@@ -75,22 +78,21 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * for current Data View type.
      *
      * @param dataProviderType
-     *              data provider type to be verified
-     *
+     *         data provider type to be verified
      * @throws IllegalStateException
-     *              if data provider type is incompatible with data view type
+     *         if data provider type is incompatible with data view type
      */
     protected final void verifyDataProviderType(Class<?> dataProviderType) {
         Class<?> supportedDataProviderType = getSupportedDataProviderType();
         if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {
             final String message = String
                     .format("%s only supports '%s' or it's subclasses, but was given a '%s'",
-                            this.getClass().getSimpleName(), supportedDataProviderType.getSimpleName(),
+                            this.getClass().getSimpleName(),
+                            supportedDataProviderType.getSimpleName(),
                             dataProviderType.getSuperclass().getSimpleName());
             throw new IllegalStateException(message);
         }
     }
-
 
     @Override
     public Stream<T> getAllItems() {
