@@ -15,17 +15,16 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Abstract list data view implementation which provides common methods
@@ -37,10 +36,20 @@ import java.util.stream.Stream;
 public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         implements ListDataView<T, AbstractListDataView<T>> {
 
+    /**
+     * Creates a new instance of {@link AbstractListDataView} subclass
+     * and verifies the passed data provider is compatible with this
+     * data view implementation.
+     *
+     * @param dataProviderSupplier
+     *         supplier from which the DataProvider can be gotten
+     * @param component
+     *         the component that the dataView is bound to
+     */
     public AbstractListDataView(
             SerializableSupplier<DataProvider<T, ?>> dataProviderSupplier,
-            SerializableSupplier<? extends Component> componentSupplier) {
-        super(dataProviderSupplier, componentSupplier);
+            Component component) {
+        super(dataProviderSupplier, component);
     }
 
     @Override

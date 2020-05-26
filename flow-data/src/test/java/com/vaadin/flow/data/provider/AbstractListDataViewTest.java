@@ -43,9 +43,10 @@ public class AbstractListDataViewTest {
 
     @Before
     public void init() {
+
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = DataProvider.ofCollection(items);
-        dataView = new ListDataViewImpl(() -> dataProvider, () -> null);
+        dataView = new ListDataViewImpl(() -> dataProvider, null);
     }
 
     @Test
@@ -56,7 +57,7 @@ public class AbstractListDataViewTest {
         exceptionRule.expectMessage(
                 "ListDataViewImpl only supports 'ListDataProvider' "
                         + "or it's subclasses, but was given a 'AbstractBackEndDataProvider'");
-        new ListDataViewImpl(() -> dataProvider, () -> null);
+        new ListDataViewImpl(() -> dataProvider, null);
     }
 
     @Test
@@ -189,8 +190,8 @@ public class AbstractListDataViewTest {
 
         public ListDataViewImpl(
                 SerializableSupplier<DataProvider<String, ?>> dataProviderSupplier,
-                SerializableSupplier<Component> componentSupplier) {
-            super(dataProviderSupplier, componentSupplier);
+                Component component) {
+            super(dataProviderSupplier, component);
         }
     }
 }

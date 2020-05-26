@@ -34,26 +34,23 @@ import com.vaadin.flow.shared.Registration;
 public abstract class AbstractDataView<T> implements DataView<T> {
 
     protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
-    protected SerializableSupplier<? extends Component> componentSupplier;
+    protected Component component;
 
     /**
      * Creates a new instance of {@link AbstractDataView} subclass
-     * and verifies the passed data controller is compatible with this
+     * and verifies the passed data provider is compatible with this
      * data view implementation.
-     * <p>
-     * Data controller reference is stored then internally and used for
-     * data set manipulations.
      *
      * @param dataProviderSupplier
      *         supplier from which the DataProvider can be gotten
-     * @param componentSupplier
-     *         supplier from which the DataView component can be gotten from
+     * @param component
+     *         the component that the dataView is bound to
      */
     public AbstractDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
-            SerializableSupplier<? extends Component> componentSupplier) {
+            Component component) {
         this.dataProviderSupplier = dataProviderSupplier;
-        this.componentSupplier = componentSupplier;
+        this.component = component;
         verifyDataProviderType(dataProviderSupplier.get().getClass());
     }
 
@@ -61,9 +58,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     public Registration addSizeChangeListener(
             ComponentEventListener<SizeChangeEvent<?>> listener) {
         Objects.requireNonNull(listener, "SizeChangeListener cannot be null");
-        return ComponentUtil
-                .addListener(componentSupplier.get(), SizeChangeEvent.class,
-                        (ComponentEventListener) listener);
+        return ComponentUtil.addListener(component, SizeChangeEvent.class,
+                (ComponentEventListener) listener);
     }
 
     /**
