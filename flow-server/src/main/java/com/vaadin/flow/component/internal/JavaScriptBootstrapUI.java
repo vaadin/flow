@@ -255,10 +255,6 @@ public class JavaScriptBootstrapUI extends UI {
                 // the error page
                 navigateToPlaceholder(location);
 
-                // TODO: Handle forward to server view which may happen in a
-                // BeforeLeaveEvent or deny the forward or reroute to a server view in
-                // BeforeLeaveEvent.
-
                 if (!isPostponed()) {
                     // Route does not exist, and current view does not prevent
                     // navigation thus an error page is shown
