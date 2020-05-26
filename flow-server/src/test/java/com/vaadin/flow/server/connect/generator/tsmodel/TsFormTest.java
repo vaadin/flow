@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGeneratorBaseTest;
+import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.EntityWithDefaultRequiredValidators;
 import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity;
 import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntityId;
 
@@ -63,6 +64,48 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
         assertEquals("NotNull()",
                 props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(2));
+    }
+
+    @Test
+    public void should_copyMessageToRequiredValidator() {
+        generateOpenApi(null);
+
+        JsonObject apiJson = readJsonFile(openApiJsonOutput);
+
+        String modelName = EntityWithDefaultRequiredValidators.class.getName().replace('$', '.');
+
+        JsonObject props = apiJson.getObject("components").getObject("schemas")
+                .getObject(modelName).getArray("allOf").getObject(1)
+                .getObject("properties");
+
+        assertEquals("Required(\"cannot be empty list\")",
+                props.getObject("list").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("NotEmpty({message:\"cannot be empty list\"})",
+                props.getObject("list").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
+        
+        assertEquals("Required(\"cannot be null\")",
+                props.getObject("notNull").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("NotNull({message:\"cannot be null\"})",
+                props.getObject("notNull").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
+
+        assertEquals("Required(\"cannot be empty\")",
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("Required(\"cannot be null\")",
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
+        assertEquals("NotEmpty({message:\"cannot be empty\"})",
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(2));
+        assertEquals("NotNull({message:\"cannot be null\"})",
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(3));
+
+        assertEquals("Required(\"cannot be blank\")",
+                props.getObject("notBlank").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("NotBlank({message:\"cannot be blank\"})",
+                props.getObject("notBlank").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
+
+        assertEquals("Required(\"size at least 1\")",
+                props.getObject("size1").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("Size({min:1, message:\"size at least 1\"})",
+                props.getObject("size1").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
     }
 
     @Test
