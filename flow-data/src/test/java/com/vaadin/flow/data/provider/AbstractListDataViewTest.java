@@ -186,6 +186,32 @@ public class AbstractListDataViewTest {
         Assert.assertEquals("last", dataView.getNextItem("first"));
     }
 
+
+    @Test
+    public void dataViewWithItem_rowOutsideSetRequested_exceptionThrown() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index 7 is outside of the accepted range '0 - 2'");
+
+        dataView.validateItemIndex(7);
+    }
+
+    @Test
+    public void dataViewWithItem_negativeRowRequested_exceptionThrown() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index -7 is outside of the accepted range '0 - 2'");
+
+        dataView.validateItemIndex(-7);
+    }
+
+    @Test
+    public void dataViewWithoutItems_exceptionThrown() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Requested index 5 on empty data.");
+
+        dataView.validateItemIndex(5);
+    }
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(
