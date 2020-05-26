@@ -8,14 +8,11 @@ class HiddenTemplate extends PolymerElement {
 
   static get template() {
     return html`
-       <div id='child' hidden>Foo</div>
+       <div id='hidden-child' hidden>Foo</div>
+       <div id='child'>Bar</div>
         <button on-click="updateVisibility" id='visibility'>Update Visibility</button>
-        <button on-click="updateHidden" id="hidden">Update Hidden Attribute</button>
     `;
   }
 
-  updateHidden(){
-      this.$['child'].hidden=!this.$['child'].hidden;
-  }
 }
 customElements.define(HiddenTemplate.is, HiddenTemplate);

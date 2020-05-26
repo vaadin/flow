@@ -19,6 +19,11 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ElementUtil;
@@ -49,10 +54,6 @@ import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.shared.JsonConstants;
-import jsinterop.annotations.JsFunction;
-
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.Scheduler;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -583,14 +584,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BinderContext nodeFactory) {
         assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
                 + context.node.getId() + " is not an Element";
-        Element element = (Element) context.htmlNode;
-
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
         // Store the current "hidden" value to restore it when the element
         // becomes visible
-
-        visibilityData.getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
 
         visibilityData.getProperty(NodeProperties.VISIBILITY_BOUND_PROPERTY)
                 .setValue(isVisible(context.node));
@@ -612,7 +608,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BinderContext nodeFactory) {
         assert context.htmlNode instanceof Element : "The HTML node for the StateNode with id="
                 + context.node.getId() + " is not an Element";
-
         NodeMap visibilityData = context.node.getMap(NodeFeatures.ELEMENT_DATA);
 
         Element element = (Element) context.htmlNode;
@@ -620,6 +615,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (needsRebind(context.node) && isVisible(context.node)) {
             remove(listeners, context, computationsCollection);
             Reactive.addFlushListener(() -> {
+
                 restoreInitialHiddenAttribute(element, visibilityData);
                 doBind(context.node, nodeFactory);
             });
@@ -628,21 +624,34 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     .setValue(true);
             restoreInitialHiddenAttribute(element, visibilityData);
         } else {
-            visibilityData
-                    .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                    .setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
-
-            WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
-                    Boolean.TRUE.toString());
+            updateVisibility(element, visibilityData, Boolean.TRUE);
         }
+    }
+
+    private void updateVisibility(Element element, NodeMap visibilityData,
+            Boolean visibility) {
+        storeInitialHiddenAttribute(element, visibilityData);
+        WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE, visibility);
     }
 
     private void restoreInitialHiddenAttribute(Element element,
             NodeMap visibilityData) {
-        WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
-                visibilityData
-                        .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY)
-                        .getValue());
+        MapProperty initialVisibility = storeInitialHiddenAttribute(element,
+                visibilityData);
+        if (initialVisibility.hasValue()) {
+            WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
+                    initialVisibility.getValue());
+        }
+    }
+
+    private MapProperty storeInitialHiddenAttribute(Element element,
+            NodeMap visibilityData) {
+        MapProperty initialVisibility = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
+        if (!initialVisibility.hasValue()) {
+            initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
+        }
+        return initialVisibility;
     }
 
     private void doBind(StateNode node, BinderContext nodeFactory) {
