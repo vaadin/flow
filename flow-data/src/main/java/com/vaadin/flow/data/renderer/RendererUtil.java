@@ -82,11 +82,9 @@ public class RendererUtil {
              * the column element.
              */
             runOnAttach(templateDataHost.getNode(),
-                    () -> getUI(templateDataHost).getInternals().getStateTree()
-                            .beforeClientResponse(templateDataHost.getNode(),
-                                    context -> processTemplateRendererEventHandlers(
-                                            context.getUI(), templateDataHost,
-                                            eventHandlers, keyMapper)));
+                    () -> processTemplateRendererEventHandlers(
+                            getUI(templateDataHost), templateDataHost,
+                            eventHandlers, keyMapper));
 
             runOnAttach(contentTemplate.getNode(), () -> getUI(contentTemplate)
                     .getInternals().getStateTree()
@@ -120,13 +118,16 @@ public class RendererUtil {
     private static <T> void setupTemplateRendererEventHandler(UI ui,
             Element eventOrigin, String handlerName, Consumer<T> consumer,
             Function<String, T> keyMapper) {
-
-        // vaadin.sendEventMessage is an exported function at the client
-        // side
-        ui.getPage().executeJs(String.format(
-                "$0.%s = function(e) {Vaadin.Flow.clients[$1].sendEventMessage(%d, '%s', {key: e.model ? e.model.__data.item.key : e.target.__dataHost.__data.item.key})}",
-                handlerName, eventOrigin.getNode().getId(), handlerName),
-                eventOrigin, ui.getInternals().getAppId());
+        ui.getInternals().getStateTree()
+                .beforeClientResponse(eventOrigin.getNode(), context -> {
+                    // vaadin.sendEventMessage is an exported function at the
+                    // client side
+                    ui.getPage().executeJs(String.format(
+                            "$0.%s = function(e) {Vaadin.Flow.clients[$1].sendEventMessage(%d, '%s', {key: e.model ? e.model.__data.item.key : e.target.__dataHost.__data.item.key})}",
+                            handlerName, eventOrigin.getNode().getId(),
+                            handlerName), eventOrigin,
+                            ui.getInternals().getAppId());
+                });
 
         DomListenerRegistration registration = eventOrigin.addEventListener(
                 handlerName, event -> processEventFromTemplateRenderer(event,
