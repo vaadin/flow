@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -187,7 +189,6 @@ public class AbstractListDataViewTest {
         Assert.assertEquals("last", dataView.getNextItem("first"));
     }
 
-
     @Test
     public void dataViewWithItem_rowOutsideSetRequested_exceptionThrown() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
@@ -215,6 +216,88 @@ public class AbstractListDataViewTest {
         dataView = new ListDataViewImpl(() -> dataProvider, null);
         dataView.validateItemIndex(5);
     }
+
+    @Test
+    public void addItemBefore_itemIsAddedAtExpectedPosition() {
+        dataView.addItemBefore("newItem", "middle");
+
+        Assert.assertArrayEquals(
+                new String[] { "first", "newItem", "middle", "last" },
+                dataView.getAllItems().toArray(String[]::new));
+
+        dataView.addItemBefore("second", "first");
+
+        Assert.assertArrayEquals(
+                new String[] { "second", "first", "newItem", "middle", "last" },
+                dataView.getAllItems().toArray(String[]::new));
+
+    }
+
+    @Test
+    public void addItemAfter_itemIsAddedAtExpectedPosition() {
+        dataView.addItemAfter("newItem", "middle");
+
+        Assert.assertArrayEquals(
+                new String[] { "first", "middle", "newItem", "last" },
+                dataView.getAllItems().toArray(String[]::new));
+
+        dataView.addItemAfter("second", "last");
+
+        Assert.assertArrayEquals(
+                new String[] { "first", "middle", "newItem", "last", "second" },
+                dataView.getAllItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemBefore_itemNotInCollection_throwsException() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
+                "Item to insert before is not available in the data");
+
+        dataView.addItemBefore("newItem", "notExistent");
+    }
+
+    @Test
+    public void addItemAfter_itemNotInCollection_throwsException() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
+                "Item to insert after is not available in the data");
+
+        dataView.addItemAfter("newItem", "notExistent");
+    }
+
+    @Test
+    public void dataProviderOnSet_exceptionThrownForAddItemBefore() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("DataProvider collection 'HashSet' is not a list.");
+
+        Set<String> items = new HashSet<>();
+        items.add("item1");
+        items.add("item2");
+
+        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
+                items);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
+
+        dataView.addItemBefore("newItem", "item2");
+    }
+
+    @Test
+    public void dataProviderOnSet_exceptionThrownForAddItemAfter() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("DataProvider collection 'HashSet' is not a list.");
+
+        Set<String> items = new HashSet<>();
+        items.add("item1");
+        items.add("item2");
+
+        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
+                items);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
+
+        dataView.addItemBefore("newItem", "item1");
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(

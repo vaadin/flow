@@ -23,10 +23,8 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @param <T>
  *         data type
- *
  * @param <V>
  *         ListDataView type
- *
  * @since
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T> {
@@ -90,12 +88,45 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
     V removeItem(T item);
 
     /**
+     * Add an item after the given target item.
+     * <p>
+     * Note! Item is added to the unfiltered and unsorted List.
+     *
+     * @param item
+     *         item to add
+     * @param after
+     *         item after which to add the item at
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @throws IllegalArgumentException
+     *         if item doesn't exist or collection is not a list
+     */
+    V addItemAfter(T item, T after);
+
+    /**
+     * Add an item before the given target item.
+     * <p>
+     * Note! Item is added to the unfiltered and unsorted List.
+     *
+     * @param item
+     *         item to add
+     * @param before
+     *         item before which to add the item at
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @throws IllegalArgumentException
+     *         if item doesn't exist or collection is not a list
+     */
+    V addItemBefore(T item, T before);
+
+    /**
      * Set a filter to be applied to the data. Given filter replaces any
      * previous filter. Setting {@code null} clears filtering.
      *
      * @param filter
      *         filter to add for the data
-     *
      * @return ListDataView instance
      */
     V withFilter(SerializablePredicate<T> filter);
@@ -106,9 +137,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * default sorting of the data.
      *
      * @param sortComparator
-     *            a comparator to use, or <code>null</code> to clear any
-     *            previously set sort order
-     *
+     *         a comparator to use, or <code>null</code> to clear any
+     *         previously set sort order
      * @return ListDataView instance
      */
     V withSortComparator(SerializableComparator<T> sortComparator);

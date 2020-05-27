@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -128,6 +130,37 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         dataProvider.getItems().remove(item);
         dataProvider.refreshAll();
         return this;
+    }
+
+    @Override
+    public AbstractListDataView<T> addItemAfter(T item, T after) {
+        final Collection<T> items = getDataProvider().getItems();
+        if(!items.contains(after)) {
+            throw new IllegalArgumentException("Item to insert after is not available in the data");
+        }
+        if(items instanceof List) {
+            final List<T> itemList = (List<T>) items;
+            itemList.add(itemList.indexOf(after)+1, item);
+            getDataProvider().refreshAll();
+            return this;
+        }
+        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+    }
+
+
+    @Override
+    public AbstractListDataView<T> addItemBefore(T item, T before) {
+        final Collection<T> items = getDataProvider().getItems();
+        if(!items.contains(before)) {
+            throw new IllegalArgumentException("Item to insert before is not available in the data");
+        }
+        if(items instanceof List) {
+            final List<T> itemList = (List<T>) items;
+            itemList.add(itemList.indexOf(before), item);
+            getDataProvider().refreshAll();
+            return this;
+        }
+        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
     }
 
     /**
