@@ -12,12 +12,13 @@ public class RemoveAddVisibilityView extends Div {
         Span hidden = new Span("Initially hidden");
         hidden.setVisible(false);
 
-        NativeButton toggle = new NativeButton("Toggle Visibility", event -> {
-            remove(hidden);
-            add(hidden);
-            hidden.setVisible(!hidden.isVisible());
-        });
-        toggle.setId("toggle");
+        NativeButton toggle = new NativeButton("Make Element visible",
+                event -> {
+                    remove(hidden);
+                    add(hidden);
+                    hidden.setVisible(true);
+                });
+        toggle.setId("make-visible");
 
         add(toggle, hidden);
     }

@@ -32,7 +32,7 @@ public class RemoveAddVisibilityIT extends ChromeBrowserTest {
         Assert.assertEquals(Boolean.TRUE.toString(),
                 element.getAttribute("hidden"));
 
-        findElement(By.id("toggle")).click();
+        findElement(By.id("make-visible")).click();
 
         Assert.assertNull(element.getAttribute("hidden"));
         Assert.assertEquals("Initially hidden", element.getText());
