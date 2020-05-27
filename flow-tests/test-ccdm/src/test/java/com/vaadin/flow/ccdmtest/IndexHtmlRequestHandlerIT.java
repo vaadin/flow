@@ -582,4 +582,18 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
                 "object", executeScript(
                         "return typeof window.vaadinPush" + ".atmosphere"));
     }
+
+    @Test
+    public void should_receiveServerPushUpdates() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+
+        findElement(By.id("pathname")).sendKeys("/push");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("pushedContent"));
+
+        String content = findElement(By.id("pushedContent")).getText();
+        Assert.assertEquals("Should have content sent from server using push mechanism",
+                "Message pushed from server", content);
+    }
 }
