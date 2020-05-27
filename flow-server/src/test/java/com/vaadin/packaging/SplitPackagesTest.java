@@ -36,7 +36,7 @@ public class SplitPackagesTest {
      */
     private static final Set<String> ignoredModules = new HashSet<>(
             Arrays.asList("demo-flow-components", "flow-tests", "flow-test-generic",
-                    "flow-code-generator", "flow-generated-components", "vaadin-grid-flow"));
+                    "flow-code-generator", "flow-generated-components", "vaadin-grid-flow", "vaadin-select-flow"));
 
     /*
      * Scans through all Maven modules to collect for which Java packages that
