@@ -89,6 +89,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
 
     /**
      * Add an item after the given target item.
+     * <p>
+     * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param item
      *         item to add
@@ -104,6 +106,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
 
     /**
      * Add an item before the given target item.
+     * <p>
+     * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param item
      *         item to add
