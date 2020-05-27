@@ -52,7 +52,7 @@ public class ElementConstants {
      */
     public static final String STYLE_COLOR = "color";
     /**
-     * The label property
+     * The label property.
      */
     public static final String LABEL_PROPERTY_NAME = "label";
 
