@@ -125,6 +125,26 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return getAllItems().collect(Collectors.toList());
     }
 
+    /**
+     * Validate that index is inside bounds of the data available.
+     *
+     * @param itemIndex
+     *         item index to validate
+     */
+    protected void validateItemIndex(int itemIndex) {
+        final int dataSize = getDataSize();
+        if (dataSize == 0) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Requested index %d on empty data.",
+                            itemIndex));
+        }
+        if (itemIndex < 0 || itemIndex >= dataSize) {
+            throw new IndexOutOfBoundsException(String.format(
+                    "Given index %d is outside of the accepted range '0 - %d'",
+                    itemIndex, dataSize - 1));
+        }
+    }
+
     private AbstractListDataView<T> withFilterOrOrder(
             SerializableConsumer<ListDataProvider<T>> filterOrOrderConsumer) {
         ListDataProvider<T> dataProvider = getDataProvider();

@@ -10,3 +10,7 @@
 	path = vaadin-checkbox-flow
 	url = git@github.com:vaadin/vaadin-checkbox-flow.git
 	branch = feature/dataprovider
+[submodule "vaadin-select-flow"]
+	path = vaadin-select-flow
+	url = git@github.com:vaadin/vaadin-select-flow.git
+	branch = feature/dataprovider

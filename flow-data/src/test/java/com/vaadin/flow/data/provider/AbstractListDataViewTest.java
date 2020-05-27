@@ -18,6 +18,7 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -186,6 +187,34 @@ public class AbstractListDataViewTest {
         Assert.assertEquals("last", dataView.getNextItem("first"));
     }
 
+
+    @Test
+    public void dataViewWithItem_rowOutsideSetRequested_exceptionThrown() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index 7 is outside of the accepted range '0 - 2'");
+
+        dataView.validateItemIndex(7);
+    }
+
+    @Test
+    public void dataViewWithItem_negativeRowRequested_exceptionThrown() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index -7 is outside of the accepted range '0 - 2'");
+
+        dataView.validateItemIndex(-7);
+    }
+
+    @Test
+    public void dataViewWithoutItems_exceptionThrown() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Requested index 5 on empty data.");
+
+        dataProvider = DataProvider.ofCollection(Collections.emptyList());
+        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView.validateItemIndex(5);
+    }
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(
