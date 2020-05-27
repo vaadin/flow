@@ -15,10 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
@@ -27,11 +25,12 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 
 /**
- * Abstract list data view implementation which provides common methods
- * for fetching, filtering and sorting in-memory data to all {@link ListDataView} subclasses.
+ * Abstract list data view implementation which provides common methods for
+ * fetching, filtering and sorting in-memory data to all {@link ListDataView}
+ * subclasses.
  *
  * @param <T>
- *        data type
+ *         data type
  */
 public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         implements ListDataView<T, AbstractListDataView<T>> {
@@ -54,42 +53,52 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public boolean hasNextItem(T item) {
-        return getNextItemIndex(notNull(item), getAllItemsAsList()).isPresent();
+        int index = getItemIndex(item);
+        if (index < 0)
+            return false;
+        return getAllItems().skip(index + 1).findAny().isPresent();
     }
 
     @Override
     public T getNextItem(T item) {
-        List<T> items = getAllItemsAsList();
-        Optional<Integer> nextItemIndex = getNextItemIndex(notNull(item), items);
-        return nextItemIndex.map(items::get).orElse(null);
+        int index = getItemIndex(item);
+        if (index < 0)
+            return null;
+        return getAllItems().skip(index + 1).findFirst().orElse(null);
     }
 
     @Override
     public boolean hasPreviousItem(T item) {
-        return getPreviousItemIndex(notNull(item), getAllItemsAsList()).isPresent();
+        int index = getItemIndex(item);
+        return index > 0;
     }
 
     @Override
     public T getPreviousItem(T item) {
-        List<T> items = getAllItemsAsList();
-        Optional<Integer> previousItemIndex = getPreviousItemIndex(notNull(item), items);
-        return previousItemIndex.map(items::get).orElse(null);
+        int index = getItemIndex(item);
+        if (index <= 0)
+            return null;
+        return getAllItems().skip(index - 1).findFirst().orElse(null);
     }
 
     @Override
     public AbstractListDataView<T> withFilter(SerializablePredicate<T> filter) {
-        return withFilterOrOrder(dataProvider -> dataProvider.setFilter(filter));
+        return withFilterOrOrder(
+                dataProvider -> dataProvider.setFilter(filter));
     }
 
     @Override
-    public AbstractListDataView<T> withSortComparator(SerializableComparator<T> sortComparator) {
-        return withFilterOrOrder(dataProvider -> dataProvider.setSortComparator(sortComparator));
+    public AbstractListDataView<T> withSortComparator(
+            SerializableComparator<T> sortComparator) {
+        return withFilterOrOrder(
+                dataProvider -> dataProvider.setSortComparator(sortComparator));
     }
 
     @Override
     public boolean isItemPresent(T item) {
-        // TODO: delegate this to the data communicator/component, since the equality could be
-        //  determined by the provided identity checker (the default is equals).
+        // TODO: delegate this to the data communicator/component, since the
+        // equality could be
+        // determined by the provided identity checker (the default is equals).
         return getAllItems().anyMatch(i -> Objects.equals(i, item));
     }
 
@@ -121,10 +130,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    protected List<T> getAllItemsAsList() {
-        return getAllItems().collect(Collectors.toList());
-    }
-
     /**
      * Validate that index is inside bounds of the data available.
      *
@@ -152,18 +157,13 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private Optional<Integer> getNextItemIndex(T item, List<T> items) {
-        int itemIndex = items.indexOf(item);
-        return (itemIndex != -1 && itemIndex < items.size() - 1) ? Optional.of(itemIndex + 1) : Optional.empty();
-    }
-
-    private Optional<Integer> getPreviousItemIndex(T item, List<T> items) {
-        int itemIndex = items.indexOf(item);
-        return (itemIndex > 0) ? Optional.of(itemIndex - 1) : Optional.empty();
-    }
-
-    private T notNull(T item) {
-        Objects.requireNonNull(item, "Item cannot be null");
-        return item;
+    private int getItemIndex(T item) {
+        Objects.requireNonNull(item, "item cannot be null");
+        AtomicInteger index = new AtomicInteger(-1);
+        if (!getAllItems().peek(t -> index.incrementAndGet())
+                .filter(t -> Objects.equals(item, t)).findFirst().isPresent()) {
+            return -1;
+        }
+        return index.get();
     }
 }
