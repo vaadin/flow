@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
