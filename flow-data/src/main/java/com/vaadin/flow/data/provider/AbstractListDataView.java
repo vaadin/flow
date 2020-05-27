@@ -139,11 +139,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             throw new IllegalArgumentException("Item to insert after is not available in the data");
         }
         if(items instanceof List) {
-            ((List<T>)items).add(((List<T>) items).indexOf(after)+1, item);
+            final List<T> itemList = (List<T>) items;
+            itemList.add(itemList.indexOf(after)+1, item);
             getDataProvider().refreshAll();
             return this;
         }
-        throw new IllegalArgumentException("DataProvider collection is not a list.");
+        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
     }
 
 
@@ -154,11 +155,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             throw new IllegalArgumentException("Item to insert before is not available in the data");
         }
         if(items instanceof List) {
-            ((List<T>)items).add(((List<T>) items).indexOf(before), item);
+            final List<T> itemList = (List<T>) items;
+            itemList.add(itemList.indexOf(before), item);
             getDataProvider().refreshAll();
             return this;
         }
-        throw new IllegalArgumentException("DataProvider collection is not a list.");
+        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
     }
 
     /**

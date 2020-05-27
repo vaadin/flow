@@ -269,7 +269,7 @@ public class AbstractListDataViewTest {
     @Test
     public void dataProviderOnSet_exceptionThrownForAddItemBefore() {
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("DataProvider collection is not a list.");
+        exceptionRule.expectMessage("DataProvider collection 'HashSet' is not a list.");
 
         Set<String> items = new HashSet<>();
         items.add("item1");
@@ -285,7 +285,7 @@ public class AbstractListDataViewTest {
     @Test
     public void dataProviderOnSet_exceptionThrownForAddItemAfter() {
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("DataProvider collection is not a list.");
+        exceptionRule.expectMessage("DataProvider collection 'HashSet' is not a list.");
 
         Set<String> items = new HashSet<>();
         items.add("item1");

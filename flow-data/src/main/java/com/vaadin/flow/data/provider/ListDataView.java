@@ -97,8 +97,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
-     * @throws IndexOutOfBoundsException
-     *         if given index is outside of item set
+     * @throws IllegalArgumentException
+     *         if item doesn't exist or collection is not a list
      */
     V addItemAfter(T item, T after);
 
@@ -112,8 +112,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
-     * @throws IndexOutOfBoundsException
-     *         if given index is outside of item set
+     * @throws IllegalArgumentException
+     *         if item doesn't exist or collection is not a list
      */
     V addItemBefore(T item, T before);
 
