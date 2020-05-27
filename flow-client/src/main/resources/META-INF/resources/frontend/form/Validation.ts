@@ -4,22 +4,23 @@ import { FieldStrategy, fieldSymbol } from "./Field";
 import { AbstractModel, ArrayModel, getName, getValue, requiredSymbol, validatorsSymbol } from "./Models";
 
 export interface ValueError<T> {
-  property: string,
+  property: string | AbstractModel<any>,
   value: T,
-  validator: Validator<T>
+  validator?: Validator<T>,
+  message?: string
 }
 
 export class ValidationError extends Error {
   constructor(public errors:Array<ValueError<any>>) {
     super([
       "There are validation errors in the form.",
-      ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.validator.message? ': ' + e.validator.message : ''}`)
+      ...errors.map(e => `${e.property} - ${e.validator?.constructor.name}${e.validator?.message? ': ' + e.validator?.message : ''}`)
     ].join('\n - '));
     this.name = this.constructor.name;
   }
 }
 
-export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
+export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean> | ValueError<T> | Promise<ValueError<T>> | undefined;
 
 export interface Validator<T> {
   validate: ValidationCallback<T>,
@@ -57,8 +58,16 @@ async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>)
     return undefined;
   }
   return (async() => validator.validate(value))()
-    .then(valid => valid ? undefined
-      : {property: getName(model), value, validator});
+    .then(result => {
+      if(typeof result === "boolean"){
+        return result ? undefined
+         : {property: getName(model), value, validator}
+      }else if(typeof result === "undefined"){
+        return undefined;
+      }else {
+        return result;
+      }
+    });
 }
 
 export async function validate<T>(model: AbstractModel<T>): Promise<Array<ValueError<any>>> {

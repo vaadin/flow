@@ -116,7 +116,7 @@ export const field = directive(<T>(
 
       const displayedError = errors[0];
       fieldStrategy.invalid = fieldState.invalid = displayedError !== undefined;
-      fieldStrategy.errorMessage = fieldState.errorMessage = displayedError?.validator.message || '';
+      fieldStrategy.errorMessage = fieldState.errorMessage = displayedError?.validator?.message || '';
 
       if (effect !== undefined) {
         effect.call(element, element);
@@ -143,6 +143,7 @@ export const field = directive(<T>(
     element.onchange = element.onblur = () => {
       updateValueFromElement();
       fieldStrategy.validate();
+      
     };
 
     element.checkValidity = () => !fieldState.invalid;
