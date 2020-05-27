@@ -15,13 +15,17 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * Abstract list data view implementation which provides common methods for
@@ -29,53 +33,55 @@ import com.vaadin.flow.function.SerializablePredicate;
  * subclasses.
  *
  * @param <T>
- *            data type
+ *         data type
  */
 public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         implements ListDataView<T, AbstractListDataView<T>> {
 
     /**
-     * Creates a new instance of {@link AbstractListDataView} subclass which
-     * rely on in-memory data set, i.e. data set stored in a collection.
+     * Creates a new instance of {@link AbstractListDataView} subclass
+     * and verifies the passed data provider is compatible with this
+     * data view implementation.
      *
-     * @param dataController
-     *            data controller reference
+     * @param dataProviderSupplier
+     *         supplier from which the DataProvider can be gotten
+     * @param component
+     *         the component that the dataView is bound to
      */
-    public AbstractListDataView(DataController<T> dataController) {
-        super(dataController);
+    public AbstractListDataView(
+            SerializableSupplier<DataProvider<T, ?>> dataProviderSupplier,
+            Component component) {
+        super(dataProviderSupplier, component);
     }
 
     @Override
     public boolean hasNextItem(T item) {
-        Stream<T> allItems = getAllItems();
-        int index = getItemIndex(allItems, item);
+        int index = getItemIndex(item);
         if (index < 0)
             return false;
-        return allItems.skip(index + 1).findAny().isPresent();
+        return getAllItems().skip(index + 1).findAny().isPresent();
     }
 
     @Override
     public T getNextItem(T item) {
-        Stream<T> allItems = getAllItems();
-        int index = getItemIndex(allItems, item);
+        int index = getItemIndex(item);
         if (index < 0)
             return null;
-        return allItems.skip(index + 1).findFirst().orElse(null);
+        return getAllItems().skip(index + 1).findFirst().orElse(null);
     }
 
     @Override
     public boolean hasPreviousItem(T item) {
-        int index = getItemIndex(getAllItems(), item);
+        int index = getItemIndex(item);
         return index > 0;
     }
 
     @Override
     public T getPreviousItem(T item) {
-        Stream<T> allItems = getAllItems();
-        int index = getItemIndex(allItems, item);
+        int index = getItemIndex(item);
         if (index <= 0)
             return null;
-        return allItems.skip(index - 1).findFirst().orElse(null);
+        return getAllItems().skip(index - 1).findFirst().orElse(null);
     }
 
     @Override
@@ -92,16 +98,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public Stream<T> getAllItems() {
-        return getDataController().getAllItems();
-    }
-
-    @Override
-    public int getDataSize() {
-        return getDataController().getDataSize();
-    }
-
-    @Override
     public boolean isItemPresent(T item) {
         // TODO: delegate this to the data communicator/component, since the
         // equality could be
@@ -114,11 +110,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return ListDataProvider.class;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
     protected ListDataProvider<T> getDataProvider() {
-        final DataProvider<T, ?> dataProvider = getDataController()
-                .getDataProvider();
+        final DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
         Objects.requireNonNull(dataProvider, "DataProvider cannot be null");
         verifyDataProviderType(dataProvider.getClass());
         return (ListDataProvider<T>) dataProvider;
@@ -140,6 +133,26 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
+    /**
+     * Validate that index is inside bounds of the data available.
+     *
+     * @param itemIndex
+     *         item index to validate
+     */
+    protected void validateItemIndex(int itemIndex) {
+        final int dataSize = getDataSize();
+        if (dataSize == 0) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Requested index %d on empty data.",
+                            itemIndex));
+        }
+        if (itemIndex < 0 || itemIndex >= dataSize) {
+            throw new IndexOutOfBoundsException(String.format(
+                    "Given index %d is outside of the accepted range '0 - %d'",
+                    itemIndex, dataSize - 1));
+        }
+    }
+
     private AbstractListDataView<T> withFilterOrOrder(
             SerializableConsumer<ListDataProvider<T>> filterOrOrderConsumer) {
         ListDataProvider<T> dataProvider = getDataProvider();
@@ -147,10 +160,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(Stream<T> stream, T item) {
+    private int getItemIndex(T item) {
         Objects.requireNonNull(item, "item cannot be null");
         AtomicInteger index = new AtomicInteger(-1);
-        if (!stream.peek(t -> index.incrementAndGet())
+        if (!getAllItems().peek(t -> index.incrementAndGet())
                 .filter(t -> Objects.equals(item, t)).findFirst().isPresent()) {
             return -1;
         }
