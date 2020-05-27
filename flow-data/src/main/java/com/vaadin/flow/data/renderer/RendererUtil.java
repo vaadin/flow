@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.renderer;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -30,6 +31,7 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Contains helper methods to register events triggered by rendered templates.
@@ -132,7 +134,8 @@ public class RendererUtil {
         DomListenerRegistration registration = eventOrigin.addEventListener(
                 handlerName, event -> processEventFromTemplateRenderer(event,
                         handlerName, consumer, keyMapper));
-        eventOrigin.addDetachListener(event -> registration.remove());
+
+        runOnceOnDetach(eventOrigin, () -> registration.remove());
     }
 
     private static <T> void processEventFromTemplateRenderer(DomEvent event,
@@ -154,6 +157,16 @@ public class RendererUtil {
                     "Received an event for the handler '{}' without any data. Ignoring event.",
                     handlerName);
         }
+    }
+
+    private static void runOnceOnDetach(Element element, Command action) {
+        AtomicReference<Registration> detachRegistration = new AtomicReference<>();
+        detachRegistration.set(element.addDetachListener(event -> {
+            action.execute();
+            if (detachRegistration.get() != null) {
+                detachRegistration.get().remove();
+            }
+        }));
     }
 
 }
