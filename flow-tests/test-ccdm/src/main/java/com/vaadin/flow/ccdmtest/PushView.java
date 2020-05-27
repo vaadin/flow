@@ -18,7 +18,6 @@ package com.vaadin.flow.ccdmtest;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
 @Route("push")
