@@ -242,6 +242,11 @@
                                 <value>${vaadin.useDeprecatedV14Bootstrapping}
                                 </value>
                             </systemProperty>
+                            <systemProperty>
+                                <name>vaadin.allow.appshell.annotations
+                                </name>
+                                <value>true</value>
+                            </systemProperty>
                         </systemProperties>
                     </configuration>
                 </plugin>
