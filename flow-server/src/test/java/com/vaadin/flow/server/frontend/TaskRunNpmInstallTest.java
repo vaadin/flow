@@ -224,15 +224,6 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
-            throws IOException, ExecutionFailedException {
-        exception.expectMessage(
-                "it's either not a file or not a 'node' executable.");
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), nodeUpdater, false));
-    }
-
-    @Test
     public void runNpmInstall_externalUpdateOfPackages_npmInstallIsRerun()
             throws ExecutionFailedException, IOException {
         nodeUpdater.modified = true;
@@ -303,25 +294,6 @@ public class TaskRunNpmInstallTest {
                 TaskUpdatePackages.generatePackageJsonHash(packageJson));
         packageJson.remove(DEPENDENCIES);
         packageJson.remove(DEV_DEPENDENCIES);
-    }
-
-    protected void assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-            TaskRunNpmInstall task)
-            throws IOException, ExecutionFailedException {
-        String userHome = "user.home";
-        String originalHome = System.getProperty(userHome);
-        File home = temporaryFolder.newFolder();
-        System.setProperty(userHome, home.getPath());
-        try {
-            File homeDir = new File(home, ".vaadin");
-            File node = new File(homeDir,
-                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
-            FileUtils.forceMkdir(node);
-
-            task.execute();
-        } finally {
-            System.setProperty(userHome, originalHome);
-        }
     }
 
     private String getRunningMsg() {
