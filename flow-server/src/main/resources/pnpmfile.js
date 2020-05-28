@@ -34,7 +34,7 @@ function readPackage(pkg) {
     }
   }
 
-  if (pkg.dependencies.chokidar === '*') {
+  if (pkg.dependencies.chokidar) {
     pkg.dependencies.chokidar = '^3.4.0';
   }
 
