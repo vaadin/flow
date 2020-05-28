@@ -5,6 +5,7 @@ import junit.framework.TestSuite;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
 
+import com.vaadin.client.communication.GwtAtmoshperePushConnectionTest;
 import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
 import com.vaadin.client.flow.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
@@ -31,6 +32,7 @@ public class GwtSuite extends GWTTestSuite {
          */
         TestSuite suite = new TestSuite("Flow GWT tests");
         suite.addTestSuite(GwtApplicationConnectionTest.class);
+        suite.addTestSuite(GwtAtmoshperePushConnectionTest.class);
         suite.addTestSuite(GwtJsArrayTest.class);
         suite.addTestSuite(GwtJsMapTest.class);
         suite.addTestSuite(GwtJsWeakMapTest.class);
