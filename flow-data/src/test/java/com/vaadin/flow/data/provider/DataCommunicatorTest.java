@@ -338,7 +338,8 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertEquals(40, lastSet.getEnd());
-        Mockito.verify(dataProvider, Mockito.times(2)).size(Mockito.any());
+        // Assert takes into acount the inital size query for setting dataprovider.
+        Mockito.verify(dataProvider, Mockito.times(3)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
     }
 

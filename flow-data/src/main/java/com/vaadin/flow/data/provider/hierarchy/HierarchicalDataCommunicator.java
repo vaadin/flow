@@ -227,9 +227,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     public <F> SerializableConsumer<F> setDataProvider(
             HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
-        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
-                initialFilter);
-
         // Remove old mapper
         if (mapper != null) {
             mapper.destroyAllData();
@@ -241,7 +238,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         mapper.setInMemorySorting(getInMemorySorting());
         mapper.setFilter(getFilter());
 
-        return consumer;
+        return super.setDataProvider(dataProvider,
+                initialFilter);
     }
 
     /**
