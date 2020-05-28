@@ -160,10 +160,15 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -182,10 +187,15 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -204,10 +214,15 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -226,10 +241,15 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. So if the {@code url} value is {@code "some.js"} and
+     * {@code src/main/webapp} is used as a location for static web resources
+     * (which is the default location) then the file system path for the
+     * resource should be {@code src/main/webapp/some.js}.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -458,7 +478,9 @@ public class Page implements Serializable {
      *            the name of the window.
      */
     public void open(String url, String windowName) {
-        executeJs("window.open($0, $1)", url, windowName);
+        executeJs(
+                "if ($1 == '_self') this.stopApplication(); window.open($0, $1)",
+                url, windowName);
     }
 
     /**

@@ -1600,6 +1600,8 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
 
+        element.setAttribute("hidden", null);
+
         setVisible(true);
 
         Reactive.flush();
@@ -1641,9 +1643,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
      * The HTML element has no "hidden" attribute.
      *
      * Element changes its visibility. The "hidden" attribute should keep its
-     * value.
+     * initial value (ignores the attribute update after initial binding).
      */
-    public void testBindNotHiddenElement_stateNodeChangesVisibilityAndElementChangesHiddenValue_elementKeepsHiddenValue() {
+    public void testBindNotHiddenElement_stateNodeChangesVisibilityAndElementChangesHiddenValue_elementKeepsInitialNotHiddenValue() {
         setTag();
 
         node.setDomNode(element);
@@ -1671,7 +1673,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
 
-        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertNull(element.getAttribute("hidden"));
     }
 
     /**
