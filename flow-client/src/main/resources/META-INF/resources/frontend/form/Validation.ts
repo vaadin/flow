@@ -6,15 +6,14 @@ import { AbstractModel, ArrayModel, getName, getValue, requiredSymbol, validator
 export interface ValueError<T> {
   property: string | AbstractModel<any>,
   value: T,
-  validator?: Validator<T>,
-  message?: string
+  validator: Validator<T>
 }
 
 export class ValidationError extends Error {
   constructor(public errors:Array<ValueError<any>>) {
     super([
       "There are validation errors in the form.",
-      ...errors.map(e => `${e.property} - ${e.validator?.constructor.name}${e.validator?.message? ': ' + e.validator?.message : ''}`)
+      ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.validator.message? ': ' + e.validator.message : ''}`)
     ].join('\n - '));
     this.name = this.constructor.name;
   }

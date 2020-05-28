@@ -69,7 +69,7 @@ suite("form/Validation", () => {
 
   test("should run all validators per model", async () => {
     return validate(binder.model.customer).then(errors => {
-      expect(errors.map(e => e.validator?.constructor.name).sort()).to.eql([
+      expect(errors.map(e => e.validator.constructor.name).sort()).to.eql([
         "Required",
         "Size"
       ]);
@@ -177,7 +177,7 @@ suite("form/Validation", () => {
       getModelValidators(binder.model).add({
         validate(value: Order) {
           if (value.customer.fullName === value.customer.nickName) {
-            return { property: binder.model.customer.nickName, value, message: "cannot be the same" };
+            return { property: binder.model.customer.nickName, value, validator: this };
           }
         },
         message: 'cannot be the same'
@@ -194,7 +194,7 @@ suite("form/Validation", () => {
           }
         });
         expect(crossFieldError).not.to.be.undefined;
-        crossFieldError && expect(crossFieldError.message).to.equal('cannot be the same');
+        crossFieldError && expect(crossFieldError.validator.message).to.equal('cannot be the same');
       });
     });
   });
@@ -213,7 +213,7 @@ suite("form/Validation", () => {
     test("should fail validation after adding a synchronous validator to the model", async () => {
       getModelValidators(binder.model).add({message: 'foo', validate: () => false});
       return validate(binder.model).then(errors => {
-        expect(errors[0].validator?.message).to.equal("foo");
+        expect(errors[0].validator.message).to.equal("foo");
         expect(errors[0].property).to.equal('');
         expect(errors[0].value).to.eql({idString: ''});
       });
@@ -229,7 +229,7 @@ suite("form/Validation", () => {
       }
       getModelValidators(binder.model).add(new AsyncValidator());
       return validate(binder.model).then(errors => {
-        expect(errors[0].validator?.message).to.equal("bar");
+        expect(errors[0].validator.message).to.equal("bar");
       });
     });
 
@@ -243,7 +243,7 @@ suite("form/Validation", () => {
       setValue(binder.model.idString, 'bar');
       getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
       const errors = await validate(binder.model);
-      expect(errors[0].validator?.message).to.equal("foo");
+      expect(errors[0].validator.message).to.equal("foo");
       expect(errors[0].property).to.equal('idString');
       expect(errors[0].value).to.eql('bar');
     });
