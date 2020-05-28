@@ -30,7 +30,13 @@ public class RedirectToPushIT extends ChromeBrowserTest {
 
         $(NativeButtonElement.class).first().click();
 
-        Assert.assertEquals("Push mode: AUTOMATIC",
+        // when running V15-Bootstrapping push must be configured in AppShell
+        // otherwise @Push annotation in routes are logged in startup but ignored.
+        String pushMode = Boolean.getBoolean(
+                "vaadin.useDeprecatedV14Bootstrapping") ? "AUTOMATIC"
+                        : "DISABLED";
+
+        Assert.assertEquals("Push mode: " + pushMode,
                 $(TestBenchElement.class).id("pushMode").getText());
     }
 }
