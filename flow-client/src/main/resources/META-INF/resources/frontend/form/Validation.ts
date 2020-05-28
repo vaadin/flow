@@ -57,14 +57,14 @@ async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>)
   if (!model[requiredSymbol] && !new Required().validate(value)) {
     return undefined;
   }
-  return (async() => validator.validate(value))()
+  return (async () => validator.validate(value))()
     .then(result => {
-      if(typeof result === "boolean"){
+      if (typeof result === "boolean") {
         return result ? undefined
-         : {property: getName(model), value, validator}
-      }else if(typeof result === "undefined"){
+          : { property: getName(model), value, validator }
+      } else if (typeof result === "undefined") {
         return undefined;
-      }else {
+      } else {
         return result;
       }
     });

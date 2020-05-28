@@ -143,7 +143,6 @@ export const field = directive(<T>(
     element.onchange = element.onblur = () => {
       updateValueFromElement();
       fieldStrategy.validate();
-      
     };
 
     element.checkValidity = () => !fieldState.invalid;
