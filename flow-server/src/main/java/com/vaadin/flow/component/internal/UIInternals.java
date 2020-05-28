@@ -1054,11 +1054,14 @@ public class UIInternals implements Serializable {
     }
 
     private void configurePush(HasElement root) {
-        Optional<Push> push = AnnotationReader.getAnnotationFor(root.getClass(),
-                Push.class);
         DeploymentConfiguration deploymentConfiguration = getSession()
                 .getService().getDeploymentConfiguration();
+        if (!deploymentConfiguration.useV14Bootstrap()) {
+            return;
+        }
         PushConfiguration pushConfiguration = ui.getPushConfiguration();
+        Optional<Push> push = AnnotationReader.getAnnotationFor(root.getClass(),
+                Push.class);
         PushMode pushMode = push.map(Push::value)
                 .orElseGet(deploymentConfiguration::getPushMode);
         pushConfiguration.setPushMode(pushMode);
