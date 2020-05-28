@@ -40,9 +40,9 @@ public class VaadinServletConfigTest {
                 .setAttribute(Mockito.anyString(), Mockito.any());
 
         properties = new HashMap<>();
-        properties.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
-        properties.put(Constants.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
-        properties.put(Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER, "false");
+        properties.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
+        properties.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        properties.put(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, "false");
 
         Mockito.when(servletConfig.getInitParameterNames())
                 .thenReturn(Collections.enumeration(properties.keySet()));

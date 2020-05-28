@@ -31,7 +31,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -93,7 +93,7 @@ public class BundleFilterFactory implements Serializable {
                                 + " Otherwise, you can skip this error either by disabling production mode, or by setting the servlet parameter '%s=true'.",
                         FLOW_BUNDLE_MANIFEST,
                         browser.isEs6Supported() ? "ES6" : "ES5",
-                        Constants.USE_ORIGINAL_FRONTEND_RESOURCES));
+                        InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES));
             }
             return Optional.of(Json.parse(IOUtils.toString(bundleManifestStream,
                     StandardCharsets.UTF_8)));

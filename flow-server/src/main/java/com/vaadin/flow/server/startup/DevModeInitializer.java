@@ -66,6 +66,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -84,7 +85,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
@@ -299,7 +300,7 @@ public class DevModeInitializer
         boolean enablePnpm = config.isPnpmEnabled();
 
         boolean useHomeNodeExec = config.getBooleanProperty(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();

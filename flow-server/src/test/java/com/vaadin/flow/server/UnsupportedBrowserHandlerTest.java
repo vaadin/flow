@@ -11,7 +11,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
 
 public class UnsupportedBrowserHandlerTest {
 

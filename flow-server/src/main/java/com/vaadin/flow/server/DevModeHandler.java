@@ -45,12 +45,12 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -147,7 +147,7 @@ public final class DevModeHandler {
         tools.validateNodeAndNpmVersion();
 
         boolean useHomeNodeExec = config.getBooleanProperty(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE, false);
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
         String nodeExec = null;
         if (useHomeNodeExec) {

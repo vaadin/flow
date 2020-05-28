@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
 import com.vaadin.flow.server.FrontendVaadinServlet;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
@@ -61,7 +61,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * <li>Frontend files servlet, mapped to '/frontend/*' <br>
  * The servlet is registered when the application is started in the development
  * mode or has
- * {@link com.vaadin.flow.server.Constants#USE_ORIGINAL_FRONTEND_RESOURCES}
+ * {@link InitParameters#USE_ORIGINAL_FRONTEND_RESOURCES}
  * parameter set to {@code true}.</li>
  * <li>Static files servlet, mapped to '/VAADIN/static' responsible to resolve
  * files placed in the '[webcontext]/VAADIN/static' folder or in the
@@ -73,7 +73,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
  * <p>
  * In addition to the rules above, a servlet won't be registered, if any servlet
  * had been mapped to the same path already or if
- * {@link com.vaadin.flow.server.Constants#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
+ * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
  * system property is set to {@code true}.
  *
  * @author Vaadin Ltd
@@ -264,7 +264,7 @@ public class ServletDeployer implements ServletContextListener {
             createServletIfNotExists(context, "frontendFilesServlet",
                     FrontendVaadinServlet.class, "/frontend/*",
                     Collections.singletonMap(
-                            Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                            InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                             Boolean.TRUE.toString()));
         }
     }

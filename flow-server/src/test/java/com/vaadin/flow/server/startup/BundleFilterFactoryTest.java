@@ -37,6 +37,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter.FilterContext;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -111,7 +112,7 @@ public class BundleFilterFactoryTest {
     @Test
     public void when_bundle_disabled_doesnt_fail() {
         mocks.getDeploymentConfiguration().setApplicationOrSystemProperty(
-                Constants.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
+                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
         new BundleFilterFactory().createFilters(mocks.getService()).count();
     }
 

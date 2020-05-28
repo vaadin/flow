@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -35,7 +35,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * <p>
  * By default, webJars are enabled for development mode and disabled for
  * production mode. There is a way to override this behavior by setting
- * {@link Constants#DISABLE_WEBJARS} param.
+ * {@link InitParameters#DISABLE_WEBJARS} param.
  *
  * @author Vaadin Ltd
  * @since 1.0.
