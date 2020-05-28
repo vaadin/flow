@@ -28,13 +28,18 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 
 import elemental.json.JsonValue;
 
@@ -114,13 +119,18 @@ public class HierarchicalCommunicatorTest {
         treeData.addItems(FOLDER, LEAF);
         dataProvider = new TreeDataProvider<>(treeData);
         stateNode = Mockito.mock(StateNode.class);
+        Mockito.when(stateNode.hasFeature(Mockito.any())).thenReturn(true);
+        ComponentMapping mapping = Mockito.mock(ComponentMapping.class);
+        Mockito.when(stateNode.getFeatureIfInitialized(ComponentMapping.class)).thenReturn(
+                java.util.Optional.ofNullable(mapping));
+        Mockito.when(mapping.getComponent()).thenReturn(
+                java.util.Optional.of(new TestComponent()));
         communicator = new HierarchicalDataCommunicator<>(
                 Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
                 json -> {
                 }, stateNode, () -> null);
         communicator.setDataProvider(dataProvider, null);
     }
-
     @Test
     public void folderRemoveRefreshAll() {
         testItemRemove(FOLDER, true);
@@ -192,5 +202,10 @@ public class HierarchicalCommunicatorTest {
         Assert.assertEquals("$connector.ensureHierarchy",
                 enqueueFunctions.get(0));
     }
+
+    @Tag("test")
+    public static class TestComponent extends Component {
+    }
+
 
 }

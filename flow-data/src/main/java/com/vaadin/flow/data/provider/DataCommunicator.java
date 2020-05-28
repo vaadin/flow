@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -31,8 +32,11 @@ import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
@@ -75,6 +79,7 @@ public class DataCommunicator<T> implements Serializable {
 
     // Last total size value sent to the client
     private int assumedSize;
+    private int lastSent = -1;
 
     private boolean resendEntireRange = true;
     private boolean assumeEmptyClient = true;
@@ -530,6 +535,27 @@ public class DataCommunicator<T> implements Serializable {
 
         // Phase 4: unregister passivated and updated items
         unregisterPassivatedKeys();
+
+        fireSizeEvent(assumedSize);
+    }
+
+    /**
+     * Fire a size change event if the last event was fired for a different size
+     * from the last sent one.
+     *
+     * @param dataSize
+     *         data size to send
+     */
+    private void fireSizeEvent(int dataSize) {
+        if (lastSent != dataSize) {
+            final Optional<Component> component = Element.get(stateNode)
+                    .getComponent();
+            if (component.isPresent()) {
+                ComponentUtil.fireEvent(component.get(),
+                        new SizeChangeEvent<>(component.get(), dataSize));
+            }
+            lastSent = dataSize;
+        }
     }
 
     private void flushUpdatedData() {
