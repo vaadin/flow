@@ -5,7 +5,7 @@ import { Binder } from "./Binder";
 import { Required, Validator } from "./Validation";
 
 const ModelSymbol = Symbol('Model');
-const parentSymbol = Symbol('parent');
+export const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
 export const defaultValueSymbol = Symbol('defaultValue');
