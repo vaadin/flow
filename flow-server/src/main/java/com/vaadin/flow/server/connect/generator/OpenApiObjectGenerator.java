@@ -102,8 +102,6 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  * produces OpenApi json.
  */
 public class OpenApiObjectGenerator {
-    private static final String REQUIRED = "Required";
-    private static final String REQUIRED_VALIDATOR = REQUIRED + "(%s)";
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
     public static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
 
