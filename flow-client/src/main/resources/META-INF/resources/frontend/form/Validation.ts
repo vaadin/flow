@@ -19,7 +19,7 @@ export class ValidationError extends Error {
   }
 }
 
-export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean> | ValueError<T> | Promise<ValueError<T>> | undefined;
+export type ValidationCallback<T> = (value: T) => boolean | ValueError<T> | void | Promise<boolean | ValueError<T> | void>;
 
 export interface Validator<T> {
   validate: ValidationCallback<T>,
@@ -54,15 +54,13 @@ async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>)
   const value = getValue(model);
   // if model is not required and value empty, do not run any validator
   if (!model[requiredSymbol] && !new Required().validate(value)) {
-    return undefined;
+    return;
   }
   return (async () => validator.validate(value))()
     .then(result => {
       if (typeof result === "boolean") {
         return result ? undefined
           : { property: getName(model), value, validator }
-      } else if (typeof result === "undefined") {
-        return undefined;
       } else {
         return result;
       }
@@ -70,7 +68,7 @@ async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>)
 }
 
 export async function validate<T>(model: AbstractModel<T>): Promise<Array<ValueError<any>>> {
-  const promises: Array<Promise<Array<ValueError<any>> | ValueError<any> | undefined>> = [];
+  const promises: Array<Promise<Array<ValueError<any>> | ValueError<any> | void>> = [];
   // validate each model in the array model
   if (model instanceof ArrayModel) {
     promises.push(...[...model].map(validateModel));
