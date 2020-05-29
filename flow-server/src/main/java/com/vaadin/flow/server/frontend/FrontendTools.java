@@ -650,8 +650,7 @@ public class FrontendTools {
                         versionCmd);
                 if (FrontendUtils.isVersionAtLeast(pnpmVersion,
                         SUPPORTED_PNPM_VERSION)
-                        && !FrontendUtils.isVersionAtLeast(pnpmVersion,
-                                BREAKING_PNPM_VERSION)) {
+                        && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION)) {
                     return pnpmCommand;
                 } else {
                     getLogger().warn(String.format(
