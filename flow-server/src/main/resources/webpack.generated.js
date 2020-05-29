@@ -147,6 +147,11 @@ module.exports = {
     !devMode && new CompressionPlugin(),
     // Give some feedback when heavy builds
     devMode && new ProgressPlugin(true),
+    // Exclude DevmodeGizmo from webpack bundle when not devMode
+    !devMode && new webpack.IgnorePlugin({
+      resourceRegExp: /^\.\/VaadinDevmodeGizmo/,
+      contextRegExp: /flow-frontend$/
+    }),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
