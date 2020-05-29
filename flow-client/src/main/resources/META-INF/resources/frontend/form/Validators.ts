@@ -48,7 +48,7 @@ export class Null extends AbstractValidator<any> {
   validate = (value: any) => value == null;
 }
 export class NotNull extends Required<any> {
-  validate(value: any){
+  validate(value: any) {
     return !new Null().validate(value);
   }
 }
