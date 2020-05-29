@@ -5,6 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to webpack.config.js
  */
 const fs = require('fs');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
