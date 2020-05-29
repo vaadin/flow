@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,13 +149,18 @@ public class StreamRequestHandler implements RequestHandler {
         try {
             builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
             builder.append(id).append(PATH_SEPARATOR);
-            builder.append(
-                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+            builder.append(encodeString(name));
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
             throw new RuntimeException(e);
         }
         return builder.toString();
+    }
+
+    private static String encodeString(String name)
+            throws UnsupportedEncodingException {
+        return URLEncoder.encode(name, StandardCharsets.UTF_8.name())
+                .replace("+", "%20");
     }
 
     private static Optional<URI> getPathUri(String path) {
@@ -166,11 +172,8 @@ public class StreamRequestHandler implements RequestHandler {
         }
         String prefix = path.substring(0, index + 1);
         String name = path.substring(prefix.length());
-        // path info returns decoded name but space ' ' remains encoded '+'
-        name = name.replace('+', ' ');
         try {
-            URI uri = new URI(prefix
-                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+            URI uri = new URI(prefix + encodeString(name));
             return Optional.of(uri);
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported

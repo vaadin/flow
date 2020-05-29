@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -82,7 +83,9 @@ public class ExplicitNullableTypeChecker {
      */
     String checkValueForType(Object value, Type expectedType) {
         Class<?> clazz;
-        if (expectedType instanceof ParameterizedType) {
+        if (expectedType instanceof TypeVariable){
+            return null;
+        } else if (expectedType instanceof ParameterizedType) {
             clazz = (Class<?>) ((ParameterizedType) expectedType).getRawType();
         } else {
             clazz = (Class<?>) expectedType;

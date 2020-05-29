@@ -19,15 +19,18 @@ package com.vaadin.flow.component;
 import java.util.Arrays;
 import java.util.Optional;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -62,8 +65,9 @@ public class ShortcutRegistrationTest {
         when(lifecycleOwner.addDetachListener(any()))
                 .thenReturn(mock(Registration.class));
 
-        for (Component component : listenOn)
+        for (Component component : listenOn) {
             when(component.getUI()).thenReturn(Optional.of(ui));
+        }
     }
 
     @Test
@@ -185,6 +189,10 @@ public class ShortcutRegistrationTest {
                 lifecycleOwner, () -> listenOn, event -> {
                 }, Key.KEY_A);
 
+        for (Component component : listenOn) {
+            when(component.addDetachListener(Mockito.any()))
+                    .thenReturn(mock(Registration.class));
+        }
         clientResponse();
 
         // listenOn component should be set after client response
@@ -203,6 +211,87 @@ public class ShortcutRegistrationTest {
         // listenOn component should be set to the new component
         assertEquals(newListenOn[0], registration.getOwner());
         assertArrayEquals(newListenOn, registration.getOwners());
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Test
+    public void listenOnComponentIsChanged_eventIsPopulatedForANewListenOnComponent() {
+        UI ui = Mockito.spy(UI.class);
+        Component owner = new FakeComponent();
+        Component initialComponentToListenOn = new FakeComponent();
+
+        Component[] components = new Component[] { initialComponentToListenOn };
+
+        ui.add(owner);
+        ui.add(initialComponentToListenOn);
+        new ShortcutRegistration(owner, () -> components, event -> {
+        }, Key.KEY_A);
+
+        ArgumentCaptor<SerializableConsumer> captor = ArgumentCaptor
+                .forClass(SerializableConsumer.class);
+
+        verify(ui, atLeastOnce()).beforeClientResponse(eq(owner),
+                captor.capture());
+
+        SerializableConsumer consumer = captor.getValue();
+
+        // Fake beforeClientExecution call.
+        consumer.accept(mock(ExecutionContext.class));
+
+        // Once the shortcut listener is registered the expression should
+        // contain KeyA
+        Assert.assertTrue(
+                hasKeyAInKeyDownExpression(initialComponentToListenOn));
+
+        Component replacementComponentToListenOn = new FakeComponent();
+        components[0] = replacementComponentToListenOn;
+        ui.add(components[0]);
+        // detach the original "listen on" component: the new one replaces the
+        // old one
+        ui.remove(initialComponentToListenOn);
+
+        // now re-attach the owner
+        ui.remove(owner);
+
+        ui.add(owner);
+
+        consumer.accept(mock(ExecutionContext.class));
+        // the new component should now also have expression with KeyA
+        Assert.assertTrue(
+                hasKeyAInKeyDownExpression(replacementComponentToListenOn));
+    }
+
+    @Test
+    public void listenOnUIIsClosing_eventIsPopulatedForANewUI() {
+        UI ui = Mockito.spy(UI.class);
+        Component owner = new FakeComponent();
+
+        Component[] components = new Component[] { ui };
+
+        ui.add(owner);
+        new ShortcutRegistration(owner, () -> components, event -> {
+        }, Key.KEY_A);
+
+        UI newUI = Mockito.spy(UI.class);
+        // close the prevopus UI
+        ui.close();
+        components[0] = newUI;
+
+        owner.getElement().removeFromTree();
+        newUI.add(owner);
+
+        ArgumentCaptor<SerializableConsumer> captor = ArgumentCaptor
+                .forClass(SerializableConsumer.class);
+
+        verify(ui, atLeastOnce()).beforeClientResponse(eq(owner),
+                captor.capture());
+
+        SerializableConsumer consumer = captor.getValue();
+
+        // Fake beforeClientExecution call.
+        consumer.accept(mock(ExecutionContext.class));
+        // the new UI should now also have expression with KeyA
+        Assert.assertTrue(hasKeyAInKeyDownExpression(newUI));
     }
 
     @Test
@@ -307,6 +396,21 @@ public class ShortcutRegistrationTest {
 
         // Fake beforeClientExecution call.
         consumer.accept(mock(ExecutionContext.class));
+    }
+
+    private boolean hasKeyAInKeyDownExpression(Component component) {
+        ElementListenerMap map = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+
+        // Once the shortcut listener is registered the expression should
+        // contain KeyA
+        boolean hasKeyA = false;
+        for (String expression : map.getExpressions("keydown")) {
+            if (expression.contains(Key.KEY_A.getKeys().get(0))) {
+                hasKeyA = true;
+            }
+        }
+        return hasKeyA;
     }
 
     @Tag("imaginary-tag")
