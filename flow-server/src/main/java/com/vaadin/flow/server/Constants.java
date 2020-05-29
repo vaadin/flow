@@ -301,8 +301,8 @@ public final class Constants implements Serializable {
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE;
 
     /**
-     * Internal parameter which prevent validation for anniotation which are
-     * allowed on on AppShell class in non V14 bootstrap mode.
+     * Internal parameter which prevent validation for annotations which are
+     * allowed on an AppShell class in non V14 bootstrap mode.
      */
     public static final String ALLOW_APPSHELL_ANNOTATIONS = "allow.appshell.annotations";
 
