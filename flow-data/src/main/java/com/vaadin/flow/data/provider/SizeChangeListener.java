@@ -18,8 +18,10 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 
 /**
- * Listener interface for getting updates on data set size changes.
- *
+ * Listener interface for getting updates on data set size changes. The
+ * sizeChanged method will be called on beforeClientResponse so changes done
+ * during the server round trip will only receive one event.
+ * <p>
  * Size changes are mostly due to filtering of the data, but can also be
  * sent for changes in the dataset.
  *
@@ -31,7 +33,8 @@ public interface SizeChangeListener extends Serializable {
     /**
      * Invoked for changes in the data size.
      *
-     * @param event Component event containing new data size
+     * @param event
+     *         Component event containing new data size
      */
     void sizeChanged(SizeChangeEvent event);
 

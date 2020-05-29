@@ -20,6 +20,8 @@ import com.vaadin.flow.component.ComponentEvent;
 
 /**
  * Event describing the data size change for a component data set.
+ * The SizeChangedEvent will fired from beforeClientResponse so changes done
+ * during the server round trip will only receive one event.
  *
  * @param <T>
  *         the event source type
