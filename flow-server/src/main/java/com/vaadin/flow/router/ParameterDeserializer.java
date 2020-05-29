@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.internal.ReflectTools;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -28,6 +25,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.googlecode.gentyref.GenericTypeReflector;
+
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Parameter deserialization utility.
@@ -195,20 +196,36 @@ public final class ParameterDeserializer {
 
         // Raw method has no parameter annotations if compiled by Eclipse
         Type parameterType = GenericTypeReflector.getTypeParameter(
-                navigationTarget,
-                HasUrlParameter.class.getTypeParameters()[0]);
+                navigationTarget, HasUrlParameter.class.getTypeParameters()[0]);
+        if (parameterType == null) {
+            parameterType = GenericTypeReflector.getTypeParameter(
+                    navigationTarget.getGenericSuperclass(),
+                    HasUrlParameter.class.getTypeParameters()[0]);
+        }
+        if (parameterType == null) {
+            for (Type iface : navigationTarget.getGenericInterfaces()) {
+                parameterType = GenericTypeReflector.getTypeParameter(iface,
+                        HasUrlParameter.class.getTypeParameters()[0]);
+                if (parameterType != null) {
+                    break;
+                }
+            }
+        }
         Class<?> parameterClass = GenericTypeReflector.erase(parameterType);
-
 
         return Stream.of(navigationTarget.getMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasValidParameterTypes(method, parameterClass))
-                .anyMatch(method -> method.getParameters()[1].isAnnotationPresent(parameterAnnotation));
+                .filter(method -> hasValidParameterTypes(method,
+                        parameterClass))
+                .anyMatch(method -> method.getParameters()[1]
+                        .isAnnotationPresent(parameterAnnotation));
     }
 
-    private static boolean hasValidParameterTypes(Method method, Class<?> parameterClass) {
+    private static boolean hasValidParameterTypes(Method method,
+            Class<?> parameterClass) {
         return method.getParameterCount() == 2
                 && method.getParameterTypes()[0] == BeforeEvent.class
-                && method.getParameterTypes()[1].isAssignableFrom(parameterClass);
+                && method.getParameterTypes()[1]
+                        .isAssignableFrom(parameterClass);
     }
 }
