@@ -34,7 +34,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.DeploymentConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
@@ -163,7 +163,7 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletConfigParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
@@ -191,7 +191,7 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
         servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(overridingProductionModeValue));
-        servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletContextParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(overridingHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
@@ -219,7 +219,7 @@ public class DeploymentConfigurationFactoryTest {
                 defaultServletParams);
         servletConfigParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletConfigProductionModeValue));
-        servletConfigParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletConfigParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletConfigHeartbeatIntervalValue));
 
         boolean servletContextProductionModeValue = false;
@@ -228,7 +228,7 @@ public class DeploymentConfigurationFactoryTest {
         Map<String, String> servletContextParams = new HashMap<>();
         servletContextParams.put(SERVLET_PARAMETER_PRODUCTION_MODE,
                 Boolean.toString(servletContextProductionModeValue));
-        servletContextParams.put(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+        servletContextParams.put(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(servletContextHeartbeatIntervalValue));
 
         DeploymentConfiguration config = DeploymentConfigurationFactory
@@ -459,9 +459,9 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
-                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+                .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         Assert.assertEquals(Boolean.TRUE.toString(), config.getInitParameters()
-                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+                .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
     }
 
     @Test
@@ -474,22 +474,22 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         config.getInitParameters().setProperty(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM,
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 Boolean.FALSE.toString());
         config.getInitParameters().setProperty(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE,
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                 Boolean.FALSE.toString());
         config.getInitParameters().setProperty(
-                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 Boolean.FALSE.toString());
 
         Assert.assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
-                .getProperty(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+                .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         Assert.assertEquals(Boolean.FALSE.toString(), config.getInitParameters()
-                .getProperty(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+                .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
         Assert.assertEquals(Boolean.FALSE.toString(),
                 config.getInitParameters().getProperty(
-                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+                        InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     private DeploymentConfiguration createConfig(Map<String, String> map)

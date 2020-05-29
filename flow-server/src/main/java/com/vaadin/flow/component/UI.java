@@ -929,16 +929,8 @@ public class UI extends Component
         Objects.requireNonNull(location, "Location must not be null");
         Objects.requireNonNull(queryParameters, "Query parameters must not be null");
 
-        Location navigationLocation = new Location(location, queryParameters);
-        if (!internals.hasLastHandledLocation()
-                || !navigationLocation.getPathWithQueryParameters()
-                        .equals(internals.getLastHandledLocation()
-                                .getPathWithQueryParameters())) {
-            // Enable navigating back
-            getPage().getHistory().pushState(null, navigationLocation);
-        }
-        getRouter().navigate(this, navigationLocation,
-                NavigationTrigger.PROGRAMMATIC);
+        getRouter().navigate(this, new Location(location, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
     }
 
     /**

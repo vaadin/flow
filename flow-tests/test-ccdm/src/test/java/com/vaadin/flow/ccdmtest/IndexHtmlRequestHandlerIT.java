@@ -22,14 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
-
-    private void openTestUrl(String url) {
-        getDriver().get(getRootURL() + "/foo" + url);
-        waitForDevServer();
-    }
+public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
     @Test
     public void indexHtmlRequestHandler_openRootURL_shouldResponseIndexHtml() {
@@ -588,5 +581,19 @@ public class IndexHtmlRequestHandlerIT extends ChromeBrowserTest {
         Assert.assertEquals("Should have window.vaadinPush.atmosphere",
                 "object", executeScript(
                         "return typeof window.vaadinPush" + ".atmosphere"));
+    }
+
+    @Test
+    public void should_receiveServerPushUpdates() {
+        openTestUrl("/");
+        waitForElementPresent(By.id("button3"));
+
+        findElement(By.id("pathname")).sendKeys("/push");
+        findElement(By.id("button3")).click();
+        waitForElementPresent(By.id("pushedContent"));
+
+        String content = findElement(By.id("pushedContent")).getText();
+        Assert.assertEquals("Should have content sent from server using push mechanism",
+                "Message pushed from server", content);
     }
 }

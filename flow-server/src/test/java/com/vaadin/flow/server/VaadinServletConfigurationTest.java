@@ -69,10 +69,10 @@ public class VaadinServletConfigurationTest {
 
         Properties servletInitParams = new Properties();
         servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 Boolean.toString(expectedBoolean));
         servletInitParams.setProperty(
-                Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(expectedInt));
 
         TestServlet servlet = new TestServlet();

@@ -31,6 +31,7 @@ import java.util.Optional;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
@@ -64,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * In addition to the rules above, a servlet won't be registered, if any servlet
  * had been mapped to the same path already or if
- * {@link com.vaadin.flow.server.Constants#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
+ * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
  * system property is set to {@code true}.
  *
  * @author Vaadin Ltd

@@ -57,6 +57,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -1260,7 +1262,7 @@ public class RouterTest extends RoutingTestBase {
      * children components used in the assertion of the event order, as being
      * children of the layout in the chain instead of being part of the layout
      * chain itself.
-     * 
+     *
      * So any children of an instance of this class should receive the
      * navigation events right after the instance of this class receives them
      * and in the order they are added.
@@ -2551,7 +2553,7 @@ public class RouterTest extends RoutingTestBase {
         long historyInvocations = ui.getInternals()
                 .dumpPendingJavaScriptInvocations().stream()
                 .filter(js -> js.getInvocation().getExpression()
-                        .startsWith("history.pushState"))
+                        .contains("history.pushState"))
                 .count();
         assertEquals(1, historyInvocations);
 
@@ -3132,8 +3134,12 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
                 FileNotFound.trigger);
 
+        JsonObject state = Json.createObject();
+        state.put("href", "router_link");
+        state.put("scrollPositionX", 0d);
+        state.put("scrollPositionY", 0d);
         router.navigate(ui, new Location("router_link"),
-                NavigationTrigger.ROUTER_LINK);
+                NavigationTrigger.ROUTER_LINK, state);
 
         Assert.assertEquals(NavigationTrigger.ROUTER_LINK,
                 FileNotFound.trigger);
@@ -3446,13 +3452,13 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("event/flower"),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         ProcessEventsBase.clear();
 
         final String parameter = "green";
         router.navigate(ui, new Location("event/leaf/" + parameter),
                 NavigationTrigger.PROGRAMMATIC);
-        
+
         assertEventOrder(Arrays.asList("ProcessEventsLeaf", "leafChild"),
                 getProcessEventsBranchChainNames("ProcessEventsFlower"),
                 getProcessEventsBranchChainNames(parameter, "ProcessEventsLeaf", "leafChild"),
@@ -3473,7 +3479,7 @@ public class RouterTest extends RoutingTestBase {
         // This is expected after reroute.
         final List<String> expectedOnReroute = getProcessEventsBranchChainNames(
                 "ProcessEventsFlower");
-        
+
         // This is expected on init and BeforeEnter since the ProcessEventsRotten
         // parent of ProcessEventsTwig will reroute, so ProcessEventsTwig and
         // ProcessEventsStick won't be created.

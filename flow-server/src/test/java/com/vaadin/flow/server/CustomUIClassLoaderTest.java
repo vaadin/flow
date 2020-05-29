@@ -58,7 +58,7 @@ public class CustomUIClassLoaderTest extends TestCase {
 
     private static DeploymentConfiguration createConfigurationMock() {
         Properties properties = new Properties();
-        properties.put(VaadinSession.UI_PARAMETER, MyUI.class.getName());
+        properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
         return new DefaultDeploymentConfiguration(CustomUIClassLoaderTest.class,
                 properties);
     }

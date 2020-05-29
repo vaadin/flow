@@ -37,7 +37,7 @@ public class AbstractDeploymentConfigurationTest {
     @Test
     public void getUIClass_returnsUIParameterPropertyValue() {
         String ui = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(VaadinSession.UI_PARAMETER,
+        DeploymentConfiguration config = getConfig(InitParameters.UI_PARAMETER,
                 ui);
         Assert.assertEquals("Unexpected UI class configuration option value",
                 ui, config.getUIClassName());

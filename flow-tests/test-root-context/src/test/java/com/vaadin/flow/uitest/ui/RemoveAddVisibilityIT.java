@@ -17,26 +17,24 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
-public class RedirectToPushIT extends ChromeBrowserTest {
+public class RemoveAddVisibilityIT extends ChromeBrowserTest {
 
     @Test
-    public void pushIsSetAfterNavigation() {
+    public void elementIsVisibleAfterReattach() {
         open();
 
-        $(NativeButtonElement.class).first().click();
+        WebElement element = findElement(By.tagName("span"));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                element.getAttribute("hidden"));
 
-        // when running V15-Bootstrapping push must be configured in AppShell
-        // otherwise @Push annotation in routes are logged in startup but ignored.
-        String pushMode = Boolean.getBoolean(
-                "vaadin.useDeprecatedV14Bootstrapping") ? "AUTOMATIC"
-                        : "DISABLED";
+        findElement(By.id("make-visible")).click();
 
-        Assert.assertEquals("Push mode: " + pushMode,
-                $(TestBenchElement.class).id("pushMode").getText());
+        Assert.assertNull(element.getAttribute("hidden"));
+        Assert.assertEquals("Initially hidden", element.getText());
     }
 }

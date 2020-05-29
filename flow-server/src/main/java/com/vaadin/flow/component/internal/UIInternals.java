@@ -646,13 +646,10 @@ public class UIInternals implements Serializable {
      *            serving the UI, not <code>null</code>
      * @param target
      *            the component to show, not <code>null</code>
-     * @param path
-     *            the resolved route path so we can determine what the rendered
-     *            target is for
      * @param layouts
      *            the parent layouts
      */
-    public void showRouteTarget(Location viewLocation, String path,
+    public void showRouteTarget(Location viewLocation,
             Component target, List<RouterLayout> layouts) {
         assert target != null;
         assert viewLocation != null;
@@ -1054,11 +1051,14 @@ public class UIInternals implements Serializable {
     }
 
     private void configurePush(HasElement root) {
-        Optional<Push> push = AnnotationReader.getAnnotationFor(root.getClass(),
-                Push.class);
         DeploymentConfiguration deploymentConfiguration = getSession()
                 .getService().getDeploymentConfiguration();
+        if (!deploymentConfiguration.useV14Bootstrap()) {
+            return;
+        }
         PushConfiguration pushConfiguration = ui.getPushConfiguration();
+        Optional<Push> push = AnnotationReader.getAnnotationFor(root.getClass(),
+                Push.class);
         PushMode pushMode = push.map(Push::value)
                 .orElseGet(deploymentConfiguration::getPushMode);
         pushConfiguration.setPushMode(pushMode);
