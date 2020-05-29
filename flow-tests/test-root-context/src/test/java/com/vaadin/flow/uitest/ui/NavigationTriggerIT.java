@@ -52,7 +52,7 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         findElement(By.id("navigate")).click();
         assertMessageCount(3);
         assertLastMessage("/navigate",
-                isClientRouter() ? NavigationTrigger.CLIENT_SIDE
+                isClientRouter() ? NavigationTrigger.UI_NAVIGATE
                         : NavigationTrigger.UI_NAVIGATE,
                 "navigate");
 
@@ -77,13 +77,13 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         findElement(By.id("forwardButton")).click();
         assertMessageCount(6);
         assertLastMessage("/forwarded",
-                isClientRouter() ? NavigationTrigger.CLIENT_SIDE
+                isClientRouter() ? NavigationTrigger.PROGRAMMATIC
                         : NavigationTrigger.PROGRAMMATIC,
                 "forwarded");
 
         findElement(By.id("rerouteButton")).click();
         assertMessageCount(7);
-        assertLastMessage("/", isClientRouter() ? NavigationTrigger.CLIENT_SIDE
+        assertLastMessage("/", isClientRouter() ? NavigationTrigger.PROGRAMMATIC
                 : NavigationTrigger.PROGRAMMATIC, "rerouted");
     }
 
