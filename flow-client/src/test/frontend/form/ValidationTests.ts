@@ -254,15 +254,6 @@ suite("form/Validation", () => {
       const errors = await validate(binder.model);
       expect(errors.length).to.equal(2);
     });
-
-    test("should be able to instantiate a Required validator with message", async () => {
-      const errMsg = 'Cannot be empty';
-      getModelValidators(binder.model.idString).add(new Required(errMsg));
-      const errors = await validate(binder.model);
-      expect(errors.length).to.equal(1);
-      expect(errors[0].property).to.equal('idString');
-      expect(errors[0].validator.message).to.equal(errMsg);
-    });
   });
 
   suite('field element', () => {

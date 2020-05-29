@@ -54,11 +54,6 @@ public class TsFormEndpoint {
     }
 
     @Nullable
-    public EntityWithDefaultRequiredValidators getEntityWithDefaultRequiredValidators() {
-        return new EntityWithDefaultRequiredValidators();
-    }
-
-    @Nullable
     public String stringNullable() {
         return "";
     }
@@ -102,13 +97,5 @@ public class TsFormEndpoint {
         @Future LocalDate future;
         @FutureOrPresent LocalTime futureOrPresent;
         @Pattern(regexp = "\\d+\\..+") String pattern;
-    }
-
-    public static class EntityWithDefaultRequiredValidators extends MyEntityId {
-        @NotEmpty(message = "cannot be empty list") List<String> list;
-        @NotNull(message = "cannot be null") String notNull;
-        @NotNull(message = "cannot be null") @NotEmpty(message = "cannot be empty") String notEmpty;
-        @NotBlank(message = "cannot be blank") String notBlank;
-        @Size(min = 1, message = "size at least 1") String size1;
     }
 }

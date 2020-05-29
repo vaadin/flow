@@ -2,7 +2,8 @@
 
 import { repeat } from "lit-html/directives/repeat";
 import { Binder } from "./Binder";
-import { Required, Validator } from "./Validation";
+import { Validator } from "./Validation";
+import { Required, Size } from "./Validators";
 
 const ModelSymbol = Symbol('Model');
 const parentSymbol = Symbol('parent');
@@ -21,7 +22,7 @@ export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {
   createEmptyValue: () => T;
-  new (parent: ModelParent<T>, key: keyof any, ...args: any[]): M;
+  new(parent: ModelParent<T>, key: keyof any, ...args: any[]): M;
 }
 
 export abstract class AbstractModel<T> {
@@ -46,11 +47,19 @@ export abstract class AbstractModel<T> {
   toString() {
     return String(this.valueOf());
   }
-  valueOf():T {
+  valueOf(): T {
     return getValue(this);
   }
   get [requiredSymbol]() {
-    return !![...this[validatorsSymbol]].find(val => val instanceof Required)
+    return !![...this[validatorsSymbol]].find(val => {
+      if (val instanceof Required) {
+        return true;
+      } else if (val instanceof Size) {
+        const min = (val as Size).value.min;
+        return min && min > 0;
+      }
+      return false;
+    })
   }
 }
 
@@ -109,7 +118,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     for (const [i, item] of array.entries()) {
       let model = this.models.get(item);
       if (!model) {
-        model = new Model(this,i);
+        model = new Model(this, i);
         if (model instanceof PrimitiveModel) {
           break;
         }
@@ -190,10 +199,10 @@ export const modelRepeat = <T, M extends AbstractModel<T>>(
   model: ArrayModel<T, M>,
   keyFnOrTemplate: KeyFn<T, M> | ItemTemplate<T, M>,
   itemTemplate?: ItemTemplate<T, M>) =>
-    repeat(model,
-      (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
-      itemTemplate && ((itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index))
-    );
+  repeat(model,
+    (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
+    itemTemplate && ((itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index))
+  );
 
 export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
   return model[validatorsSymbol];

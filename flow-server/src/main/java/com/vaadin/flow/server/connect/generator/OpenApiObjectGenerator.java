@@ -487,20 +487,19 @@ public class OpenApiObjectGenerator {
                     "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
                 annotations.add(str);
             }
-            if (str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
-                    || str.matches("Size\\(\\{.*min:[^0].+")) {
-                String message = getParameterValueFromAnnotation(annotation, "message");
-                String requiredValidator = String.format(REQUIRED_VALIDATOR, message == null ? "" : message);
-                annotations.add(requiredValidator);
-            }
         });
         if (!annotations.isEmpty()) {
             schema.addExtension(CONSTRAINT_ANNOTATIONS,
                     annotations.stream()
-                            .sorted((a, b) -> a.startsWith(REQUIRED) ? -1
-                                    : b.startsWith(REQUIRED) ? 1 : a.compareTo(b))
+                            .sorted((a, b) -> isAnnotationIndicatingRequired(a) ? -1
+                                    : isAnnotationIndicatingRequired(b) ? 1 : a.compareTo(b))
                             .collect(Collectors.toList()));
         }
+    }
+
+    private boolean isAnnotationIndicatingRequired(String str){
+        return str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
+            || str.matches("Size\\(\\{.*min:[^0].+");
     }
 
     private Map<String, ResolvedReferenceType> collectUsedTypesFromSchema(
