@@ -4,7 +4,7 @@ import { FieldStrategy, fieldSymbol } from "./Field";
 import { AbstractModel, ArrayModel, getName, getValue, requiredSymbol, validatorsSymbol } from "./Models";
 
 export interface ValueError<T> {
-  property: string,
+  property: string | AbstractModel<any>,
   value: T,
   validator: Validator<T>
 }
@@ -19,7 +19,7 @@ export class ValidationError extends Error {
   }
 }
 
-export type ValidationCallback<T> = (value: T) => boolean | Promise<boolean>;
+export type ValidationCallback<T> = (value: T) => boolean | ValueError<T> | void | Promise<boolean | ValueError<T> | void>;
 
 export interface Validator<T> {
   validate: ValidationCallback<T>,
@@ -54,15 +54,21 @@ async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>)
   const value = getValue(model);
   // if model is not required and value empty, do not run any validator
   if (!model[requiredSymbol] && !new Required().validate(value)) {
-    return undefined;
+    return;
   }
-  return (async() => validator.validate(value))()
-    .then(valid => valid ? undefined
-      : {property: getName(model), value, validator});
+  return (async () => validator.validate(value))()
+    .then(result => {
+      if (typeof result === "boolean") {
+        return result ? undefined
+          : { property: getName(model), value, validator }
+      } else {
+        return result;
+      }
+    });
 }
 
 export async function validate<T>(model: AbstractModel<T>): Promise<Array<ValueError<any>>> {
-  const promises: Array<Promise<Array<ValueError<any>> | ValueError<any> | undefined>> = [];
+  const promises: Array<Promise<Array<ValueError<any>> | ValueError<any> | void>> = [];
   // validate each model in the array model
   if (model instanceof ArrayModel) {
     promises.push(...[...model].map(validateModel));

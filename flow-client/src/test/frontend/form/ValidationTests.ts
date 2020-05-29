@@ -12,12 +12,14 @@ import {
   Binder,
   field,
   getModelValidators,
+  getName,
   modelRepeat,
   Required,
   setValue,
   validate,
   ValidationError,
-  Validator
+  Validator,
+  AbstractModel
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel } from "./TestModels";
@@ -26,13 +28,13 @@ import { css, customElement, html, LitElement, query} from 'lit-element';
 
 @customElement('order-view')
 class OrderView extends LitElement {
-  public binder = new Binder(this, OrderModel);
-  @query('#notes') public notes!: HTMLInputElement;
-  @query('#fullName') public fullName!: HTMLInputElement;
-  @query('#nickName') public nickName!: HTMLInputElement;
-  @query('#add') public add!: Element;
-  @query('#description0') public description!: HTMLInputElement;
-  @query('#price0') public price!: HTMLInputElement;
+  binder = new Binder(this, OrderModel);
+  @query('#notes') notes!: HTMLInputElement;
+  @query('#fullName') fullName!: HTMLInputElement;
+  @query('#nickName') nickName!: HTMLInputElement;
+  @query('#add') add!: Element;
+  @query('#description0') description!: HTMLInputElement;
+  @query('#price0') price!: HTMLInputElement;
 
   static get styles() {
     return css`input[invalid] {border: 2px solid red;}`;
@@ -59,7 +61,7 @@ const fireEvent = async (elm: Element, name: string) => {
 
 suite("form/Validation", () => {
   let binder: Binder<Order, OrderModel<Order>>;
-  let view = document.createElement('div');
+  const view = document.createElement('div');
 
   beforeEach(async () => {
     binder = new Binder(view,OrderModel);
@@ -169,6 +171,31 @@ suite("form/Validation", () => {
         expect(error.errors[0].value).to.be.undefined;
         expect(error.errors[0].property).to.be.equal('bar');
       }
+    });
+
+    test("record level cross field validation", async () => {
+      getModelValidators(binder.model).add({
+        validate(value: Order) {
+          if (value.customer.fullName === value.customer.nickName) {
+            return { property: binder.model.customer.nickName, value, validator: this };
+          }
+        },
+        message: 'cannot be the same'
+      });
+      setValue(binder.model.customer.fullName, "foo");
+      setValue(binder.model.customer.nickName, "foo");
+      return validate(binder.model).then(errors => {
+        const crossFieldError = errors.find(error => {
+          if(typeof error.property === 'string'){
+            return 'customer.nickName'===error.property
+          }
+          else {
+            return 'customer.nickName'===getName(error.property)
+          }
+        });
+        expect(crossFieldError).not.to.be.undefined;
+        crossFieldError && expect(crossFieldError.validator.message).to.equal('cannot be the same');
+      });
     });
   });
 
