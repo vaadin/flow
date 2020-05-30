@@ -326,7 +326,7 @@ public class StreamReceiverHandler implements Serializable {
         sendUploadResponse(response, success);
     }
 
-    private boolean handleFileUploadValidationAndData(VaadinSession session,
+    protected boolean handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,
             String filename, String mimeType, long contentLength,
             StateNode node) throws UploadException {
@@ -396,7 +396,7 @@ public class StreamReceiverHandler implements Serializable {
      * @throws IOException
      *             exception when writing to stream
      */
-    private void sendUploadResponse(VaadinResponse response, boolean success)
+    protected void sendUploadResponse(VaadinResponse response, boolean success)
             throws IOException {
         response.setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
