@@ -14,6 +14,10 @@ class VaadinDevmodeGizmo extends LitElement {
           direction: ltr;
        }
 
+      .vaadin-devmode-gizmo-root > * {
+          z-index: 20000;
+      }
+
       .gizmo {
           display: flex;
           align-items: center;
@@ -30,7 +34,6 @@ class VaadinDevmodeGizmo extends LitElement {
           color: rgba(255,255,255,.8);
           transform: translateX(calc(100% - 2rem));
           transition: 400ms;
-          z-index: 20000;
       }
 
       .gizmo:hover,
@@ -313,7 +316,6 @@ class VaadinDevmodeGizmo extends LitElement {
           height: auto;
           width: auto;
           padding-left: .5rem;
-          z-index: 20000;
       }
       
       .notification-tray .message {
@@ -798,7 +800,7 @@ class VaadinDevmodeGizmo extends LitElement {
 
   render() {
     return html`
-      <div class="vaadin-live-reload">
+      <div class="vaadin-devmode-gizmo-root">
       <div class="window ${this.expanded ? 'visible' : 'hidden'}">
         <div class="window-header">
           <span class="title">Vaadin Development Mode</span>
