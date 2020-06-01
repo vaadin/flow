@@ -124,7 +124,8 @@ public class JavaScriptBootstrapUI extends UI {
         }
 
         // Render the flow view that the user wants to navigate to.
-        renderViewForRoute(new Location(trimmedRoute));
+        renderViewForRoute(new Location(trimmedRoute),
+                NavigationTrigger.CLIENT_SIDE);
 
         // true if the target is client-view and the push mode is disable
         if (getForwardToClientUrl() != null) {
@@ -174,7 +175,7 @@ public class JavaScriptBootstrapUI extends UI {
         Location location = new Location(pathname, queryParameters);
         if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
             // server-side routing
-            renderViewForRoute(location);
+            renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
         } else {
             // client-side routing
 
@@ -193,7 +194,8 @@ public class JavaScriptBootstrapUI extends UI {
             if (navigationState.isPresent()) {
                 // Navigation can be done in server side without extra
                 // round-trip
-                handleNavigation(location, navigationState.get());
+                handleNavigation(location, navigationState.get(),
+                        NavigationTrigger.UI_NAVIGATE);
                 if (getForwardToClientUrl() != null) {
                     navigationInProgress = false;
                     // Server is forwarding to a client route from a
@@ -235,10 +237,11 @@ public class JavaScriptBootstrapUI extends UI {
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
-        handleNavigation(location, clientViewNavigationState);
+        handleNavigation(location, clientViewNavigationState,
+                NavigationTrigger.CLIENT_SIDE);
     }
 
-    private void renderViewForRoute(Location location) {
+    private void renderViewForRoute(Location location, NavigationTrigger trigger) {
         if (!shouldHandleNavigation(location)) {
             return;
         }
@@ -248,7 +251,7 @@ public class JavaScriptBootstrapUI extends UI {
                     .resolveNavigationTarget(location);
             if (navigationState.isPresent()) {
                 // There is a valid route in flow.
-                handleNavigation(location, navigationState.get());
+                handleNavigation(location, navigationState.get(), trigger);
             } else {
                 // When route does not exist, try to navigate to current route
                 // in order to check if current view can be left before showing
@@ -282,9 +285,9 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private void handleNavigation(Location location,
-            NavigationState navigationState) {
+            NavigationState navigationState, NavigationTrigger trigger) {
         NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
-                location, this, NavigationTrigger.CLIENT_SIDE);
+                location, this, trigger);
 
         JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
