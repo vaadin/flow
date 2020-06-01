@@ -54,7 +54,8 @@ public final class Constants implements Serializable {
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP}
      *             instead.
      */
     @Deprecated
@@ -68,7 +69,8 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_INITIAL_UIDL = InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_ENABLE_DEV_SERVER}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_ENABLE_DEV_SERVER}
      *             instead.
      */
     @Deprecated
@@ -89,28 +91,32 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_HEARTBEAT_INTERVAL}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_HEARTBEAT_INTERVAL}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT = InitParameters.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS}
      *             instead.
      */
     @Deprecated
@@ -138,21 +144,24 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT}
      *             instead.
      */
     @Deprecated
@@ -187,7 +196,8 @@ public final class Constants implements Serializable {
     public static final String I18N_PROVIDER = InitParameters.I18N_PROVIDER;
 
     /**
-     * @deprecated Use {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
+     * @deprecated Use
+     *             {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
      *             instead.
      */
     @Deprecated
@@ -231,35 +241,40 @@ public final class Constants implements Serializable {
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE}
      *             instead.
      */
     @Deprecated
@@ -284,6 +299,12 @@ public final class Constants implements Serializable {
      */
     @Deprecated
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE;
+
+    /**
+     * Internal parameter which prevent validation for annotations which are
+     * allowed on an AppShell class in non V14 bootstrap mode.
+     */
+    public static final String ALLOW_APPSHELL_ANNOTATIONS = "allow.appshell.annotations";
 
     /**
      * The path used in the vaadin servlet for handling static resources.
@@ -378,7 +399,8 @@ public final class Constants implements Serializable {
     public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD}
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD}
      *             instead.
      */
     @Deprecated
