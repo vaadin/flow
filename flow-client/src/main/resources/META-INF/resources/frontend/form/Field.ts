@@ -1,7 +1,8 @@
 /* tslint:disable:max-classes-per-file */
 
 import { directive, Part, PropertyPart } from "lit-html";
-import { AbstractModel, fromStringSymbol, getName, getValue, requiredSymbol, setValue } from "./Models";
+import { Binder} from "./Binder";
+import { AbstractModel, fromStringSymbol, getName, getValue, parentSymbol, requiredSymbol, setValue } from "./Models";
 import { validate, ValueError } from "./Validation";
 
 export const fieldSymbol = Symbol('field');
@@ -69,7 +70,7 @@ export class SelectedFieldStrategy extends GenericFieldStrategy {
   }
 }
 
-function getFieldStrategy(elm: any): FieldStrategy {
+export function getDefaultFieldStrategy(elm: any): FieldStrategy {
   switch(elm.localName) {
     case 'vaadin-checkbox': case 'vaadin-radio-button':
       return new CheckedFieldStrategy(elm);
@@ -84,6 +85,15 @@ function getFieldStrategy(elm: any): FieldStrategy {
   return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
 }
 
+function getFieldStrategy <T> (model: AbstractModel<T>, elm: any): FieldStrategy {
+  let parent = model as any;
+  while(parent[parentSymbol]) {
+    parent = parent[parentSymbol];
+  }
+  return (parent as Binder<any, any>).getFieldStrategy(elm);
+}
+
+
 export const field = directive(<T>(
   model: AbstractModel<T>,
   effect?: (element: Element) => void
@@ -94,7 +104,7 @@ export const field = directive(<T>(
   }
   let fieldState: FieldState;
   const element = propertyPart.committer.element as HTMLInputElement & Field;
-  const fieldStrategy = getFieldStrategy(element);
+  const fieldStrategy = getFieldStrategy(model, element);
 
   if (fieldStateMap.has(propertyPart)) {
     fieldState = fieldStateMap.get(propertyPart)!;

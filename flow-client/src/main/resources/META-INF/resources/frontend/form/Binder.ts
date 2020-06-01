@@ -1,3 +1,4 @@
+import { FieldStrategy, getDefaultFieldStrategy } from "./Field";
 import { AbstractModel, defaultValueSymbol, ModelConstructor} from "./Models";
 import { ServerValidator, validate, ValidationError, ValueError } from "./Validation";
 
@@ -99,6 +100,10 @@ export class Binder<T, M extends AbstractModel<T>> {
       this[isSubmittingSymbol] = false;
       this.reset(this.value);
     }
+  }
+
+  getFieldStrategy(elm: any): FieldStrategy {
+    return getDefaultFieldStrategy(elm);
   }
 
   private update(oldValue: T) {

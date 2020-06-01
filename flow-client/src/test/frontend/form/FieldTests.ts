@@ -18,7 +18,9 @@ import {
   VaadinFieldStrategy,
   getModelValidators,
   Required,
-  AbstractModel
+  AbstractModel,
+  FieldStrategy,
+  AbstractFieldStrategy
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
 import { OrderModel, TestModel, TestEntity, IdEntity } from "./TestModels";
@@ -300,7 +302,7 @@ suite("form/Field", () => {
 
 
   suite('field/Strategy', () => {
-    const binder = new Binder(document.createElement('div'), TestModel);
+    let binder = new Binder(document.createElement('div'), TestModel);
 
     ['div',
      'input',
@@ -309,6 +311,7 @@ suite("form/Field", () => {
       test(`GenericFieldStrategy ${tag}`, async() => {
         const element: Element & {value?: any} = document.createElement(tag);
         const model = binder.model.fieldString;
+
         setValue(model, 'foo');
         getModelValidators(model).add({message: 'any-err-msg', validate: () => false});
 
@@ -408,6 +411,31 @@ suite("form/Field", () => {
         expect(element.invalid).to.be.true;
         expect(element.errorMessage).to.be.equal('any-err-msg');
       });
+    });
+
+    test(`Strategy can be overridden in binder`, async () => {
+      const element = document.createElement('div');
+      class MyStrategy extends AbstractFieldStrategy {
+        invalid =  true;
+        required = true;
+      }
+
+      class MyBinder extends Binder<TestEntity, TestModel> {
+        getFieldStrategy(elm: any):FieldStrategy {
+          return new MyStrategy(elm);
+        }
+        constructor(elm: Element) {
+          super(elm, TestModel);
+        }
+      }
+
+      const binder = new MyBinder(element);
+      const model = binder.model;
+
+      const part = new PropertyPart(new AttributeCommitter(element, '..', []));
+      field(model)(part);
+      const strategy = (model as any)[fieldSymbol];
+      expect(strategy instanceof MyStrategy).to.be.true;
     });
   })
 });

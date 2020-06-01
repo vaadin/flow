@@ -6,7 +6,7 @@ import { Validator } from "./Validation";
 import { Required, Size } from "./Validators";
 
 const ModelSymbol = Symbol('Model');
-const parentSymbol = Symbol('parent');
+export const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
 export const defaultValueSymbol = Symbol('defaultValue');
