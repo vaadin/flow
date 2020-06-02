@@ -220,7 +220,7 @@ public class ExecuteJavaScriptProcessor {
           };
           object.scrollPositionHandlerAfterServerNavigation = function(state) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
-          }
+          };
           object.stopApplication = $entry(function(){
               stopApplication.@java.lang.Runnable::run(*)();
           });
