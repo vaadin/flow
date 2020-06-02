@@ -58,6 +58,7 @@ public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
                     public JsMap<String, String> getParameters() {
                         return JsCollections.map();
                     }
+
                 });
                 set(ConnectionStateHandler.class,
                         new DefaultConnectionStateHandler(this));
@@ -70,6 +71,7 @@ public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
         setUpAtmosphere();
 
         registry.getApplicationConfiguration().setServiceUrl("context://foo");
+        registry.getApplicationConfiguration().setFrontendRootUrl("frontend/");
         registry.getApplicationConfiguration().setContextRootUrl("bar/");
 
         AtmospherePushConnection connection = new AtmospherePushConnection(
