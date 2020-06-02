@@ -24,21 +24,36 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-@Tag("template-without-shadow-root-view")
-@JsModule("./template-without-shadow-root-view.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerTemplateWithoutShadowRootView")
 @PageTitle("PolymerTemplate without a shadow root")
-public class PolymerTemplateWithoutShadowRootView
-        extends PolymerTemplate<TemplateModel> {
+public class PolymerTemplateWithoutShadowRootView extends Div {
 
-    @Id("content")
-    private Div div;
+    @JsModule("./template-without-shadow-root-view.js")
+    @Tag("template-without-shadow-root-view")
+    public static class Template extends PolymerTemplate<TemplateModel> {
+
+        @Id("content")
+        private Div div;
+        @Id("special!#id")
+        private Div specialId;
+
+        public Template() {
+            div.setText("Hello");
+            specialId.setText("Special");
+            div.addClickListener(e -> {
+                div.setText("Goodbye");
+            });
+        }
+    }
 
     public PolymerTemplateWithoutShadowRootView() {
-        div.setText("Hello");
-        div.addClickListener(e -> {
-            div.setText("Goodbye");
-        });
+        Div distractor1 = new Div();
+        Div distractor2 = new Div();
+        distractor1.setId("content");
+        distractor2.setId("content");
+        add(distractor1);
+        add(new Template());
+        add(distractor2);
     }
 
 }
