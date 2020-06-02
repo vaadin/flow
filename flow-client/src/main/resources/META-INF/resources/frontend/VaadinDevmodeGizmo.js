@@ -530,7 +530,7 @@ class VaadinDevmodeGizmo extends LitElement {
       this.showNotification(VaadinDevmodeGizmo.WARNING,
         'Live reload unavailable',
         'Live reload is currently not set up. Find out how to make use of this functionality to boost your workflow.',
-        'https://github.com/vaadin/flow-and-components-documentation/blob/master/documentation/workflow/workflow-overview.asciidoc',
+        'https://vaadin.com/docs/live-reload',
         'liveReloadUnavailable');
     }
     if (this.connection) {
