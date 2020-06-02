@@ -298,6 +298,47 @@ public class AbstractListDataViewTest {
         dataView.addItemBefore("newItem", "item1");
     }
 
+    @Test
+    public void addFilter_FilterIsAddedOnTop() {
+        items = new ArrayList<>(
+                Arrays.asList("item1", "item2", "item22", "item3"));
+        dataProvider = DataProvider.ofCollection(items);
+
+        Assert.assertEquals(4, dataView.getAllItems().count());
+
+        dataView.addFilter(
+                item -> item.equals("item1") || item.equals("item2") || item
+                        .equals("item22"));
+
+        Assert.assertEquals(3, dataView.getAllItems().count());
+
+        dataView.addFilter(item -> item.endsWith("2"));
+
+        Assert.assertEquals(2, dataView.getAllItems().count());
+    }
+
+    @Test
+    public void clearFilters_removesAllSetAndAddedFilters() {
+        items = new ArrayList<>(
+                Arrays.asList("item1", "item2", "item22", "item3"));
+        dataProvider = DataProvider.ofCollection(items);
+
+        dataView.withFilter(item -> item.endsWith("2") || item.endsWith("3"));
+
+        Assert.assertEquals("Set filter not applied", 3,
+                dataView.getAllItems().count());
+
+        dataView.addFilter(item -> item.endsWith("2"));
+
+        Assert.assertEquals("Added filter not applied", 2,
+                dataView.getAllItems().count());
+
+        dataView.clearFilters();
+
+        Assert.assertEquals("Filters were not cleared", 4,
+                dataView.getAllItems().count());
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(
