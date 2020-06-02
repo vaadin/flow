@@ -84,6 +84,18 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
+    public AbstractListDataView<T> addFilter(SerializablePredicate<T> filter) {
+        getDataProvider().addFilter(filter);
+        return this;
+    }
+
+    @Override
+    public AbstractListDataView<T> clearFilters() {
+        getDataProvider().clearFilters();
+        return this;
+    }
+
+    @Override
     public AbstractListDataView<T> withFilter(SerializablePredicate<T> filter) {
         return withFilterOrOrder(
                 dataProvider -> dataProvider.setFilter(filter));

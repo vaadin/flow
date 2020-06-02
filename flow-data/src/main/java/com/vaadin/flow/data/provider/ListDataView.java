@@ -122,6 +122,23 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
     V addItemBefore(T item, T before);
 
     /**
+     * Adds a filter to be applied to all queries. The filter will be used in
+     * addition to any filter that has been set or added previously.
+     *
+     * @param filter
+     *         the filter to add, not <code>null</code>
+     * @return ListDataView instance
+     */
+    V addFilter(SerializablePredicate<T> filter);
+
+    /**
+     * Remove all in-memory filters set or added.
+     *
+     * @return ListDataView instance
+     */
+    V clearFilters();
+
+    /**
      * Set a filter to be applied to the data. Given filter replaces any
      * previous filter. Setting {@code null} clears filtering.
      *
