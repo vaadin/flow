@@ -31,6 +31,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMapUtil;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -405,7 +406,8 @@ public class ShortcutRegistrationTest {
         // Once the shortcut listener is registered the expression should
         // contain KeyA
         boolean hasKeyA = false;
-        for (String expression : map.getExpressions("keydown")) {
+        for (String expression : ElementListenerMapUtil.getExpressions(map,
+                "keydown")) {
             if (expression.contains(Key.KEY_A.getKeys().get(0))) {
                 hasKeyA = true;
             }
