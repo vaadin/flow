@@ -8,15 +8,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Route("template-push")
-@Push(transport = Transport.WEBSOCKET)
 @JsModule("TemplatePushView.js")
 @Tag("template-push-view")
 public class TemplatePushView extends PolymerTemplate<TemplateModel> {
@@ -35,6 +34,8 @@ public class TemplatePushView extends PolymerTemplate<TemplateModel> {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
 
         elementTest.addClickListener(e -> {
             new Thread(new ElementAPI(ui)).start();

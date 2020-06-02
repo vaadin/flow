@@ -5,14 +5,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
 import java.util.concurrent.locks.Lock;
 
 @Route("push")
-@Push(transport = Transport.WEBSOCKET)
 public class PushView extends Div {
 
     private final class SayWorld implements Runnable {
@@ -42,6 +41,8 @@ public class PushView extends Div {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
 
         // Fallback transport is forced to websocket so that we either get a
         // websocket connection or no push connection at all
