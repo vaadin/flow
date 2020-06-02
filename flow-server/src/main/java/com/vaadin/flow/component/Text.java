@@ -59,4 +59,20 @@ public class Text extends Component implements HasText {
         return getElement().getText();
     }
 
+    @Override
+    protected <T> void set(PropertyDescriptor<T, ?> descriptor, T value) {
+        throw new UnsupportedOperationException("Cannot set '"
+                + descriptor.getPropertyName() + "' property to the "
+                + getClass().getSimpleName() + " component because it doesn't "
+                + "represent an HTML Element but a text Node on the client side.");
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        throw new UnsupportedOperationException("Cannot change "
+                + getClass().getSimpleName()
+                + " component visibiltiy because it doesn't "
+                + "represent an HTML Element but a text Node on the client side.");
+    }
+
 }
