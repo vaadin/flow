@@ -230,10 +230,9 @@ public class RouterLink extends Component implements HasText, HasComponents,
                     .getUrl(navigationTarget, parameters);
             updateHref(url);
         } catch (NotFoundException exception) {
-            IllegalArgumentException error = new IllegalArgumentException(
+            throw new IllegalArgumentException(
                     "Cannot set route for non registered " + navigationTarget,
                     exception);
-            throw error;
         }
     }
 
