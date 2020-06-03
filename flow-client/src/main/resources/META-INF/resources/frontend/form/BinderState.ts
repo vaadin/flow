@@ -23,11 +23,12 @@ export interface BinderState<T, M extends AbstractModel<T>> {
   value: T;
   readonly defaultValue: T;
   readonly validators: ReadonlyArray<Validator<T>>;
+  readonly dirty: boolean;
   readonly visited: boolean;
   readonly invalid: boolean;
   readonly required: boolean;
   readonly errors: ReadonlyArray<ValueError<any>>;
   readonly ownErrors: ReadonlyArray<ValueError<T>>;
 
-  validate(): Promise<void>;
+  validate(): Promise<ReadonlyArray<ValueError<any>>>;
 }

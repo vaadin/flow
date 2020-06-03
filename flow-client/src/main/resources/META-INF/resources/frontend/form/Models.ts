@@ -17,8 +17,8 @@ interface HasFromString<T> {
   [fromStringSymbol](value: string): T
 }
 
-export type ValueRoot<T> = {value: T};
-export type ModelParent<T> = AbstractModel<any> | ValueRoot<T>;
+export type HasValue<T> = {value: T};
+export type ModelParent<T> = AbstractModel<any> | HasValue<T>;
 export type ModelType<M> = M extends AbstractModel<infer T> ? T : never;
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {

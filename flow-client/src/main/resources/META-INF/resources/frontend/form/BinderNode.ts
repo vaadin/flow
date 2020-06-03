@@ -24,6 +24,7 @@ import {
   validatorsSymbol
 } from "./Models";
 import {Required, Validator, ValueError} from "./Validation";
+import {ForEachTokenCallback} from "tslint";
 
 const errorsSymbol = Symbol('errors');
 const visitedSymbol = Symbol('visited');
@@ -49,7 +50,6 @@ export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T,
       return;
     }
 
-    this.model = model;
     this.model[binderNodeSymbol] = this;
     this[validatorsSymbol] = model[validatorsSymbol];
   }
@@ -70,7 +70,10 @@ export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T,
   }
 
   set value(value: T) {
-    setValue(this.model, value);
+    if (value !== this.value) {
+      setValue(this.model, value);
+      this.updateValidation();
+    }
   }
 
   get defaultValue(): T {
@@ -78,6 +81,10 @@ export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T,
     return ('value' in modelParent)
       ? modelParent.value
       : (modelParent[binderNodeSymbol] as BinderNode<any, typeof modelParent>).defaultValue[this.model[keySymbol]];
+  }
+
+  get dirty(): boolean {
+    return this.value !== this.defaultValue;
   }
 
   get validators(): ReadonlyArray<Validator<T>> {
@@ -97,12 +104,19 @@ export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T,
     return binderNode;
   }
 
-  async validate(): Promise<void> {
+  async validate(): Promise<ReadonlyArray<ValueError<any>>> {
     const name = this.name;
-    const errors = await Promise.all(this.requestValidationWithParents());
+    const descendantErrors = await this.updateValidationWithDescenants();
+    if (descendantErrors.length) {
+      this[errorsSymbol] = descendantErrors;
+      return this[errorsSymbol];
+    }
+
+    const errors = await Promise.all(this.requestValidationWithAncestors());
     this[errorsSymbol] = errors.filter(
       valueError => valueError && valueError.property.startsWith(name)
     ) as ReadonlyArray<ValueError<any>>;
+    return this[errorsSymbol];
   }
 
   async addValidator(validator: Validator<T>) {
@@ -116,7 +130,7 @@ export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T,
   set visited(v) {
     if (this[visitedSymbol] !== v) {
       this[visitedSymbol] = v;
-      this.validate();
+      this.updateValidation();
     }
   }
 
@@ -154,12 +168,27 @@ export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T,
     }
   }
 
-  private requestValidationWithParents(): ReadonlyArray<Promise<ValueError<any> | void>> {
+  private requestValidationWithAncestors(): ReadonlyArray<Promise<ValueError<any> | void>> {
     return [
       ...this[validatorsSymbol].map(
         validator => this.binder.requestValidation(this.model, validator)
       ),
-      ...(this.parent ? this.parent.requestValidationWithParents() : [])
+      ...(this.parent ? this.parent.requestValidationWithAncestors() : [])
     ];
+  }
+
+  private async updateValidation(): Promise<ReadonlyArray<ValueError<any>>> {
+    if (this.dirty || this.visited) {
+      await this.validate();
+    } else {
+      if (this[errorsSymbol].length) {
+        this[errorsSymbol] = [];
+      }
+    }
+  }
+
+  private async updateValidationWithDescenants(): Promise<ReadonlyArray<ValueError<any>>> {
+    const errors = await Promise.all([...this].map(childBinderNode => childBinderNode.updateValidation()));
+    return (errors as any).flat();
   }
 }

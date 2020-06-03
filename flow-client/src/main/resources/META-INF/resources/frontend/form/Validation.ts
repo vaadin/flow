@@ -2,7 +2,7 @@
 
 import {
   AbstractModel,
-  binderNodeSymbol,
+  binderNodeSymbol, getBinderNode,
   getName,
   getValue,
 } from "./Models";
@@ -52,7 +52,7 @@ export class Required implements Validator<string> {
 export async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>) {
   const value = getValue(model);
   // if model is not required and value empty, do not run any validator
-  if (!model[binderNodeSymbol].required && !new Required().validate(value)) {
+  if (!getBinderNode(model).required && !new Required().validate(value)) {
     return undefined;
   }
   return (async() => validator.validate(value))()
