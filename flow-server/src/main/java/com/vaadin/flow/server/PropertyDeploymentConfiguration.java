@@ -234,6 +234,7 @@ public class PropertyDeploymentConfiguration
     public boolean isDevModeLiveReloadEnabled() {
         return !isProductionMode() && !isCompatibilityMode()
                 && getBooleanProperty(
-                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true);
+                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
+                && enableDevServer(); // gizmo excluded from prod bundle
     }
 }
