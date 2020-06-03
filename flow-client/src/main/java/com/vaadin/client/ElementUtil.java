@@ -63,15 +63,12 @@ public class ElementUtil {
          return context.shadowRoot.getElementById(id);
        } else if (context.getElementById) {
          return context.getElementById(id);
-       } else if (context.ownerDocument && context.ownerDocument.getElementById) {
-         var e = context.ownerDocument.getElementById(id);
-         if (e && context.contains(e)) {
-           return e;
-         } else {
-           return null;
-         }
+       } else if (id && id.match("^[a-zA-Z0-9-_]*$")) {
+         // No funky characters in id so querySelector can be used directly
+         return context.querySelector("#" + id);
        } else {
-         return null;
+         // Find all elements with an id attribute and filter out the correct one
+         return Array.from(context.querySelectorAll('[id]')).find(function(e) {return e.id == id});
        }
     }-*/;
 
