@@ -17,6 +17,7 @@ package com.vaadin.client.flow;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -156,6 +157,7 @@ public class ExecuteJavaScriptProcessor {
             function.apply(
                     getContextExecutionObject(nodeParameters, () -> registry
                             .getUILifecycle().setState(UIState.TERMINATED)),
+                    parameters);
         } catch (Exception exception) {
             Console.reportStacktrace(exception);
             Console.error(
@@ -224,7 +226,7 @@ public class ExecuteJavaScriptProcessor {
           object.stopApplication = $entry(function(){
               stopApplication.@java.lang.Runnable::run(*)();
           });
-
+    
         return object;
     }-*/;
 }
