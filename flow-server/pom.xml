@@ -21,7 +21,6 @@
         <javaparser.version>3.15.1</javaparser.version>
         <swagger.codegen.version>3.0.2</swagger.codegen.version>
         <swagger.codegen.generators.version>1.0.2</swagger.codegen.generators.version>
-        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
