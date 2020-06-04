@@ -206,7 +206,7 @@ public class NodeUpdaterTest {
                 .getString("name"));
         Assert.assertEquals("UNLICENSED", formPackageJson
                 .getString("license"));
-        Assert.assertEquals("Form", formPackageJson
+        Assert.assertEquals("index", formPackageJson
                 .getString("main"));
         Assert.assertEquals("1.0.0", formPackageJson
                 .getString("version"));

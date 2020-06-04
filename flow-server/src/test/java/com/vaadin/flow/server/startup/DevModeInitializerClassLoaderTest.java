@@ -55,7 +55,7 @@ public class DevModeInitializerClassLoaderTest {
 
         List<String> files = TestUtils.listFilesRecursively(
                 new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
-        Assert.assertEquals(4, files.size());
+        Assert.assertEquals(5, files.size());
 
         Assert.assertTrue("A package.json file should be created",
                 files.contains("package.json"));
@@ -69,6 +69,10 @@ public class DevModeInitializerClassLoaderTest {
         Assert.assertTrue(
                 "Js resource should have been copied from resource folder",
                 files.contains("resourceInFolder.js"));
+
+        Assert.assertTrue(
+                "The package.json file for client-side form should be copied",
+                files.contains("form/package.json"));
     }
 
 }
