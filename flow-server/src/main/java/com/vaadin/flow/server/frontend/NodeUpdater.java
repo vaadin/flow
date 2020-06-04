@@ -74,7 +74,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_KEY = "main";
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
+    protected static final String DEP_NAME_FORM_JARS = "@vaadin/form";
+    private static final String FORM_FOLDER = "form";
     private static final String DEP_MAIN_FLOW_JARS = "Flow";
+    private static final String DEP_MAIN_FORM_JARS = "index";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     private static final String ROUTER_VERSION = "1.7.2";
@@ -100,6 +103,11 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Base directory for flow dependencies coming from jars.
      */
     protected final File flowResourcesFolder;
+
+    /**
+     * Base directory for form dependencies coming from jars.
+     */
+    protected final File formResourcesFolder;
 
     /**
      * The {@link FrontendDependencies} object representing the application
@@ -134,6 +142,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = generatedPath;
         this.flowResourcesFolder = flowResourcesPath;
+        this.formResourcesFolder = new File(flowResourcesPath, FORM_FOLDER);
     }
 
     private File getPackageJsonFile() {
@@ -217,6 +226,19 @@ public abstract class NodeUpdater implements FallibleCommand {
         return packageJson;
     }
 
+    JsonObject getFormResourcesPackageJson() throws IOException {
+        JsonObject packageJson = getJsonFileContent(
+                new File(formResourcesFolder, PACKAGE_JSON));
+        if (packageJson == null) {
+            packageJson = Json.createObject();
+            packageJson.put(DEP_NAME_KEY, DEP_NAME_FORM_JARS);
+            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FORM_JARS);
+            packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
+        }
+        return packageJson;
+    }
+
     static JsonObject getJsonFileContent(File packageFile) throws IOException {
         JsonObject jsonContent = null;
         if (packageFile.exists()) {
@@ -284,8 +306,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("raw-loader", "4.0.0");
 
         defaults.put("terser", "4.6.7");
-        
+
         defaults.put("lit-element", "2.3.1");
+        defaults.put("lit-html", "1.2.1");
+        defaults.put("@types/validator", "10.11.3");
+        defaults.put("validator", "12.0.0");
+
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
@@ -397,6 +423,12 @@ public abstract class NodeUpdater implements FallibleCommand {
             throws IOException {
         return writePackageFile(packageJson,
                 new File(flowResourcesFolder, PACKAGE_JSON));
+    }
+
+    String writeFormResourcesPackageFile(JsonObject packageJson)
+            throws IOException {
+        return writePackageFile(packageJson,
+                new File(formResourcesFolder, PACKAGE_JSON));
     }
 
     String writePackageFile(JsonObject json, File packageFile)

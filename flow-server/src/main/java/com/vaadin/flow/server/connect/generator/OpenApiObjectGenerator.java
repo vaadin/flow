@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,6 +107,8 @@ public class OpenApiObjectGenerator {
 
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
+
+    public static final String CONSTRAINT_ANNOTATIONS = "x-annotations";
 
     private List<Path> javaSourcePaths = new ArrayList<>();
     private OpenApiConfiguration configuration;
@@ -190,6 +193,7 @@ public class OpenApiObjectGenerator {
         endpointsJavadoc = new HashMap<>();
         schemaResolver = new SchemaResolver();
         ParserConfiguration parserConfiguration = createParserConfiguration();
+
 
         javaSourcePaths.stream()
                 .map(path -> new SourceRoot(path, parserConfiguration))
@@ -342,7 +346,7 @@ public class OpenApiObjectGenerator {
 
         // detect the endpoint value name
         if (endpointName.equals(classDeclaration.getNameAsString()) && endpointAnnotation != null) {
-            String endpointValueName = getEndpointValueName(endpointAnnotation);
+            String endpointValueName = getParameterValueFromAnnotation(endpointAnnotation, "value");
             if (endpointValueName != null) {
                 endpointName = endpointValueName.substring(1, endpointValueName.length() - 1);
             }
@@ -357,10 +361,10 @@ public class OpenApiObjectGenerator {
         return endpointName;
     }
 
-    private String getEndpointValueName(AnnotationExpr endpointAnnotation) {
+    private String getParameterValueFromAnnotation(AnnotationExpr endpointAnnotation, String paramName) {
         return endpointAnnotation.getChildNodes().stream().filter(node ->
                 node.getTokenRange().isPresent() &&
-                        "value".equals(node.getTokenRange().get().getBegin().getText()))
+                paramName.equals(node.getTokenRange().get().getBegin().getText()))
                 .map(node -> node.getTokenRange().get().getEnd().getText()).findFirst().orElse(null);
     }
 
@@ -453,11 +457,47 @@ public class OpenApiObjectGenerator {
                     // not required
                     propertySchema.setNullable(true);
                 }
+                addFieldAnnotationsToSchema(field, propertySchema);
                 properties.put(variableDeclarator.getNameAsString(),
                         propertySchema);
             });
         }
         return properties;
+    }
+
+    private void addFieldAnnotationsToSchema(FieldDeclaration field,
+            Schema<?> schema) {
+        Set<String> annotations = new LinkedHashSet<>();
+        field.getAnnotations().stream().forEach(annotation -> {
+            String str = annotation.toString()
+                    // remove annotation character
+                    .replaceFirst("@", "")
+                    // change to json syntax
+                    .replace(" = ", ":");
+            // wrap arguments with curly if there are json key:value arguments
+            if (str.contains(":")) {
+                str =  str.replaceFirst("\\(", "({").replaceFirst("\\)$", "})");
+            }
+            // append parenthesis if not already
+            str += str.contains("(") ? "" : "()";
+
+            if (str.matches(
+                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
+                annotations.add(str);
+            }
+        });
+        if (!annotations.isEmpty()) {
+            schema.addExtension(CONSTRAINT_ANNOTATIONS,
+                    annotations.stream()
+                            .sorted((a, b) -> isAnnotationIndicatingRequired(a) ? -1
+                                    : isAnnotationIndicatingRequired(b) ? 1 : a.compareTo(b))
+                            .collect(Collectors.toList()));
+        }
+    }
+
+    private boolean isAnnotationIndicatingRequired(String str){
+        return str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
+            || str.matches("Size\\(\\{.*min:[^0].+");
     }
 
     private Map<String, ResolvedReferenceType> collectUsedTypesFromSchema(

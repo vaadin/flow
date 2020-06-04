@@ -33,7 +33,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -73,20 +71,17 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.generator.OpenApiConfiguration;
 import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
-import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
 import com.vaadin.flow.server.connect.generator.TestUtils;
-import com.vaadin.flow.server.connect.generator.VaadinConnectTsGenerator;
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.GrandParentModel;
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.Model;
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.ParentModel;
@@ -97,7 +92,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public abstract class AbstractEndpointGenerationTest {
+public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGeneratorBaseTest {
     private static final List<Class<?>> JSON_NUMBER_CLASSES = Arrays.asList(
             Number.class, byte.class, char.class, short.class, int.class,
             long.class, float.class, double.class);
@@ -110,55 +105,11 @@ public abstract class AbstractEndpointGenerationTest {
      */
     private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
             .asList(Model.class, ParentModel.class, GrandParentModel.class);
-    @Rule
-    public TemporaryFolder outputDirectory = new TemporaryFolder();
-
-    protected Path openApiJsonOutput;
-
-    private final List<Class<?>> endpointClasses = new ArrayList<>();
-    private final List<Class<?>> nonEndpointClasses = new ArrayList<>();
     private final Set<String> schemaReferences = new HashSet<>();
     private static final VaadinConnectAccessChecker accessChecker = new VaadinConnectAccessChecker();
 
-    private final Package testPackage;
-
     public AbstractEndpointGenerationTest(List<Class<?>> testClasses) {
-        collectEndpointClasses(endpointClasses, nonEndpointClasses, testClasses);
-        testPackage = getClass().getPackage();
-    }
-
-    private void collectEndpointClasses(List<Class<?>> endpointClasses,
-            List<Class<?>> nonEndpointClasses, List<Class<?>> inputClasses) {
-        for (Class<?> testEndpointClass : inputClasses) {
-            if (testEndpointClass.isAnnotationPresent(Endpoint.class)) {
-                endpointClasses.add(testEndpointClass);
-            } else {
-                nonEndpointClasses.add(testEndpointClass);
-            }
-            collectEndpointClasses(endpointClasses, nonEndpointClasses,
-                    Arrays.asList(testEndpointClass.getDeclaredClasses()));
-        }
-    }
-
-    @Before
-    public void setUpOutputFile() {
-        openApiJsonOutput = java.nio.file.Paths.get(
-                outputDirectory.getRoot().getAbsolutePath(), "openapi.json");
-    }
-
-    protected List<File> getTsFiles(File directory) {
-        return Arrays.asList(
-                directory.listFiles((dir, name) -> name.endsWith(".ts")));
-    }
-
-    protected String readFile(Path file) {
-        try {
-            return StringUtils.toEncodedString(Files.readAllBytes(file),
-                    StandardCharsets.UTF_8).trim();
-        } catch (IOException e) {
-            throw new AssertionError(
-                    String.format("Failed to read the file '%s'", file));
-        }
+        super(testClasses);
     }
 
     protected void verifyOpenApiObjectAndGeneratedTs() {
@@ -172,19 +123,11 @@ public abstract class AbstractEndpointGenerationTest {
                 "Full verification requires an expected open api spec file"));
     }
 
+
     private void generateAndVerify(URL customApplicationProperties,
             URL expectedOpenApiJsonResourceUrl) {
-        Properties applicationProperties = customApplicationProperties == null
-                ? new Properties()
-                : TestUtils
-                        .readProperties(customApplicationProperties.getPath());
-        new OpenApiSpecGenerator(applicationProperties).
-                generateOpenApiSpec(
-                Collections
-                        .singletonList(java.nio.file.Paths.get("src/test/java",
-                                testPackage.getName().replace('.',
-                                        File.separatorChar))),
-                openApiJsonOutput);
+
+        generateOpenApi(customApplicationProperties);
 
         Assert.assertTrue(
                 String.format("No generated json found at path '%s'",
@@ -195,8 +138,9 @@ public abstract class AbstractEndpointGenerationTest {
         if (expectedOpenApiJsonResourceUrl != null) {
             verifyOpenApiJson(expectedOpenApiJsonResourceUrl);
         }
-        VaadinConnectTsGenerator.launch(openApiJsonOutput.toFile(),
-                outputDirectory.getRoot());
+
+        generateTsEndpoints();
+
         verifyTsModule();
         verifyModelTsModule();
     }
@@ -218,19 +162,6 @@ public abstract class AbstractEndpointGenerationTest {
         }
 
         verifySchemaReferences();
-    }
-
-    private OpenAPI getOpenApiObject() {
-        OpenApiObjectGenerator generator = new OpenApiObjectGenerator();
-
-        Path javaSourcePath = java.nio.file.Paths.get("src/test/java/",
-                testPackage.getName().replace('.', File.separatorChar));
-        generator.addSourcePath(javaSourcePath);
-
-        generator.setOpenApiConfiguration(new OpenApiConfiguration("Test title",
-                "0.0.1", "https://server.test", "Test description"));
-
-        return generator.getOpenApi();
     }
 
     private void assertPaths(Paths actualPaths,
