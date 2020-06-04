@@ -107,7 +107,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         // Update the dependency for the folder with resources
-        updateFrontendDependency(dependencies);
+        updateFlowFrontendDependencies(dependencies);
 
         // Add application dependencies
         for (Entry<String, String> dep : deps.entrySet()) {
@@ -159,26 +159,26 @@ public class TaskUpdatePackages extends NodeUpdater {
         return added > 0 || removed > 0 || !oldHash.equals(newHash);
     }
 
+    private int updateFlowFrontendDependencies(JsonObject json) {
+        return updateNpmLocalDependency(json, DEP_NAME_FLOW_JARS, flowResourcesFolder)
+                + updateNpmLocalDependency(json, DEP_NAME_FORM_JARS, formResourcesFolder) ;
+    }
 
-    private int updateFrontendDependency(JsonObject json) {
-        if (flowResourcesFolder != null
-                // Skip if deps are copied directly to `node_modules` folder
-                && !flowResourcesFolder.toString().contains(NODE_MODULES)) {
-
+    private int updateNpmLocalDependency(JsonObject json, String packageName, File folder) {
+        if (folder != null) {
             String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),
-                    flowResourcesFolder.getAbsoluteFile().toPath());
-            if (!json.hasKey(DEP_NAME_FLOW_JARS) || !depsPkg.equals(json.getString(DEP_NAME_FLOW_JARS))) {
-                json.put(DEP_NAME_FLOW_JARS, depsPkg);
+                    folder.getAbsoluteFile().toPath());
+            if (!json.hasKey(packageName) || !depsPkg.equals(json.getString(packageName))) {
+                json.put(packageName, depsPkg);
                 return 1;
             }
         } else {
-            if (json.hasKey(DEP_NAME_FLOW_JARS)) {
-                json.remove(DEP_NAME_FLOW_JARS);
+            if (json.hasKey(packageName)) {
+                json.remove(packageName);
                 return 1;
             }
         }
-
         return 0;
     }
 
