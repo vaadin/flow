@@ -69,5 +69,5 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
   fieldBoolean = new BooleanModel(this, 'fieldBoolean');
   fieldObject = new ObjectModel(this, 'fieldObject');
   fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel);
-  fieldArrayModel = new ArrayModel(this, 'fieldString', IdEntityModel);
+  fieldArrayModel = new ArrayModel(this, 'fieldArrayModel', IdEntityModel);
 }
