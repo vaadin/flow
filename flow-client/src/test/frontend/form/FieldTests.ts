@@ -1,5 +1,7 @@
 /* tslint:disable:max-classes-per-file */
 
+import {BinderNode} from "../../../main/resources/META-INF/resources/frontend/form/BinderNode";
+
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
 /// <reference types="sinon">
@@ -298,9 +300,14 @@ suite("form/Field", () => {
     });
   });
 
-
   suite('field/Strategy', () => {
-    let binder = new Binder(document.createElement('div'), TestModel);
+    const element = document.createElement('div');
+    let binder = new Binder(element, TestModel);
+
+    async function resetBinderNodeValidation(binderNode: BinderNode<any, AbstractModel<any>>) {
+      binderNode.validators = [];
+      await binderNode.validate();
+    }
 
     ['div',
      'input',
@@ -311,7 +318,9 @@ suite("form/Field", () => {
         const model = binder.model.fieldString;
         const binderNode = binder.for(model);
         binderNode.value = 'foo';
-        binderNode.addValidator({message: 'any-err-msg', validate: () => false});
+        await resetBinderNodeValidation(binderNode);
+
+        binderNode.validators = [{message: 'any-err-msg', validate: () => false}];
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
@@ -339,7 +348,9 @@ suite("form/Field", () => {
         const binderNode = binder.for(model);
 
         binderNode.value = true;
-        binderNode.addValidator({message: 'any-err-msg', validate: () => false});
+        await resetBinderNodeValidation(binderNode);
+
+        binderNode.validators = [{message: 'any-err-msg', validate: () => false}];
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
@@ -362,7 +373,7 @@ suite("form/Field", () => {
       const binderNode = binder.for(model);
 
       binderNode.value = true;
-      binderNode.addValidator({message: 'any-err-msg', validate: () => false});
+      binderNode.validators = [{message: 'any-err-msg', validate: () => false}];
 
       const part = new PropertyPart(new AttributeCommitter(element, '..', []));
       field(model)(part);
@@ -396,8 +407,15 @@ suite("form/Field", () => {
         const binderNode = binder.for(model);
 
         binderNode.value = value;
-        binderNode.addValidator({message: 'any-err-msg', validate: () => false});
-        binderNode.addValidator(new Required());
+        await resetBinderNodeValidation(binderNode);
+
+        binderNode.validators = [];
+        await binderNode.validate();
+
+        binderNode.validators = [
+          {message: 'any-err-msg', validate: () => false},
+          new Required()
+        ];
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
