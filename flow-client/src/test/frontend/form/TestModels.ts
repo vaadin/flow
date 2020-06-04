@@ -7,7 +7,9 @@ import {
   ObjectModel,
   Pattern,
   Positive,
-  Required, Size, StringModel, AbstractModel
+  Required,
+  Size,
+  StringModel,
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
 export interface IdEntity {
