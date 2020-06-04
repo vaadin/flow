@@ -13,10 +13,10 @@ import {
   Binder,
   field,
   setValue,
-  // GenericFieldStrategy,
-  // CheckedFieldStrategy,
-  // SelectedFieldStrategy,
-  // VaadinFieldStrategy,
+  GenericFieldStrategy,
+  CheckedFieldStrategy,
+  SelectedFieldStrategy,
+  VaadinFieldStrategy,
   Required,
   AbstractModel,
   FieldStrategy,
@@ -302,7 +302,13 @@ suite("form/Field", () => {
 
   suite('field/Strategy', () => {
     const element = document.createElement('div');
-    let binder = new Binder(element, TestModel);
+    let currentStrategy: FieldStrategy;
+    let binder = new class StrategySpyBinder<T, M extends AbstractModel<T>> extends Binder<T, M> {
+      getFieldStrategy(elm: any): FieldStrategy {
+        currentStrategy = super.getFieldStrategy(elm);
+        return currentStrategy;
+      }
+    }(element, TestModel);
 
     async function resetBinderNodeValidation(binderNode: BinderNode<any, AbstractModel<any>>) {
       binderNode.validators = [];
@@ -324,10 +330,9 @@ suite("form/Field", () => {
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
-        // const strategy = (model as any)[fieldSymbol];
-        //
-        // expect(strategy instanceof GenericFieldStrategy).to.be.true;
-        // expect(strategy.value).to.be.equal('foo');
+
+        expect(currentStrategy instanceof GenericFieldStrategy).to.be.true;
+        expect(currentStrategy.value).to.be.equal('foo');
 
         await binderNode.validate();
         field(model)(part);
@@ -354,10 +359,10 @@ suite("form/Field", () => {
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
-        // const strategy = (model as any)[fieldSymbol];
-        //
-        // expect(strategy instanceof CheckedFieldStrategy).to.be.true;
-        // expect(strategy.value).to.be.true;
+
+        expect(currentStrategy instanceof CheckedFieldStrategy).to.be.true;
+        expect(currentStrategy.value).to.be.true;
+
         expect(element.checked).to.be.true;
 
         await binderNode.validate();
@@ -377,10 +382,9 @@ suite("form/Field", () => {
 
       const part = new PropertyPart(new AttributeCommitter(element, '..', []));
       field(model)(part);
-      // const strategy = (model as any)[fieldSymbol];
 
-      // expect(strategy instanceof SelectedFieldStrategy).to.be.true;
-      // expect(strategy.value).to.be.true;
+      expect(currentStrategy instanceof SelectedFieldStrategy).to.be.true;
+      expect(currentStrategy.value).to.be.true;
       expect(element.selected).to.be.true;
 
       await binderNode.validate();
@@ -422,8 +426,8 @@ suite("form/Field", () => {
         // const strategy = (model as any)[fieldSymbol];
         delete (element.constructor as any).version;
 
-        // expect(strategy instanceof VaadinFieldStrategy).to.be.true;
-        // expect(strategy.value).to.be.equal(value);
+        expect(currentStrategy instanceof VaadinFieldStrategy).to.be.true;
+        expect(currentStrategy.value).to.be.equal(value);
         expect(element.value).to.be.equal(value);
         expect(element.required).to.be.true;
         expect(element.invalid).to.be.undefined;
@@ -445,7 +449,8 @@ suite("form/Field", () => {
 
       class MyBinder extends Binder<TestEntity, TestModel> {
         getFieldStrategy(elm: any):FieldStrategy {
-          return new MyStrategy(elm);
+          currentStrategy = new MyStrategy(elm);
+          return currentStrategy;
         }
         constructor(elm: Element) {
           super(elm, TestModel);
@@ -457,8 +462,7 @@ suite("form/Field", () => {
 
       const part = new PropertyPart(new AttributeCommitter(element, '..', []));
       field(model)(part);
-      //const strategy = (model as any)[fieldSymbol];
-      //expect(strategy instanceof MyStrategy).to.be.true;
+      expect(currentStrategy instanceof MyStrategy).to.be.true;
     });
   })
 });
