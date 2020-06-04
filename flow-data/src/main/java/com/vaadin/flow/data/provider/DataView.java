@@ -41,7 +41,7 @@ public interface DataView<T> extends Serializable {
     Stream<T> getAllItems();
 
     /**
-     * Get the full data size with filters is any set.
+     * Get the full data size with filters if any set.
      *
      * @return filtered data size
      */
