@@ -6,6 +6,7 @@ import {
   getName,
   getValue,
 } from "./Models";
+import { Required } from "./Validators";
 
 export interface ValueError<T> {
   property: string | AbstractModel<any>,
@@ -35,18 +36,6 @@ export class ServerValidator implements Validator<any> {
   constructor(public message: string) {
   }
   validate = () => false;
-}
-
-export class Required implements Validator<string> {
-  message = '';
-  validate = (value: any) => {
-    if (typeof value === 'string' || Array.isArray(value)) {
-      return value.length > 0;
-    } else if (typeof value === 'number') {
-      return Number.isFinite(value);
-    }
-    return value !== undefined;
-  }
 }
 
 export async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>) {

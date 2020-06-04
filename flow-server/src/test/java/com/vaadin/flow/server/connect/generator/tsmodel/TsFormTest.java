@@ -57,12 +57,10 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 props.getObject("assertTrue").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("Digits({integer:5, fraction:2})",
                 props.getObject("digits").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("Required()",
-                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("NotEmpty()",
-                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
         assertEquals("NotNull()",
-                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(2));
+                props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
     }
 
     @Test

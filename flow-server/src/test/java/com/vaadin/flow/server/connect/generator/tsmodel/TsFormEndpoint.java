@@ -53,7 +53,6 @@ public class TsFormEndpoint {
         return new MyEntity();
     }
 
-
     @Nullable
     public String stringNullable() {
         return "";

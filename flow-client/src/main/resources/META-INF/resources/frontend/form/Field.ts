@@ -7,6 +7,8 @@ import {
   getBinderNode
 } from "./Models";
 
+export const fieldSymbol = Symbol('field');
+
 interface Field {
   required: boolean,
   invalid: boolean,
@@ -69,7 +71,7 @@ export class SelectedFieldStrategy extends GenericFieldStrategy {
   }
 }
 
-function getFieldStrategy(elm: any): FieldStrategy {
+export function getDefaultFieldStrategy(elm: any): FieldStrategy {
   switch(elm.localName) {
     case 'vaadin-checkbox': case 'vaadin-radio-button':
       return new CheckedFieldStrategy(elm);
@@ -96,6 +98,7 @@ export const field = directive(<T>(
   const element = propertyPart.committer.element as HTMLInputElement & Field;
 
   const binderNode = getBinderNode(model);
+  const fieldStrategy = binderNode.binder.getFieldStrategy(element);
 
   if (fieldStateMap.has(propertyPart)) {
     fieldState = fieldStateMap.get(propertyPart)!;
@@ -106,7 +109,7 @@ export const field = directive(<T>(
       required: false,
       invalid: false,
       errorMessage: '',
-      strategy: getFieldStrategy(element)
+      strategy: fieldStrategy
     };
     fieldStateMap.set(propertyPart, fieldState);
 

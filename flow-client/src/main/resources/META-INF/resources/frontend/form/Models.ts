@@ -26,7 +26,7 @@ export type ModelType<M extends AbstractModel<any>> = M extends AbstractModel<in
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {
   createEmptyValue: () => T;
-  new (parent: ModelParent<T>, key: keyof any, ...args: any[]): M;
+  new(parent: ModelParent<T>, key: keyof any, ...args: any[]): M;
 }
 
 export abstract class AbstractModel<T> {
@@ -54,7 +54,7 @@ export abstract class AbstractModel<T> {
   toString() {
     return String(this.valueOf());
   }
-  valueOf():T {
+  valueOf(): T {
     return getValue(this);
   }
 }
@@ -114,7 +114,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     for (const [i, item] of array.entries()) {
       let model = this.models.get(item);
       if (!model) {
-        model = new Model(this,i);
+        model = new Model(this, i);
         if (model instanceof PrimitiveModel) {
           break;
         }

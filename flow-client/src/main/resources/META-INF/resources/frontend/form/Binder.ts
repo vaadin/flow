@@ -13,6 +13,8 @@ import {
   ValueError
 } from "./Validation";
 
+import { FieldStrategy, getDefaultFieldStrategy } from "./Field";
+
 const submittingSymbol = Symbol('submitting');
 const defaultValueSymbol = Symbol('defaultValue');
 const valueSymbol = Symbol('value');
@@ -148,6 +150,10 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     }
 
     return valueError;
+  }
+
+  getFieldStrategy(elm: any): FieldStrategy {
+    return getDefaultFieldStrategy(elm);
   }
 
   get submitting() {
