@@ -239,7 +239,7 @@ suite("form/Binder", () => {
       const products = [
         ProductModel.createEmptyValue(),
         ProductModel.createEmptyValue()
-      ]
+      ];
       setValue(binder.model.products, products);
 
       const models_1 = [...binder.model.products].slice();

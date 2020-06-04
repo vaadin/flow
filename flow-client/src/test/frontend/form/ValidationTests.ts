@@ -11,15 +11,12 @@ import {
   appendItem,
   Binder,
   field,
-  getModelValidators,
   getName,
   modelRepeat,
   Required,
   setValue,
-  validate,
   ValidationError,
-  Validator,
-  AbstractModel
+  Validator
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
 import { IdEntity, IdEntityModel,  Order, OrderModel } from "./TestModels";
@@ -68,7 +65,7 @@ suite("form/Validation", () => {
   });
 
   test("should run all validators per model", async () => {
-    return validate(binder.model.customer).then(errors => {
+    return binder.for(binder.model.customer).validate().then(errors => {
       expect(errors.map(e => e.validator.constructor.name).sort()).to.eql([
         "Required",
         "Size"
@@ -77,7 +74,7 @@ suite("form/Validation", () => {
   });
 
   test("should run all nested validations per model", async () => {
-    return validate(binder.model).then(errors => {
+    return binder.validate().then(errors => {
       expect(errors.map(e => e.property)).to.eql([
         "customer.fullName",
         "customer.fullName",
@@ -89,7 +86,7 @@ suite("form/Validation", () => {
   test("should run all validations per array items", async () => {
     appendItem(binder.model.products);
     appendItem(binder.model.products);
-    return validate(binder.model).then(errors => {
+    return binder.validate().then(errors => {
       expect(errors.map(e => e.property)).to.eql([
         "customer.fullName",
         "customer.fullName",
@@ -104,11 +101,8 @@ suite("form/Validation", () => {
 
   suite('submitTo', () => {
     test("should be able to call submit() if onSubmit is pre configured", async () => {
-      let foo = 'bar';
       const binder = new Binder(view, OrderModel, {
-        onSubmit: async () => {
-          foo = 'baz';
-        }
+        onSubmit: async () => {}
       });
       const binderSubmitToSpy = sinon.spy(binder, 'submitTo');
       await binder.submit();
@@ -174,17 +168,19 @@ suite("form/Validation", () => {
     });
 
     test("record level cross field validation", async () => {
-      getModelValidators(binder.model).add({
+      binder.addValidator({
         validate(value: Order) {
           if (value.customer.fullName === value.customer.nickName) {
             return { property: binder.model.customer.nickName, value, validator: this };
           }
+
+          return;
         },
         message: 'cannot be the same'
       });
       setValue(binder.model.customer.fullName, "foo");
       setValue(binder.model.customer.nickName, "foo");
-      return validate(binder.model).then(errors => {
+      return binder.validate().then(errors => {
         const crossFieldError = errors.find(error => {
           if(typeof error.property === 'string'){
             return 'customer.nickName'===error.property
@@ -207,12 +203,12 @@ suite("form/Validation", () => {
     });
 
     test("should not have validation errors for a model without validators", async () => {
-      assert.isEmpty(await validate(binder.model));
+      assert.isEmpty(await binder.validate());
     });
 
     test("should fail validation after adding a synchronous validator to the model", async () => {
-      getModelValidators(binder.model).add({message: 'foo', validate: () => false});
-      return validate(binder.model).then(errors => {
+      binder.addValidator({message: 'foo', validate: () => false});
+      return binder.validate().then(errors => {
         expect(errors[0].validator.message).to.equal("foo");
         expect(errors[0].property).to.equal('');
         expect(errors[0].value).to.eql({idString: ''});
@@ -227,31 +223,31 @@ suite("form/Validation", () => {
           return false;
         };
       }
-      getModelValidators(binder.model).add(new AsyncValidator());
-      return validate(binder.model).then(errors => {
+      binder.addValidator(new AsyncValidator());
+      return binder.validate().then(errors => {
         expect(errors[0].validator.message).to.equal("bar");
       });
     });
 
     test("should not have validations errors after adding validators to properties if property is not required", async () => {
-      getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
-      const errors = await validate(binder.model);
+      binder.for(binder.model.idString).addValidator({message: 'foo', validate: () => false});
+      const errors = await binder.validate();
       assert.isEmpty(errors);
     });
 
     test("should fail after adding validators to properties if property is not required but it has a value", async () => {
       setValue(binder.model.idString, 'bar');
-      getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
-      const errors = await validate(binder.model);
+      binder.for(binder.model.idString).addValidator({message: 'foo', validate: () => false});
+      const errors = await binder.validate();
       expect(errors[0].validator.message).to.equal("foo");
       expect(errors[0].property).to.equal('idString');
       expect(errors[0].value).to.eql('bar');
     });
 
     test("should fail after adding validators to properties if required and not value", async () => {
-      getModelValidators(binder.model.idString).add({message: 'foo', validate: () => false});
-      getModelValidators(binder.model.idString).add(new Required());
-      const errors = await validate(binder.model);
+      binder.for(binder.model.idString).addValidator({message: 'foo', validate: () => false});
+      binder.for(binder.model.idString).addValidator(new Required());
+      const errors = await binder.validate();
       expect(errors.length).to.equal(2);
     });
   });
