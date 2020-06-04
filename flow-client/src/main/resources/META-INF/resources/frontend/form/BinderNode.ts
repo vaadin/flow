@@ -14,7 +14,6 @@
  * the License.
  */
 import {Binder} from "./Binder";
-import {BinderState} from "./BinderState";
 import {
   AbstractModel,
   ArrayModel,
@@ -40,7 +39,7 @@ function getErrorPropertyName(valueError: ValueError<any>) {
     : getName(valueError.property)
 }
 
-export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T, M> {
+export class BinderNode<T, M extends AbstractModel<T>> {
   private [visitedSymbol]: boolean = false;
   private [validatorsSymbol]: ReadonlyArray<Validator<T>>;
   private [errorsSymbol]?: ReadonlyArray<ValueError<T>>;
