@@ -9,7 +9,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class TaskGenerateConnectTest {
@@ -86,13 +88,7 @@ public class TaskGenerateConnectTest {
 
         String outputEndpoinTs1 = FileUtils.readFileToString(ts1, "UTF-8");
         String outputEndpoinTs2 = FileUtils.readFileToString(ts2, "UTF-8");
-        assertTrue(outputEndpoinTs1
-                .contains("import client from '"
-                        + customConnectClient.getPath()
-                        .replaceFirst("[.][^.]+$", "") + "'"));
-        assertTrue(outputEndpoinTs2
-                .contains("import client from '"
-                        + customConnectClient.getPath()
-                        .replaceFirst("[.][^.]+$", "") + "'"));
+        assertThat(outputEndpoinTs1, containsString("import client from '../connect-client'"));
+        assertThat(outputEndpoinTs1, containsString("import client from '../connect-client'"));
     }
 }
