@@ -28,7 +28,8 @@ import {
   setValue,
   validatorsSymbol
 } from "./Models";
-import {Required, Validator, ValueError} from "./Validation";
+import {Validator, ValueError} from "./Validation";
+import { Required, Size } from "./Validators";
 
 const errorsSymbol = Symbol('ownErrorsSymbol');
 const visitedSymbol = Symbol('visited');
@@ -148,7 +149,15 @@ export class BinderNode<T, M extends AbstractModel<T>> implements BinderState<T,
   }
 
   get required() {
-    return !!this[validatorsSymbol].find(val => val instanceof Required);
+    return !!this[validatorsSymbol].find(val => {
+      if (val instanceof Required) {
+        return true;
+      } else if (val instanceof Size) {
+        const min = (val as Size).value.min;
+        return min && min > 0;
+      }
+      return false;
+    });
   }
 
   protected async updateValidation(): Promise<ReadonlyArray<ValueError<any>>> {
