@@ -726,6 +726,10 @@ public class Element extends Node<Element> {
     private Element setRawProperty(String name, Serializable value) {
         verifySetPropertyName(name);
 
+        if ("innerHTML".equals(name)) {
+            removeAllChildren();
+        }
+
         getStateProvider().setProperty(getNode(), name, value, true);
 
         return this;
