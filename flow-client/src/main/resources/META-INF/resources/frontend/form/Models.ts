@@ -1,24 +1,28 @@
 /* tslint:disable:max-classes-per-file */
 
 import { repeat } from "lit-html/directives/repeat";
-import { Binder } from "./Binder";
-import { Validator } from "./Validation";
-import { Required, Size } from "./Validators";
 
-const ModelSymbol = Symbol('Model');
+import {BinderNode} from "./BinderNode";
+import {Validator} from "./Validation";
+
+export const ModelSymbol = Symbol('Model');
 export const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
-export const defaultValueSymbol = Symbol('defaultValue');
 export const fromStringSymbol = Symbol('fromString');
 export const validatorsSymbol = Symbol('validators');
-export const requiredSymbol = Symbol('required');
+export const binderNodeSymbol = Symbol('binderNode');
 
 interface HasFromString<T> {
   [fromStringSymbol](value: string): T
 }
 
-export type ModelParent<T> = AbstractModel<any> | Binder<T, AbstractModel<T>>;
+export interface HasValue<T> {
+  value: T
+}
+
+export type ModelParent<T> = AbstractModel<any> | HasValue<T>;
+export type ModelType<M extends AbstractModel<any>> = M extends AbstractModel<infer T> ? T : never;
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {
   createEmptyValue: () => T;
@@ -30,18 +34,21 @@ export abstract class AbstractModel<T> {
     return undefined;
   };
 
-  private [parentSymbol]: ModelParent<T>;
+  readonly [parentSymbol]: ModelParent<T>;
+  readonly [validatorsSymbol]: ReadonlyArray<Validator<T>>;
+
+  [binderNodeSymbol]?: BinderNode<T, this>;
+
   private [keySymbol]: keyof any;
-  private [validatorsSymbol] = new Set<Validator<T>>();
 
   constructor(
     parent: ModelParent<T>,
     key: keyof any,
-    ...validators: Array<Validator<T>>
+    ...validators: ReadonlyArray<Validator<T>>
   ) {
     this[parentSymbol] = parent;
     this[keySymbol] = key;
-    validators.forEach(validator => this[validatorsSymbol].add(validator));
+    this[validatorsSymbol] = validators;
   }
 
   toString() {
@@ -49,17 +56,6 @@ export abstract class AbstractModel<T> {
   }
   valueOf(): T {
     return getValue(this);
-  }
-  get [requiredSymbol]() {
-    return !![...this[validatorsSymbol]].find(val => {
-      if (val instanceof Required) {
-        return true;
-      } else if (val instanceof Size) {
-        const min = (val as Size).value.min;
-        return min && min > 0;
-      }
-      return false;
-    })
   }
 }
 
@@ -83,7 +79,7 @@ export class StringModel extends PrimitiveModel<string> implements HasFromString
 
 export class ObjectModel<T> extends AbstractModel<T> {
   static createEmptyValue() {
-    const modelInstance = new this(undefined as any, defaultValueSymbol)
+    const modelInstance = new this({value: undefined as any}, 'value')
     return Object.keys(modelInstance).reduce(
       (obj: any, key: keyof any) => {
         (obj = (obj || {}))[key] = (
@@ -130,15 +126,21 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   }
 }
 
+export function getBinderNode<M extends AbstractModel<any>>(model: M): BinderNode<ModelType<M>, M> {
+  return model[binderNodeSymbol] || (
+    model[binderNodeSymbol] = new BinderNode(model)
+  );
+}
+
 export function getName(model: AbstractModel<any>) {
-  if (model[parentSymbol] instanceof Binder) {
+  if ('value' in model[parentSymbol]) {
     return '';
   }
 
   let name = String(model[keySymbol]);
   model = model[parentSymbol] as AbstractModel<any>;
 
-  while (!(model[parentSymbol] instanceof Binder)) {
+  while (!('value' in model[parentSymbol])) {
     name = `${String(model[keySymbol])}.${name}`;
     model = model[parentSymbol] as AbstractModel<any>;
   }
@@ -148,14 +150,18 @@ export function getName(model: AbstractModel<any>) {
 
 export function getValue<T>(model: AbstractModel<T>): T {
   const parent = model[parentSymbol];
-  return (parent instanceof Binder)
+  return ('value' in parent)
     ? parent.value
     : getValue(parent)[model[keySymbol]];
 }
 
 export function setValue<T>(model: AbstractModel<T>, value: T) {
   const parent = model[parentSymbol];
-  if (parent instanceof Binder) {
+  if (value === getValue(model)) {
+    return;
+  }
+
+  if ('value' in parent) {
     parent.value = value;
   } else if (parent instanceof ArrayModel) {
     const array = getValue(parent).slice();
@@ -199,11 +205,7 @@ export const modelRepeat = <T, M extends AbstractModel<T>>(
   model: ArrayModel<T, M>,
   keyFnOrTemplate: KeyFn<T, M> | ItemTemplate<T, M>,
   itemTemplate?: ItemTemplate<T, M>) =>
-  repeat(model,
-    (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
-    itemTemplate && ((itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index))
-  );
-
-export function getModelValidators<T>(model: AbstractModel<T>): Set<Validator<T>> {
-  return model[validatorsSymbol];
-}
+    repeat(model,
+      (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
+      itemTemplate && ((itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index))
+    );
