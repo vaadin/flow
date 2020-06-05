@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -411,6 +412,66 @@ public class NodeMapTest
         assertChangeCollected(map);
         // change the same property one more time: it still should be collected
         assertChangeCollected(map);
+    }
+
+    @Test
+    public void put_sameValue_alwaysProduceChange_nodeIsDirty() {
+        UI ui = new UI();
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        StateTree tree = ui.getInternals().getStateTree();
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(node);
+        AlwaysProduceChangeMap map = new AlwaysProduceChangeMap(node);
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        map.put("foo", "bar");
+
+        Set<StateNode> nodes = tree.collectDirtyNodes();
+        Assert.assertTrue(nodes.contains(node));
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        Assert.assertTrue(tree.collectDirtyNodes().isEmpty());
+
+        // set once again the same value
+        map.put("foo", "bar");
+
+        nodes = tree.collectDirtyNodes();
+        Assert.assertTrue(nodes.contains(node));
+    }
+
+    @Test
+    public void put_sameValue_neverProduceChange_nodeIsNotDirty() {
+        UI ui = new UI();
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        StateTree tree = ui.getInternals().getStateTree();
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(node);
+        NeverProduceChangeMap map = new NeverProduceChangeMap(node);
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        map.put("foo", "bar");
+
+        Set<StateNode> nodes = tree.collectDirtyNodes();
+        Assert.assertFalse(nodes.contains(node));
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        Assert.assertTrue(tree.collectDirtyNodes().isEmpty());
+
+        // set another value
+        map.put("foo", "baz");
+
+        nodes = tree.collectDirtyNodes();
+        Assert.assertFalse(nodes.contains(node));
     }
 
     @Test

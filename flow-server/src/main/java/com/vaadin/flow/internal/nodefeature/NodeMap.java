@@ -188,7 +188,7 @@ public abstract class NodeMap extends NodeFeature {
     protected Serializable put(String key, Serializable value,
             boolean emitChange) {
         Serializable oldValue = get(key);
-        if (contains(key) && Objects.equals(oldValue, value)) {
+        if (!producePutChange(key, contains(key), value)) {
             return oldValue;
         }
         if (emitChange) {
