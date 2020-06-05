@@ -31,6 +31,7 @@ import java.util.Optional;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.DeploymentConfigurationFactory;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinConfigurationException;
 import com.vaadin.flow.server.VaadinContext;
@@ -64,7 +65,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * In addition to the rules above, a servlet won't be registered, if any servlet
  * had been mapped to the same path already or if
- * {@link com.vaadin.flow.server.Constants#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
+ * {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
  * system property is set to {@code true}.
  *
  * @author Vaadin Ltd
@@ -73,7 +74,6 @@ import org.slf4j.LoggerFactory;
  */
 public class ServletDeployer implements ServletContextListener {
     private static final String SKIPPING_AUTOMATIC_SERVLET_REGISTRATION_BECAUSE = "Skipping automatic servlet registration because";
-    private static final String SEPARATOR = "=======================================================================";
 
     private enum VaadinServletCreation {
         NO_CREATION, SERVLET_EXISTS, SERVLET_CREATED;
@@ -261,12 +261,11 @@ public class ServletDeployer implements ServletContextListener {
     }
 
     /**
-     * Prints to sysout a notification to the user that the application is to be
-     * opened in the browser.
+     * Prints to sysout a notification to the user that the application has been deployed.
      * <p>
      * This method is public so that it can be called in add-ons that map
      * servlet automatically but don't use this class for that.
-     * 
+     *
      * @param servletContext
      *            the deployed servlet context
      * @param servletAutomaticallyCreated
@@ -281,16 +280,14 @@ public class ServletDeployer implements ServletContextListener {
             String contextPath = servletContext.getContextPath();
             contextPath = contextPath.isEmpty() ? "/" : contextPath;
 
-            String url = String.format("http://localhost:8080%s", contextPath);
             FrontendUtils.console(FrontendUtils.BRIGHT_BLUE, String.format(
-                    "%n%s%n%n Vaadin application has started in DEBUG MODE and is available by opening %s in the browser.%n%n NOTE: the server HTTP port may vary - see server log output.%n%n%s%n",
-                    SEPARATOR, url, SEPARATOR));
+                    "Vaadin application has been deployed and started to the context path \"%s\".%n",
+                    contextPath));
         } else {
             // if the user has mapped their own servlet, they will know where to
             // find it
             FrontendUtils.console(FrontendUtils.BRIGHT_BLUE, String.format(
-                    "%n%s%n%nVaadin application has started in DEBUG MODE and is available in the browser.%n%n%s%n",
-                    SEPARATOR, SEPARATOR));
+                    "Vaadin application has been deployed and started.%n"));
         }
     }
 

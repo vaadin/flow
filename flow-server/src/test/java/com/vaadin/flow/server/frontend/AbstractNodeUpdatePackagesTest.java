@@ -41,10 +41,13 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FORM_JARS;
 import static com.vaadin.flow.server.frontend.TaskUpdatePackages.VAADIN_APP_PACKAGE_HASH;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -751,6 +754,9 @@ public abstract class AbstractNodeUpdatePackagesTest
             Assert.assertTrue("Missing '" + entry.getKey() + "' package",
                     devDependencies.hasKey(entry.getKey()));
         }
+
+        Assert.assertTrue(dependencies.hasKey(DEP_NAME_FLOW_JARS));
+        Assert.assertTrue(dependencies.hasKey(DEP_NAME_FORM_JARS));
     }
 
     private JsonObject getDependencies(JsonObject json) {

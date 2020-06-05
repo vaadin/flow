@@ -5,6 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to webpack.config.js
  */
 const fs = require('fs');
+const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
@@ -147,6 +148,11 @@ module.exports = {
     !devMode && new CompressionPlugin(),
     // Give some feedback when heavy builds
     devMode && new ProgressPlugin(true),
+    // Exclude DevmodeGizmo from webpack bundle when not devMode
+    !devMode && new webpack.IgnorePlugin({
+      resourceRegExp: /^\.\/VaadinDevmodeGizmo/,
+      contextRegExp: /flow-frontend$/
+    }),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {

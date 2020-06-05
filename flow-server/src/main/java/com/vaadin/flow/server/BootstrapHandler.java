@@ -898,7 +898,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
             Element wrapper = createJavaScriptElement(null, false);
             wrapper.appendChild(
-                    new DataNode(javaScriptContents, wrapper.baseUri()));
+                    new DataNode(javaScriptContents));
             return wrapper;
         }
 

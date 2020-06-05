@@ -51,7 +51,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -116,7 +116,14 @@ public class FrontendUtils {
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
-    public static final String FLOW_NPM_PACKAGE_NAME = "@vaadin/flow-frontend/";
+    public static final String FLOW_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FLOW_JARS + "/";
+
+    /**
+     * The NPM package name that will be used for the javascript files present
+     * in jar resources that will to be copied to the npm folder so as they are
+     * accessible to webpack.
+     */
+    public static final String FORM_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FORM_JARS + "/";
 
     /**
      * Default folder for copying front-end resources present in the classpath

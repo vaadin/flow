@@ -115,7 +115,9 @@ public class UIInternalsTest {
     @Test
     public void showRouteTarget_usePushConfigFromComponent() {
         PushConfiguration pushConfig = setUpInitialPush();
-        internals.showRouteTarget(Mockito.mock(Location.class), "",
+        useV14Bootstrap();
+
+        internals.showRouteTarget(Mockito.mock(Location.class),
                 new RouteTarget(), Collections.emptyList());
 
         Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
@@ -125,7 +127,9 @@ public class UIInternalsTest {
     @Test
     public void showRouteTarget_usePushConfigFromParentLayout() {
         PushConfiguration pushConfig = setUpInitialPush();
-        internals.showRouteTarget(Mockito.mock(Location.class), "",
+        useV14Bootstrap();
+
+        internals.showRouteTarget(Mockito.mock(Location.class),
                 new RouteTarget1(),
                 Collections.singletonList(new RouteTarget()));
 
@@ -136,17 +140,29 @@ public class UIInternalsTest {
     @Test
     public void showRouteTarget_componentHasNoPush_pushIsDisabled() {
         PushConfiguration pushConfig = setUpInitialPush();
+        useV14Bootstrap();
+
         DeploymentConfiguration deploymentConfiguration = vaadinService
                 .getDeploymentConfiguration();
         Mockito.when(deploymentConfiguration.getPushMode())
                 .thenReturn(PushMode.AUTOMATIC);
 
-        internals.showRouteTarget(Mockito.mock(Location.class), "",
+        internals.showRouteTarget(Mockito.mock(Location.class),
                 new Text(""), Collections.emptyList());
 
         Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
         Mockito.verify(pushConfig, Mockito.times(0))
                 .setTransport(Mockito.any());
+    }
+
+    @Test
+    public void showRouteTarget_clientSideBootstrap() {
+        PushConfiguration pushConfig = setUpInitialPush();
+
+        internals.showRouteTarget(Mockito.mock(Location.class),
+                new RouteTarget(), Collections.emptyList());
+
+        Mockito.verify(pushConfig, Mockito.never()).setPushMode(Mockito.any());
     }
 
     private PushConfiguration setUpInitialPush() {
@@ -160,6 +176,13 @@ public class UIInternalsTest {
 
         Mockito.when(config.getPushMode()).thenReturn(PushMode.DISABLED);
         return pushConfig;
+    }
+
+    private void useV14Bootstrap() {
+        DeploymentConfiguration deploymentConfiguration = vaadinService
+                .getDeploymentConfiguration();
+        Mockito.when(deploymentConfiguration.useV14Bootstrap())
+                .thenReturn(true);
     }
 
 }

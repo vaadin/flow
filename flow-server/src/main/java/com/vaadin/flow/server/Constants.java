@@ -35,7 +35,12 @@ public final class Constants implements Serializable {
      */
     public static final String VAADIN_PREFIX = "vaadin.";
 
-    public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_PRODUCTION_MODE}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_PRODUCTION_MODE = InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 
     // Token file keys used for defining folder paths for dev server
     public static final String NPM_TOKEN = "npmFolder";
@@ -49,66 +54,168 @@ public final class Constants implements Serializable {
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
     /**
-     * Enable it if your project is using client-side bootstrapping (CCDM).
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_USE_V14_BOOTSTRAP = "useDeprecatedV14Bootstrapping";
-    public static final String SERVLET_PARAMETER_INITIAL_UIDL = "eagerServerLoad";
-    public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
-    public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_USE_V14_BOOTSTRAP = InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
-    public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
-    // Javadocs for VaadinService should be updated if this value is changed
-    public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
-    public static final String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = "heartbeatInterval";
-    public static final String SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT = "webComponentDisconnect";
-    public static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
-    public static final String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
-    public static final String SERVLET_PARAMETER_PUSH_URL = "pushURL";
-    public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
-    public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
-    public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
-    public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
-    public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
-    public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_INITIAL_UIDL}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_INITIAL_UIDL = InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_ENABLE_DEV_SERVER}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_REUSE_DEV_SERVER}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_REQUEST_TIMING}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_REQUEST_TIMING = InitParameters.SERVLET_PARAMETER_REQUEST_TIMING;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_HEARTBEAT_INTERVAL}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT = InitParameters.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
+
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_PUSH_MODE}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_PUSH_MODE = InitParameters.SERVLET_PARAMETER_PUSH_MODE;
+
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_PUSH_URL}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_PUSH_URL = InitParameters.SERVLET_PARAMETER_PUSH_URL;
+
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_SYNC_ID_CHECK}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING;
+
+    /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT;
+
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_JSBUNDLE}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_JSBUNDLE = InitParameters.SERVLET_PARAMETER_JSBUNDLE;
+
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_POLYFILLS}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_POLYFILLS = InitParameters.SERVLET_PARAMETER_POLYFILLS;
+
     public static final String POLYFILLS_DEFAULT_VALUE = "";
 
     /**
-     * Configuration name for the parameter that determines whether Brotli
-     * compression should be used for static resources in cases when a
-     * precompressed file is available.
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_BROTLI} instead.
      */
-    public static final String SERVLET_PARAMETER_BROTLI = "brotli";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_BROTLI = InitParameters.SERVLET_PARAMETER_BROTLI;
 
     /**
-     * I18N provider property.
+     * @deprecated Use {@link InitParameters#I18N_PROVIDER} instead.
      */
-    public static final String I18N_PROVIDER = "i18n.provider";
+    @Deprecated
+    public static final String I18N_PROVIDER = InitParameters.I18N_PROVIDER;
 
     /**
-     * Configuration name for the parameter that determines if Flow should
-     * automatically register servlets needed for the application to work.
+     * @deprecated Use
+     *             {@link InitParameters#DISABLE_AUTOMATIC_SERVLET_REGISTRATION}
+     *             instead.
      */
-    public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = "disable.automatic.servlet.registration";
+    @Deprecated
+    public static final String DISABLE_AUTOMATIC_SERVLET_REGISTRATION = InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION;
 
     /**
-     * Configuration name for the parameter that sets the compiled web
-     * components path. The path should be the same as
-     * {@code webComponentOutputDirectoryName} in the maven plugin that
-     * transpiles ES6 code. This path is only used for generated web components
-     * (server side web components) module in case they are transpiled: web
-     * component UI imports them as dependencies.
+     * @deprecated Use {@link InitParameters#COMPILED_WEB_COMPONENTS_PATH}
+     *             instead.
      */
-    public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
+    @Deprecated
+    public static final String COMPILED_WEB_COMPONENTS_PATH = InitParameters.COMPILED_WEB_COMPONENTS_PATH;
 
     /**
-     * Configuration name for the WebPack profile statistics json file to use to
-     * determine template contents.
-     * <p>
-     * File needs to be available either for the ClassLoader as a resource, or
-     * as a static web resource. By default it returns the value in
-     * {@link Constants#STATISTICS_JSON_DEFAULT}
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_STATISTICS_JSON}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_STATISTICS_JSON = "statistics.file.path";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_STATISTICS_JSON = InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
     /**
      * Default path for the WebPack profile statistics json file. It can be
@@ -134,46 +241,51 @@ public final class Constants implements Serializable {
     public static final String RESOURCES_FRONTEND_DEFAULT = "META-INF/frontend";
 
     /**
-     * Configuration name for the time waiting for webpack output success or
-     * error pattern defined in
-     * {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN} and
-     * {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN}
-     * parameters.
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 
     /**
-     * Configuration name for the pattern used to inspect the webpack output to
-     * assure it is up and running. Default value is defined in
-     * {@link DevModeHandler} as the <code>: Compiled</code> expression.
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = "devmode.webpack.output.success.pattern";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
 
     /**
-     * Configuration name for the pattern used to inspect the webpack output to
-     * detecting when compilation failed. Default value is defined in
-     * {@link DevModeHandler} as the <code>: Failed</code> expression.
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = "devmode.webpack.output.error.pattern";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 
     /**
-     * Configuration name for adding extra options to the webpack-dev-server.
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 
     /**
-     * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
-     * If enabled, entry points are scanned for reachable frontend resources. If
-     * disabled, all classes on the classpath are scanned.
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = "devmode.optimizeBundle";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 
     /**
-     * Configuration parameter name for enabling pnpm.
-     *
-     * @since 2.2
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_ENABLE_PNPM}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_ENABLE_PNPM = InitParameters.SERVLET_PARAMETER_ENABLE_PNPM;
 
     /**
      * Constant for whether pnpm is default or not. Mojos need the value as
@@ -182,12 +294,17 @@ public final class Constants implements Serializable {
     public static final String ENABLE_PNPM_DEFAULT_STRING = "true";
 
     /**
-     * Configuration parameter name for requiring node executable installed in
-     * home directory.
-     *
-     * @since
+     * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}
+     *             instead.
      */
-    public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
+    @Deprecated
+    public static final String REQUIRE_HOME_NODE_EXECUTABLE = InitParameters.REQUIRE_HOME_NODE_EXECUTABLE;
+
+    /**
+     * Internal parameter which prevent validation for annotations which are
+     * allowed on an AppShell class in non V14 bootstrap mode.
+     */
+    public static final String ALLOW_APPSHELL_ANNOTATIONS = "allow.appshell.annotations";
 
     /**
      * The path used in the vaadin servlet for handling static resources.
@@ -282,11 +399,12 @@ public final class Constants implements Serializable {
     public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
 
     /**
-     * Configuration parameter name for enabling live reload.
-     *
-     * @since
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD}
+     *             instead.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 
     private Constants() {
         // prevent instantiation constants class only

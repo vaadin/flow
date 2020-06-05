@@ -43,6 +43,7 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -402,15 +403,17 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
-    public void should_not_throw_when_noAppShell_and_classWithPageConfigurator()
+    public void should_not_throw_when_classWithPageConfigurator()
             throws Exception {
         classes.add(OffendingClassWithConfigurator.class);
         initializer.process(classes, servletContext);
     }
 
     @Test
-    public void should_not_throw_when_noAppShell_and_offendingClass()
+    public void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass()
             throws Exception {
+        initParams.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                Boolean.TRUE.toString());
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
 
@@ -423,6 +426,8 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_link_to_PWA_article() throws Exception {
+        initParams.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                Boolean.TRUE.toString());
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingPwaClass.class);
         initializer.process(classes, servletContext);
@@ -433,6 +438,8 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_not_link_to_PWA_article() throws Exception {
+        initParams.put(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                Boolean.TRUE.toString());
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingNonPwaClass.class);
         initializer.process(classes, servletContext);

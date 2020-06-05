@@ -44,6 +44,7 @@ import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
@@ -53,7 +54,6 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_APP_CONFIGURATOR;
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING;
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_CONFIGURATOR;
 import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA;
 
@@ -110,6 +110,9 @@ public class VaadinAppShellInitializer
             return;
         }
 
+        boolean disregardOffendingAnnotations = config.getBooleanProperty(
+                Constants.ALLOW_APPSHELL_ANNOTATIONS, false);
+
         AppShellRegistry registry = AppShellRegistry
                 .getInstance(new VaadinServletContext(context));
         registry.reset();
@@ -140,7 +143,7 @@ public class VaadinAppShellInitializer
                 });
 
         if (!offendingAnnotations.isEmpty()) {
-            if (registry.getShell() == null) {
+            if (disregardOffendingAnnotations) {
                 boolean hasPwa = offendingAnnotations.stream()
                         .anyMatch(err -> err.matches(".*@PWA.*"));
                 String message = String.format(
@@ -149,8 +152,7 @@ public class VaadinAppShellInitializer
                         String.join("\n  ", offendingAnnotations));
                 getLogger().error(message);
             } else {
-                String message = String.format(ERROR_HEADER_OFFENDING,
-                        registry.getShell(),
+                String message = String.format(ERROR_HEADER_NO_SHELL,
                         String.join("\n  ", offendingAnnotations));
                 throw new InvalidApplicationConfigurationException(message);
             }

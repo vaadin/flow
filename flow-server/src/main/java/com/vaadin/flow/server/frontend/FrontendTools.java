@@ -112,6 +112,10 @@ public class FrontendTools {
     public static final int SUPPORTED_PNPM_MAJOR_VERSION = 4;
     public static final int SUPPORTED_PNPM_MINOR_VERSION = 4;
 
+    // Due to a regression in pnpm, see #8434
+    private static final int BREAKING_PNPM_MAJOR_VERSION = 4;
+    private static final int BREAKING_PNPM_MINOR_VERSION = 6;
+
     private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
     private static final FrontendVersion SHOULD_WORK_NODE_VERSION = new FrontendVersion(
@@ -134,6 +138,10 @@ public class FrontendTools {
 
     private static final FrontendVersion SUPPORTED_PNPM_VERSION = new FrontendVersion(
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
+
+    // See #8434
+    private static final FrontendVersion BREAKING_PNPM_VERSION = new FrontendVersion(
+            BREAKING_PNPM_MAJOR_VERSION, BREAKING_PNPM_MINOR_VERSION);
 
     private final String baseDir;
     private final Supplier<String> alternativeDirGetter;
@@ -641,13 +649,16 @@ public class FrontendTools {
                 FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
                         versionCmd);
                 if (FrontendUtils.isVersionAtLeast(pnpmVersion,
-                        SUPPORTED_PNPM_VERSION)) {
+                        SUPPORTED_PNPM_VERSION)
+                        && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION)) {
                     return pnpmCommand;
                 } else {
                     getLogger().warn(String.format(
-                            "installed pnpm ('%s', version %s) is too old, installing supported version locally",
+                            "installed pnpm ('%s', version %s) is not in the compatible versions range (>=%s, <%s), installing supported version locally",
                             String.join(" ", pnpmCommand),
-                            pnpmVersion.getFullVersion()));
+                            pnpmVersion.getFullVersion(),
+                            SUPPORTED_PNPM_VERSION.getFullVersion(),
+                            BREAKING_PNPM_VERSION.getFullVersion()));
                 }
             } catch (UnknownVersionException e) {
                 getLogger().warn(

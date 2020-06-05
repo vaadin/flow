@@ -134,7 +134,8 @@ public class RouterLinkTest extends HasCurrentService {
 
         Assert.assertTrue(link.getElement().hasAttribute("href"));
 
-        Assert.assertEquals("greeting/foo", link.getElement().getAttribute("href"));
+        Assert.assertEquals("greeting/foo",
+                link.getElement().getAttribute("href"));
     }
 
     @Test
@@ -237,7 +238,7 @@ public class RouterLinkTest extends HasCurrentService {
             link.setRoute(ParameterNavigationTarget.class,
                     new RouteParameters("fooId", "qwe"));
             Assert.fail("Route is not registered.");
-        } catch (NotFoundException e) {
+        } catch (IllegalArgumentException e) {
         }
     }
 
@@ -384,6 +385,12 @@ public class RouterLinkTest extends HasCurrentService {
         Assert.assertEquals("foo", href);
     }
 
+    @Test
+    public void routerLinkToNotRouterTarget_throwsIAE() {
+        expectedEx.expect(IllegalArgumentException.class);
+        new RouterLink("", Foo.class);
+    }
+
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
@@ -407,5 +414,10 @@ public class RouterLinkTest extends HasCurrentService {
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
         }
+    }
+
+    @Tag(Tag.DIV)
+    public static class Foo extends Component {
+
     }
 }

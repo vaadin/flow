@@ -17,6 +17,7 @@ package com.vaadin.client.flow;
 
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.flow.binding.SimpleElementBindingStrategy;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -34,8 +35,7 @@ import elemental.json.JsonValue;
 
 /**
  * Processes the result of
- * {@link Page#executeJs(String, java.io.Serializable...)} on the
- * client.
+ * {@link Page#executeJs(String, java.io.Serializable...)} on the client.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -154,7 +154,9 @@ public class ExecuteJavaScriptProcessor {
         try {
             NativeFunction function = new NativeFunction(parameterNamesAndCode);
 
-            function.apply(getContextExecutionObject(nodeParameters),
+            function.apply(
+                    getContextExecutionObject(nodeParameters, () -> registry
+                            .getUILifecycle().setState(UIState.TERMINATED)),
                     parameters);
         } catch (Exception exception) {
             Console.reportStacktrace(exception);
@@ -197,26 +199,33 @@ public class ExecuteJavaScriptProcessor {
     }
 
     private native JsonObject getContextExecutionObject(
-            JsMap<Object, StateNode> nodeParameters)
+            JsMap<Object, StateNode> nodeParameters, Runnable stopApplication)
     /*-{
           var object = {};
-          object.getNode = function (element){
+          object.getNode = $entry(function (element) {
               var node = nodeParameters.get(element);
-              if ( node == null ){
+              if (node == null) {
                   throw new ReferenceError("There is no a StateNode for the given argument.");
               }
               return node;
-          };
+          });
           object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
-          object.attachExistingElement = function(parent, previousSibling, tagName, id){
+          object.registry = this.@ExecuteJavaScriptProcessor::registry;
+          object.attachExistingElement = $entry(function(parent, previousSibling, tagName, id) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
-          };
-          object.populateModelProperties = function(element, properties){
+          });
+          object.populateModelProperties = $entry(function(element, properties) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::populateModelProperties(*)(object.getNode(element), properties);
-          };
-          object.registerUpdatableModelProperties = function(element, properties){
+          });
+          object.registerUpdatableModelProperties = $entry(function(element, properties) {
               @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
-          };
+          });
+          object.stopApplication = $entry(function() {
+              stopApplication.@java.lang.Runnable::run(*)();
+          });
+          object.scrollPositionHandlerAfterServerNavigation = $entry(function(state) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
+          });
           return object;
     }-*/;
 }

@@ -73,7 +73,7 @@ public @interface VaadinServletConfiguration {
      *
      * @see DeploymentConfiguration#isProductionMode()
      */
-    @InitParameterName(Constants.SERVLET_PARAMETER_PRODUCTION_MODE)
+    @InitParameterName(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE)
     boolean productionMode();
 
     /**
@@ -81,7 +81,7 @@ public @interface VaadinServletConfiguration {
      *
      * @return the UI class
      */
-    @InitParameterName(VaadinSession.UI_PARAMETER)
+    @InitParameterName(InitParameters.UI_PARAMETER)
     Class<? extends UI> ui() default UI.class;
 
     /**
@@ -93,7 +93,7 @@ public @interface VaadinServletConfiguration {
      *
      * @see DeploymentConfiguration#getHeartbeatInterval()
      */
-    @InitParameterName(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL)
+    @InitParameterName(InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL)
     int heartbeatInterval() default DefaultDeploymentConfiguration.DEFAULT_HEARTBEAT_INTERVAL;
 
     /**
@@ -107,7 +107,7 @@ public @interface VaadinServletConfiguration {
      *
      * @see DeploymentConfiguration#isCloseIdleSessions()
      */
-    @InitParameterName(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)
+    @InitParameterName(InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)
     boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
 
     /**
@@ -118,7 +118,7 @@ public @interface VaadinServletConfiguration {
      *
      * @see DeploymentConfiguration#disableAutomaticServletRegistration()
      */
-    @InitParameterName(Constants.DISABLE_AUTOMATIC_SERVLET_REGISTRATION)
+    @InitParameterName(InitParameters.DISABLE_AUTOMATIC_SERVLET_REGISTRATION)
     boolean disableAutomaticServletRegistration() default false;
 
 }

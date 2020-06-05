@@ -5,7 +5,12 @@ module.exports = {
   entry: {
     flow: "./src/test/frontend/FlowTests.ts",
     connect: "./src/test/frontend/ConnectTests.ts",
-    vaadindevmodegizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js"
+    gizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js",
+    form_binder: "./src/test/frontend/form/BinderTests.ts",
+    form_field: "./src/test/frontend/form/FieldTests.ts",
+    form_validation: "./src/test/frontend/form/ValidationTests.ts",
+    form_validators: "./src/test/frontend/form/ValidatorsTests.ts",
+    form_model: "./src/test/frontend/form/ModelTests.ts"
   },
   output: {
     filename: "[name].spec.js",

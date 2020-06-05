@@ -45,37 +45,34 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 public class DefaultDeploymentConfiguration
         extends PropertyDeploymentConfiguration {
 
-    private static final String SEPARATOR = "\n=======================================================================";
-    private static final String HEADER = "\n=================== Vaadin DeploymentConfiguration ====================\n";
+    public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEBUG MODE.\n"
+            + "When deploying application for production, remember to disable debug features. See more from https://vaadin.com/docs/";
 
-    public static final String NOT_PRODUCTION_MODE_INFO = " Vaadin is running in DEBUG MODE.\n"
-            + " When deploying application for production, remember to disable debug features. See more from https://vaadin.com/docs/";
+    public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
+            + "When deploying application for production, disable debug features by enabling production mode!\n"
+            + "See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
-    public static final String NOT_PRODUCTION_MODE_WARNING = " WARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
-            + " When deploying application for production, disable debug features by enabling production mode!\n"
-            + " See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
-
-    public static final String WARNING_V14_BOOTSTRAP = " Using deprecated Vaadin 14 bootstrap mode.\n"
-            + " Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"
-            + " See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information.";
+    public static final String WARNING_V14_BOOTSTRAP = "Using deprecated Vaadin 14 bootstrap mode.\n"
+            + "Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"
+            + "See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information.";
 
     // not a warning anymore, but keeping variable name to avoid breaking anything
-    public static final String WARNING_V15_BOOTSTRAP = "%n Using Vaadin 15+ bootstrap mode.%n %s%n %s";
+    public static final String WARNING_V15_BOOTSTRAP = "Using Vaadin 15+ bootstrap mode.%n %s%n %s";
 
-    private static final String DEPLOYMENT_WARNINGS = " Following issues were discovered with deployment configuration:";
+    private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
-    public static final String WARNING_XSRF_PROTECTION_DISABLED = " WARNING: Cross-site request forgery protection is disabled!";
+    public static final String WARNING_XSRF_PROTECTION_DISABLED = "WARNING: Cross-site request forgery protection is disabled!";
 
-    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = " WARNING: heartbeatInterval has been set to a non integer value."
+    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = "WARNING: heartbeatInterval has been set to a non integer value."
             + "\n The default of 5min will be used.";
 
-    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = " WARNING: pushMode has been set to an unrecognized value.\n"
-            + " The permitted values are \"disabled\", \"manual\",\n"
-            + " and \"automatic\". The default of \"disabled\" will be used.";
+    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = "WARNING: pushMode has been set to an unrecognized value.\n"
+            + "The permitted values are \"disabled\", \"manual\",\n"
+            + "and \"automatic\". The default of \"disabled\" will be used.";
 
-    private static final String INDEX_NOT_FOUND = " '%s' is not found from '%s'.%n"
-            + " Generating a default one in '%s%s'. "
-            + " Move it to the '%s' folder if you want to customize it.";
+    private static final String INDEX_NOT_FOUND = "'%s' is not found from '%s'.%n"
+            + "Generating a default one in '%s%s'. "
+            + "Move it to the '%s' folder if you want to customize it.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -159,18 +156,13 @@ public class DefaultDeploymentConfiguration
         Logger logger = LoggerFactory.getLogger(getClass().getName());
 
         if (!warnings.isEmpty()) {
-            warnings.add(0, HEADER);
-            warnings.add(1, DEPLOYMENT_WARNINGS);
-            warnings.add("\n");
+            warnings.add(0, DEPLOYMENT_WARNINGS);
             // merging info messages to warnings for now
             warnings.addAll(info);
-            warnings.add(SEPARATOR);
             if (logger.isWarnEnabled()) {
                 logger.warn(String.join("\n", warnings));
             }
         } else if (!info.isEmpty()) {
-            info.add(0, HEADER);
-            info.add(SEPARATOR);
             if (logger.isInfoEnabled()) {
                 logger.info(String.join("\n", info));
             }
@@ -296,7 +288,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkProductionMode(boolean log) {
         productionMode = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_PRODUCTION_MODE, false);
+                InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, false);
         if (log) {
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
@@ -315,7 +307,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkV14Bootsrapping(boolean log) {
         useDeprecatedV14Bootstrapping = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
+                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
         if (log) {
             if (useDeprecatedV14Bootstrapping) {
                 warnings.add(WARNING_V14_BOOTSTRAP);
@@ -370,7 +362,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkRequestTiming() {
         requestTiming = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
+                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
     }
 
     /**
@@ -378,7 +370,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkXsrfProtection(boolean loggWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
-                Constants.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
         if (!xsrfProtectionEnabled && loggWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -387,7 +379,7 @@ public class DefaultDeploymentConfiguration
     private void checkHeartbeatInterval() {
         try {
             heartbeatInterval = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
+                    InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                     DEFAULT_HEARTBEAT_INTERVAL, Integer::parseInt);
         } catch (NumberFormatException e) {
             warnings.add(WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC);
@@ -398,7 +390,7 @@ public class DefaultDeploymentConfiguration
     private void checkMaxMessageSuspendTimeout() {
         try {
             maxMessageSuspendTimeout = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                    InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                     DEFAULT_MAX_MESSAGE_SUSPEND_TIMEOUT, Integer::parseInt);
         } catch (NumberFormatException e) {
             String warning = "WARNING: maxMessageSuspendInterval has been set to an illegal value."
@@ -412,7 +404,7 @@ public class DefaultDeploymentConfiguration
     private void checkWebComponentDisconnectTimeout() {
         try {
             webComponentDisconnect = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT,
+                    InitParameters.SERVLET_PARAMETER_WEB_COMPONENT_DISCONNECT,
                     DEFAULT_WEB_COMPONENT_DISCONNECT, Integer::parseInt);
 
         } catch (NumberFormatException e) {
@@ -423,14 +415,14 @@ public class DefaultDeploymentConfiguration
 
     private void checkCloseIdleSessions() {
         closeIdleSessions = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
+                InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS,
                 DEFAULT_CLOSE_IDLE_SESSIONS);
     }
 
     private void checkPushMode() {
         try {
             pushMode = getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
+                    InitParameters.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
                     stringMode -> Enum.valueOf(PushMode.class,
                             stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
@@ -440,18 +432,18 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkPushURL() {
-        pushURL = getStringProperty(Constants.SERVLET_PARAMETER_PUSH_URL, "");
+        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "");
     }
 
     private void checkSyncIdCheck() {
         syncIdCheck = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_SYNC_ID_CHECK,
+                InitParameters.SERVLET_PARAMETER_SYNC_ID_CHECK,
                 DEFAULT_SYNC_ID_CHECK);
     }
 
     private void checkSendUrlsAsParameters() {
         sendUrlsAsParameters = getBooleanProperty(
-                Constants.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
     }
 }

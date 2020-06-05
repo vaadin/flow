@@ -19,7 +19,7 @@ package com.vaadin.flow.server.communication;
 import java.io.Serializable;
 import java.util.EventListener;
 
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -33,11 +33,11 @@ import com.vaadin.flow.server.VaadinResponse;
  * Index HTML request listeners are registered using the
  * {@link ServiceInitEvent} during the initialization of the application. Index
  * HTML request listener is used when the application flag
- * {@link Constants#SERVLET_PARAMETER_USE_V14_BOOTSTRAP} is not set.
+ * {@link InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP} is not set.
  *
  * @see ServiceInitEvent#addIndexHtmlRequestListener(IndexHtmlRequestListener)
  * @see IndexHtmlRequestHandler
- * @see Constants#SERVLET_PARAMETER_USE_V14_BOOTSTRAP
+ * @see InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP
  */
 @FunctionalInterface
 public interface IndexHtmlRequestListener extends EventListener, Serializable {
