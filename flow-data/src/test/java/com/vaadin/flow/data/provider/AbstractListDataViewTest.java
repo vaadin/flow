@@ -267,9 +267,75 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItems_allItemsAreAdded() {
+        dataView.addItems(Arrays.asList("newOne", "newTwo", "newThree"));
+
+        Assert.assertArrayEquals(
+                new String[] { "first", "middle", "last", "newOne", "newTwo",
+                        "newThree" },
+                dataView.getAllItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemsAfter_allItemsAreAddedAfterTargetItem() {
+        dataView.addItemsAfter(Arrays.asList("newOne", "newTwo", "newThree"),
+                "first");
+
+        Assert.assertArrayEquals(
+                new String[] { "first", "newOne", "newTwo", "newThree",
+                        "middle", "last" },
+                dataView.getAllItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemsBefore_allItemsAreAddedBeforeTargetItem() {
+        dataView.addItemsBefore(Arrays.asList("newOne", "newTwo", "newThree"),
+                "middle");
+
+        Assert.assertArrayEquals(
+                new String[] { "first", "newOne", "newTwo", "newThree",
+                        "middle", "last" },
+                dataView.getAllItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void removeItems_itemsOutOfOrder_allItemsAreRemoved() {
+        dataView.removeItems(Arrays.asList("middle", "first"));
+
+        Assert.assertArrayEquals(new String[] { "last" },
+                dataView.getAllItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemsAndRemoveItems_noConcurrencyIssues() {
+        dataView.addItemsBefore(Arrays.asList("newOne", "newTwo", "newThree"),
+                "middle");
+
+        Assert.assertArrayEquals(
+                new String[] { "first", "newOne", "newTwo", "newThree",
+                        "middle", "last" },
+                dataView.getAllItems().toArray(String[]::new));
+
+        dataView.removeItems(Arrays.asList("middle", "first"));
+
+        Assert.assertArrayEquals(
+                new String[] { "newOne", "newTwo", "newThree", "last" },
+                dataView.getAllItems().toArray(String[]::new));
+
+        dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
+
+        Assert.assertArrayEquals(
+                new String[] { "newOne", "one", "two", "newTwo", "newThree",
+                        "last" },
+                dataView.getAllItems().toArray(String[]::new));
+
+    }
+
+    @Test
     public void dataProviderOnSet_exceptionThrownForAddItemBefore() {
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("DataProvider collection 'HashSet' is not a list.");
+        exceptionRule.expectMessage(
+                "DataProvider collection 'HashSet' is not a list.");
 
         Set<String> items = new HashSet<>();
         items.add("item1");
@@ -285,7 +351,8 @@ public class AbstractListDataViewTest {
     @Test
     public void dataProviderOnSet_exceptionThrownForAddItemAfter() {
         exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("DataProvider collection 'HashSet' is not a list.");
+        exceptionRule.expectMessage(
+                "DataProvider collection 'HashSet' is not a list.");
 
         Set<String> items = new HashSet<>();
         items.add("item1");

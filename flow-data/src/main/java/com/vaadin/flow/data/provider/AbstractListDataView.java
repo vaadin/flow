@@ -137,9 +137,9 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public AbstractListDataView<T> removeItem(T item) {
+    public AbstractListDataView<T> addItems(Collection<T> items) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        dataProvider.getItems().remove(item);
+        dataProvider.getItems().addAll(items);
         dataProvider.refreshAll();
         return this;
     }
@@ -159,6 +159,20 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
     }
 
+    @Override
+    public AbstractListDataView<T> addItemsAfter(Collection<T> items, T after) {
+        final Collection<T> backendItems = getDataProvider().getItems();
+        if(!backendItems.contains(after)) {
+            throw new IllegalArgumentException("Item to insert after is not available in the data");
+        }
+        if(backendItems instanceof List) {
+            final List<T> itemList = (List<T>) backendItems;
+            itemList.addAll(itemList.indexOf(after)+1, items);
+            getDataProvider().refreshAll();
+            return this;
+        }
+        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+    }
 
     @Override
     public AbstractListDataView<T> addItemBefore(T item, T before) {
@@ -173,6 +187,37 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return this;
         }
         throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+    }
+
+    @Override
+    public AbstractListDataView<T> addItemsBefore(Collection<T> items, T before) {
+        final Collection<T> backendItems = getDataProvider().getItems();
+        if(!backendItems.contains(before)) {
+            throw new IllegalArgumentException("Item to insert before is not available in the data");
+        }
+        if(backendItems instanceof List) {
+            final List<T> itemList = (List<T>) backendItems;
+            itemList.addAll(itemList.indexOf(before), items);
+            getDataProvider().refreshAll();
+            return this;
+        }
+        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+    }
+
+    @Override
+    public AbstractListDataView<T> removeItem(T item) {
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        dataProvider.getItems().remove(item);
+        dataProvider.refreshAll();
+        return this;
+    }
+
+    @Override
+    public AbstractListDataView<T> removeItems(Collection<T> items) {
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        dataProvider.getItems().removeAll(items);
+        dataProvider.refreshAll();
+        return this;
     }
 
     /**
