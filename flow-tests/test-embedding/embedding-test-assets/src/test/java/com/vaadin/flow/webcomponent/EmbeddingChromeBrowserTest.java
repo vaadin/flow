@@ -13,7 +13,7 @@ public abstract class EmbeddingChromeBrowserTest extends ChromeBrowserTest {
         // attached #8329
         this.waitUntil((driver) -> Boolean.TRUE
                 .equals(this.getCommandExecutor().executeScript(
-                        "return Array.from(document.getElementsByTagName('*')).some(x => x.shadowRoot !== null)")));
+                        "return Array.prototype.slice.call(document.getElementsByTagName(\"*\")).some(function (x) { return !!x.shadowRoot })")));
     }
 
 }
