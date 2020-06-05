@@ -358,4 +358,48 @@ public class MapPropertyTest {
         property.syncToServer(null);
         Assert.assertEquals(property, tree.sentProperty);
     }
+
+    @Test
+    public void setValue_alwaysUpdateValue_eventIsAlwaysFired() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(13, tree);
+
+        MapProperty property = new MapProperty("foo",
+                node.getMap(NodeFeatures.ELEMENT_PROPERTIES), true);
+
+        AtomicReference<MapPropertyChangeEvent> capture = new AtomicReference<>();
+        property.addChangeListener(capture::set);
+
+        property.setValue("bar");
+
+        Assert.assertNotNull(capture.get());
+        // reset
+        capture.set(null);
+
+        // set the same value again
+        property.setValue("foo");
+        Assert.assertNotNull(capture.get());
+    }
+
+    @Test
+    public void setValue_defaultUpdateValueStrategy_eventIsFiredOnlyOnce() {
+        TestTree tree = new TestTree();
+        StateNode node = new StateNode(13, tree);
+
+        MapProperty property = new MapProperty("foo",
+                node.getMap(NodeFeatures.ELEMENT_PROPERTIES), false);
+
+        AtomicReference<MapPropertyChangeEvent> capture = new AtomicReference<>();
+        property.addChangeListener(capture::set);
+
+        property.setValue("bar");
+
+        Assert.assertNotNull(capture.get());
+        // reset
+        capture.set(null);
+
+        // set the same value again
+        property.setValue("bar");
+        Assert.assertNull(capture.get());
+    }
 }
