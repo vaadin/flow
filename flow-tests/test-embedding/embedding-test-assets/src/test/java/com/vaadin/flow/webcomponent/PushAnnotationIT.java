@@ -18,10 +18,9 @@ package com.vaadin.flow.webcomponent;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class PushAnnotationIT extends ChromeBrowserTest {
+public class PushAnnotationIT extends EmbeddingChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
