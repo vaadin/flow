@@ -309,6 +309,9 @@ class VaadinDevmodeGizmo extends LitElement {
 
       .message-content {
           margin-right: 0.5rem;
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          user-select: text;
       }
 
       .message .message-heading {
@@ -386,6 +389,9 @@ class VaadinDevmodeGizmo extends LitElement {
           display: flex;
           align-items: center;
           position: relative;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          user-select: none;
       }
 
       .message .persist::before {
