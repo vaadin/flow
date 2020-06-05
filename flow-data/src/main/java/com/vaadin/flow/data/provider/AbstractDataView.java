@@ -91,12 +91,12 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public Stream<T> getAllItems() {
+    public Stream<T> getItems() {
         return dataProviderSupplier.get().fetch(new Query<>());
     }
 
     @Override
-    public int getDataSize() {
+    public int getSize() {
         return dataProviderSupplier.get().size(new Query<>());
     }
 }

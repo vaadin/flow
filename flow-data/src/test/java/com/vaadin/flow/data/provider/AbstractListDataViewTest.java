@@ -20,10 +20,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.primitives.Chars;
+import com.vaadin.flow.function.ValueProvider;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -46,7 +49,6 @@ public class AbstractListDataViewTest {
 
     @Before
     public void init() {
-
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = DataProvider.ofCollection(items);
         dataView = new ListDataViewImpl(() -> dataProvider, null);
@@ -64,89 +66,109 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void hasNextItem_nextItemAvailable_nextItemFound() {
-        Assert.assertTrue("First item should have next item",
-                dataView.hasNextItem("first"));
-        Assert.assertTrue("Item in middle should have next item",
-                dataView.hasNextItem("middle"));
-    }
-
-    @Test
-    public void hasNextItem_nextItemUnavailable_nextItemNotFound() {
-        Assert.assertFalse("No next item for last item should be available",
-                dataView.hasNextItem("last"));
-    }
-
-    @Test
     public void getNextItem_nextItemAvailable_nextItemFound() {
+        Optional<String> middle = dataView.getNextItem("middle");
+        Assert.assertTrue(middle.isPresent());
         Assert.assertEquals("Faulty next item", "last",
-                dataView.getNextItem("middle"));
+                middle.get());
     }
 
     @Test
     public void getNextItem_nextItemUnavailable_nextItemNotFound() {
-        Assert.assertNull("Got next item for last item",
-                dataView.getNextItem("last"));
-    }
-
-    @Test
-    public void hasPrevItem_prevItemAvailable_prevItemFound() {
-        Assert.assertTrue("Last item should have previous item",
-                dataView.hasPreviousItem("last"));
-        Assert.assertTrue("Item in middle should have previous item",
-                dataView.hasPreviousItem("middle"));
-    }
-
-    @Test
-    public void hasPrevItem_prevItemUnavailable_prevItemNotFound() {
-        Assert.assertFalse(
-                "No previous item for first item should be available",
-                dataView.hasPreviousItem("first"));
+        Assert.assertFalse("Got next item for last item",
+                dataView.getNextItem("last").isPresent());
     }
 
     @Test
     public void getPrevItem_prevItemAvailable_prevItemFound() {
+        Optional<String> middle = dataView.getPreviousItem("middle");
+        Assert.assertTrue(middle.isPresent());
         Assert.assertEquals("Item in middle should have previous item", "first",
-                dataView.getPreviousItem("middle"));
+                middle.get());
     }
 
     @Test
     public void getPrevItem_prevItemUnavailable_prevItemNotFound() {
-        Assert.assertNull("Got previous item for first index",
-                dataView.getPreviousItem("first"));
+        Assert.assertFalse("Got previous item for first index",
+                dataView.getPreviousItem("first").isPresent());
     }
 
     @Test
-    public void withFilter_filterIsSet_filteredItemsObtained() {
-        Assert.assertEquals(items.size(), dataView.getDataSize());
-        dataView.withFilter(item -> item.equals("first"));
+    public void setFilter_filterIsSet_filteredItemsObtained() {
+        Assert.assertEquals(items.size(), dataView.getSize());
+        dataView.setFilter(item -> item.equals("first"));
         Assert.assertEquals("Filter was not applied to data size", 1,
-                dataView.getDataSize());
+                dataView.getSize());
         Assert.assertEquals("Expected item is missing from filtered data",
-                "first", dataView.getAllItems().findFirst().get());
+                "first", dataView.getItems().findFirst().get());
     }
 
     @Test
-    public void withFilter_filterReset_allItemsObtained() {
-        ((ListDataProvider) dataProvider)
-                .setFilter(item -> item.equals("first"));
-        dataView.withFilter(null);
+    public void setFilter_filterReset_allItemsObtained() {
+        dataProvider.setFilter(item -> item.equals("first"));
+        dataView.setFilter(null);
         Assert.assertEquals("Filter reset was not applied to data size",
-                items.size(), dataView.getDataSize());
+                items.size(), dataView.getSize());
         Assert.assertArrayEquals("Filter reset was not applied to data set",
-                items.toArray(), dataView.getAllItems().toArray());
+                items.toArray(), dataView.getItems().toArray());
     }
 
     @Test
-    public void withSortComparator_sortIsSet_sortedItemsObtained() {
-        dataView.withSortComparator(String::compareTo);
+    public void setSortComparator_sortIsSet_sortedItemsObtained() {
+        dataView.setSortComparator(String::compareTo);
+        Assert.assertEquals("Unexpected data set order after comparator setup",
+                "first,last,middle",
+                dataView.getItems().collect(Collectors.joining(",")));
+    }
+
+    @Test
+    public void addSortComparator_twoComparatorsAdded_itemsSortedByCompositeComparator() {
+        dataProvider = DataProvider.ofItems("b3", "a2", "a1");
+        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView.addSortComparator((s1, s2) -> Chars.compare(s1.charAt(0), s2.charAt(0)));
+        Assert.assertEquals("Unexpected data set order (comparator 1)",
+                "a2,a1,b3",
+                dataView.getItems().collect(Collectors.joining(",")));
+        dataView.addSortComparator((s1, s2) -> Chars.compare(s1.charAt(1), s2.charAt(1)));
+        Assert.assertEquals("Unexpected data set order (comparator 2)",
+                "a1,a2,b3",
+                dataView.getItems().collect(Collectors.joining(",")));
+    }
+
+    @Test
+    public void setSortOrder_sortOrderIsSet_sortedItemsObtained() {
+        dataView.setSortOrder(ValueProvider.identity(), SortDirection.ASCENDING);
         Assert.assertEquals("Unexpected data set order", "first,last,middle",
-                dataView.getAllItems().collect(Collectors.joining(",")));
+                dataView.getItems().collect(Collectors.joining(",")));
+    }
+
+    @Test
+    public void addSortOrder_twoOrdersAdded_itemsSortedByCompositeOrders() {
+        dataProvider = DataProvider.ofItems("b3", "a1", "a2");
+        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView.addSortOrder((item) -> item.charAt(0), SortDirection.DESCENDING);
+        Assert.assertEquals("Unexpected data set order (order 1)",
+                "b3,a1,a2",
+                dataView.getItems().collect(Collectors.joining(",")));
+        dataView.addSortOrder((item) -> item.charAt(1), SortDirection.DESCENDING);
+        Assert.assertEquals("Unexpected data set order (order 2)",
+                "b3,a2,a1",
+                dataView.getItems().collect(Collectors.joining(",")));
+    }
+
+    @Test
+    public void removeSorting_sortOrderIsSet_noSorting() {
+        dataView.setSortOrder(ValueProvider.identity(), SortDirection.ASCENDING);
+        Assert.assertEquals("Unexpected data set order", "first,last,middle",
+                dataView.getItems().collect(Collectors.joining(",")));
+        dataView.removeSorting();
+        Assert.assertEquals("Unexpected data set order", "first,middle,last",
+                dataView.getItems().collect(Collectors.joining(",")));
     }
 
     @Test
     public void getAllItems_noFiltersSet_allItemsObtained() {
-        Stream<String> allItems = dataView.getAllItems();
+        Stream<String> allItems = dataView.getItems();
         Assert.assertArrayEquals("Unexpected data set", items.toArray(),
                 allItems.toArray());
     }
@@ -154,19 +176,19 @@ public class AbstractListDataViewTest {
     @Test
     public void getDataSize_noFiltersSet_dataSizeObtained() {
         Assert.assertEquals("Unexpected size for data", items.size(),
-                dataView.getDataSize());
+                dataView.getSize());
     }
 
     @Test
-    public void isItemPresent_itemPresentedInDataSet_itemFound() {
+    public void contains_itemPresentedInDataSet_itemFound() {
         Assert.assertTrue("Set item was not found in the data",
-                dataView.isItemPresent("first"));
+                dataView.contains("first"));
     }
 
     @Test
-    public void isItemPresent_itemNotPresentedInDataSet_itemNotFound() {
+    public void contains_itemNotPresentedInDataSet_itemNotFound() {
         Assert.assertFalse("Non existent item found in data",
-                dataView.isItemPresent("absent item"));
+                dataView.contains("absent item"));
     }
 
     @Test
@@ -174,19 +196,22 @@ public class AbstractListDataViewTest {
         final String newItem = "new Item";
         dataView.addItem(newItem);
 
-        Assert.assertEquals(4, dataView.getDataSize());
-        Assert.assertTrue(dataView.isItemPresent(newItem));
-        Assert.assertEquals(newItem, dataView.getNextItem("last"));
-
+        Assert.assertEquals(4, dataView.getSize());
+        Assert.assertTrue(dataView.contains(newItem));
+        Optional<String> optionalItem = dataView.getNextItem("last");
+        Assert.assertTrue(optionalItem.isPresent());
+        Assert.assertEquals(newItem, optionalItem.get());
     }
 
     @Test
     public void removeItem_itemRemovedFromDataset() {
         dataView.removeItem("middle");
 
-        Assert.assertEquals(2, dataView.getDataSize());
-        Assert.assertFalse(dataView.isItemPresent("middle"));
-        Assert.assertEquals("last", dataView.getNextItem("first"));
+        Assert.assertEquals(2, dataView.getSize());
+        Assert.assertFalse(dataView.contains("middle"));
+        Optional<String> optionalItem = dataView.getNextItem("first");
+        Assert.assertTrue(optionalItem.isPresent());
+        Assert.assertEquals("last", optionalItem.get());
     }
 
     @Test
@@ -223,13 +248,13 @@ public class AbstractListDataViewTest {
 
         Assert.assertArrayEquals(
                 new String[] { "first", "newItem", "middle", "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
 
         dataView.addItemBefore("second", "first");
 
         Assert.assertArrayEquals(
                 new String[] { "second", "first", "newItem", "middle", "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
 
     }
 
@@ -239,13 +264,13 @@ public class AbstractListDataViewTest {
 
         Assert.assertArrayEquals(
                 new String[] { "first", "middle", "newItem", "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
 
         dataView.addItemAfter("second", "last");
 
         Assert.assertArrayEquals(
                 new String[] { "first", "middle", "newItem", "last", "second" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
     }
 
     @Test
@@ -371,17 +396,17 @@ public class AbstractListDataViewTest {
                 Arrays.asList("item1", "item2", "item22", "item3"));
         dataProvider = DataProvider.ofCollection(items);
 
-        Assert.assertEquals(4, dataView.getAllItems().count());
+        Assert.assertEquals(4, dataView.getItems().count());
 
         dataView.addFilter(
                 item -> item.equals("item1") || item.equals("item2") || item
                         .equals("item22"));
 
-        Assert.assertEquals(3, dataView.getAllItems().count());
+        Assert.assertEquals(3, dataView.getItems().count());
 
         dataView.addFilter(item -> item.endsWith("2"));
 
-        Assert.assertEquals(2, dataView.getAllItems().count());
+        Assert.assertEquals(2, dataView.getItems().count());
     }
 
     @Test
@@ -390,20 +415,20 @@ public class AbstractListDataViewTest {
                 Arrays.asList("item1", "item2", "item22", "item3"));
         dataProvider = DataProvider.ofCollection(items);
 
-        dataView.withFilter(item -> item.endsWith("2") || item.endsWith("3"));
+        dataView.setFilter(item -> item.endsWith("2") || item.endsWith("3"));
 
         Assert.assertEquals("Set filter not applied", 3,
-                dataView.getAllItems().count());
+                dataView.getItems().count());
 
         dataView.addFilter(item -> item.endsWith("2"));
 
         Assert.assertEquals("Added filter not applied", 2,
-                dataView.getAllItems().count());
+                dataView.getItems().count());
 
-        dataView.clearFilters();
+        dataView.removeFilters();
 
         Assert.assertEquals("Filters were not cleared", 4,
-                dataView.getAllItems().count());
+                dataView.getItems().count());
     }
 
     private static class ListDataViewImpl extends AbstractListDataView<String> {

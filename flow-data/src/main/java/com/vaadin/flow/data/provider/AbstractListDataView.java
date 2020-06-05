@@ -18,6 +18,7 @@ package com.vaadin.flow.data.provider;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.Component;
@@ -25,6 +26,7 @@ import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.function.ValueProvider;
 
 /**
  * Abstract list data view implementation which provides common methods for
@@ -54,33 +56,19 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public boolean hasNextItem(T item) {
+    public Optional<T> getNextItem(T item) {
         int index = getItemIndex(item);
         if (index < 0)
-            return false;
-        return getAllItems().skip(index + 1).findAny().isPresent();
+            return Optional.empty();
+        return getItems().skip(index + 1).findFirst();
     }
 
     @Override
-    public T getNextItem(T item) {
-        int index = getItemIndex(item);
-        if (index < 0)
-            return null;
-        return getAllItems().skip(index + 1).findFirst().orElse(null);
-    }
-
-    @Override
-    public boolean hasPreviousItem(T item) {
-        int index = getItemIndex(item);
-        return index > 0;
-    }
-
-    @Override
-    public T getPreviousItem(T item) {
+    public Optional<T> getPreviousItem(T item) {
         int index = getItemIndex(item);
         if (index <= 0)
-            return null;
-        return getAllItems().skip(index - 1).findFirst().orElse(null);
+            return Optional.empty();
+        return getItems().skip(index - 1).findFirst();
     }
 
     @Override
@@ -90,30 +78,56 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public AbstractListDataView<T> clearFilters() {
+    public AbstractListDataView<T> removeFilters() {
         getDataProvider().clearFilters();
         return this;
     }
 
     @Override
-    public AbstractListDataView<T> withFilter(SerializablePredicate<T> filter) {
-        return withFilterOrOrder(
+    public AbstractListDataView<T> setFilter(SerializablePredicate<T> filter) {
+        return setFilterOrOrder(
                 dataProvider -> dataProvider.setFilter(filter));
     }
 
     @Override
-    public AbstractListDataView<T> withSortComparator(
+    public AbstractListDataView<T> setSortComparator(
             SerializableComparator<T> sortComparator) {
-        return withFilterOrOrder(
+        return setFilterOrOrder(
                 dataProvider -> dataProvider.setSortComparator(sortComparator));
     }
 
     @Override
-    public boolean isItemPresent(T item) {
+    public AbstractListDataView<T> addSortComparator(
+            SerializableComparator<T> sortComparator) {
+        return setFilterOrOrder(
+                dataProvider -> dataProvider.addSortComparator(sortComparator));
+    }
+
+    @Override
+    public AbstractListDataView<T> removeSorting() {
+        return setSortComparator(null);
+    }
+
+    @Override
+    public <VALUE extends Comparable<? super VALUE>> AbstractListDataView<T> setSortOrder(
+            ValueProvider<T, VALUE> valueProvider, SortDirection sortDirection) {
+        return setFilterOrOrder(
+                dataProvider -> dataProvider.setSortOrder(valueProvider, sortDirection));
+    }
+
+    @Override
+    public <VALUE extends Comparable<? super VALUE>> AbstractListDataView<T> addSortOrder(
+            ValueProvider<T, VALUE> valueProvider, SortDirection sortDirection) {
+        return setFilterOrOrder(
+                dataProvider -> dataProvider.addSortOrder(valueProvider, sortDirection));
+    }
+
+    @Override
+    public boolean contains(T item) {
         // TODO: delegate this to the data communicator/component, since the
         // equality could be
         // determined by the provided identity checker (the default is equals).
-        return getAllItems().anyMatch(i -> Objects.equals(i, item));
+        return getItems().anyMatch(i -> Objects.equals(i, item));
     }
 
     @Override
@@ -240,7 +254,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
      *         item index to validate
      */
     protected void validateItemIndex(int itemIndex) {
-        final int dataSize = getDataSize();
+        final int dataSize = getSize();
         if (dataSize == 0) {
             throw new IndexOutOfBoundsException(
                     String.format("Requested index %d on empty data.",
@@ -253,7 +267,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         }
     }
 
-    private AbstractListDataView<T> withFilterOrOrder(
+    private AbstractListDataView<T> setFilterOrOrder(
             SerializableConsumer<ListDataProvider<T>> filterOrOrderConsumer) {
         ListDataProvider<T> dataProvider = getDataProvider();
         filterOrOrderConsumer.accept(dataProvider);
@@ -263,7 +277,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     private int getItemIndex(T item) {
         Objects.requireNonNull(item, "item cannot be null");
         AtomicInteger index = new AtomicInteger(-1);
-        if (!getAllItems().peek(t -> index.incrementAndGet())
+        if (!getItems().peek(t -> index.incrementAndGet())
                 .filter(t -> Objects.equals(item, t)).findFirst().isPresent()) {
             return -1;
         }

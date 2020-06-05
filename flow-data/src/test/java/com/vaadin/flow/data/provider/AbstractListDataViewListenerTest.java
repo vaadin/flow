@@ -48,8 +48,8 @@ public abstract class AbstractListDataViewListenerTest {
         UI ui = new MockUI();
         ui.add((Component) component);
 
-        dataView.withFilter("one"::equals);
-        dataView.withFilter(null);
+        dataView.setFilter("one"::equals);
+        dataView.setFilter(null);
         dataView.addItemAfter("item5", "item4");
         dataView.addItemBefore("item0", "item1");
         dataView.addItem("last");
@@ -81,7 +81,7 @@ public abstract class AbstractListDataViewListenerTest {
         dataView.addSizeChangeListener(
                 event -> invocationChecker.getAndSet(true));
 
-        dataView.withSortComparator(String::compareTo);
+        dataView.setSortComparator(String::compareTo);
 
         // Make size change after sort. No event should be sent as size stays the same.
         fakeClientCall(ui);
@@ -111,7 +111,7 @@ public abstract class AbstractListDataViewListenerTest {
             invocationChecker.set(true);
         });
 
-        dataView.withFilter("item1"::equals);
+        dataView.setFilter("item1"::equals);
 
         // Size change should be sent as size has changed after filtering.
         fakeClientCall(ui);
