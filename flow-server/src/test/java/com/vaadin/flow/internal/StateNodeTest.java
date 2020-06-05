@@ -1329,13 +1329,13 @@ public class StateNodeTest {
     private void assertCollectChanges_initiallyInactive(StateNode stateNode,
             ElementPropertyMap properties, Consumer<Boolean> activityUpdater) {
 
-        properties.setProperty("foo", "bar");
-
         TestStateTree tree = (TestStateTree) stateNode.getOwner();
         tree.dirtyNodes.clear();
 
         ElementData visibility = stateNode.getFeature(ElementData.class);
         activityUpdater.accept(false);
+
+        properties.setProperty("foo", "bar");
 
         // activity updater may modify visibility of the node itself or its
         // ancestor. The number of changes will depend on whether the subject

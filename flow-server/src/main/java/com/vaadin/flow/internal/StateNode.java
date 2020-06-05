@@ -615,22 +615,16 @@ public class StateNode implements Serializable {
             return;
         }
         if (isInactive()) {
-            Set<NodeFeature> collectChangesFeatures;
             if (isInitialChanges) {
                 // send only required (reported) features updates
-                collectChangesFeatures = Stream
+                Stream<NodeFeature> initialFeatures = Stream
                         .concat(featureSet.mappings.keySet().stream()
                                 .filter(this::isReportedFeature)
-                                .map(this::getFeature), getDisalowFeatures())
-                        .collect(Collectors.toSet());
+                                .map(this::getFeature), getDisalowFeatures());
+                doCollectChanges(collector, initialFeatures);
             } else {
-                collectChangesFeatures = getDisalowFeatures()
-                        .collect(Collectors.toSet());
+                doCollectChanges(collector, getDisalowFeatures());
             }
-            doCollectChanges(collector, collectChangesFeatures.stream());
-            doCollectChanges(change -> {
-            }, getInitializedFeatures().filter(
-                    feature -> !collectChangesFeatures.contains(feature)));
         } else {
             doCollectChanges(collector, getInitializedFeatures());
         }

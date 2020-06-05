@@ -421,7 +421,7 @@ public abstract class NodeMap extends NodeFeature {
                 hasChanges = true;
             } else if (containsNow) {
                 Object currentValue = values.get(key);
-                if (!containedEarlier || !Objects.equals(value, currentValue)) {
+                if (producePutChange(key, containedEarlier, value)) {
                     // New or changed value
                     collector.accept(new MapPutChange(this, key, currentValue));
                     hasChanges = true;
@@ -499,6 +499,22 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected boolean mayUpdateFromClient(String key, Serializable value) {
         return false;
+    }
+
+    /**
+     * Checks whether a {@link MapPutChange} should be produced.
+     *
+     * @param key
+     *            a key to produce a change
+     * @param hadValueEarlier
+     *            whether the value was already earlier in the map
+     * @param newValue
+     *            the new value for the {@code key}
+     * @return
+     */
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        return !hadValueEarlier || !Objects.equals(newValue, values.get(key));
     }
 
     // Exposed for testing purposes
