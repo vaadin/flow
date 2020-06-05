@@ -20,9 +20,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-public class FactoryExporterIT extends ChromeBrowserTest implements HasById {
+public class FactoryExporterIT extends EmbeddingChromeBrowserTest
+        implements HasById {
 
     @Override
     protected String getTestPath() {
