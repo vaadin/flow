@@ -206,7 +206,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * component.
      *
      * @param filter
-     *         filter to add for the data
+     *         filter to be set, or <code>null</code> to clear any
+     *         previously set filters
      * @return ListDataView instance
      *
      * @see #addFilter(SerializablePredicate)
