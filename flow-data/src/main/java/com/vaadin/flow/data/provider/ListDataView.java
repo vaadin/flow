@@ -76,9 +76,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
-     * @see #addItemBefore(T, T)
-     * @see #addItemAfter(T, T)
-     * @see #removeItem(T)
+     * @see #addItemBefore(Object, Object)
+     * @see #addItemAfter(Object, Object)
+     * @see #removeItem(Object)
      */
     V addItem(T item);
 
@@ -96,8 +96,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
-     * @see #addItem(T)
-     * @see #addItemBefore(T, T)
+     * @see #addItem(Object)
+     * @see #addItemBefore(Object, Object)
      */
     V addItemAfter(T item, T after);
 
@@ -115,8 +115,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
-     * @see #addItem(T)
-     * @see #addItemAfter(T, T)
+     * @see #addItem(Object)
+     * @see #addItemAfter(Object, Object)
      */
     V addItemBefore(T item, T before);
 
@@ -129,8 +129,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
      * @see #removeItems(Collection)
-     * @see #addItemsBefore(Collection, T)
-     * @see #addItemsAfter(Collection, T)
+     * @see #addItemsBefore(Collection, Object)
+     * @see #addItemsAfter(Collection, Object)
      */
     V addItems(Collection<T> items);
 
@@ -150,7 +150,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
      * @see #addItems(Collection)
-     * @see #addItemsBefore(Collection, T)
+     * @see #addItemsBefore(Collection, Object)
      */
     V addItemsAfter(Collection<T> items, T after);
 
@@ -170,7 +170,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
      * @see #addItems(Collection)
-     * @see #addItemsAfter(Collection, T)
+     * @see #addItemsAfter(Collection, Object)
      */
     V addItemsBefore(Collection<T> items, T before);
 
@@ -182,7 +182,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
-     * @see #addItem(T)
+     * @see #addItem(Object)
      * @see #removeItems(Collection)
      */
     V removeItem(T item);
@@ -195,7 +195,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
-     * @see #removeItem(T)
+     * @see #removeItem(Object)
      * @see #removeItems(Collection)
      */
     V removeItems(Collection<T> items);
