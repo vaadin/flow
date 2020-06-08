@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
+
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 
@@ -27,7 +29,8 @@ import com.vaadin.flow.function.SerializablePredicate;
  *         ListDataView type
  * @since
  */
-public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T> {
+public interface ListDataView<T, V extends ListDataView<T, ?>>
+        extends DataView<T> {
     /**
      * Check if the given item has a next item in the filtered and sorted data.
      *
@@ -73,19 +76,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
+     * @see #addItemBefore(Object, Object)
+     * @see #addItemAfter(Object, Object)
+     * @see #removeItem(Object)
      */
     V addItem(T item);
-
-    /**
-     * Remove an item from the data list.
-     *
-     * @param item
-     *         item to remove
-     * @return this ListDataView instance
-     * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
-     */
-    V removeItem(T item);
 
     /**
      * Add an item after the given target item.
@@ -101,6 +96,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
+     * @see #addItem(Object)
+     * @see #addItemBefore(Object, Object)
      */
     V addItemAfter(T item, T after);
 
@@ -118,8 +115,90 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
+     * @see #addItem(Object)
+     * @see #addItemAfter(Object, Object)
      */
     V addItemBefore(T item, T before);
+
+    /**
+     * Adds multiple items to the data list.
+     *
+     * @param items
+     *         collection of item to add
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @see #removeItems(Collection)
+     * @see #addItemsBefore(Collection, Object)
+     * @see #addItemsAfter(Collection, Object)
+     */
+    V addItems(Collection<T> items);
+
+    /**
+     * Adds multiple items after the given target item.
+     * The full collection is added in order after the target.
+     * <p>
+     * Note! Item is added to the unfiltered and unsorted List.
+     *
+     * @param items
+     *         collection of items to add
+     * @param after
+     *         item after which to add the item at
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @throws IllegalArgumentException
+     *         if item doesn't exist or collection is not a list
+     * @see #addItems(Collection)
+     * @see #addItemsBefore(Collection, Object)
+     */
+    V addItemsAfter(Collection<T> items, T after);
+
+    /**
+     * Adds multiple items before the given target item.
+     * The full collection is added in order before the target.
+     * <p>
+     * Note! Item is added to the unfiltered and unsorted List.
+     *
+     * @param items
+     *         collection of items to add
+     * @param before
+     *         item before which to add the item at
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @throws IllegalArgumentException
+     *         if item doesn't exist or collection is not a list
+     * @see #addItems(Collection)
+     * @see #addItemsAfter(Collection, Object)
+     */
+    V addItemsBefore(Collection<T> items, T before);
+
+    /**
+     * Remove an item from the data list.
+     *
+     * @param item
+     *         item to remove
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @see #addItem(Object)
+     * @see #removeItems(Collection)
+     */
+    V removeItem(T item);
+
+    /**
+     * Remove multiple items from the data list.
+     *
+     * @param items
+     *         collection of items to remove
+     * @return this ListDataView instance
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @see #removeItem(Object)
+     * @see #removeItems(Collection)
+     */
+    V removeItems(Collection<T> items);
 
     /**
      * Adds a filter to be applied to all queries. The filter will be used in
