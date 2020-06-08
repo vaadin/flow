@@ -52,7 +52,7 @@ public class AbstractDataViewTest {
 
     @Test
     public void getAllItems_noFiltersSet_allItemsObtained() {
-        Stream<String> allItems = dataView.getAllItems();
+        Stream<String> allItems = dataView.getItems();
         Assert.assertArrayEquals("Unexpected data set", items.toArray(),
                 allItems.toArray());
     }
@@ -60,7 +60,7 @@ public class AbstractDataViewTest {
     @Test
     public void getDataSize_noFiltersSet_dataSizeObtained() {
         Assert.assertEquals("Unexpected size for data", items.size(),
-                dataView.getDataSize());
+                dataView.getSize());
     }
 
     @Test
@@ -93,8 +93,8 @@ public class AbstractDataViewTest {
         }
 
         @Override
-        public boolean isItemPresent(String item) {
-            return getAllItems().anyMatch(item::equals);
+        public boolean contains(String item) {
+            return getItems().anyMatch(item::equals);
         }
     }
 }

@@ -38,14 +38,14 @@ public interface DataView<T> extends Serializable {
      *
      * @return filtered and sorted data set
      */
-    Stream<T> getAllItems();
+    Stream<T> getItems();
 
     /**
      * Get the full data size with filters if any set.
      *
      * @return filtered data size
      */
-    int getDataSize();
+    int getSize();
 
     /**
      * Check if item is in the current data.
@@ -56,11 +56,15 @@ public interface DataView<T> extends Serializable {
      *         item to search for
      * @return true if item is found in the available data
      */
-    boolean isItemPresent(T item);
+    boolean contains(T item);
 
     /**
      * Add a size change listener that is fired when the data set size changes.
      * This can happen for instance when filtering the data set.
+     * <p>
+     * Size change listener is bound to the component and will be retained even
+     * if the data changes by setting of a new items or {@link DataProvider} to
+     * component.
      *
      * @param listener
      *         size change listener to register
