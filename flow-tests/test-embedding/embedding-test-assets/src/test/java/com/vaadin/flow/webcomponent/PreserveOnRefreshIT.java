@@ -21,10 +21,10 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class PreserveOnRefreshIT extends ChromeBrowserTest implements HasById {
+public class PreserveOnRefreshIT extends EmbeddingChromeBrowserTest
+        implements HasById {
     private static final String MODIFIED = "modified";
     private static final String UNMODIFIED = "unmodified";
     private static final String NO_PRESERVE = "nopreserve";

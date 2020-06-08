@@ -58,7 +58,6 @@ public class GwtAtmoshperePushConnectionTest extends ClientEngineTestBase {
                     public JsMap<String, String> getParameters() {
                         return JsCollections.map();
                     }
-
                 });
                 set(ConnectionStateHandler.class,
                         new DefaultConnectionStateHandler(this));

@@ -22,10 +22,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class NpmOnlyIndexIT extends ChromeBrowserTest {
+public class NpmOnlyIndexIT extends EmbeddingChromeBrowserTest {
 
     @Override
     protected String getTestPath() {

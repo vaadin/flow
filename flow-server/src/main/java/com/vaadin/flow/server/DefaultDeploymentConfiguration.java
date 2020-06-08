@@ -37,32 +37,29 @@ import com.vaadin.flow.shared.communication.PushMode;
  */
 public class DefaultDeploymentConfiguration
         extends PropertyDeploymentConfiguration {
-    private static final String SEPARATOR = "\n=======================================================================";
-    private static final String HEADER = "\n=================== Vaadin DeploymentConfiguration ====================\n";
 
-    public static final String NOT_PRODUCTION_MODE_INFO = " Vaadin is running in DEBUG MODE.\n"
-            + " When deploying application for production, remember to disable debug features. See more from https://vaadin.com/docs/";
+    public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEBUG MODE.\n"
+            + "When deploying application for production, remember to disable debug features. See more from https://vaadin.com/docs/";
 
-    public static final String WARNING_COMPATIBILITY_MODE = SEPARATOR
-            + "\nRunning in Vaadin 13 (Flow 1) compatibility mode.\n\n"
+    public static final String WARNING_COMPATIBILITY_MODE = "Running in Vaadin 13 (Flow 1) compatibility mode.\n\n"
             + "This mode uses webjars/Bower for client side dependency management and HTML imports for dependency loading.\n\n"
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
-            + "See http://vaadin.com/docs for more information." + SEPARATOR;
+            + "See http://vaadin.com/docs for more information.";
 
-    public static final String NOT_PRODUCTION_MODE_WARNING = " WARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
-            + " When deploying application for production, disable debug features by enabling production mode!\n"
-            + " See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
+    public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
+            + "When deploying application for production, disable debug features by enabling production mode!\n"
+            + "See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
 
-    private static final String DEPLOYMENT_WARNINGS = " Following issues were discovered with deployment configuration:";
+    private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
-    public static final String WARNING_XSRF_PROTECTION_DISABLED = " WARNING: Cross-site request forgery protection is disabled!";
+    public static final String WARNING_XSRF_PROTECTION_DISABLED = "WARNING: Cross-site request forgery protection is disabled!";
 
-    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = " WARNING: heartbeatInterval has been set to a non integer value."
+    public static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = "WARNING: heartbeatInterval has been set to a non integer value."
             + "\n The default of 5min will be used.";
 
-    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = " WARNING: pushMode has been set to an unrecognized value.\n"
-            + " The permitted values are \"disabled\", \"manual\",\n"
-            + " and \"automatic\". The default of \"disabled\" will be used.";
+    public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = "WARNING: pushMode has been set to an unrecognized value.\n"
+            + "The permitted values are \"disabled\", \"manual\",\n"
+            + "and \"automatic\". The default of \"disabled\" will be used.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -146,18 +143,13 @@ public class DefaultDeploymentConfiguration
         Logger logger = LoggerFactory.getLogger(getClass().getName());
 
         if (!warnings.isEmpty()) {
-            warnings.add(0, HEADER);
-            warnings.add(1, DEPLOYMENT_WARNINGS);
-            warnings.add("\n");
+            warnings.add(0, DEPLOYMENT_WARNINGS);
             // merging info messages to warnings for now
             warnings.addAll(info);
-            warnings.add(SEPARATOR);
             if (logger.isWarnEnabled()) {
                 logger.warn(String.join("\n", warnings));
             }
         } else if (!info.isEmpty()) {
-            info.add(0, HEADER);
-            info.add(SEPARATOR);
             if (logger.isInfoEnabled()) {
                 logger.info(String.join("\n", info));
             }
