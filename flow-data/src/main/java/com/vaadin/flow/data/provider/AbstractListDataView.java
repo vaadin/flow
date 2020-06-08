@@ -147,61 +147,74 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItemAfter(T item, T after) {
         final Collection<T> items = getDataProvider().getItems();
-        if(!items.contains(after)) {
-            throw new IllegalArgumentException("Item to insert after is not available in the data");
+        if (!items.contains(after)) {
+            throw new IllegalArgumentException(
+                    "Item to insert after is not available in the data");
         }
-        if(items instanceof List) {
+        if (items instanceof List) {
             final List<T> itemList = (List<T>) items;
-            itemList.add(itemList.indexOf(after)+1, item);
+            itemList.add(itemList.indexOf(after) + 1, item);
             getDataProvider().refreshAll();
             return this;
         }
-        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+        throw new IllegalArgumentException(
+                String.format("DataProvider collection '%s' is not a list.",
+                        items.getClass().getSimpleName()));
     }
 
     @Override
     public AbstractListDataView<T> addItemsAfter(Collection<T> items, T after) {
         final Collection<T> backendItems = getDataProvider().getItems();
-        if(!backendItems.contains(after)) {
-            throw new IllegalArgumentException("Item to insert after is not available in the data");
+        if (!backendItems.contains(after)) {
+            throw new IllegalArgumentException(
+                    "Item to insert after is not available in the data");
         }
-        if(backendItems instanceof List) {
+        if (backendItems instanceof List) {
             final List<T> itemList = (List<T>) backendItems;
-            itemList.addAll(itemList.indexOf(after)+1, items);
+            itemList.addAll(itemList.indexOf(after) + 1, items);
             getDataProvider().refreshAll();
             return this;
         }
-        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+        throw new IllegalArgumentException(
+                String.format("DataProvider collection '%s' is not a list.",
+                        items.getClass().getSimpleName()));
     }
 
     @Override
     public AbstractListDataView<T> addItemBefore(T item, T before) {
         final Collection<T> items = getDataProvider().getItems();
-        if(!items.contains(before)) {
-            throw new IllegalArgumentException("Item to insert before is not available in the data");
+        if (!items.contains(before)) {
+            throw new IllegalArgumentException(
+                    "Item to insert before is not available in the data");
         }
-        if(items instanceof List) {
+        if (items instanceof List) {
             final List<T> itemList = (List<T>) items;
             itemList.add(itemList.indexOf(before), item);
             getDataProvider().refreshAll();
             return this;
         }
-        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+        throw new IllegalArgumentException(
+                String.format("DataProvider collection '%s' is not a list.",
+                        items.getClass().getSimpleName()));
     }
 
     @Override
-    public AbstractListDataView<T> addItemsBefore(Collection<T> items, T before) {
+    public AbstractListDataView<T> addItemsBefore(Collection<T> items,
+            T before) {
         final Collection<T> backendItems = getDataProvider().getItems();
-        if(!backendItems.contains(before)) {
-            throw new IllegalArgumentException("Item to insert before is not available in the data");
+        if (!backendItems.contains(before)) {
+            throw new IllegalArgumentException(
+                    "Item to insert before is not available in the data");
         }
-        if(backendItems instanceof List) {
+        if (backendItems instanceof List) {
             final List<T> itemList = (List<T>) backendItems;
             itemList.addAll(itemList.indexOf(before), items);
             getDataProvider().refreshAll();
             return this;
         }
-        throw new IllegalArgumentException(String.format("DataProvider collection '%s' is not a list.", items.getClass().getSimpleName()));
+        throw new IllegalArgumentException(
+                String.format("DataProvider collection '%s' is not a list.",
+                        items.getClass().getSimpleName()));
     }
 
     @Override
