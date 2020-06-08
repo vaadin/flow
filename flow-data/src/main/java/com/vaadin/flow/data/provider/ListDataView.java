@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
@@ -114,6 +115,39 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @see #addItemAfter(Object, Object)
      */
     V addItemBefore(T item, T before);
+
+    /**
+     * Finds an items equal to {@code item} in the non-filtered data set
+     * and replaces it with {@code item}.
+     * <p>
+     * Equality between items relies on equality of its identifiers
+     * provided by {@link DataProvider#getId(Object)}.
+     *
+     * @param item
+     *         item containing updated state
+     * @return this ListDataView instance
+     *
+     * @see #updateItem(T, SerializableFunction)
+     */
+    V updateItem(T item);
+
+    /**
+     * Finds an items equal to {@code item} in the non-filtered data set
+     * and replaces it with {@code item}.
+     * <p>
+     * Equality between items relies on equality of its identifiers
+     * provided by {@code identityProvider}.
+     *
+     * @param item
+     *         item containing updated state
+     * @param identityProvider
+     *         callback that transforms {@code item} object into identifier
+     *         object which is used to find the equal items in data set.
+     * @return this ListDataView instance
+     *
+     * @see #updateItem(T)
+     */
+    V updateItem(T item, SerializableFunction<T, ?> identityProvider);
 
     /**
      * Adds multiple items to the data list.
