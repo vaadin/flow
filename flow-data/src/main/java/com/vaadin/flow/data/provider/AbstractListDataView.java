@@ -111,15 +111,15 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public <VALUE extends Comparable<? super VALUE>> AbstractListDataView<T> setSortOrder(
-            ValueProvider<T, VALUE> valueProvider, SortDirection sortDirection) {
+    public <V1 extends Comparable<? super V1>> AbstractListDataView<T> setSortOrder(
+            ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
         return setFilterOrOrder(
                 dataProvider -> dataProvider.setSortOrder(valueProvider, sortDirection));
     }
 
     @Override
-    public <VALUE extends Comparable<? super VALUE>> AbstractListDataView<T> addSortOrder(
-            ValueProvider<T, VALUE> valueProvider, SortDirection sortDirection) {
+    public <V1 extends Comparable<? super V1>> AbstractListDataView<T> addSortOrder(
+            ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
         return setFilterOrOrder(
                 dataProvider -> dataProvider.addSortOrder(valueProvider, sortDirection));
     }

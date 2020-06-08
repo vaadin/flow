@@ -167,7 +167,7 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void getAllItems_noFiltersSet_allItemsObtained() {
+    public void getItems_noFiltersSet_allItemsObtained() {
         Stream<String> allItems = dataView.getItems();
         Assert.assertArrayEquals("Unexpected data set", items.toArray(),
                 allItems.toArray());
@@ -298,7 +298,7 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[] { "first", "middle", "last", "newOne", "newTwo",
                         "newThree" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
     }
 
     @Test
@@ -309,7 +309,7 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[] { "first", "newOne", "newTwo", "newThree",
                         "middle", "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
     }
 
     @Test
@@ -320,7 +320,7 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[] { "first", "newOne", "newTwo", "newThree",
                         "middle", "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
     }
 
     @Test
@@ -328,7 +328,7 @@ public class AbstractListDataViewTest {
         dataView.removeItems(Arrays.asList("middle", "first"));
 
         Assert.assertArrayEquals(new String[] { "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
     }
 
     @Test
@@ -339,20 +339,20 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[] { "first", "newOne", "newTwo", "newThree",
                         "middle", "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
 
         dataView.removeItems(Arrays.asList("middle", "first"));
 
         Assert.assertArrayEquals(
                 new String[] { "newOne", "newTwo", "newThree", "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
 
         dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
 
         Assert.assertArrayEquals(
                 new String[] { "newOne", "one", "two", "newTwo", "newThree",
                         "last" },
-                dataView.getAllItems().toArray(String[]::new));
+                dataView.getItems().toArray(String[]::new));
 
     }
 
