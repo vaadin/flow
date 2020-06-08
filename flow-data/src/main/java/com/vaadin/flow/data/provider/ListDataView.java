@@ -127,7 +127,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *         item containing updated state
      * @return this ListDataView instance
      *
-     * @see #updateItem(T, SerializableFunction)
+     * @see #updateItem(Object, SerializableFunction)
      */
     V updateItem(T item);
 
@@ -145,7 +145,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *         object which is used to find the equal items in data set.
      * @return this ListDataView instance
      *
-     * @see #updateItem(T)
+     * @see #updateItem(Object)
      */
     V updateItem(T item, SerializableFunction<T, ?> identityProvider);
 
