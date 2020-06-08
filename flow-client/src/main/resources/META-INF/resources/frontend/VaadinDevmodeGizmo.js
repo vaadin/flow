@@ -956,10 +956,10 @@ class VaadinDevmodeGizmo extends LitElement {
 
   renderMessage(messageObject) {
     return html`
-      <div class="message ${messageObject.type} ${messageObject.deleted ? 'animate-out' : ''} ${messageObject.details || messageObject.link ? 'has-details' : ''}">
+      <div class="message ${messageObject.type} ${messageObject.deleted ? 'animate-out' : ''} ${messageObject.details || messageObject.link ? 'has-details' : ''}">
         <div class="message-content">
           <div class="message-heading">${messageObject.message}</div>
-          <div class="message-details" ?hidden="${!messageObject.details && !messageObject.link}">
+          <div class="message-details" ?hidden="${!messageObject.details && !messageObject.link}">
             ${messageObject.details ? html`<p>${messageObject.details}</p>` : ''}
             ${messageObject.link ? html`<a class="ahreflike" href="${messageObject.link}" target="_blank">Read more</a>` : ''}
           </div>
