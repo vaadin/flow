@@ -29,7 +29,8 @@ import com.vaadin.flow.function.SerializablePredicate;
  *         ListDataView type
  * @since
  */
-public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<T> {
+public interface ListDataView<T, V extends ListDataView<T, ?>>
+        extends DataView<T> {
     /**
      * Check if the given item has a next item in the filtered and sorted data.
      *
@@ -75,6 +76,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
+     * @see #addItemBefore(T, T)
+     * @see #addItemAfter(T, T)
+     * @see #removeItem(T)
      */
     V addItem(T item);
 
@@ -92,6 +96,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
+     * @see #addItem(T)
+     * @see #addItemBefore(T, T)
      */
     V addItemAfter(T item, T after);
 
@@ -109,22 +115,27 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
+     * @see #addItem(T)
+     * @see #addItemAfter(T, T)
      */
     V addItemBefore(T item, T before);
 
     /**
-     * Add multiple items to the data list.
+     * Adds multiple items to the data list.
      *
      * @param items
      *         collection of item to add
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
+     * @see #removeItems(Collection)
+     * @see #addItemsBefore(Collection, T)
+     * @see #addItemsAfter(Collection, T)
      */
     V addItems(Collection<T> items);
 
     /**
-     * Add multiple items after the given target item.
+     * Adds multiple items after the given target item.
      * The full collection is added in order after the target.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
@@ -138,11 +149,13 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
+     * @see #addItems(Collection)
+     * @see #addItemsBefore(Collection, T)
      */
     V addItemsAfter(Collection<T> items, T after);
 
     /**
-     * Add multiple items before the given target item.
+     * Adds multiple items before the given target item.
      * The full collection is added in order before the target.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
@@ -156,6 +169,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      *         if backing collection doesn't support modification
      * @throws IllegalArgumentException
      *         if item doesn't exist or collection is not a list
+     * @see #addItems(Collection)
+     * @see #addItemsAfter(Collection, T)
      */
     V addItemsBefore(Collection<T> items, T before);
 
@@ -167,6 +182,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
+     * @see #addItem(T)
+     * @see #removeItems(Collection)
      */
     V removeItem(T item);
 
@@ -178,6 +195,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>> extends DataView<
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
      *         if backing collection doesn't support modification
+     * @see #removeItem(T)
+     * @see #removeItems(Collection)
      */
     V removeItems(Collection<T> items);
 
