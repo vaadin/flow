@@ -180,14 +180,6 @@ public class NodeUpdaterTest {
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
     }
 
-    @Test
-    public void assertTerserVersion() throws IOException {
-        final JsonObject packageJson = nodeUpdater.getPackageJson();
-        nodeUpdater.updateDefaultDependencies(packageJson);
-        Assert.assertEquals("4.6.7", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("terser"));
-    }
-
     private String getPolymerVersion(JsonObject object) {
         JsonObject deps = object.get("dependencies");
         String version = deps.getString("@polymer/polymer");
