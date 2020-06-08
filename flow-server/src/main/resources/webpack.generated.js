@@ -214,8 +214,11 @@ function collectChunks(statsJson, acceptedChunks) {
           const slimModule = {
             id: module.id,
             name: module.name,
-            source: module.source,
+            source: module.source
           };
+          if(module.modules) {
+            slimModule.modules = collectSubModules(module);
+          }
           modules.push(slimModule);
         });
         const slimChunk = {
@@ -245,27 +248,40 @@ function collectModules(statsJson, acceptedChunks) {
     statsJson.modules.forEach(function (module) {
       // Add module if module chunks contain an accepted chunk and the module is generated-flow-imports.js module
       if (module.chunks.filter(key => acceptedChunks.includes(key)).length > 0
-          && (module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js"))) {
-        let subModules = [];
-        // Create sub modules only if they are available
-        if (module.modules) {
-          module.modules.forEach(function (module) {
-            const subModule = {
-              name: module.name,
-              source: module.source
-            };
-            subModules.push(subModule);
-          });
-        }
+        && (module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js"))) {
         const slimModule = {
           id: module.id,
           name: module.name,
-          source: module.source,
-          modules: subModules
+          source: module.source
         };
+        if(module.modules) {
+          slimModule.modules = collectSubModules(module);
+        }
         modules.push(slimModule);
       }
     });
   }
+  return modules;
+}
+
+/**
+ * Collect any modules under a module (aka. submodules);
+ *
+ * @param module module to get submodules for
+ */
+function collectSubModules(module) {
+  let modules = [];
+  module.modules.forEach(function (submodule) {
+    if (submodule.source) {
+      const slimModule = {
+        name: submodule.name,
+        source: submodule.source,
+      };
+      if(submodule.id) {
+        slimModule.id = submodule.id;
+      }
+      modules.push(slimModule);
+    }
+  });
   return modules;
 }
