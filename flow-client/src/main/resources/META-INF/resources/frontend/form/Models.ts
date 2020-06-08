@@ -1,7 +1,5 @@
 /* tslint:disable:max-classes-per-file */
 
-import { repeat } from "lit-html/directives/repeat";
-
 import {BinderNode} from "./BinderNode";
 import {Validator} from "./Validation";
 
@@ -22,7 +20,7 @@ export interface HasValue<T> {
 }
 
 export type ModelParent<T> = AbstractModel<any> | HasValue<T>;
-export type ModelType<M extends AbstractModel<any>> = M extends AbstractModel<infer T> ? T : never;
+export type ModelValue<M extends AbstractModel<any>> = ReturnType<M["valueOf"]>;
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {
   createEmptyValue: () => T;
@@ -96,37 +94,39 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   }
 
   private [ModelSymbol]: ModelConstructor<T, M>;
-  private models = new WeakMap<any, M>();
+  private models: M[] = [];
 
   constructor(
     parent: ModelParent<ReadonlyArray<T>>,
     key: keyof any,
     Model: ModelConstructor<T, M>,
-    ...validators: any
+    ...validators: ReadonlyArray<Validator<ReadonlyArray<T>>>
   ) {
     super(parent, key, ...validators);
     this[ModelSymbol] = Model;
   }
 
-  *[Symbol.iterator](): IterableIterator<M> {
+  /**
+   * Iterates the current array value and yields a binder node for every item.
+   */
+  *[Symbol.iterator](): IterableIterator<BinderNode<T, M>> {
     const array = getValue(this);
     const Model = this[ModelSymbol];
-    for (const [i, item] of array.entries()) {
-      let model = this.models.get(item);
+    if (array.length !== this.models.length) {
+      this.models.length = array.length;
+    }
+    for (const i of array.keys()) {
+      let model = this.models[i];
       if (!model) {
         model = new Model(this, i);
-        if (model instanceof PrimitiveModel) {
-          break;
-        }
-        this.models.set(item, model);
+        this.models[i] = model;
       }
-      model[keySymbol] = i;
-      yield model;
+      yield getBinderNode(model);
     }
   }
 }
 
-export function getBinderNode<M extends AbstractModel<any>>(model: M): BinderNode<ModelType<M>, M> {
+export function getBinderNode<M extends AbstractModel<any>, T = ModelValue<M>>(model: M): BinderNode<T, M> {
   return model[binderNodeSymbol] || (
     model[binderNodeSymbol] = new BinderNode(model)
   );
@@ -175,37 +175,44 @@ export function setValue<T>(model: AbstractModel<T>, value: T) {
   }
 }
 
-export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item?: T) {
-  if (!item) {
-    item = model[ModelSymbol].createEmptyValue();
+/**
+ * Append an item to the array model’s value.
+ *
+ * @param model the array model
+ * @param itemValue optional new item value, empty item is
+ * appended if omitted
+ */
+export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, itemValue?: T) {
+  if (!itemValue) {
+    itemValue = model[ModelSymbol].createEmptyValue();
   }
-  setValue(model, [...getValue(model), item]);
+  setValue(model, [...getValue(model), itemValue]);
 }
 
-export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, item?: T) {
-  if (!item) {
-    item = model[ModelSymbol].createEmptyValue();
+/**
+ * Prepend an item to the array model’s value.
+ *
+ * @param model the array model
+ * @param itemValue optional new item value, empty item is
+ * prepended if omitted
+ */
+export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, itemValue?: T) {
+  if (!itemValue) {
+    itemValue = model[ModelSymbol].createEmptyValue();
   }
-  setValue(model, [item, ...getValue(model)]);
+  setValue(model, [itemValue, ...getValue(model)]);
 }
 
-export function removeItem<T, M extends AbstractModel<T>>(model: M) {
+/**
+ * Remove the item from its parent array.
+ *
+ * @param model the array item model
+ */
+export function removeItem<M extends AbstractModel<any>>(model: M) {
   if (!(model[parentSymbol] instanceof ArrayModel)) {
-    throw new TypeError('Not an ArrayModel child');
+    throw new TypeError('Model is not an array item');
   }
-  const arrayModel = model[parentSymbol] as ArrayModel<T, M>;
+  const arrayModel = model[parentSymbol] as ArrayModel<any, M>;
   const itemIndex = model[keySymbol] as number;
   setValue(arrayModel, getValue(arrayModel).filter((_, i) => i !== itemIndex));
 }
-
-export type KeyFn<T, M extends AbstractModel<T>> = (model: M, value: T, index: number) => unknown;
-export type ItemTemplate<T, M extends AbstractModel<T>> = (model: M, value: T, index: number) => unknown;
-
-export const modelRepeat = <T, M extends AbstractModel<T>>(
-  model: ArrayModel<T, M>,
-  keyFnOrTemplate: KeyFn<T, M> | ItemTemplate<T, M>,
-  itemTemplate?: ItemTemplate<T, M>) =>
-    repeat(model,
-      (itemModel, index) => keyFnOrTemplate(itemModel, getValue(itemModel), index),
-      itemTemplate && ((itemModel, index) => itemTemplate(itemModel, getValue(itemModel), index))
-    );
