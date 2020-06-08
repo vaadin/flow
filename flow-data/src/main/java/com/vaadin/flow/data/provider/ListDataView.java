@@ -37,12 +37,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Gets the item after given item from the filtered and sorted data.
      * <p>
      * Note! Item might be present in the data set, but be filtered out
-     * so that the next item won't be available.
+     * or be the last item so that the next item won't be available.
      *
      * @param item
      *         item to get next for
      * @return next item if available, else empty optional if item
-     *         doesn't exist or filtered out
+     *         doesn't exist or not in current filtered items
      *
      * @see #getPreviousItem(Object)
      */
@@ -52,12 +52,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Gets the item before given item from the filtered and sorted data.
      * <p>
      * Note! Item might be present in the data set, but be filtered out
-     * so that the previous item won't be available.
+     * or be the first item so that the previous item won't be available.
      *
      * @param item
      *         item to get previous for
      * @return previous item if available, else empty optional if item
-     *         doesn't exist or filtered out
+     *         doesn't exist or not in current filtered items
      *
      * @see #getNextItem(Object)
      */
@@ -196,12 +196,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeItems(Collection<T> items);
 
     /**
-     * Sets a filter to be applied to the data. Given filter replaces any
-     * previous filter. Setting {@code null} clears filtering.
+     * Sets a filter to be applied to the data. The filter replaces any filter
+     * that has been set or added previously. {@code null} will clear all filters.
      * <p>
      * A filter bound to data set, not to the component. That means this filter
-     * won't be retained when a new data or data provider is set to the
-     * component. Any other component using the same data provider object
+     * won't be retained when a new data or {@link DataProvider} is set to the
+     * component. Any other component using the same {@link DataProvider} object
      * would be affected by setting a filter through data view of another
      * component.
      *
@@ -220,8 +220,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * <p>
      * A filter bound to data set, not to the component. That means
      * this filter and previously added filters won't be retained when
-     * a new data or data provider is set to the component. Any other
-     * component using the same data provider object would be affected
+     * a new data or {@link DataProvider} is set to the component. Any other
+     * component using the same {@link DataProvider} object would be affected
      * by adding a filter through data view of another component.
      *
      * @param filter
@@ -244,14 +244,14 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeFilters();
 
     /**
-     * Sets the comparator to use as the data default sorting.
+     * Sets the comparator to use as the default sorting.
      * This overrides the sorting set by any other method that manipulates the
-     * default sorting of the data.
+     * default sorting.
      * <p>
      * A comparator bound to data set, not to the component. That means
-     * the default sorting won't be retained when a new data or data provider
+     * the default sorting won't be retained when a new data or {@link DataProvider}
      * is set to the component. Any other component using the same
-     * data provider object would be affected by setting a sort comparator
+     * {@link DataProvider} object would be affected by setting a sort comparator
      * through data view of another component.
      *
      * @param sortComparator
@@ -273,7 +273,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * A comparator added to data set, not to the component. That means
      * the default sorting won't be retained when a new data or {@link DataProvider}
      * is set to the component. Any other component using the same
-     * data provider object would be affected by adding a sort comparator
+     * {@link DataProvider} object would be affected by adding a sort comparator
      * through data view of another component.
      *
      * @param sortComparator
@@ -285,9 +285,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addSortComparator(SerializableComparator<T> sortComparator);
 
     /**
-     * Removes any data default sorting that has been set or added previously.
+     * Removes any default sorting that has been set or added previously.
      * <p>
-     * Any other component using the same data provider object would be affected
+     * Any other component using the same {@link DataProvider} object would be affected
      * by removing default sorting through data view of another component.
      *
      * @return ListDataView instance
@@ -298,14 +298,14 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeSorting();
 
     /**
-     * Sets the property and direction to use as the default sorting for data.
+     * Sets the property and direction to use as the default sorting.
      * This overrides the sorting set by any other method that
-     * manipulates the default sorting of this data provider.
+     * manipulates the default sorting of this {@link DataProvider}.
      * <p>
      * A sort order bound to data set, not to the component. That means
      * the default sorting won't be retained when a new data or
      * {@link DataProvider} is set to the component. Any other component
-     * using the same data provider object would be affected by setting
+     * using the same {@link DataProvider} object would be affected by setting
      * a sort order through data view of another component.
      *
      * @param valueProvider
@@ -313,18 +313,18 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *            <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
-     * @param <VALUE>
+     * @param <V1>
      *            the provided value type
      *
      * @return ListDataView instance
      *
      * @see #addSortOrder(ValueProvider, SortDirection)
      */
-    <VALUE extends Comparable<? super VALUE>> V setSortOrder(
-            ValueProvider<T, VALUE> valueProvider, SortDirection sortDirection);
+    <V1 extends Comparable<? super V1>> V setSortOrder(
+            ValueProvider<T, V1> valueProvider, SortDirection sortDirection);
 
     /**
-     * Adds a property and direction to the default sorting for data.
+     * Adds a property and direction to the default sorting.
      * If no default sorting has been defined, then the provided sort
      * order will be used as the default sorting. If a default sorting has been
      * defined, then the provided sort order will be used to determine the
@@ -334,7 +334,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * A sort order added to data set, not to the component. That means
      * the default sorting won't be retained when a new data or
      * {@link DataProvider} is set to the component. Any other component
-     * using the same data provider object would be affected by adding
+     * using the same {@link DataProvider} object would be affected by adding
      * a sort order through data view of another component.
      *
      * @param valueProvider
@@ -342,11 +342,13 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *            <code>null</code>
      * @param sortDirection
      *            the sort direction to use, not <code>null</code>
-     * @param <VALUE>
+     * @param <V1>
      *            the provided value type
+     *
+     * @return ListDataView instance
      *
      * @see #setSortOrder(ValueProvider, SortDirection)
      */
-    <VALUE extends Comparable<? super VALUE>> V addSortOrder(
-            ValueProvider<T, VALUE> valueProvider, SortDirection sortDirection);
+    <V1 extends Comparable<? super V1>> V addSortOrder(
+            ValueProvider<T, V1> valueProvider, SortDirection sortDirection);
 }
