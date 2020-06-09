@@ -70,7 +70,7 @@ public class TextTest {
 
         exception.expectMessage(CoreMatchers.allOf(
                 CoreMatchers.containsString(
-                        "Cannot change Text component visibiltiy"),
+                        "Cannot change Text component visibility"),
                 CoreMatchers.containsString(
                         "because it doesn't represent an HTML Element")));
 

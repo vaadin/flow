@@ -71,7 +71,7 @@ public class Text extends Component implements HasText {
     public void setVisible(boolean visible) {
         throw new UnsupportedOperationException("Cannot change "
                 + getClass().getSimpleName()
-                + " component visibiltiy because it doesn't "
+                + " component visibility because it doesn't "
                 + "represent an HTML Element but a text Node on the client side.");
     }
 
