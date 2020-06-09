@@ -50,6 +50,8 @@ import com.vaadin.flow.internal.ReflectTools;
 public abstract class Composite<T extends Component> extends Component {
     private T content;
 
+    private ThreadLocal<Boolean> contentIsInitializing = new ThreadLocal<>();
+
     /**
      * Creates a new composite.
      * <p>
@@ -113,12 +115,27 @@ public abstract class Composite<T extends Component> extends Component {
      */
     public T getContent() {
         if (content == null) {
-            T newContent = initContent();
-            if (newContent == null) {
-                throw new IllegalStateException(
-                        "initContent returned null instead of a component");
+            try {
+                if (Boolean.TRUE.equals(contentIsInitializing.get())) {
+                    throw new IllegalStateException(
+                            "The content is not yet initialized. "
+                                    + "Infinite loop detected: you are calling a code inside 'initContent' "
+                                    + "which directly or indirectly is calling 'getContent'/'initContent'. "
+                                    + "You may not call any method on "
+                                    + Composite.class.getSimpleName()
+                                    + " instance until it initialized (inside 'getContent' or 'initContent'). "
+                                    + "Call methods on the content component instead.");
+                }
+                contentIsInitializing.set(true);
+                T newContent = initContent();
+                if (newContent == null) {
+                    throw new IllegalStateException(
+                            "initContent returned null instead of a component");
+                }
+                setContent(newContent);
+            } finally {
+                contentIsInitializing.set(false);
             }
-            setContent(newContent);
         }
         return content;
     }
