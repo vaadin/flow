@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
 
@@ -46,6 +49,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the width of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param width
+     *            the width of the object.
+     * @param unit
+     *            the unit used for the width.
+     */
+    default void setWidth(float width, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setWidth(getCssSize(width,unit));
+    }
+    
+    /**
      * Sets the min-width of the component.
      * <p>
      * The width should be in a format understood by the browser, e.g. "100px"
@@ -62,6 +81,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the min-width of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param minWidth
+     *            the min-width of the object.
+     * @param unit
+     *            the unit used for the min-width.
+     */
+    default void setMinWidth(float minWidth, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMinWidth(getCssSize(minWidth,unit));
+    }
+
+    /**
      * Sets the max-width of the component.
      * <p>
      * The width should be in a format understood by the browser, e.g. "100px"
@@ -75,6 +110,22 @@ public interface HasSize extends HasElement {
      */
     default void setMaxWidth(String maxWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_WIDTH, maxWidth);
+    }
+
+    /**
+     * Sets the max-width of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param maxWidth
+     *            the max-width of the object.
+     * @param unit
+     *            the unit used for the max-width.
+     */
+    default void setMaxWidth(float maxWidth, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMaxWidth(getCssSize(maxWidth,unit));
     }
 
     /**
@@ -133,6 +184,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the height of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param height
+     *            the height of the object.
+     * @param unit
+     *            the unit used for the height.
+     */
+    default void setHeight(float height, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setHeight(getCssSize(height,unit));
+    }
+
+    /**
      * Sets the min-height of the component.
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
@@ -149,6 +216,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the min-height of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param minHeight
+     *            the min-height of the object.
+     * @param unit
+     *            the unit used for the min-height.
+     */
+    default void setMinHeight(float minHeight, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMinHeight(getCssSize(minHeight,unit));
+    }
+
+    /**
      * Sets the max-height of the component.
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
@@ -162,6 +245,22 @@ public interface HasSize extends HasElement {
      */
     default void setMaxHeight(String maxHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT, maxHeight);
+    }
+
+    /**
+     * Sets the max-height of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param maxHeight
+     *            the max-height of the object.
+     * @param unit
+     *            the unit used for the max-height.
+     */
+    default void setMaxHeight(float maxHeight, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMaxHeight(getCssSize(maxHeight,unit));
     }
 
     /**
@@ -244,5 +343,130 @@ public interface HasSize extends HasElement {
     default void setSizeUndefined() {
         setWidth(null);
         setHeight(null);
+    }
+
+    public enum Unit {
+        /**
+         * Unit code representing pixels.
+         */
+        PIXELS("px"),
+        /**
+         * Unit code representing points (1/72nd of an inch).
+         */
+        POINTS("pt"),
+        /**
+         * Unit code representing picas (12 points).
+         */
+        PICAS("pc"),
+        /**
+         * Unit code representing the font-size of the root font.
+         */
+        REM("rem"),
+        /**
+         * Unit code representing the font-size of the relevant font.
+         */
+        EM("em"),
+        /**
+         * Unit code representing the x-height of the relevant font.
+         */
+        EX("ex"),
+        /**
+         * Unit code representing millimeters.
+         */
+        MM("mm"),
+        /**
+         * Unit code representing centimeters.
+         */
+        CM("cm"),
+        /**
+         * Unit code representing inches.
+         */
+        INCH("in"),
+        /**
+         * Unit code representing in percentage of the containing element
+         * defined by terminal.
+         */
+        PERCENTAGE("%");
+
+        private final String symbol;
+
+        private Unit(String symbol) {
+            this.symbol = symbol;
+        }
+
+        public String getSymbol() {
+            return symbol;
+        }
+
+        @Override
+        public String toString() {
+            return symbol;
+        }
+
+        static Stream<Unit> getUnits() {
+            return Stream.of(Unit.values());
+        }
+
+        /**
+         * Gives size unit of the css string representing a size.
+         * 
+         * @param cssSize Css compliant size string such as "50px".
+         * 
+         * @return A unit or null if no supported unit.
+         */
+        public static Unit getUnit(String cssSize) {
+            if (cssSize == null || cssSize.length() < 1) {
+                throw new IllegalArgumentException(
+                       "The parameter can't be null or too short to contain unit");
+            }
+            Stream<Unit> units = getUnits().filter(
+                    unit -> cssSize.endsWith(unit.toString()));
+            return units.findFirst().get();
+        }
+
+        /**
+         * Gives size component as float of the css string representing a size.
+         * 
+         * @param cssSize Css compliant size string such as "50px".
+         * 
+         * @return Size as float, 0 if string contained only the unit.
+         */
+        public static float getSize(String cssSize) {
+            if (cssSize == null || cssSize.length() < 1) {
+                throw new IllegalArgumentException("The parameter can't be null");
+            }
+            Stream<Unit> units = getUnits().filter(
+                    unit -> cssSize.endsWith(unit.toString()));
+            String size = "0";
+            String unit = "";
+            try {
+                unit = units.findFirst().get().toString();
+            } catch (NoSuchElementException e) {
+                throw new IllegalArgumentException(
+                        "The parameter string '"+cssSize+"' does not contain valid unit");
+            }
+            size = cssSize.substring(0,cssSize.length()-unit.length());
+            if (size.isEmpty()) size = "0";
+            return Float.valueOf(size);
+        }
+
+        public static Unit getUnitFromSymbol(String symbol) {
+            if (symbol == null) {
+                return Unit.PIXELS; // Defaults to pixels
+            }
+            for (Unit unit : Unit.values()) {
+                if (symbol.equals(unit.getSymbol())) {
+                    return unit;
+                }
+            }
+            return Unit.PIXELS; // Defaults to pixels
+        }
+    }
+
+    static String getCssSize(float size, Unit unit) {
+        if (size < 0) {
+            return null;
+        }
+        return size + unit.toString();
     }
 }
