@@ -47,6 +47,9 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class ErrorStateRendererTest {
 
     /**
@@ -157,8 +160,13 @@ public class ErrorStateRendererTest {
                 .setErrorNavigationTargets(
                         Collections.singleton(InfiniteLoopErrorTarget.class));
 
+        JsonObject routerLinkstate = Json.createObject();
+        routerLinkstate.put("href", "router_link");
+        routerLinkstate.put("scrollPositionX", 0d);
+        routerLinkstate.put("scrollPositionY", 0d);
         NavigationEvent event = new NavigationEvent(ui.getRouter(),
-                new Location("npe"), ui, NavigationTrigger.ROUTER_LINK);
+                new Location("npe"), ui, NavigationTrigger.ROUTER_LINK,
+                routerLinkstate, false);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
         renderer.handle(event);

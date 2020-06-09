@@ -21,14 +21,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble_Cancel;
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.Bubble_NoCancel;
 import static com.vaadin.flow.webcomponent.FireEventComponent.OptionsType.NoBubble_NoCancel;
 
-public class FireEventIT extends ChromeBrowserTest implements HasById {
+public class FireEventIT extends EmbeddingChromeBrowserTest implements HasById {
     private static final String N1 = "number1";
     private static final String N2 = "number2";
     private static final String SUM = "sum";

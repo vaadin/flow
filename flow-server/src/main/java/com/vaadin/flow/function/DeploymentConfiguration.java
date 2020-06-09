@@ -109,7 +109,7 @@ public interface DeploymentConfiguration extends Serializable {
      * the client will then wait for the predecessors of a received out-order
      * message, before considering them missing and requesting a full
      * resynchronization of the application state from the server.
-     * 
+     *
      * @return The maximum message suspension timeout
      */
     int getMaxMessageSuspendTimeout();
@@ -341,8 +341,9 @@ public interface DeploymentConfiguration extends Serializable {
      * @return {@code true} if Flow should use compiled frontend resources.
      */
     default boolean useCompiledFrontendResources() {
-        return isProductionMode() && !getBooleanProperty(
-                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES, false);
+        return isProductionMode() && isCompatibilityMode()
+                && !getBooleanProperty(
+                        InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES, false);
     }
 
     /**
@@ -414,8 +415,8 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get if the stats.json file should be retrieved from an external service or
-     * through the classpath.
+     * Get if the stats.json file should be retrieved from an external service
+     * or through the classpath.
      *
      * @return true if stats.json is served from an external location
      */
@@ -424,8 +425,8 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     /**
-     * Get the url from where stats.json should be retrieved from.
-     * If not given this will default to '/vaadin-static/VAADIN/config/stats.json'
+     * Get the url from where stats.json should be retrieved from. If not given
+     * this will default to '/vaadin-static/VAADIN/config/stats.json'
      *
      * @return external stats.json location
      */

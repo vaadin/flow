@@ -19,10 +19,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class UpdatePropertyIT extends ChromeBrowserTest implements HasById {
+public class UpdatePropertyIT extends EmbeddingChromeBrowserTest implements HasById {
 
     @Override
     protected String getTestPath() {

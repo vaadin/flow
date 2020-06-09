@@ -13,29 +13,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
+package com.vaadin.flow.mixedtest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-public class FactoryExporterIT extends EmbeddingChromeBrowserTest
-        implements HasById {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class NavigateToStyledIT extends ChromeBrowserTest {
+
+    @Test
+    public void navigateToStyledComponent() {
+        open();
+
+        findElement(By.id("navigate")).click();
+
+        waitForElementPresent(By.id("styling-div"));
+
+        WebElement div = findElement(By.id("styling-div"));
+
+        String color = div.getCssValue("color");
+        // The red color
+        Assert.assertEquals("rgba(255, 0, 0, 1)", color);
+    }
 
     @Override
     protected String getTestPath() {
-        return Constants.PAGE_CONTEXT + "/interfaceBased.html";
-    }
-
-    @Test
-    public void webComponentExportedByExportsWebComponentInterfaceShouldBeDisplayedAndUpgraded() {
-        open();
-
-        waitForElementVisible(By.id("interface"));
-        WebElement paragraph = byId("interface", "paragraph");
-
-        Assert.assertNotNull("Web component exported by interface based "
-                + "exporter should have been upgraded", paragraph);
+        return "/context-path/servlet-path/navigate-to-styled";
     }
 }
