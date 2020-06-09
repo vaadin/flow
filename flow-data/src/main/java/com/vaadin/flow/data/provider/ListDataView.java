@@ -127,6 +127,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *         item containing updated state
      * @return this ListDataView instance
      *
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @throws IllegalArgumentException
+     *         if collection is not a list
+     *
      * @see #updateItem(Object, SerializableFunction)
      */
     V updateItem(T item);
@@ -144,6 +149,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *         callback that transforms {@code item} object into identifier
      *         object which is used to determine the equality between items.
      * @return this ListDataView instance
+     *
+     * @throws UnsupportedOperationException
+     *         if backing collection doesn't support modification
+     * @throws IllegalArgumentException
+     *         if collection is not a list
      *
      * @see #updateItem(Object)
      */

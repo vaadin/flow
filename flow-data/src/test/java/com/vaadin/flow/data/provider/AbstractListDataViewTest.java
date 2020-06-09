@@ -61,8 +61,9 @@ public class AbstractListDataViewTest {
                 .fromCallbacks(query -> Stream.of("one"), query -> 1);
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage(
-                "ListDataViewImpl only supports 'ListDataProvider' "
-                        + "or it's subclasses, but was given a 'AbstractBackEndDataProvider'");
+                "ListDataViewImpl only supports 'ListDataProvider' " +
+                        "or it's subclasses, but was given a " +
+                        "'AbstractBackEndDataProvider'");
         new ListDataViewImpl(() -> dataProvider, null);
     }
 
@@ -84,8 +85,8 @@ public class AbstractListDataViewTest {
     public void getPrevItem_prevItemAvailable_prevItemFound() {
         Optional<String> middle = dataView.getPreviousItem("middle");
         Assert.assertTrue(middle.isPresent());
-        Assert.assertEquals("Item in middle should have previous item", "first",
-                middle.get());
+        Assert.assertEquals("Item in middle should have previous item",
+                "first", middle.get());
     }
 
     @Test
@@ -126,11 +127,13 @@ public class AbstractListDataViewTest {
     public void addSortComparator_twoComparatorsAdded_itemsSortedByCompositeComparator() {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
         dataView = new ListDataViewImpl(() -> dataProvider, null);
-        dataView.addSortComparator((s1, s2) -> Chars.compare(s1.charAt(0), s2.charAt(0)));
+        dataView.addSortComparator((s1, s2) ->
+                Chars.compare(s1.charAt(0), s2.charAt(0)));
         Assert.assertEquals("Unexpected data set order (comparator 1)",
                 "a2,a1,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
-        dataView.addSortComparator((s1, s2) -> Chars.compare(s1.charAt(1), s2.charAt(1)));
+        dataView.addSortComparator((s1, s2) ->
+                Chars.compare(s1.charAt(1), s2.charAt(1)));
         Assert.assertEquals("Unexpected data set order (comparator 2)",
                 "a1,a2,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
@@ -248,13 +251,13 @@ public class AbstractListDataViewTest {
         dataView.addItemBefore("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newItem", "middle", "last" },
+                new String[]{"first", "newItem", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemBefore("second", "first");
 
         Assert.assertArrayEquals(
-                new String[] { "second", "first", "newItem", "middle", "last" },
+                new String[]{"second", "first", "newItem", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -264,13 +267,13 @@ public class AbstractListDataViewTest {
         dataView.addItemAfter("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "middle", "newItem", "last" },
+                new String[]{"first", "middle", "newItem", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemAfter("second", "last");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "middle", "newItem", "last", "second" },
+                new String[]{"first", "middle", "newItem", "last", "second"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -297,8 +300,8 @@ public class AbstractListDataViewTest {
         dataView.addItems(Arrays.asList("newOne", "newTwo", "newThree"));
 
         Assert.assertArrayEquals(
-                new String[] { "first", "middle", "last", "newOne", "newTwo",
-                        "newThree" },
+                new String[]{"first", "middle", "last", "newOne", "newTwo",
+                        "newThree"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -308,8 +311,8 @@ public class AbstractListDataViewTest {
                 "first");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newOne", "newTwo", "newThree",
-                        "middle", "last" },
+                new String[]{"first", "newOne", "newTwo", "newThree",
+                        "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -319,8 +322,8 @@ public class AbstractListDataViewTest {
                 "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newOne", "newTwo", "newThree",
-                        "middle", "last" },
+                new String[]{"first", "newOne", "newTwo", "newThree",
+                        "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -328,7 +331,7 @@ public class AbstractListDataViewTest {
     public void removeItems_itemsOutOfOrder_allItemsAreRemoved() {
         dataView.removeItems(Arrays.asList("middle", "first"));
 
-        Assert.assertArrayEquals(new String[] { "last" },
+        Assert.assertArrayEquals(new String[]{"last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -338,21 +341,21 @@ public class AbstractListDataViewTest {
                 "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newOne", "newTwo", "newThree",
-                        "middle", "last" },
+                new String[]{"first", "newOne", "newTwo", "newThree",
+                        "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.removeItems(Arrays.asList("middle", "first"));
 
         Assert.assertArrayEquals(
-                new String[] { "newOne", "newTwo", "newThree", "last" },
+                new String[]{"newOne", "newTwo", "newThree", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
 
         Assert.assertArrayEquals(
-                new String[] { "newOne", "one", "two", "newTwo", "newThree",
-                        "last" },
+                new String[]{"newOne", "one", "two", "newTwo", "newThree",
+                        "last"},
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -367,8 +370,8 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
-                items);
+        final ListDataProvider<String> stringListDataProvider =
+                new ListDataProvider<>(items);
         dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
 
         dataView.addItemBefore("newItem", "item2");
@@ -384,8 +387,8 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
-                items);
+        final ListDataProvider<String> stringListDataProvider =
+                new ListDataProvider<>(items);
         dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
 
         dataView.addItemBefore("newItem", "item1");

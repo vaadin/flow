@@ -317,7 +317,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(T item, SerializableFunction<T, ?> identityProvider) {
+    private int getItemIndex(
+            T item, SerializableFunction<T, ?> identityProvider) {
         Objects.requireNonNull(item, "item cannot be null");
         final Object itemIdentifier = getIdentifier(item,
                 identityProvider);
