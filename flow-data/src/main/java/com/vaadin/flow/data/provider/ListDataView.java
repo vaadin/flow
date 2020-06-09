@@ -135,7 +135,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Finds an items equal to {@code item} in the non-filtered data set
      * and replaces it with {@code item}.
      * <p>
-     * Equality between items relies on equality of its identifiers
+      * Equality between the items is determined by the identifiers
      * provided by {@code identityProvider}.
      *
      * @param item
