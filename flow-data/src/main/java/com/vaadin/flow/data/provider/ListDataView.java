@@ -117,7 +117,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemBefore(T item, T before);
 
     /**
-     * Finds an items equal to {@code item} in the non-filtered data set
+     * Finds an item equal to {@code item} in the non-filtered data set
      * and replaces it with {@code item}.
      * <p>
      * Equality between the items is determined by the identifiers
@@ -132,10 +132,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V updateItem(T item);
 
     /**
-     * Finds an items equal to {@code item} in the non-filtered data set
+     * Finds an item equal to {@code item} in the non-filtered data set
      * and replaces it with {@code item}.
      * <p>
-      * Equality between the items is determined by the identifiers
+     * Equality between the items is determined by the identifiers
      * provided by {@code identityProvider}.
      *
      * @param item

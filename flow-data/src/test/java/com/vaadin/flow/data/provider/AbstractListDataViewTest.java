@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -434,11 +433,60 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void updateItem_idEquality_updatesExistingItem() {
-        Collection<Item> items = Item.getTestItems();
+    public void updateItem_equalsBasedIdentity_noUpdatesExpected() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
 
         ItemListDataView dataView = new ItemListDataView(
-                () -> DataProvider.ofCollection(items), null);
+                () -> dataProvider, null);
+
+        dataView.updateItem(
+                new Item(1L, "updatedValue", "updatedDescr"));
+
+        Optional<Item> firstItem =
+                items.stream().filter(i -> i.getId() == 1L).findFirst();
+
+        // No item is supposed to be updated since no items found matching
+        // equals() implementation
+        Assert.assertTrue(firstItem.isPresent());
+        Assert.assertEquals(3, items.size());
+        Assert.assertEquals("value1", firstItem.get().getValue());
+        Assert.assertEquals("descr1", firstItem.get().getDescription());
+    }
+
+    @Test
+    public void updateItem_equalsBasedIdentity_updatesExistingItem() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
+
+        ItemListDataView dataView = new ItemListDataView(
+                () -> dataProvider, null);
+
+        dataView.updateItem(
+                new Item(1L, "value1", "updatedDescr"));
+
+        Optional<Item> firstItem =
+                items.stream().filter(i -> i.getId() == 1L).findFirst();
+
+        // Item with id = 1 is supposed to be updated since description is
+        // not included in equals() method
+        Assert.assertTrue(firstItem.isPresent());
+        Assert.assertEquals(3, items.size());
+        Assert.assertEquals("value1", firstItem.get().getValue());
+        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
+    }
+
+    @Test
+    public void updateItem_idBasedIdentity_updatesExistingItem() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = new
+                CustomIdentityItemDataProvider(items);
+
+        ItemListDataView dataView = new ItemListDataView(
+                () -> dataProvider, null);
 
         dataView.updateItem(
                 new Item(1L, "updatedValue", "updatedDescr"));
@@ -454,80 +502,26 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void updateItem_idEquality_updatesExistingItems() {
-        Collection<Item> items = Item.getTestItems();
-        items.add(new Item(1L, "duplicatedValue", "duplicatedDescr"));
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> DataProvider.ofCollection(items), null);
-
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
-
-        List<Item> updatedItems =
-                items.stream().filter(i -> i.getId() == 1L).collect(Collectors.toList());
-
-        // Two items with id = 1 supposed to be updated
-        Assert.assertEquals(2, updatedItems.size());
-        Assert.assertEquals(4, items.size());
-        Assert.assertEquals("updatedValue", updatedItems.get(0).getValue());
-        Assert.assertEquals("updatedDescr", updatedItems.get(0).getDescription());
-        Assert.assertEquals("updatedValue", updatedItems.get(1).getValue());
-        Assert.assertEquals("updatedDescr", updatedItems.get(1).getDescription());
-    }
-
-    @Test
-    public void updateItem_descrIdentity_updatesExistingItem() {
-        Collection<Item> items = Item.getTestItems();
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> new ItemDataProvider(items), null);
-
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
-
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
-
-        // No Items are supposed to be updated, because no items with
-        // description = 'updatedDescr'
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("value1", firstItem.get().getValue());
-        Assert.assertEquals("descr1", firstItem.get().getDescription());
-
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "descr1"));
-
-        firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
-
-        // Item with description = 'descr1' supposed to be updated
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("updatedValue", firstItem.get().getValue());
-        Assert.assertEquals("descr1", firstItem.get().getDescription());
-    }
-
-    @Test
     public void updateItem_identityProvider_updatesExistingItem() {
-        Collection<Item> items = Item.getTestItems();
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
 
         ItemListDataView dataView = new ItemListDataView(
-                () -> DataProvider.ofCollection(items), null);
+                () -> dataProvider, null);
 
         dataView.updateItem(
-                new Item(1L, "updatedValue", "descr1"),
-                Item::getDescription);
+                new Item(1L, "updatedValue", "updatedDescr"),
+                Item::getId);
 
         Optional<Item> firstItem =
                 items.stream().filter(i -> i.getId() == 1L).findFirst();
 
-        // Item with description = 'descr1' supposed to be updated
+        // Item with id = 1 supposed to be updated
         Assert.assertTrue(firstItem.isPresent());
         Assert.assertEquals(3, items.size());
         Assert.assertEquals("updatedValue", firstItem.get().getValue());
-        Assert.assertEquals("descr1", firstItem.get().getDescription());
+        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
     }
 
     private static class ListDataViewImpl extends AbstractListDataView<String> {
@@ -539,16 +533,16 @@ public class AbstractListDataViewTest {
         }
     }
 
-    private static class ItemDataProvider
+    private static class CustomIdentityItemDataProvider
             extends ListDataProvider<Item> {
 
-        public ItemDataProvider(Collection<Item> items) {
+        public CustomIdentityItemDataProvider(Collection<Item> items) {
             super(items);
         }
 
         @Override
         public Object getId(Item item) {
-            return item.getDescription();
+            return item.getId();
         }
     }
 
@@ -559,5 +553,12 @@ public class AbstractListDataViewTest {
                 Component component) {
             super(dataProviderSupplier, component);
         }
+    }
+
+    private Collection<Item> getTestItems() {
+        return new ArrayList<>(Arrays.asList(
+                new Item(1L, "value1", "descr1"),
+                new Item(2L, "value2", "descr2"),
+                new Item(3L, "value3", "descr3")));
     }
 }

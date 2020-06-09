@@ -40,7 +40,7 @@ import com.vaadin.flow.function.ValueProvider;
 public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         implements ListDataView<T, AbstractListDataView<T>> {
 
-    private final static String COLLECTION_TYPE_ERROR_MESSAGE_PATTERN =
+    private static final String COLLECTION_TYPE_ERROR_MESSAGE_PATTERN =
             "DataProvider collection '%s' is not a list.";
 
     /**
@@ -118,23 +118,24 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public <V1 extends Comparable<? super V1>> AbstractListDataView<T> setSortOrder(
             ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
         return setFilterOrOrder(
-                dataProvider -> dataProvider.setSortOrder(valueProvider, sortDirection));
+                dataProvider -> dataProvider.setSortOrder(valueProvider,
+                        sortDirection));
     }
 
     @Override
     public <V1 extends Comparable<? super V1>> AbstractListDataView<T> addSortOrder(
             ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
         return setFilterOrOrder(
-                dataProvider -> dataProvider.addSortOrder(valueProvider, sortDirection));
+                dataProvider -> dataProvider.addSortOrder(valueProvider,
+                        sortDirection));
     }
 
     @Override
     public boolean contains(T item) {
-        final Object itemIdentifier = getDataProvider().getId(item);
-        Objects.requireNonNull(itemIdentifier,
-                "Identity Provider should not return null");
-        return getItems().anyMatch(i -> getDataProvider().getId(i)
-                .equals(itemIdentifier));
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        final Object itemIdentifier = getIdentifier(item, dataProvider);
+        return getItems().anyMatch(i -> itemIdentifier.equals(
+                getIdentifier(i, dataProvider)));
     }
 
     @Override
@@ -159,29 +160,30 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> updateItem(T item) {
-        return updateItem(item, getDataProvider()::getId);
+        ListDataProvider<T> dataProvider = getDataProvider();
+        return updateItem(item, i -> getIdentifier(i, dataProvider));
     }
 
     @Override
     public AbstractListDataView<T> updateItem(T item,
-                                   SerializableFunction<T, ?> identityProvider) {
+                                SerializableFunction<T, ?> identityProvider) {
         Objects.requireNonNull(item, "Item cannot be null");
-        Objects.requireNonNull(identityProvider,
-                "Identity provider cannot be null");
-        Collection<T> items = getDataProvider().getItems();
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        Collection<T> items = dataProvider.getItems();
 
         if (items instanceof List) {
-            final Object itemIdentifier = identityProvider.apply(item);
-            Objects.requireNonNull(itemIdentifier,
-                    "Identity Provider should not return null");
+            final Object itemIdentifier = getIdentifier(item,
+                    identityProvider);
             final List<T> itemList = (List<T>) items;
 
-            for (int itemIndex = 0; itemIndex < itemList.size(); itemIndex++) {
-                T nextItem = itemList.get(itemIndex);
+            int itemIndex = getItemIndex(item, identityProvider);
+
+            if (itemIndex != -1) {
+                T itemToUpdate = itemList.get(itemIndex);
                 if (itemIdentifier.equals(
-                        identityProvider.apply(nextItem))) {
+                        getIdentifier(itemToUpdate, identityProvider))) {
                     itemList.set(itemIndex, item);
-                    getDataProvider().refreshItem(item);
+                    dataProvider.refreshItem(item);
                 }
             }
             return this;
@@ -203,7 +205,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public AbstractListDataView<T> addItemAfter(T item, T after) {
         final Collection<T> items = getDataProvider().getItems();
         if (!items.contains(after)) {
-            throw new IllegalArgumentException("Item to insert after is not available in the data");
+            throw new IllegalArgumentException(
+                    "Item to insert after is not available in the data");
         }
         if (items instanceof List) {
             final List<T> itemList = (List<T>) items;
@@ -314,17 +317,36 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(T item) {
+    private int getItemIndex(T item, SerializableFunction<T, ?> identityProvider) {
         Objects.requireNonNull(item, "item cannot be null");
-        final Object itemIdentifier = getDataProvider().getId(item);
-        Objects.requireNonNull(itemIdentifier,
-                "Identity Provider should not return null");
+        final Object itemIdentifier = getIdentifier(item,
+                identityProvider);
         AtomicInteger index = new AtomicInteger(-1);
         if (!getItems().peek(t -> index.incrementAndGet())
-                .filter(t -> itemIdentifier.equals(getDataProvider()
-                        .getId(t))).findFirst().isPresent()) {
+                .filter(t -> itemIdentifier.equals(
+                        getIdentifier(t, identityProvider)))
+                .findFirst().isPresent()) {
             return -1;
         }
         return index.get();
+    }
+
+    private int getItemIndex(T item) {
+        ListDataProvider<T> dataProvider = getDataProvider();
+        return getItemIndex(item, dataProvider::getId);
+    }
+
+    private Object getIdentifier(T item,
+                                 SerializableFunction<T, ?> identityProvider) {
+        Objects.requireNonNull(identityProvider,
+                "Identity provider cannot be null");
+        final Object itemIdentifier = identityProvider.apply(item);
+        Objects.requireNonNull(itemIdentifier,
+                "Identity provider should not return null");
+        return itemIdentifier;
+    }
+
+    private Object getIdentifier(T item, ListDataProvider<T> dataProvider) {
+        return getIdentifier(item, dataProvider::getId);
     }
 }

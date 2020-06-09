@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.tests.data.bean;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Objects;
 
 public class Item {
@@ -61,19 +58,12 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
-        return id == item.id;
+        return id == item.id &&
+                Objects.equals(value, item.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    public static Collection<Item> getTestItems() {
-        return new ArrayList<>(Arrays.asList(
-                new Item(1L, "value1", "descr1"),
-                new Item(2L, "value2", "descr2"),
-                new Item(3L, "value3", "descr3")));
-
+        return Objects.hash(id, value);
     }
 }
