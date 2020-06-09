@@ -142,7 +142,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      *         item containing updated state
      * @param identityProvider
      *         callback that transforms {@code item} object into identifier
-     *         object which is used to find the equal items in data set.
+     *         object which is used to determine the equality between items.
      * @return this ListDataView instance
      *
      * @see #updateItem(Object)
