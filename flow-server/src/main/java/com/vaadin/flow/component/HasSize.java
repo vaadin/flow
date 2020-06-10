@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
@@ -412,16 +413,14 @@ public interface HasSize extends HasElement {
          * 
          * @param cssSize Css compliant size string such as "50px".
          * 
-         * @return A unit or null if no supported unit.
+         * @return A Optional unit.
          */
-        public static Unit getUnit(String cssSize) {
-            if (cssSize == null || cssSize.length() < 1) {
-                throw new IllegalArgumentException(
-                       "The parameter can't be null or too short to contain unit");
+        public static Optional<Unit> getUnit(String cssSize) {
+            if (cssSize == null) {
+                 throw new IllegalArgumentException("The parameter can't be null");
             }
-            Stream<Unit> units = getUnits().filter(
-                    unit -> cssSize.endsWith(unit.toString()));
-            return units.findFirst().get();
+            Stream<Unit> units = getUnits().filter(unit -> cssSize.endsWith(unit.toString()));
+            return units.findFirst();
         }
 
         /**
@@ -435,8 +434,7 @@ public interface HasSize extends HasElement {
             if (cssSize == null || cssSize.length() < 1) {
                 throw new IllegalArgumentException("The parameter can't be null");
             }
-            Stream<Unit> units = getUnits().filter(
-                    unit -> cssSize.endsWith(unit.toString()));
+            Stream<Unit> units = getUnits().filter(unit -> cssSize.endsWith(unit.toString()));
             String size = "0";
             String unit = "";
             try {
@@ -446,7 +444,9 @@ public interface HasSize extends HasElement {
                         "The parameter string '"+cssSize+"' does not contain valid unit");
             }
             size = cssSize.substring(0,cssSize.length()-unit.length());
-            if (size.isEmpty()) size = "0";
+            if (size.isEmpty()) {
+                size = "0";
+            }
             return Float.valueOf(size);
         }
 
@@ -463,6 +463,13 @@ public interface HasSize extends HasElement {
         }
     }
 
+    /**
+     * Utility method for internal use
+     * 
+     * @param size Size
+     * @param unit Unit
+     * @return Css format size string
+     */
     static String getCssSize(float size, Unit unit) {
         if (size < 0) {
             return null;
