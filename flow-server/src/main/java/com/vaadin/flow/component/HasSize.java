@@ -346,6 +346,9 @@ public interface HasSize extends HasElement {
         setHeight(null);
     }
 
+    /**
+     * Enum of supported units in Css sizes
+     */
     public enum Unit {
         /**
          * Unit code representing pixels.
@@ -435,7 +438,7 @@ public interface HasSize extends HasElement {
                 throw new IllegalArgumentException("The parameter can't be null");
             }
             Stream<Unit> units = getUnits().filter(unit -> cssSize.endsWith(unit.toString()));
-            String size = "0";
+            String size;
             String unit = "";
             try {
                 unit = units.findFirst().get().toString();
@@ -450,6 +453,12 @@ public interface HasSize extends HasElement {
             return Float.valueOf(size);
         }
 
+        /**
+         * Convert unit string symbol to Unit.
+         *
+         * @param symbol A String.
+         * @return A Unit, Unit.PIXELS if symbol was null or not matching.
+         */
         public static Unit getUnitFromSymbol(String symbol) {
             if (symbol == null) {
                 return Unit.PIXELS; // Defaults to pixels
@@ -464,7 +473,7 @@ public interface HasSize extends HasElement {
     }
 
     /**
-     * Utility method for internal use
+     * Utility method for internal use.
      * 
      * @param size Size
      * @param unit Unit
