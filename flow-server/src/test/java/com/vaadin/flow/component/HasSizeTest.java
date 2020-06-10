@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 
