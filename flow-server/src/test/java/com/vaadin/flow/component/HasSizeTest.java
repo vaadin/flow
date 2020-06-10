@@ -228,8 +228,9 @@ public class HasSizeTest {
         HasSizeComponent c = new HasSizeComponent();
         for (Unit unit : Unit.values()) {
             String cssSize = 100f+unit.toString();
-            Unit theUnit = Unit.getUnit(cssSize);
-            Assert.assertEquals(theUnit, unit);
+            Optional<Unit> theUnit = Unit.getUnit(cssSize);
+            Assert.assertTrue(theUnit.isPresent());
+            Assert.assertEquals(theUnit.get(), unit);
         }
     }
 
@@ -269,6 +270,6 @@ public class HasSizeTest {
     @Test(expected = IllegalArgumentException.class)
     public void getUnitException() {
         String cssSize = "";
-        Unit size = Unit.getUnit(cssSize);        	
+        Optional<Unit> size = Unit.getUnit(cssSize);        	
     }
 }
