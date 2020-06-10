@@ -34,6 +34,17 @@ function readPackage(pkg) {
     }
   }
 
+  /*
+  * A check is made for each dependency. If there are dependency version being
+  * forced in the project dependencies at package.json, then pnpm will force
+  * that version for all possible packages.
+  */
+  if (packageJson.dependencies.hasOwnProperty(pkg.name)) {
+    if (packageJson.dependencies[pkg.name] !== pkg.version) {
+      pkg.dependencies[pkg.name] = packageJson.dependencies[pkg.name];
+    }
+  }
+
   // Forcing chokidar version for now until new babel version is available
   // check out https://github.com/babel/babel/issues/11488
   if (pkg.dependencies.chokidar) {
