@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import com.google.common.primitives.Chars;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -60,8 +61,9 @@ public class AbstractListDataViewTest {
                 .fromCallbacks(query -> Stream.of("one"), query -> 1);
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage(
-                "ListDataViewImpl only supports 'ListDataProvider' "
-                        + "or it's subclasses, but was given a 'AbstractBackEndDataProvider'");
+                "ListDataViewImpl only supports 'ListDataProvider' " +
+                        "or it's subclasses, but was given a " +
+                        "'AbstractBackEndDataProvider'");
         new ListDataViewImpl(() -> dataProvider, null);
     }
 
@@ -83,8 +85,8 @@ public class AbstractListDataViewTest {
     public void getPrevItem_prevItemAvailable_prevItemFound() {
         Optional<String> middle = dataView.getPreviousItem("middle");
         Assert.assertTrue(middle.isPresent());
-        Assert.assertEquals("Item in middle should have previous item", "first",
-                middle.get());
+        Assert.assertEquals("Item in middle should have previous item",
+                "first", middle.get());
     }
 
     @Test
@@ -125,11 +127,13 @@ public class AbstractListDataViewTest {
     public void addSortComparator_twoComparatorsAdded_itemsSortedByCompositeComparator() {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
         dataView = new ListDataViewImpl(() -> dataProvider, null);
-        dataView.addSortComparator((s1, s2) -> Chars.compare(s1.charAt(0), s2.charAt(0)));
+        dataView.addSortComparator((s1, s2) ->
+                Chars.compare(s1.charAt(0), s2.charAt(0)));
         Assert.assertEquals("Unexpected data set order (comparator 1)",
                 "a2,a1,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
-        dataView.addSortComparator((s1, s2) -> Chars.compare(s1.charAt(1), s2.charAt(1)));
+        dataView.addSortComparator((s1, s2) ->
+                Chars.compare(s1.charAt(1), s2.charAt(1)));
         Assert.assertEquals("Unexpected data set order (comparator 2)",
                 "a1,a2,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
@@ -247,13 +251,13 @@ public class AbstractListDataViewTest {
         dataView.addItemBefore("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newItem", "middle", "last" },
+                new String[]{"first", "newItem", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemBefore("second", "first");
 
         Assert.assertArrayEquals(
-                new String[] { "second", "first", "newItem", "middle", "last" },
+                new String[]{"second", "first", "newItem", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -263,13 +267,13 @@ public class AbstractListDataViewTest {
         dataView.addItemAfter("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "middle", "newItem", "last" },
+                new String[]{"first", "middle", "newItem", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemAfter("second", "last");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "middle", "newItem", "last", "second" },
+                new String[]{"first", "middle", "newItem", "last", "second"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -296,8 +300,8 @@ public class AbstractListDataViewTest {
         dataView.addItems(Arrays.asList("newOne", "newTwo", "newThree"));
 
         Assert.assertArrayEquals(
-                new String[] { "first", "middle", "last", "newOne", "newTwo",
-                        "newThree" },
+                new String[]{"first", "middle", "last", "newOne", "newTwo",
+                        "newThree"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -307,8 +311,8 @@ public class AbstractListDataViewTest {
                 "first");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newOne", "newTwo", "newThree",
-                        "middle", "last" },
+                new String[]{"first", "newOne", "newTwo", "newThree",
+                        "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -318,8 +322,8 @@ public class AbstractListDataViewTest {
                 "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newOne", "newTwo", "newThree",
-                        "middle", "last" },
+                new String[]{"first", "newOne", "newTwo", "newThree",
+                        "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -327,7 +331,7 @@ public class AbstractListDataViewTest {
     public void removeItems_itemsOutOfOrder_allItemsAreRemoved() {
         dataView.removeItems(Arrays.asList("middle", "first"));
 
-        Assert.assertArrayEquals(new String[] { "last" },
+        Assert.assertArrayEquals(new String[]{"last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -337,21 +341,21 @@ public class AbstractListDataViewTest {
                 "middle");
 
         Assert.assertArrayEquals(
-                new String[] { "first", "newOne", "newTwo", "newThree",
-                        "middle", "last" },
+                new String[]{"first", "newOne", "newTwo", "newThree",
+                        "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.removeItems(Arrays.asList("middle", "first"));
 
         Assert.assertArrayEquals(
-                new String[] { "newOne", "newTwo", "newThree", "last" },
+                new String[]{"newOne", "newTwo", "newThree", "last"},
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
 
         Assert.assertArrayEquals(
-                new String[] { "newOne", "one", "two", "newTwo", "newThree",
-                        "last" },
+                new String[]{"newOne", "one", "two", "newTwo", "newThree",
+                        "last"},
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -366,8 +370,8 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
-                items);
+        final ListDataProvider<String> stringListDataProvider =
+                new ListDataProvider<>(items);
         dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
 
         dataView.addItemBefore("newItem", "item2");
@@ -383,8 +387,8 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
-                items);
+        final ListDataProvider<String> stringListDataProvider =
+                new ListDataProvider<>(items);
         dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
 
         dataView.addItemBefore("newItem", "item1");
@@ -431,6 +435,98 @@ public class AbstractListDataViewTest {
                 dataView.getItems().count());
     }
 
+    @Test
+    public void updateItem_equalsBasedIdentity_noUpdatesExpected() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
+
+        ItemListDataView dataView = new ItemListDataView(
+                () -> dataProvider, null);
+
+        dataView.updateItem(
+                new Item(1L, "updatedValue", "updatedDescr"));
+
+        Optional<Item> firstItem =
+                items.stream().filter(i -> i.getId() == 1L).findFirst();
+
+        // No item is supposed to be updated since no items found matching
+        // equals() implementation
+        Assert.assertTrue(firstItem.isPresent());
+        Assert.assertEquals(3, items.size());
+        Assert.assertEquals("value1", firstItem.get().getValue());
+        Assert.assertEquals("descr1", firstItem.get().getDescription());
+    }
+
+    @Test
+    public void updateItem_equalsBasedIdentity_updatesExistingItem() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
+
+        ItemListDataView dataView = new ItemListDataView(
+                () -> dataProvider, null);
+
+        dataView.updateItem(
+                new Item(1L, "value1", "updatedDescr"));
+
+        Optional<Item> firstItem =
+                items.stream().filter(i -> i.getId() == 1L).findFirst();
+
+        // Item with id = 1 is supposed to be updated since description is
+        // not included in equals() method
+        Assert.assertTrue(firstItem.isPresent());
+        Assert.assertEquals(3, items.size());
+        Assert.assertEquals("value1", firstItem.get().getValue());
+        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
+    }
+
+    @Test
+    public void updateItem_idBasedIdentity_updatesExistingItem() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = new
+                CustomIdentityItemDataProvider(items);
+
+        ItemListDataView dataView = new ItemListDataView(
+                () -> dataProvider, null);
+
+        dataView.updateItem(
+                new Item(1L, "updatedValue", "updatedDescr"));
+
+        Optional<Item> firstItem =
+                items.stream().filter(i -> i.getId() == 1L).findFirst();
+
+        // Item with id = 1 supposed to be updated
+        Assert.assertTrue(firstItem.isPresent());
+        Assert.assertEquals(3, items.size());
+        Assert.assertEquals("updatedValue", firstItem.get().getValue());
+        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
+    }
+
+    @Test
+    public void updateItem_identityProvider_updatesExistingItem() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
+
+        ItemListDataView dataView = new ItemListDataView(
+                () -> dataProvider, null);
+
+        dataView.updateItem(
+                new Item(1L, "updatedValue", "updatedDescr"),
+                Item::getId);
+
+        Optional<Item> firstItem =
+                items.stream().filter(i -> i.getId() == 1L).findFirst();
+
+        // Item with id = 1 supposed to be updated
+        Assert.assertTrue(firstItem.isPresent());
+        Assert.assertEquals(3, items.size());
+        Assert.assertEquals("updatedValue", firstItem.get().getValue());
+        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(
@@ -438,5 +534,34 @@ public class AbstractListDataViewTest {
                 Component component) {
             super(dataProviderSupplier, component);
         }
+    }
+
+    private static class CustomIdentityItemDataProvider
+            extends ListDataProvider<Item> {
+
+        public CustomIdentityItemDataProvider(Collection<Item> items) {
+            super(items);
+        }
+
+        @Override
+        public Object getId(Item item) {
+            return item.getId();
+        }
+    }
+
+    private static class ItemListDataView extends AbstractListDataView<Item> {
+
+        public ItemListDataView(
+                SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier,
+                Component component) {
+            super(dataProviderSupplier, component);
+        }
+    }
+
+    private Collection<Item> getTestItems() {
+        return new ArrayList<>(Arrays.asList(
+                new Item(1L, "value1", "descr1"),
+                new Item(2L, "value2", "descr2"),
+                new Item(3L, "value3", "descr3")));
     }
 }

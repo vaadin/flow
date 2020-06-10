@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
@@ -38,6 +39,9 @@ import com.vaadin.flow.function.ValueProvider;
  */
 public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         implements ListDataView<T, AbstractListDataView<T>> {
+
+    private static final String COLLECTION_TYPE_ERROR_MESSAGE_PATTERN =
+            "DataProvider collection '%s' is not a list.";
 
     /**
      * Creates a new instance of {@link AbstractListDataView} subclass
@@ -114,22 +118,24 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     public <V1 extends Comparable<? super V1>> AbstractListDataView<T> setSortOrder(
             ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
         return setFilterOrOrder(
-                dataProvider -> dataProvider.setSortOrder(valueProvider, sortDirection));
+                dataProvider -> dataProvider.setSortOrder(valueProvider,
+                        sortDirection));
     }
 
     @Override
     public <V1 extends Comparable<? super V1>> AbstractListDataView<T> addSortOrder(
             ValueProvider<T, V1> valueProvider, SortDirection sortDirection) {
         return setFilterOrOrder(
-                dataProvider -> dataProvider.addSortOrder(valueProvider, sortDirection));
+                dataProvider -> dataProvider.addSortOrder(valueProvider,
+                        sortDirection));
     }
 
     @Override
     public boolean contains(T item) {
-        // TODO: delegate this to the data communicator/component, since the
-        // equality could be
-        // determined by the provided identity checker (the default is equals).
-        return getItems().anyMatch(i -> Objects.equals(i, item));
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        final Object itemIdentifier = getIdentifier(item, dataProvider);
+        return getItems().anyMatch(i -> itemIdentifier.equals(
+                getIdentifier(i, dataProvider)));
     }
 
     @Override
@@ -150,6 +156,41 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         dataProvider.getItems().add(item);
         dataProvider.refreshAll();
         return this;
+    }
+
+    @Override
+    public AbstractListDataView<T> updateItem(T item) {
+        ListDataProvider<T> dataProvider = getDataProvider();
+        return updateItem(item, i -> getIdentifier(i, dataProvider));
+    }
+
+    @Override
+    public AbstractListDataView<T> updateItem(T item,
+                                SerializableFunction<T, ?> identityProvider) {
+        Objects.requireNonNull(item, "Item cannot be null");
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        Collection<T> items = dataProvider.getItems();
+
+        if (items instanceof List) {
+            final Object itemIdentifier = getIdentifier(item,
+                    identityProvider);
+            final List<T> itemList = (List<T>) items;
+
+            int itemIndex = getItemIndex(item, identityProvider);
+
+            if (itemIndex != -1) {
+                T itemToUpdate = itemList.get(itemIndex);
+                if (itemIdentifier.equals(
+                        getIdentifier(itemToUpdate, identityProvider))) {
+                    itemList.set(itemIndex, item);
+                    dataProvider.refreshItem(item);
+                }
+            }
+            return this;
+        }
+        throw new IllegalArgumentException(
+                String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
+                        items.getClass().getSimpleName()));
     }
 
     @Override
@@ -174,7 +215,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return this;
         }
         throw new IllegalArgumentException(
-                String.format("DataProvider collection '%s' is not a list.",
+                String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
                         items.getClass().getSimpleName()));
     }
 
@@ -192,7 +233,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return this;
         }
         throw new IllegalArgumentException(
-                String.format("DataProvider collection '%s' is not a list.",
+                String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
                         items.getClass().getSimpleName()));
     }
 
@@ -210,7 +251,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return this;
         }
         throw new IllegalArgumentException(
-                String.format("DataProvider collection '%s' is not a list.",
+                String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
                         items.getClass().getSimpleName()));
     }
 
@@ -229,7 +270,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return this;
         }
         throw new IllegalArgumentException(
-                String.format("DataProvider collection '%s' is not a list.",
+                String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
                         items.getClass().getSimpleName()));
     }
 
@@ -276,13 +317,37 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(T item) {
+    private int getItemIndex(
+            T item, SerializableFunction<T, ?> identityProvider) {
         Objects.requireNonNull(item, "item cannot be null");
+        final Object itemIdentifier = getIdentifier(item,
+                identityProvider);
         AtomicInteger index = new AtomicInteger(-1);
         if (!getItems().peek(t -> index.incrementAndGet())
-                .filter(t -> Objects.equals(item, t)).findFirst().isPresent()) {
+                .filter(t -> itemIdentifier.equals(
+                        getIdentifier(t, identityProvider)))
+                .findFirst().isPresent()) {
             return -1;
         }
         return index.get();
+    }
+
+    private int getItemIndex(T item) {
+        ListDataProvider<T> dataProvider = getDataProvider();
+        return getItemIndex(item, dataProvider::getId);
+    }
+
+    private Object getIdentifier(T item,
+                                 SerializableFunction<T, ?> identityProvider) {
+        Objects.requireNonNull(identityProvider,
+                "Identity provider cannot be null");
+        final Object itemIdentifier = identityProvider.apply(item);
+        Objects.requireNonNull(itemIdentifier,
+                "Identity provider should not return null");
+        return itemIdentifier;
+    }
+
+    private Object getIdentifier(T item, ListDataProvider<T> dataProvider) {
+        return getIdentifier(item, dataProvider::getId);
     }
 }
