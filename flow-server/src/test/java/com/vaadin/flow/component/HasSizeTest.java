@@ -271,7 +271,7 @@ public class HasSizeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getUnitException() {
-        String cssSize = "";
+        String cssSize = null;
         Optional<Unit> size = Unit.getUnit(cssSize);        	
     }
 }
