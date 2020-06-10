@@ -419,13 +419,12 @@ public abstract class NodeMap extends NodeFeature {
             if (containedEarlier && !containsNow) {
                 collector.accept(new MapRemoveChange(this, key));
                 hasChanges = true;
-            } else if (containsNow) {
+            } else if (containsNow
+                    && producePutChange(key, containedEarlier, value)) {
                 Object currentValue = values.get(key);
-                if (producePutChange(key, containedEarlier, value)) {
-                    // New or changed value
-                    collector.accept(new MapPutChange(this, key, currentValue));
-                    hasChanges = true;
-                }
+                // New or changed value
+                collector.accept(new MapPutChange(this, key, currentValue));
+                hasChanges = true;
             }
         }
         if (!isPopulated) {
