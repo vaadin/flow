@@ -549,7 +549,7 @@ class VaadinDevmodeGizmo extends LitElement {
       splashMessage: {type: String},
       notifications: {type: Array},
       status: {type: String},
-      serviceurl: {type: String},
+      contextRootUrl: {type: String},
       liveReloadPath: {type: String},
       liveReloadBackend: {type: String},
       springBootDevToolsPort: {type: Number}
@@ -707,12 +707,13 @@ class VaadinDevmodeGizmo extends LitElement {
 
   getDedicatedWebSocketUrl(location) {
     let url;
-    if (this.serviceurl) {
-      url = this.serviceurl;
-    } else if (this.liveReloadPath) {
-      url = location.protocol + '//' + location.host + '/' + this.liveReloadPath;
+    if (this.contextRootUrl) {
+      url = this.contextRootUrl;
     } else {
-      url = location.href;
+      url = location.protocol + '//' + location.host;
+    }
+    if (this.liveReloadPath) {
+      url = url + (url.endsWith('/') ? '' : '/') + this.liveReloadPath;
     }
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       console.warn('The protocol of the url should be http or https for live reload to work.');
@@ -1013,14 +1014,14 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 }
 
-const init = function(serviceUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort) {
+const init = function(contextRootUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort) {
   if ('false' !== window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE)) {
     if (customElements.get('vaadin-devmode-gizmo') === undefined) {
       customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
     }
     const devmodeGizmo = document.createElement('vaadin-devmode-gizmo');
-    if (serviceUrl) {
-      devmodeGizmo.setAttribute('serviceurl', serviceUrl);
+    if (contextRootUrl) {
+      devmodeGizmo.setAttribute('contextRootUrl', contextRootUrl);
     }
     if (liveReloadPath) {
       devmodeGizmo.setAttribute('liveReloadPath', liveReloadPath);
