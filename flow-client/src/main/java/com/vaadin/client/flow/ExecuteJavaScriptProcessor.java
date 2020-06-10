@@ -210,6 +210,7 @@ public class ExecuteJavaScriptProcessor {
               return node;
           });
           object.$appId = this.@ExecuteJavaScriptProcessor::getAppId()().replace(/-\d+$/, '');
+          object.registry = this.@ExecuteJavaScriptProcessor::registry;
           object.attachExistingElement = $entry(function(parent, previousSibling, tagName, id){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
           });
@@ -219,9 +220,13 @@ public class ExecuteJavaScriptProcessor {
           object.registerUpdatableModelProperties = $entry(function(element, properties){
               @com.vaadin.client.ExecuteJavaScriptElementUtils::registerUpdatableModelProperties(*)(object.getNode(element), properties);
           });
+          object.scrollPositionHandlerAfterServerNavigation = function(state) {
+              @com.vaadin.client.ExecuteJavaScriptElementUtils::scrollPositionHandlerAfterServerNavigation(*)(object.registry, state);
+          };
           object.stopApplication = $entry(function(){
               stopApplication.@java.lang.Runnable::run(*)();
           });
-          return object;
+    
+        return object;
     }-*/;
 }

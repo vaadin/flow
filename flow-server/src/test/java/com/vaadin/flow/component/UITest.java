@@ -252,7 +252,7 @@ public class UITest {
         ui.navigate(route, params);
 
         Mockito.verify(router).navigate(Matchers.eq(ui), location.capture(),
-                Matchers.eq(NavigationTrigger.PROGRAMMATIC));
+                Matchers.eq(NavigationTrigger.UI_NAVIGATE));
 
         Location value = location.getValue();
         Assert.assertEquals(route, value.getPath());
