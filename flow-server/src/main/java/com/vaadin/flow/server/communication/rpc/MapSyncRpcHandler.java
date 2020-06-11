@@ -35,7 +35,7 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
-import com.vaadin.flow.internal.nodefeature.PropertyChangeVetoException;
+import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -119,7 +119,7 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         try {
             return Optional.of(node.getFeature(ElementPropertyMap.class)
                     .deferredUpdateFromClient(property, value));
-        } catch (PropertyChangeVetoException exception) {
+        } catch (PropertyChangeDeniedException exception) {
             throw new IllegalArgumentException(
                     getVetoPropertyUpdateMessage(node, property), exception);
         }
