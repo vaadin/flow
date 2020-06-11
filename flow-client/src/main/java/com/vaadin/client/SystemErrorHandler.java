@@ -120,22 +120,25 @@ public class SystemErrorHandler {
     public void handleUnrecoverableError(String caption, String message,
             String details, String url, String querySelector) {
         if (caption == null && message == null && details == null) {
-            WidgetUtil.redirect(url);
+            if (!isWebComponentMode()) {
+                WidgetUtil.redirect(url);
+            }
             return;
         }
 
         Element systemErrorContainer = handleError(caption, message, details,
                 querySelector);
-        systemErrorContainer.addEventListener("click",
-                e -> WidgetUtil.redirect(url), false);
-
-        Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
-            int keyCode = ((KeyboardEvent) e).getKeyCode();
-            if (keyCode == KeyCode.ESC) {
-                e.preventDefault();
-                WidgetUtil.redirect(url);
-            }
-        }, false);
+        if (!isWebComponentMode()) {
+            systemErrorContainer.addEventListener("click",
+                    e -> WidgetUtil.redirect(url), false);
+            Browser.getDocument().addEventListener(Event.KEYDOWN, e -> {
+                int keyCode = ((KeyboardEvent) e).getKeyCode();
+                if (keyCode == KeyCode.ESC) {
+                    e.preventDefault();
+                    WidgetUtil.redirect(url);
+                }
+            }, false);
+        }
     }
 
     /**
@@ -154,7 +157,7 @@ public class SystemErrorHandler {
         Element errorContainer = handleError(null, errorMessage, null, null);
         errorContainer.addEventListener("click", e -> {
             // Allow user to dismiss the error by clicking it.
-            errorContainer.getParentElement().removeChild(errorContainer);
+            errorContainer.getParentNode().removeChild(errorContainer);
         });
     }
 
@@ -230,6 +233,10 @@ public class SystemErrorHandler {
 
     private Optional<Element> findShadowRoot(Element host) {
         return Optional.ofNullable(getShadowRootElement(host));
+    }
+
+    private boolean isWebComponentMode() {
+        return registry.getApplicationConfiguration().isWebComponentMode();
     }
 
     private native Element getShadowRootElement(Element host)
