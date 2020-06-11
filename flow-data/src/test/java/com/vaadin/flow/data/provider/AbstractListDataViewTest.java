@@ -208,6 +208,15 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItem_itemAlreadyInList_notAdded() {
+        final String newItem = "first";
+        dataView.addItem(newItem);
+
+        Assert.assertEquals(3, dataView.getSize());
+        Assert.assertTrue(dataView.contains(newItem));
+    }
+
+    @Test
     public void removeItem_itemRemovedFromDataset() {
         dataView.removeItem("middle");
 
@@ -306,6 +315,15 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItems_someItemsAlreadyInList_absentItemsAreAdded() {
+        dataView.addItems(Arrays.asList("first", "newOne", "newTwo"));
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "middle", "last", "newOne", "newTwo"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
     public void addItemsAfter_allItemsAreAddedAfterTargetItem() {
         dataView.addItemsAfter(Arrays.asList("newOne", "newTwo", "newThree"),
                 "first");
@@ -317,6 +335,16 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItemsAfter_someItemsAlreadyInList_absentItemsAreAdded() {
+        dataView.addItemsAfter(Arrays.asList("middle", "newOne", "newTwo"),
+                "first");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "newOne", "newTwo", "middle", "last"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
     public void addItemsBefore_allItemsAreAddedBeforeTargetItem() {
         dataView.addItemsBefore(Arrays.asList("newOne", "newTwo", "newThree"),
                 "middle");
@@ -324,6 +352,16 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[]{"first", "newOne", "newTwo", "newThree",
                         "middle", "last"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemsBefore_someItemsAlreadyInList_absentItemsAreAdded() {
+        dataView.addItemsBefore(Arrays.asList("first", "newOne", "newTwo"),
+                "middle");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "newOne", "newTwo", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 

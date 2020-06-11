@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableComparator;
@@ -153,8 +154,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItem(T item) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        dataProvider.getItems().add(item);
-        dataProvider.refreshAll();
+        if (!contains(item)) {
+            dataProvider.getItems().add(item);
+            dataProvider.refreshAll();
+        }
         return this;
     }
 
@@ -196,96 +199,142 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItems(Collection<T> items) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        dataProvider.getItems().addAll(items);
-        dataProvider.refreshAll();
+        Collection<T> backendItems = dataProvider.getItems();
+        if (items != null && !items.isEmpty()) {
+            items.stream()
+                    .filter(item ->
+                            !contains(item))
+                    .forEach(backendItems::add);
+            dataProvider.refreshAll();
+        }
         return this;
     }
 
     @Override
     public AbstractListDataView<T> addItemAfter(T item, T after) {
-        final Collection<T> items = getDataProvider().getItems();
-        if (!items.contains(after)) {
+        final Collection<T> backendItems = getDataProvider().getItems();
+        final int afterItemIndex = getItemIndex(after);
+        if (afterItemIndex == -1) {
             throw new IllegalArgumentException(
                     "Item to insert after is not available in the data");
         }
-        if (items instanceof List) {
-            final List<T> itemList = (List<T>) items;
-            itemList.add(itemList.indexOf(after) + 1, item);
+
+        // Do nothing if the backend collection already contains such an item
+        if (contains(item)) {
+            return this;
+        }
+
+        if (backendItems instanceof List) {
+            final List<T> itemList = (List<T>) backendItems;
+            itemList.add(afterItemIndex + 1, item);
             getDataProvider().refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
                 String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                        items.getClass().getSimpleName()));
+                        backendItems.getClass().getSimpleName()));
     }
 
     @Override
     public AbstractListDataView<T> addItemsAfter(Collection<T> items, T after) {
+        if (items == null || items.isEmpty()) {
+            return this;
+        }
         final Collection<T> backendItems = getDataProvider().getItems();
-        if (!backendItems.contains(after)) {
+        final int afterItemIndex = getItemIndex(after);
+        if (afterItemIndex == -1) {
             throw new IllegalArgumentException(
                     "Item to insert after is not available in the data");
         }
         if (backendItems instanceof List) {
             final List<T> itemList = (List<T>) backendItems;
-            itemList.addAll(itemList.indexOf(after) + 1, items);
+            final List<T> itemsToAdd = items.stream()
+                    .filter(item ->
+                            !contains(item))
+                    .collect(Collectors.toList());
+            itemList.addAll(afterItemIndex + 1, itemsToAdd);
             getDataProvider().refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
                 String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                        items.getClass().getSimpleName()));
+                        backendItems.getClass().getSimpleName()));
     }
 
     @Override
     public AbstractListDataView<T> addItemBefore(T item, T before) {
-        final Collection<T> items = getDataProvider().getItems();
-        if (!items.contains(before)) {
+        final Collection<T> backendItems = getDataProvider().getItems();
+        final int beforeItemIndex = getItemIndex(before);
+        if (beforeItemIndex == -1) {
             throw new IllegalArgumentException(
                     "Item to insert before is not available in the data");
         }
-        if (items instanceof List) {
-            final List<T> itemList = (List<T>) items;
-            itemList.add(itemList.indexOf(before), item);
+
+        // Do nothing if the backend collection already contains such an item
+        if (contains(item)) {
+            return this;
+        }
+
+        if (backendItems instanceof List) {
+            final List<T> itemList = (List<T>) backendItems;
+            itemList.add(beforeItemIndex, item);
             getDataProvider().refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
                 String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                        items.getClass().getSimpleName()));
+                        backendItems.getClass().getSimpleName()));
     }
 
     @Override
     public AbstractListDataView<T> addItemsBefore(Collection<T> items,
             T before) {
+        if (items == null || items.isEmpty()) {
+            return this;
+        }
         final Collection<T> backendItems = getDataProvider().getItems();
-        if (!backendItems.contains(before)) {
+        final int beforeItemIndex = getItemIndex(before);
+        if (beforeItemIndex == -1) {
             throw new IllegalArgumentException(
                     "Item to insert before is not available in the data");
         }
         if (backendItems instanceof List) {
             final List<T> itemList = (List<T>) backendItems;
-            itemList.addAll(itemList.indexOf(before), items);
+            final List<T> itemsToAdd = items.stream()
+                    .filter(item ->
+                            !contains(item))
+                    .collect(Collectors.toList());
+            itemList.addAll(beforeItemIndex, itemsToAdd);
             getDataProvider().refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
                 String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                        items.getClass().getSimpleName()));
+                        backendItems.getClass().getSimpleName()));
     }
 
     @Override
     public AbstractListDataView<T> removeItem(T item) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        dataProvider.getItems().remove(item);
+        final Object itemIdentifier = getIdentifier(item, dataProvider);
+        dataProvider.getItems().removeIf(i -> itemIdentifier.equals(
+                        getIdentifier(i, dataProvider)));
         dataProvider.refreshAll();
         return this;
     }
 
     @Override
     public AbstractListDataView<T> removeItems(Collection<T> items) {
+        if (items == null || items.isEmpty()) {
+            return this;
+        }
         final ListDataProvider<T> dataProvider = getDataProvider();
-        dataProvider.getItems().removeAll(items);
+        Collection<T> backendItems = dataProvider.getItems();
+        items.forEach(item -> {
+            Object itemIdentifier = getIdentifier(item, dataProvider);
+            backendItems.removeIf(i -> itemIdentifier.equals(
+                    getIdentifier(i, dataProvider)));
+        });
         dataProvider.refreshAll();
         return this;
     }
