@@ -38,7 +38,7 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
      *         ListDataProvider providing data tot he component.
      * @return ListDataView instance
      */
-    V setDataProvider(ListDataProvider<T> dataProvider);
+    V setDataSource(ListDataProvider<T> dataProvider);
 
     // NOTE: this is not using setItems so that we don't collide with HasItems::setItems
 
@@ -49,8 +49,8 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
      *         the data items to display, not {@code null}
      * @return ListDataView instance
      */
-    default V setDataProvider(Collection<T> items) {
-        return setDataProvider(DataProvider.ofCollection(items));
+    default V setDataSource(Collection<T> items) {
+        return setDataSource(DataProvider.ofCollection(items));
     }
 
     /**
@@ -60,8 +60,8 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
      *         the data items to display, not {@code null}
      * @return ListDataView instance
      */
-    default V setDataProvider(Stream<T> items) {
-        return setDataProvider(DataProvider.fromStream(items));
+    default V setDataSource(Stream<T> items) {
+        return setDataSource(DataProvider.fromStream(items));
     }
 
     /**
@@ -71,8 +71,8 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
      *         the data items to display, not {@code null}
      * @return ListDataView instance
      */
-    default V setDataProvider(T... items) {
-        return setDataProvider(DataProvider.ofItems(items));
+    default V setDataSource(T... items) {
+        return setDataSource(DataProvider.ofItems(items));
     }
 
     /**

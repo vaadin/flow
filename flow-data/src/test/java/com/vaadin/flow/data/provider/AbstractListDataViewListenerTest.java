@@ -38,7 +38,7 @@ public abstract class AbstractListDataViewListenerTest {
         HasListDataView<String, ? extends AbstractListDataView<String>> component =
                 getVerifiedComponent();
         AbstractListDataView<String> dataView = component
-                .setDataProvider(Arrays.stream(items));
+                .setDataSource(Arrays.stream(items));
 
         AtomicInteger invocationCounter = new AtomicInteger(0);
 
@@ -68,7 +68,7 @@ public abstract class AbstractListDataViewListenerTest {
         HasListDataView<String, ? extends AbstractListDataView<String>> component =
                 getVerifiedComponent();
         AbstractListDataView<String> dataView = component
-                .setDataProvider(Arrays.stream(items));
+                .setDataSource(Arrays.stream(items));
 
         AtomicBoolean invocationChecker = new AtomicBoolean(false);
 
@@ -96,7 +96,7 @@ public abstract class AbstractListDataViewListenerTest {
         HasListDataView<String, ? extends AbstractListDataView<String>> component =
                 getVerifiedComponent();
         AbstractListDataView<String> dataView = component
-                .setDataProvider(Arrays.stream(items));
+                .setDataSource(Arrays.stream(items));
 
         AtomicBoolean invocationChecker = new AtomicBoolean(false);
 
