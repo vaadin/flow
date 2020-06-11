@@ -549,8 +549,7 @@ class VaadinDevmodeGizmo extends LitElement {
       splashMessage: {type: String},
       notifications: {type: Array},
       status: {type: String},
-      serviceurl: {type: String},
-      liveReloadPath: {type: String},
+      reloadConnectionBaseUri: {type: String},
       liveReloadBackend: {type: String},
       springBootDevToolsPort: {type: Number}
     };
@@ -693,7 +692,7 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   openDedicatedWebSocketConnection() {
-    const wsUrl = this.getDedicatedWebSocketUrl(window.location);
+    const wsUrl = this.getDedicatedWebSocketUrl();
     if (wsUrl) {
       this.connection = new WebSocket(wsUrl);
       const self = this;
@@ -705,20 +704,16 @@ class VaadinDevmodeGizmo extends LitElement {
     }
   }
 
-  getDedicatedWebSocketUrl(location) {
-    let url;
-    if (this.serviceurl) {
-      url = this.serviceurl;
-    } else if (this.liveReloadPath) {
-      url = location.protocol + '//' + location.host + '/' + this.liveReloadPath;
-    } else {
-      url = location.href;
+  getDedicatedWebSocketUrl() {
+    if (!this.reloadConnectionBaseUri) {
+      console.warn('This live reload backend requires a dedicated WS connection, but no base URL is given');
+      return null;
     }
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    if (!this.reloadConnectionBaseUri.startsWith('http://') && !this.reloadConnectionBaseUri.startsWith('https://')) {
       console.warn('The protocol of the url should be http or https for live reload to work.');
       return null;
     }
-    return url.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
+    return this.reloadConnectionBaseUri.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
   }
 
   getSpringBootWebSocketUrl(location) {
@@ -1013,17 +1008,14 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 }
 
-const init = function(serviceUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort) {
+const init = function(reloadConnectionBaseUri, liveReloadBackend, springBootDevToolsPort) {
   if ('false' !== window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE)) {
     if (customElements.get('vaadin-devmode-gizmo') === undefined) {
       customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
     }
     const devmodeGizmo = document.createElement('vaadin-devmode-gizmo');
-    if (serviceUrl) {
-      devmodeGizmo.setAttribute('serviceurl', serviceUrl);
-    }
-    if (liveReloadPath) {
-      devmodeGizmo.setAttribute('liveReloadPath', liveReloadPath);
+    if (reloadConnectionBaseUri) {
+      devmodeGizmo.setAttribute('reloadConnectionBaseUri', reloadConnectionBaseUri);
     }
     if (liveReloadBackend) {
       devmodeGizmo.setAttribute('liveReloadBackend', liveReloadBackend);
@@ -1038,5 +1030,7 @@ const init = function(serviceUrl, liveReloadPath, liveReloadBackend, springBootD
   }
 };
 
-// expose the init function globally for access by GWT ApplicationConnection
-window.Vaadin.Flow.initDevModeGizmo = init
+if (window.Vaadin && window.Vaadin.Flow) {
+  // expose the init function globally for access by GWT ApplicationConnection
+  window.Vaadin.Flow.initDevModeGizmo = init;
+}

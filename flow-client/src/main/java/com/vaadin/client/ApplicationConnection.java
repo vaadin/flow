@@ -94,9 +94,16 @@ public class ApplicationConnection {
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
 
+            String reloadConnectionBaseUri;
+            if (applicationConfiguration.getLiveReloadPath() != null) {
+                reloadConnectionBaseUri = applicationConfiguration
+                        .getContextRootUrl()
+                        + applicationConfiguration.getLiveReloadPath();
+            } else {
+                reloadConnectionBaseUri = applicationConfiguration.getServiceUrl();
+            }
             if (applicationConfiguration.isDevmodeGizmoEnabled()) {
-                createDevModeGizmo(applicationConfiguration.getServiceUrl(),
-                        applicationConfiguration.getLiveReloadPath(),
+                createDevModeGizmo(reloadConnectionBaseUri,
                         applicationConfiguration.getLiveReloadBackend(),
                         applicationConfiguration.getSpringBootDevToolsPort());
             }
@@ -105,13 +112,12 @@ public class ApplicationConnection {
         registry.getLoadingIndicator().show();
     }
 
-    private native void createDevModeGizmo(String serviceUrl,
-            String liveReloadPath, String liveReloadBackend,
-            String springBootDevToolsPort)
+    private native void createDevModeGizmo(String reloadConnectionBaseUri,
+            String liveReloadBackend, String springBootDevToolsPort)
     /*-{
       if ($wnd.Vaadin.Flow.initDevModeGizmo !== undefined) {
         $wnd.Vaadin.Flow.devModeGizmo = $wnd.Vaadin.Flow.initDevModeGizmo(
-          serviceUrl, liveReloadPath, liveReloadBackend, springBootDevToolsPort);
+          reloadConnectionBaseUri, liveReloadBackend, springBootDevToolsPort);
       } else {
         // This should normally not happen, as conditions during which
         // live-reload is disabled (configuration, production and/or
