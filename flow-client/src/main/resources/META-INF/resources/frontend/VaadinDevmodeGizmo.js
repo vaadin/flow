@@ -549,7 +549,7 @@ class VaadinDevmodeGizmo extends LitElement {
       splashMessage: {type: String},
       notifications: {type: Array},
       status: {type: String},
-      reloadConnectionUrl: {type: String},
+      reloadConnectionBaseUri: {type: String},
       liveReloadBackend: {type: String},
       springBootDevToolsPort: {type: Number}
     };
@@ -705,15 +705,15 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   getDedicatedWebSocketUrl(location) {
-    if (!this.reloadConnectionUrl) {
-      console.warn('This live reload backend requires a dedicated WS connection, but no URL is given');
+    if (!this.reloadConnectionBaseUri) {
+      console.warn('This live reload backend requires a dedicated WS connection, but no base URL is given');
       return null;
     }
-    if (!this.reloadConnectionUrl.startsWith('http://') && !url.startsWith('https://')) {
+    if (!this.reloadConnectionBaseUri.startsWith('http://') && !url.startsWith('https://')) {
       console.warn('The protocol of the url should be http or https for live reload to work.');
       return null;
     }
-    return this.reloadConnectionUrl.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
+    return this.reloadConnectionBaseUri.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
   }
 
   getSpringBootWebSocketUrl(location) {
@@ -1008,14 +1008,14 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 }
 
-const init = function(reloadConnectionUrl, liveReloadBackend, springBootDevToolsPort) {
+const init = function(reloadConnectionBaseUri, liveReloadBackend, springBootDevToolsPort) {
   if ('false' !== window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE)) {
     if (customElements.get('vaadin-devmode-gizmo') === undefined) {
       customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
     }
     const devmodeGizmo = document.createElement('vaadin-devmode-gizmo');
-    if (reloadConnectionUrl) {
-      devmodeGizmo.setAttribute('reloadConnectionUrl', reloadConnectionUrl);
+    if (reloadConnectionBaseUri) {
+      devmodeGizmo.setAttribute('reloadConnectionBaseUri', reloadConnectionBaseUri);
     }
     if (liveReloadBackend) {
       devmodeGizmo.setAttribute('liveReloadBackend', liveReloadBackend);
