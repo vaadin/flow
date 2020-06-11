@@ -16,14 +16,15 @@
 package com.vaadin.flow.internal.nodefeature;
 
 /**
- * The exception is thrown when a proposed change to a property is disallowed.
+ * The exception is thrown when a property change from client is disallowed on
+ * the server side.
  *
  * @author Vaadin Ltd
  *
  */
-public class PropertyChangeVetoException extends Exception {
+public class PropertyChangeDeniedException extends Exception {
 
-    public PropertyChangeVetoException(String message) {
+    public PropertyChangeDeniedException(String message) {
         super(message);
     }
 

@@ -78,11 +78,11 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @param value
      *            the value to store
      * @return a runnable for firing the deferred change event
-     * @exception PropertyChangeVetoException
+     * @exception PropertyChangeDeniedException
      *                if the property change is disallowed
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value)
-            throws PropertyChangeVetoException {
+            throws PropertyChangeDeniedException {
         return doDeferredUpdateFromClient(key, value);
     }
 
@@ -536,7 +536,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * </pre>
      */
     private Runnable doDeferredUpdateFromClient(String key, Serializable value)
-            throws PropertyChangeVetoException {
+            throws PropertyChangeDeniedException {
         // Use private <code>allowUpdateFromClient</code> method instead of
         // <code>mayUpdateFromClient</code> which may be overridden
         // The logic below
@@ -547,7 +547,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 };
             }
 
-            throw new PropertyChangeVetoException(String.format(
+            throw new PropertyChangeDeniedException(String.format(
                     "Feature '%s' doesn't allow the client to update '%s'. "
                             + "For security reasons, the property must be defined as synchronized through the Element's API.",
                     getClass().getName(), key));
