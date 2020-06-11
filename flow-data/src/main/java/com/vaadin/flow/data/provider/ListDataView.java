@@ -79,7 +79,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItem(T item);
 
     /**
-     * Adds an item after the given target item.
+     * Adds an item after the given target item if it is not already
+     * present in the data set.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -98,7 +99,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemAfter(T item, T after);
 
     /**
-     * Adds an item before the given target item.
+     * Adds an item before the given target item if it is not already
+     * present in the data set.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -160,7 +162,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V updateItem(T item, SerializableFunction<T, ?> identityProvider);
 
     /**
-     * Adds multiple items to the data list.
+     * Adds multiple items to the data list if they are not already
+     * present.
      *
      * @param items
      *         collection of item to add
@@ -174,7 +177,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItems(Collection<T> items);
 
     /**
-     * Adds multiple items after the given target item.
+     * Adds multiple items after the given target item if they
+     * are not already present.
      * The full collection is added in order after the target.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
@@ -194,7 +198,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemsAfter(Collection<T> items, T after);
 
     /**
-     * Adds multiple items before the given target item.
+     * Adds multiple items before the given target item if they
+     * are not already present.
      * The full collection is added in order before the target.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.

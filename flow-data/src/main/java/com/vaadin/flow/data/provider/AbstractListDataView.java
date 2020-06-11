@@ -133,10 +133,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public boolean contains(T item) {
-        final ListDataProvider<T> dataProvider = getDataProvider();
-        final Object itemIdentifier = getIdentifier(item, dataProvider);
-        return getItems().anyMatch(i -> itemIdentifier.equals(
-                getIdentifier(i, dataProvider)));
+        return contains(item, getDataProvider());
     }
 
     @Override
@@ -154,7 +151,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItem(T item) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        if (!contains(item)) {
+        if (!contains(item, dataProvider)) {
             dataProvider.getItems().add(item);
             dataProvider.refreshAll();
         }
@@ -203,7 +200,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         if (items != null && !items.isEmpty()) {
             items.stream()
                     .filter(item ->
-                            !contains(item))
+                            !contains(item, dataProvider))
                     .forEach(backendItems::add);
             dataProvider.refreshAll();
         }
@@ -212,7 +209,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addItemAfter(T item, T after) {
-        final Collection<T> backendItems = getDataProvider().getItems();
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        final Collection<T> backendItems = dataProvider.getItems();
         final int afterItemIndex = getItemIndex(after);
         if (afterItemIndex == -1) {
             throw new IllegalArgumentException(
@@ -220,14 +218,14 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         }
 
         // Do nothing if the backend collection already contains such an item
-        if (contains(item)) {
+        if (contains(item, dataProvider)) {
             return this;
         }
 
         if (backendItems instanceof List) {
             final List<T> itemList = (List<T>) backendItems;
             itemList.add(afterItemIndex + 1, item);
-            getDataProvider().refreshAll();
+            dataProvider.refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
@@ -240,7 +238,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         if (items == null || items.isEmpty()) {
             return this;
         }
-        final Collection<T> backendItems = getDataProvider().getItems();
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        final Collection<T> backendItems = dataProvider.getItems();
         final int afterItemIndex = getItemIndex(after);
         if (afterItemIndex == -1) {
             throw new IllegalArgumentException(
@@ -250,10 +249,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             final List<T> itemList = (List<T>) backendItems;
             final List<T> itemsToAdd = items.stream()
                     .filter(item ->
-                            !contains(item))
+                            !contains(item, dataProvider))
                     .collect(Collectors.toList());
             itemList.addAll(afterItemIndex + 1, itemsToAdd);
-            getDataProvider().refreshAll();
+            dataProvider.refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
@@ -263,7 +262,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addItemBefore(T item, T before) {
-        final Collection<T> backendItems = getDataProvider().getItems();
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        final Collection<T> backendItems = dataProvider.getItems();
         final int beforeItemIndex = getItemIndex(before);
         if (beforeItemIndex == -1) {
             throw new IllegalArgumentException(
@@ -271,14 +271,14 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         }
 
         // Do nothing if the backend collection already contains such an item
-        if (contains(item)) {
+        if (contains(item, dataProvider)) {
             return this;
         }
 
         if (backendItems instanceof List) {
             final List<T> itemList = (List<T>) backendItems;
             itemList.add(beforeItemIndex, item);
-            getDataProvider().refreshAll();
+            dataProvider.refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
@@ -292,7 +292,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         if (items == null || items.isEmpty()) {
             return this;
         }
-        final Collection<T> backendItems = getDataProvider().getItems();
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        final Collection<T> backendItems = dataProvider.getItems();
         final int beforeItemIndex = getItemIndex(before);
         if (beforeItemIndex == -1) {
             throw new IllegalArgumentException(
@@ -302,10 +303,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             final List<T> itemList = (List<T>) backendItems;
             final List<T> itemsToAdd = items.stream()
                     .filter(item ->
-                            !contains(item))
+                            !contains(item, dataProvider))
                     .collect(Collectors.toList());
             itemList.addAll(beforeItemIndex, itemsToAdd);
-            getDataProvider().refreshAll();
+            dataProvider.refreshAll();
             return this;
         }
         throw new IllegalArgumentException(
@@ -398,5 +399,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     private Object getIdentifier(T item, ListDataProvider<T> dataProvider) {
         return getIdentifier(item, dataProvider::getId);
+    }
+
+    private boolean contains(T item, ListDataProvider<T> dataProvider) {
+        final Object itemIdentifier = getIdentifier(item, dataProvider);
+        return getItems().anyMatch(i -> itemIdentifier.equals(
+                getIdentifier(i, dataProvider)));
     }
 }
