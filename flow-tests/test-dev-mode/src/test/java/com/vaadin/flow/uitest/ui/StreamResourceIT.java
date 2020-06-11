@@ -57,7 +57,7 @@ public class StreamResourceIT extends ChromeBrowserTest {
 
         findElement(By.id("detach-attach")).click();
 
-        assertDownloadedContent("link", "filename");
+        assertDownloadedContent("link", "file%20name");
     }
 
     private void assertDownloadedContent(String downloadId, String filename)
