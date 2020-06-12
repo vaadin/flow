@@ -30,16 +30,19 @@ import java.io.Serializable;
 public interface HasLazyDataView<T, V extends LazyDataView<T>>
         extends Serializable {
     /**
-     * Supply data through a callback provider. This sets the component to
-     * undefined size and removes any existing size estimate or callback to
-     * provide size.
+     * Supply data lazily with a callback. This sets the component to undefined
+     * size and removes any existing size estimate or callback to provide size.
+     * <p>
+     * For using in-memory data, use
+     * {@link HasListDataView#setDataSource(ListDataProvider)}
+     * {@link ListDataProvider}
      *
      * @param fetchCallback
      *            function that returns a stream of items from the back end for
      *            a query
-     * @return LazyDataView instance
+     * @return LazyDataView instance for further configuration
      */
-    default V setDataProvider(
+    default V setDataSource(
             CallbackDataProvider.FetchCallback<T, Void> fetchCallback) {
         getDataCommunicator().setDataProvider(
                 DataProvider.fromCallbacks(fetchCallback, query -> -1), null);
@@ -48,9 +51,8 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
     }
 
     /**
-     * Supply data through a callback provider with a count callback. This sets
-     * the component to defined size - the given callback is queried for data
-     * size.
+     * Supply data lazily with a callbacks. This sets the component to defined size
+     * - the given count callback is queried for the data size.
      *
      * @param fetchCallback
      *            function that returns a stream of items from the back end for
@@ -58,32 +60,32 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
      * @param countCallback
      *            function that return the number of items in the back end for a
      *            query
-     * @return LazyDataView instance
+     * @return LazyDataView instance for further configuration
      */
-    default V setDataProvider(
+    default V setDataSource(
             CallbackDataProvider.FetchCallback<T, Void> fetchCallback,
             CallbackDataProvider.CountCallback<T, Void> countCallback) {
-        setDataProvider(
-                DataProvider.fromCallbacks(fetchCallback, countCallback));
+        setDataSource(DataProvider.fromCallbacks(fetchCallback, countCallback));
         return getLazyDataView();
     }
 
     /**
-     * Supply data through a BackendDataProvider that lazy loads items from a
-     * back end.
+     * Supply data with a {@link BackEndDataProvider} that lazy loads items from a
+     * back end. This sets the component to use defined size, provided by the
+     * data provider {@link BackEndDataProvider#size(Query)} method.
      *
      * @param dataProvider
      *            BackendDataProvider instance
-     * @return LazyDataView instance
+     * @return LazyDataView instance for further configuration
      */
-    default V setDataProvider(BackEndDataProvider<T, Void> dataProvider) {
+    default V setDataSource(BackEndDataProvider<T, Void> dataProvider) {
         getDataCommunicator().setDataProvider(dataProvider, null);
         return getLazyDataView();
     }
 
     /**
      * Get the LazyDataView for the component. Throws if the data is not lazy
-     * and should use another data view type.
+     * and should use another data view type like {@link ListDataView}.
      *
      * @return LazyDataView instance
      * @throws IllegalStateException
