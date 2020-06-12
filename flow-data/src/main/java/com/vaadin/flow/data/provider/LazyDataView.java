@@ -34,15 +34,15 @@ public interface LazyDataView<T> extends DataView<T> {
      * of the data provider {@link DataProvider#size(Query)} method.
      * <p>
      * Calling this method will clear any previously set initial size estimate
-     * {@link #setUndefinedSize(int)} and size estimate callback
-     * {@link #setUndefinedSize(SizeEstimateCallback)}.
+     * {@link #withUndefinedSize(int)} and size estimate callback
+     * {@link #withUndefinedSize(SizeEstimateCallback)}.
      *
      * @param callback
      *            the callback to use for determining dataset size, not
      *            {@code null}
-     * @see #setDefinedSize(boolean)
+     * @see #withDefinedSize()
      */
-    void setDefinedSize(CallbackDataProvider.CountCallback<T, Void> callback);
+    void withDefinedSize(CallbackDataProvider.CountCallback<T, Void> callback);
 
     /**
      * Sets the component to use undefined size with the given initial size
@@ -50,20 +50,20 @@ public interface LazyDataView<T> extends DataView<T> {
      * filter changes.
      * <p>
      * Calling this method will clear any previously set size estimate callback
-     * {@link #setUndefinedSize(SizeEstimateCallback)} or defined size callback
-     * {@link #setDefinedSize(CallbackDataProvider.CountCallback)}.
+     * {@link #withUndefinedSize(SizeEstimateCallback)} or defined size callback
+     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)}.
      *
      * @param initialSizeEstimate
      *            initial size estimate for the dataset
      */
-    void setUndefinedSize(int initialSizeEstimate);
+    void withUndefinedSize(int initialSizeEstimate);
 
     /**
      * Sets the component to use undefined size with the given callback for
      * estimating the size of the dataset. Calling this method will clear any
      * previously set size callback
-     * {@link #setDefinedSize(CallbackDataProvider.CountCallback)} or initial
-     * size estimate {@link #setUndefinedSize(int)}.
+     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)} or initial
+     * size estimate {@link #withUndefinedSize(int)}.
      * <p>
      * This callback is triggered:
      * <ol>
@@ -80,51 +80,41 @@ public interface LazyDataView<T> extends DataView<T> {
      * been a reset (see {@link SizeEstimateQuery#isReset()},as that would be
      * the same as using defined size.</em> An {@link IllegalStateException} is
      * thrown instead. For using defined size, use
-     * {@link #setDefinedSize(CallbackDataProvider.CountCallback)} instead.
+     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)} instead.
      *
      * @param callback
      *            a callback that provides the estimated size of the data
      */
-    void setUndefinedSize(SizeEstimateCallback<T, Void> callback);
+    void withUndefinedSize(SizeEstimateCallback<T, Void> callback);
 
     /**
-     * Switches the component between defined and undefined size.
+     * Switches the component to defined size from undefined size.
      * <p>
-     * With defined size, either a size callback needs to have been provided
-     * with the {@link #setDefinedSize(CallbackDataProvider.CountCallback)} or
-     * the data provider in the component needs to have implemented the
-     * {@link DataProvider#size(Query)} method.
-     * <p>
-     * The default undefined size depends on the component implementation. For
-     * controlling the undefined size, use {@link #setUndefinedSize(int)} or
-     * {@link #setUndefinedSize(SizeEstimateCallback)}. Calling this method will
-     * clear any previously set initial size estimate or size
-     *
-     * @param definedSize
-     *            {@code true} for defined size, {@code false} for undefined
-     *            size
+     * With defined size, the data provider in the component needs to have
+     * implemented the {@link DataProvider#size(Query)} method. Another
+     * alternative is to provide a size callback with the
+     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)}.
      */
-    void setDefinedSize(boolean definedSize);
+    void withDefinedSize();
 
     /**
      * Returns whether the component is using defined or undefined size.
      * 
      * @return {@code true} for defined size, {@code false} for undefined size
-     * @see #setDefinedSize(boolean)
+     * @see #withDefinedSize()
+     * @see #withUndefinedSize()
      */
     boolean isDefinedSize();
 
     /**
-     * Switches to undefined size from defined size or from previous estimate
-     * #withInitialCountEstimate or estimate callback
+     * Switches the component to undefined size from defined size or from
+     * previous estimate #withInitialCountEstimate or estimate callback
      * #withCountEstimateCallback.
      * <p>
-     * The default undefined size depends on the component implementation.
-     * <p>
-     * This method is a shorthand for calling {@link #setDefinedSize(boolean)}
-     * with {@code false}.
+     * The default undefined size depends on the component implementation. For
+     * controlling the undefined size, use {@link #withUndefinedSize(int)} or
+     * {@link #withUndefinedSize(SizeEstimateCallback)}. Calling this method
+     * will clear any previously set initial size estimate or size.
      */
-    default void withUndefinedSize() {
-        setDefinedSize(false);
-    }
+    void withUndefinedSize();
 }

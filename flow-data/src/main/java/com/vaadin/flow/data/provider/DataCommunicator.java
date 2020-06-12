@@ -379,7 +379,9 @@ public class DataCommunicator<T> implements Serializable {
             CallbackDataProvider.CountCallback<T, ?> sizeCallback) {
         if (sizeCallback == null) {
             throw new IllegalArgumentException(
-                    "Provided size callback cannot be null - for switching between defined and undefined size use setDefinedSize(boolean) method instead.");
+                    "Provided size callback cannot be null - for switching " +
+                            "between defined and undefined size use " +
+                            "setDefinedSize(boolean) method instead.");
         }
         clearSizeCallbacksAndState();
         this.sizeCallback = sizeCallback;
@@ -391,7 +393,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Sets the size estimate callback to be used and switches teh component to
+     * Sets the size estimate callback to be used and switches the component to
      * undefined size. Any previously set callbacks or initial size are cleared.
      * The new estimate will be fetched after this roundtrip.
      * 
@@ -402,7 +404,9 @@ public class DataCommunicator<T> implements Serializable {
             SizeEstimateCallback<T, ?> sizeEstimateCallback) {
         if (sizeEstimateCallback == null) {
             throw new IllegalArgumentException(
-                    "Provided size estimate callback cannot be null - for switching between defined and undefined size use setDefinedSize(boolean) method instead.");
+                    "Provided size estimate callback cannot be null - for " +
+                            "switching between defined and undefined size use " +
+                            "setDefinedSize(boolean) method instead.");
         }
         clearSizeCallbacksAndState();
         this.sizeEstimateCallback = sizeEstimateCallback;
