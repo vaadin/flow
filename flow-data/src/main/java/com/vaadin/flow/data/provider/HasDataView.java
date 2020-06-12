@@ -33,7 +33,7 @@ public interface HasDataView<T, V extends DataView<T>> extends Serializable {
     /**
      * Sets an InMemory data provider for the component to use.
      * <p>
-     * Note! Using a ListDataProvider instead of a InMemoryDataProvider is
+     * Note! Using a {@link ListDataProvider} instead of a {@link InMemoryDataProvider} is
      * recommended to get more help from the DataView API.
      *
      * @param dataProvider
