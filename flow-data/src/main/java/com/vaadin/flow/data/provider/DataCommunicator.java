@@ -256,8 +256,8 @@ public class DataCommunicator<T> implements Serializable {
             DataProvider<T, F> dataProvider, F initialFilter) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
         filter = initialFilter;
-        doSetDefinedSize(null, null, -1, true);
-        skipSizeCheckUntilReset = false;
+        clearSizeCallbacksAndState();
+        definedSize = true;
         sizeReset = false; // everything is cleared anyway
 
         handleDetach();
@@ -336,8 +336,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param pageSize
      *            the page size to set
      */
-    // TODO add API that will force the communicator to only fetch one page at a
-    // time from the data provider. Now it might be a multiple.
+    // TODO https://github.com/vaadin/flow/issues/8557
     public void setPageSize(int pageSize) {
         if (pageSize < 1) {
             throw new IllegalArgumentException(String.format(
@@ -382,8 +381,11 @@ public class DataCommunicator<T> implements Serializable {
             throw new IllegalArgumentException(
                     "Provided size callback cannot be null - for switching between defined and undefined size use setDefinedSize(boolean) method instead.");
         }
-        doSetDefinedSize(sizeCallback, null, -1, true);
+        clearSizeCallbacksAndState();
+        this.sizeCallback = sizeCallback;
+        definedSize = true;
         skipSizeCheckUntilReset = false;
+        // there is no reset but we need to get the defined size
         sizeReset = true;
         requestFlush();
     }
@@ -402,7 +404,9 @@ public class DataCommunicator<T> implements Serializable {
             throw new IllegalArgumentException(
                     "Provided size estimate callback cannot be null - for switching between defined and undefined size use setDefinedSize(boolean) method instead.");
         }
-        doSetDefinedSize(null, sizeEstimateCallback, -1, false);
+        clearSizeCallbacksAndState();
+        this.sizeEstimateCallback = sizeEstimateCallback;
+        definedSize = false;
         if (!skipSizeCheckUntilReset) {
             sizeReset = true;
             requestFlush();
@@ -424,7 +428,9 @@ public class DataCommunicator<T> implements Serializable {
             throw new IllegalArgumentException(
                     "Given initial size estimate cannot be less than 1. For switching between defined and undefined size use setDefinedSize(boolean) method instead.");
         }
-        doSetDefinedSize(null, null, initialSizeEstimate, false);
+        clearSizeCallbacksAndState();
+        this.initialSizeEstimate = initialSizeEstimate;
+        definedSize = false;
         if (!skipSizeCheckUntilReset && assumedSize < initialSizeEstimate) {
             sizeReset = true;
             requestFlush();
@@ -445,7 +451,8 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void setDefinedSize(boolean definedSize) {
         if (this.definedSize != definedSize) {
-            doSetDefinedSize(null, null, -1, definedSize);
+            clearSizeCallbacksAndState();
+            this.definedSize = definedSize;
             skipSizeCheckUntilReset = false;
             if (definedSize) {
                 // Always fetch explicit size from data provider
@@ -471,14 +478,10 @@ public class DataCommunicator<T> implements Serializable {
         return definedSize;
     }
 
-    private void doSetDefinedSize(
-            CallbackDataProvider.CountCallback<T, ?> sizeCallback,
-            SizeEstimateCallback<T, ?> sizeEstimateCallback,
-            int initialSizeEstimate, boolean definedSize) {
-        this.sizeCallback = sizeCallback;
-        this.sizeEstimateCallback = sizeEstimateCallback;
-        this.initialSizeEstimate = initialSizeEstimate;
-        this.definedSize = definedSize;
+    private void clearSizeCallbacksAndState() {
+        this.sizeCallback = null;
+        this.sizeEstimateCallback = null;
+        this.initialSizeEstimate = -1;
     }
 
     /**
@@ -576,9 +579,9 @@ public class DataCommunicator<T> implements Serializable {
             if (size == -1) {
                 size = getDefaultInitialSize();
             }
-            getLogger(DataCommunicator.class)
-                    .info("Requested: " + requestedRange + " old size: "
-                            + assumedSize + " new size: " + size);
+            getLogger(DataCommunicator.class).info(
+                    "Requested range: {} old size: {} new size: {}",
+                    requestedRange, assumedSize, size);
             assumedSize = size;
         } else {
             // increase size estimate if the last page is being fetched
@@ -590,9 +593,9 @@ public class DataCommunicator<T> implements Serializable {
                     // by default adjust size by multiple of page size
                     assumedSize += getEstimatedSizeIncrease();
                 }
-                getLogger(DataCommunicator.class).info("Requested: "
-                        + requestedRange + " old size: " + previousAssumedSize
-                        + " new size: " + assumedSize);
+                getLogger(DataCommunicator.class).info(
+                        "Requested range: {} old size: {} new size: {}",
+                        requestedRange, previousAssumedSize, assumedSize);
             }
         }
     }

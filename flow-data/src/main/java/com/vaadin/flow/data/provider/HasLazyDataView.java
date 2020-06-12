@@ -18,8 +18,8 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 
 /**
- * Interface that defines methods for setting in memory data. This will return a
- * {@link LazyDataView}.
+ * Interface that defines methods for fetching data lazily from a backend. The
+ * API will return a {@link LazyDataView}.
  *
  * @param <T>
  *            data type

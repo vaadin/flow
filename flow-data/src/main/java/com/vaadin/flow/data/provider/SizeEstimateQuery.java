@@ -65,6 +65,9 @@ public class SizeEstimateQuery<T, F> extends Query<T, F> {
     /**
      * Returns whether the data set was reset or not. The reset happens when the
      * data was updated due to addition, deleting or filter change.
+     * <p>
+     * If no previous size estimate was used, returns {@code true} at the same
+     * time {@link #getPreviousSizeEstimate()} will return {@code 0}.
      * 
      * @return {@code true} for reset, {@code false} for not
      */

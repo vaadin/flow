@@ -45,6 +45,7 @@ public interface SizeEstimateCallback<T, F> extends Serializable {
      *            the query that defines which items to count
      * @return the number of available items
      */
-    // TODO refactor to return void and provide API to increase the size
+    // TODO refactor to return void and provide API to increase the size ?
+    // https://github.com/vaadin/flow/issues/8558
     int sizeEstimate(SizeEstimateQuery<T, F> query);
 }
