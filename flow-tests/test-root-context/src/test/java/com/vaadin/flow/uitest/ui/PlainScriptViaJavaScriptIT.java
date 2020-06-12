@@ -13,32 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.uitest.ui;
 
-package com.vaadin.flow.internal;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
 
-/**
- * Internal utility class for URL handling.
- *
- * @author Vaadin Ltd
- * @since 2.0
- */
-public class UrlUtil {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-    private UrlUtil() {
-    }
+public class PlainScriptViaJavaScriptIT extends ChromeBrowserTest {
 
-    /**
-     * checks if the given url is an external URL (e.g. staring with http:// or
-     * https://) or not.
-     *
-     * @param url
-     *            is the url to be checked.
-     * @return true if the url is external otherwise false.
-     */
-    public static boolean isExternal(String url) {
-        if (url.startsWith("//")) {
-            return true;
-        }
-        return url.contains("://");
+    @Test
+    public void contextSchemaWorksinJavaScript() {
+        open();
+
+        Assert.assertTrue(isElementPresent(By.id("added-from-src-script")));
     }
 }
