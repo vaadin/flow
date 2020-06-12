@@ -31,6 +31,18 @@ import java.io.Serializable;
 public interface HasDataView<T, V extends DataView<T>> extends Serializable {
 
     /**
+     * Set a generic data provider dor the component to use.
+     * <p>
+     * It is suggested to use a more specific target from {@link
+     * HasListDataView} or {@link HasLazyDataView}
+     *
+     * @param dataProvider
+     *         DataProvider instance to use
+     * @return DataView instance
+     */
+    V setDataSource(DataProvider<T, ?> dataProvider);
+
+    /**
      * Sets an InMemory data provider for the component to use.
      * <p>
      * Note! Using a {@link ListDataProvider} instead of a {@link
@@ -38,8 +50,10 @@ public interface HasDataView<T, V extends DataView<T>> extends Serializable {
      * ListDataView} API by using {@link HasListDataView#setDataSource(ListDataProvider)}.
      *
      * @param dataProvider
-     *         InMemoryDataProvider to use.
+     *         InMemoryDataProvider to use
      * @return DataView instance
      */
-    V setDataSource(InMemoryDataProvider<T> dataProvider);
+    default V setDataSource(InMemoryDataProvider<T> dataProvider) {
+        return setDataSource((DataProvider<T, ?>) dataProvider);
+    }
 }
