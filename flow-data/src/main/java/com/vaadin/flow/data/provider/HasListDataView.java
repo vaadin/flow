@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.stream.Stream;
 
 /**
- * Interface that defines methods for setting in memory data.
+ * Interface that defines methods for setting in memory list data.
  * This will return a {@link ListDataView}.
  *
  * @param <T>
