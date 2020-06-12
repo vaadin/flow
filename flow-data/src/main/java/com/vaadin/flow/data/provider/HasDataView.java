@@ -31,7 +31,7 @@ import java.io.Serializable;
 public interface HasDataView<T, V extends DataView<T>> extends Serializable {
 
     /**
-     * Set a generic data provider dor the component to use.
+     * Set a generic data provider for the component to use.
      * <p>
      * It is suggested to use a more specific target from {@link
      * HasListDataView} or {@link HasLazyDataView}
