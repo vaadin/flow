@@ -67,9 +67,18 @@ public @interface JavaScript {
      * in the browser.
      * <p>
      * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * {@code frontend} directory location.
+     * <p>
+     * In NPM mode this URL identifies a file which will be bundled, so the file
+     * should be available to be able to bundle it. External URLs (e.g. absolute
+     * URL which has a schema like "http://") are not bundled but included into
+     * the page as standalone scripts (the same way as in compatibility mode,
+     * see below). It's applicable also for "context://" and "base://" schemas.
+     * <p>
+     * In compatibility mode the URL represents a standalone script which will
+     * be added to the page. You can prefix the URL with {@code context://} to
+     * make it relative to the context path or use an absolute URL to refer to
+     * files outside the frontend directory.
      *
      * @return a JavaScript file URL
      */
