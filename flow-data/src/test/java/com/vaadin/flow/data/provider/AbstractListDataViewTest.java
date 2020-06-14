@@ -272,6 +272,27 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItemBefore_itemAlreadyInList_itemIsMovedAtExpectedPosition() {
+        final String newItem = "newItem";
+        dataView.addItem(newItem);
+
+        dataView.addItemBefore("newItem", "middle");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "newItem", "middle", "last"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemBefore_itemAndTargetAreTheSame_itemIsNotAdded() {
+        dataView.addItemBefore("newItem", "newItem");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "middle", "last"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
     public void addItemAfter_itemIsAddedAtExpectedPosition() {
         dataView.addItemAfter("newItem", "middle");
 
@@ -283,6 +304,27 @@ public class AbstractListDataViewTest {
 
         Assert.assertArrayEquals(
                 new String[]{"first", "middle", "newItem", "last", "second"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemAfter_itemAlreadyInList_itemIsMovedAtExpectedPosition() {
+        final String newItem = "newItem";
+        dataView.addItem(newItem);
+
+        dataView.addItemAfter("newItem", "middle");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "middle", "newItem", "last"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemAfter_itemAndTargetAreTheSame_itemIsNotAdded() {
+        dataView.addItemAfter("newItem", "newItem");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -315,11 +357,11 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void addItems_someItemsAlreadyInList_absentItemsAreAdded() {
+    public void addItems_someItemsAlreadyInList_allItemsAreMovedAtTheEndAndOrdered() {
         dataView.addItems(Arrays.asList("first", "newOne", "newTwo"));
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last", "newOne", "newTwo"},
+                new String[]{"middle", "last", "first", "newOne", "newTwo"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -335,12 +377,33 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void addItemsAfter_someItemsAlreadyInList_absentItemsAreAdded() {
+    public void addItemsAfter_someItemsAlreadyInList_allItemsAreMovedAfterTargetAndOrdered() {
         dataView.addItemsAfter(Arrays.asList("middle", "newOne", "newTwo"),
                 "first");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newOne", "newTwo", "middle", "last"},
+                new String[]{"first", "middle", "newOne", "newTwo", "last"},
+                dataView.getItems().toArray(String[]::new));
+
+        dataView.addItemsAfter(Collections.singletonList("newThree"),
+                "last");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "middle", "newOne", "newTwo", "last", "newThree"},
+                dataView.getItems().toArray(String[]::new));
+
+        dataView.addItemsAfter(Arrays.asList("newFour", "newThree"),
+                "newThree");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "middle", "newOne", "newTwo", "last", "newFour", "newThree"},
+                dataView.getItems().toArray(String[]::new));
+
+        dataView.addItemsAfter(Arrays.asList("newFive", "first"),
+                "first");
+
+        Assert.assertArrayEquals(
+                new String[]{"newFive", "first", "middle", "newOne", "newTwo", "last", "newFour", "newThree"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -356,12 +419,34 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void addItemsBefore_someItemsAlreadyInList_absentItemsAreAdded() {
+    public void addItemsBefore_someItemsAlreadyInList_allItemsAreMovedBeforeTargetAndOrdered() {
+
         dataView.addItemsBefore(Arrays.asList("first", "newOne", "newTwo"),
+                "last");
+
+        Assert.assertArrayEquals(
+                new String[]{"middle", "first", "newOne", "newTwo", "last"},
+                dataView.getItems().toArray(String[]::new));
+
+        dataView.addItemsBefore(Arrays.asList("newThree", "last"),
+                "last");
+
+        Assert.assertArrayEquals(
+                new String[]{"middle", "first", "newOne", "newTwo", "newThree", "last"},
+                dataView.getItems().toArray(String[]::new));
+
+        dataView.addItemsBefore(Arrays.asList("newFour", "middle"),
                 "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newOne", "newTwo", "middle", "last"},
+                new String[]{"newFour", "middle", "first", "newOne", "newTwo", "newThree", "last"},
+                dataView.getItems().toArray(String[]::new));
+
+        dataView.addItemsBefore(Collections.singletonList("newFive"), "newFour");
+
+        Assert.assertArrayEquals(
+                new String[]{"newFive", "newFour", "middle", "first", "newOne"
+                        , "newTwo", "newThree", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
