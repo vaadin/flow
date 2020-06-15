@@ -213,7 +213,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addItemAfter(T item, T after) {
-        doAddItemOnTarget(item, after,
+        addItemOnTarget(item, after,
                 "Item to insert after is not available in the data",
                 index -> index + 1);
         return this;
@@ -221,7 +221,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addItemBefore(T item, T before) {
-        doAddItemOnTarget(item, before,
+        addItemOnTarget(item, before,
                 "Item to insert before is not available in the data",
                 index -> index);
         return this;
@@ -230,7 +230,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItemsAfter(Collection<T> items,
                                                  T after) {
-        doAddItemsCollectionOnTarget(items, after,
+        addItemCollectionOnTarget(items, after,
                 "Item to insert after is not available in the data",
                 (index, containsTarget) -> containsTarget ? index : index + 1);
         return this;
@@ -239,7 +239,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItemsBefore(Collection<T> items,
                                                   T before) {
-        doAddItemsCollectionOnTarget(items, before,
+        addItemCollectionOnTarget(items, before,
                 "Item to insert before is not available in the data",
                 (index, containsTarget) -> index);
         return this;
@@ -330,14 +330,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 getIdentifier(i, dataProvider::getId)));
     }
 
-    private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider,
-                                     List<T> from) {
-        final int itemIndex = getItemIndex(item, dataProvider::getId);
-        if (itemIndex != -1) {
-            from.remove(itemIndex);
-        }
-    }
-
     private boolean equals(T item, T compareTo,
                            ListDataProvider<T> dataProvider) {
         final Object itemIdentifier = getIdentifier(item, dataProvider::getId);
@@ -345,7 +337,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 getIdentifier(compareTo, dataProvider::getId));
     }
 
-    private void doAddItemOnTarget(
+    private void addItemOnTarget(
             T item, T target, String targetItemNotFoundErrorMessage,
             SerializableFunction<Integer, Integer> insertItemsIndexProvider) {
         final ListDataProvider<T> dataProvider = getDataProvider();
@@ -361,7 +353,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         final Collection<T> backendItems = dataProvider.getItems();
         if (backendItems instanceof List) {
             final List<T> itemList = (List<T>) backendItems;
-            removeItemIfPresent(item, dataProvider, itemList);
+            removeItemIfPresent(item, dataProvider);
             itemList.add(insertItemsIndexProvider.apply(targetItemIndex), item);
             dataProvider.refreshAll();
         } else {
@@ -371,7 +363,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         }
     }
 
-    private void doAddItemsCollectionOnTarget(
+    private void addItemCollectionOnTarget(
             Collection<T> items, T target, String targetItemNotFoundErrorMessage,
         SerializableBiFunction<Integer, Boolean, Integer> insertItemsIndexProvider) {
         Objects.requireNonNull(items, "Items collection cannot be null");
@@ -400,7 +392,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                      */
                     containsTargetItem.set(true);
                 } else {
-                    removeItemIfPresent(item, dataProvider, itemList);
+                    removeItemIfPresent(item, dataProvider);
                 }
             });
             int targetItemIndex = getItemIndex(target, dataProvider::getId);
