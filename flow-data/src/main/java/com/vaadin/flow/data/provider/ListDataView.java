@@ -81,8 +81,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds an item after the given target item.
      * <p>
-     * Moves an item to the proper position (next to {@code after} item) if it
-     * is already in the data list, but not after the given item.
+     * If the item is already present in the data provider, then it is moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -103,8 +102,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds an item before the given target item.
      * <p>
-     * Moves an item to the proper position (next to {@code before} item) if it
-     * is already in the data list, but not before the given item.
+     * If the item is already present in the data provider, then it is moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -168,8 +166,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds multiple items to the data list.
      * <p>
-     * Moves the data list items to the end of the data list if they already
-     * present, so as to keep the ordering of the {@code items} collection.
+     * Any items that already present in the data provider are moved
+     * to the end.
      *
      * @param items
      *         collection of item to add
@@ -186,9 +184,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Adds multiple items after the given target item.
      * The full collection is added in order after the target.
      * <p>
-     * Moves the data list items to the proper position (next to {@code after}
-     * item) if they already present, so as to keep the ordering of the
-     * {@code items} collection.
+     * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -210,9 +206,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Adds multiple items before the given target item.
      * The full collection is added in order before the target.
      * <p>
-     * Moves the data list items to the proper position (next to {@code before}
-     * item) if they already present, so as to keep the ordering of the
-     * {@code items} collection.
+     * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *

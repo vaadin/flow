@@ -196,7 +196,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addItems(Collection<T> items) {
-        if (items != null && !items.isEmpty()) {
+        Objects.requireNonNull(items, "Items collection cannot be null");
+        if (!items.isEmpty()) {
             final ListDataProvider<T> dataProvider = getDataProvider();
             Collection<T> backendItems = dataProvider.getItems();
             items.stream()
@@ -212,32 +213,36 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> addItemAfter(T item, T after) {
-        return doAddItemOnTarget(item, after,
+        doAddItemOnTarget(item, after,
                 "Item to insert after is not available in the data",
                 index -> index + 1);
+        return this;
     }
 
     @Override
     public AbstractListDataView<T> addItemBefore(T item, T before) {
-        return doAddItemOnTarget(item, before,
+        doAddItemOnTarget(item, before,
                 "Item to insert before is not available in the data",
                 index -> index);
+        return this;
     }
 
     @Override
     public AbstractListDataView<T> addItemsAfter(Collection<T> items,
                                                  T after) {
-        return doAddItemsOnTarget(items, after,
+        doAddItemsCollectionOnTarget(items, after,
                 "Item to insert after is not available in the data",
                 (index, containsTarget) -> containsTarget ? index : index + 1);
+        return this;
     }
 
     @Override
     public AbstractListDataView<T> addItemsBefore(Collection<T> items,
                                                   T before) {
-        return doAddItemsOnTarget(items, before,
+        doAddItemsCollectionOnTarget(items, before,
                 "Item to insert before is not available in the data",
                 (index, containsTarget) -> index);
+        return this;
     }
 
     @Override
@@ -250,7 +255,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> removeItems(Collection<T> items) {
-        if (items == null || items.isEmpty()) {
+        Objects.requireNonNull(items, "Items collection cannot be null");
+        if (items.isEmpty()) {
             return this;
         }
         final ListDataProvider<T> dataProvider = getDataProvider();
@@ -339,18 +345,18 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 getIdentifier(compareTo, dataProvider::getId));
     }
 
-    private AbstractListDataView<T> doAddItemOnTarget(
-            T item, T target, String noTargetErrMessage,
+    private void doAddItemOnTarget(
+            T item, T target, String targetItemNotFoundErrorMessage,
             SerializableFunction<Integer, Integer> insertItemsIndexProvider) {
         final ListDataProvider<T> dataProvider = getDataProvider();
 
         if (equals(item, target, dataProvider)) {
-            return this;
+            return;
         }
 
         final int targetItemIndex = getItemIndex(target, dataProvider::getId);
         if (targetItemIndex == -1) {
-            throw new IllegalArgumentException(noTargetErrMessage);
+            throw new IllegalArgumentException(targetItemNotFoundErrorMessage);
         }
         final Collection<T> backendItems = dataProvider.getItems();
         if (backendItems instanceof List) {
@@ -358,25 +364,25 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             removeItemIfPresent(item, dataProvider, itemList);
             itemList.add(insertItemsIndexProvider.apply(targetItemIndex), item);
             dataProvider.refreshAll();
-            return this;
+        } else {
+            throw new IllegalArgumentException(
+                    String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
+                            backendItems.getClass().getSimpleName()));
         }
-        throw new IllegalArgumentException(
-                String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                        backendItems.getClass().getSimpleName()));
     }
 
-    private AbstractListDataView<T> doAddItemsOnTarget(
-            Collection<T> items, T target, String noTargetErrMessage,
+    private void doAddItemsCollectionOnTarget(
+            Collection<T> items, T target, String targetItemNotFoundErrorMessage,
         SerializableBiFunction<Integer, Boolean, Integer> insertItemsIndexProvider) {
-
-        if (items == null || items.isEmpty()) {
-            return this;
+        Objects.requireNonNull(items, "Items collection cannot be null");
+        if (items.isEmpty()) {
+            return;
         }
 
         final ListDataProvider<T> dataProvider = getDataProvider();
 
         if (!contains(target, dataProvider)) {
-            throw new IllegalArgumentException(noTargetErrMessage);
+            throw new IllegalArgumentException(targetItemNotFoundErrorMessage);
         }
 
         final Collection<T> backendItems = dataProvider.getItems();
@@ -408,10 +414,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
             itemList.addAll(indexToInsertItems, items);
             dataProvider.refreshAll();
-            return this;
+        } else {
+            throw new IllegalArgumentException(
+                    String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
+                            backendItems.getClass().getSimpleName()));
         }
-        throw new IllegalArgumentException(
-                String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                        backendItems.getClass().getSimpleName()));
     }
 }
