@@ -805,15 +805,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
+            if (!PolymerUtils.isReady(context.htmlNode)) {
+                PolymerUtils.addReadyListener((Element) context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                return;
+            }
+
             String id = object.getString(NodeProperties.PAYLOAD);
             String address = "id='" + id + "'";
 
             if (!verifyAttachRequest(context.node, node, id, address)) {
-                return;
-            }
-            if (!PolymerUtils.isReady(context.htmlNode)) {
-                PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
                 return;
             }
 
@@ -840,16 +841,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 Reactive.flush();
             }
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
+            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
+                PolymerUtils.addReadyListener((Element) context.htmlNode,
+                        () -> appendVirtualChild(context, node, false));
+                return;
+            }
+
             JsonArray path = object.getArray(NodeProperties.PAYLOAD);
             String address = "path='" + path.toString() + "'";
 
             if (!verifyAttachRequest(context.node, node, null, address)) {
-                return;
-            }
-
-            if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
-                PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
                 return;
             }
 
