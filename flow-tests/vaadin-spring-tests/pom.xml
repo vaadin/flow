@@ -326,6 +326,7 @@
                 <!--        <module>test-spring</module>-->
                 <module>test-spring-boot-contextpath</module>
                 <module>test-ts-services</module>
+                <module>test-ts-services-custom-client</module>
 
                 <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
                 <module>dummy-module</module>

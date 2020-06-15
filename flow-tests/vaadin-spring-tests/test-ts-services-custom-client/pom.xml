@@ -7,8 +7,8 @@
         <artifactId>vaadin-spring-tests</artifactId>
         <version>13.1-SNAPSHOT</version>
     </parent>
-    <artifactId>test-ts-services</artifactId>
-    <name>Integration tests for V15+ endpoints</name>
+    <artifactId>test-ts-services-custom-client</artifactId>
+    <name>Integration tests for V15+ endpoints (custom Connect client)</name>
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
