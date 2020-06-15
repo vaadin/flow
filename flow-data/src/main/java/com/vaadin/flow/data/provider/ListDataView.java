@@ -65,7 +65,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     Optional<T> getPreviousItem(T item);
 
     /**
-     * Adds an item to the data list.
+     * Adds an item to the data list if it is not already present.
      *
      * @param item
      *         item to add
@@ -79,8 +79,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItem(T item);
 
     /**
-     * Adds an item after the given target item if it is not already
-     * present in the data set.
+     * Adds an item after the given target item.
+     * <p>
+     * Moves an item to the proper position (next to {@code after} item) if it
+     * is already in the data list, but not after the given item.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -99,8 +101,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemAfter(T item, T after);
 
     /**
-     * Adds an item before the given target item if it is not already
-     * present in the data set.
+     * Adds an item before the given target item.
+     * <p>
+     * Moves an item to the proper position (next to {@code before} item) if it
+     * is already in the data list, but not before the given item.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -162,8 +166,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V updateItem(T item, SerializableFunction<T, ?> identityProvider);
 
     /**
-     * Adds multiple items to the data list if they are not already
-     * present.
+     * Adds multiple items to the data list.
+     * <p>
+     * Moves the data list items to the end of the data list if they already
+     * present, so as to keep the ordering of the {@code items} collection.
      *
      * @param items
      *         collection of item to add
@@ -177,9 +183,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItems(Collection<T> items);
 
     /**
-     * Adds multiple items after the given target item if they
-     * are not already present.
+     * Adds multiple items after the given target item.
      * The full collection is added in order after the target.
+     * <p>
+     * Moves the data list items to the proper position (next to {@code after}
+     * item) if they already present, so as to keep the ordering of the
+     * {@code items} collection.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -198,9 +207,12 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemsAfter(Collection<T> items, T after);
 
     /**
-     * Adds multiple items before the given target item if they
-     * are not already present.
+     * Adds multiple items before the given target item.
      * The full collection is added in order before the target.
+     * <p>
+     * Moves the data list items to the proper position (next to {@code before}
+     * item) if they already present, so as to keep the ordering of the
+     * {@code items} collection.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
