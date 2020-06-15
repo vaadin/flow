@@ -64,7 +64,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public Optional<T> getNextItem(T item) {
-        int index = getItemIndex(item);
+        int index = getItemIndex(item, getDataProvider()::getId);
         if (index < 0) {
             return Optional.empty();
         }
@@ -73,7 +73,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public Optional<T> getPreviousItem(T item) {
-        int index = getItemIndex(item);
+        int index = getItemIndex(item, getDataProvider()::getId);
         if (index <= 0) {
             return Optional.empty();
         }
@@ -163,7 +163,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> updateItem(T item) {
         ListDataProvider<T> dataProvider = getDataProvider();
-        return updateItem(item, i -> getIdentifier(i, dataProvider));
+        return updateItem(item, i -> getIdentifier(i, dataProvider::getId));
     }
 
     @Override
@@ -287,8 +287,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(
-            T item, SerializableFunction<T, ?> identityProvider) {
+    private int getItemIndex(T item,
+                             SerializableFunction<T, ?> identityProvider) {
         Objects.requireNonNull(item, "item cannot be null");
         final Object itemIdentifier = getIdentifier(item,
                 identityProvider);
@@ -302,15 +302,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return index.get();
     }
 
-    private int getItemIndex(T item, ListDataProvider<T> dataProvider) {
-        return getItemIndex(item, dataProvider::getId);
-    }
-
-    private int getItemIndex(T item) {
-        ListDataProvider<T> dataProvider = getDataProvider();
-        return getItemIndex(item, dataProvider);
-    }
-
     private Object getIdentifier(T item,
                                  SerializableFunction<T, ?> identityProvider) {
         Objects.requireNonNull(identityProvider,
@@ -321,31 +312,22 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return itemIdentifier;
     }
 
-    private Object getIdentifier(T item, ListDataProvider<T> dataProvider) {
-        return getIdentifier(item, dataProvider::getId);
-    }
-
     private boolean contains(T item, ListDataProvider<T> dataProvider) {
-        return contains(item, dataProvider, getItems());
-    }
-
-    private boolean contains(T item, ListDataProvider<T> dataProvider,
-                             Stream<T> containsIn) {
-        final Object itemIdentifier = getIdentifier(item, dataProvider);
-        return containsIn.anyMatch(i -> itemIdentifier.equals(
-                getIdentifier(i, dataProvider)));
+        final Object itemIdentifier = getIdentifier(item, dataProvider::getId);
+        return getItems().anyMatch(i -> itemIdentifier.equals(
+                getIdentifier(i, dataProvider::getId)));
     }
 
     private void removeItemIfPresent(T item,
                                      ListDataProvider<T> dataProvider) {
-        final Object itemIdentifier = getIdentifier(item, dataProvider);
+        final Object itemIdentifier = getIdentifier(item, dataProvider::getId);
         dataProvider.getItems().removeIf(i -> itemIdentifier.equals(
-                getIdentifier(i, dataProvider)));
+                getIdentifier(i, dataProvider::getId)));
     }
 
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider,
                                      List<T> from) {
-        final int itemIndex = getItemIndex(item, dataProvider);
+        final int itemIndex = getItemIndex(item, dataProvider::getId);
         if (itemIndex != -1) {
             from.remove(itemIndex);
         }
@@ -353,9 +335,9 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     private boolean equals(T item, T compareTo,
                            ListDataProvider<T> dataProvider) {
-        final Object itemIdentifier = getIdentifier(item, dataProvider);
+        final Object itemIdentifier = getIdentifier(item, dataProvider::getId);
         return itemIdentifier.equals(
-                getIdentifier(compareTo, dataProvider));
+                getIdentifier(compareTo, dataProvider::getId));
     }
 
     private AbstractListDataView<T> doAddItemOnTarget(
@@ -367,7 +349,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return this;
         }
 
-        final int targetItemIndex = getItemIndex(target, dataProvider);
+        final int targetItemIndex = getItemIndex(target, dataProvider::getId);
         if (targetItemIndex == -1) {
             throw new IllegalArgumentException(noTargetErrMessage);
         }
@@ -416,7 +398,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                     removeItemIfPresent(item, dataProvider, itemList);
                 }
             });
-            int targetItemIndex = getItemIndex(target, dataProvider);
+            int targetItemIndex = getItemIndex(target, dataProvider::getId);
 
             if (containsTargetItem.get()) {
                 itemList.remove(targetItemIndex);
