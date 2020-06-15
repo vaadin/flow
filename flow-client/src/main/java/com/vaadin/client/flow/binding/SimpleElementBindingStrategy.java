@@ -825,20 +825,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private void handleTemplateInTemplate(BindingContext context,
-            StateNode node, JsonObject object, boolean reactivePhase) {
-        JsonArray path = object.getArray(NodeProperties.PAYLOAD);
-        String address = "path='" + path.toString() + "'";
-
-        if (!verifyAttachRequest(context.node, node, null, address)) {
+    private void doAppendVirtualChild(BindingContext context, StateNode node,
+            boolean reactivePhase, Supplier<Element> elementLookup, String id,
+            String address) {
+        if (!verifyAttachRequest(context.node, node, id, address)) {
             return;
         }
-
-        Element customElement = PolymerUtils.getCustomElement(
-                PolymerUtils.getDomRoot(context.htmlNode), path);
-
-        if (verifyAttachedElement(customElement, node, null, address,
-                context)) {
+        Element element = elementLookup.get();
+        if (verifyAttachedElement(element, node, id, address, context)) {
             if (!reactivePhase) {
                 InitialPropertiesHandler initialPropertiesHandler = node
                         .getTree().getRegistry().getInitialPropertiesHandler();
@@ -846,7 +840,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 initialPropertiesHandler.nodeRegistered(node);
                 initialPropertiesHandler.flushPropertyUpdates();
             }
-            node.setDomNode(customElement);
+            node.setDomNode(element);
             context.binderContext.createAndBind(node);
         }
         if (!reactivePhase) {
@@ -859,36 +853,28 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     }
 
+    private void handleTemplateInTemplate(BindingContext context,
+            StateNode node, JsonObject object, boolean reactivePhase) {
+        JsonArray path = object.getArray(NodeProperties.PAYLOAD);
+        String address = "path='" + path.toString() + "'";
+
+        Supplier<Element> elementLookup = () -> PolymerUtils.getCustomElement(
+                PolymerUtils.getDomRoot(context.htmlNode), path);
+
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, null,
+                address);
+
+    }
+
     private void handleInjectId(BindingContext context, StateNode node,
             JsonObject object, boolean reactivePhase) {
         String id = object.getString(NodeProperties.PAYLOAD);
         String address = "id='" + id + "'";
+        Supplier<Element> elementLookup = () -> ElementUtil
+                .getElementById(context.htmlNode, id);
 
-        if (!verifyAttachRequest(context.node, node, id, address)) {
-            return;
-        }
-
-        Element existingElement = ElementUtil.getElementById(context.htmlNode,
-                id);
-        if (verifyAttachedElement(existingElement, node, id, address,
-                context)) {
-            if (!reactivePhase) {
-                InitialPropertiesHandler initialPropertiesHandler = node
-                        .getTree().getRegistry().getInitialPropertiesHandler();
-
-                initialPropertiesHandler.nodeRegistered(node);
-                initialPropertiesHandler.flushPropertyUpdates();
-            }
-            node.setDomNode(existingElement);
-            context.binderContext.createAndBind(node);
-        }
-        if (!reactivePhase) {
-            // Correct binding requires reactive involvement which doesn't
-            // happen automatically when we are out of the phase. So we
-            // should
-            // call <code>flush()</code> explicitly.
-            Reactive.flush();
-        }
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, id,
+                address);
     }
 
     private boolean verifyAttachedElement(Element element, StateNode attachNode,
