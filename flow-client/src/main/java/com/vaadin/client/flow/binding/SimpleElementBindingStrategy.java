@@ -807,39 +807,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
             if (!PolymerUtils.isReady(context.htmlNode)) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
+                        () -> handleInjectId(context, node, object, false));
                 return;
             }
 
-            String id = object.getString(NodeProperties.PAYLOAD);
-            String address = "id='" + id + "'";
-
-            if (!verifyAttachRequest(context.node, node, id, address)) {
-                return;
-            }
-
-            Element existingElement = ElementUtil
-                    .getElementById(context.htmlNode, id);
-            if (verifyAttachedElement(existingElement, node, id, address,
-                    context)) {
-                if (!reactivePhase) {
-                    InitialPropertiesHandler initialPropertiesHandler = node
-                            .getTree().getRegistry()
-                            .getInitialPropertiesHandler();
-
-                    initialPropertiesHandler.nodeRegistered(node);
-                    initialPropertiesHandler.flushPropertyUpdates();
-                }
-                node.setDomNode(existingElement);
-                context.binderContext.createAndBind(node);
-            }
-            if (!reactivePhase) {
-                // Correct binding requires reactive involvement which doesn't
-                // happen automatically when we are out of the phase. So we
-                // should
-                // call <code>flush()</code> explicitly.
-                Reactive.flush();
-            }
+            handleInjectId(context, node, object, reactivePhase);
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
@@ -879,6 +851,38 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             }
         } else {
             assert false : "Unexpected payload type " + type;
+        }
+    }
+
+    private void handleInjectId(BindingContext context, StateNode node,
+            JsonObject object, boolean reactivePhase) {
+        String id = object.getString(NodeProperties.PAYLOAD);
+        String address = "id='" + id + "'";
+
+        if (!verifyAttachRequest(context.node, node, id, address)) {
+            return;
+        }
+
+        Element existingElement = ElementUtil.getElementById(context.htmlNode,
+                id);
+        if (verifyAttachedElement(existingElement, node, id, address,
+                context)) {
+            if (!reactivePhase) {
+                InitialPropertiesHandler initialPropertiesHandler = node
+                        .getTree().getRegistry().getInitialPropertiesHandler();
+
+                initialPropertiesHandler.nodeRegistered(node);
+                initialPropertiesHandler.flushPropertyUpdates();
+            }
+            node.setDomNode(existingElement);
+            context.binderContext.createAndBind(node);
+        }
+        if (!reactivePhase) {
+            // Correct binding requires reactive involvement which doesn't
+            // happen automatically when we are out of the phase. So we
+            // should
+            // call <code>flush()</code> explicitly.
+            Reactive.flush();
         }
     }
 
