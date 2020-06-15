@@ -19,10 +19,14 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
@@ -44,6 +48,14 @@ public class MapSyncRpcHandlerTest {
     private static final String NEW_VALUE = "newValue";
     private static final String DUMMY_EVENT = "dummy-event";
     private static final String TEST_PROPERTY = "test-property";
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    @Tag(Tag.A)
+    public static class TestComponent extends Component {
+
+    }
 
     @Test
     public void testSynchronizeProperty() throws Exception {
@@ -180,7 +192,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ONLY_WHEN_ENABLED);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ONLY_WHEN_ENABLED);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -196,7 +209,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         element.setEnabled(false);
-        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -228,7 +242,8 @@ public class MapSyncRpcHandlerTest {
         ui.getElement().appendChild(element);
 
         ui.setEnabled(false);
-        element.addPropertyChangeListener(TEST_PROPERTY,DUMMY_EVENT, event -> {}).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
+        element.addPropertyChangeListener(TEST_PROPERTY, DUMMY_EVENT, event -> {
+        }).setDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
 
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
 
@@ -264,6 +279,54 @@ public class MapSyncRpcHandlerTest {
                         NEW_VALUE));
 
         Assert.assertEquals(NEW_VALUE, map.getProperty(TEST_PROPERTY));
+    }
+
+    @Test
+    public void propertyIsNotExplicitlyAllowed_throwsWithElementTagInfo() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString("Element with tag 'foo'"),
+                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        Element element = new Element("foo");
+
+        new MapSyncRpcHandler().handleNode(element.getNode(),
+                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
+                        NEW_VALUE));
+    }
+
+    @Test
+    public void propertyIsNotExplicitlyAllowed_throwsWithComponentInfo() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "Component " + TestComponent.class.getName()),
+                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        TestComponent component = new TestComponent();
+        Element element = component.getElement();
+
+        new MapSyncRpcHandler().handleNode(element.getNode(),
+                createSyncPropertyInvocation(element.getNode(), TEST_PROPERTY,
+                        NEW_VALUE));
+    }
+
+    @Test
+    public void propertyIsNotExplicitlyAllowed_subproperty_throwsWithComponentInfo() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "Component " + TestComponent.class.getName()),
+                CoreMatchers.containsString("'" + TEST_PROPERTY + "'")));
+        TestComponent component = new TestComponent();
+        Element element = component.getElement();
+
+        StateNode node = element.getNode();
+        ElementPropertyMap propertyMap = node
+                .getFeature(ElementPropertyMap.class)
+                .resolveModelMap("foo.bar");
+
+        new MapSyncRpcHandler().handleNode(propertyMap.getNode(),
+                createSyncPropertyInvocation(propertyMap.getNode(),
+                        TEST_PROPERTY, NEW_VALUE));
     }
 
     @Test
