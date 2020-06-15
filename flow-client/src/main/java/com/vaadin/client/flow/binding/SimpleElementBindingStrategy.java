@@ -29,6 +29,7 @@ import com.vaadin.client.Console;
 import com.vaadin.client.ElementUtil;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
+import com.vaadin.client.LitUtils;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -805,7 +806,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
-            if (!PolymerUtils.isReady(context.htmlNode)) {
+            if (LitUtils.isLitElement(context.htmlNode)) {
+                LitUtils.whenRendered((Element) context.htmlNode,
+                        () -> handleInjectId(context, node, object, false));
+                return;
+            } else if (!PolymerUtils.isReady(context.htmlNode)) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
                         () -> handleInjectId(context, node, object, false));
                 return;

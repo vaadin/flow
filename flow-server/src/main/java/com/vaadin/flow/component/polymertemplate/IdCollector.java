@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 
 /**
@@ -69,7 +70,7 @@ public class IdCollector {
 
     private void collectInjectedIds(Class<?> cls,
             Set<String> notInjectableElementIds) {
-        if (!AbstractTemplate.class.equals(cls.getSuperclass())) {
+        if (!Component.class.equals(cls.getSuperclass())) {
             // Parent fields
             collectInjectedIds(cls.getSuperclass(), notInjectableElementIds);
         }
