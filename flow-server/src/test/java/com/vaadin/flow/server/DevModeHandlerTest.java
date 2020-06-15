@@ -45,6 +45,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -205,6 +206,14 @@ public class DevModeHandlerTest {
     public void shouldNot_CreateInstance_When_WebpackNotConfigured() {
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).delete();
         assertNull(DevModeHandler.start(configuration, npmFolder));
+    }
+    
+    @Test
+    public void isDevModeRequest_dynamicResourcesAreNotDevModeRequest() {
+        HttpServletRequest request = prepareRequest(
+                "/" + StreamRequestHandler.DYN_RES_PREFIX + "foo");
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder);
+        assertFalse(handler.isDevModeRequest(request));
     }
 
     @Test
