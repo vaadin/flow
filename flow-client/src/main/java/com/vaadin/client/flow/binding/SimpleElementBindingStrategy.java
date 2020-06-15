@@ -803,9 +803,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        InitialPropertiesHandler initialPropertiesHandler = node.getTree()
-                .getRegistry().getInitialPropertiesHandler();
-
         assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
             String id = object.getString(NodeProperties.PAYLOAD);
@@ -825,11 +822,22 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (verifyAttachedElement(existingElement, node, id, address,
                     context)) {
                 if (!reactivePhase) {
+                    InitialPropertiesHandler initialPropertiesHandler = node
+                            .getTree().getRegistry()
+                            .getInitialPropertiesHandler();
+
                     initialPropertiesHandler.nodeRegistered(node);
                     initialPropertiesHandler.flushPropertyUpdates();
                 }
                 node.setDomNode(existingElement);
                 context.binderContext.createAndBind(node);
+            }
+            if (!reactivePhase) {
+                // Correct binding requires reactive involvement which doesn't
+                // happen automatically when we are out of the phase. So we
+                // should
+                // call <code>flush()</code> explicitly.
+                Reactive.flush();
             }
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
             JsonArray path = object.getArray(NodeProperties.PAYLOAD);
@@ -851,20 +859,25 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (verifyAttachedElement(customElement, node, null, address,
                     context)) {
                 if (!reactivePhase) {
+                    InitialPropertiesHandler initialPropertiesHandler = node
+                            .getTree().getRegistry()
+                            .getInitialPropertiesHandler();
+
                     initialPropertiesHandler.nodeRegistered(node);
                     initialPropertiesHandler.flushPropertyUpdates();
                 }
                 node.setDomNode(customElement);
                 context.binderContext.createAndBind(node);
             }
+            if (!reactivePhase) {
+                // Correct binding requires reactive involvement which doesn't
+                // happen automatically when we are out of the phase. So we
+                // should
+                // call <code>flush()</code> explicitly.
+                Reactive.flush();
+            }
         } else {
             assert false : "Unexpected payload type " + type;
-        }
-        if (!reactivePhase) {
-            // Correct binding requires reactive involvement which doesn't
-            // happen automatically when we are out of the phase. So we should
-            // call <code>flush()</code> explicitly.
-            Reactive.flush();
         }
     }
 
