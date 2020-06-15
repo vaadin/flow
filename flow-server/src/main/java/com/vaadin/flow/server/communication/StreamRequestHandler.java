@@ -117,7 +117,7 @@ public class StreamRequestHandler implements RequestHandler {
     }
 
     /**
-     * Parse the pathInfo for id data. s *
+     * Parse the pathInfo for id data.
      * <p>
      * URI pattern: VAADIN/dynamic/resource/[UIID]/[SECKEY]/[NAME]
      *
