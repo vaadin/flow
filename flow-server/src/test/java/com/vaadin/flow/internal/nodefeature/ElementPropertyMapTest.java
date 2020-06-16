@@ -404,6 +404,23 @@ public class ElementPropertyMapTest {
         Assert.assertNotNull(eventCapture.get());
     }
 
+    @Test
+    public void producePutChange_innerHTMLProperty_valueIsTheSame_returnsTrue() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        map.setProperty("innerHTML", "foo");
+
+        Assert.assertTrue(map.producePutChange("innerHTML", true, "foo"));
+        Assert.assertTrue(map.producePutChange("innerHTML", false, "foo"));
+    }
+
+    @Test
+    public void producePutChange_notInnerHTMLProperty_valueIsTheSame_returnsFalse() {
+        ElementPropertyMap map = createSimplePropertyMap();
+        map.setProperty("foo", "bar");
+
+        Assert.assertFalse(map.producePutChange("foo", true, "bar"));
+    }
+
     private void listenerIsNotified(boolean clientEvent) {
         ElementPropertyMap map = createSimplePropertyMap();
         StateNode node = map.getNode();

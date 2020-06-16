@@ -51,6 +51,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             .of("textContent", "classList", "className")
             .collect(Collectors.toSet());
 
+    private static final Set<String> ALWAYS_GENERATE_CHANGE_PROPERTIES = Collections
+            .singleton("innerHTML");
+
     private Map<String, List<PropertyChangeListener>> listeners;
 
     private SerializablePredicate<String> updateFromClientFilter = null;
@@ -197,6 +200,15 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
         return allowUpdateFromClient(key, value);
+    }
+
+    @Override
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        if (ALWAYS_GENERATE_CHANGE_PROPERTIES.contains(key)) {
+            return true;
+        }
+        return super.producePutChange(key, hadValueEarlier, newValue);
     }
 
     private boolean allowUpdateFromClient(String key, Serializable value) {
