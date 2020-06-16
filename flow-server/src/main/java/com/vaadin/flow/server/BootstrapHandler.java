@@ -1086,7 +1086,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     appConfig.put("liveReloadBackend",
                             liveReload.getBackend().toString());
                     String pushURL = session.getConfiguration().getPushURL();
-                    if (pushURL != null) {
+                    if (pushURL != null && pushURL.startsWith("context:")) {
                         appConfig.put("liveReloadPath", context
                                 .getUriResolver().resolveVaadinUri(pushURL));
                     }

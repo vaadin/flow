@@ -1,1 +1,1 @@
-export const init: (serviceUrl: string, liveReloadPath: string, liveReloadBackend: string, springBootDevToolsPort: number) => HTMLElement;
+export const init: (reloadConnectionBaseUri: string, liveReloadBackend: string, springBootDevToolsPort: number) => HTMLElement;
