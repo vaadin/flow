@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
