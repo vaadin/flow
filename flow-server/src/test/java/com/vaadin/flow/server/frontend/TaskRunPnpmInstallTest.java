@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 
+import javax.validation.constraints.AssertTrue;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -211,7 +212,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void generateVersionsJson_userVersionNewerThanPinned_installedOverlayVersionIsNotPinned()
+    public void generateVersionsJson_userVersionNewerThanPinned_intalledOverlayVersionIsUserVersion()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -263,11 +264,20 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                      + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        verifyVersionIsNotPinned(versions, devDeps);
+        JsonObject versionsJson = getGeneratedVersionsContent(versions, devDeps);
+        Assert.assertEquals("Generated versions json should have 2 keys",
+                2,
+                versionsJson.keys().length);
+        Assert.assertEquals("Overlay should be pinned to user version",
+                customOverlayVersion,
+                versionsJson.getString("@vaadin/vaadin-overlay"));
+        Assert.assertEquals("Notification should be pinned to user version",
+                "1.4.0",
+                versionsJson.getString("@vaadin/vaadin-notification"));
     }
 
     @Test
-    public void generateVersionsJson_userVersionOlderThanPinned_installedOverlayVersionIsNotPinned()
+    public void generateVersionsJson_userVersionOlderThanPinned_installedOverlayPinnedVersionIsUserVersion()
             throws IOException {
         File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -319,7 +329,16 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                      + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        verifyVersionIsNotPinned(versions, devDeps);
+        JsonObject versionsJson = getGeneratedVersionsContent(versions, devDeps);
+        Assert.assertEquals("Generated versions json should have 2 keys",
+                2,
+                versionsJson.keys().length);
+        Assert.assertEquals("Overlay should be pinned to user version",
+                customOverlayVersion,
+                versionsJson.getString("@vaadin/vaadin-overlay"));
+        Assert.assertEquals("Notification should be pinned to user version",
+                "1.3.9",
+                versionsJson.getString("@vaadin/vaadin-notification"));
     }
 
     @Test
@@ -402,13 +421,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertEquals("Login version is the same for user and platform.",
                 loginVersion,
                 generatedVersions.getString("@vaadin/vaadin-login"));
-        Assert.assertFalse("Menu Bar should not be pinned.",
-                generatedVersions.hasKey("@vaadin/vaadin-menu-bar"));
+        Assert.assertEquals("Menu Bar should be pinned to user version.",
+                menuVersion,
+                generatedVersions.getString("@vaadin/vaadin-menu-bar"));
         Assert.assertEquals("Notification version should use platform",
                 versionsNotificationVersion,
                 generatedVersions.getString("@vaadin/vaadin-notification"));
-        Assert.assertFalse("Upload should not be pinned.",
-                generatedVersions.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertEquals("Upload should be pinned to user version.",
+                uploadVersion,
+                generatedVersions.getString("@vaadin/vaadin-upload"));
         Assert.assertEquals("Button version should use dev dependency", "2.2.2",
                 generatedVersions.getString("@vaadin/vaadin-button"));
     }
