@@ -110,16 +110,13 @@ public enum Unit {
         if (cssSize == null || cssSize.length() < 1) {
             throw new IllegalArgumentException("The parameter can't be null");
         }
-        Stream<Unit> units = getUnits().filter(unit -> cssSize.endsWith(unit.toString()));
-        String size;
-        String unit = "";
-        try {
-            unit = units.findFirst().get().toString();
-        } catch (NoSuchElementException e) {
-            throw new IllegalArgumentException(
-                    "The parameter string '"+cssSize+"' does not contain valid unit");
-        }
-        size = cssSize.substring(0,cssSize.length()-unit.length());
+        Unit unit = getUnits()
+                .filter(value -> cssSize.endsWith(value.toString())).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "The parameter string '%s' does not contain valid unit",
+                        cssSize)));
+        String size = cssSize
+                .substring(0, cssSize.length() - unit.toString().length());
         if (size.isEmpty()) {
             size = "0";
         }
