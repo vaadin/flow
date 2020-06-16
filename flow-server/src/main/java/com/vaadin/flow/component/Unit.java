@@ -67,7 +67,7 @@ public enum Unit {
 
     private final String symbol;
 
-    private Unit(String symbol) {
+    Unit(String symbol) {
         this.symbol = symbol;
     }
 
