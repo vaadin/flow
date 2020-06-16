@@ -41,9 +41,6 @@ public class UrlUtil {
         if (url.startsWith("//")) {
             return true;
         }
-        return url.contains("://") && !(url
-                .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)
-                || url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX));
+        return url.contains("://") && !url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
     }
 }
