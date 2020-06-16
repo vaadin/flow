@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
@@ -276,9 +277,22 @@ public class PushHandler {
     }
 
     void connectionLost(AtmosphereResourceEvent event) {
+        VaadinSession session = null;
+        try {
+            session = handleConnectionLost(event);
+        } finally {
+            if (session != null) {
+                session.access(() -> CurrentInstance.clearAll());
+            }
+        }
+    }
+
+    private VaadinSession handleConnectionLost(AtmosphereResourceEvent event) {
+        VaadinSession session = null;
+
         if (event == null) {
             getLogger().error("Could not get event. This should never happen.");
-            return;
+            return null;
         }
         // We don't want to use callWithUi here, as it assumes there's a client
         // request active and does requestStart and requestEnd among other
@@ -286,7 +300,7 @@ public class PushHandler {
 
         AtmosphereResource resource = event.getResource();
         if (resource == null) {
-            return;
+            return null;
         }
 
         // In development mode we may have a live-reload push channel
@@ -298,13 +312,12 @@ public class PushHandler {
             BrowserLiveReload liveReload = access.getLiveReload(service);
             if (liveReload.isLiveReload(resource)) {
                 liveReload.onDisconnect(resource);
-                return;
+                return null;
             }
         }
 
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
-        VaadinSession session;
 
         try {
             session = service.findVaadinSession(vaadinRequest);
@@ -316,7 +329,7 @@ public class PushHandler {
             getLogger().debug(
                     "Session expired before push disconnect event was received",
                     e);
-            return;
+            return session;
         }
 
         UI ui;
@@ -342,7 +355,7 @@ public class PushHandler {
                             .debug("Could not get UI. This should never happen,"
                                     + " except when reloading in Firefox and Chrome -"
                                     + " see http://dev.vaadin.com/ticket/14251.");
-                    return;
+                    return session;
                 } else {
                     getLogger().info(
                             "No UI was found based on data in the request,"
@@ -390,6 +403,7 @@ public class PushHandler {
                 // can't call ErrorHandler, we (hopefully) don't have a lock
             }
         }
+        return session;
     }
 
     private static UI findUiUsingResource(AtmosphereResource resource,
@@ -505,7 +519,6 @@ public class PushHandler {
             callWithUi(resource, receiveCallback);
         }
     }
-
 
     private boolean isLiveReloadConnection(AtmosphereResource resource) {
         String refreshConnection = resource.getRequest()
