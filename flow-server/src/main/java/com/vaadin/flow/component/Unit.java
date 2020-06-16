@@ -95,8 +95,7 @@ public enum Unit {
         if (cssSize == null) {
              throw new IllegalArgumentException("The parameter can't be null");
         }
-        Stream<Unit> units = getUnits().filter(unit -> cssSize.endsWith(unit.toString()));
-        return units.findFirst();
+        return getUnits().filter(unit -> cssSize.endsWith(unit.toString())).findFirst();
     }
 
     /**
