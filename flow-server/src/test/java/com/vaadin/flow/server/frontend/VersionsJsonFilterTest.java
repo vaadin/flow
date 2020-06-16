@@ -86,8 +86,8 @@ public class VersionsJsonFilterTest {
         JsonObject filteredJson = filter
                 .getFilteredVersions(Json.parse(versions));
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-progress-bar"));
-        Assert.assertFalse(filteredJson.hasKey("@vaadin/vaadin-upload"));
-        Assert.assertFalse(filteredJson.hasKey("@polymer/iron-list"));
+        Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));
 
         Assert.assertEquals("1.1.2",
                 filteredJson.getString("@vaadin/vaadin-progress-bar"));
@@ -120,9 +120,7 @@ public class VersionsJsonFilterTest {
                     filteredJson.hasKey(key));
         }
 
-        List<String> droppedKeys = Arrays.asList("flow", "core", "platform",
-                "@vaadin/vaadin-ordered-layout", "@vaadin/vaadin-progress-bar",
-                "@vaadin/vaadin-radio-button", "@vaadin/vaadin-confirm-dialog");
+        List<String> droppedKeys = Arrays.asList("flow", "core", "platform");
         for (String key : droppedKeys) {
             Assert.assertFalse(
                     String.format("User managed key '%s' was found.", key),

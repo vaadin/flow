@@ -48,6 +48,8 @@ class VersionsJsonFilter {
         for (String key : versions.keys()) {
             if (!userManagedDependencies.hasKey(key)) {
                 json.put(key, versions.getString(key));
+            } else {
+                json.put(key, userManagedDependencies.getString(key));
             }
         }
         return json;
