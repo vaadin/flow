@@ -33,7 +33,7 @@ public interface HasLabel extends HasElement{
      * Set the label of the component to the given text.
      *
      * @param label
-     *            the label text to set
+     *            the label text to set or {@code null} to clear
      */
     default void setLabel(String label) {
         getElement().setProperty(ElementConstants.LABEL_PROPERTY_NAME, label);
@@ -42,7 +42,7 @@ public interface HasLabel extends HasElement{
     /**
      * Gets the label of the component.
      *
-     * @return the label of the component or <code>""</code> if no label has
+     * @return the label of the component or {@code null} if no label has
      *         been set
      */
     default String getLabel() {
