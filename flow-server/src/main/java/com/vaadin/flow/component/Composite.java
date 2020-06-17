@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -50,7 +52,7 @@ import com.vaadin.flow.internal.ReflectTools;
 public abstract class Composite<T extends Component> extends Component {
     private T content;
 
-    private ThreadLocal<Boolean> contentIsInitializing = new ThreadLocal<>();
+    private transient ThreadLocal<Boolean> contentIsInitializing = new ThreadLocal<>();
 
     /**
      * Creates a new composite.
@@ -119,12 +121,10 @@ public abstract class Composite<T extends Component> extends Component {
                 if (Boolean.TRUE.equals(contentIsInitializing.get())) {
                     throw new IllegalStateException(
                             "The content is not yet initialized. "
-                                    + "Infinite loop detected: you are calling a code inside 'initContent' "
-                                    + "which directly or indirectly is calling 'getContent'/'initContent'. "
-                                    + "You may not call any method on "
+                                    + "Detected direct or indirect call to 'getContent' from 'initContent'. "
+                                    + "You may not call any framework method on a '"
                                     + Composite.class.getSimpleName()
-                                    + " instance until it initialized (inside 'getContent' or 'initContent'). "
-                                    + "Call methods on the content component instead.");
+                                    + "' instance before 'initContent' has completed initializing the component.");
                 }
                 contentIsInitializing.set(true);
                 T newContent = initContent();
@@ -185,5 +185,11 @@ public abstract class Composite<T extends Component> extends Component {
     @Override
     public Stream<Component> getChildren() {
         return Stream.of(getContent());
+    }
+
+    private void readObject(ObjectInputStream stream)
+            throws ClassNotFoundException, IOException {
+        stream.defaultReadObject();
+        contentIsInitializing = new ThreadLocal<>();
     }
 }
