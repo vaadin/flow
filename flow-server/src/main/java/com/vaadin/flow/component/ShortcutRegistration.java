@@ -253,11 +253,26 @@ public class ShortcutRegistration implements Registration, Serializable {
         setLifecycleOwner(component);
         return this;
     }
+    
+    /**
+     * Fluently define the component to listen for shortcuts on. Calling this
+     * method will remove any previous listeners.
+     * <p>
+     * This method only exists to retain backwards compatibility after support
+     * for listening on multiple components was added with the method
+     * {@link #listenOn(Component...)}.
+     *
+     * @param listenOnComponent
+     *            components to listen for the shortcut on. Must not be null.
+     * @return this <code>ShortcutRegistration</code>
+     */
+    public ShortcutRegistration listenOn(Component listenOnComponent) {
+        return listenOn(new Component[]{listenOnComponent});
+    }
 
     /**
-     * Fluently define the {@link Component} onto which the shortcut's listener
-     * is bound. Calling this method will remove the previous listener from the
-     * {@code component} it was bound to.
+     * Fluently define the components to listen for shortcuts on. Calling this
+     * method will remove any previous listeners.
      *
      * @param listenOnComponents
      *            {@code Component}s onto which the shortcut listeners are
