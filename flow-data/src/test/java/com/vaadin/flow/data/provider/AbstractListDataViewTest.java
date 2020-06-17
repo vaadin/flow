@@ -764,9 +764,9 @@ public class AbstractListDataViewTest {
         ItemListDataView dataView = new ItemListDataView(
                 () -> dataProvider, null);
 
+        dataView.setIdentityProvider(Item::getId);
         dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"),
-                Item::getId);
+                new Item(1L, "updatedValue", "updatedDescr"));
 
         Optional<Item> firstItem =
                 items.stream().filter(i -> i.getId() == 1L).findFirst();

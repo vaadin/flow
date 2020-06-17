@@ -22,6 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -35,6 +36,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
 
     protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
     protected Component component;
+    protected ValueProvider<T, ?> identityProvider;
 
     /**
      * Creates a new instance of {@link AbstractDataView} subclass
@@ -49,9 +51,15 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     public AbstractDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
             Component component) {
+        Objects.requireNonNull(dataProviderSupplier,
+                "DataProvider supplier cannot be null");
         this.dataProviderSupplier = dataProviderSupplier;
         this.component = component;
-        verifyDataProviderType(dataProviderSupplier.get().getClass());
+        final DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
+        Objects.requireNonNull(dataProvider,
+                "Supplied DataProvider cannot be null");
+        this.identityProvider = dataProvider::getId;
+        verifyDataProviderType(dataProvider.getClass());
     }
 
     @Override
@@ -98,5 +106,12 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public int getSize() {
         return dataProviderSupplier.get().size(new Query<>());
+    }
+
+    @Override
+    public void setIdentityProvider(ValueProvider<T, ?> identityProvider) {
+        Objects.requireNonNull(identityProvider,
+                "Item identity provider cannot be null");
+        this.identityProvider = identityProvider;
     }
 }
