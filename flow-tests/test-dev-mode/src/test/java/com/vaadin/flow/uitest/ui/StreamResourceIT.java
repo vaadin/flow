@@ -63,9 +63,6 @@ public class StreamResourceIT extends ChromeBrowserTest {
     private void assertDownloadedContent(String downloadId, String filename)
             throws IOException {
         WebElement link = findElement(By.id(downloadId));
-        Assert.assertEquals(
-                "Anchor element should have router-ignore " + "attribute", "",
-                link.getAttribute("router-ignore"));
         String url = link.getAttribute("href");
 
         getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
