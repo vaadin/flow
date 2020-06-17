@@ -47,7 +47,8 @@ public interface LazyDataView<T> extends DataView<T> {
     /**
      * Sets the component to use undefined size with the given initial size
      * estimate of the dataset. The estimated size is used after reset occurs or
-     * filter changes.
+     * filter changes. <em>The initial size estimate should not be be small
+     * or it will get discarded immediately and cause extra requests</em>.
      * <p>
      * Calling this method will clear any previously set size estimate callback
      * {@link #withUndefinedSize(SizeEstimateCallback)} or defined size callback

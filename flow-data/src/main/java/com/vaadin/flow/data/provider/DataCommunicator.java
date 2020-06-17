@@ -291,10 +291,29 @@ public class DataCommunicator<T> implements Serializable {
      * @return size of available data
      */
     public int getDataSize() {
-        if (resendEntireRange || assumeEmptyClient) {
+        if (isDefinedSize()
+                && (resendEntireRange || assumeEmptyClient || sizeReset)) {
+            // TODO it could be possible to cache the value returned here
+            // and use it next time instead of making another query, unless
+            // the conditions like filter (or another reset) have changed
             return getDataProviderSize();
         }
+        // do not report a stale size or size estimate
+        if (!isDefinedSize() && sizeReset) {
+            return -1;
+        }
         return assumedSize;
+    }
+
+    /**
+     * Returns whether the given item is part of the active items.
+     * 
+     * @param item
+     *            the item to check, not {@code null}
+     * @return {@code true} if item is active, {@code false} if not
+     */
+    public boolean isItemActive(T item) {
+        return getKeyMapper().has(item);
     }
 
     /**
@@ -304,6 +323,25 @@ public class DataCommunicator<T> implements Serializable {
      */
     public List<String> getActiveKeyOrdering() {
         return Collections.unmodifiableList(activeKeyOrder);
+    }
+
+    /**
+     * Returns the active item at the given index or throws a
+     * {@link IndexOutOfBoundsException} in case the item is not active at the
+     * moment.
+     * 
+     * @param index
+     *            the index of the item to get
+     * @return the item
+     */
+    public T getActiveItemOnIndex(int index) {
+        int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
+        if (index < activeStart || index > activeDataEnd) {
+            throw new IndexOutOfBoundsException(String.format(
+                    "Given index %d is outside of the active range of the component '%d - %d'",
+                    index, activeStart, activeDataEnd));
+        }
+        return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
     }
 
     /**
@@ -340,9 +378,18 @@ public class DataCommunicator<T> implements Serializable {
     public void setPageSize(int pageSize) {
         if (pageSize < 1) {
             throw new IllegalArgumentException(String.format(
-                    "Page size cannot be less than 1, got %s", pageSize));
+                    "Page size cannot be less than 1, got %d", pageSize));
         }
         this.pageSize = pageSize;
+    }
+
+    /**
+     * Returns the page size set to fetch items.
+     * 
+     * @return the page size
+     */
+    public int getPageSize() {
+        return pageSize;
     }
 
     /**
@@ -379,9 +426,9 @@ public class DataCommunicator<T> implements Serializable {
             CallbackDataProvider.CountCallback<T, ?> sizeCallback) {
         if (sizeCallback == null) {
             throw new IllegalArgumentException(
-                    "Provided size callback cannot be null - for switching " +
-                            "between defined and undefined size use " +
-                            "setDefinedSize(boolean) method instead.");
+                    "Provided size callback cannot be null - for switching "
+                            + "between defined and undefined size use "
+                            + "setDefinedSize(boolean) method instead.");
         }
         clearSizeCallbacksAndState();
         this.sizeCallback = sizeCallback;
@@ -404,9 +451,9 @@ public class DataCommunicator<T> implements Serializable {
             SizeEstimateCallback<T, ?> sizeEstimateCallback) {
         if (sizeEstimateCallback == null) {
             throw new IllegalArgumentException(
-                    "Provided size estimate callback cannot be null - for " +
-                            "switching between defined and undefined size use " +
-                            "setDefinedSize(boolean) method instead.");
+                    "Provided size estimate callback cannot be null - for "
+                            + "switching between defined and undefined size use "
+                            + "setDefinedSize(boolean) method instead.");
         }
         clearSizeCallbacksAndState();
         this.sizeEstimateCallback = sizeEstimateCallback;
@@ -422,7 +469,11 @@ public class DataCommunicator<T> implements Serializable {
      * size. Any previously set size related callbacks are cleared. The new
      * estimate is only applied if it is greater than the currently
      * estimated/known size. Otherwise it is not applied until there has been a
-     * reset.
+     * reset. <br/>
+     * <em>NOTE:</em> it makes no sense to use an initial size estimate that is
+     * less than two times the set page size (set with {@link #setPageSize(int)}
+     * since this would trigger unnecessary requests immediately. On these
+     * cases, given estimate is discarded.
      * 
      * @param initialSizeEstimate
      *            the initial size estimate to be used
@@ -575,6 +626,12 @@ public class DataCommunicator<T> implements Serializable {
         if (resendEntireRange || sizeReset) {
             // 1. given size estimate
             int size = initialSizeEstimate;
+            if (initialSizeEstimate > 0
+                    && initialSizeEstimate <= requestedRange.getEnd()) {
+                // don't let the initial size estimate set to lock component to
+                // defined size -> increase the size so size it's not locked
+                size = requestedRange.getEnd() + pageSize;
+            }
             // 2. given estimate callback
             if (sizeEstimateCallback != null) {
                 size = getNewSizeEstimateFromCallback(true);
