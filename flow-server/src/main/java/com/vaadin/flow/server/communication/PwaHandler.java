@@ -129,9 +129,10 @@ public class PwaHandler implements RequestHandler {
 
         if (pwaRegistry.getPwaConfiguration().isEnabled()) {
             if (requestHandlerMap.containsKey(requestUri)) {
-                return requestHandlerMap.get(requestUri)
-                        .handleRequest(session,request,response);
-            } else if (requestUri.startsWith("/"+PwaRegistry.WORKBOX_FOLDER)) {
+                return requestHandlerMap.get(requestUri).handleRequest(session,
+                        request, response);
+            } else if (requestUri != null && requestUri
+                    .startsWith("/" + PwaRegistry.WORKBOX_FOLDER)) {
 
                 // allow only files under workbox_folder
                 String resourceName = PwaRegistry.WORKBOX_FOLDER + requestUri
@@ -149,8 +150,8 @@ public class PwaHandler implements RequestHandler {
             VaadinResponse response) {
         try (InputStream stream = BootstrapHandler.class
                 .getResourceAsStream(fileName);
-             InputStreamReader reader = new InputStreamReader(
-                     stream, StandardCharsets.UTF_8);) {
+                InputStreamReader reader = new InputStreamReader(stream,
+                        StandardCharsets.UTF_8);) {
             PrintWriter writer = response.getWriter();
             if (fileName.endsWith(".js")) {
                 response.setContentType("application/javascript");
@@ -168,7 +169,8 @@ public class PwaHandler implements RequestHandler {
             getLogger().debug("Workbox file '{}' does not exist", fileName, e);
             return false;
         } catch (IOException e) {
-            getLogger().warn("Error while reading workbox file '{}'", fileName, e);
+            getLogger().warn("Error while reading workbox file '{}'", fileName,
+                    e);
             return false;
         }
     }
