@@ -282,14 +282,12 @@ public class PushHandler {
             session = handleConnectionLost(event);
         } finally {
             if (session != null) {
-                session.access(() -> CurrentInstance.clearAll());
+                session.access(CurrentInstance::clearAll);
             }
         }
     }
 
     private VaadinSession handleConnectionLost(AtmosphereResourceEvent event) {
-        VaadinSession session = null;
-
         if (event == null) {
             getLogger().error("Could not get event. This should never happen.");
             return null;
@@ -319,6 +317,7 @@ public class PushHandler {
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
 
+        VaadinSession session = null;
         try {
             session = service.findVaadinSession(vaadinRequest);
         } catch (SessionExpiredException e) {
