@@ -21,7 +21,7 @@ public interface HasLabel extends HasElement{
      *            the label text to set
      */
     default void setLabel(String label) {
-        getElement().setProperty(ElementConstants.LABEL_PROPERTY_NAME, label == null ? "" : label);
+        getElement().setProperty(ElementConstants.LABEL_PROPERTY_NAME, label);
     }
 
     /**
@@ -31,6 +31,6 @@ public interface HasLabel extends HasElement{
      *         been set
      */
     default String getLabel() {
-        return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME, "");
+        return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME, null);
     }
 }

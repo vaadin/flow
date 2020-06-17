@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
@@ -29,10 +30,29 @@ public class HasLabelTest {
     }
 
     @Test
-    public void withoutLabelComponent_getLabelReturnsEmptyString() {
+    public void withoutLabelComponent_getLabelReturnsNull() {
        TestComponent component = new TestComponent();
+<<<<<<< Upstream, based on upstream/master
+=======
+
+       assertNull(component.getLabel());
+    }
+    
+    @Test
+    public void withNullLabel_getLabelReturnsNull() {
+       TestComponent component = new TestComponent();
+       component.setLabel(null);
+       assertNull(component.getLabel());
+    }
+    
+    @Test
+    public void withEmptyLabel_getLabelReturnsEmptyString() {
+       TestComponent component = new TestComponent();
+       component.setLabel("");
+>>>>>>> 9277186 Update HasLabel mixin interface to return null as default value(#3241)
        assertEquals("",component.getLabel());
     }
+
 
     @Test
     public void setLabel() {
