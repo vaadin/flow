@@ -46,6 +46,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the width of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param width
+     *            the width of the object.
+     * @param unit
+     *            the unit used for the width.
+     */
+    default void setWidth(float width, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setWidth(getCssSize(width,unit));
+    }
+    
+    /**
      * Sets the min-width of the component.
      * <p>
      * The width should be in a format understood by the browser, e.g. "100px"
@@ -62,6 +78,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the min-width of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param minWidth
+     *            the min-width of the object.
+     * @param unit
+     *            the unit used for the min-width.
+     */
+    default void setMinWidth(float minWidth, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMinWidth(getCssSize(minWidth,unit));
+    }
+
+    /**
      * Sets the max-width of the component.
      * <p>
      * The width should be in a format understood by the browser, e.g. "100px"
@@ -75,6 +107,22 @@ public interface HasSize extends HasElement {
      */
     default void setMaxWidth(String maxWidth) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_WIDTH, maxWidth);
+    }
+
+    /**
+     * Sets the max-width of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param maxWidth
+     *            the max-width of the object.
+     * @param unit
+     *            the unit used for the max-width.
+     */
+    default void setMaxWidth(float maxWidth, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMaxWidth(getCssSize(maxWidth,unit));
     }
 
     /**
@@ -133,6 +181,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the height of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param height
+     *            the height of the object.
+     * @param unit
+     *            the unit used for the height.
+     */
+    default void setHeight(float height, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setHeight(getCssSize(height,unit));
+    }
+
+    /**
      * Sets the min-height of the component.
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
@@ -149,6 +213,22 @@ public interface HasSize extends HasElement {
     }
 
     /**
+     * Sets the min-height of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param minHeight
+     *            the min-height of the object.
+     * @param unit
+     *            the unit used for the min-height.
+     */
+    default void setMinHeight(float minHeight, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMinHeight(getCssSize(minHeight,unit));
+    }
+
+    /**
      * Sets the max-height of the component.
      * <p>
      * The height should be in a format understood by the browser, e.g. "100px"
@@ -162,6 +242,22 @@ public interface HasSize extends HasElement {
      */
     default void setMaxHeight(String maxHeight) {
         getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT, maxHeight);
+    }
+
+    /**
+     * Sets the max-height of the component. Negative number implies unspecified size
+     * (terminal is free to set the size).
+     *
+     * @param maxHeight
+     *            the max-height of the object.
+     * @param unit
+     *            the unit used for the max-height.
+     */
+    default void setMaxHeight(float maxHeight, Unit unit) {
+        if (unit == null) {
+            throw new IllegalArgumentException("Unit can not be null");
+        }
+        setMaxHeight(getCssSize(maxHeight,unit));
     }
 
     /**
@@ -244,5 +340,19 @@ public interface HasSize extends HasElement {
     default void setSizeUndefined() {
         setWidth(null);
         setHeight(null);
+    }
+
+    /**
+     * Utility method for internal use.
+     * 
+     * @param size Size
+     * @param unit Unit
+     * @return Css format size string
+     */
+    static String getCssSize(float size, Unit unit) {
+        if (size < 0) {
+            return null;
+        }
+        return size + unit.toString();
     }
 }
