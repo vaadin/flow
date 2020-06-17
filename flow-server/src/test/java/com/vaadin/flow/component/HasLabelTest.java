@@ -32,8 +32,6 @@ public class HasLabelTest {
     @Test
     public void withoutLabelComponent_getLabelReturnsNull() {
        TestComponent component = new TestComponent();
-<<<<<<< Upstream, based on upstream/master
-=======
 
        assertNull(component.getLabel());
     }
@@ -49,7 +47,6 @@ public class HasLabelTest {
     public void withEmptyLabel_getLabelReturnsEmptyString() {
        TestComponent component = new TestComponent();
        component.setLabel("");
->>>>>>> 9277186 Update HasLabel mixin interface to return null as default value(#3241)
        assertEquals("",component.getLabel());
     }
 
