@@ -56,6 +56,8 @@ class VersionsJsonConverter {
         for(String key : convertedObject.keys()) {
             if (!userManagedDependencies.hasKey(key)) {
                 json.put(key, convertedObject.getString(key));
+            } else {
+                json.put(key, userManagedDependencies.getString(key));
             }
         }
         return json;

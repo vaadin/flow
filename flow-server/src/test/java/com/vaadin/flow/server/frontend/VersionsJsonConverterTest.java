@@ -88,14 +88,7 @@ public class VersionsJsonConverterTest {
             Assert.assertTrue(String.format("Key '%s' was expected, but not found", key), convertedJson.hasKey(key));
         }
 
-        List<String> droppedKeys = Arrays.asList("flow",
-                "core",
-                "platform",
-                "@vaadin/vaadin-ordered-layout",
-                "@vaadin/vaadin-progress-bar",
-                "@vaadin/vaadin-radio-button",
-                "@vaadin/vaadin-confirm-dialog"
-                );
+        List<String> droppedKeys = Arrays.asList("flow", "core", "platform");
         for(String key : droppedKeys) {
             Assert.assertFalse(String.format("User managed key '%s' was found.", key), convertedJson.hasKey(key));
         }
@@ -127,8 +120,8 @@ public class VersionsJsonConverterTest {
                 Json.parse(versions), Json.parse(pkgJson));
         JsonObject convertedJson = convert.getManagedVersions();
         Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-progress-bar"));
-        Assert.assertFalse(convertedJson.hasKey("@vaadin/vaadin-upload"));
-        Assert.assertFalse(convertedJson.hasKey("@polymer/iron-list"));
+        Assert.assertTrue(convertedJson.hasKey("@vaadin/vaadin-upload"));
+        Assert.assertTrue(convertedJson.hasKey("@polymer/iron-list"));
 
         Assert.assertFalse(convertedJson.hasKey("flow"));
         Assert.assertFalse(convertedJson.hasKey("core"));
