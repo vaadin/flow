@@ -1,5 +1,7 @@
 /* tslint:disable:max-classes-per-file */
 
+import {repeat} from "lit-html/directives/repeat";
+
 const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
 /// <reference types="sinon">
@@ -8,11 +10,9 @@ import { expect } from "chai";
 
 // API to test
 import {
-  appendItem,
   Binder,
   field,
   getName,
-  modelRepeat,
   Required,
   setValue,
   ValidationError,
@@ -37,14 +37,15 @@ class OrderView extends LitElement {
     return css`input[invalid] {border: 2px solid red;}`;
   }
   render() {
+    const {notes, products, customer: {fullName, nickName}} = this.binder.model;
     return html`
-    <input id="notes" ...="${field(this.binder.model.notes)}" />
-    <input id="fullName" ...="${field(this.binder.model.customer.fullName)}" />
-    <input id="nickName" ...="${field(this.binder.model.customer.nickName)}" />
-    <button id="add" @click=${() => appendItem(this.binder.model.products)}>+</button>
-    ${modelRepeat(this.binder.model.products, (model, _product, index) => html`<div>
-        <input id="description${index}" ...="${field(model.description)}" />
-        <input id="price${index}" ...="${field(model.price)}">
+    <input id="notes" ...="${field(notes)}" />
+    <input id="fullName" ...="${field(fullName)}" />
+    <input id="nickName" ...="${field(nickName)}" />
+    <button id="add" @click=${() => this.binder.for(products).appendItem()}>+</button>
+    ${repeat(products, ({model: {description, price}}, index) => html`<div>
+        <input id="description${index}" ...="${field(description)}" />
+        <input id="price${index}" ...="${field(price)}">
       </div>`)}
     `;
   }
@@ -84,8 +85,8 @@ suite("form/Validation", () => {
   });
 
   test("should run all validations per array items", async () => {
-    appendItem(binder.model.products);
-    appendItem(binder.model.products);
+    binder.for(binder.model.products).appendItem();
+    binder.for(binder.model.products).appendItem();
     return binder.validate().then(errors => {
       expect(errors.map(e => e.property)).to.eql([
         "customer.fullName",
