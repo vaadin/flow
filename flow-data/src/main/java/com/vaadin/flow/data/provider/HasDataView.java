@@ -60,9 +60,10 @@ public interface HasDataView<T, V extends DataView<T>> extends Serializable {
     /**
      * Get the DataView for the component.
      * <p>
-     * The returned DataView may be a {@link ListDataView} or a {@link
-     * LazyDataView} if the datasource used for instantiation has created one of
-     * the specific instances.
+     * The returned DataView only contains a minimal common API.
+     * Use of {@link HasListDataView#getListDataView} or {@link
+     * HasLazyDataView#getLazyDataView} should be used for more
+     * targeted helper features
      *
      * @return DataView instance
      */
