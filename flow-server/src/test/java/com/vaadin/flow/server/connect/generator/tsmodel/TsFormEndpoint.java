@@ -97,5 +97,6 @@ public class TsFormEndpoint {
         @Future LocalDate future;
         @FutureOrPresent LocalTime futureOrPresent;
         @Pattern(regexp = "\\d+\\..+") String pattern;
+        List<MyEntity> children;
     }
 }

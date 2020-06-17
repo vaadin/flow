@@ -3,7 +3,7 @@ import MyEntityIdModel from './MyEntityIdModel';
 import MyEntity from './MyEntity';
 
 // @ts-ignore
-import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required} from '@vaadin/form';
+import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType} from '@vaadin/form';
 
 // @ts-ignore
 import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
@@ -12,13 +12,14 @@ import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,Neg
  * This module is generated from com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity.
  * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  */
-export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEntityIdModel<T> { 
+export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEntityIdModel<T> {
   static createEmptyValue: () => MyEntity;
   public readonly assertFalse = new StringModel(this, 'assertFalse', new AssertFalse());
   public readonly assertTrue = new StringModel(this, 'assertTrue', new AssertTrue());
   public readonly bar = new MyBazModel(this, 'bar');
-  public readonly baz = new ArrayModel(this, 'baz', MyBazModel);
+  public readonly baz: ArrayModel<ModelType<MyBazModel>, MyBazModel> = new ArrayModel(this, 'baz', MyBazModel);
   public readonly bool = new BooleanModel(this, 'bool');
+  public readonly children: ArrayModel<ModelType<MyEntityModel>, MyEntityModel> = new ArrayModel(this, 'children', MyEntityModel);
   public readonly decimalMax = new NumberModel(this, 'decimalMax', new DecimalMax({value:"0.01", inclusive:false}));
   public readonly decimalMin = new NumberModel(this, 'decimalMin', new DecimalMin("0.01"));
   public readonly digits = new StringModel(this, 'digits', new Digits({integer:5, fraction:2}));
