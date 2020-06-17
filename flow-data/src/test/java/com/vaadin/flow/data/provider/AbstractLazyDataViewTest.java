@@ -18,6 +18,7 @@ package com.vaadin.flow.data.provider;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -33,7 +34,7 @@ import elemental.json.JsonValue;
 
 public class AbstractLazyDataViewTest {
 
-    public static final String ITEM1 = "foo";
+    private static final String ITEM1 = "foo";
 
     @Tag("test-component")
     private static class TestComponent extends Component {
@@ -87,6 +88,7 @@ public class AbstractLazyDataViewTest {
         }, arrayUpdater, null, component.getElement().getNode());
         // need to set a lazy data provider to communicator or type check fails
         dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(50);
         dataView = new AbstractLazyDataView<String>(dataCommunicator,
                 component) {
         };
@@ -139,7 +141,7 @@ public class AbstractLazyDataViewTest {
 
     @Test
     public void contains_itemsNotFetched_canCheckForItemWithBeforeClientResponse() {
-        dataCommunicator.setRequestedRange(0, 3);
+        dataCommunicator.setRequestedRange(0, 50);
 
         Assert.assertFalse("Item should not be loaded yet",
                 dataView.contains("foo"));
@@ -159,6 +161,7 @@ public class AbstractLazyDataViewTest {
 
     @Test
     public void size_withDefinedSize() {
+        dataCommunicator.setRequestedRange(0, 50);
         Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
 
         dataView.withDefinedSize(query -> 5);
@@ -168,17 +171,81 @@ public class AbstractLazyDataViewTest {
 
     @Test
     public void size_withUndefinedSize() {
+        dataCommunicator.setRequestedRange(0, 50);
+        dataView.withUndefinedSize();
 
+        Assert.assertEquals("Invalid size reported", 0, dataView.getSize());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
+
+        dataView.withUndefinedSize(query -> 500);
+
+        // since the size was "locked", there is no estimate
+        Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
+
+        // setting new data provider triggers new size to be applied after
+        // communication
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            return Stream.generate(String::new).limit(query.getLimit());
+        }, query -> -1), null);
+        dataView.withUndefinedSize(query -> 400);
+
+        Assert.assertEquals("Invalid size reported", 0, dataView.getSize());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid size reported", 400, dataView.getSize());
+
+        dataView.withUndefinedSize(300);
+
+        Assert.assertEquals("Invalid size reported", 0, dataView.getSize());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid size reported", 300, dataView.getSize());
     }
 
     @Test
     public void getItems_withDefinedSize() {
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.generate(String::new).limit(99);
+        }, query -> 99), null);
 
+        Stream<String> items = dataView.getItems();
+        Assert.assertEquals("Invalid amount of items returned", 99,
+                items.count());
     }
 
     @Test
     public void getItems_withUndefinedSize() {
+        dataCommunicator.setRequestedRange(0, 50);
+        AtomicInteger limit = new AtomicInteger(50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.generate(String::new).limit(limit.get());
+        }, query -> -1), null);
 
+        dataCommunicator.setSizeEstimateCallback(query -> 66);
+
+        fakeClientCommunication();
+
+        Assert.assertEquals(66, dataView.getSize());
+
+        limit.set(70);
+        Stream<String> items = dataView.getItems();
+        Assert.assertEquals("Invalid amount of items returned", limit.get(),
+                items.count());
     }
 
     private void fakeClientCommunication() {

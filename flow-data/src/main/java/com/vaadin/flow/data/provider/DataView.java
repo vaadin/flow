@@ -36,7 +36,9 @@ public interface DataView<T> extends Serializable {
 
     /**
      * Get the full data available to the component. Data will use set filters
-     * and sorting.
+     * and sorting. <em>NOTE: calling this method might cause a backend query
+     * that fetches all items from the backend when using a lazy data
+     * source!</em>
      *
      * @return filtered and sorted data set
      */

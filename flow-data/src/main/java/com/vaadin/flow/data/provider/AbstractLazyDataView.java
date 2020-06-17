@@ -93,8 +93,8 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * trigger a backend call when using {@link #withDefinedSize()} and the size
      * is not known.</em>
      * <p>
-     * If no size is yet known, like during the initial roundtrip, this may
-     * return {@code -1} as the size is determined during the "before client
+     * If size is not yet known, like during the initial roundtrip, {@code 0} is
+     * returned as the size is determined during the "before client
      * response"-phase.
      * 
      * @return the size of the data or the currently used estimated size

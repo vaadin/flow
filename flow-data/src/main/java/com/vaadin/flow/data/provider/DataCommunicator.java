@@ -186,6 +186,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void reset() {
         skipSizeCheckUntilReset = false;
+        sizeReset = true;
         resendEntireRange = true;
         dataGenerator.destroyAllData();
         updatedData.clear();
@@ -258,7 +259,7 @@ public class DataCommunicator<T> implements Serializable {
         filter = initialFilter;
         clearSizeCallbacksAndState();
         definedSize = true;
-        sizeReset = false; // everything is cleared anyway
+        sizeReset = true;
 
         handleDetach();
 
@@ -300,7 +301,7 @@ public class DataCommunicator<T> implements Serializable {
         }
         // do not report a stale size or size estimate
         if (!isDefinedSize() && sizeReset) {
-            return -1;
+            return 0;
         }
         return assumedSize;
     }
@@ -409,6 +410,8 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Returns the number of pages that the size is increased when the estimated
      * end has been reached in undefined size mode.
+     * 
+     * @return the number of pages the size is increased
      */
     public int getSizeIncreasePageCount() {
         return sizeIncreasePageCount;
@@ -469,7 +472,8 @@ public class DataCommunicator<T> implements Serializable {
      * size. Any previously set size related callbacks are cleared. The new
      * estimate is only applied if it is greater than the currently
      * estimated/known size. Otherwise it is not applied until there has been a
-     * reset. <br/>
+     * reset.
+     * <p>
      * <em>NOTE:</em> it makes no sense to use an initial size estimate that is
      * less than two times the set page size (set with {@link #setPageSize(int)}
      * since this would trigger unnecessary requests immediately. On these
@@ -486,7 +490,7 @@ public class DataCommunicator<T> implements Serializable {
         clearSizeCallbacksAndState();
         this.initialSizeEstimate = initialSizeEstimate;
         definedSize = false;
-        if (!skipSizeCheckUntilReset && assumedSize < initialSizeEstimate) {
+        if (!skipSizeCheckUntilReset && requestedRange.getEnd() < initialSizeEstimate) {
             sizeReset = true;
             requestFlush();
         }
