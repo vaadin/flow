@@ -17,6 +17,7 @@ package com.vaadin.flow.dom;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -688,6 +689,33 @@ public class Element extends Node<Element> {
                     "setProperty(name, Json.createNull()) must be used to set a property to null");
         }
         return setPropertyJson(name, JsonUtils.beanToJson(value));
+    }
+
+    /**
+     * Sets the given property to the given list of beans or primitive values,
+     * converted to a JSON array.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *                  the type of items in the list
+     * @param name
+     *                  the property name, not <code>null</code>
+     * @param value
+     *                  the property value, not <code>null</code>
+     * @return this element
+     */
+    public <T> Element setProperty(String name, List<T> value) {
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    "setProperty(name, Json.createNull()) must be used to set a property to null");
+        }
+
+        return setPropertyJson(name, JsonUtils.listToJson(value));
     }
 
     /**

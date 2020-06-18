@@ -50,6 +50,7 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
@@ -573,6 +574,20 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(1.0, json.getNumber("number"), 0.0);
         Assert.assertEquals(2.3, json.getNumber("flt"), 0.0);
         Assert.assertEquals(4.56, json.getNumber("dbl"), 0.0);
+
+        List<SimpleBean> list = new ArrayList<>();
+        SimpleBean bean1 = new SimpleBean();
+        bean1.string = "bean1";
+        SimpleBean bean2 = new SimpleBean();
+        bean2.string = "bean2";
+        list.add(bean1);
+        list.add(bean2);
+        element.setProperty("p", list);
+        JsonArray jsonArray = (JsonArray) element.getPropertyRaw("p");
+        Assert.assertEquals("bean1",
+                jsonArray.getObject(0).getString("string"));
+        Assert.assertEquals("bean2",
+                jsonArray.getObject(1).getString("string"));
     }
 
     @Test

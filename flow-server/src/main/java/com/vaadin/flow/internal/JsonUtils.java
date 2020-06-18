@@ -19,6 +19,7 @@ package com.vaadin.flow.internal;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -298,6 +299,25 @@ public final class JsonUtils {
         } catch (JsonProcessingException e) {
             throw new JsonException(
                     "Error converting bean to JSON: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Converts the given list to JSON.
+     *
+     * @param list
+     *                 the list to convert, not {@code null}
+     * @return a JSON representation of the bean
+     */
+    public static JsonArray listToJson(List<?> list) {
+        if (list == null) {
+            throw new JsonException("Cannot convert null to a JSON object");
+        }
+        try {
+            return Json.instance().parse(objectMapper.writeValueAsString(list));
+        } catch (JsonProcessingException e) {
+            throw new JsonException(
+                    "Error converting list to JSON: " + e.getMessage());
         }
     }
 }
