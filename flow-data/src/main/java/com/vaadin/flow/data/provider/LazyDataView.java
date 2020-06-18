@@ -26,43 +26,45 @@ public interface LazyDataView<T> extends DataView<T> {
 
     /**
      * Sets the component to use defined size with the given callback that
-     * provides the exact size for the dataset.
+     * provides the exact size for the data source.
      * <p>
      * When the component has a distinct data provider set with
      * {@link com.vaadin.flow.data.binder.HasDataProvider#setDataProvider(DataProvider)},
-     * the given callback will be queried for getting the dataset size instead
-     * of the data provider {@link DataProvider#size(Query)} method.
+     * the given callback will be queried for getting the size of the data
+     * source instead of the data provider {@link DataProvider#size(Query)}
+     * method.
      * <p>
      * Calling this method will clear any previously set initial size estimate
      * {@link #withUndefinedSize(int)} and size estimate callback
      * {@link #withUndefinedSize(SizeEstimateCallback)}.
      *
      * @param callback
-     *            the callback to use for determining dataset size, not
-     *            {@code null}
+     *            the callback to use for determining the size of the data
+     *            source, not {@code null}
      * @see #withDefinedSize()
      */
     void withDefinedSize(CallbackDataProvider.CountCallback<T, Void> callback);
 
     /**
      * Sets the component to use undefined size with the given initial size
-     * estimate of the dataset. The estimated size is used after reset occurs or
-     * filter changes. <em>The initial size estimate should not be less than the currently
-     * requested range, or it will get discarded until a reset occurs.</em>.
+     * estimate of the data source. <em>If the initial size estimate is less
+     * than the currently requested range, it will get discarded until a reset
+     * occurs.</em>. The initial size estimate shouldn't be less than two pages
+     * or it might cause extra requests after a reset.
      * <p>
      * Calling this method will clear any previously set size estimate callback
      * {@link #withUndefinedSize(SizeEstimateCallback)} or defined size callback
      * {@link #withDefinedSize(CallbackDataProvider.CountCallback)}.
      *
      * @param initialSizeEstimate
-     *            initial size estimate for the dataset
+     *            initial size estimate for the data source
      */
     void withUndefinedSize(int initialSizeEstimate);
 
     /**
      * Sets the component to use undefined size with the given callback for
-     * estimating the size of the dataset. Calling this method will clear any
-     * previously set size callback
+     * estimating the size of the data source. Calling this method will clear
+     * any previously set size callback
      * {@link #withDefinedSize(CallbackDataProvider.CountCallback)} or initial
      * size estimate {@link #withUndefinedSize(int)}.
      * <p>

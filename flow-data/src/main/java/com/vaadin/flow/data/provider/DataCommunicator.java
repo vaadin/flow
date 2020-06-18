@@ -470,14 +470,12 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the initial size estimate to use and switches component to undefined
      * size. Any previously set size related callbacks are cleared. The new
-     * estimate is only applied if it is greater than the currently
-     * estimated/known size. Otherwise it is not applied until there has been a
-     * reset.
+     * estimate is only applied if it is greater than the number of requested
+     * items. Otherwise it is not applied until there has been a reset.
      * <p>
-     * <em>NOTE:</em> it makes no sense to use an initial size estimate that is
-     * less than two times the set page size (set with {@link #setPageSize(int)}
-     * since this would trigger unnecessary requests immediately. On these
-     * cases, given estimate is discarded.
+     * <em>NOTE:</em> setting an initial size estimate that is less than two
+     * pages (set with {@link #setPageSize(int)}) can cause extra requests
+     * initially or after a reset.
      * 
      * @param initialSizeEstimate
      *            the initial size estimate to be used
@@ -490,7 +488,8 @@ public class DataCommunicator<T> implements Serializable {
         clearSizeCallbacksAndState();
         this.initialSizeEstimate = initialSizeEstimate;
         definedSize = false;
-        if (!skipSizeCheckUntilReset && requestedRange.getEnd() < initialSizeEstimate) {
+        if (!skipSizeCheckUntilReset
+                && requestedRange.getEnd() < initialSizeEstimate) {
             sizeReset = true;
             requestFlush();
         }

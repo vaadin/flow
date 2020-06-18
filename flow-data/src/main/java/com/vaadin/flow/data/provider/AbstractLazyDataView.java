@@ -55,18 +55,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * @return the data communicator
      */
     protected DataCommunicator<T> getDataCommunicator() {
-        // verify that the data provider hasn't been changed to an incompatible
-        // type
-        if (dataCommunicator.getDataProvider().isInMemory()) {
-            throw new IllegalStateException(String.format(
-                    "LazyDataView cannot be used for component %s with an "
-                            + "in-memory data provider (type was %s)."
-                            + "Use a lazy data provider instead or"
-                            + " for accessing data view for in-memory data use"
-                            + " getListDataView().",
-                    component.getClass().getSimpleName(), dataCommunicator
-                            .getDataProvider().getClass().getSimpleName()));
-        }
+        verifyDataProviderType(dataCommunicator.getDataProvider().getClass());
         return dataCommunicator;
     }
 

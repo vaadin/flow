@@ -38,17 +38,17 @@ public class HasLazyDataViewTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setDataSourceCountCallback_switchesToDefinedSize_throwsOnSizeQuery() {
         TestComponent testComponent = new TestComponent();
-        Assert.assertTrue(testComponent.getLazyDataView().isDefinedSize());
-
         // uses a NOOP count callback that will throw when called
         testComponent.setDataSource(query -> Stream.of("foo","bar","baz"));
 
         Assert.assertFalse(testComponent.getLazyDataView().isDefinedSize());
 
         testComponent.getLazyDataView().withDefinedSize();
+
+        Assert.assertTrue(testComponent.getLazyDataView().isDefinedSize());
 
         expectedException.expect(IllegalStateException.class);
         // to make things fail, just need to call size() which will trigger a size query

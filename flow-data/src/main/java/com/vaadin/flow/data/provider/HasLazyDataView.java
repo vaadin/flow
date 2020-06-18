@@ -30,19 +30,6 @@ import java.io.Serializable;
 public interface HasLazyDataView<T, V extends LazyDataView<T>>
         extends Serializable {
 
-    @SuppressWarnings("rawtypes")
-    CallbackDataProvider.CountCallback INVALID_COUNT_CALLBACK = query -> {
-        throw new IllegalStateException(
-                "Trying to use defined size with a lazy loading component"
-                        + " without either providing a count callback for the"
-                        + "component to fetch the size of the data or a data"
-                        + "provider that implements the size query. Provide the "
-                        + "callback for fetching size with%n"
-                        + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
-                        + "%nor switch to undefined size with%n"
-                        + "component.getLazyDataView().withUndefinedSize();");
-    };
-
     /**
      * Supply data lazily with a callback. This sets the component to undefined
      * size and removes any existing size estimate or callback to provide size.
@@ -56,11 +43,19 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
      *            a query
      * @return LazyDataView instance for further configuration
      */
-    @SuppressWarnings("unchecked")
     default V setDataSource(
             CallbackDataProvider.FetchCallback<T, Void> fetchCallback) {
-        setDataSource(DataProvider.fromCallbacks(fetchCallback,
-                INVALID_COUNT_CALLBACK));
+        setDataSource(DataProvider.fromCallbacks(fetchCallback, query -> {
+            throw new IllegalStateException(
+                    "Trying to use defined size with a lazy loading component"
+                            + " without either providing a count callback for the"
+                            + "component to fetch the size of the data or a data"
+                            + "provider that implements the size query. Provide the "
+                            + "callback for fetching size with%n"
+                            + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
+                            + "%nor switch to undefined size with%n"
+                            + "component.getLazyDataView().withUndefinedSize();");
+        }));
         V lazyDataView = getLazyDataView();
         lazyDataView.withUndefinedSize();
         return lazyDataView;

@@ -121,7 +121,7 @@ public class AbstractLazyDataViewTest {
 
     }
 
-    // This is weird-ish behavior but kept for now
+    // TODO https://github.com/vaadin/flow/issues/8583
     @Test(expected = IllegalStateException.class)
     public void dataViewCreated_beforeSettingDataProvider_throws() {
         // data communicator has by default an empty list data provider ->
