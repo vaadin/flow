@@ -359,8 +359,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return;
         }
 
-        final int targetItemIndex = getItemIndex(target, dataProvider::getId);
-        if (targetItemIndex == -1) {
+        if (!contains(target, dataProvider)) {
             throw new IllegalArgumentException(targetItemNotFoundErrorMessage);
         }
 
