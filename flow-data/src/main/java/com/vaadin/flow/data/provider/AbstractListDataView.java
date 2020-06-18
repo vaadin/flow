@@ -359,8 +359,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             return;
         }
 
-        final int targetItemIndex = getItemIndex(target, dataProvider::getId);
-        if (targetItemIndex == -1) {
+        if (!contains(target, dataProvider)) {
             throw new IllegalArgumentException(targetItemNotFoundErrorMessage);
         }
 
@@ -371,7 +370,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
          * the proper position towards to target item.
          */
         removeItemIfPresent(item, dataProvider);
-        itemList.add(insertItemsIndexProvider.apply(targetItemIndex), item);
+        itemList.add(insertItemsIndexProvider
+                .apply(getItemIndex(target, dataProvider::getId)), item);
         dataProvider.refreshAll();
     }
 
