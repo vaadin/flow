@@ -29,8 +29,12 @@ import java.util.stream.Collector;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonException;
 import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
@@ -43,6 +47,8 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public final class JsonUtils {
+
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Collects a stream of JSON values to a JSON array.
@@ -274,5 +280,24 @@ public final class JsonUtils {
         map.forEach((key, value) -> object.put(key, itemToJson.apply(value)));
 
         return object;
+    }
+
+    /**
+     * Converts the given bean to JSON.
+     *
+     * @param bean
+     *                 the bean to convert, not {@code null}
+     * @return a JSON representation of the bean
+     */
+    public static JsonObject beanToJson(Object bean) {
+        if (bean == null) {
+            throw new JsonException("Cannot convert null to a JSON object");
+        }
+        try {
+            return Json.parse(objectMapper.writeValueAsString(bean));
+        } catch (JsonProcessingException e) {
+            throw new JsonException(
+                    "Error converting bean to JSON: " + e.getMessage());
+        }
     }
 }
