@@ -29,6 +29,7 @@ import java.io.Serializable;
  */
 public interface HasLazyDataView<T, V extends LazyDataView<T>>
         extends Serializable {
+
     /**
      * Supply data lazily with a callback. This sets the component to undefined
      * size and removes any existing size estimate or callback to provide size.
@@ -44,15 +45,25 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
      */
     default V setDataSource(
             CallbackDataProvider.FetchCallback<T, Void> fetchCallback) {
-        getDataCommunicator().setDataProvider(
-                DataProvider.fromCallbacks(fetchCallback, query -> -1), null);
-        getDataCommunicator().setDefinedSize(false);
-        return getLazyDataView();
+        setDataSource(DataProvider.fromCallbacks(fetchCallback, query -> {
+            throw new IllegalStateException(
+                    "Trying to use defined size with a lazy loading component"
+                            + " without either providing a count callback for the"
+                            + "component to fetch the size of the data or a data"
+                            + "provider that implements the size query. Provide the "
+                            + "callback for fetching size with%n"
+                            + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
+                            + "%nor switch to undefined size with%n"
+                            + "component.getLazyDataView().withUndefinedSize();");
+        }));
+        V lazyDataView = getLazyDataView();
+        lazyDataView.withUndefinedSize();
+        return lazyDataView;
     }
 
     /**
-     * Supply data lazily with a callbacks. This sets the component to defined size
-     * - the given count callback is queried for the data size.
+     * Supply data lazily with a callbacks. This sets the component to defined
+     * size - the given count callback is queried for the data size.
      *
      * @param fetchCallback
      *            function that returns a stream of items from the back end for
@@ -70,18 +81,15 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
     }
 
     /**
-     * Supply data with a {@link BackEndDataProvider} that lazy loads items from a
-     * back end. This sets the component to use defined size, provided by the
+     * Supply data with a {@link BackEndDataProvider} that lazy loads items from
+     * a backend. This sets the component to use defined size, provided by the
      * data provider {@link BackEndDataProvider#size(Query)} method.
      *
      * @param dataProvider
      *            BackendDataProvider instance
      * @return LazyDataView instance for further configuration
      */
-    default V setDataSource(BackEndDataProvider<T, Void> dataProvider) {
-        getDataCommunicator().setDataProvider(dataProvider, null);
-        return getLazyDataView();
-    }
+    V setDataSource(BackEndDataProvider<T, Void> dataProvider);
 
     /**
      * Get the LazyDataView for the component. Throws if the data is not lazy
@@ -92,12 +100,4 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
      *             when lazy data view is not applicable
      */
     V getLazyDataView();
-
-    /**
-     * Gets the data communicator bound to the component. This method is meant
-     * for the data views and should not be called directly.
-     * 
-     * @return the data communicator for the data view
-     */
-    DataCommunicator<T> getDataCommunicator();
 }
