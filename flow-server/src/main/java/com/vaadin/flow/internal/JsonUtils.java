@@ -19,6 +19,7 @@ package com.vaadin.flow.internal;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -47,6 +48,8 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public final class JsonUtils {
+
+    private static final String CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT = "Cannot convert null to JSON";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -290,12 +293,44 @@ public final class JsonUtils {
      * @return a JSON representation of the bean
      */
     public static JsonObject beanToJson(Object bean) {
-        Objects.requireNonNull(bean, "Cannot convert null to a JSON object");
+        Objects.requireNonNull(bean, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
 
         try {
             return Json.parse(objectMapper.writeValueAsString(bean));
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error converting bean to JSON", e);
+        }
+    }
+
+    /**
+     * Converts the given list to JSON.
+     *
+     * @param list
+     *                 the list to convert, not {@code null}
+     * @return a JSON representation of the bean
+     */
+    public static JsonArray listToJson(List<?> list) {
+        Objects.requireNonNull(list, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
+        try {
+            return Json.instance().parse(objectMapper.writeValueAsString(list));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting list to JSON", e);
+        }
+    }
+
+    /**
+     * Converts the given map to JSON.
+     *
+     * @param map
+     *                the map to convert, not {@code null}
+     * @return a JSON representation of the bean
+     */
+    public static JsonObject mapToJson(Map<String, ?> map) {
+        Objects.requireNonNull(map, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
+        try {
+            return Json.instance().parse(objectMapper.writeValueAsString(map));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting map to JSON", e);
         }
     }
 }
