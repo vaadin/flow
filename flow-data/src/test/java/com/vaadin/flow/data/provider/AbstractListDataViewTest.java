@@ -305,6 +305,12 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[]{"first", "middle", "newItem", "last", "second"},
                 dataView.getItems().toArray(String[]::new));
+
+        dataView.addItemAfter("middle", "last");
+
+        Assert.assertArrayEquals(
+                new String[]{"first", "newItem", "last", "middle", "second"},
+                dataView.getItems().toArray(String[]::new));
     }
 
     @Test
