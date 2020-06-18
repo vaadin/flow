@@ -518,7 +518,22 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return getSimpleNameFromQualifiedName(dataType);
     }
 
-    private String getModeleConstructor(CodegenProperty property,
+    private String getModelType(CodegenProperty property,
+            List<Map<String, String>> imports) {
+        String simpleName = getSimpleNameFromImports(property.datatype,
+                imports);
+
+        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
+        if (matcher.find()
+                && !matcher.group(1).matches("any|boolean|number|string")) {
+            String itemModelType = fixNameForModel(matcher.group(1)) + MODEL;
+            return ": Array" + MODEL + "<ModelType<" + itemModelType + ">, "
+                    + itemModelType + ">";
+        }
+        return "";
+    }
+
+    private String getModelConstructor(CodegenProperty property,
             List<Map<String, String>> imports) {
         String name = property.name;
         String dataType = property.datatype;
@@ -971,6 +986,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("multiplelines", getMultipleLinesHelper());
         handlebars.registerHelper("getClassNameFromImports",
                 getClassNameFromImportsHelper());
+        handlebars.registerHelper("getModelType", getModelTypeHelper());
         handlebars.registerHelper("getModelConstructor",
                 getModelConstructorHelper());
     }
@@ -993,8 +1009,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 (List<Map<String, String>>) options.param(0));
     }
 
+    private Helper<CodegenProperty> getModelTypeHelper() {
+        return (prop, options) -> getModelType(prop,
+                (List<Map<String, String>>) options.param(0));
+    }
+
     private Helper<CodegenProperty> getModelConstructorHelper() {
-        return (prop, options) -> getModeleConstructor(prop,
+        return (prop, options) -> getModelConstructor(prop,
                 (List<Map<String, String>>) options.param(0));
     }
 
