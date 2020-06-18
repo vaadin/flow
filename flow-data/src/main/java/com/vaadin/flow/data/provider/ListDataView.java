@@ -16,7 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
