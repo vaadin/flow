@@ -65,7 +65,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     Optional<T> getPreviousItem(T item);
 
     /**
-     * Adds an item to the data list.
+     * Adds an item to the data list if it is not already present.
      *
      * @param item
      *         item to add
@@ -80,6 +80,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Adds an item after the given target item.
+     * <p>
+     * If the item is already present in the data provider, then it is moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -99,6 +101,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Adds an item before the given target item.
+     * <p>
+     * If the item is already present in the data provider, then it is moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -161,6 +165,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Adds multiple items to the data list.
+     * <p>
+     * Any items that already present in the data provider are moved
+     * to the end.
      *
      * @param items
      *         collection of item to add
@@ -176,6 +183,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds multiple items after the given target item.
      * The full collection is added in order after the target.
+     * <p>
+     * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
@@ -196,6 +205,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds multiple items before the given target item.
      * The full collection is added in order before the target.
+     * <p>
+     * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *

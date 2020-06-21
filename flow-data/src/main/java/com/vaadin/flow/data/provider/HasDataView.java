@@ -56,4 +56,16 @@ public interface HasDataView<T, V extends DataView<T>> extends Serializable {
     default V setDataSource(InMemoryDataProvider<T> dataProvider) {
         return setDataSource((DataProvider<T, ?>) dataProvider);
     }
+
+    /**
+     * Get the DataView for the component.
+     * <p>
+     * The returned DataView only contains a minimal common API.
+     * Use of {@link HasListDataView#getListDataView} or {@link
+     * HasLazyDataView#getLazyDataView} should be used for more
+     * targeted helper features
+     *
+     * @return DataView instance
+     */
+    V getDataView();
 }
