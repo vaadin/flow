@@ -10,21 +10,27 @@ import { Required } from "./Validators";
 
 export interface ValueError<T> {
   property: string | AbstractModel<any>,
+  message: string,
   value: T,
   validator: Validator<T>
+}
+
+export interface ValidationResult {
+  property: string | AbstractModel<any>,
+  message?: string
 }
 
 export class ValidationError extends Error {
   constructor(public errors:ReadonlyArray<ValueError<any>>) {
     super([
       "There are validation errors in the form.",
-      ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.validator.message? ': ' + e.validator.message : ''}`)
+      ...errors.map(e => `${e.property} - ${e.validator.constructor.name}${e.message? ': ' + e.message : ''}`)
     ].join('\n - '));
     this.name = this.constructor.name;
   }
 }
 
-export type ValidationCallback<T> = (value: T) => boolean | ValueError<T> | void | Promise<boolean | ValueError<T> | void>;
+export type ValidationCallback<T> = (value: T) => boolean | ValidationResult | Array<ValidationResult> | Promise<boolean | ValidationResult | Array<ValidationResult>>;
 
 export interface Validator<T> {
   validate: ValidationCallback<T>,
@@ -38,19 +44,22 @@ export class ServerValidator implements Validator<any> {
   validate = () => false;
 }
 
-export async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>) {
+export async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>): Promise<ReadonlyArray<ValueError<T>>> {
   const value = getValue(model);
   // if model is not required and value empty, do not run any validator
   if (!getBinderNode(model).required && !new Required().validate(value)) {
-    return;
+    return [];
   }
   return (async () => validator.validate(value))()
     .then(result => {
-      if (typeof result === "boolean") {
-        return result ? undefined
-          : { property: getName(model), value, validator }
+      if (result === false) {
+        return [{ property: getName(model), value, validator, message: validator.message }];
+      } else if (result === true || Array.isArray(result) && result.length === 0) {
+        return [];
+      } else if (Array.isArray(result)) {
+        return result.map(result => ({ message: validator.message, ...result, value, validator }));
       } else {
-        return result;
+        return [{ message: validator.message, ...result, value, validator }];
       }
     });
 }

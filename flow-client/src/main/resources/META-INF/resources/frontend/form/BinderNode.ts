@@ -113,7 +113,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     const errors = (await Promise.all([
       ...this.requestValidationOfDescendants(),
       ...this.requestValidationWithAncestors()
-    ])).filter(valueError => valueError) as ReadonlyArray<ValueError<any>>;
+    ])).flat().filter(valueError => valueError) as ReadonlyArray<ValueError<any>>;
     this.setErrorsWithDescendants(errors.length ? errors : undefined);
     this.update();
     return this.errors;
@@ -237,21 +237,21 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
   }
 
-  private runOwnValidators(): ReadonlyArray<Promise<ValueError<any> | void>> {
+  private runOwnValidators(): ReadonlyArray<Promise<ReadonlyArray<ValueError<any>>>> {
     return this[validatorsSymbol].map(
       validator => this.binder.requestValidation(this.model, validator)
     );
   }
 
-  private requestValidationOfDescendants(): ReadonlyArray<Promise<ValueError<any> | void>> {
+  private requestValidationOfDescendants(): ReadonlyArray<Promise<ReadonlyArray<ValueError<any>>>> {
     return [...this.getChildBinderNodes()].reduce((promises, childBinderNode) => [
         ...promises,
         ...childBinderNode.runOwnValidators(),
         ...childBinderNode.requestValidationOfDescendants()
-      ], [] as ReadonlyArray<Promise<ValueError<any> | void>>);
+      ], [] as ReadonlyArray<Promise<ReadonlyArray<ValueError<any>>>>);
   }
 
-  private requestValidationWithAncestors(): ReadonlyArray<Promise<ValueError<any> | void>> {
+  private requestValidationWithAncestors(): ReadonlyArray<Promise<ReadonlyArray<ValueError<any>>>> {
     return [
       ...this.runOwnValidators(),
       ...(this.parent ? this.parent.requestValidationWithAncestors() : [])
