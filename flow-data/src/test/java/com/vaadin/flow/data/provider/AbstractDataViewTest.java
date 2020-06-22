@@ -19,9 +19,11 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,18 +35,22 @@ import com.vaadin.flow.function.SerializableSupplier;
 
 public class AbstractDataViewTest {
 
-    private Collection<String> items;
+    private Collection<Item> items;
 
-    private ListDataProvider<String> dataProvider;
+    private ListDataProvider<Item> dataProvider;
 
-    private AbstractDataView<String> dataView;
+    private AbstractDataView<Item> dataView;
 
     private Component component;
 
     @Before
     public void init() {
 
-        items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
+        items = new ArrayList<>(Arrays.asList(
+                new Item(1L, "first", "description1"),
+                new Item(2L, "middle", "description2"),
+                new Item(3L, "last", "description3")
+        ));
         dataProvider = DataProvider.ofCollection(items);
         component = new TestComponent();
         dataView = new DataViewImpl(() -> dataProvider, component);
@@ -52,7 +58,7 @@ public class AbstractDataViewTest {
 
     @Test
     public void getAllItems_noFiltersSet_allItemsObtained() {
-        Stream<String> allItems = dataView.getItems();
+        Stream<Item> allItems = dataView.getItems();
         Assert.assertArrayEquals("Unexpected data set", items.toArray(),
                 allItems.toArray());
     }
@@ -75,14 +81,80 @@ public class AbstractDataViewTest {
         Assert.assertEquals(10, fired.get());
     }
 
+    @Test
+    public void setIdentifierProvider_defaultIdentity_equalsIsUsed() {
+        Assert.assertTrue(dataView.contains(
+                new Item(1L, "first")));
+        Assert.assertFalse(dataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertFalse(dataView.contains(
+                new Item(4L, "first")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderIdentity_getIdIsUsed() {
+        dataProvider = new CustomIdentityItemDataProvider(items);
+
+        Assert.assertTrue(dataView.contains(
+                new Item(1L, "first")));
+        Assert.assertTrue(dataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertFalse(dataView.contains(
+                new Item(4L, "first")));
+    }
+
+    @Test
+    public void setIdentifierProvider_customIdentifierProvider_customIdentifierProviderIsUsed() {
+        dataView.setIdentifierProvider(Item::getValue);
+
+        Assert.assertTrue(dataView.contains(
+                new Item(1L, "first")));
+        Assert.assertFalse(dataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertTrue(dataView.contains(
+                new Item(4L, "first")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderHasChanged_newDataProviderIsUsed() {
+        Assert.assertFalse(dataView.contains(
+                new Item(1L, "non present")));
+
+        dataProvider = new CustomIdentityItemDataProvider(items);
+
+        Assert.assertTrue(dataView.contains(
+                new Item(1L, "non present")));
+
+        dataProvider = DataProvider.ofCollection(items);
+
+        Assert.assertFalse(dataView.contains(
+                new Item(1L, "non present")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderHasChanged_identifierProviderRetained() {
+        Assert.assertFalse(dataView.contains(
+                new Item(4L, "non present", "description1")));
+
+        dataView.setIdentifierProvider(Item::getDescription);
+
+        Assert.assertTrue(dataView.contains(
+                new Item(4L, "non present", "description1")));
+
+        dataProvider = new CustomIdentityItemDataProvider(items);
+
+        Assert.assertTrue(dataView.contains(
+                new Item(4L, "non present", "description1")));
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
     }
 
-    private static class DataViewImpl extends AbstractDataView<String> {
+    private static class DataViewImpl extends AbstractDataView<Item> {
 
         public DataViewImpl(
-                SerializableSupplier<DataProvider<String, ?>> dataProviderSupplier,
+                SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier,
                 Component component) {
             super(dataProviderSupplier, component);
         }
@@ -93,8 +165,25 @@ public class AbstractDataViewTest {
         }
 
         @Override
-        public boolean contains(String item) {
-            return getItems().anyMatch(item::equals);
+        public boolean contains(Item item) {
+            IdentifierProvider<Item> identifierProvider =
+                    getIdentifierProvider();
+            return getItems().anyMatch(i -> Objects.equals(
+                    identifierProvider.apply(item),
+                    identifierProvider.apply(i)));
+        }
+    }
+
+    static class CustomIdentityItemDataProvider
+            extends ListDataProvider<Item> {
+
+        public CustomIdentityItemDataProvider(Collection<Item> items) {
+            super(items);
+        }
+
+        @Override
+        public Object getId(Item item) {
+            return item.getId();
         }
     }
 }

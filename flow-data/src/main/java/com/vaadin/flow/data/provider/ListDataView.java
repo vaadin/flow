@@ -16,7 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
@@ -124,8 +123,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Finds an item equal to {@code item} in the non-filtered data set
      * and replaces it with {@code item}.
      * <p>
-     * Equality between the items is determined by the identifiers
-     * provided by {@link DataProvider#getId(Object)}.
+     * By default, {@code equals} method implementation of the item is used
+     * for identity check. If a custom data provider is used,
+     * then the {@link DataProvider#getId(Object)} method is used instead.
+     * Item's custom identity can be set up with a
+     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
      *
      * @param item
      *         item containing updated state
@@ -136,32 +138,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @throws IllegalArgumentException
      *         if collection is not a list
      *
-     * @see #updateItem(Object, SerializableFunction)
+     * @see #setIdentifierProvider(IdentifierProvider)
      */
     V updateItem(T item);
-
-    /**
-     * Finds an item equal to {@code item} in the non-filtered data set
-     * and replaces it with {@code item}.
-     * <p>
-     * Equality between the items is determined by the identifiers
-     * provided by {@code identityProvider}.
-     *
-     * @param item
-     *         item containing updated state
-     * @param identityProvider
-     *         callback that transforms {@code item} object into identifier
-     *         object which is used to determine the equality between items.
-     * @return this ListDataView instance
-     *
-     * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
-     * @throws IllegalArgumentException
-     *         if collection is not a list
-     *
-     * @see #updateItem(Object)
-     */
-    V updateItem(T item, SerializableFunction<T, ?> identityProvider);
 
     /**
      * Adds multiple items to the data list.

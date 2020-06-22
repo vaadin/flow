@@ -69,7 +69,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public Optional<T> getNextItem(T item) {
-        int index = getItemIndex(item, getDataProvider()::getId);
+        int index = getItemIndex(item);
         if (index < 0) {
             return Optional.empty();
         }
@@ -78,7 +78,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public Optional<T> getPreviousItem(T item) {
-        int index = getItemIndex(item, getDataProvider()::getId);
+        int index = getItemIndex(item);
         if (index <= 0) {
             return Optional.empty();
         }
@@ -140,7 +140,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public boolean contains(T item) {
-        return contains(item, getDataProvider());
+        return getItems().anyMatch(i -> equals(item, i));
     }
 
     @Override
@@ -158,7 +158,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> addItem(T item) {
         final ListDataProvider<T> dataProvider = getDataProvider();
-        if (!contains(item, dataProvider)) {
+        if (!contains(item)) {
             dataProvider.getItems().add(item);
             dataProvider.refreshAll();
         }
@@ -167,13 +167,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public AbstractListDataView<T> updateItem(T item) {
-        ListDataProvider<T> dataProvider = getDataProvider();
-        return updateItem(item, i -> getIdentifier(i, dataProvider::getId));
-    }
-
-    @Override
-    public AbstractListDataView<T> updateItem(T item,
-                                SerializableFunction<T, ?> identityProvider) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
         final ListDataProvider<T> dataProvider = getDataProvider();
         Collection<T> items = dataProvider.getItems();
@@ -184,15 +177,13 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                             items.getClass().getSimpleName()));
         }
 
-        final Object itemIdentifier = getIdentifier(item, identityProvider);
         final List<T> itemList = (List<T>) items;
 
-        int itemIndex = getItemIndex(item, identityProvider);
+        int itemIndex = getItemIndex(item);
 
         if (itemIndex != -1) {
             T itemToUpdate = itemList.get(itemIndex);
-            if (itemIdentifier.equals(
-                    getIdentifier(itemToUpdate, identityProvider))) {
+            if (equals(item, itemToUpdate)) {
                 itemList.set(itemIndex, item);
                 dataProvider.refreshItem(item);
             }
@@ -207,8 +198,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
             final ListDataProvider<T> dataProvider = getDataProvider();
             Collection<T> backendItems = dataProvider.getItems();
             items.stream()
-                    .filter(item ->
-                            contains(item, dataProvider))
+                    .filter(this::contains)
                     .forEach(item ->
                             removeItemIfPresent(item, dataProvider));
             backendItems.addAll(items);
@@ -298,49 +288,33 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(T item,
-                             SerializableFunction<T, ?> identityProvider) {
+    private int getItemIndex(T item) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        final Object itemIdentifier = getIdentifier(item,
-                identityProvider);
         AtomicInteger index = new AtomicInteger(-1);
         if (!getItems().peek(t -> index.incrementAndGet())
-                .filter(t -> itemIdentifier.equals(
-                        getIdentifier(t, identityProvider)))
+                .filter(t -> equals(item, t))
                 .findFirst().isPresent()) {
             return -1;
         }
         return index.get();
     }
 
-    private Object getIdentifier(T item,
-                                 SerializableFunction<T, ?> identityProvider) {
-        Objects.requireNonNull(identityProvider,
-                "Identity provider cannot be null");
-        final Object itemIdentifier = identityProvider.apply(item);
+    private Object getIdentifier(T item) {
+        final Object itemIdentifier = getIdentifierProvider().apply(item);
         Objects.requireNonNull(itemIdentifier,
                 "Identity provider should not return null");
         return itemIdentifier;
     }
 
-    private boolean contains(T item, ListDataProvider<T> dataProvider) {
-        final Object itemIdentifier = getIdentifier(item, dataProvider::getId);
-        return getItems().anyMatch(i -> itemIdentifier.equals(
-                getIdentifier(i, dataProvider::getId)));
-    }
-
     private void removeItemIfPresent(T item,
                                      ListDataProvider<T> dataProvider) {
-        final Object itemIdentifier = getIdentifier(item, dataProvider::getId);
-        dataProvider.getItems().removeIf(i -> itemIdentifier.equals(
-                getIdentifier(i, dataProvider::getId)));
+        dataProvider.getItems().removeIf(i -> equals(item, i));
     }
 
-    private boolean equals(T item, T compareTo,
-                           ListDataProvider<T> dataProvider) {
-        final Object itemIdentifier = getIdentifier(item, dataProvider::getId);
-        return itemIdentifier.equals(
-                getIdentifier(compareTo, dataProvider::getId));
+    private boolean equals(T item, T compareTo) {
+        final Object itemIdentifier = getIdentifier(item);
+        return Objects.equals(itemIdentifier,
+                getIdentifier(compareTo));
     }
 
     private void addItemOnTarget(
@@ -355,11 +329,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                             backendItems.getClass().getSimpleName()));
         }
 
-        if (equals(item, target, dataProvider)) {
+        if (equals(item, target)) {
             return;
         }
 
-        if (!contains(target, dataProvider)) {
+        if (!contains(target)) {
             throw new IllegalArgumentException(targetItemNotFoundErrorMessage);
         }
 
@@ -371,7 +345,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
          */
         removeItemIfPresent(item, dataProvider);
         itemList.add(insertItemsIndexProvider
-                .apply(getItemIndex(target, dataProvider::getId)), item);
+                .apply(getItemIndex(target)), item);
         dataProvider.refreshAll();
     }
 
@@ -391,7 +365,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                             backendItems.getClass().getSimpleName()));
         }
 
-        if (!contains(target, dataProvider)) {
+        if (!contains(target)) {
             throw new IllegalArgumentException(targetItemNotFoundErrorMessage);
         }
 
@@ -415,13 +389,13 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
              * present, so as to be placed to proper position with a
              * proper order later on.
              */
-            if (equals(item, target, dataProvider)) {
+            if (equals(target, item)) {
                 containsTargetItem.set(true);
             } else {
                 removeItemIfPresent(item, dataProvider);
             }
         });
-        int targetItemIndex = getItemIndex(target, dataProvider::getId);
+        int targetItemIndex = getItemIndex(target);
 
         /*
          * If the target item is in a collection then remove it from

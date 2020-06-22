@@ -49,6 +49,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     public AbstractDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
             Component component) {
+        Objects.requireNonNull(dataProviderSupplier,
+                "DataProvider supplier cannot be null");
         this.dataProviderSupplier = dataProviderSupplier;
         this.component = component;
         verifyDataProviderType(dataProviderSupplier.get().getClass());
@@ -98,5 +100,31 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public int getSize() {
         return dataProviderSupplier.get().size(new Query<>());
+    }
+
+    @Override
+    public void setIdentifierProvider(IdentifierProvider<T> identifierProvider) {
+        Objects.requireNonNull(identifierProvider,
+                "Item identity provider cannot be null");
+        ComponentUtil.setData(component, IdentifierProvider.class,
+                identifierProvider);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected IdentifierProvider<T> getIdentifierProvider() {
+        IdentifierProvider<T> identifierProviderObject =
+                (IdentifierProvider<T>) ComponentUtil
+                        .getData(component, IdentifierProvider.class);
+
+        if (identifierProviderObject == null) {
+            DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
+            if (dataProvider != null) {
+                return dataProvider::getId;
+            } else {
+                return IdentifierProvider.identity();
+            }
+        } else {
+            return identifierProviderObject;
+        }
     }
 }
