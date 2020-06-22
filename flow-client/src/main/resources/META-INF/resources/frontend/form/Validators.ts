@@ -3,24 +3,40 @@
 import * as validator from 'validator';
 import { Validator } from './Validation';
 
-interface FormOptions { message?: string };
-type ValueNumberOptions = FormOptions & { value: number | string };
-type DigitOptions = FormOptions & { integer: number, fraction: number };
-type SizeOptions = FormOptions & { min?: number, max?: number };
-type PatternOptions = FormOptions & { regexp: RegExp | string };
-type DecimalOptions = ValueNumberOptions & { inclusive: boolean | undefined };
+interface ValidatorAttributes {
+  message?: string;
+}
+interface ValueNumberAttributes extends ValidatorAttributes {
+  value: number | string;
+}
+interface DigitAttributes extends ValidatorAttributes {
+  integer: number;
+  fraction: number;
+}
+interface SizeAttributes extends ValidatorAttributes {
+  min?: number;
+  max?: number;
+}
+interface PatternAttributes extends ValidatorAttributes {
+  regexp: RegExp | string;
+}
+interface DecimalAttributes extends ValueNumberAttributes {
+  inclusive?: boolean;
+}
 
 abstract class AbstractValidator<T> implements Validator<T> {
   message = 'invalid';
-  constructor(options?: FormOptions) {
-    if (options && options.message) {
-      this.message = options.message;
+  impliesRequired = false;
+  constructor(attrs?: ValidatorAttributes) {
+    if (attrs && attrs.message) {
+      this.message = attrs.message;
     }
   }
   abstract validate(value: T): boolean | Promise<boolean>;
 }
 
 export class Required<T> extends AbstractValidator<T> {
+  impliesRequired = true;
   validate(value: T){
     if (typeof value === 'string' || Array.isArray(value)) {
       return value.length > 0;
@@ -33,9 +49,9 @@ export class Required<T> extends AbstractValidator<T> {
 
 abstract class ValueNumberValidator<T> extends AbstractValidator<T> {
   value: number;
-  constructor(opts: ValueNumberOptions | number | string) {
-    super(typeof opts === 'number' || typeof opts === 'string' ? {} : opts);
-    const val = typeof opts === 'object' ? opts.value : opts;
+  constructor(attrs: ValueNumberAttributes | number | string) {
+    super(typeof attrs === 'number' || typeof attrs === 'string' ? {} : attrs);
+    const val = typeof attrs === 'object' ? attrs.value : attrs;
     this.value = typeof val === 'string' ? parseFloat(val) : val;
   }
 }
@@ -67,16 +83,16 @@ export class AssertFalse extends AbstractValidator<any> {
   validate = (value: any) => !new AssertTrue().validate(value);
 }
 export class Min extends ValueNumberValidator<any> {
-  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { min: this.value })
+  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { min: this.value });
 }
 export class Max extends ValueNumberValidator<any> {
-  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { max: this.value })
+  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { max: this.value });
 }
 export class DecimalMin extends ValueNumberValidator<any> {
   inclusive: boolean;
-  constructor(opts: DecimalOptions | string | number) {
-    super(opts);
-    this.inclusive = typeof opts !== 'object' || opts.inclusive !== false;
+  constructor(attrs: DecimalAttributes | string | number) {
+    super(attrs);
+    this.inclusive = typeof attrs !== 'object' || attrs.inclusive !== false;
   }
   validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { [this.inclusive ? 'min' : 'gt']: this.value });
 }
@@ -97,28 +113,35 @@ export class PositiveOrZero extends AbstractValidator<any> {
 }
 
 export class Size extends AbstractValidator<string> {
-  value: SizeOptions;
-  constructor(opts: SizeOptions) {
-    super(opts);
-    this.value = { min: opts.min || 0, max: opts.max || 0x7fffffff };
+  min: number;
+  max: number;
+  constructor(attrs: SizeAttributes) {
+    super(attrs);
+    this.min = attrs.min || 0;
+    this.max = attrs.max || Number.MAX_SAFE_INTEGER;
+    if (this.min > 0) {
+      this.impliesRequired = true;
+    }
   }
   validate = (value: string) => {
-    if (this.value.min && this.value.min > 0 && !new Required().validate(value)) {
+    if (this.min && this.min > 0 && !new Required().validate(value)) {
       return false;
     }
-    return validator.isLength(value, this.value);
+    return validator.isLength(value, this.min, this.max);
   }
 }
 
 export class Digits extends AbstractValidator<string> {
-  value: DigitOptions;
-  constructor(opts: FormOptions & DigitOptions) {
-    super(opts);
-    this.value = { integer: opts.integer, fraction: opts.fraction };
+  integer: number;
+  fraction: number;
+  constructor(attrs: DigitAttributes) {
+    super(attrs);
+    this.integer = attrs.integer;
+    this.fraction = attrs.fraction;
   }
   validate = (value: any) =>
-    String(validator.toFloat(`${value}`)).replace(/(.*)\.\d+/, "$1").length === this.value.integer
-    && validator.isDecimal(`${value}`, { decimal_digits: `0,${this.value.fraction}` })
+    String(validator.toFloat(`${value}`)).replace(/(.*)\.\d+/, "$1").length === this.integer
+    && validator.isDecimal(`${value}`, { decimal_digits: `0,${this.fraction}` })
 }
 
 export class Past extends AbstractValidator<any> {
@@ -135,12 +158,12 @@ export class FutureOrPresent extends AbstractValidator<any> {
 }
 
 export class Pattern extends AbstractValidator<string> {
-  value: RegExp;
-  constructor(opts: PatternOptions | string | RegExp) {
-    super(typeof opts === 'string' || opts instanceof RegExp ? {} : opts);
-    this.value = typeof opts === 'string' ? new RegExp(opts)
-      : opts instanceof RegExp ? opts
-        : typeof opts.regexp === 'string' ? new RegExp(opts.regexp) : opts.regexp;
+  regexp: RegExp;
+  constructor(attrs: PatternAttributes | string | RegExp) {
+    super(typeof attrs === 'string' || attrs instanceof RegExp ? {} : attrs);
+    this.regexp = typeof attrs === 'string' ? new RegExp(attrs)
+      : attrs instanceof RegExp ? attrs
+        : typeof attrs.regexp === 'string' ? new RegExp(attrs.regexp) : attrs.regexp;
   }
-  validate = (value: any) => validator.matches(value, this.value);
+  validate = (value: any) => validator.matches(value, this.regexp);
 }
