@@ -103,28 +103,28 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public void setIdentityProvider(IdentityProvider<T> identityProvider) {
-        Objects.requireNonNull(identityProvider,
+    public void setIdentifierProvider(IdentifierProvider<T> identifierProvider) {
+        Objects.requireNonNull(identifierProvider,
                 "Item identity provider cannot be null");
-        ComponentUtil.setData(component, IdentityProvider.class,
-                        identityProvider);
+        ComponentUtil.setData(component, IdentifierProvider.class,
+                identifierProvider);
     }
 
     @SuppressWarnings("unchecked")
-    protected IdentityProvider<T> getIdentityProvider() {
-        IdentityProvider<T> identityProviderObject =
-                (IdentityProvider<T>) ComponentUtil
-                        .getData(component, IdentityProvider.class);
+    protected IdentifierProvider<T> getIdentifierProvider() {
+        IdentifierProvider<T> identifierProviderObject =
+                (IdentifierProvider<T>) ComponentUtil
+                        .getData(component, IdentifierProvider.class);
 
-        if (identityProviderObject == null) {
+        if (identifierProviderObject == null) {
             DataProvider<T, ?> dataProvider = dataProviderSupplier.get();
             if (dataProvider != null) {
                 return dataProvider::getId;
             } else {
-                return IdentityProvider.identity();
+                return IdentifierProvider.identity();
             }
         } else {
-            return identityProviderObject;
+            return identifierProviderObject;
         }
     }
 }

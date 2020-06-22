@@ -82,7 +82,7 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void setIdentityProvider_defaultIdentity_equalsIsUsed() {
+    public void setIdentifierProvider_defaultIdentity_equalsIsUsed() {
         Assert.assertTrue(dataView.contains(
                 new Item(1L, "first")));
         Assert.assertFalse(dataView.contains(
@@ -92,7 +92,7 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void setIdentityProvider_dataProviderIdentity_getIdIsUsed() {
+    public void setIdentifierProvider_dataProviderIdentity_getIdIsUsed() {
         dataProvider = new CustomIdentityItemDataProvider(items);
 
         Assert.assertTrue(dataView.contains(
@@ -104,8 +104,8 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void setIdentityProvider_customIdentityProvider_customIdentityProviderIsUsed() {
-        dataView.setIdentityProvider(Item::getValue);
+    public void setIdentifierProvider_customIdentifierProvider_customIdentifierProviderIsUsed() {
+        dataView.setIdentifierProvider(Item::getValue);
 
         Assert.assertTrue(dataView.contains(
                 new Item(1L, "first")));
@@ -116,7 +116,7 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void setIdentityProvider_dataProviderHasChanged_newDataProviderIsUsed() {
+    public void setIdentifierProvider_dataProviderHasChanged_newDataProviderIsUsed() {
         Assert.assertFalse(dataView.contains(
                 new Item(1L, "non present")));
 
@@ -132,11 +132,11 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void setIdentityProvider_dataProviderHasChanged_identityProviderRetained() {
+    public void setIdentifierProvider_dataProviderHasChanged_identifierProviderRetained() {
         Assert.assertFalse(dataView.contains(
                 new Item(4L, "non present", "description1")));
 
-        dataView.setIdentityProvider(Item::getDescription);
+        dataView.setIdentifierProvider(Item::getDescription);
 
         Assert.assertTrue(dataView.contains(
                 new Item(4L, "non present", "description1")));
@@ -166,11 +166,11 @@ public class AbstractDataViewTest {
 
         @Override
         public boolean contains(Item item) {
-            IdentityProvider<Item> identityProvider =
-                    getIdentityProvider();
+            IdentifierProvider<Item> identifierProvider =
+                    getIdentifierProvider();
             return getItems().anyMatch(i -> Objects.equals(
-                    identityProvider.apply(item),
-                    identityProvider.apply(i)));
+                    identifierProvider.apply(item),
+                    identifierProvider.apply(i)));
         }
     }
 

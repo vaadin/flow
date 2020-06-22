@@ -56,13 +56,13 @@ public interface DataView<T> extends Serializable {
      * for identity check. If a custom data provider is used,
      * then the {@link DataProvider#getId(Object)} method is used instead.
      * Item's custom identity can be set up with a
-     * {@link DataView#setIdentityProvider(IdentityProvider)}.
+     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
      *
      * @param item
      *         item to search for
      * @return true if item is found in the available data
      *
-     * @see #setIdentityProvider(IdentityProvider)
+     * @see #setIdentifierProvider(IdentifierProvider)
      */
     boolean contains(T item);
 
@@ -85,8 +85,8 @@ public interface DataView<T> extends Serializable {
      * Sets identity provider to be used for getting item identifier and
      * compare the items using that identifier.
      *
-     * @param identityProvider
+     * @param identifierProvider
      *           function that returns the non-null identifier for a given item
      */
-    void setIdentityProvider(IdentityProvider<T> identityProvider);
+    void setIdentifierProvider(IdentifierProvider<T> identifierProvider);
 }

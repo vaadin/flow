@@ -127,7 +127,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * for identity check. If a custom data provider is used,
      * then the {@link DataProvider#getId(Object)} method is used instead.
      * Item's custom identity can be set up with a
-     * {@link DataView#setIdentityProvider(IdentityProvider)}.
+     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
      *
      * @param item
      *         item containing updated state
@@ -138,7 +138,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @throws IllegalArgumentException
      *         if collection is not a list
      *
-     * @see #setIdentityProvider(IdentityProvider)
+     * @see #setIdentifierProvider(IdentifierProvider)
      */
     V updateItem(T item);
 

@@ -19,23 +19,22 @@ package com.vaadin.flow.data.provider;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
- * A callback interface that provides the identifier for a data items stored
- * in {@link DataProvider}.
+ * A callback interface that is used to provide the identifier of an item.
  *
  * @param <T>
- *            the type of the data item
+ *            the type of the item
  * @since
  */
 @FunctionalInterface
-public interface IdentityProvider<T> extends ValueProvider<T, Object> {
+public interface IdentifierProvider<T> extends ValueProvider<T, Object> {
     /**
-     * Returns a value provider that always returns its input argument.
+     * Returns an identifier provider that always returns its input argument.
      *
      * @param <T>
      *            the type of the input and output objects to the function
      * @return a function that always returns its input argument
      */
-    static <T> IdentityProvider<T> identity() {
+    static <T> IdentifierProvider<T> identity() {
         return t -> t;
     }
 }

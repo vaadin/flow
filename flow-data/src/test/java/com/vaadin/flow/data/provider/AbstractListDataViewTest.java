@@ -760,7 +760,7 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void updateItem_identityProvider_updatesExistingItem() {
+    public void updateItem_identifierProvider_updatesExistingItem() {
         Collection<Item> items = getTestItems();
 
         ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
@@ -768,7 +768,7 @@ public class AbstractListDataViewTest {
         ItemListDataView dataView = new ItemListDataView(
                 () -> dataProvider, component);
 
-        dataView.setIdentityProvider(Item::getId);
+        dataView.setIdentifierProvider(Item::getId);
         dataView.updateItem(
                 new Item(1L, "updatedValue", "updatedDescr"));
 
