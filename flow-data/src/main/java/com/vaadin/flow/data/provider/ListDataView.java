@@ -123,9 +123,11 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Finds an item equal to {@code item} in the non-filtered data set
      * and replaces it with {@code item}.
      * <p>
-     * By default, equality between the items is determined by the identifiers
-     * provided by {@link DataProvider#getId(Object)}. Identity provider can
-     * be changed with a {@link DataView#setIdentityProvider(ValueProvider)}.
+     * By default, {@code equals} method implementation of the item is used
+     * for identity check. If a custom data provider is used,
+     * then the {@link DataProvider#getId(Object)} method is used instead.
+     * Item's custom identity can be set up with a
+     * {@link DataView#setIdentityProvider(IdentityProvider)}.
      *
      * @param item
      *         item containing updated state
@@ -136,7 +138,7 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @throws IllegalArgumentException
      *         if collection is not a list
      *
-     * @see #setIdentityProvider(ValueProvider)
+     * @see #setIdentityProvider(IdentityProvider)
      */
     V updateItem(T item);
 

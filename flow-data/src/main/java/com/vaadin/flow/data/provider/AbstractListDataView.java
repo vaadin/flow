@@ -300,7 +300,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     private Object getIdentifier(T item) {
-        final Object itemIdentifier = identityProvider.apply(item);
+        final Object itemIdentifier = getIdentityProvider().apply(item);
         Objects.requireNonNull(itemIdentifier,
                 "Identity provider should not return null");
         return itemIdentifier;

@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -53,15 +52,17 @@ public interface DataView<T> extends Serializable {
      * Item may be filtered out or for lazy data not in the currently loaded
      * making it un-available.
      * <p>
-     * By default, equality between the items is determined by the identifiers
-     * provided by {@link DataProvider#getId(Object)}. Identity provider can
-     * be changed with a {@link DataView#setIdentityProvider(ValueProvider)}.
+     * By default, {@code equals} method implementation of the item is used
+     * for identity check. If a custom data provider is used,
+     * then the {@link DataProvider#getId(Object)} method is used instead.
+     * Item's custom identity can be set up with a
+     * {@link DataView#setIdentityProvider(IdentityProvider)}.
      *
      * @param item
      *         item to search for
      * @return true if item is found in the available data
      *
-     * @see #setIdentityProvider(ValueProvider)
+     * @see #setIdentityProvider(IdentityProvider)
      */
     boolean contains(T item);
 
@@ -87,5 +88,5 @@ public interface DataView<T> extends Serializable {
      * @param identityProvider
      *           function that returns the non-null identifier for a given item
      */
-    void setIdentityProvider(ValueProvider<T, ?> identityProvider);
+    void setIdentityProvider(IdentityProvider<T> identityProvider);
 }
