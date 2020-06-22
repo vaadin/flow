@@ -7,6 +7,7 @@ import {
   getValue,
 } from "./Models";
 import { Required } from "./Validators";
+import {Binder} from "./Binder";
 
 export interface ValueError<T> {
   property: string | AbstractModel<any>,
@@ -30,7 +31,7 @@ export class ValidationError extends Error {
   }
 }
 
-export type ValidationCallback<T> = (value: T) => boolean | ValidationResult | Array<ValidationResult> | Promise<boolean | ValidationResult | Array<ValidationResult>>;
+export type ValidationCallback<T> = (value: T, binder: Binder<any, AbstractModel<T>>) => boolean | ValidationResult | Array<ValidationResult> | Promise<boolean | ValidationResult | Array<ValidationResult>>;
 
 export interface Validator<T> {
   validate: ValidationCallback<T>,
@@ -50,7 +51,7 @@ export async function runValidator<T>(model: AbstractModel<T>, validator: Valida
   if (!getBinderNode(model).required && !new Required().validate(value)) {
     return [];
   }
-  return (async () => validator.validate(value))()
+  return (async () => validator.validate(value, getBinderNode(model).binder))()
     .then(result => {
       if (result === false) {
         return [{ property: getName(model), value, validator, message: validator.message }];
