@@ -7,7 +7,9 @@ import {
   ObjectModel,
   Pattern,
   Positive,
-  Required, Size, StringModel, AbstractModel
+  Required,
+  Size,
+  StringModel,
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
 export interface IdEntity {
@@ -69,5 +71,5 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
   fieldBoolean = new BooleanModel(this, 'fieldBoolean');
   fieldObject = new ObjectModel(this, 'fieldObject');
   fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel);
-  fieldArrayModel = new ArrayModel(this, 'fieldString', IdEntityModel);
+  fieldArrayModel = new ArrayModel(this, 'fieldArrayModel', IdEntityModel);
 }

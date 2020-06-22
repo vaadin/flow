@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.internal;
 
-import com.vaadin.flow.shared.ApplicationConstants;
-
 /**
  * Internal utility class for URL handling.
  *
@@ -41,8 +39,6 @@ public class UrlUtil {
         if (url.startsWith("//")) {
             return true;
         }
-        return url.contains("://") && !(url
-                .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX));
+        return url.contains("://");
     }
 }

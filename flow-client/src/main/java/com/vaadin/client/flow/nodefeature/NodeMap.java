@@ -27,6 +27,7 @@ import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.ReactiveEventRouter;
 import com.vaadin.client.flow.reactive.ReactiveValue;
 import com.vaadin.client.flow.reactive.ReactiveValueChangeListener;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.events.EventRemover;
 import elemental.json.JsonObject;
@@ -88,7 +89,8 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     public MapProperty getProperty(String name) {
         MapProperty property = properties.get(name);
         if (property == null) {
-            property = new MapProperty(name, this);
+            property = new MapProperty(name, this, "innerHTML".equals(name)
+                    && getId() == NodeFeatures.ELEMENT_PROPERTIES);
             properties.set(name, property);
 
             eventRouter.fireEvent(new MapPropertyAddEvent(this, property));
@@ -125,7 +127,7 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
 
     /**
      * Gets all property names in this map.
-     * 
+     *
      * @return a list with the property names, never <code>null</code>
      */
     public JsArray<String> getPropertyNames() {

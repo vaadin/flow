@@ -27,6 +27,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.reactive.CountingComputation;
 import com.vaadin.client.flow.reactive.Reactive;
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 
 import elemental.events.EventRemover;
 
@@ -60,11 +61,10 @@ public class NodeMapTest {
     public void testAddPropertyEvent() {
         AtomicReference<MapPropertyAddEvent> lastEvent = new AtomicReference<>();
 
-        EventRemover remover = map
-                .addPropertyAddListener(event -> {
-                    Assert.assertNull("Got unexpected event", lastEvent.get());
-                    lastEvent.set(event);
-                });
+        EventRemover remover = map.addPropertyAddListener(event -> {
+            Assert.assertNull("Got unexpected event", lastEvent.get());
+            lastEvent.set(event);
+        });
 
         Assert.assertNull(lastEvent.get());
 
@@ -144,6 +144,26 @@ public class NodeMapTest {
         Assert.assertTrue(map.hasPropertyValue("foo"));
         p.removeValue();
         Assert.assertFalse(map.hasPropertyValue("foo"));
+    }
+
+    @Test
+    public void getProperty_returnPropertyWhichAlwaysUpdatesTheValue() {
+        NodeMap map = new NodeMap(NodeFeatures.ELEMENT_PROPERTIES,
+                new StateNode(0, new StateTree(null)));
+        MapProperty property = map.getProperty("innerHTML");
+
+        AtomicReference<MapPropertyChangeEvent> capture = new AtomicReference<>();
+        property.addChangeListener(capture::set);
+
+        property.setValue("foo");
+
+        Assert.assertNotNull(capture.get());
+        // reset
+        capture.set(null);
+
+        // set the same value again
+        property.setValue("foo");
+        Assert.assertNotNull(capture.get());
     }
 
 }

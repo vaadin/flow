@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -49,6 +51,8 @@ import com.vaadin.flow.internal.ReflectTools;
  */
 public abstract class Composite<T extends Component> extends Component {
     private T content;
+
+    private transient ThreadLocal<Boolean> contentIsInitializing = new ThreadLocal<>();
 
     /**
      * Creates a new composite.
@@ -113,12 +117,25 @@ public abstract class Composite<T extends Component> extends Component {
      */
     public T getContent() {
         if (content == null) {
-            T newContent = initContent();
-            if (newContent == null) {
-                throw new IllegalStateException(
-                        "initContent returned null instead of a component");
+            try {
+                if (Boolean.TRUE.equals(contentIsInitializing.get())) {
+                    throw new IllegalStateException(
+                            "The content is not yet initialized. "
+                                    + "Detected direct or indirect call to 'getContent' from 'initContent'. "
+                                    + "You may not call any framework method on a '"
+                                    + Composite.class.getSimpleName()
+                                    + "' instance before 'initContent' has completed initializing the component.");
+                }
+                contentIsInitializing.set(true);
+                T newContent = initContent();
+                if (newContent == null) {
+                    throw new IllegalStateException(
+                            "initContent returned null instead of a component");
+                }
+                setContent(newContent);
+            } finally {
+                contentIsInitializing.set(false);
             }
-            setContent(newContent);
         }
         return content;
     }
@@ -168,5 +185,11 @@ public abstract class Composite<T extends Component> extends Component {
     @Override
     public Stream<Component> getChildren() {
         return Stream.of(getContent());
+    }
+
+    private void readObject(ObjectInputStream stream)
+            throws ClassNotFoundException, IOException {
+        stream.defaultReadObject();
+        contentIsInitializing = new ThreadLocal<>();
     }
 }

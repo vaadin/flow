@@ -48,11 +48,12 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
@@ -244,6 +245,15 @@ public class DevModeHandlerTest {
     @Test
     public void shouldNot_HandleOtherRequests() {
         HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        assertFalse(handler.isDevModeRequest(request));
+    }
+
+    @Test
+    public void isDevModeRequest_dynamicResourcesAreNotDevModeRequest() {
+        HttpServletRequest request = prepareRequest(
+                "/" + StreamRequestHandler.DYN_RES_PREFIX + "foo");
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
         assertFalse(handler.isDevModeRequest(request));

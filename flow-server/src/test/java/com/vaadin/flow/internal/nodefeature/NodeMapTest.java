@@ -16,9 +16,12 @@
 
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -42,6 +45,34 @@ public class NodeMapTest
         extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     private static final String KEY = "key";
     private ElementStylePropertyMap nodeMap = createFeature();
+
+    private static class AlwaysProduceChangeMap extends NodeMap {
+
+        AlwaysProduceChangeMap(StateNode node) {
+            super(node);
+        }
+
+        @Override
+        protected boolean producePutChange(String key, boolean hadValueEarlier,
+                Serializable newValue) {
+            return true;
+        }
+
+    }
+
+    private static class NeverProduceChangeMap extends NodeMap {
+
+        NeverProduceChangeMap(StateNode node) {
+            super(node);
+        }
+
+        @Override
+        protected boolean producePutChange(String key, boolean hadValueEarlier,
+                Serializable newValue) {
+            return false;
+        }
+
+    }
 
     @Test
     public void testBasicFunctionality() {
@@ -371,5 +402,106 @@ public class NodeMapTest
             Assert.fail(
                     "Should not happen, but forEachChild shouldn't explode either");
         });
+    }
+
+    @Test
+    public void collectChanges_sameValue_alwaysCollect_allValueChangesCollected() {
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        AlwaysProduceChangeMap map = new AlwaysProduceChangeMap(node);
+
+        assertChangeCollected(map);
+        // change the same property one more time: it still should be collected
+        assertChangeCollected(map);
+    }
+
+    @Test
+    public void put_sameValue_alwaysProduceChange_nodeIsDirty() {
+        UI ui = new UI();
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        StateTree tree = ui.getInternals().getStateTree();
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(node);
+        AlwaysProduceChangeMap map = new AlwaysProduceChangeMap(node);
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        map.put("foo", "bar");
+
+        Set<StateNode> nodes = tree.collectDirtyNodes();
+        Assert.assertTrue(nodes.contains(node));
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        Assert.assertTrue(tree.collectDirtyNodes().isEmpty());
+
+        // set once again the same value
+        map.put("foo", "bar");
+
+        nodes = tree.collectDirtyNodes();
+        Assert.assertTrue(nodes.contains(node));
+    }
+
+    @Test
+    public void put_sameValue_neverProduceChange_nodeIsNotDirty() {
+        UI ui = new UI();
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        StateTree tree = ui.getInternals().getStateTree();
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(node);
+        NeverProduceChangeMap map = new NeverProduceChangeMap(node);
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        map.put("foo", "bar");
+
+        Set<StateNode> nodes = tree.collectDirtyNodes();
+        Assert.assertFalse(nodes.contains(node));
+
+        // clear dirty nodes
+        tree.collectChanges(change -> {
+        });
+
+        Assert.assertTrue(tree.collectDirtyNodes().isEmpty());
+
+        // set another value
+        map.put("foo", "baz");
+
+        nodes = tree.collectDirtyNodes();
+        Assert.assertFalse(nodes.contains(node));
+    }
+
+    @Test
+    public void collectChanges_sameValue_neverCollect_noValueChanges() {
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        NeverProduceChangeMap map = new NeverProduceChangeMap(node);
+
+        assertChangeIsNotCollected(map, "bar");
+        // change the same property one more time to another value: it still
+        // should not be collected
+        assertChangeIsNotCollected(map, "baz");
+    }
+
+    private void assertChangeIsNotCollected(NeverProduceChangeMap map,
+            String value) {
+        map.put("foo", value);
+
+        List<NodeChange> changes = new ArrayList<>();
+        map.collectChanges(changes::add);
+
+        Assert.assertTrue(changes.isEmpty());
+    }
+
+    private void assertChangeCollected(AlwaysProduceChangeMap map) {
+        map.put("foo", "bar");
+
+        List<NodeChange> changes = new ArrayList<>();
+        map.collectChanges(changes::add);
+
+        Assert.assertEquals(1, changes.size());
+        Assert.assertEquals(MapPutChange.class, changes.get(0).getClass());
     }
 }

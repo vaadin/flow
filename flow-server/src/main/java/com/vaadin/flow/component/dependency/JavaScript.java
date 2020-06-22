@@ -24,6 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
@@ -67,9 +68,17 @@ public @interface JavaScript {
      * in the browser.
      * <p>
      * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
+     * {@code frontend} directory location.
+     * <p>
+     * This URL identifies a file which will be bundled, so the file should be
+     * available to be able to bundle it.
+     * <p>
+     * You can prefix the URL with {@code context://} to make it relative to the
+     * context path or use an absolute URL to refer to files outside the
+     * frontend directory. Such URLs are not bundled but included into the page
+     * as standalone scripts in the same way as it's done by
+     * {@link Page#addJavaScript(String)}.
+     * <p>
      *
      * @return a JavaScript file URL
      */
