@@ -1187,7 +1187,7 @@ public class ComponentTest {
     public void removeOnRegistration_registrationIsIdempotent() {
         TestDiv div = new TestDiv();
         Registration registration = div.addListener(ComponentEvent.class,
-                event -> {
+                (ComponentEventListener) event -> {
                 });
 
         registration.remove();
