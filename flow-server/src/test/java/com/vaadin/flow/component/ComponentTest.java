@@ -29,6 +29,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
@@ -47,11 +53,6 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import elemental.json.Json;
 
@@ -943,13 +944,14 @@ public class ComponentTest {
         }
     }
 
-    private void assertSynchronizedProperties(String domEventName, Element element,
-            String... properties) {
+    private void assertSynchronizedProperties(String domEventName,
+            Element element, String... properties) {
         Set<String> expected = Stream.of(properties)
                 .collect(Collectors.toSet());
 
         Set<String> expressions = element.getNode()
-                .getFeature(ElementListenerMap.class).getExpressions(domEventName);
+                .getFeature(ElementListenerMap.class)
+                .getExpressions(domEventName);
 
         Assert.assertEquals(expected, expressions);
     }
@@ -1109,7 +1111,8 @@ public class ComponentTest {
     public void declarativeSyncProperties_propertiesAreRegisteredWithProperDisabledUpdateMode() {
         TestDiv div = new TestDiv();
 
-        ElementListenerMap feature = div.getElement().getNode().getFeature(ElementListenerMap.class);
+        ElementListenerMap feature = div.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
 
         Set<String> props = feature.getExpressions("bar");
         Assert.assertEquals(1, props.size());
@@ -1178,6 +1181,18 @@ public class ComponentTest {
                 .fireEvent(createEvent("foo", div));
 
         Assert.assertEquals(1, count.get());
+    }
+
+    @Test
+    public void removeOnRegistration_registrationIsIdempotent() {
+        TestDiv div = new TestDiv();
+        Registration registration = div.addListener(ComponentEvent.class,
+                event -> {
+                });
+
+        registration.remove();
+        // It's still possible to call the same method one more time
+        registration.remove();
     }
 
     private DomEvent createEvent(String type, Component component) {
