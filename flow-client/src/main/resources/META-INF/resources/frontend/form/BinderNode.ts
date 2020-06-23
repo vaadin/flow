@@ -119,7 +119,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return this.errors;
   }
 
-  async addValidator(validator: Validator<T>) {
+  addValidator(validator: Validator<T>) {
     this.validators = [...this[validatorsSymbol], validator];
   }
 
