@@ -683,17 +683,5 @@
                 <module>flow-dev-deps</module>
             </modules>
         </profile>
-        <profile>
-            <!-- Move components under feature to simplify PR compilation -->
-            <!-- as Flow builds 3.2-SNAPSHOT, but Component PRs need to target 3.2.dataprovider-SNAPSHOT-->
-            <id>feature</id>
-            <modules>
-                <!-- TODO remove and do not push to master -->
-                <module>vaadin-grid-flow</module>
-                <module>vaadin-combo-box-flow</module>
-                <module>vaadin-checkbox-flow</module>
-                <module>vaadin-select-flow</module>
-            </modules>
-        </profile>
     </profiles>
 </project>
