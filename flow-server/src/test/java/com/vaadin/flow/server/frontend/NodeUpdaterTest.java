@@ -192,14 +192,6 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void assertTerserVersion() throws IOException {
-        final JsonObject packageJson = nodeUpdater.getPackageJson();
-        nodeUpdater.updateDefaultDependencies(packageJson);
-        Assert.assertEquals("4.6.7", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("terser"));
-    }
-
-    @Test
     public void assertFormResourcesPackageJson() throws IOException {
         JsonObject formPackageJson = nodeUpdater.getFormResourcesPackageJson();
         Assert.assertEquals("@vaadin/form", formPackageJson

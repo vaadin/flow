@@ -29,6 +29,7 @@ import com.vaadin.client.Console;
 import com.vaadin.client.ElementUtil;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
+import com.vaadin.client.LitUtils;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -803,69 +804,82 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             return;
         }
 
-        InitialPropertiesHandler initialPropertiesHandler = node.getTree()
-                .getRegistry().getInitialPropertiesHandler();
-
         assert context.htmlNode instanceof Element : "Unexpected html node. The node is supposed to be a custom element";
         if (NodeProperties.INJECT_BY_ID.equals(type)) {
-            String id = object.getString(NodeProperties.PAYLOAD);
-            String address = "id='" + id + "'";
-
-            if (!verifyAttachRequest(context.node, node, id, address)) {
+            if (LitUtils.isLitElement(context.htmlNode)) {
+                LitUtils.whenRendered((Element) context.htmlNode,
+                        () -> handleInjectId(context, node, object, false));
                 return;
-            }
-            if (!PolymerUtils.isReady(context.htmlNode)) {
+            } else if (!PolymerUtils.isReady(context.htmlNode)) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
+                        () -> handleInjectId(context, node, object, false));
                 return;
             }
 
-            Element existingElement = ElementUtil
-                    .getElementById(context.htmlNode, id);
-            if (verifyAttachedElement(existingElement, node, id, address,
-                    context)) {
-                if (!reactivePhase) {
-                    initialPropertiesHandler.nodeRegistered(node);
-                    initialPropertiesHandler.flushPropertyUpdates();
-                }
-                node.setDomNode(existingElement);
-                context.binderContext.createAndBind(node);
-            }
+            handleInjectId(context, node, object, reactivePhase);
         } else if (NodeProperties.TEMPLATE_IN_TEMPLATE.equals(type)) {
-            JsonArray path = object.getArray(NodeProperties.PAYLOAD);
-            String address = "path='" + path.toString() + "'";
-
-            if (!verifyAttachRequest(context.node, node, null, address)) {
-                return;
-            }
-
             if (PolymerUtils.getDomRoot(context.htmlNode) == null) {
                 PolymerUtils.addReadyListener((Element) context.htmlNode,
-                        () -> appendVirtualChild(context, node, false));
+                        () -> handleTemplateInTemplate(context, node, object,
+                                false));
                 return;
             }
-
-            Element customElement = PolymerUtils.getCustomElement(
-                    PolymerUtils.getDomRoot(context.htmlNode), path);
-
-            if (verifyAttachedElement(customElement, node, null, address,
-                    context)) {
-                if (!reactivePhase) {
-                    initialPropertiesHandler.nodeRegistered(node);
-                    initialPropertiesHandler.flushPropertyUpdates();
-                }
-                node.setDomNode(customElement);
-                context.binderContext.createAndBind(node);
-            }
+            handleTemplateInTemplate(context, node, object, reactivePhase);
         } else {
             assert false : "Unexpected payload type " + type;
         }
+    }
+
+    private void doAppendVirtualChild(BindingContext context, StateNode node,
+            boolean reactivePhase, Supplier<Element> elementLookup, String id,
+            String address) {
+        if (!verifyAttachRequest(context.node, node, id, address)) {
+            return;
+        }
+        Element element = elementLookup.get();
+        if (verifyAttachedElement(element, node, id, address, context)) {
+            if (!reactivePhase) {
+                InitialPropertiesHandler initialPropertiesHandler = node
+                        .getTree().getRegistry().getInitialPropertiesHandler();
+
+                initialPropertiesHandler.nodeRegistered(node);
+                initialPropertiesHandler.flushPropertyUpdates();
+            }
+            node.setDomNode(element);
+            context.binderContext.createAndBind(node);
+        }
         if (!reactivePhase) {
             // Correct binding requires reactive involvement which doesn't
-            // happen automatically when we are out of the phase. So we should
+            // happen automatically when we are out of the phase. So we
+            // should
             // call <code>flush()</code> explicitly.
             Reactive.flush();
         }
+
+    }
+
+    private void handleTemplateInTemplate(BindingContext context,
+            StateNode node, JsonObject object, boolean reactivePhase) {
+        JsonArray path = object.getArray(NodeProperties.PAYLOAD);
+        String address = "path='" + path.toString() + "'";
+
+        Supplier<Element> elementLookup = () -> PolymerUtils.getCustomElement(
+                PolymerUtils.getDomRoot(context.htmlNode), path);
+
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, null,
+                address);
+
+    }
+
+    private void handleInjectId(BindingContext context, StateNode node,
+            JsonObject object, boolean reactivePhase) {
+        String id = object.getString(NodeProperties.PAYLOAD);
+        String address = "id='" + id + "'";
+        Supplier<Element> elementLookup = () -> ElementUtil
+                .getElementById(context.htmlNode, id);
+
+        doAppendVirtualChild(context, node, reactivePhase, elementLookup, id,
+                address);
     }
 
     private boolean verifyAttachedElement(Element element, StateNode attachNode,

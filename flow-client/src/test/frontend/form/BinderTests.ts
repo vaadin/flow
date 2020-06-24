@@ -4,22 +4,19 @@ const {suite, test, beforeEach, afterEach} = intern.getInterface("tdd");
 const {assert} = intern.getPlugin("chai");
 /// <reference types="sinon">
 const {sinon} = intern.getPlugin('sinon');
-import { expect } from "chai";
 
 // API to test
 import {
   Binder,
+  BinderConfiguration,
   getName,
   getValue,
-  keySymbol,
-  prependItem,
-  setValue,
-  BinderConfiguration
+  setValue
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import { Order, OrderModel, ProductModel } from "./TestModels";
+import {Order, OrderModel} from "./TestModels";
 
-import { customElement, LitElement} from 'lit-element';
+import {customElement, LitElement} from 'lit-element';
 
 @customElement('lit-order-view')
 class LitOrderView extends LitElement {}
@@ -191,74 +188,5 @@ suite("form/Binder", () => {
     });
   });
 
-  suite('array-model', () => {
-    let binder: Binder<Order, OrderModel<Order>>;
-
-    beforeEach(() => {
-      binder = new Binder(litOrderView, OrderModel);
-    });
-
-    test("should reuse model instance for the same array item", async () => {
-      const products = [
-        ProductModel.createEmptyValue(),
-        ProductModel.createEmptyValue()
-      ]
-      setValue(binder.model.products, products.slice());
-      const models_1 = [...binder.model.products].slice();
-      [0, 1].forEach(i => expect(models_1[i].valueOf()).to.be.equal(products[i]));
-
-      setValue(binder.model.products, products);
-      const models_2 = [...binder.model.products].slice();
-      [0, 1].forEach(i => {
-        expect(models_1[i]).to.be.equal(models_2[i]);
-        expect(models_2[i].valueOf()).to.be.equal(products[i]);
-      });
-    });
-
-    test("should reuse model instance for the same array item after it is modified", async () => {
-      const products = [
-        ProductModel.createEmptyValue(),
-        ProductModel.createEmptyValue()
-      ]
-      setValue(binder.model.products, products);
-      const models_1 = [...binder.model.products].slice();
-      [0, 1].forEach(i => expect(models_1[i].valueOf()).to.be.equal(products[i]));
-
-      setValue(models_1[0].description, 'foo');
-      setValue(models_1[1].description, 'bar');
-
-      setValue(binder.model.products, products.slice());
-      const models_2 = [...binder.model.products].slice();
-      [0, 1].forEach(i => {
-        expect(models_1[i]).to.be.equal(models_2[i]);
-        expect(models_2[i].valueOf()).to.be.equal(products[i]);
-      });
-    });
-
-    test("should update model keySymbol when inserting items", async () => {
-      const products = [
-        ProductModel.createEmptyValue(),
-        ProductModel.createEmptyValue()
-      ]
-      setValue(binder.model.products, products);
-
-      const models_1 = [...binder.model.products].slice();
-      for (let i = 0; i < models_1.length; i++) {
-        expect((models_1[i] as any)[keySymbol]).to.be.equal(i)
-      }
-
-      setValue(models_1[0].description, 'foo');
-      expect(binder.model.products.valueOf()[0].description).to.be.equal('foo');
-
-      prependItem(binder.model.products);
-      expect(binder.model.products.valueOf()[1].description).to.be.equal('foo');
-
-      const models_2 = [...binder.model.products].slice();
-      expect(models_2.length).to.be.equal(3);
-      for (let i = 0; i < models_2.length; i++) {
-        expect((models_2[i] as any)[keySymbol]).to.be.equal(i)
-      }
-    });
-  });
 
 });

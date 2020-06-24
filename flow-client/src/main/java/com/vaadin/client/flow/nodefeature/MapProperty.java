@@ -64,6 +64,8 @@ public class MapProperty implements ReactiveValue {
     private Object value;
     private boolean hasValue = false;
 
+    private final boolean forceValueUpdate;
+
     /**
      * Creates a new property.
      *
@@ -73,8 +75,24 @@ public class MapProperty implements ReactiveValue {
      *            the map that the property belongs to
      */
     public MapProperty(String name, NodeMap map) {
+        this(name, map, false);
+    }
+
+    /**
+     * Creates a new property.
+     *
+     * @param name
+     *            the name of the property
+     * @param map
+     *            the map that the property belongs to
+     * @param forceValueUpdate
+     *            whether value update for {@code name} property should be
+     *            applied regardless of previous value
+     */
+    public MapProperty(String name, NodeMap map, boolean forceValueUpdate) {
         this.name = name;
         this.map = map;
+        this.forceValueUpdate = forceValueUpdate;
     }
 
     /**
@@ -162,7 +180,8 @@ public class MapProperty implements ReactiveValue {
     }
 
     private void doSetValue(Object value) {
-        if (hasValue && Objects.equals(value, this.value)) {
+        if (!forceValueUpdate && hasValue
+                && Objects.equals(value, this.value)) {
             // Nothing to do
             return;
         }

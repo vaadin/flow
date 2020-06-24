@@ -30,7 +30,7 @@ public class ElementInnerHtmlView extends AbstractDivView {
         innerHtml = new Div();
         innerHtml.setId("inner-html-field");
         add(createButton("Foo"), createButton("Boo"), getNullButton(),
-                innerHtml);
+                createToggleButton(), innerHtml);
 
     }
 
@@ -46,6 +46,13 @@ public class ElementInnerHtmlView extends AbstractDivView {
         NativeButton button = new NativeButton("Set value null",
                 click -> innerHtml.getElement().setProperty("innerHTML", null));
         button.setId("set-null");
+        return button;
+    }
+
+    private NativeButton createToggleButton() {
+        NativeButton button = new NativeButton("ToggleVisibility",
+                click -> innerHtml.setVisible(!innerHtml.isVisible()));
+        button.setId("toggle-visibility");
         return button;
     }
 

@@ -49,6 +49,20 @@ public class CompositeTest {
         }
     }
 
+    public static class KeyNotifierComposite extends Composite<MyTemplate>
+            implements KeyNotifier {
+
+        @Override
+        protected MyTemplate initContent() {
+            MyTemplate template = new MyTemplate();
+
+            addKeyUpListener(Key.ENTER, event -> {
+            }, KeyModifier.CONTROL);
+
+            return template;
+        }
+    }
+
     protected Component createTestComponent() {
         return new TestComponent(
                 ElementFactory.createDiv("Component in composite"));
@@ -411,10 +425,17 @@ public class CompositeTest {
                 new Integer[] { -1, -2, -3, -4, -5, -6, 1, 2, 3, 4, 5, 6 });
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void getContent_compositeIsKeyNotifier() {
+        KeyNotifierComposite composite = new KeyNotifierComposite();
+        composite.getContent();
+    }
+
     /*
      * This is just a test for #1181.
      */
-    @Test @Ignore("Failing after adding connect client generators")
+    @Test
+    @Ignore("Failing after adding connect client generators")
     public void templateInsideComposite_compositeCanBeAdded() {
         class MyComponent extends Composite<MyTemplate> {
 

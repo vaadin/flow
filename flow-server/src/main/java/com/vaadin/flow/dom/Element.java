@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -728,13 +727,9 @@ public class Element extends Node<Element> {
         verifySetPropertyName(name);
 
         if ("innerHTML".equals(name)) {
-            Serializable oldValue = getStateProvider().getProperty(getNode(),
-                    name);
-            if (!Objects.equals(value, oldValue)) {
-                // Only remove all children for value change
-                removeAllChildren();
-            }
+            removeAllChildren();
         }
+
         getStateProvider().setProperty(getNode(), name, value, true);
 
         return this;
@@ -748,8 +743,9 @@ public class Element extends Node<Element> {
 
         String replacement = illegalPropertyReplacements.get(name);
         if (replacement != null) {
-            throw new IllegalArgumentException("Can't set or synchronize " + name
-                    + " as a property, use " + replacement + " instead.");
+            throw new IllegalArgumentException(
+                    "Can't set or synchronize " + name + " as a property, use "
+                            + replacement + " instead.");
         }
     }
 
