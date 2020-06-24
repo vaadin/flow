@@ -149,6 +149,21 @@ public class FrontendTools {
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
     /**
+     * The node.js version to be used when node.js is installed automatically
+     * by Vaadin, for example <code>"v12.16.0"</code>. Defaults to
+     * {@value #DEFAULT_NODE_VERSION}.
+     */
+    public String nodeVersion = DEFAULT_NODE_VERSION;
+
+    /**
+     * Download node.js from this URL. Handy in heavily firewalled corporate
+     * environments where the node.js download can be provided from an intranet
+     * mirror. Defaults to null which will cause the downloader to use
+     * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+     */
+    public URI nodeDownloadRoot = null;
+
+    /**
      * Creates an instance of the class using the {@code baseDir} as a base
      * directory to locate the tools and the directory returned by the
      * {@code alternativeDirGetter} as a directory to install tools if they are
@@ -210,8 +225,8 @@ public class FrontendTools {
             return file.getAbsolutePath();
         } else {
             getLogger().info("Node not found in {}. Installing node {}.", dir,
-                    DEFAULT_NODE_VERSION);
-            return installNode(DEFAULT_NODE_VERSION, null);
+                    nodeVersion);
+            return installNode(nodeVersion, nodeDownloadRoot);
         }
     }
 
@@ -459,7 +474,7 @@ public class FrontendTools {
         if (file == null && installNode) {
             getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
                     cmd, getAlternativeDir());
-            return new File(installNode(DEFAULT_NODE_VERSION, null));
+            return new File(installNode(nodeVersion, nodeDownloadRoot));
         }
         if (file == null) {
             throw new IllegalStateException(String.format(NODE_NOT_FOUND));
@@ -750,5 +765,4 @@ public class FrontendTools {
     private String getAlternativeDir() {
         return alternativeDirGetter.get();
     }
-
 }

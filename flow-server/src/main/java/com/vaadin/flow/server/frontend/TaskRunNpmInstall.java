@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -67,6 +69,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final ClassFinder classFinder;
+
+    /**
+     * The node.js version to be used when node.js is installed automatically by
+     * Vaadin, for example <code>"v12.16.0"</code>. Defaults to null which uses
+     * the Vaadin-default node version - see {@link FrontendTools} for details.
+     */
+    public String nodeVersion = null;
+
+    /**
+     * Download node.js from this URL. Handy in heavily firewalled corporate
+     * environments where the node.js download can be provided from an intranet
+     * mirror. Defaults to null which will cause the downloader to use
+     * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+     */
+    public URI nodeDownloadRoot = null;
 
     /**
      * Create an instance of the command.
@@ -306,6 +323,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         FrontendTools tools = new FrontendTools(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        if (nodeVersion != null) {
+            tools.nodeVersion = nodeVersion;
+        }
+        tools.nodeDownloadRoot = nodeDownloadRoot;
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
@@ -428,5 +449,4 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
     }
-
 }
