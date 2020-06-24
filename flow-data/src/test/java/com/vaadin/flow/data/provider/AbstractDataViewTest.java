@@ -57,16 +57,39 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void getAllItems_noFiltersSet_allItemsObtained() {
+    public void getItems_noFiltersSet_allItemsObtained() {
         Stream<Item> allItems = dataView.getItems();
         Assert.assertArrayEquals("Unexpected data set", items.toArray(),
                 allItems.toArray());
     }
 
     @Test
-    public void getDataSize_noFiltersSet_dataSizeObtained() {
+    public void getItems_filtersSet_filteredItemsObtained() {
+        dataProvider.setFilter(item -> item.getValue().equals("first"));
+        Assert.assertArrayEquals("Unexpected data set after filtering",
+                new String[] {"first"},
+                dataView.getItems().map(Item::getValue).toArray());
+    }
+
+    @Test
+    public void getItems_sortingSet_sortedItemsObtained() {
+        dataProvider.setSortOrder(Item::getId, SortDirection.DESCENDING);
+        Assert.assertArrayEquals("Unexpected items sorting",
+                new Long[] {3L, 2L, 1L},
+                dataView.getItems().map(Item::getId).toArray());
+    }
+
+    @Test
+    public void getSize_noFiltersSet_dataSizeObtained() {
         Assert.assertEquals("Unexpected size for data", items.size(),
                 dataView.getSize());
+    }
+
+    @Test
+    public void getSize_filtersSet_filteredItemsObtained() {
+        dataProvider.setFilter(item -> item.getValue().equals("first"));
+        Assert.assertEquals("Unexpected size for data",
+                1, dataView.getSize());
     }
 
     @Test

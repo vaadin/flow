@@ -128,6 +128,14 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void setSortComparator_sortingReset_sortingResetToInitial() {
+        dataProvider.setSortComparator(String::compareTo);
+        dataView.setSortComparator(null);
+        Assert.assertArrayEquals("Sorting reset was not applied to data set",
+                items.toArray(), dataView.getItems().toArray());
+    }
+
+    @Test
     public void addSortComparator_twoComparatorsAdded_itemsSortedByCompositeComparator() {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
         dataView = new ListDataViewImpl(() -> dataProvider, component);
@@ -165,26 +173,13 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void removeSorting_sortOrderIsSet_noSorting() {
+    public void removeSorting_sortingSetAndThenRemoved_initialSortingObtained() {
         dataView.setSortOrder(ValueProvider.identity(), SortDirection.ASCENDING);
         Assert.assertEquals("Unexpected data set order", "first,last,middle",
                 dataView.getItems().collect(Collectors.joining(",")));
         dataView.removeSorting();
         Assert.assertEquals("Unexpected data set order", "first,middle,last",
                 dataView.getItems().collect(Collectors.joining(",")));
-    }
-
-    @Test
-    public void getItems_noFiltersSet_allItemsObtained() {
-        Stream<String> allItems = dataView.getItems();
-        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
-                allItems.toArray());
-    }
-
-    @Test
-    public void getDataSize_noFiltersSet_dataSizeObtained() {
-        Assert.assertEquals("Unexpected size for data", items.size(),
-                dataView.getSize());
     }
 
     @Test
@@ -229,6 +224,12 @@ public class AbstractListDataViewTest {
         Optional<String> optionalItem = dataView.getNextItem("first");
         Assert.assertTrue(optionalItem.isPresent());
         Assert.assertEquals("last", optionalItem.get());
+    }
+
+    @Test
+    public void removeItem_notInList_dataSetNotChanged() {
+        dataView.removeItem("not present");
+        Assert.assertEquals(3, dataView.getSize());
     }
 
     @Test
@@ -297,6 +298,15 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItemBefore_itemNotInCollection_throwsException() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
+                "Item to insert before is not available in the data");
+
+        dataView.addItemBefore("newItem", "notExistent");
+    }
+
+    @Test
     public void addItemAfter_itemIsAddedAtExpectedPosition() {
         dataView.addItemAfter("newItem", "middle");
 
@@ -336,15 +346,6 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[]{"first", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
-    }
-
-    @Test
-    public void addItemBefore_itemNotInCollection_throwsException() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(
-                "Item to insert before is not available in the data");
-
-        dataView.addItemBefore("newItem", "notExistent");
     }
 
     @Test
@@ -669,7 +670,7 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void clearFilters_removesAllSetAndAddedFilters() {
+    public void removeFilters_removesAllSetAndAddedFilters() {
         items = new ArrayList<>(
                 Arrays.asList("item1", "item2", "item22", "item3"));
         dataProvider = DataProvider.ofCollection(items);
