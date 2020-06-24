@@ -33,7 +33,6 @@ import {
   validatorsSymbol
 } from "./Models";
 import {Validator, ValueError} from "./Validation";
-import { Required, Size } from "./Validators";
 
 const errorsSymbol = Symbol('ownErrorsSymbol');
 const visitedSymbol = Symbol('visited');
@@ -153,15 +152,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get required() {
-    return !!this[validatorsSymbol].find(val => {
-      if (val instanceof Required) {
-        return true;
-      } else if (val instanceof Size) {
-        const min = (val as Size).value.min;
-        return min && min > 0;
-      }
-      return false;
-    });
+    return this[validatorsSymbol].some(validator => validator.impliesRequired);
   }
 
   /**

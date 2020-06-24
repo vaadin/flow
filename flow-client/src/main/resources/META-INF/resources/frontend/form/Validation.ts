@@ -36,7 +36,7 @@ export type ValidationCallback<T> = (value: T, binder: Binder<any, AbstractModel
 export interface Validator<T> {
   validate: ValidationCallback<T>,
   message: string,
-  value?: any
+  impliesRequired?: boolean
 }
 
 export class ServerValidator implements Validator<any> {

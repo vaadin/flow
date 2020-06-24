@@ -285,6 +285,27 @@ suite("form/Validation", () => {
         expect(errors[0].value).to.eql({idString: ''});
       });
     });
+
+    test('should not cause required by default', async () => {
+      binder.for(binder.model.idString).addValidator({
+        message: 'foo',
+        validate: () => false
+      });
+      expect(binder.for(binder.model.idString).required).to.be.false;
+    });
+
+    test('should cause required when having impliesRequired: true', async () => {
+      binder.for(binder.model.idString).addValidator({
+        message: 'foo',
+        validate: () => false
+      });
+      binder.for(binder.model.idString).addValidator({
+        message: 'foo',
+        validate: () => false,
+        impliesRequired: true
+      });
+      expect(binder.for(binder.model.idString).required).to.be.true;
+    });
   });
 
   suite('model add validator (multiple fields)', () => {
