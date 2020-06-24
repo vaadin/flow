@@ -152,7 +152,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get required() {
-    return !!this[validatorsSymbol].find(val => !!val.impliesRequired);
+    return this[validatorsSymbol].some(validator => validator.impliesRequired);
   }
 
   /**
