@@ -16,12 +16,15 @@
 package com.vaadin.flow.router.internal;
 
 import javax.servlet.ServletContext;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -49,6 +52,7 @@ import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.PreserveOnRefresh;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.Router;
@@ -418,6 +422,55 @@ public class NavigationStateRendererTest {
                 ui.getInternals().getActiveRouterTargetsChain().get(1));
 
         Assert.assertTrue(previousUi.isClosing());
+    }
+
+    @Test
+    public void handle_preserveOnRefresh_sameUI_uiIsNotClosed_childrenAreNotRemoved() {
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // the path is the same, location params will be different
+        String path = "foo";
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a NavigationStateRenderer mapping to PreservedView
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(PreservedView.class));
+
+        // given the session has a cache of PreservedView at this location
+        final PreservedView view = new PreservedView();
+        MockUI ui = new MockUI(session);
+
+        ui.add(view);
+
+        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
+                new Location(path,
+                        new QueryParameters(Collections.singletonMap("a",
+                                Collections.emptyList()))),
+                new ArrayList<>(Arrays.asList(view)));
+
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ui.getInternals().setExtendedClientDetails(details);
+
+        AtomicInteger count = new AtomicInteger();
+
+        view.addDetachListener(event -> count.getAndIncrement());
+
+        NavigationEvent event = new NavigationEvent(
+                new Router(new TestRouteRegistry()),
+                new Location(path,
+                        new QueryParameters(Collections.singletonMap("b",
+                                Collections.emptyList()))),
+                ui, NavigationTrigger.ROUTER_LINK, Json.createObject(), false);
+        renderer.handle(event);
+
+        Assert.assertFalse(ui.isClosing());
+        Assert.assertEquals(0, count.get());
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {
