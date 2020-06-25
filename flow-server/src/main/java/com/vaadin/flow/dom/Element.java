@@ -40,6 +40,7 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
@@ -663,6 +664,30 @@ public class Element extends Node<Element> {
 
         setRawProperty(name, value);
         return this;
+    }
+
+    /**
+     * Sets the given property to the given bean, converted to a JSON object.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param name
+     *                  the property name, not <code>null</code>
+     * @param value
+     *                  the property value, not <code>null</code>
+     * @return this element
+     */
+    // Distinct name so setProperty("foo", null) is not ambiguous
+    public Element setPropertyBean(String name, Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    "setProperty(name, Json.createNull()) must be used to set a property to null");
+        }
+        return setPropertyJson(name, JsonUtils.beanToJson(value));
     }
 
     /**

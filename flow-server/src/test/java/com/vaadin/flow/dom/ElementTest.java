@@ -50,6 +50,7 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
 
@@ -526,6 +527,29 @@ public class ElementTest extends AbstractNodeTest {
                 element.getProperty("property", defaultValue));
     }
 
+    public static class SimpleBean {
+        private String string = "value";
+        private int number = 1;
+        private float flt = 2.3f;
+        private double dbl = 4.56;
+
+        public String getString() {
+            return string;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public float getFlt() {
+            return flt;
+        }
+
+        public double getDbl() {
+            return dbl;
+        }
+    }
+
     @Test
     public void propertyRawValues() {
         Element element = ElementFactory.createDiv();
@@ -542,6 +566,13 @@ public class ElementTest extends AbstractNodeTest {
         element.setPropertyJson("p", Json.createObject());
         Assert.assertEquals(JreJsonObject.class,
                 element.getPropertyRaw("p").getClass());
+
+        element.setPropertyBean("p", new SimpleBean());
+        JsonObject json = (JsonObject) element.getPropertyRaw("p");
+        Assert.assertEquals("value", json.getString("string"));
+        Assert.assertEquals(1.0, json.getNumber("number"), 0.0);
+        Assert.assertEquals(2.3, json.getNumber("flt"), 0.0);
+        Assert.assertEquals(4.56, json.getNumber("dbl"), 0.0);
     }
 
     @Test
