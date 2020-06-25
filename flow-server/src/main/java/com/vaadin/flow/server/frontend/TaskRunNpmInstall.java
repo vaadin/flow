@@ -157,9 +157,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     "versions.json");
 
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    Json.parse(IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    Json.parse(
+                            IOUtils.toString(content, StandardCharsets.UTF_8)),
                     packageUpdater.getPackageJson());
-            FileUtils.write(versions, stringify(convert.getManagedVersions(), 2) + "\n",
+            FileUtils.write(versions,
+                    stringify(convert.getManagedVersions(), 2) + "\n",
                     StandardCharsets.UTF_8);
             Path versionsPath = versions.toPath();
             if (versions.isAbsolute()) {
@@ -276,9 +278,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             // This will allow to destroy the process which does IO regardless
             // whether it's executed in the same thread or another (may be
             // daemon) thread
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                finalProcess.destroyForcibly();
-            }));
+            Runtime.getRuntime()
+                    .addShutdownHook(new Thread(finalProcess::destroyForcibly));
 
             int errorCode = process.waitFor();
 
