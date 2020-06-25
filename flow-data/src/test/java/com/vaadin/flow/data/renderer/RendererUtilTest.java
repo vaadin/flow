@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,8 +29,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class RendererUtilTest {
 
@@ -107,6 +113,38 @@ public class RendererUtilTest {
 
         attachElements(ui, contentTemplate, templateDataHost);
         assertJSExecutions(ui, internals, contentTemplate, templateDataHost);
+    }
+
+    @Test
+    public void registerEventHandlers_attachMultipleTimes_singleEventListenerRegistered() {
+        UI ui = new TestUI();
+        TestUIInternals internals = (TestUIInternals) ui.getInternals();
+
+        Renderer<String> renderer = new Renderer<>();
+
+        AtomicInteger eventCounter = new AtomicInteger(0);
+
+        renderer.setEventHandler("foo", value -> {
+            eventCounter.getAndIncrement();
+        });
+
+        Element contentTemplate = new Element(Tag.DIV);
+        Element templateDataHost = new Element(Tag.SPAN);
+
+        RendererUtil.registerEventHandlers(renderer, contentTemplate,
+                templateDataHost, ValueProvider.identity());
+
+        attachElements(ui, contentTemplate, templateDataHost);
+        attachElements(ui, contentTemplate, templateDataHost);
+
+        internals.getStateTree().runExecutionsBeforeClientResponse();
+
+        JsonObject eventData = Json.createObject();
+        eventData.put("key", "");
+        templateDataHost.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(templateDataHost, "foo", eventData));
+
+        Assert.assertEquals(1, eventCounter.get());
     }
 
     private void attachElements(UI ui, Element contentTemplate,

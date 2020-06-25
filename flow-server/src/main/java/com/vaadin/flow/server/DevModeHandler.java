@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -327,8 +327,9 @@ public final class DevModeHandler {
      * @return true if the request should be forwarded to webpack
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
-        return request.getPathInfo() != null
-                && request.getPathInfo().matches(".+\\.js");
+        final String pathInfo = request.getPathInfo();
+        return pathInfo != null && pathInfo.matches(".+\\.js") && !pathInfo
+                .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     /**
