@@ -121,8 +121,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemBefore(T item, T before);
 
     /**
-     * Finds an item equal to {@code item} in the non-filtered data set and
-     * replaces it with {@code item}.
+     * Triggers {@code item} refresh event on the component side if the
+     * {@code item} is present in the data list.
      * <p>
      * By default, {@code equals} method implementation of the item is used for
      * identity check. If a custom data provider is used, then the
@@ -133,11 +133,6 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * @param item
      *            item containing updated state
      * @return this ListDataView instance
-     *
-     * @throws UnsupportedOperationException
-     *             if backing collection doesn't support modification
-     * @throws IllegalArgumentException
-     *             if collection is not a list
      *
      * @see #setIdentifierProvider(IdentifierProvider)
      */
