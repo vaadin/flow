@@ -17,6 +17,7 @@ package com.vaadin.flow.dom;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +67,8 @@ public class Element extends Node<Element> {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
     static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
+
+    private static final String USE_SET_PROPERTY_WITH_JSON_NULL = "setProperty(name, Json.createNull()) must be used to set a property to null";
 
     // Can't set $name as a property, use $replacement instead.
     private static final Map<String, String> illegalPropertyReplacements = new HashMap<>();
@@ -658,8 +661,7 @@ public class Element extends Node<Element> {
     // Distinct name so setProperty("foo", null) is not ambiguous
     public Element setPropertyJson(String name, JsonValue value) {
         if (value == null) {
-            throw new IllegalArgumentException(
-                    "Json.createNull() must be used instead of null for JSON values");
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
 
         setRawProperty(name, value);
@@ -684,10 +686,59 @@ public class Element extends Node<Element> {
     // Distinct name so setProperty("foo", null) is not ambiguous
     public Element setPropertyBean(String name, Object value) {
         if (value == null) {
-            throw new IllegalArgumentException(
-                    "setProperty(name, Json.createNull()) must be used to set a property to null");
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
         return setPropertyJson(name, JsonUtils.beanToJson(value));
+    }
+
+    /**
+     * Sets the given property to the given list of beans or primitive values,
+     * converted to a JSON array.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *                  the type of items in the list
+     * @param name
+     *                  the property name, not <code>null</code>
+     * @param value
+     *                  the property value, not <code>null</code>
+     * @return this element
+     */
+    public <T> Element setPropertyList(String name, List<T> value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        return setPropertyJson(name, JsonUtils.listToJson(value));
+    }
+
+    /**
+     * Sets the given property to the given map of beans or primitive values,
+     * converted to a JSON object.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param name
+     *                  the property name, not <code>null</code>
+     * @param value
+     *                  the property value, not <code>null</code>
+     * @return this element
+     */
+    public Element setPropertyMap(String name, Map<String, ?> value) {
+        if (value == null) {
+            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
+        }
+
+        return setPropertyJson(name, JsonUtils.mapToJson(value));
     }
 
     /**

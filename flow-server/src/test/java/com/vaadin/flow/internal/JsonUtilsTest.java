@@ -376,4 +376,35 @@ public class JsonUtilsTest {
                 ((JsonObject) childBeanList.get(1)).getString("childValue"));
     }
 
+    @Test
+    public void simpleBeanListToJson() {
+        ArrayList<SimpleBean> list = new ArrayList<>();
+        SimpleBean bean1 = new SimpleBean();
+        bean1.string = "bean1";
+        SimpleBean bean2 = new SimpleBean();
+        bean2.string = "bean2";
+        list.add(bean1);
+        list.add(bean2);
+        JsonArray json = JsonUtils.listToJson(list);
+
+        Assert.assertEquals("bean1", json.getObject(0).getString("string"));
+        Assert.assertEquals("bean2", json.getObject(1).getString("string"));
+    }
+
+    @Test
+    public void simpleMapToJson() {
+        Map<String, Object> map = new HashMap<>();
+        SimpleBean bean1 = new SimpleBean();
+        bean1.string = "bean1";
+        SimpleBean bean2 = new SimpleBean();
+        bean2.string = "bean2";
+
+        map.put("one", bean1);
+        map.put("two", bean2);
+        JsonObject json = JsonUtils.mapToJson(map);
+
+        Assert.assertEquals("bean1", json.getObject("one").getString("string"));
+        Assert.assertEquals("bean2", json.getObject("two").getString("string"));
+    }
+
 }
