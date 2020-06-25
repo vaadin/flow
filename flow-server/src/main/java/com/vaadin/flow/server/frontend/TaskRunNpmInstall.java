@@ -342,9 +342,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             // This will allow to destroy the process which does IO regardless
             // whether it's executed in the same thread or another (may be
             // daemon) thread
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                finalProcess.destroyForcibly();
-            }));
+            Runtime.getRuntime()
+                    .addShutdownHook(new Thread(finalProcess::destroyForcibly));
 
             int errorCode = process.waitFor();
 
