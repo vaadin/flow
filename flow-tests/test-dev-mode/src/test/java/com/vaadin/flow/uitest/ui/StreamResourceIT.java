@@ -60,7 +60,8 @@ public class StreamResourceIT extends ChromeBrowserTest {
         assertDownloadedContent("link", "file%20name");
     }
 
-    private void assertDownloadedContent(String downloadId, String filename) throws IOException {
+    private void assertDownloadedContent(String downloadId, String filename)
+            throws IOException {
         WebElement link = findElement(By.id(downloadId));
         String url = link.getAttribute("href");
 
@@ -107,4 +108,5 @@ public class StreamResourceIT extends ChromeBrowserTest {
         }
         return new ByteArrayInputStream(bytes);
     }
+
 }
