@@ -20,6 +20,7 @@ import java.util.AbstractList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -47,13 +48,13 @@ import elemental.json.JsonValue;
  */
 public final class JsonUtils {
 
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Collects a stream of JSON values to a JSON array.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     private static final class JsonArrayCollector
             implements Collector<JsonValue, JsonArray, JsonArray> {
@@ -289,9 +290,8 @@ public final class JsonUtils {
      * @return a JSON representation of the bean
      */
     public static JsonObject beanToJson(Object bean) {
-        if (bean == null) {
-            throw new RuntimeException("Cannot convert null to a JSON object");
-        }
+        Objects.requireNonNull(bean, "Cannot convert null to a JSON object");
+
         try {
             return Json.parse(objectMapper.writeValueAsString(bean));
         } catch (JsonProcessingException e) {
