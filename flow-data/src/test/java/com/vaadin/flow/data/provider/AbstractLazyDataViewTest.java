@@ -104,7 +104,7 @@ public class AbstractLazyDataViewTest {
         // no items are activated
         Assert.assertFalse(dataView.contains("foo"));
         Assert.assertEquals(200, dataView.getRowCountEstimate());
-        Assert.assertEquals(200, dataView.getRowCountEstimateStep());
+        Assert.assertEquals(200, dataView.getRowCountEstimateIncrease());
 
         dataView.setRowCountUnknown();
         Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
@@ -118,7 +118,7 @@ public class AbstractLazyDataViewTest {
         dataView.setRowCountFromDataProvider();
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
 
-        dataView.setRowCountEstimateStep(200);
+        dataView.setRowCountEstimateIncrease(200);
         Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
     }
 

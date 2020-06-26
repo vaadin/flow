@@ -18,7 +18,6 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
@@ -533,7 +532,7 @@ public class DataCommunicatorTest {
     public void rowCountEstimateAndStep_defaults() {
         Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
                 pageSize * 4);
-        Assert.assertEquals(dataCommunicator.getRowCountEstimateStep(),
+        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
                 pageSize * 4);
 
         int customPageSize = 100;
@@ -541,17 +540,17 @@ public class DataCommunicatorTest {
 
         Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
                 customPageSize * 4);
-        Assert.assertEquals(dataCommunicator.getRowCountEstimateStep(),
+        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
                 customPageSize * 4);
 
         int customRowCountEstimate = 123;
         dataCommunicator.setRowCountEstimate(customRowCountEstimate);
         int customRowCountEstimateStep = 456;
-        dataCommunicator.setRowCountEstimateStep(customRowCountEstimateStep);
+        dataCommunicator.setRowCountEstimateIncrease(customRowCountEstimateStep);
 
         Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
                 customRowCountEstimate);
-        Assert.assertEquals(dataCommunicator.getRowCountEstimateStep(),
+        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
                 customRowCountEstimateStep);
     }
 

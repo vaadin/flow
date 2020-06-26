@@ -107,7 +107,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int rowCountEstimate = -1;
-    private int rowCountEstimateStep = -1;
+    private int rowCountEstimateIncrease = -1;
     private boolean definedSize = true;
     private boolean skipSizeCheckUntilReset;
     private boolean sizeReset;
@@ -391,9 +391,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Sets the size callback to be used and switches the component to defined
-     * size. Any previously set callbacks or initial size are cleared. The new
-     * size will be used after this roundtrip.
+     * Sets the size callback to be used and switches the component to exact row
+     * count. The new count will be used after this roundtrip.
      * 
      * @param countCallback
      *            the size callback to use
@@ -449,32 +448,51 @@ public class DataCommunicator<T> implements Serializable {
      * @return the row count estimate used
      */
     public int getRowCountEstimate() {
-        return doGetRowCountEstimate();
+        int estimate = rowCountEstimate;
+        if (estimate < 1) {
+            estimate = pageSize * 4;
+        }
+        if (estimate <= requestedRange.getEnd()) {
+            // don't let the count estimate set to lock component to
+            // defined size -> increase the size so size it's not locked
+            estimate = requestedRange.getEnd() + pageSize;
+        }
+        return estimate;
     }
 
     /**
-     * Sets the row count estimate increase step to use and switches the
-     * component to undefined size if not yet used. Any previously set count
-     * callback is cleared. The step is used the next time that the count is
-     * adjusted. <em>NOTE:</em> the step should be greater than the
+     * Sets the row count estimate increase to use and switches the component to
+     * undefined size if not yet used. Any previously set count callback is
+     * cleared. The step is used the next time that the count is adjusted.
+     * <em>NOTE:</em> the increase should be greater than the
      * {@link #setPageSize(int)} or it may cause bad performance.
      * 
-     * @param rowCountEstimateStep
+     * @param rowCountEstimateIncrease
      *            the row count estimate step to use
      */
-    public void setRowCountEstimateStep(int rowCountEstimateStep) {
-        this.rowCountEstimateStep = rowCountEstimateStep;
+    public void setRowCountEstimateIncrease(int rowCountEstimateIncrease) {
+        if (rowCountEstimateIncrease < 1) {
+            throw new IllegalArgumentException(
+                    "rowCountEstimateIncrease cannot be less than 1");
+        }
+        this.rowCountEstimateIncrease = rowCountEstimateIncrease;
         this.countCallback = null;
         definedSize = false;
     }
 
     /**
-     * Gets the row count estimate step used.
+     * Gets the row count estimate increase used.
      * 
-     * @return the row count estimate step
+     * @return the row count estimate increase
      */
-    public int getRowCountEstimateStep() {
-        return doGetRowCountEstimateStep();
+    public int getRowCountEstimateIncrease() {
+        if (rowCountEstimateIncrease < 1) {
+            return pageSize * 4;
+        } else {
+            // might be sensible to force this to be a multiple of page size,
+            // but being lenient for now
+            return rowCountEstimateIncrease;
+        }
     }
 
     /**
@@ -483,7 +501,7 @@ public class DataCommunicator<T> implements Serializable {
      * {@link DataProvider#size(Query)} for getting the size. Calling with
      * {@code false} will use whatever has been set with
      * {@link #setRowCountEstimate(int)} and increase the count when needed with
-     * {@link #setRowCountEstimateStep(int)}.
+     * {@link #setRowCountEstimateIncrease(int)}.
      * 
      * @param definedSize
      *            {@code true} for defined size, {@code false} for undefined
@@ -583,7 +601,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Getter method for determining the initial size of the data. Can be
+     * Getter method for determining the row count of the data. Can be
      * overridden by a subclass that uses a specific type of DataProvider and/or
      * query.
      *
@@ -604,40 +622,17 @@ public class DataCommunicator<T> implements Serializable {
         int previousAssumedSize = assumedSize;
         if (resendEntireRange || sizeReset) {
             // things have reset
-            assumedSize = doGetRowCountEstimate();
+            assumedSize = getRowCountEstimate();
         } else {
             // increase size estimate if the last page is being fetched
             if (requestedRange.getEnd() + pageSize > assumedSize) {
                 // by default adjust size by multiple of page size
-                assumedSize += doGetRowCountEstimateStep();
+                assumedSize += getRowCountEstimateIncrease();
             }
         }
         getLogger(DataCommunicator.class).info(
                 "Requested range: {} old size: {} new size: {}", requestedRange,
                 previousAssumedSize, assumedSize);
-    }
-
-    private int doGetRowCountEstimate() {
-        int estimate = rowCountEstimate;
-        if (estimate < 1) {
-            estimate = pageSize * 4;
-        }
-        if (estimate <= requestedRange.getEnd()) {
-            // don't let the initial size estimate set to lock component to
-            // defined size -> increase the size so size it's not locked
-            estimate = requestedRange.getEnd() + pageSize;
-        }
-        return estimate;
-    }
-
-    private int doGetRowCountEstimateStep() {
-        if (rowCountEstimateStep < 1) {
-            return pageSize * 4;
-        } else {
-            // might be sensible to force this to be a multiple of page size,
-            // but being lenient for now
-            return rowCountEstimateStep;
-        }
     }
 
     /**

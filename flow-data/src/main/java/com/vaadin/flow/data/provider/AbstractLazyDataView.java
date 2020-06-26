@@ -117,13 +117,13 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public void setRowCountEstimateStep(int rowCountEstimateStep) {
-        getDataCommunicator().setRowCountEstimateStep(rowCountEstimateStep);
+    public void setRowCountEstimateIncrease(int rowCountEstimateIncrease) {
+        getDataCommunicator().setRowCountEstimateIncrease(rowCountEstimateIncrease);
     }
 
     @Override
-    public int getRowCountEstimateStep() {
-        return getDataCommunicator().getRowCountEstimateStep();
+    public int getRowCountEstimateIncrease() {
+        return getDataCommunicator().getRowCountEstimateIncrease();
     }
 
     @Override
