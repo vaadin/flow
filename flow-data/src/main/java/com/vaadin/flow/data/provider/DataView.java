@@ -34,7 +34,7 @@ public interface DataView<T> extends Serializable {
 
     /**
      * Get the full data available to the component.
-     * Data will use set filters and sorting.
+     * Data is filtered and sorted the same way as in the component.
      *
      * @return filtered and sorted data set
      */
