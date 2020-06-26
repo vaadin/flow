@@ -309,7 +309,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             schemaReferences.add(actualSchema.get$ref());
         } else {
             if (actualSchema instanceof StringSchema) {
-                assertTrue(String.class.isAssignableFrom(expectedSchemaClass));
+                assertTrue(String.class.isAssignableFrom(expectedSchemaClass)
+                        || Enum.class.isAssignableFrom(expectedSchemaClass));
             } else if (actualSchema instanceof BooleanSchema) {
                 assertTrue((boolean.class.isAssignableFrom(expectedSchemaClass)
                         || Boolean.class

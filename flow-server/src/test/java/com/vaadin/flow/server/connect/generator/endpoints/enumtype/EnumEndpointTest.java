@@ -13,21 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.connect.generator.endpoints.datetime;
+package com.vaadin.flow.server.connect.generator.endpoints.enumtype;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 import org.junit.Test;
 
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGenerationTest;
 
-public class DateTimeEndpointTest extends AbstractEndpointGenerationTest {
-    public DateTimeEndpointTest() {
-        super(Collections.singletonList(DateTimeEndpoint.class));
+public class EnumEndpointTest extends AbstractEndpointGenerationTest {
+    public EnumEndpointTest() {
+        super(Arrays.asList(EnumEndpoint.class));
     }
 
     @Test
-    public void should_GenerateStringType_When_ReferringToDateTimeTypes() {
+    public void should_GenerateStringType_When_ReferringToEnumTypes() {
         verifyOpenApiObjectAndGeneratedTs();
     }
 }
