@@ -25,11 +25,11 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Abstract data view implementation which takes care of processing
- * component data size change events.
+ * Abstract data view implementation which handles parts that apply for any type
+ * of data source.
  *
  * @param <T>
- *         data type
+ *            data type
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
 
@@ -37,14 +37,14 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     protected Component component;
 
     /**
-     * Creates a new instance of {@link AbstractDataView} subclass
-     * and verifies the passed data provider is compatible with this
-     * data view implementation.
+     * Creates a new instance of {@link AbstractDataView} subclass and verifies
+     * the passed data provider is compatible with this data view
+     * implementation.
      *
      * @param dataProviderSupplier
-     *         supplier from which the DataProvider can be gotten
+     *            supplier from which the DataProvider can be gotten
      * @param component
-     *         the component that the dataView is bound to
+     *            the component that the dataView is bound to
      */
     public AbstractDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
@@ -72,22 +72,22 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     protected abstract Class<?> getSupportedDataProviderType();
 
     /**
-     * Verifies an obtained {@link DataProvider} type is appropriate
-     * for current Data View type.
+     * Verifies an obtained {@link DataProvider} type is appropriate for current
+     * Data View type.
      *
      * @param dataProviderType
-     *         data provider type to be verified
+     *            data provider type to be verified
      * @throws IllegalStateException
-     *         if data provider type is incompatible with data view type
+     *             if data provider type is incompatible with data view type
      */
     protected final void verifyDataProviderType(Class<?> dataProviderType) {
         Class<?> supportedDataProviderType = getSupportedDataProviderType();
         if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {
-            final String message = String
-                    .format("%s only supports '%s' or it's subclasses, but was given a '%s'",
-                            this.getClass().getSimpleName(),
-                            supportedDataProviderType.getSimpleName(),
-                            dataProviderType.getSuperclass().getSimpleName());
+            final String message = String.format(
+                    "%s only supports '%s' or it's subclasses, but was given a '%s'",
+                    this.getClass().getSimpleName(),
+                    supportedDataProviderType.getSimpleName(),
+                    dataProviderType.getSuperclass().getSimpleName());
             throw new IllegalStateException(message);
         }
     }
@@ -103,7 +103,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public void setIdentifierProvider(IdentifierProvider<T> identifierProvider) {
+    public void setIdentifierProvider(
+            IdentifierProvider<T> identifierProvider) {
         Objects.requireNonNull(identifierProvider,
                 "Item identity provider cannot be null");
         ComponentUtil.setData(component, IdentifierProvider.class,
@@ -112,9 +113,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
 
     @SuppressWarnings("unchecked")
     protected IdentifierProvider<T> getIdentifierProvider() {
-        IdentifierProvider<T> identifierProviderObject =
-                (IdentifierProvider<T>) ComponentUtil
-                        .getData(component, IdentifierProvider.class);
+        IdentifierProvider<T> identifierProviderObject = (IdentifierProvider<T>) ComponentUtil
+                .getData(component, IdentifierProvider.class);
 
         if (identifierProviderObject == null) {
             DataProvider<T, ?> dataProvider = dataProviderSupplier.get();

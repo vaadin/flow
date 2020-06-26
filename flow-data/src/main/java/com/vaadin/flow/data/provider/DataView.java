@@ -23,43 +23,43 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.shared.Registration;
 
 /**
- * Base view interface for getting information on current
- * data set of a Component.
+ * Base view interface for getting information on current data set of a
+ * Component.
  *
  * @param <T>
- *         data type
+ *            data type
  * @since
  */
 public interface DataView<T> extends Serializable {
 
     /**
-     * Get the full data available to the component.
-     * Data is filtered and sorted the same way as in the component.
+     * Get the full data available to the component. Data is filtered and sorted
+     * the same way as in the component.
      *
      * @return filtered and sorted data set
      */
     Stream<T> getItems();
 
     /**
-     * Get the full data size with filters if any set.
+     * Gets the size of the data source with filters applied if any are set.
      *
      * @return filtered data size
+     * @see #addSizeChangeListener(ComponentEventListener)
      */
     int getSize();
 
     /**
-     * Check if item is in the current data.
-     * Item may be filtered out or for lazy data not in the currently loaded
-     * making it un-available.
+     * Check if item is in the current data. Item may be filtered out or for
+     * lazy data not in the currently loaded making it un-available.
      * <p>
-     * By default, {@code equals} method implementation of the item is used
-     * for identity check. If a custom data provider is used,
-     * then the {@link DataProvider#getId(Object)} method is used instead.
-     * Item's custom identity can be set up with a
+     * By default, {@code equals} method implementation of the item is used for
+     * identity check. If a custom data provider is used, then the
+     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
+     * identity can be set up with a
      * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
      *
      * @param item
-     *         item to search for
+     *            item to search for
      * @return true if item is found in the available data
      *
      * @see #setIdentifierProvider(IdentifierProvider)
@@ -75,18 +75,19 @@ public interface DataView<T> extends Serializable {
      * component.
      *
      * @param listener
-     *         size change listener to register
+     *            size change listener to register
      * @return registration for removing the listener
      */
     Registration addSizeChangeListener(
             ComponentEventListener<SizeChangeEvent<?>> listener);
 
     /**
-     * Sets identity provider to be used for getting item identifier and
-     * compare the items using that identifier.
+     * Sets an identifier provider, which returns an identifier for the given
+     * item. The identified is used for comparing the equality of items. Usage
+     * example: {@code dataView.setIdentifiedProvider(Item::getId);}.
      *
      * @param identifierProvider
-     *           function that returns the non-null identifier for a given item
+     *            function that returns the non-null identifier for a given item
      */
     void setIdentifierProvider(IdentifierProvider<T> identifierProvider);
 }

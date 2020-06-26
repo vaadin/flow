@@ -17,59 +17,50 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.stream.Stream;
 
 /**
- * Interface that defines methods for setting in memory list data.
- * This will return a {@link ListDataView}.
+ * An interface for components that accept setting in-memory data sources and
+ * returns a {@link ListDataView} that provides information and allows
+ * operations on the data.
  *
  * @param <T>
- *         data type
+ *            data type
  * @param <V>
- *         DataView type
+ *            DataView type
  * @since
  */
-public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
-        Serializable {
+public interface HasListDataView<T, V extends ListDataView<T, ?>>
+        extends Serializable {
     /**
-     * Sets a ListDataProvider for the component to use.
+     * Sets a ListDataProvider for the component to use and returns a
+     * {@link ListDataView} that provides information and allows operations on
+     * the data.
      *
      * @param dataProvider
-     *         ListDataProvider providing data tot he component.
-     * @return ListDataView instance
+     *            ListDataProvider providing data to the component.
+     * @return ListDataView providing access to the data
      */
     V setDataSource(ListDataProvider<T> dataProvider);
 
-    // NOTE: this is not using setItems so that we don't collide with HasItems::setItems
-
     /**
-     * Sets the data items from the given Collection.
+     * Sets the data from the given Collection and returns a
+     * {@link ListDataView} that provides information and allows operations on
+     * the data.
      *
      * @param items
-     *         the data items to display, not {@code null}
-     * @return ListDataView instance
+     *            the data items to display, not {@code null}
+     * @return ListDataView providing access to the data
      */
     default V setDataSource(Collection<T> items) {
         return setDataSource(DataProvider.ofCollection(items));
     }
 
     /**
-     * Sets the data items from the given Stream.
-     *
-     * @param items
-     *         the data items to display, not {@code null}
-     * @return ListDataView instance
-     */
-    default V setDataSource(Stream<T> items) {
-        return setDataSource(DataProvider.fromStream(items));
-    }
-
-    /**
      * Sets the data items of this listing.
      *
      * @param items
-     *         the data items to display, not {@code null}
-     * @return ListDataView instance
+     *            the data items to display, not {@code null}
+     * @return ListDataView providing access to the data
      */
     default V setDataSource(T... items) {
         return setDataSource(DataProvider.ofItems(items));
@@ -77,11 +68,13 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>> extends
 
     /**
      * Get the ListDataView for the component. Throws if the data is not
-     * in-memory and should use another data view type.
+     * in-memory and should use another data view type like
+     * {@code getLazyDataView()}.
      *
-     * @return ListDataView instance
+     * @return ListDataView providing access to the data
      * @throws IllegalStateException
-     *         when list data view is not applicable
+     *             when list data view is not applicable and
+     *             {@code getLazyDataView()} should be used instead
      */
     V getListDataView();
 }

@@ -19,39 +19,43 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 
 /**
- * Interface that defines methods for setting data.
- * This will return a {@link DataView}.
+ * An interface for components that accept setting a data source of the
+ * generic types {@link DataProvider} and {@link InMemoryDataProvider}. The
+ * methods return a {@link DataView} which has the generic API for getting
+ * information on the data.
  *
  * @param <T>
- *         data type
+ *            data type
  * @param <V>
- *         DataView type
+ *            DataView type
  * @since
  */
 public interface HasDataView<T, V extends DataView<T>> extends Serializable {
 
     /**
-     * Set a generic data provider for the component to use.
+     * Set a generic data provider for the component to use and returns the base
+     * {@link DataView} that provides API to get information on the data.
      * <p>
-     * It is suggested to use a more specific target from {@link
-     * HasListDataView} or {@link HasLazyDataView}
+     * This method should be used only when the data provider type
+     * is not either {@link ListDataProvider} or {@link BackEndDataProvider}.
      *
      * @param dataProvider
-     *         DataProvider instance to use
-     * @return DataView instance
+     *            DataProvider instance to use
+     * @return DataView providing information on the data
      */
     V setDataSource(DataProvider<T, ?> dataProvider);
 
     /**
      * Sets an InMemory data provider for the component to use.
      * <p>
-     * Note! Using a {@link ListDataProvider} instead of a {@link
-     * InMemoryDataProvider} is recommended to get access to {@link
-     * ListDataView} API by using {@link HasListDataView#setDataSource(ListDataProvider)}.
+     * Note! Using a {@link ListDataProvider} instead of a
+     * {@link InMemoryDataProvider} is recommended to get access to
+     * {@link ListDataView} API by using
+     * {@link HasListDataView#setDataSource(ListDataProvider)}.
      *
      * @param dataProvider
-     *         InMemoryDataProvider to use
-     * @return DataView instance
+     *            InMemoryDataProvider to use
+     * @return DataView providing information on the data
      */
     default V setDataSource(InMemoryDataProvider<T> dataProvider) {
         return setDataSource((DataProvider<T, ?>) dataProvider);
@@ -60,10 +64,10 @@ public interface HasDataView<T, V extends DataView<T>> extends Serializable {
     /**
      * Get the DataView for the component.
      * <p>
-     * The returned DataView only contains a minimal common API.
-     * Use of {@link HasListDataView#getListDataView} or {@link
-     * HasLazyDataView#getLazyDataView} should be used for more
-     * targeted helper features
+     * The returned DataView only contains a minimal common API. Use of
+     * {@link HasListDataView#getListDataView} or
+     * {@link HasLazyDataView#getLazyDataView} should be used for more targeted
+     * helper features
      *
      * @return DataView instance
      */

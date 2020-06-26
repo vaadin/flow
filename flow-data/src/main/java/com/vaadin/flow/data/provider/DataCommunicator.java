@@ -280,24 +280,6 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Get the active keys and order on active data on the client.
-     *
-     * @return list of active client data as ordered keys
-     */
-    public List<String> getActiveKeyOrdering() {
-        return Collections.unmodifiableList(activeKeyOrder);
-    }
-
-    /**
-     * Get the current client item range.
-     *
-     * @return range of items on client
-     */
-    public Range getRequestedRange() {
-        return requestedRange;
-    }
-
-    /**
      * Generate a data query with component sorting and filtering.
      *
      * @param offset
