@@ -53,6 +53,7 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouteParameters;
@@ -243,11 +244,21 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
-        if (event instanceof ErrorNavigationEvent) {
-            return;
-        }
+        boolean isRouterLink = NavigationTrigger.ROUTER_LINK
+                .equals(event.getTrigger());
 
-        if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+        if (event instanceof ErrorNavigationEvent) {
+            if (isRouterLink) {
+                ErrorNavigationEvent errorNavigationEvent = (ErrorNavigationEvent) event;
+                if (errorNavigationEvent.getErrorParameter() != null
+                        && errorNavigationEvent.getErrorParameter()
+                                .getCaughtException() instanceof NotFoundException) {
+                    // Push history in case the exception was due to route not
+                    // found (#8544)
+                    pushHistoryState(event);
+                }
+            }
+        } else if (isRouterLink) {
             /*
              * When the event trigger is a RouterLink, pushing history state
              * should be done in client-side. See
