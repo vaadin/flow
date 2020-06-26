@@ -393,6 +393,44 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void setSizeCallback_rowCountEstimatesWereSet_overridesRowCountEstimates() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                5000);
+        dataProvider = Mockito.spy(dataProvider);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        final int rowCountEstimate = 200;
+        dataCommunicator.setRowCountEstimate(rowCountEstimate);
+        final int rowCountEstimateIncrease = 300;
+        dataCommunicator.setRowCountEstimateIncrease(rowCountEstimateIncrease);
+        dataCommunicator.setRequestedRange(150, 50);
+        Assert.assertFalse(dataCommunicator.isDefinedSize());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("initial estimate+increase not used",
+                rowCountEstimate + rowCountEstimateIncrease,
+                dataCommunicator.getDataSize());
+        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+
+        AtomicBoolean sizeCallbackCall = new AtomicBoolean(false);
+        final int exactSize = 1234;
+        dataCommunicator.setCountCallback(query -> {
+            sizeCallbackCall.set(true);
+            return exactSize;
+        });
+        Assert.assertTrue(dataCommunicator.isDefinedSize());
+
+        fakeClientCommunication();
+
+        Assert.assertTrue("SizeCallback not called",
+                sizeCallbackCall.getAndSet(false));
+        Assert.assertEquals("Size not used", exactSize,
+                dataCommunicator.getDataSize());
+    }
+
+    @Test
     public void setInitialSizeEstimate_usedInitiallyThenDiscarded() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
@@ -441,7 +479,8 @@ public class DataCommunicatorTest {
 
         Assert.assertEquals(
                 "too small initial size estimate should not be applied",
-                getPageSizeIncrease(), dataCommunicator.getDataSize());
+                initialSizeEstimate + getPageSizeIncrease(),
+                dataCommunicator.getDataSize());
     }
 
     @Test
@@ -459,7 +498,28 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         Assert.assertEquals(
                 "Size should be automatically adjusted for too small estimate",
-                requestedRangeEnd + dataCommunicator.getPageSize(),
+                initialSizeEstimate + getPageSizeIncrease(),
+                dataCommunicator.getDataSize());
+    }
+
+    @Test
+    public void setInitialRowCountEstimateAndIncrease_lessThanRequestedRange_estimateIncreaseUsed() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                5000);
+        dataProvider = Mockito.spy(dataProvider);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        int rangeLength = 100;
+        dataCommunicator.setRequestedRange(400, rangeLength);
+
+        final int initialSizeEstimate = 300;
+        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+        final int rowCountEstimateIncrease = 99;
+        dataCommunicator.setRowCountEstimateIncrease(rowCountEstimateIncrease);
+
+        fakeClientCommunication();
+        Assert.assertEquals(
+                "Size should be automatically adjusted for too small estimate",
+                initialSizeEstimate + (3 * rowCountEstimateIncrease),
                 dataCommunicator.getDataSize());
     }
 
@@ -546,7 +606,8 @@ public class DataCommunicatorTest {
         int customRowCountEstimate = 123;
         dataCommunicator.setRowCountEstimate(customRowCountEstimate);
         int customRowCountEstimateStep = 456;
-        dataCommunicator.setRowCountEstimateIncrease(customRowCountEstimateStep);
+        dataCommunicator
+                .setRowCountEstimateIncrease(customRowCountEstimateStep);
 
         Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
                 customRowCountEstimate);

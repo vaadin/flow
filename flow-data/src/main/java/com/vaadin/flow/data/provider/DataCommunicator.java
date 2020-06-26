@@ -60,6 +60,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * @since 1.0
  */
 public class DataCommunicator<T> implements Serializable {
+    public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
@@ -448,16 +449,10 @@ public class DataCommunicator<T> implements Serializable {
      * @return the row count estimate used
      */
     public int getRowCountEstimate() {
-        int estimate = rowCountEstimate;
-        if (estimate < 1) {
-            estimate = pageSize * 4;
+        if (rowCountEstimate < 1) {
+            return pageSize * DEFAULT_PAGE_INCREASE_COUNT;
         }
-        if (estimate <= requestedRange.getEnd()) {
-            // don't let the count estimate set to lock component to
-            // defined size -> increase the size so size it's not locked
-            estimate = requestedRange.getEnd() + pageSize;
-        }
-        return estimate;
+        return rowCountEstimate;
     }
 
     /**
@@ -486,9 +481,10 @@ public class DataCommunicator<T> implements Serializable {
      * @return the row count estimate increase
      */
     public int getRowCountEstimateIncrease() {
-        if (rowCountEstimateIncrease < 1) {
-            return pageSize * 4;
+        if (rowCountEstimateIncrease == -1) {
+            return pageSize * DEFAULT_PAGE_INCREASE_COUNT;
         } else {
+            assert rowCountEstimate > 0 : "0 is not an increase";
             // might be sensible to force this to be a multiple of page size,
             // but being lenient for now
             return rowCountEstimateIncrease;
@@ -623,12 +619,13 @@ public class DataCommunicator<T> implements Serializable {
         if (resendEntireRange || sizeReset) {
             // things have reset
             assumedSize = getRowCountEstimate();
-        } else {
-            // increase size estimate if the last page is being fetched
-            if (requestedRange.getEnd() + pageSize > assumedSize) {
-                // by default adjust size by multiple of page size
-                assumedSize += getRowCountEstimateIncrease();
-            }
+        }
+
+        // increase size estimate if the last page is being fetched,
+        // or if the estimate is less than what is shown on client
+        while (requestedRange.getEnd() + pageSize > assumedSize) {
+            // by default adjust size by multiple of page size
+            assumedSize += getRowCountEstimateIncrease();
         }
         getLogger(DataCommunicator.class).info(
                 "Requested range: {} old size: {} new size: {}", requestedRange,

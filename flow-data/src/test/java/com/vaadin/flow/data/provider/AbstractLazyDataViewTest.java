@@ -235,11 +235,15 @@ public class AbstractLazyDataViewTest {
             return Stream.generate(String::new).limit(limit.get());
         }, query -> -1), null);
 
-        dataCommunicator.setRowCountEstimate(66);
+        final int rowCountEstimate = 66;
+        dataCommunicator.setRowCountEstimate(rowCountEstimate);
 
         fakeClientCommunication();
 
-        Assert.assertEquals(66, dataView.getSize());
+        Assert.assertEquals(
+                rowCountEstimate
+                        + dataCommunicator.getRowCountEstimateIncrease(),
+                dataView.getSize());
 
         limit.set(70);
         Stream<String> items = dataView.getItems();
