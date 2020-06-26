@@ -99,6 +99,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
     private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
+    private static final Pattern GENERIC_TYPE_NAME_PATTERN = Pattern
+            .compile("([^<]*)<(.*)>");
     private static final String OPERATION = "operation";
     private static final String IMPORT = "import";
 
@@ -523,12 +525,16 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String simpleName = getSimpleNameFromImports(property.datatype,
                 imports);
 
-        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
-        if (matcher.find()
-                && !matcher.group(1).matches("any|boolean|number|string")) {
-            String itemModelType = fixNameForModel(matcher.group(1)) + MODEL;
-            return ": Array" + MODEL + "<ModelType<" + itemModelType + ">, "
-                    + itemModelType + ">";
+        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(simpleName);
+        if (matcher.find()) {
+            String variableName;
+            do {
+                variableName = matcher.group(2);
+                matcher.reset(variableName);
+            } while (matcher.find());
+            if (!variableName.matches("any|boolean|number|string")) {
+                return ": " + getModelFullType(simpleName);
+            }
         }
         return "";
     }
@@ -538,26 +544,49 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String name = property.name;
         String dataType = property.datatype;
         String simpleName = getSimpleNameFromImports(dataType, imports);
-        String validators = getConstrainsArguments(property);
+        String arguments = getConstrainsArguments(property);
 
-        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
+        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(simpleName);
         if (matcher.find()) {
-            simpleName = "Array" + MODEL + "(this, '" + name + "', "
-                    + fixNameForModel(matcher.group(1)) + MODEL + validators + ")";
-        } else {
-            simpleName = fixNameForModel(simpleName) + MODEL + "(this, '" + name
-                    + "'" + validators + ")";
+            simpleName = matcher.group(1);
+            arguments = ", " + getModelVariableArguments(matcher.group(2))
+                    + arguments;
         }
-        return "new " + simpleName;
+        return "new " + fixNameForModel(simpleName) + "(this, '" + name + "'"
+                + arguments + ")";
+    }
+
+    private String getModelFullType(String name) {
+        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            String variableName = getModelFullType(matcher.group(2));
+            return fixNameForModel(matcher.group(1)) + "<ModelType<"
+                    + variableName + ">, " + variableName + ">";
+        }
+        return fixNameForModel(name);
+    }
+
+    private String getModelVariableArguments(String name) {
+        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            return fixNameForModel(matcher.group(1)) + ", ["
+                    + getModelVariableArguments(matcher.group(2)) + "]";
+        } else {
+            return fixNameForModel(name) + ", []";
+        }
     }
 
     private String fixNameForModel(String name) {
+        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            name = matcher.group(1);
+        }
         if ("any".equals(name)) {
             name = "Object";
         } else if (name.matches("string|number|boolean")) {
             name = GeneratorUtils.capitalize(name);
         }
-        return name;
+        return name + MODEL;
     }
 
     private String getConstrainsArguments(CodegenProperty property) {
