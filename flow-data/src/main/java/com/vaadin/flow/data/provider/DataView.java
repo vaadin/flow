@@ -83,7 +83,7 @@ public interface DataView<T> extends Serializable {
 
     /**
      * Sets an identifier provider, which returns an identifier for the given
-     * item. The identified is used for comparing the equality of items. Usage
+     * item. The identifier is used for comparing the equality of items. Usage
      * example: {@code dataView.setIdentifiedProvider(Item::getId);}.
      *
      * @param identifierProvider
