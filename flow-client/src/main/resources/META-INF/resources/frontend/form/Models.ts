@@ -27,6 +27,9 @@ export interface ModelConstructor<T, M extends AbstractModel<T>> {
   new(parent: ModelParent<T>, key: keyof any, ...args: any[]): M;
 }
 
+type ModelVariableArguments<C extends ModelConstructor<any, AbstractModel<any>>> =
+  C extends new (parent: ModelParent<any>, key: keyof any, ...args: infer R) => any ? R : never;
+
 export abstract class AbstractModel<T> {
   static createEmptyValue(): unknown {
     return undefined;
@@ -93,17 +96,20 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     return [] as ReadonlyArray<unknown>;
   }
 
-  private [ModelSymbol]: ModelConstructor<T, M>;
-  private models: M[] = [];
+  private readonly [ModelSymbol]: ModelConstructor<T, M>;
+  private readonly modelArgs: ReadonlyArray<any>;
+  private readonly models: M[] = [];
 
   constructor(
     parent: ModelParent<ReadonlyArray<T>>,
     key: keyof any,
     Model: ModelConstructor<T, M>,
+    modelArgs: ModelVariableArguments<typeof Model>,
     ...validators: ReadonlyArray<Validator<ReadonlyArray<T>>>
   ) {
     super(parent, key, ...validators);
     this[ModelSymbol] = Model;
+    this.modelArgs = modelArgs;
   }
 
   /**
@@ -118,7 +124,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     for (const i of array.keys()) {
       let model = this.models[i];
       if (!model) {
-        model = new Model(this, i);
+        model = new Model(this, i, ...this.modelArgs);
         this.models[i] = model;
       }
       yield getBinderNode(model);

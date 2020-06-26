@@ -53,7 +53,7 @@ export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   readonly customer = new CustomerModel(this, 'customer', new Required());
   readonly notes = new StringModel(this, 'notes', new Required());
   readonly priority = new NumberModel(this, 'priority');
-  readonly products = new ArrayModel(this, 'products', ProductModel);
+  readonly products = new ArrayModel(this, 'products', ProductModel, []);
 }
 
 export interface TestEntity {
@@ -70,6 +70,6 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
   fieldNumber = new NumberModel(this, 'fieldNumber');
   fieldBoolean = new BooleanModel(this, 'fieldBoolean');
   fieldObject = new ObjectModel(this, 'fieldObject');
-  fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel);
-  fieldArrayModel = new ArrayModel(this, 'fieldArrayModel', IdEntityModel);
+  fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel, []);
+  fieldArrayModel = new ArrayModel(this, 'fieldArrayModel', IdEntityModel, []);
 }
