@@ -59,6 +59,7 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
+
 import elemental.json.JsonValue;
 
 /**
@@ -80,7 +81,6 @@ public abstract class AbstractNavigationStateRenderer
     private Postpone postponed = null;
 
     private LocationChangeEvent locationChangeEvent = null;
-
 
     /**
      * Creates a new renderer for the given navigation state.
@@ -659,7 +659,7 @@ public abstract class AbstractNavigationStateRenderer
                         beforeEvent.getRerouteTargetRouteParameters())) {
             return Optional.of(reroute(event, beforeEvent));
         }
-
+        
         return Optional.empty();
     }
 

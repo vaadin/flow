@@ -69,10 +69,13 @@ public final class FilterUtils {
      *            a query with a filter to convert
      * @return a converted filter, may be {@code null} if the query has no
      *         filter
-     *
+     * @param <T>
+     *            data type
      * @param <C>
      *            the filter type that the wrapped data provider accepts;
      *            typically provided by a Component
+     * @param <F>
+     *            the filter type of data provider
      */
     public static <T, C, F> F convertFilter(
             SerializableFunction<C, F> filterConverter, Query<T, C> query) {

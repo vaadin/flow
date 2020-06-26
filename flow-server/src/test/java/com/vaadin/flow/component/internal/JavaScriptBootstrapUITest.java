@@ -490,7 +490,7 @@ public class JavaScriptBootstrapUITest  {
     }
 
     private void assertExceptionComponent(Class<?> errorClass,
-                                          String... exceptionTexts) {
+            String... exceptionTexts) {
         Optional<Component> visibleComponent = ui.getElement().getChild(0)
                 .getComponent();
 
