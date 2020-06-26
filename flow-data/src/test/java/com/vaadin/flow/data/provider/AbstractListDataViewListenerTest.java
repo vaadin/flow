@@ -24,6 +24,7 @@ import com.vaadin.flow.server.VaadinSession;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +39,7 @@ public abstract class AbstractListDataViewListenerTest {
         HasListDataView<String, ? extends AbstractListDataView<String>> component =
                 getVerifiedComponent();
         AbstractListDataView<String> dataView = component
-                .setDataSource(items);
+                .setDataSource(new ArrayList<>(Arrays.asList(items)));
 
         AtomicInteger invocationCounter = new AtomicInteger(0);
 
