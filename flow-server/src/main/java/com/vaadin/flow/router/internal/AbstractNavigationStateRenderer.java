@@ -248,15 +248,10 @@ public abstract class AbstractNavigationStateRenderer
                 .equals(event.getTrigger());
 
         if (event instanceof ErrorNavigationEvent) {
-            if (isRouterLink) {
-                ErrorNavigationEvent errorNavigationEvent = (ErrorNavigationEvent) event;
-                if (errorNavigationEvent.getErrorParameter() != null
-                        && errorNavigationEvent.getErrorParameter()
-                                .getCaughtException() instanceof NotFoundException) {
-                    // Push history in case the exception was due to route not
-                    // found (#8544)
-                    pushHistoryState(event);
-                }
+            // Push history in case the exception was due to route not
+            // found (#8544)
+            if (shouldPushHistoryStateForNavigationError((ErrorNavigationEvent) event)) {
+                pushHistoryState(event);
             }
         } else if (isRouterLink) {
             /*
@@ -293,6 +288,14 @@ public abstract class AbstractNavigationStateRenderer
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
         return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
+    }
+
+    protected boolean shouldPushHistoryStateForNavigationError(
+            ErrorNavigationEvent event) {
+        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
+                && event.getErrorParameter() != null
+                && event.getErrorParameter()
+                        .getCaughtException() instanceof NotFoundException;
     }
 
     /**
