@@ -25,99 +25,111 @@ package com.vaadin.flow.data.provider;
 public interface LazyDataView<T> extends DataView<T> {
 
     /**
-     * Sets the component to use defined size with the given callback that
-     * provides the exact size for the data source.
+     * Sets a callback that the component uses to get the exact rows count
+     * (items) in the data source. Use this when it is cheap to get the exact
+     * size of the data source and it is desired that the user sees the "full
+     * scrollbar size".
      * <p>
-     * When the component has a distinct data provider set with
-     * {@link com.vaadin.flow.data.binder.HasDataProvider#setDataProvider(DataProvider)},
-     * the given callback will be queried for getting the size of the data
-     * source instead of the data provider {@link DataProvider#size(Query)}
-     * method.
-     * <p>
-     * Calling this method will clear any previously set initial size estimate
-     * {@link #withUndefinedSize(int)} and size estimate callback
-     * {@link #withUndefinedSize(SizeEstimateCallback)}.
+     * The given callback will be queried for the count instead of the data
+     * provider {@link DataProvider#size(Query)} method when the component has a
+     * distinct data provider set with
+     * {@link HasLazyDataView#setDataSource(BackEndDataProvider)}.
      *
      * @param callback
-     *            the callback to use for determining the size of the data
+     *            the callback to use for determining row count in the data
      *            source, not {@code null}
-     * @see #withDefinedSize()
+     * @see #setRowCountFromDataProvider()
+     * @see #setRowCountUnknown()
      */
-    void withDefinedSize(CallbackDataProvider.CountCallback<T, Void> callback);
+    void setRowCountCallback(
+            CallbackDataProvider.CountCallback<T, Void> callback);
 
     /**
-     * Sets the component to use undefined size with the given initial size
-     * estimate of the data source. <em>If the initial size estimate is less
-     * than the currently requested range, it will get discarded until a reset
-     * occurs.</em>. The initial size estimate shouldn't be less than two pages
-     * or it might cause extra requests after a reset.
+     * Switches the component to get the exact row count from the data
+     * provider's {@link DataProvider#size(Query)}. Use this when it is cheap to
+     * get the exact size of the data source and it is desired that the user
+     * sees the "full scrollbar size".
      * <p>
-     * Calling this method will clear any previously set size estimate callback
-     * {@link #withUndefinedSize(SizeEstimateCallback)} or defined size callback
-     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)}.
+     * Calling this method will clear any previously set count callback with the
+     * {@link #setRowCountCallback(CallbackDataProvider.CountCallback)} method.
+     */
+    void setRowCountFromDataProvider();
+
+    /**
+     * Sets the estimated row count for the component. The component will
+     * automatically fetch more items once the estimate is reached or adjust the
+     * count if the data source runs out of items before the end. Use this when
+     * the data source will have a lot more items than shown by default and it
+     * should be shown to the user.
+     * <p>
+     * The given estimate is discarded if it is less than the currently shown
+     * range or if the actual number of rows has been determined. The estimate
+     * shouldn't be less than two pages (see {@code setPageSize(int)} in the
+     * component) or it causes unnecessary backend requests.
+     * <p>
+     * Calling this method will clear any previously set count callback
+     * {@link #setRowCountCallback(CallbackDataProvider.CountCallback)}.
      *
-     * @param initialSizeEstimate
-     *            initial size estimate for the data source
+     * @param rowCountEstimate
+     *            estimated row count of the data source
+     * @see #setRowCountUnknown()
+     * @see #setRowCountEstimateIncrease(int)
      */
-    void withUndefinedSize(int initialSizeEstimate);
+    void setRowCountEstimate(int rowCountEstimate);
 
     /**
-     * Sets the component to use undefined size with the given callback for
-     * estimating the size of the data source. Calling this method will clear
-     * any previously set size callback
-     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)} or initial
-     * size estimate {@link #withUndefinedSize(int)}.
-     * <p>
-     * This callback is triggered:
-     * <ol>
-     * <li>initially after setting</li>
-     * <li>after reset like when the filter has changed</li>
-     * <li>when the last page of the previous size is being fetched</li>
-     * </ol>
-     * <p>
-     * Once the size is known, because the backend has "run out of items", the
-     * callback is not triggered until a reset occurs or filter changes.
-     * <p>
-     * <em>NOTE: The given callback can only return a size estimate that is less
-     * than the {@link SizeEstimateQuery#getRequestedRangeEnd()} when there has
-     * been a reset (see {@link SizeEstimateQuery#isReset()},as that would be
-     * the same as using defined size.</em> An {@link IllegalStateException} is
-     * thrown instead. For using defined size, use
-     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)} instead.
+     * Gets the row count estimate. The default value depends on the component.
      *
-     * @param callback
-     *            a callback that provides the estimated size of the data
+     * @return row count estimate
+     * @see #setRowCountEstimate(int)
      */
-    void withUndefinedSize(SizeEstimateCallback<T, Void> callback);
+    int getRowCountEstimate();
 
     /**
-     * Switches the component to defined size from undefined size.
+     * Sets how much the row count estimate is increased once the previous row
+     * count estimate has been reached. Use this when the user should be able to
+     * scroll down faster. The default value depends on the component.
      * <p>
-     * With defined size, the data provider in the component needs to have
-     * implemented the {@link DataProvider#size(Query)} method. Another
-     * alternative is to provide a size callback with the
-     * {@link #withDefinedSize(CallbackDataProvider.CountCallback)}.
+     * As an example, with an estimate of {@code 1000} and an increase of
+     * {@code 500}, when scrolling down the row count will be:
+     * {@code 1000, 1500, 2000, 2500...} until the data source runs out of
+     * items.
+     * <p>
+     * <em>NOTE:</em> the given increase should not be less than the
+     * {@code setPageSize(int)} set in the component, or there will be
+     * unnecessary backend requests.
+     *
+     * @param rowCountEstimateIncrease
+     *            how much the row count estimate is increased
+     * @see #setRowCountEstimate(int)
      */
-    void withDefinedSize();
+    void setRowCountEstimateIncrease(int rowCountEstimateIncrease);
 
     /**
-     * Returns whether the component is using defined or undefined size.
+     * Gets the row count estimate increase - how much the row count estimate is
+     * increased once the previous row count estimate has been reached. The
+     * default value depends on the component.
      * 
-     * @return {@code true} for defined size, {@code false} for undefined size
-     * @see #withDefinedSize()
-     * @see #withUndefinedSize()
+     * @return the row count estimate increase
+     * @see #setRowCountEstimateIncrease(int)
      */
-    boolean isDefinedSize();
+    int getRowCountEstimateIncrease();
 
     /**
-     * Switches the component to undefined size from defined size or from
-     * previous estimate #withInitialCountEstimate or estimate callback
-     * #withCountEstimateCallback.
+     * Switches the component to automatically extend the number of rows as the
+     * previous end is almost reached. The component stops increasing the number
+     * of rows once the data source has run out of items. Not getting the exact
+     * size of the data source upfront can improve performance with large sets
+     * of data.
      * <p>
-     * The default undefined size depends on the component implementation. For
-     * controlling the undefined size, use {@link #withUndefinedSize(int)} or
-     * {@link #withUndefinedSize(SizeEstimateCallback)}. Calling this method
-     * will clear any previously set initial size estimate or size.
+     * The default initial row count and how much the row count is increased
+     * depends on the component. These values can be customized with
+     * {@link #setRowCountEstimate(int)} and
+     * {@link #setRowCountEstimateIncrease(int)} when the data source has a lot
+     * of items and faster scrolling down is desired.
+     * <p>
+     * Calling this method will clear any previously set count callback
+     * {@link #setRowCountCallback(CallbackDataProvider.CountCallback)}.
      */
-    void withUndefinedSize();
+    void setRowCountUnknown();
 }

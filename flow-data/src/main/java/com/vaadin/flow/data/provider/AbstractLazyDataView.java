@@ -62,25 +62,27 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
     @SuppressWarnings("unchecked")
     @Override
     public Stream<T> getItems() {
-        if (isDefinedSize()) {
-            return getDataCommunicator().getDataProvider()
-                    .fetch(dataCommunicator.buildQuery(0,
-                            dataCommunicator.getDataSize()));
+        DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
+        if (verifiedDataCommunicator.isDefinedSize()) {
+            return verifiedDataCommunicator.getDataProvider()
+                    .fetch(this.dataCommunicator.buildQuery(0,
+                            this.dataCommunicator.getDataSize()));
         } else {
-            return getDataCommunicator().getDataProvider()
-                    .fetch(dataCommunicator.buildQuery(0, Integer.MAX_VALUE));
+            return verifiedDataCommunicator.getDataProvider().fetch(
+                    this.dataCommunicator.buildQuery(0, Integer.MAX_VALUE));
         }
     }
 
     /**
-     * Gets the known size of the data. With undefined size
-     * {@link #withUndefinedSize()} this may be an estimate. <em>NOTE: usage of
-     * this method is not recommended as the size might change at any point -
-     * add a listener with the
+     * Gets the size of the data source. With unknown size
+     * {@link #setRowCountUnknown()} this may be an estimate. <em>NOTE: as the
+     * size might change at any point - add a listener with the
      * {@link #addSizeChangeListener(ComponentEventListener)} method to get
      * notified when the data size has changed. Calling this method will also
-     * trigger a backend call when using {@link #withDefinedSize()} and the size
-     * is not known.</em>
+     * trigger a backend call when using either a
+     * {@link #setRowCountFromDataProvider()} or
+     * {@link #setRowCountCallback(CallbackDataProvider.CountCallback)} and the
+     * size is not yet fetched.</em>
      * <p>
      * If size is not yet known, like during the initial roundtrip, {@code 0} is
      * returned as the size is determined during the "before client
@@ -99,34 +101,39 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public void withDefinedSize(
+    public void setRowCountCallback(
             CallbackDataProvider.CountCallback<T, Void> callback) {
-        getDataCommunicator().setSizeCallback(callback);
+        getDataCommunicator().setCountCallback(callback);
     }
 
     @Override
-    public void withUndefinedSize(int initialSizeEstimate) {
-        getDataCommunicator().setInitialSizeEstimate(initialSizeEstimate);
+    public void setRowCountEstimate(int rowCountEstimate) {
+        getDataCommunicator().setRowCountEstimate(rowCountEstimate);
     }
 
     @Override
-    public void withUndefinedSize(SizeEstimateCallback<T, Void> callback) {
-        getDataCommunicator().setSizeEstimateCallback(callback);
+    public int getRowCountEstimate() {
+        return getDataCommunicator().getRowCountEstimate();
     }
 
     @Override
-    public void withDefinedSize() {
+    public void setRowCountEstimateIncrease(int rowCountEstimateIncrease) {
+        getDataCommunicator().setRowCountEstimateIncrease(rowCountEstimateIncrease);
+    }
+
+    @Override
+    public int getRowCountEstimateIncrease() {
+        return getDataCommunicator().getRowCountEstimateIncrease();
+    }
+
+    @Override
+    public void setRowCountFromDataProvider() {
         getDataCommunicator().setDefinedSize(true);
     }
 
     @Override
-    public void withUndefinedSize() {
+    public void setRowCountUnknown() {
         getDataCommunicator().setDefinedSize(false);
-    }
-
-    @Override
-    public boolean isDefinedSize() {
-        return getDataCommunicator().isDefinedSize();
     }
 
     @Override

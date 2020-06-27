@@ -44,11 +44,11 @@ public class HasLazyDataViewTest {
         // uses a NOOP count callback that will throw when called
         testComponent.setDataSource(query -> Stream.of("foo","bar","baz"));
 
-        Assert.assertFalse(testComponent.getLazyDataView().isDefinedSize());
+        Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
-        testComponent.getLazyDataView().withDefinedSize();
+        testComponent.getLazyDataView().setRowCountFromDataProvider();
 
-        Assert.assertTrue(testComponent.getLazyDataView().isDefinedSize());
+        Assert.assertTrue(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
         expectedException.expect(IllegalStateException.class);
         // to make things fail, just need to call size() which will trigger a size query
