@@ -61,6 +61,7 @@ public class HtmlComponentSmokeTest {
         testValues.put(int.class, 42);
         testValues.put(IFrame.ImportanceType.class, IFrame.ImportanceType.HIGH);
         testValues.put(IFrame.SandboxType[].class, new IFrame.SandboxType[] { IFrame.SandboxType.ALLOW_POPUPS, IFrame.SandboxType.ALLOW_MODALS });
+        testValues.put(AnchorTarget.class, AnchorTarget.TOP);
     }
 
     // For classes registered here testStringConstructor will be ignored. This test checks whether the content of the
