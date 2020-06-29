@@ -114,17 +114,16 @@ public class NodeTasks implements FallibleCommand {
         /**
          * The node.js version to be used when node.js is installed
          * automatically by Vaadin, for example <code>"v12.16.0"</code>.
-         * Defaults to null which uses the default node version.
+         * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
          */
-        public String nodeVersion = null;
+        public String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
 
         /**
          * Download node.js from this URL. Handy in heavily firewalled corporate
          * environments where the node.js download can be provided from an
-         * intranet mirror. Defaults to null which will cause the downloader
-         * to use {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          */
-        public URI nodeDownloadRoot = null;
+        public URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -513,12 +512,10 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                final TaskRunNpmInstall task = new TaskRunNpmInstall(
+                commands.add(new TaskRunNpmInstall(
                         classFinder, packageUpdater,
-                        builder.enablePnpm, builder.requireHomeNodeExec);
-                task.nodeVersion = builder.nodeVersion;
-                task.nodeDownloadRoot = builder.nodeDownloadRoot;
-                commands.add(task);
+                        builder.enablePnpm, builder.requireHomeNodeExec,
+                        builder.nodeVersion, builder.nodeDownloadRoot));
             }
         }
 

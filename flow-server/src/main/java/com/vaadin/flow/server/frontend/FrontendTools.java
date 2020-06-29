@@ -57,7 +57,7 @@ import elemental.json.JsonObject;
  */
 public class FrontendTools {
 
-    private static final String DEFAULT_NODE_VERSION = "v12.16.0";
+    public static final String DEFAULT_NODE_VERSION = "v12.16.0";
 
     public static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
@@ -148,20 +148,8 @@ public class FrontendTools {
 
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
-    /**
-     * The node.js version to be used when node.js is installed automatically
-     * by Vaadin, for example <code>"v12.16.0"</code>. Defaults to
-     * {@value #DEFAULT_NODE_VERSION}.
-     */
-    public String nodeVersion = DEFAULT_NODE_VERSION;
-
-    /**
-     * Download node.js from this URL. Handy in heavily firewalled corporate
-     * environments where the node.js download can be provided from an intranet
-     * mirror. Defaults to null which will cause the downloader to use
-     * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
-     */
-    public URI nodeDownloadRoot = null;
+    private final String nodeVersion;
+    private final URI nodeDownloadRoot;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -181,8 +169,42 @@ public class FrontendTools {
      */
     public FrontendTools(String baseDir,
             Supplier<String> alternativeDirGetter) {
+        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+    }
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed automatically
+     *            by Vaadin, for example <code>"v12.16.0"</code>. Use
+     *            {@value #DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled corporate
+     *            environments where the node.js download can be provided from an intranet
+     *            mirror. Use {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     */
+    public FrontendTools(String baseDir,
+                         Supplier<String> alternativeDirGetter,
+                         String nodeVersion,
+                         URI nodeDownloadRoot) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
+        this.nodeVersion = Objects.requireNonNull(nodeVersion);
+        this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
     }
 
     /**
