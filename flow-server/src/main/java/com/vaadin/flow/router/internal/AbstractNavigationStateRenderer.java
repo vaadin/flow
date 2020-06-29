@@ -313,7 +313,8 @@ public abstract class AbstractNavigationStateRenderer
 
     private void pushHistoryState(NavigationEvent event) {
         // Enable navigating back
-        event.getUI().getPage().getHistory().pushState(null, event.getLocation());
+        event.getUI().getPage().getHistory().pushState(null,
+                event.getLocation());
     }
 
     private boolean isRouterLinkNotFoundNavigationError(
@@ -806,6 +807,10 @@ public abstract class AbstractNavigationStateRenderer
                 final HasElement root = chain.get(chain.size() - 1);
                 final Component component = (Component) chain.get(0);
                 final Optional<UI> maybePrevUI = component.getUI();
+
+                if (maybePrevUI.isPresent() && maybePrevUI.get().equals(ui)) {
+                    return Optional.of(chain);
+                }
 
                 // Remove the top-level component from the tree
                 root.getElement().removeFromTree();
