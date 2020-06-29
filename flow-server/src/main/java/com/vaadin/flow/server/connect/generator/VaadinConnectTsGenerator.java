@@ -99,8 +99,10 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
     private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
-    private static final Pattern GENERIC_TYPE_NAME_PATTERN = Pattern
-            .compile("([^<]*)<(.*)>");
+    private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
+            .compile("Array<(.*)>");
+    private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern.compile(
+            "\\{ \\[key: string\\]: (.*); \\}");
     private static final String OPERATION = "operation";
     private static final String IMPORT = "import";
 
@@ -525,16 +527,18 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String simpleName = getSimpleNameFromImports(property.datatype,
                 imports);
 
-        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(simpleName);
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(simpleName);
         if (matcher.find()) {
             String variableName;
             do {
-                variableName = matcher.group(2);
+                variableName = matcher.group(1);
                 matcher.reset(variableName);
             } while (matcher.find());
             if (!variableName.matches("any|boolean|number|string")) {
                 return ": " + getModelFullType(simpleName);
             }
+        } else if (MAPPED_TYPE_NAME_PATTERN.matcher(simpleName).find()) {
+            return ": " + getModelFullType(simpleName);
         }
         return "";
     }
@@ -546,10 +550,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String simpleName = getSimpleNameFromImports(dataType, imports);
         String arguments = getConstrainsArguments(property);
 
-        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(simpleName);
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(simpleName);
         if (matcher.find()) {
-            simpleName = matcher.group(1);
-            arguments = ", " + getModelVariableArguments(matcher.group(2))
+            arguments = ", " + getModelVariableArguments(matcher.group(1))
                     + arguments;
         }
         return "new " + fixNameForModel(simpleName) + "(this, '" + name + "'"
@@ -557,31 +560,41 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private String getModelFullType(String name) {
-        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(name);
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
         if (matcher.find()) {
-            String variableName = getModelFullType(matcher.group(2));
-            return fixNameForModel(matcher.group(1)) + "<ModelType<"
-                    + variableName + ">, " + variableName + ">";
+            String variableName = matcher.group(1);
+            return "Array" + MODEL + "<" + getModelVariableType(variableName)
+                    + ", " + getModelFullType(variableName) + ">";
+        }
+        matcher = MAPPED_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            return "Object" + MODEL + "<{ [key: string]: "
+                    + getModelVariableType(matcher.group(1)) + "; }>";
         }
         return fixNameForModel(name);
     }
 
+    private String getModelVariableType(String variableName) {
+        if (variableName.matches("string|number|boolean")) {
+            return variableName;
+        }
+        return MODEL + "Type<" + getModelFullType(variableName) + ">";
+    }
+
     private String getModelVariableArguments(String name) {
-        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(name);
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
         if (matcher.find()) {
-            return fixNameForModel(matcher.group(1)) + ", ["
-                    + getModelVariableArguments(matcher.group(2)) + "]";
+            return fixNameForModel(name) + ", ["
+                    + getModelVariableArguments(matcher.group(1)) + "]";
         } else {
             return fixNameForModel(name) + ", []";
         }
     }
 
     private String fixNameForModel(String name) {
-        Matcher matcher = GENERIC_TYPE_NAME_PATTERN.matcher(name);
-        if (matcher.find()) {
-            name = matcher.group(1);
-        }
-        if ("any".equals(name)) {
+        if (ARRAY_TYPE_NAME_PATTERN.matcher(name).find()) {
+            name = "Array";
+        } else if ("any".equals(name) || MAPPED_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = "Object";
         } else if (name.matches("string|number|boolean")) {
             name = GeneratorUtils.capitalize(name);

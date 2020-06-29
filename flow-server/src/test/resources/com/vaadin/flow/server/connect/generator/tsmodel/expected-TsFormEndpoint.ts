@@ -24,6 +24,7 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
   public readonly decimalMin = new NumberModel(this, 'decimalMin', new DecimalMin("0.01"));
   public readonly digits = new StringModel(this, 'digits', new Digits({integer:5, fraction:2}));
   public readonly email = new StringModel(this, 'email', new Email({message:"foo"}));
+  public readonly entityMap: ObjectModel<{ [key: string]: ModelType<MyBazModel>; }> = new ObjectModel(this, 'entityMap');
   public readonly foo = new StringModel(this, 'foo');
   public readonly future = new StringModel(this, 'future', new Future());
   public readonly futureOrPresent = new ObjectModel(this, 'futureOrPresent', new FutureOrPresent());
@@ -45,4 +46,5 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
   public readonly size = new StringModel(this, 'size', new Size());
   public readonly size1 = new StringModel(this, 'size1', new Size({min:1}));
   public readonly stringArray = new ArrayModel(this, 'stringArray', StringModel, []);
+  public readonly stringMap: ObjectModel<{ [key: string]: string; }> = new ObjectModel(this, 'stringMap');
 }

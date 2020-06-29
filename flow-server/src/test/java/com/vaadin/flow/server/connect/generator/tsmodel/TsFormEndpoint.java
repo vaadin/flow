@@ -42,6 +42,9 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+
+import org.omg.CORBA.portable.IDLEntity;
 
 import com.vaadin.flow.server.connect.Endpoint;
 
@@ -100,5 +103,7 @@ public class TsFormEndpoint {
         List<MyEntity> children;
         String[] stringArray;
         Number[][] numberMatrix;
+        Map<String, String> stringMap;
+        Map<String, MyBaz> entityMap;
     }
 }
