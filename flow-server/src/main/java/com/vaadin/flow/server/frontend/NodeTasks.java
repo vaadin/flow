@@ -116,14 +116,14 @@ public class NodeTasks implements FallibleCommand {
          * automatically by Vaadin, for example <code>"v12.16.0"</code>.
          * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
          */
-        public String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
+        private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
 
         /**
          * Download node.js from this URL. Handy in heavily firewalled corporate
          * environments where the node.js download can be provided from an
          * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          */
-        public URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -463,6 +463,26 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder withHomeNodeExecRequired(boolean requireHomeNodeExec) {
             this.requireHomeNodeExec = requireHomeNodeExec;
+            return this;
+        }
+
+        /**
+         * The node.js version to be used when node.js is installed
+         * automatically by Vaadin, for example <code>"v12.16.0"</code>.
+         * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
+         */
+        public Builder withNodeVersion(String nodeVersion) {
+            this.nodeVersion = Objects.requireNonNull(nodeVersion);
+            return this;
+        }
+
+        /**
+         * Download node.js from this URL. Handy in heavily firewalled corporate
+         * environments where the node.js download can be provided from an
+         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         */
+        public Builder withNodeDownloadRoot(URI nodeDownloadRoot) {
+            this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
             return this;
         }
     }
