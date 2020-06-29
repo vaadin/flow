@@ -121,23 +121,21 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemBefore(T item, T before);
 
     /**
-     * Finds an item equal to {@code item} in the non-filtered data set and
-     * replaces it with {@code item}.
+     * Notifies the component that the item has been updated and thus should be
+     * refreshed.
      * <p>
-     * By default, {@code equals} method implementation of the item is used for
-     * identity check. If a custom data provider is used, then the
-     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
-     * identity can be set up with a
-     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
+     * For this to work properly, the item must either implement
+     * {@link Object#equals(Object)} and {@link Object#hashCode()} to consider
+     * both the old and the new item instances to be equal, or alternatively
+     * use the {@link #setIdentifierProvider(IdentifierProvider)} to set
+     * an appropriate item's identifier.
+     * <p>
+     * This method delegates the update to
+     * {@link DataProvider#refreshItem(Object)}.
      *
      * @param item
      *            item containing updated state
      * @return this ListDataView instance
-     *
-     * @throws UnsupportedOperationException
-     *             if backing collection doesn't support modification
-     * @throws IllegalArgumentException
-     *             if collection is not a list
      *
      * @see #setIdentifierProvider(IdentifierProvider)
      */

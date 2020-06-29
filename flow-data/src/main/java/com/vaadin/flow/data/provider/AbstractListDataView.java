@@ -168,26 +168,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> updateItem(T item) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        final ListDataProvider<T> dataProvider = getDataProvider();
-        Collection<T> items = dataProvider.getItems();
-
-        if (!(items instanceof List)) {
-            throw new IllegalArgumentException(
-                    String.format(COLLECTION_TYPE_ERROR_MESSAGE_PATTERN,
-                            items.getClass().getSimpleName()));
-        }
-
-        final List<T> itemList = (List<T>) items;
-
-        int itemIndex = getItemIndex(item);
-
-        if (itemIndex != -1) {
-            T itemToUpdate = itemList.get(itemIndex);
-            if (equals(item, itemToUpdate)) {
-                itemList.set(itemIndex, item);
-                dataProvider.refreshItem(item);
-            }
-        }
+        getItems()
+                .filter(i -> equals(item, i))
+                .findFirst()
+                .ifPresent(getDataProvider()::refreshItem);
         return this;
     }
 
