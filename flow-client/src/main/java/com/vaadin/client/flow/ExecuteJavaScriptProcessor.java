@@ -154,10 +154,11 @@ public class ExecuteJavaScriptProcessor {
         try {
             NativeFunction function = new NativeFunction(parameterNamesAndCode);
 
-            function.apply(
-                    getContextExecutionObject(nodeParameters, () -> registry
-                            .getUILifecycle().setState(UIState.TERMINATED)),
-                    parameters);
+            function.apply(getContextExecutionObject(nodeParameters, () -> {
+                if (!registry.getUILifecycle().isTerminated()) {
+                    registry.getUILifecycle().setState(UIState.TERMINATED);
+                }
+            }), parameters);
         } catch (Exception exception) {
             Console.reportStacktrace(exception);
             Console.error(
