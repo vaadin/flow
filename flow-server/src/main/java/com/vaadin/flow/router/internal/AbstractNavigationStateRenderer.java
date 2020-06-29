@@ -54,6 +54,7 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -272,11 +273,17 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
-        if (event instanceof ErrorNavigationEvent) {
-            return;
-        }
+        boolean isRouterLink = NavigationTrigger.ROUTER_LINK
+                .equals(event.getTrigger());
 
-        if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
+        if (event instanceof ErrorNavigationEvent) {
+            // Push history in case the exception was due to route not
+            // found (#8544)
+            if (isRouterLinkNotFoundNavigationError(
+                    (ErrorNavigationEvent) event)) {
+                pushHistoryState(event);
+            }
+        } else if (isRouterLink) {
             /*
              * When the event trigger is a RouterLink, pushing history state
              * should be done in client-side. See
@@ -297,12 +304,24 @@ public abstract class AbstractNavigationStateRenderer
                                         .getPathWithQueryParameters()))) {
 
             if (NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())) {
-                // Enable navigating back
-                ui.getPage().getHistory().pushState(null, event.getLocation());
+                pushHistoryState(event);
             }
 
             ui.getInternals().setLastHandledNavigation(event.getLocation());
         }
+    }
+
+    private void pushHistoryState(NavigationEvent event) {
+        // Enable navigating back
+        event.getUI().getPage().getHistory().pushState(null, event.getLocation());
+    }
+
+    private boolean isRouterLinkNotFoundNavigationError(
+            ErrorNavigationEvent event) {
+        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
+                && event.getErrorParameter() != null
+                && event.getErrorParameter()
+                        .getCaughtException() instanceof NotFoundException;
     }
 
     /**
