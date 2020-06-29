@@ -391,7 +391,7 @@ public class OpenApiObjectGenerator {
     private List<Schema> parseNonEndpointClassAsSchema(
             String fullQualifiedName) {
         TypeDeclaration typeDeclaration = nonEndpointMap.get(fullQualifiedName);
-        if (typeDeclaration == null) {
+        if (typeDeclaration == null || typeDeclaration.isEnumDeclaration()) {
             return Collections.emptyList();
         }
         List<Schema> result = new ArrayList<>();
