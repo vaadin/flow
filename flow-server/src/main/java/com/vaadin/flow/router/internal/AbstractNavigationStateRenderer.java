@@ -250,7 +250,8 @@ public abstract class AbstractNavigationStateRenderer
         if (event instanceof ErrorNavigationEvent) {
             // Push history in case the exception was due to route not
             // found (#8544)
-            if (shouldPushHistoryStateForNavigationError((ErrorNavigationEvent) event)) {
+            if (isRouterLinkNotFoundNavigationError(
+                    (ErrorNavigationEvent) event)) {
                 pushHistoryState(event);
             }
         } else if (isRouterLink) {
@@ -290,7 +291,7 @@ public abstract class AbstractNavigationStateRenderer
         return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
     }
 
-    protected boolean shouldPushHistoryStateForNavigationError(
+    private boolean isRouterLinkNotFoundNavigationError(
             ErrorNavigationEvent event) {
         return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
                 && event.getErrorParameter() != null
