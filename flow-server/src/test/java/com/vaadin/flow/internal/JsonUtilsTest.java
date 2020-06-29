@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
+
+import com.vaadin.flow.internal.JsonUtilsTest.ChildBean;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -228,6 +232,179 @@ public class JsonUtilsTest {
                 });
 
         Assert.assertEquals(0, object.keys().length);
+    }
+
+    public static class SimpleBean {
+        private String string = "value";
+        private int number = 1;
+        private float flt = 2.3f;
+        private double dbl = 4.56;
+
+        public String getString() {
+            return string;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public float getFlt() {
+            return flt;
+        }
+
+        public double getDbl() {
+            return dbl;
+        }
+    }
+
+    public static class ParentBean {
+        private String parentValue = "parent";
+        private ChildBean child = new ChildBean();
+
+        public String getParentValue() {
+            return parentValue;
+        }
+
+        public ChildBean getChild() {
+            return child;
+        }
+    }
+
+    public static class ChildBean {
+        private String childValue = "child";
+
+        public String getChildValue() {
+            return childValue;
+        }
+    }
+
+    public static class ListAndMapBean {
+        private Map<String, Integer> integerMap = new HashMap<>();
+        private Map<String, ChildBean> childBeanMap = new HashMap<>();
+
+        private List<Integer> integerList = new ArrayList<>();
+        private List<ChildBean> childBeanList = new ArrayList<>();
+        {
+            integerMap.put("one", 1);
+            integerMap.put("two", 2);
+
+            integerList.add(3);
+            integerList.add(2);
+            integerList.add(1);
+
+            ChildBean firstChild = new ChildBean();
+            firstChild.childValue = "firstChildValue";
+            childBeanMap.put("First", firstChild);
+            ChildBean secondChild = new ChildBean();
+            secondChild.childValue = "secondChildValue";
+            childBeanMap.put("Second", secondChild);
+
+            childBeanList.add(firstChild);
+            childBeanList.add(secondChild);
+        }
+
+        public Map<String, Integer> getIntegerMap() {
+            return integerMap;
+        }
+
+        public List<ChildBean> getChildBeanList() {
+            return childBeanList;
+        }
+
+        public List<Integer> getIntegerList() {
+            return integerList;
+        }
+
+        public Map<String, ChildBean> getChildBeanMap() {
+            return childBeanMap;
+        }
+    }
+
+    @Test
+    public void simpleBeanToJson() {
+        JsonObject json = JsonUtils.beanToJson(new SimpleBean());
+        Assert.assertEquals("value", json.getString("string"));
+        Assert.assertEquals(1.0, json.getNumber("number"), 0.0);
+        Assert.assertEquals(2.3, json.getNumber("flt"), 0.0);
+        Assert.assertEquals(4.56, json.getNumber("dbl"), 0.0);
+    }
+
+    @Test
+    public void nestedBeanToJson() {
+        JsonObject json = JsonUtils.beanToJson(new ParentBean());
+        Assert.assertEquals("parent", json.getString("parentValue"));
+        JsonObject child = json.getObject("child");
+        Assert.assertEquals("child", child.getString("childValue"));
+    }
+
+    @Test
+    public void nullChildBean() {
+        ParentBean bean = new ParentBean();
+        bean.child = null;
+
+        JsonObject json = JsonUtils.beanToJson(bean);
+        Assert.assertEquals(Json.createNull(), json.get("child"));
+    }
+
+    @Test
+    public void beanWithListAndMap() {
+        ListAndMapBean bean = new ListAndMapBean();
+
+        JsonObject json = JsonUtils.beanToJson(bean);
+
+        JsonObject integerMap = json.getObject("integerMap");
+        Assert.assertEquals(1, integerMap.getNumber("one"), 0);
+        Assert.assertEquals(2, integerMap.getNumber("two"), 0);
+
+        JsonObject childBeanMap = json.getObject("childBeanMap");
+        JsonObject firstChild = childBeanMap.getObject("First");
+        Assert.assertEquals("firstChildValue",
+                firstChild.getString("childValue"));
+        JsonObject secondChild = childBeanMap.getObject("Second");
+        Assert.assertEquals("secondChildValue",
+                secondChild.getString("childValue"));
+
+        JsonArray integerList = json.getArray("integerList");
+        Assert.assertEquals(3, integerList.get(0).asNumber(), 0);
+        Assert.assertEquals(2, integerList.get(1).asNumber(), 0);
+        Assert.assertEquals(1, integerList.get(2).asNumber(), 0);
+
+        JsonArray childBeanList = json.getArray("childBeanList");
+        Assert.assertEquals("firstChildValue",
+                ((JsonObject) childBeanList.get(0)).getString("childValue"));
+        Assert.assertEquals("secondChildValue",
+                ((JsonObject) childBeanList.get(1)).getString("childValue"));
+    }
+
+    @Test
+    public void simpleBeanListToJson() {
+        ArrayList<SimpleBean> list = new ArrayList<>();
+        SimpleBean bean1 = new SimpleBean();
+        bean1.string = "bean1";
+        SimpleBean bean2 = new SimpleBean();
+        bean2.string = "bean2";
+        list.add(bean1);
+        list.add(bean2);
+        JsonArray json = JsonUtils.listToJson(list);
+
+        Assert.assertEquals("bean1", json.getObject(0).getString("string"));
+        Assert.assertEquals("bean2", json.getObject(1).getString("string"));
+    }
+
+    @Test
+    public void simpleMapToJson() {
+        Map<String, Object> map = new HashMap<>();
+        SimpleBean bean1 = new SimpleBean();
+        bean1.string = "bean1";
+        SimpleBean bean2 = new SimpleBean();
+        bean2.string = "bean2";
+
+        map.put("one", bean1);
+        map.put("two", bean2);
+        JsonObject json = JsonUtils.mapToJson(map);
+
+        Assert.assertEquals("bean1", json.getObject("one").getString("string"));
+        Assert.assertEquals("bean2", json.getObject("two").getString("string"));
     }
 
 }

@@ -24,7 +24,11 @@ public class Item {
     private String description;
 
     public Item(long id) {
-        this.id = id;
+        this(id, null);
+    }
+
+    public Item(long id, String value) {
+        this(id, value, null);
     }
 
     public Item(long id, String value, String description) {

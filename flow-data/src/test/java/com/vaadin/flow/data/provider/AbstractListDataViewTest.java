@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.primitives.Chars;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
@@ -48,11 +49,14 @@ public class AbstractListDataViewTest {
 
     private AbstractListDataView<String> dataView;
 
+    private Component component;
+
     @Before
     public void init() {
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = DataProvider.ofCollection(items);
-        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        component = new TestComponent();
+        dataView = new ListDataViewImpl(() -> dataProvider, component);
     }
 
     @Test
@@ -124,9 +128,17 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void setSortComparator_sortingReset_sortingResetToInitial() {
+        dataProvider.setSortComparator(String::compareTo);
+        dataView.setSortComparator(null);
+        Assert.assertArrayEquals("Sorting reset was not applied to data set",
+                items.toArray(), dataView.getItems().toArray());
+    }
+
+    @Test
     public void addSortComparator_twoComparatorsAdded_itemsSortedByCompositeComparator() {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
-        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView = new ListDataViewImpl(() -> dataProvider, component);
         dataView.addSortComparator((s1, s2) ->
                 Chars.compare(s1.charAt(0), s2.charAt(0)));
         Assert.assertEquals("Unexpected data set order (comparator 1)",
@@ -161,26 +173,13 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void removeSorting_sortOrderIsSet_noSorting() {
+    public void removeSorting_sortingSetAndThenRemoved_initialSortingObtained() {
         dataView.setSortOrder(ValueProvider.identity(), SortDirection.ASCENDING);
         Assert.assertEquals("Unexpected data set order", "first,last,middle",
                 dataView.getItems().collect(Collectors.joining(",")));
         dataView.removeSorting();
         Assert.assertEquals("Unexpected data set order", "first,middle,last",
                 dataView.getItems().collect(Collectors.joining(",")));
-    }
-
-    @Test
-    public void getItems_noFiltersSet_allItemsObtained() {
-        Stream<String> allItems = dataView.getItems();
-        Assert.assertArrayEquals("Unexpected data set", items.toArray(),
-                allItems.toArray());
-    }
-
-    @Test
-    public void getDataSize_noFiltersSet_dataSizeObtained() {
-        Assert.assertEquals("Unexpected size for data", items.size(),
-                dataView.getSize());
     }
 
     @Test
@@ -228,6 +227,12 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void removeItem_notInList_dataSetNotChanged() {
+        dataView.removeItem("not present");
+        Assert.assertEquals(3, dataView.getSize());
+    }
+
+    @Test
     public void dataViewWithItem_rowOutsideSetRequested_exceptionThrown() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         exceptionRule.expectMessage(
@@ -251,7 +256,7 @@ public class AbstractListDataViewTest {
         exceptionRule.expectMessage("Requested index 5 on empty data.");
 
         dataProvider = DataProvider.ofCollection(Collections.emptyList());
-        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView = new ListDataViewImpl(() -> dataProvider, component);
         dataView.validateItemIndex(5);
     }
 
@@ -290,6 +295,15 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[]{"first", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemBefore_itemNotInCollection_throwsException() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
+                "Item to insert before is not available in the data");
+
+        dataView.addItemBefore("newItem", "notExistent");
     }
 
     @Test
@@ -332,15 +346,6 @@ public class AbstractListDataViewTest {
         Assert.assertArrayEquals(
                 new String[]{"first", "middle", "last"},
                 dataView.getItems().toArray(String[]::new));
-    }
-
-    @Test
-    public void addItemBefore_itemNotInCollection_throwsException() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(
-                "Item to insert before is not available in the data");
-
-        dataView.addItemBefore("newItem", "notExistent");
     }
 
     @Test
@@ -589,7 +594,7 @@ public class AbstractListDataViewTest {
 
         final ListDataProvider<String> stringListDataProvider =
                 new ListDataProvider<>(items);
-        dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider, component);
 
         dataView.addItemBefore("newItem", "item2");
     }
@@ -623,7 +628,7 @@ public class AbstractListDataViewTest {
 
         final ListDataProvider<String> stringListDataProvider =
                 new ListDataProvider<>(items);
-        dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider, component);
 
         dataView.addItemsAfter(Collections.singleton("newItem"), "item1");
     }
@@ -640,7 +645,7 @@ public class AbstractListDataViewTest {
 
         final ListDataProvider<String> stringListDataProvider =
                 new ListDataProvider<>(items);
-        dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider, component);
 
         dataView.addItemsBefore(Collections.singleton("newItem"), "item1");
     }
@@ -665,7 +670,7 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void clearFilters_removesAllSetAndAddedFilters() {
+    public void removeFilters_removesAllSetAndAddedFilters() {
         items = new ArrayList<>(
                 Arrays.asList("item1", "item2", "item22", "item3"));
         dataProvider = DataProvider.ofCollection(items);
@@ -693,7 +698,7 @@ public class AbstractListDataViewTest {
         ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
 
         ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, null);
+                () -> dataProvider, component);
 
         dataView.updateItem(
                 new Item(1L, "updatedValue", "updatedDescr"));
@@ -716,7 +721,7 @@ public class AbstractListDataViewTest {
         ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
 
         ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, null);
+                () -> dataProvider, component);
 
         dataView.updateItem(
                 new Item(1L, "value1", "updatedDescr"));
@@ -737,10 +742,10 @@ public class AbstractListDataViewTest {
         Collection<Item> items = getTestItems();
 
         ListDataProvider<Item> dataProvider = new
-                CustomIdentityItemDataProvider(items);
+                AbstractDataViewTest.CustomIdentityItemDataProvider(items);
 
         ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, null);
+                () -> dataProvider, component);
 
         dataView.updateItem(
                 new Item(1L, "updatedValue", "updatedDescr"));
@@ -756,17 +761,17 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void updateItem_identityProvider_updatesExistingItem() {
+    public void updateItem_identifierProvider_updatesExistingItem() {
         Collection<Item> items = getTestItems();
 
         ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
 
         ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, null);
+                () -> dataProvider, component);
 
+        dataView.setIdentifierProvider(Item::getId);
         dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"),
-                Item::getId);
+                new Item(1L, "updatedValue", "updatedDescr"));
 
         Optional<Item> firstItem =
                 items.stream().filter(i -> i.getId() == 1L).findFirst();
@@ -787,19 +792,6 @@ public class AbstractListDataViewTest {
         }
     }
 
-    private static class CustomIdentityItemDataProvider
-            extends ListDataProvider<Item> {
-
-        public CustomIdentityItemDataProvider(Collection<Item> items) {
-            super(items);
-        }
-
-        @Override
-        public Object getId(Item item) {
-            return item.getId();
-        }
-    }
-
     private static class ItemListDataView extends AbstractListDataView<Item> {
 
         public ItemListDataView(
@@ -814,5 +806,9 @@ public class AbstractListDataViewTest {
                 new Item(1L, "value1", "descr1"),
                 new Item(2L, "value2", "descr2"),
                 new Item(3L, "value3", "descr3")));
+    }
+
+    @Tag("test-component")
+    private static class TestComponent extends Component {
     }
 }

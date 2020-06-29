@@ -16,7 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
@@ -24,12 +23,13 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- * DataView for a in-memory data.
+ * DataView for a in-memory list data that provides information on the data and
+ * allows operations on it.
  *
  * @param <T>
- *         data type
+ *            data type
  * @param <V>
- *         ListDataView type
+ *            ListDataView type
  * @since
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>>
@@ -37,13 +37,13 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Gets the item after given item from the filtered and sorted data.
      * <p>
-     * Note! Item might be present in the data set, but be filtered out
-     * or be the last item so that the next item won't be available.
+     * Note! Item might be present in the data set, but be filtered out or be
+     * the last item so that the next item won't be available.
      *
      * @param item
-     *         item to get next for
-     * @return next item if available, else empty optional if item
-     *         doesn't exist or not in current filtered items
+     *            item to get next for
+     * @return next item if available, else empty optional if item doesn't exist
+     *         or not in current filtered items
      *
      * @see #getPreviousItem(Object)
      */
@@ -52,13 +52,13 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Gets the item before given item from the filtered and sorted data.
      * <p>
-     * Note! Item might be present in the data set, but be filtered out
-     * or be the first item so that the previous item won't be available.
+     * Note! Item might be present in the data set, but be filtered out or be
+     * the first item so that the previous item won't be available.
      *
      * @param item
-     *         item to get previous for
-     * @return previous item if available, else empty optional if item
-     *         doesn't exist or not in current filtered items
+     *            item to get previous for
+     * @return previous item if available, else empty optional if item doesn't
+     *         exist or not in current filtered items
      *
      * @see #getNextItem(Object)
      */
@@ -68,10 +68,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Adds an item to the data list if it is not already present.
      *
      * @param item
-     *         item to add
+     *            item to add
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @see #addItemBefore(Object, Object)
      * @see #addItemAfter(Object, Object)
      * @see #removeItem(Object)
@@ -86,14 +86,14 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param item
-     *         item to add
+     *            item to add
      * @param after
-     *         item after which to add the item at
+     *            item after which to add the item at
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @throws IllegalArgumentException
-     *         if item doesn't exist or collection is not a list
+     *             if item doesn't exist or collection is not a list
      * @see #addItem(Object)
      * @see #addItemBefore(Object, Object)
      */
@@ -107,73 +107,52 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param item
-     *         item to add
+     *            item to add
      * @param before
-     *         item before which to add the item at
+     *            item before which to add the item at
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @throws IllegalArgumentException
-     *         if item doesn't exist or collection is not a list
+     *             if item doesn't exist or collection is not a list
      * @see #addItem(Object)
      * @see #addItemAfter(Object, Object)
      */
     V addItemBefore(T item, T before);
 
     /**
-     * Finds an item equal to {@code item} in the non-filtered data set
-     * and replaces it with {@code item}.
+     * Finds an item equal to {@code item} in the non-filtered data set and
+     * replaces it with {@code item}.
      * <p>
-     * Equality between the items is determined by the identifiers
-     * provided by {@link DataProvider#getId(Object)}.
+     * By default, {@code equals} method implementation of the item is used for
+     * identity check. If a custom data provider is used, then the
+     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
+     * identity can be set up with a
+     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
      *
      * @param item
-     *         item containing updated state
+     *            item containing updated state
      * @return this ListDataView instance
      *
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @throws IllegalArgumentException
-     *         if collection is not a list
+     *             if collection is not a list
      *
-     * @see #updateItem(Object, SerializableFunction)
+     * @see #setIdentifierProvider(IdentifierProvider)
      */
     V updateItem(T item);
 
     /**
-     * Finds an item equal to {@code item} in the non-filtered data set
-     * and replaces it with {@code item}.
-     * <p>
-     * Equality between the items is determined by the identifiers
-     * provided by {@code identityProvider}.
-     *
-     * @param item
-     *         item containing updated state
-     * @param identityProvider
-     *         callback that transforms {@code item} object into identifier
-     *         object which is used to determine the equality between items.
-     * @return this ListDataView instance
-     *
-     * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
-     * @throws IllegalArgumentException
-     *         if collection is not a list
-     *
-     * @see #updateItem(Object)
-     */
-    V updateItem(T item, SerializableFunction<T, ?> identityProvider);
-
-    /**
      * Adds multiple items to the data list.
      * <p>
-     * Any items that already present in the data provider are moved
-     * to the end.
+     * Any items that already present in the data provider are moved to the end.
      *
      * @param items
-     *         collection of item to add
+     *            collection of item to add
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @see #removeItems(Collection)
      * @see #addItemsBefore(Collection, Object)
      * @see #addItemsAfter(Collection, Object)
@@ -181,44 +160,44 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItems(Collection<T> items);
 
     /**
-     * Adds multiple items after the given target item.
-     * The full collection is added in order after the target.
+     * Adds multiple items after the given target item. The full collection is
+     * added in order after the target.
      * <p>
      * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param items
-     *         collection of items to add
+     *            collection of items to add
      * @param after
-     *         item after which to add the item at
+     *            item after which to add the item at
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @throws IllegalArgumentException
-     *         if item doesn't exist or collection is not a list
+     *             if item doesn't exist or collection is not a list
      * @see #addItems(Collection)
      * @see #addItemsBefore(Collection, Object)
      */
     V addItemsAfter(Collection<T> items, T after);
 
     /**
-     * Adds multiple items before the given target item.
-     * The full collection is added in order before the target.
+     * Adds multiple items before the given target item. The full collection is
+     * added in order before the target.
      * <p>
      * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
      *
      * @param items
-     *         collection of items to add
+     *            collection of items to add
      * @param before
-     *         item before which to add the item at
+     *            item before which to add the item at
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @throws IllegalArgumentException
-     *         if item doesn't exist or collection is not a list
+     *             if item doesn't exist or collection is not a list
      * @see #addItems(Collection)
      * @see #addItemsAfter(Collection, Object)
      */
@@ -228,10 +207,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Remove an item from the data list.
      *
      * @param item
-     *         item to remove
+     *            item to remove
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @see #addItem(Object)
      * @see #removeItems(Collection)
      */
@@ -241,10 +220,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Remove multiple items from the data list.
      *
      * @param items
-     *         collection of items to remove
+     *            collection of items to remove
      * @return this ListDataView instance
      * @throws UnsupportedOperationException
-     *         if backing collection doesn't support modification
+     *             if backing collection doesn't support modification
      * @see #removeItem(Object)
      * @see #removeItems(Collection)
      */
@@ -252,7 +231,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Sets a filter to be applied to the data. The filter replaces any filter
-     * that has been set or added previously. {@code null} will clear all filters.
+     * that has been set or added previously. {@code null} will clear all
+     * filters.
      * <p>
      * A filter bound to data set, not to the component. That means this filter
      * won't be retained when a new data or {@link DataProvider} is set to the
@@ -261,8 +241,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * component.
      *
      * @param filter
-     *         filter to be set, or <code>null</code> to clear any
-     *         previously set filters
+     *            filter to be set, or <code>null</code> to clear any previously
+     *            set filters
      * @return ListDataView instance
      *
      * @see #addFilter(SerializablePredicate)
@@ -271,17 +251,17 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V setFilter(SerializablePredicate<T> filter);
 
     /**
-     * Adds a filter to be applied to all queries. The filter will be
-     * used in addition to any filter that has been set or added previously.
+     * Adds a filter to be applied to all queries. The filter will be used in
+     * addition to any filter that has been set or added previously.
      * <p>
-     * A filter bound to data set, not to the component. That means
-     * this filter and previously added filters won't be retained when
-     * a new data or {@link DataProvider} is set to the component. Any other
-     * component using the same {@link DataProvider} object would be affected
-     * by adding a filter through data view of another component.
+     * A filter bound to data set, not to the component. That means this filter
+     * and previously added filters won't be retained when a new data or
+     * {@link DataProvider} is set to the component. Any other component using
+     * the same {@link DataProvider} object would be affected by adding a filter
+     * through data view of another component.
      *
      * @param filter
-     *         the filter to add, not <code>null</code>
+     *            the filter to add, not <code>null</code>
      * @return ListDataView instance
      *
      * @see #setFilter(SerializablePredicate)
@@ -300,19 +280,18 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeFilters();
 
     /**
-     * Sets the comparator to use as the default sorting.
-     * This overrides the sorting set by any other method that manipulates the
-     * default sorting.
+     * Sets the comparator to use as the default sorting. This overrides the
+     * sorting set by any other method that manipulates the default sorting.
      * <p>
-     * A comparator bound to data set, not to the component. That means
-     * the default sorting won't be retained when a new data or {@link DataProvider}
+     * A comparator bound to data set, not to the component. That means the
+     * default sorting won't be retained when a new data or {@link DataProvider}
      * is set to the component. Any other component using the same
-     * {@link DataProvider} object would be affected by setting a sort comparator
-     * through data view of another component.
+     * {@link DataProvider} object would be affected by setting a sort
+     * comparator through data view of another component.
      *
      * @param sortComparator
-     *         a comparator to use, or <code>null</code> to clear any
-     *         previously set sort order
+     *            a comparator to use, or <code>null</code> to clear any
+     *            previously set sort order
      * @return ListDataView instance
      *
      * @see #addSortComparator(SerializableComparator)
@@ -320,20 +299,20 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V setSortComparator(SerializableComparator<T> sortComparator);
 
     /**
-     * Adds a comparator to the data default sorting. If no
-     * default sorting has been defined, then the provided comparator will be
-     * used as the default sorting. If a default sorting has been defined, then
-     * the provided comparator will be used to determine the ordering of items
-     * that are considered equal by the previously defined default sorting.
+     * Adds a comparator to the data default sorting. If no default sorting has
+     * been defined, then the provided comparator will be used as the default
+     * sorting. If a default sorting has been defined, then the provided
+     * comparator will be used to determine the ordering of items that are
+     * considered equal by the previously defined default sorting.
      * <p>
-     * A comparator added to data set, not to the component. That means
-     * the default sorting won't be retained when a new data or {@link DataProvider}
+     * A comparator added to data set, not to the component. That means the
+     * default sorting won't be retained when a new data or {@link DataProvider}
      * is set to the component. Any other component using the same
      * {@link DataProvider} object would be affected by adding a sort comparator
      * through data view of another component.
      *
      * @param sortComparator
-     *         a comparator to add, not <code>null</code>
+     *            a comparator to add, not <code>null</code>
      * @return ListDataView instance
      *
      * @see #setSortComparator(SerializableComparator)
@@ -343,8 +322,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Removes any default sorting that has been set or added previously.
      * <p>
-     * Any other component using the same {@link DataProvider} object would be affected
-     * by removing default sorting through data view of another component.
+     * Any other component using the same {@link DataProvider} object would be
+     * affected by removing default sorting through data view of another
+     * component.
      *
      * @return ListDataView instance
      *
@@ -354,15 +334,15 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeSorting();
 
     /**
-     * Sets the property and direction to use as the default sorting.
-     * This overrides the sorting set by any other method that
-     * manipulates the default sorting of this {@link DataProvider}.
+     * Sets the property and direction to use as the default sorting. This
+     * overrides the sorting set by any other method that manipulates the
+     * default sorting of this {@link DataProvider}.
      * <p>
-     * A sort order bound to data set, not to the component. That means
-     * the default sorting won't be retained when a new data or
-     * {@link DataProvider} is set to the component. Any other component
-     * using the same {@link DataProvider} object would be affected by setting
-     * a sort order through data view of another component.
+     * A sort order bound to data set, not to the component. That means the
+     * default sorting won't be retained when a new data or {@link DataProvider}
+     * is set to the component. Any other component using the same
+     * {@link DataProvider} object would be affected by setting a sort order
+     * through data view of another component.
      *
      * @param valueProvider
      *            the value provider that defines the property do sort by, not
@@ -380,18 +360,17 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
             ValueProvider<T, V1> valueProvider, SortDirection sortDirection);
 
     /**
-     * Adds a property and direction to the default sorting.
-     * If no default sorting has been defined, then the provided sort
-     * order will be used as the default sorting. If a default sorting has been
-     * defined, then the provided sort order will be used to determine the
-     * ordering of items that are considered equal by the previously defined
-     * default sorting.
+     * Adds a property and direction to the default sorting. If no default
+     * sorting has been defined, then the provided sort order will be used as
+     * the default sorting. If a default sorting has been defined, then the
+     * provided sort order will be used to determine the ordering of items that
+     * are considered equal by the previously defined default sorting.
      * <p>
-     * A sort order added to data set, not to the component. That means
-     * the default sorting won't be retained when a new data or
-     * {@link DataProvider} is set to the component. Any other component
-     * using the same {@link DataProvider} object would be affected by adding
-     * a sort order through data view of another component.
+     * A sort order added to data set, not to the component. That means the
+     * default sorting won't be retained when a new data or {@link DataProvider}
+     * is set to the component. Any other component using the same
+     * {@link DataProvider} object would be affected by adding a sort order
+     * through data view of another component.
      *
      * @param valueProvider
      *            the value provider that defines the property do sort by, not

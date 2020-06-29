@@ -19,7 +19,9 @@ package com.vaadin.flow.internal;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -28,6 +30,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -44,11 +49,15 @@ import elemental.json.JsonValue;
  */
 public final class JsonUtils {
 
+    private static final String CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT = "Cannot convert null to JSON";
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     /**
      * Collects a stream of JSON values to a JSON array.
      *
      * @author Vaadin Ltd
- * @since 1.0
+     * @since 1.0
      */
     private static final class JsonArrayCollector
             implements Collector<JsonValue, JsonArray, JsonArray> {
@@ -274,5 +283,54 @@ public final class JsonUtils {
         map.forEach((key, value) -> object.put(key, itemToJson.apply(value)));
 
         return object;
+    }
+
+    /**
+     * Converts the given bean to JSON.
+     *
+     * @param bean
+     *                 the bean to convert, not {@code null}
+     * @return a JSON representation of the bean
+     */
+    public static JsonObject beanToJson(Object bean) {
+        Objects.requireNonNull(bean, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
+
+        try {
+            return Json.parse(objectMapper.writeValueAsString(bean));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting bean to JSON", e);
+        }
+    }
+
+    /**
+     * Converts the given list to JSON.
+     *
+     * @param list
+     *                 the list to convert, not {@code null}
+     * @return a JSON representation of the bean
+     */
+    public static JsonArray listToJson(List<?> list) {
+        Objects.requireNonNull(list, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
+        try {
+            return Json.instance().parse(objectMapper.writeValueAsString(list));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting list to JSON", e);
+        }
+    }
+
+    /**
+     * Converts the given map to JSON.
+     *
+     * @param map
+     *                the map to convert, not {@code null}
+     * @return a JSON representation of the bean
+     */
+    public static JsonObject mapToJson(Map<String, ?> map) {
+        Objects.requireNonNull(map, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
+        try {
+            return Json.instance().parse(objectMapper.writeValueAsString(map));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting map to JSON", e);
+        }
     }
 }

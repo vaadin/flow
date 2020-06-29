@@ -35,7 +35,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   private [onChangeSymbol]: (oldValue?: T) => void;
   private [onSubmitSymbol]: (value: T) => Promise<T|void>;
 
-  private [validationsSymbol]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ValueError<any> | void>>> = new Map();
+  private [validationsSymbol]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> = new Map();
 
   constructor(
     public context: Element,
@@ -111,7 +111,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
         error.validationErrorData.forEach((data:any) => {
           const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(data.message);
           const [property, value, message] = res ? res.splice(2) : [data.parameterName, undefined, data.message];
-          valueErrors.push({ property, value, validator: new ServerValidator(message) });
+          valueErrors.push({ property, value, validator: new ServerValidator(message), message });
         });
         error = new ValidationError(valueErrors);
       }
@@ -122,10 +122,10 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     }
   }
 
-  async requestValidation<NT, NM extends AbstractModel<NT>>(model: NM, validator: Validator<NT>): Promise<ValueError<NT> | void> {
-    let modelValidations: Map<Validator<NT>, Promise<ValueError<NT> | void>>;
+  async requestValidation<NT, NM extends AbstractModel<NT>>(model: NM, validator: Validator<NT>): Promise<ReadonlyArray<ValueError<NT>>> {
+    let modelValidations: Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
     if (this[validationsSymbol].has(model)) {
-      modelValidations = this[validationsSymbol].get(model) as Map<Validator<NT>, Promise<ValueError<NT> | void>>;
+      modelValidations = this[validationsSymbol].get(model) as Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
     } else {
       modelValidations = new Map();
       this[validationsSymbol].set(model, modelValidations);
@@ -134,12 +134,12 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     await this.performValidation();
 
     if (modelValidations.has(validator)) {
-      return modelValidations.get(validator);
+      return modelValidations.get(validator) as Promise<ReadonlyArray<ValueError<NT>>>;
     }
 
-    const promise = Promise.resolve(runValidator(model, validator));
+    const promise = runValidator(model, validator);
     modelValidations.set(validator, promise);
-    const valueError = await promise;
+    const valueErrors = await promise;
 
     modelValidations.delete(validator);
     if (modelValidations.size === 0) {
@@ -149,7 +149,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
       this.completeValidation();
     }
 
-    return valueError;
+    return valueErrors;
   }
 
   getFieldStrategy(elm: any): FieldStrategy {

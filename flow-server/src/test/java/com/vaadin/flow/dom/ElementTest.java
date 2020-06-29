@@ -10,8 +10,10 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,6 +52,8 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
 
@@ -526,6 +530,29 @@ public class ElementTest extends AbstractNodeTest {
                 element.getProperty("property", defaultValue));
     }
 
+    public static class SimpleBean {
+        private String string = "value";
+        private int number = 1;
+        private float flt = 2.3f;
+        private double dbl = 4.56;
+
+        public String getString() {
+            return string;
+        }
+
+        public int getNumber() {
+            return number;
+        }
+
+        public float getFlt() {
+            return flt;
+        }
+
+        public double getDbl() {
+            return dbl;
+        }
+    }
+
     @Test
     public void propertyRawValues() {
         Element element = ElementFactory.createDiv();
@@ -542,6 +569,37 @@ public class ElementTest extends AbstractNodeTest {
         element.setPropertyJson("p", Json.createObject());
         Assert.assertEquals(JreJsonObject.class,
                 element.getPropertyRaw("p").getClass());
+
+        element.setPropertyBean("p", new SimpleBean());
+        JsonObject json = (JsonObject) element.getPropertyRaw("p");
+        Assert.assertEquals("value", json.getString("string"));
+        Assert.assertEquals(1.0, json.getNumber("number"), 0.0);
+        Assert.assertEquals(2.3, json.getNumber("flt"), 0.0);
+        Assert.assertEquals(4.56, json.getNumber("dbl"), 0.0);
+
+        List<SimpleBean> list = new ArrayList<>();
+        SimpleBean bean1 = new SimpleBean();
+        bean1.string = "bean1";
+        SimpleBean bean2 = new SimpleBean();
+        bean2.string = "bean2";
+        list.add(bean1);
+        list.add(bean2);
+        element.setPropertyList("p", list);
+        JsonArray jsonArray = (JsonArray) element.getPropertyRaw("p");
+        Assert.assertEquals("bean1",
+                jsonArray.getObject(0).getString("string"));
+        Assert.assertEquals("bean2",
+                jsonArray.getObject(1).getString("string"));
+
+        Map<String, SimpleBean> map = new HashMap<>();
+        map.put("one", bean1);
+        map.put("two", bean2);
+        element.setPropertyMap("p", map);
+        JsonObject jsonObject = (JsonObject) element.getPropertyRaw("p");
+        Assert.assertEquals("bean1",
+                jsonObject.getObject("one").getString("string"));
+        Assert.assertEquals("bean2",
+                jsonObject.getObject("two").getString("string"));
     }
 
     @Test

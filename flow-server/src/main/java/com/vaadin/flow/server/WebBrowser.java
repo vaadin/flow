@@ -205,6 +205,9 @@ public class WebBrowser implements Serializable {
      *         Linux or if no information on the browser is present
      */
     public boolean isLinux() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isLinux();
     }
 
@@ -215,6 +218,9 @@ public class WebBrowser implements Serializable {
      *         using Mac OS X or if no information on the browser is present
      */
     public boolean isMacOSX() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isMacOSX();
     }
 
@@ -225,6 +231,9 @@ public class WebBrowser implements Serializable {
      *         Windows or if no information on the browser is present
      */
     public boolean isWindows() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isWindows();
     }
 
@@ -236,6 +245,9 @@ public class WebBrowser implements Serializable {
      *         present
      */
     public boolean isWindowsPhone() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isWindowsPhone();
     }
 
@@ -246,6 +258,9 @@ public class WebBrowser implements Serializable {
      *         if no information on the browser is present
      */
     public boolean isAndroid() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isAndroid();
     }
 
@@ -256,6 +271,9 @@ public class WebBrowser implements Serializable {
      *         no information on the browser is present
      */
     public boolean isIPhone() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isIPhone();
     }
 
@@ -266,6 +284,9 @@ public class WebBrowser implements Serializable {
      *         or if no information on the browser is present
      */
     public boolean isChromeOS() {
+        if (browserDetails == null) {
+            return false;
+        }
         return browserDetails.isChromeOS();
     }
 

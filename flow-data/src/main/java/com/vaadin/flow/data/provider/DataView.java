@@ -35,12 +35,8 @@ import com.vaadin.flow.shared.Registration;
 public interface DataView<T> extends Serializable {
 
     /**
-     * Get the full data available to the component. Data will use set filters
-     * and sorting.
-     * <p>
-     * <em>NOTE:</em> calling this method might cause a backend query
-     * that fetches all items from the backend when using a lazy data
-     * source!
+     * Get the full data available to the component. Data is filtered and sorted
+     * the same way as in the component.
      *
      * @return filtered and sorted data set
      */
@@ -53,12 +49,19 @@ public interface DataView<T> extends Serializable {
      * get notified when the data size has changed.
      *
      * @return filtered data size
+     * @see #addSizeChangeListener(ComponentEventListener)
      */
     int getSize();
 
     /**
      * Check if item is in the current data. Item may be filtered out or for
      * lazy data not in the currently loaded making it un-available.
+     * <p>
+     * By default, {@code equals} method implementation of the item is used for
+     * identity check. If a custom data provider is used, then the
+     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
+     * identity can be set up with a
+     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
      * <p>
      * <em>NOTE:</em> when the component is created and not yet added, the item
      * might not yet be loaded, but will be loaded during the "before client
@@ -68,7 +71,9 @@ public interface DataView<T> extends Serializable {
      *
      * @param item
      *            item to search for
-     * @return {@code true} if item is found in the available data
+     * @return true if item is found in the available data
+     *
+     * @see #setIdentifierProvider(IdentifierProvider)
      */
     boolean contains(T item);
 
@@ -86,4 +91,14 @@ public interface DataView<T> extends Serializable {
      */
     Registration addSizeChangeListener(
             ComponentEventListener<SizeChangeEvent<?>> listener);
+
+    /**
+     * Sets an identifier provider, which returns an identifier for the given
+     * item. The identifier is used for comparing the equality of items. Usage
+     * example: {@code dataView.setIdentifiedProvider(Item::getId);}.
+     *
+     * @param identifierProvider
+     *            function that returns the non-null identifier for a given item
+     */
+    void setIdentifierProvider(IdentifierProvider<T> identifierProvider);
 }

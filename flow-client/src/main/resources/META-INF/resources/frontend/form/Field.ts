@@ -151,7 +151,7 @@ export const field = directive(<T>(
   }
 
   const firstError = binderNode.ownErrors[0];
-  const errorMessage = firstError && firstError.validator.message || '';
+  const errorMessage = firstError && firstError.message || '';
   if (errorMessage !== fieldState.errorMessage) {
     fieldState.strategy.errorMessage = fieldState.errorMessage = errorMessage;
   }
