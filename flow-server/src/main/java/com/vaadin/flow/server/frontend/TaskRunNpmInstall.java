@@ -36,6 +36,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
@@ -61,9 +62,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final NodeUpdater packageUpdater;
 
-    private final List<String> ignoredNodeFolders = Arrays
-            .asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".staging",
-                    ".vaadin", MODULES_YAML);
+    private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
+            "pnpm", ".ignored_pnpm", ".pnpm", ".staging", ".vaadin",
+            MODULES_YAML);
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final ClassFinder classFinder;
@@ -115,7 +116,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         try {
             final JsonObject vaadin = packageUpdater.getPackageJson()
                     .getObject(VAADIN_DEP_KEY);
-            if(vaadin == null) {
+            if (vaadin == null) {
                 packageUpdater.log().warn("No vaadin object in package.json");
                 return;
             }
@@ -244,10 +245,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .listFiles(
                             (dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
-            return installedPackages.length == 0 || (
-                    installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName())) || (
-                    installedPackages.length > 0 && isVaadinHashUpdated());
+            return installedPackages.length == 0
+                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                            .startsWith(installedPackages[0].getName()))
+                    || (installedPackages.length > 0 && isVaadinHashUpdated());
         }
         return true;
     }
@@ -256,15 +257,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         final File localHashFile = getLocalHashFile();
         if (localHashFile.exists()) {
             try {
-                String fileContent = FileUtils
-                        .readFileToString(localHashFile, UTF_8.name());
+                String fileContent = FileUtils.readFileToString(localHashFile,
+                        UTF_8.name());
                 JsonObject content = Json.parse(fileContent);
                 if (content.hasKey(HASH_KEY)) {
                     final JsonObject packageJson = packageUpdater
                             .getPackageJson();
-                    return !content.getString(HASH_KEY)
-                            .equals(packageJson.getObject(VAADIN_DEP_KEY)
-                                    .getString(HASH_KEY));
+                    return !content.getString(HASH_KEY).equals(packageJson
+                            .getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
                 }
             } catch (IOException e) {
                 packageUpdater.log()
@@ -337,7 +337,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
         Process process = null;
         try {
             process = builder.inheritIO().start();
+            Process finalProcess = process;
+
+            // This will allow to destroy the process which does IO regardless
+            // whether it's executed in the same thread or another (may be
+            // daemon) thread
+            Runtime.getRuntime()
+                    .addShutdownHook(new Thread(finalProcess::destroyForcibly));
+
             int errorCode = process.waitFor();
+
             if (errorCode != 0) {
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
