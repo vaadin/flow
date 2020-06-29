@@ -63,6 +63,7 @@ export interface TestEntity {
   fieldObject: object;
   fieldArrayString: string[];
   fieldArrayModel: IdEntity[];
+  fieldMatrixNumber: number[][];
 }
 export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T> {
   static createEmptyValue: () => TestEntity;
@@ -72,4 +73,5 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
   fieldObject = new ObjectModel(this, 'fieldObject');
   fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel, []);
   fieldArrayModel = new ArrayModel(this, 'fieldArrayModel', IdEntityModel, []);
+  fieldMatrixNumber = new ArrayModel(this, 'fieldMatrixNumber', ArrayModel, [NumberModel, [new Positive()]]);
 }
