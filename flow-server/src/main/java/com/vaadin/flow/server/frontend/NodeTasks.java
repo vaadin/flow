@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -98,6 +100,20 @@ public class NodeTasks implements FallibleCommand {
          * Directory where generated files are written.
          */
         public final File generatedFolder;
+
+        /**
+         * The node.js version to be used when node.js is installed
+         * automatically by Vaadin, for example <code>"v12.16.0"</code>.
+         * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
+         */
+        private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
+
+        /**
+         * Download node.js from this URL. Handy in heavily firewalled corporate
+         * environments where the node.js download can be provided from an
+         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         */
+        private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -377,6 +393,34 @@ public class NodeTasks implements FallibleCommand {
             additionalFrontendModules.addAll(frontendModules);
             return this;
         }
+
+        /**
+         * Sets the node.js version to be used when node.js is installed
+         * automatically by Vaadin, for example <code>"v12.16.0"</code>.
+         * Defaults to {@value FrontendTools#DEFAULT_NODE_VERSION}.
+         *
+         * @param nodeVersion
+         *            the new node version to download, not null.
+         * @return the builder, for chaining
+         */
+        public Builder withNodeVersion(String nodeVersion) {
+            this.nodeVersion = Objects.requireNonNull(nodeVersion);
+            return this;
+        }
+
+        /**
+         * Sets the download node.js URL. Handy in heavily firewalled corporate
+         * environments where the node.js download can be provided from an
+         * intranet mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+         *
+         * @param nodeDownloadRoot
+         *            the new download URL to set, not null.
+         * @return the builder, for chaining
+         */
+        public Builder withNodeDownloadRoot(URI nodeDownloadRoot) {
+            this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -415,8 +459,10 @@ public class NodeTasks implements FallibleCommand {
             commands.add(packageUpdater);
 
             if (builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
-                        builder.enablePnpm, builder.requireHomeNodeExec));
+                commands.add(new TaskRunNpmInstall(
+                        classFinder, packageUpdater,
+                        builder.enablePnpm, builder.requireHomeNodeExec,
+                        builder.nodeVersion, builder.nodeDownloadRoot));
             }
         }
 

@@ -18,8 +18,12 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+import javax.validation.constraints.AssertTrue;
+
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -366,11 +370,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
             throws IOException, ExecutionFailedException {
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), getNodeUpdater(), true, true));
+                getClassFinder(), getNodeUpdater(), true, true, FrontendTools.DEFAULT_NODE_VERSION, URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), getNodeUpdater(), true, true));
+                getClassFinder(), getNodeUpdater(), true, true, FrontendTools.DEFAULT_NODE_VERSION, URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
     }
 
     @Test
@@ -456,12 +460,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     @Override
     protected TaskRunNpmInstall createTask() {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false);
+                false, FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false) {
+                false, FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -479,7 +485,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private TaskRunNpmInstall createTaskWithDevDepsLocked(String devDepsPath) {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false) {
+                false, FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)) {
             @Override
             protected String getDevDependenciesFilePath() {
                 return devDepsPath;
