@@ -316,15 +316,6 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Get the active keys and order on active data on the client.
-     *
-     * @return list of active client data as ordered keys
-     */
-    public List<String> getActiveKeyOrdering() {
-        return Collections.unmodifiableList(activeKeyOrder);
-    }
-
-    /**
      * Returns the active item at the given index or throws a
      * {@link IndexOutOfBoundsException} in case the item is not active at the
      * moment.
@@ -341,15 +332,6 @@ public class DataCommunicator<T> implements Serializable {
                     index, activeStart, activeDataEnd));
         }
         return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
-    }
-
-    /**
-     * Get the current client item range.
-     *
-     * @return range of items on client
-     */
-    public Range getRequestedRange() {
-        return requestedRange;
     }
 
     /**
@@ -627,9 +609,6 @@ public class DataCommunicator<T> implements Serializable {
             // by default adjust size by multiple of page size
             assumedSize += getRowCountEstimateIncrease();
         }
-        getLogger(DataCommunicator.class).info(
-                "Requested range: {} old size: {} new size: {}", requestedRange,
-                previousAssumedSize, assumedSize);
     }
 
     /**
