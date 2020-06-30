@@ -155,7 +155,7 @@ public class ComponentEventBus implements Serializable {
         componentEventData.computeIfAbsent(eventType, t -> new ArrayList<>(1))
                 .add(wrapper);
 
-        return () -> removeListener(eventType, wrapper);
+        return Registration.once(() -> removeListener(eventType, wrapper));
     }
 
     /**
