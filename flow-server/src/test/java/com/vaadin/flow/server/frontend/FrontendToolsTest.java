@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -106,14 +107,12 @@ public class FrontendToolsTest {
 
     }
 
-    @Test
-    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
-            throws IOException {
+    private void prepareNodeDownloadableZipAt(String baseDir, String version) throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        String prefix = "node-v12.16.0-" + platform.getNodeClassifier();
+        String prefix = "node-" + version + "-" + platform.getNodeClassifier();
 
-        File downloadDir = new File(baseDir, "v12.16.0");
+        File downloadDir = new File(baseDir, version);
         FileUtils.forceMkdir(downloadDir);
         File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
@@ -154,10 +153,33 @@ public class FrontendToolsTest {
                 o.closeArchiveEntry();
             }
         }
+    }
+
+    @Test
+    public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
+            throws IOException {
+        prepareNodeDownloadableZipAt(baseDir, "v12.16.0");
 
         String nodeExecutable = tools.installNode("v12.16.0",
                 new File(baseDir).toPath().toUri());
         Assert.assertNotNull(nodeExecutable);
+
+        Assert.assertTrue("npm should have been copied to node_modules",
+                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
+                        .exists());
+    }
+
+    @Test
+    public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
+            throws Exception{
+        Assert.assertFalse("npm should not yet be present",
+                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
+                        .exists());
+
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
+                "v12.10.0", new File(baseDir).toURI());
+        prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
+        tools.forceAlternativeNodeExecutable();
 
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")

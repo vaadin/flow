@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -27,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -72,6 +75,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final boolean requireHomeNodeExec;
     private final ClassFinder classFinder;
 
+    private final String nodeVersion;
+    private final URI nodeDownloadRoot;
+
     /**
      * Create an instance of the command.
      *
@@ -84,13 +90,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            whether PNPM should be used instead of NPM
      * @param requireHomeNodeExec
      *            whether vaadin home node executable has to be used
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed automatically
+     *            by Vaadin, for example <code>"v12.16.0"</code>. Use
+     *            {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled corporate
+     *            environments where the node.js download can be provided from an intranet
+     *            mirror. Use {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      */
     TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
-            boolean enablePnpm, boolean requireHomeNodeExec) {
+            boolean enablePnpm, boolean requireHomeNodeExec,
+            String nodeVersion, URI nodeDownloadRoot) {
         this.classFinder = classFinder;
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
         this.requireHomeNodeExec = requireHomeNodeExec;
+        this.nodeVersion = Objects.requireNonNull(nodeVersion);
+        this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
     }
 
     @Override
@@ -309,7 +326,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
         FrontendTools tools = new FrontendTools(baseDir,
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                nodeVersion, nodeDownloadRoot);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
@@ -442,5 +460,4 @@ public class TaskRunNpmInstall implements FallibleCommand {
             FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
         }
     }
-
 }
