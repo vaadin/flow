@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -173,6 +174,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withConnectGeneratedOpenApiJson(openApiJsonFile)
                         .withConnectClientTsApiFolder(generatedTsFolder)
                         .withHomeNodeExecRequired(requireHomeNodeExec)
+                        .withNodeVersion(nodeVersion)
+                        .withNodeDownloadRoot(URI.create(nodeDownloadRoot))
                         .build()
                         .execute();
     }
@@ -190,7 +193,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         String nodePath;
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                nodeVersion, URI.create(nodeDownloadRoot));
         if (requireHomeNodeExec) {
             nodePath = tools
                     .forceAlternativeNodeExecutable();

@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -98,8 +99,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
         try {
             FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                    () -> FrontendUtils.getVaadinHomeDirectory()
-                            .getAbsolutePath());
+                    () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                    nodeVersion, URI.create(nodeDownloadRoot));
             tools.validateNodeAndNpmVersion();
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
@@ -123,7 +124,11 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)
                             .enableImportsUpdate(false)
-                            .enablePackagesUpdate(false).runNpmInstall(false);
+                            .enablePackagesUpdate(false)
+                            .runNpmInstall(false)
+                            .withNodeVersion(nodeVersion)
+                            .withNodeDownloadRoot(URI.create(nodeDownloadRoot))
+                            .withHomeNodeExecRequired(requireHomeNodeExec);
             // If building a jar project copy jar artifact contents now as we
             // might
             // not be able to read files from jar path.
