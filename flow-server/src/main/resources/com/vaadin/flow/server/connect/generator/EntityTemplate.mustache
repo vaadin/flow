@@ -17,7 +17,7 @@ import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/im
  }}{{/vendorExtensions.x-vaadin-file-path}}
  */
 {{#if vendorExtensions.x-is-enum}}
-export const enum {{{getClassNameFromImports classname ../../imports}}} {
+const enum {{{getClassNameFromImports classname ../../imports}}} {
 {{#allowableValues.enumVars}}
   {{name}} = {{{value}}},
 {{/allowableValues.enumVars}}
@@ -33,5 +33,8 @@ export default interface {{{getClassNameFromImports classname ../../imports}}} {
   {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports datatype ../../../imports}}};
 {{/vars}}
 }
+{{#if vendorExtensions.x-is-enum}}
+export default {{{getClassNameFromImports classname ../../imports}}};
+{{/if}}
 {{/model}}
 {{/models}}
