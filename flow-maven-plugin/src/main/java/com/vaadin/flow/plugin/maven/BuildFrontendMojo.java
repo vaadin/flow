@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -146,13 +148,19 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-    private void runNodeUpdater() throws ExecutionFailedException {
+    private void runNodeUpdater() throws ExecutionFailedException, MojoExecutionException {
         Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
         File flowResourcesFolder = new File(npmFolder,
                 DEAULT_FLOW_RESOURCES_FOLDER);
+        final URI nodeDownloadRootURI;
+        try {
+            nodeDownloadRootURI = new URI(nodeDownloadRoot);
+        } catch (URISyntaxException e) {
+            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+        }
         // @formatter:off
         new NodeTasks.Builder(getClassFinder(project),
                 npmFolder, generatedFolder, frontendDirectory)
@@ -173,11 +181,13 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withConnectGeneratedOpenApiJson(openApiJsonFile)
                         .withConnectClientTsApiFolder(generatedTsFolder)
                         .withHomeNodeExecRequired(requireHomeNodeExec)
+                        .withNodeVersion(nodeVersion)
+                        .withNodeDownloadRoot(nodeDownloadRootURI)
                         .build()
                         .execute();
     }
 
-    private void runWebpack() {
+    private void runWebpack() throws MojoExecutionException {
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(npmFolder,
                 NODE_MODULES + webpackCommand);
@@ -188,9 +198,16 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
+        final URI nodeDownloadRootURI;
+        try {
+            nodeDownloadRootURI = new URI(nodeDownloadRoot);
+        } catch (URISyntaxException e) {
+            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+        }
         String nodePath;
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                nodeVersion, nodeDownloadRootURI);
         if (requireHomeNodeExec) {
             nodePath = tools
                     .forceAlternativeNodeExecutable();
