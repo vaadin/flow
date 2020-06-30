@@ -170,7 +170,7 @@ public class Query<T, F> implements Serializable {
 
     /**
      * Gets the requested range end. This is a shorthand for
-     * {@code getOffset() + getLimit()}.
+     * {@code getOffset() + getLimit()} where the end is exclusive.
      * 
      * @return the requested range end
      */

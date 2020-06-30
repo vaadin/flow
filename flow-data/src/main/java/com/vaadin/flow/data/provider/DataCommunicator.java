@@ -42,12 +42,12 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * DataProvider base class. This class is the base for all DataProvider
@@ -636,10 +636,10 @@ public class DataCommunicator<T> implements Serializable {
                 inMemorySorting, filter);
         Stream<T> stream = getDataProvider().fetch(query);
         if (stream.isParallel()) {
-            getLogger(DataCommunicator.class).debug(
-                    "Data provider {} has returned "
+            LoggerFactory.getLogger(DataCommunicator.class)
+                    .debug("Data provider {} has returned "
                             + "parallel stream on 'fetch' call",
-                    getDataProvider().getClass());
+                            getDataProvider().getClass());
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
         }
@@ -647,7 +647,10 @@ public class DataCommunicator<T> implements Serializable {
         SizeVerifier verifier = new SizeVerifier<>(limit);
         stream = stream.peek(verifier);
 
-        // FIXME simplify by removing these restrictions ?
+        /*
+         * These restrictions are used to help users to see that they have done
+         * a mistake instead of just letting things work in an unintended way.
+         */
         if (!query.isLimitCalled()) {
             throw new IllegalStateException(
                     getInvalidContractMessage("getLimit"));

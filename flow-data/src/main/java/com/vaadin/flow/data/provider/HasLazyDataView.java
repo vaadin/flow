@@ -52,10 +52,10 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
             CallbackDataProvider.FetchCallback<T, Void> fetchCallback) {
         setDataSource(DataProvider.fromCallbacks(fetchCallback, query -> {
             throw new IllegalStateException(
-                    "Trying to use defined size with a lazy loading component"
+                    "Trying to use exact size with a lazy loading component"
                             + " without either providing a count callback for the"
-                            + "component to fetch the size of the data or a data"
-                            + "provider that implements the size query. Provide the "
+                            + " component to fetch the size of the data or a data"
+                            + " provider that implements the size query. Provide the "
                             + "callback for fetching size with%n"
                             + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
                             + "%nor switch to undefined size with%n"
