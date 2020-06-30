@@ -325,14 +325,6 @@ public abstract class AbstractNavigationStateRenderer
                         .getCaughtException() instanceof NotFoundException;
     }
 
-    private boolean isRouterLinkNotFoundNavigationError(
-            ErrorNavigationEvent event) {
-        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                && event.getErrorParameter() != null
-                && event.getErrorParameter()
-                        .getCaughtException() instanceof NotFoundException;
-    }
-
     /**
      * Notify the navigation target about the status of the navigation.
      *
