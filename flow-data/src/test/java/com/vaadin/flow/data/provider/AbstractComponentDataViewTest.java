@@ -52,7 +52,7 @@ public abstract class AbstractComponentDataViewTest {
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = new InMemoryProvider(items);
         component = getVerifiedComponent();
-        dataView = component.setDataSource(dataProvider);
+        dataView = component.setItems(dataProvider);
     }
 
     @Test

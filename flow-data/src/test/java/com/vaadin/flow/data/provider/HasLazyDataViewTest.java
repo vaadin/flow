@@ -23,7 +23,7 @@ public class HasLazyDataViewTest {
         }
 
         @Override
-        public AbstractLazyDataView<String> setDataSource(BackEndDataProvider<String, Void> dataProvider) {
+        public AbstractLazyDataView<String> setItems(BackEndDataProvider<String, Void> dataProvider) {
             dataCommunicator.setDataProvider(dataProvider,null);
             return getLazyDataView();
         }
@@ -39,10 +39,10 @@ public class HasLazyDataViewTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Test
-    public void setDataSourceCountCallback_switchesToDefinedSize_throwsOnSizeQuery() {
+    public void setItemsCountCallback_switchesToDefinedSize_throwsOnSizeQuery() {
         TestComponent testComponent = new TestComponent();
         // uses a NOOP count callback that will throw when called
-        testComponent.setDataSource(query -> Stream.of("foo","bar","baz"));
+        testComponent.setItems(query -> Stream.of("foo","bar","baz"));
 
         Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
