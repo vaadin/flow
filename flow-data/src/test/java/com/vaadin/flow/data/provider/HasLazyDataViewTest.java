@@ -33,6 +33,10 @@ public class HasLazyDataViewTest {
             return new AbstractLazyDataView<String>(dataCommunicator, this) {
             };
         }
+
+        public DataCommunicator<String> getDataCommunicator() {
+            return dataCommunicator;
+        }
     }
 
     @Rule
@@ -46,13 +50,17 @@ public class HasLazyDataViewTest {
 
         Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
-        testComponent.getLazyDataView().setRowCountFromDataProvider();
+        testComponent.getLazyDataView().setItemCountFromDataProvider();
 
         Assert.assertTrue(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
         expectedException.expect(IllegalStateException.class);
         // to make things fail, just need to call size() which will trigger a size query
-        testComponent.getLazyDataView().getSize();
+        //
+        // Although we don't have getSize() method for lazy data view, it is
+        // still possible for developer to call getDataSize() from
+        // dataCommunicator.
+        testComponent.getDataCommunicator().getDataSize();
     }
 
 }
