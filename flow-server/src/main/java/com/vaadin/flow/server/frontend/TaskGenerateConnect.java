@@ -38,14 +38,14 @@ public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
     /**
      * Create a task for generating TS files based.
      *
-     * @param output
-     *            the output folder.
      * @param applicationProperties
- *            application properties file.
+     *            application properties file.
      * @param openApi
-*            openApi json file.
+     *            openApi json file.
+     * @param outputFolder
+     *            the output folder.
      * @param frontendDirectory
-     *       the frontend folder.
+     *            the frontend folder.
      */
     TaskGenerateConnect(File applicationProperties, File openApi,
                         File outputFolder, File frontendDirectory) {

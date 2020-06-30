@@ -16,7 +16,14 @@ import {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/im
  * @see {@link file://{{vendorExtensions.x-vaadin-file-path}}{{!}}}{{!
  }}{{/vendorExtensions.x-vaadin-file-path}}
  */
+{{#if vendorExtensions.x-is-enum}}
+const enum {{{getClassNameFromImports classname ../../imports}}} {
+{{#allowableValues.enumVars}}
+  {{name}} = {{{value}}},
+{{/allowableValues.enumVars}}
+{{else}}
 export default interface {{{getClassNameFromImports classname ../../imports}}} {{~#parentSchema}} extends {{{getClassNameFromImports parentSchema ../../imports}}}{{/parentSchema}} {
+{{/if}}
 {{#vars}}
 {{#unescapedDescription}}
   /**{{#multiplelines unescapedDescription}}
@@ -26,5 +33,8 @@ export default interface {{{getClassNameFromImports classname ../../imports}}} {
   {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports datatype ../../../imports}}};
 {{/vars}}
 }
+{{#if vendorExtensions.x-is-enum}}
+export default {{{getClassNameFromImports classname ../../imports}}};
+{{/if}}
 {{/model}}
 {{/models}}
