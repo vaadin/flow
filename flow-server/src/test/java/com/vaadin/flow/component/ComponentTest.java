@@ -1148,12 +1148,9 @@ public class ComponentTest {
         SynchronizedPropertiesList list = div.getElement().getNode()
                 .getFeature(SynchronizedPropertiesList.class);
 
-<<<<<<< HEAD
         Set<String> props = list.getSynchronizedProperties();
-=======
         ElementListenerMap feature = div.getElement().getNode()
                 .getFeature(ElementListenerMap.class);
->>>>>>> 82e052dc2d... Make Registration for Component::addListener idempotent (#8606)
 
         Assert.assertTrue(props.contains("bar"));
         Assert.assertTrue(props.contains("baz"));
