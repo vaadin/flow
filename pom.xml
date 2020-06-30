@@ -125,6 +125,10 @@
         <osgi.compendium.version>6.0.0</osgi.compendium.version>
 
         <maven.test.skip>false</maven.test.skip>
+
+        <!-- This property is needed to allow some Win-specific unit tests -->
+        <!-- to be disabled via system property in CI until they got fixed-->
+        <exclude.windows.failed.tests></exclude.windows.failed.tests>
     </properties>
 
     <repositories>
@@ -485,6 +489,9 @@
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                         <reuseForks>false</reuseForks>
+                        <excludes>
+                            <exclude>${exclude.windows.failed.tests}</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
