@@ -17,11 +17,18 @@ package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.Range;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,13 +38,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.Range;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
 
@@ -97,6 +97,7 @@ public class DataCommunicatorTest {
     public Range lastClear = null;
     public Range lastSet = null;
     public int lastUpdateId = -1;
+    private int pageSize;
 
     @Before
     public void init() {
@@ -133,6 +134,8 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode());
+        pageSize = 50;
+        dataCommunicator.setPageSize(pageSize);
     }
 
     @Test
@@ -338,9 +341,282 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertEquals(40, lastSet.getEnd());
-        // Assert takes into acount the inital size query for setting dataprovider.
+        // Assert takes into acount the inital size query for setting
+        // dataprovider.
         Mockito.verify(dataProvider, Mockito.times(2)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+    }
+
+    @Test
+    public void setSizeCallback_usedForDataSize() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setRequestedRange(0, 50);
+        Assert.assertTrue(dataCommunicator.isDefinedSize());
+
+        fakeClientCommunication();
+
+        AtomicBoolean sizeCallbackCall = new AtomicBoolean(false);
+        dataCommunicator.setCountCallback(query -> {
+            sizeCallbackCall.set(true);
+            return 100;
+        });
+        Assert.assertTrue(dataCommunicator.isDefinedSize());
+
+        fakeClientCommunication();
+
+        Assert.assertTrue("SizeCallback not called",
+                sizeCallbackCall.getAndSet(false));
+        Assert.assertEquals("Size not used", 100,
+                dataCommunicator.getDataSize());
+
+        Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+
+        dataCommunicator.setRequestedRange(50, 50);
+
+        fakeClientCommunication();
+
+        Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
+
+        Assert.assertFalse("SizeCallback called when should not have",
+                sizeCallbackCall.get());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setSizeCallback_null_throws() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setCountCallback(null);
+    }
+
+    @Test
+    public void setSizeCallback_rowCountEstimatesWereSet_overridesRowCountEstimates() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                5000);
+        dataProvider = Mockito.spy(dataProvider);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        final int rowCountEstimate = 200;
+        dataCommunicator.setRowCountEstimate(rowCountEstimate);
+        final int rowCountEstimateIncrease = 300;
+        dataCommunicator.setRowCountEstimateIncrease(rowCountEstimateIncrease);
+        dataCommunicator.setRequestedRange(150, 50);
+        Assert.assertFalse(dataCommunicator.isDefinedSize());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("initial estimate+increase not used",
+                rowCountEstimate + rowCountEstimateIncrease,
+                dataCommunicator.getDataSize());
+        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+
+        AtomicBoolean sizeCallbackCall = new AtomicBoolean(false);
+        final int exactSize = 1234;
+        dataCommunicator.setCountCallback(query -> {
+            sizeCallbackCall.set(true);
+            return exactSize;
+        });
+        Assert.assertTrue(dataCommunicator.isDefinedSize());
+
+        fakeClientCommunication();
+
+        Assert.assertTrue("SizeCallback not called",
+                sizeCallbackCall.getAndSet(false));
+        Assert.assertEquals("Size not used", exactSize,
+                dataCommunicator.getDataSize());
+    }
+
+    @Test
+    public void setInitialSizeEstimate_usedInitiallyThenDiscarded() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                250);
+        dataProvider = Mockito.spy(dataProvider);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        final int initialSizeEstimate = 100;
+        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+        dataCommunicator.setRequestedRange(0, 50);
+        Assert.assertFalse(dataCommunicator.isDefinedSize());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("initial size estimate not used",
+                initialSizeEstimate, dataCommunicator.getDataSize());
+        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+
+        dataCommunicator.setRequestedRange(50, 50);
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("initial size estimate was not discarded",
+                initialSizeEstimate + getPageSizeIncrease(),
+                dataCommunicator.getDataSize());
+        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
+    }
+
+    @Test
+    public void setInitialSizeEstimate_lessThanCurrentFetchedSize_discarded() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                250);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setDefinedSize(false);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        final int initialSizeEstimate = 111;
+        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+        Assert.assertFalse(dataCommunicator.isDefinedSize());
+
+        dataCommunicator.setRequestedRange(50, 100);
+        fakeClientCommunication();
+
+        Assert.assertEquals(
+                "too small initial size estimate should not be applied",
+                initialSizeEstimate + getPageSizeIncrease(),
+                dataCommunicator.getDataSize());
+    }
+
+    @Test
+    public void setInitialSizeEstimate_lessThanRequestedRange_sizeIsIncreasedAutomatically() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                250);
+        dataProvider = Mockito.spy(dataProvider);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        int requestedRangeEnd = 50;
+        dataCommunicator.setRequestedRange(0, requestedRangeEnd);
+
+        final int initialSizeEstimate = 49;
+        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+
+        fakeClientCommunication();
+        Assert.assertEquals(
+                "Size should be automatically adjusted for too small estimate",
+                initialSizeEstimate + getPageSizeIncrease(),
+                dataCommunicator.getDataSize());
+    }
+
+    @Test
+    public void setInitialRowCountEstimateAndIncrease_lessThanRequestedRange_estimateIncreaseUsed() {
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
+                5000);
+        dataProvider = Mockito.spy(dataProvider);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        int rangeLength = 100;
+        dataCommunicator.setRequestedRange(400, rangeLength);
+
+        final int initialSizeEstimate = 300;
+        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+        final int rowCountEstimateIncrease = 99;
+        dataCommunicator.setRowCountEstimateIncrease(rowCountEstimateIncrease);
+
+        fakeClientCommunication();
+        Assert.assertEquals(
+                "Size should be automatically adjusted for too small estimate",
+                initialSizeEstimate + (3 * rowCountEstimateIncrease),
+                dataCommunicator.getDataSize());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setInitialSizeEstimate_lessThanOne_throws() {
+        dataCommunicator.setRowCountEstimate(0);
+    }
+
+    @Test
+    public void getActiveItemOnIndex_activeRangeChanges_itemsReturned() {
+        dataCommunicator.setDataProvider(createDataProvider(300), null);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+        Assert.assertEquals("Wrong active item", new Item(0),
+                dataCommunicator.getActiveItemOnIndex(0));
+        Assert.assertEquals("Wrong active item", new Item(49),
+                dataCommunicator.getActiveItemOnIndex(49));
+
+        dataCommunicator.setRequestedRange(50, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals("Wrong active item", new Item(50),
+                dataCommunicator.getActiveItemOnIndex(50));
+        Assert.assertEquals("Wrong active item", new Item(69),
+                dataCommunicator.getActiveItemOnIndex(69));
+        Assert.assertEquals("Wrong active item", new Item(99),
+                dataCommunicator.getActiveItemOnIndex(99));
+    }
+
+    @Test
+    public void isItemActive_newItems() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setRequestedRange(0, 50);
+
+        Assert.assertFalse("Item should not be active",
+                dataCommunicator.isItemActive(new Item(0)));
+
+        fakeClientCommunication();
+
+        Assert.assertTrue("Item should be active",
+                dataCommunicator.isItemActive(new Item(0)));
+        Assert.assertTrue("Item should be active",
+                dataCommunicator.isItemActive(new Item(49)));
+        Assert.assertFalse("Item should not be active",
+                dataCommunicator.isItemActive(new Item(50)));
+
+        dataCommunicator.setRequestedRange(50, 50);
+        fakeClientCommunication();
+
+        Assert.assertTrue("Item should be active",
+                dataCommunicator.isItemActive(new Item(50)));
+        Assert.assertTrue("Item should be active",
+                dataCommunicator.isItemActive(new Item(99)));
+        Assert.assertFalse("Item should not be active",
+                dataCommunicator.isItemActive(new Item(100)));
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void getActiveItemOnIndex_outsizeActiveRange_throws() {
+        dataCommunicator.setDataProvider(createDataProvider(300), null);
+        dataCommunicator.setRequestedRange(50, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals("Wrong active item", new Item(50),
+                dataCommunicator.getActiveItemOnIndex(50));
+        dataCommunicator.getActiveItemOnIndex(49);
+    }
+
+    @Test
+    public void rowCountEstimateAndStep_defaults() {
+        Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
+                pageSize * 4);
+        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
+                pageSize * 4);
+
+        int customPageSize = 100;
+        dataCommunicator.setPageSize(customPageSize);
+
+        Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
+                customPageSize * 4);
+        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
+                customPageSize * 4);
+
+        int customRowCountEstimate = 123;
+        dataCommunicator.setRowCountEstimate(customRowCountEstimate);
+        int customRowCountEstimateStep = 456;
+        dataCommunicator
+                .setRowCountEstimateIncrease(customRowCountEstimateStep);
+
+        Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
+                customRowCountEstimate);
+        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
+                customRowCountEstimateStep);
+    }
+
+    private int getPageSizeIncrease() {
+        return dataCommunicator.getPageSize() * 4;
     }
 
     private void fakeClientCommunication() {
@@ -397,6 +673,27 @@ public class DataCommunicatorTest {
                 return IntStream
                         .range(query.getOffset(),
                                 query.getLimit() + query.getOffset())
+                        .mapToObj(Item::new);
+            }
+        };
+    }
+
+    private AbstractDataProvider<Item, Object> createDataProvider(int size) {
+        return new AbstractDataProvider<Item, Object>() {
+            @Override
+            public boolean isInMemory() {
+                return true;
+            }
+
+            @Override
+            public int size(Query<Item, Object> query) {
+                return size;
+            }
+
+            @Override
+            public Stream<Item> fetch(Query<Item, Object> query) {
+                int end = Math.min(query.getRequestedRangeEnd(), size);
+                return IntStream.range(query.getOffset(), end)
                         .mapToObj(Item::new);
             }
         };

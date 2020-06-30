@@ -19,7 +19,9 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -41,7 +43,10 @@ public interface DataView<T> extends Serializable {
     Stream<T> getItems();
 
     /**
-     * Gets the size of the data source with filters applied if any are set.
+     * Get the full data size with filters if any set. As the size might change
+     * at any point, it is recommended to add a listener with the
+     * {@link #addSizeChangeListener(ComponentEventListener)} method instead to
+     * get notified when the data size has changed.
      *
      * @return filtered data size
      * @see #addSizeChangeListener(ComponentEventListener)
@@ -57,6 +62,12 @@ public interface DataView<T> extends Serializable {
      * {@link DataProvider#getId(Object)} method is used instead. Item's custom
      * identity can be set up with a
      * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
+     * <p>
+     * <em>NOTE:</em> when the component is created and not yet added, the item
+     * might not yet be loaded, but will be loaded during the "before client
+     * response"-phase. To check if the item has been added at that point, after
+     * setting the data source to the component you need to use
+     * {@link com.vaadin.flow.component.UI#beforeClientResponse(Component, SerializableConsumer)}.
      *
      * @param item
      *            item to search for

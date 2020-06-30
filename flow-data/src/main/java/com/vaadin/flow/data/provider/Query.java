@@ -167,4 +167,14 @@ public class Query<T, F> implements Serializable {
     public Optional<Comparator<T>> getSortingComparator() {
         return Optional.ofNullable(inMemorySorting);
     }
+
+    /**
+     * Gets the requested range end. This is a shorthand for
+     * {@code getOffset() + getLimit()} where the end is exclusive.
+     * 
+     * @return the requested range end
+     */
+    public int getRequestedRangeEnd() {
+        return getOffset() + getLimit();
+    }
 }

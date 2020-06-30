@@ -81,10 +81,13 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      *             if data provider type is incompatible with data view type
      */
     protected final void verifyDataProviderType(Class<?> dataProviderType) {
+        // TODO https://github.com/vaadin/flow/issues/8583
         Class<?> supportedDataProviderType = getSupportedDataProviderType();
         if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {
             final String message = String.format(
-                    "%s only supports '%s' or it's subclasses, but was given a '%s'",
+                    "%s only supports '%s' or it's subclasses, but was given a '%s'."
+                            + "%nUse either 'getLazyDataView()', 'getListDataView()'"
+                            + " or 'getDataView()' according to the used data type.",
                     this.getClass().getSimpleName(),
                     supportedDataProviderType.getSimpleName(),
                     dataProviderType.getSuperclass().getSimpleName());

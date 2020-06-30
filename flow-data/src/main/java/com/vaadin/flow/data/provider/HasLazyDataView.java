@@ -16,63 +16,112 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
- * Interface that defines methods for setting in memory data.
- * This will return a {@link LazyDataView}.
+ * Interface that defines methods for fetching data lazily from a backend. The
+ * API will return a {@link LazyDataView}.
  *
  * @param <T>
- *         data type
+ *            data type
  * @param <V>
- *         DataView type
+ *            DataView type
  * @since
  */
-public interface HasLazyDataView<T, V extends LazyDataView<T>> extends
-        Serializable {
-    /**
-     * Supply data through a callback provider.
-     *
-     * @param fetchCallback
-     *         function that returns a stream of items from the back end for
-     *         a query
-     * @return LazyDataView instance
-     */
-    V setDataProvider(
-            CallbackDataProvider.FetchCallback<T, Void> fetchCallback);
+public interface HasLazyDataView<T, V extends LazyDataView<T>>
+        extends Serializable {
 
     /**
-     * Supply data through a callback provider with a count callback.
+     * Supply data lazily with a callback from a backend. The component will
+     * automatically fetch more items and adjust its size until the data source
+     * runs out of items. Usage example:
+     * <p>
+     * {@code component.setDataSource(query -> orderService.getOrders(query.getOffset(), query.getLimit());}
+     * <p>
+     * The returned data view object can be used for further configuration, or
+     * later on fetched with {@link #getLazyDataView()}. For using in-memory
+     * data, like {@link java.util.Collection}, use
+     * {@link HasListDataView#setDataSource(Collection)} instead.
      *
      * @param fetchCallback
-     *         function that returns a stream of items from the back end for
-     *         a query
+     *            function that returns a stream of items from the backend based
+     *            on the offset and limit provided by the query object
+     * @return LazyDataView instance for further configuration
+     */
+    default V setDataSource(
+            CallbackDataProvider.FetchCallback<T, Void> fetchCallback) {
+        setDataSource(DataProvider.fromCallbacks(fetchCallback, query -> {
+            throw new IllegalStateException(
+                    "Trying to use exact size with a lazy loading component"
+                            + " without either providing a count callback for the"
+                            + " component to fetch the size of the data or a data"
+                            + " provider that implements the size query. Provide the "
+                            + "callback for fetching size with%n"
+                            + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
+                            + "%nor switch to undefined size with%n"
+                            + "component.getLazyDataView().withUndefinedSize();");
+        }));
+        V lazyDataView = getLazyDataView();
+        lazyDataView.setRowCountUnknown();
+        return lazyDataView;
+    }
+
+    /**
+     * Supply data lazily with callbacks: the first one fetches the items based
+     * on offset and limit, the second provides the exact count of items in the
+     * backend. Use this in case getting the count is cheap and the user
+     * benefits from the component showing immediately the exact size. Usage
+     * example:
+     * <p>
+     * {@code component.setDataSource(
+     *                    query -> orderService.getOrders(query.getOffset, query.getLimit()),
+     *                    query -> orderService.getSize());}
+     * <p>
+     * The returned data view object can be used for further configuration, or
+     * later on fetched with {@link #getLazyDataView()}. For using in-memory
+     * data, like {@link java.util.Collection}, use
+     * {@link HasListDataView#setDataSource(Collection)} instead.
+     * 
+     * @param fetchCallback
+     *            function that returns a stream of items from the back end for
+     *            a query
      * @param countCallback
-     *         function that return the number of items in the back end for a
-     *         query
-     * @return LazyDataView instance
+     *            function that return the number of items in the back end for a
+     *            query
+     * @return LazyDataView instance for further configuration
      */
-    V setDataProvider(CallbackDataProvider.FetchCallback<T, Void> fetchCallback,
-            CallbackDataProvider.CountCallback<T, Void> countCallback);
-
-    // Using a more distinct type so that existing data provider API of HasDataProvider::setDataProvider can be overridden
+    default V setDataSource(
+            CallbackDataProvider.FetchCallback<T, Void> fetchCallback,
+            CallbackDataProvider.CountCallback<T, Void> countCallback) {
+        setDataSource(DataProvider.fromCallbacks(fetchCallback, countCallback));
+        return getLazyDataView();
+    }
 
     /**
-     * Supply data through a BackendDataProvider that lazy loads items from a
-     * back end.
-     *
+     * Supply data with a {@link BackEndDataProvider} that lazy loads items from
+     * a backend. Note that component will query the data provider for the item
+     * count. In case that is not desired for performance reasons, use
+     * {@link #setDataSource(CallbackDataProvider.FetchCallback)} instead.
+     * <p>
+     * The returned data view object can be used for further configuration, or
+     * later on fetched with {@link #getLazyDataView()}. For using in-memory
+     * data, like {@link java.util.Collection}, use
+     * {@link HasListDataView#setDataSource(Collection)} instead.
+     * 
      * @param dataProvider
-     *         BackendDataProvider instance
-     * @return LazyDataView instance
+     *            BackEndDataProvider instance
+     * @return LazyDataView instance for further configuration
      */
-    V setDataProvider(BackEndDataProvider<T, Void> dataProvider);
+    V setDataSource(BackEndDataProvider<T, Void> dataProvider);
 
     /**
-     * Get the LazyDataView for the component. Throws if the data is not lazy
-     * and should use another data view type.
+     * Get the LazyDataView for the component. Throws an exception if the data
+     * source is not lazy and another data view type should be used, like
+     * {@link ListDataView}.
      *
      * @return LazyDataView instance
      * @throws IllegalStateException
-     *         when list data view is not applicable
+     *             when lazy data view is not applicable
      */
     V getLazyDataView();
 }
