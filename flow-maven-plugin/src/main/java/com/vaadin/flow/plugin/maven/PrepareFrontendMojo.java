@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -97,10 +98,16 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // propagate info via System properties and token file
         propagateBuildInfo();
 
+        final URI nodeDownloadRootURI;
+        try {
+            nodeDownloadRootURI = new URI(nodeDownloadRoot);
+        } catch (URISyntaxException e) {
+            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+        }
         try {
             FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
                     () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                    nodeVersion, URI.create(nodeDownloadRoot));
+                    nodeVersion, nodeDownloadRootURI);
             tools.validateNodeAndNpmVersion();
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
@@ -127,7 +134,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .enablePackagesUpdate(false)
                             .runNpmInstall(false)
                             .withNodeVersion(nodeVersion)
-                            .withNodeDownloadRoot(URI.create(nodeDownloadRoot))
+                            .withNodeDownloadRoot(nodeDownloadRootURI)
                             .withHomeNodeExecRequired(requireHomeNodeExec);
             // If building a jar project copy jar artifact contents now as we
             // might
