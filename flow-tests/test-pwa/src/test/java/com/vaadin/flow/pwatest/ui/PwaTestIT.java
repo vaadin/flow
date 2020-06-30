@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -37,6 +38,7 @@ import com.google.gwt.thirdparty.json.JSONObject;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class PwaTestIT extends ChromeBrowserTest {
+
 
     @Test
     public void testPwaResources() throws IOException, JSONException {

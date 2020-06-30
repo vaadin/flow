@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -38,6 +39,7 @@ public class OrderedDependencyIT extends ChromeBrowserTest {
                 findElementById("component").getCssValue("color"));
     }
 
+
     @Test
     public void inheritedModuleInjection() {
         open();
@@ -50,6 +52,7 @@ public class OrderedDependencyIT extends ChromeBrowserTest {
         Assert.assertEquals("Messagehandler initialized in module 2",
                 messages.get(index + 1));
     }
+
 
     @Test
     public void inheritedScriptInjection() {

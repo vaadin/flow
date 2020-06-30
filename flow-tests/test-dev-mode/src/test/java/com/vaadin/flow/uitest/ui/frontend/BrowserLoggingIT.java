@@ -33,7 +33,6 @@ import static org.junit.Assert.assertThat;
 public class BrowserLoggingIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore
     public void productionModeHasNoLogEntries() {
         openProduction();
         waitForElementPresent(By.id("elementId"));

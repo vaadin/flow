@@ -8,6 +8,7 @@ import java.net.URLClassLoader;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.flow.server.frontend.TestUtils;
@@ -16,6 +17,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCE
 
 public class DevModeInitializerClassLoaderTest {
 
+    @Ignore
     @Test
     public void should_loadResources_from_customClassLoader() throws Exception {
 

@@ -33,6 +33,7 @@ public class DependencyIT extends ChromeBrowserTest {
     private static final String RED = "rgba(255, 0, 0, 1)";
     private static final String BLUE = "rgba(0, 0, 255, 1)";
 
+
     @Test
     public void styleInjection() {
         open();
@@ -44,6 +45,7 @@ public class DependencyIT extends ChromeBrowserTest {
         Assert.assertEquals(BLUE,
                 findElementById("hello").getCssValue("color"));
     }
+
 
     @Test
     public void scriptInjection() {
@@ -64,6 +66,7 @@ public class DependencyIT extends ChromeBrowserTest {
                 "Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
                 addedJsText);
     }
+
 
     @Test
     public void loadingUnavailableResources() {

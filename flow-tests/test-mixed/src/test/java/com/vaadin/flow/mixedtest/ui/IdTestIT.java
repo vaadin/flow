@@ -15,16 +15,27 @@
  */
 package com.vaadin.flow.mixedtest.ui;
 
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.slf4j.LoggerFactory;
+
+import static org.openqa.selenium.logging.LogType.BROWSER;
+import static org.openqa.selenium.logging.LogType.CLIENT;
+import static org.openqa.selenium.logging.LogType.DRIVER;
+import static org.openqa.selenium.logging.LogType.PERFORMANCE;
+import static org.openqa.selenium.logging.LogType.PROFILER;
+import static org.openqa.selenium.logging.LogType.SERVER;
 
 public class IdTestIT extends ChromeBrowserTest {
     @Override
@@ -36,8 +47,21 @@ public class IdTestIT extends ChromeBrowserTest {
     public void testIds() {
         open();
 
+        String[] types = {BROWSER, CLIENT, DRIVER, PROFILER, SERVER};
+
+        Arrays.stream(types).forEach(type -> {
+            LogEntries logEntries = getDriver().manage().logs().get(type);
+            LoggerFactory.getLogger(IdTestIT.class)
+                    .error("==================" + type);
+            logEntries.forEach(entry ->
+                    LoggerFactory.getLogger(IdTestIT.class)
+                            .error(entry.toString()));
+        });
+
         checkLogsForErrors(
                 msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
+
+
         waitUntilWithMessage(
                 ExpectedConditions
                         .presenceOfElementLocated(By.tagName("my-component")),

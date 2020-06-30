@@ -412,6 +412,7 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
+    @Ignore
     public void should_bePossibeToGetPrincipalInEndpoint() {
         MockVaadinServletService service = new MockVaadinServletService();
         VaadinService.setCurrent(service);

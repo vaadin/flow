@@ -13,6 +13,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 public class ExportedJSFunctionIT extends ChromeBrowserTest {
+
     @Test
     public void versionInfoAvailableInDevelopmentMopde() {
         open();
@@ -45,6 +46,7 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
         Assert.assertEquals("Production mode: true", productionMode.getText());
     }
 
+
     @Test
     public void pollUsingJS() {
         open();
@@ -66,6 +68,7 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
         openProduction();
         poll();
     }
+
 
     @Test
     public void profilingInfoAvailableInDevelopmentMode() {
