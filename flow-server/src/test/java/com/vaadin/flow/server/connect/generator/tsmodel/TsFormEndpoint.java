@@ -44,8 +44,6 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
-import org.omg.CORBA.portable.IDLEntity;
-
 import com.vaadin.flow.server.connect.Endpoint;
 
 @Endpoint

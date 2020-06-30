@@ -532,6 +532,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             String variableName;
             do {
                 variableName = matcher.group(1);
+                // Loop to extract the item type for multi-dimensional arrays
                 matcher.reset(variableName);
             } while (matcher.find());
             if (!variableName.matches("any|boolean|number|string")) {
