@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -102,6 +104,10 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
         ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
                 true);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
+                FrontendTools.DEFAULT_NODE_VERSION);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
+                NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
