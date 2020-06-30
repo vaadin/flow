@@ -143,7 +143,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
     @Parameter(property = "node.version", defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
-    protected String nodeVersion;
+    protected String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
 
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
@@ -154,5 +154,5 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
-    protected String nodeDownloadRoot;
+    protected String nodeDownloadRoot = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 }
