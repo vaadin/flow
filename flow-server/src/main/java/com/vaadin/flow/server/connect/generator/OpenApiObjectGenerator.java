@@ -117,7 +117,7 @@ public class OpenApiObjectGenerator {
     private OpenApiConfiguration configuration;
     private Map<String, ResolvedReferenceType> usedTypes;
     private Map<ClassOrInterfaceDeclaration, String> endpointsJavadoc;
-    private Map<String, TypeDeclaration> nonEndpointMap;
+    private Map<String, TypeDeclaration<?>> nonEndpointMap;
     private Map<String, String> qualifiedNameToPath;
     private Map<String, PathItem> pathItems;
     private Set<String> generatedSchema;
@@ -298,20 +298,20 @@ public class OpenApiObjectGenerator {
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 
-    private Collection<TypeDeclaration> appendNestedClasses(
+    private Collection<TypeDeclaration<?>> appendNestedClasses(
             ClassOrInterfaceDeclaration topLevelClass) {
-        Set<TypeDeclaration> nestedClasses = topLevelClass
+        Set<TypeDeclaration<?>> nestedClasses = topLevelClass
                 .getMembers().stream()
                 .filter(bodyDeclaration -> bodyDeclaration.isClassOrInterfaceDeclaration()
                         || bodyDeclaration.isEnumDeclaration())
-                .map(BodyDeclaration::asTypeDeclaration)
+                .map(bodyDeclaration -> (TypeDeclaration<?>) bodyDeclaration.asTypeDeclaration())
                 .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator
                         .comparing(NodeWithSimpleName::getNameAsString))));
         nestedClasses.add(topLevelClass);
         return nestedClasses;
     }
 
-    private void parseClass(TypeDeclaration typeDeclaration,
+    private void parseClass(TypeDeclaration<?> typeDeclaration,
             CompilationUnit compilationUnit) {
         if (typeDeclaration.isClassOrInterfaceDeclaration()) {
             parseClass(typeDeclaration.asClassOrInterfaceDeclaration(), compilationUnit);
@@ -390,7 +390,7 @@ public class OpenApiObjectGenerator {
 
     private List<Schema> parseNonEndpointClassAsSchema(
             String fullQualifiedName) {
-        TypeDeclaration typeDeclaration = nonEndpointMap.get(fullQualifiedName);
+        TypeDeclaration<?> typeDeclaration = nonEndpointMap.get(fullQualifiedName);
         if (typeDeclaration == null || typeDeclaration.isEnumDeclaration()) {
             return Collections.emptyList();
         }
@@ -429,9 +429,9 @@ public class OpenApiObjectGenerator {
     }
 
     private Schema createSingleSchema(String fullQualifiedName,
-            TypeDeclaration typeDeclaration) {
+            TypeDeclaration<?> typeDeclaration) {
         Optional<String> description = typeDeclaration.getJavadoc()
-                .map(javadoc -> ((Javadoc) javadoc).getDescription().toText());
+                .map(javadoc -> javadoc.getDescription().toText());
         Schema schema = new ObjectSchema();
         schema.setName(fullQualifiedName);
         description.ifPresent(schema::setDescription);
@@ -460,9 +460,9 @@ public class OpenApiObjectGenerator {
     }
 
     private Map<String, Schema> getPropertiesFromClassDeclaration(
-            TypeDeclaration typeDeclaration) {
+            TypeDeclaration<?> typeDeclaration) {
         Map<String, Schema> properties = new TreeMap<>();
-        for (FieldDeclaration field : ((List<FieldDeclaration>) typeDeclaration.getFields())) {
+        for (FieldDeclaration field : typeDeclaration.getFields()) {
             if (field.isTransient() || field.isStatic()
                     || field.isAnnotationPresent(JsonIgnore.class)) {
                 continue;
