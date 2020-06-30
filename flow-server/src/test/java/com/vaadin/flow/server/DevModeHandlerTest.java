@@ -40,6 +40,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -412,11 +413,11 @@ public class DevModeHandlerTest {
         }
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-        // The following call will throw an exception without considering the
-        // fact that
-        // dev mode start was unsuccessful and there is no need to serve
-        // requests via serveDevModeRequest
-        handler.serveDevModeRequest(request, response);
+        // The following throws an exception without considering the
+        // fact that dev mode start was unsuccessful and there is no need to
+        // serve requests via serveDevModeRequest. In the current impl it
+        // doesn't throw and just return false
+        Assert.assertFalse(handler.serveDevModeRequest(request, response));
     }
 
     private VaadinServlet prepareServlet(int port)

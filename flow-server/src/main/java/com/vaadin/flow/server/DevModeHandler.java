@@ -252,6 +252,9 @@ public final class DevModeHandler implements RequestHandler {
      * Note: it considers the {@link HttpServletRequest#getPathInfo} that will
      * be the path passed to the 'webpack-dev-server' which is running in the
      * context root folder of the application.
+     * <p>
+     * Method returns {@code false} immediately if dev server failed on its
+     * startup.
      *
      * @param request
      *            the servlet request
