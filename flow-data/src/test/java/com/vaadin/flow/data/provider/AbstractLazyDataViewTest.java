@@ -100,6 +100,7 @@ public class AbstractLazyDataViewTest {
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
         Assert.assertEquals(BackEndDataProvider.class,
                 dataView.getSupportedDataProviderType());
+        Assert.assertEquals(3, dataView.getDataCommunicator().getDataSize());
         // no items are activated
         Assert.assertFalse(dataView.contains("foo"));
         Assert.assertEquals(200, dataView.getItemCountEstimate());
