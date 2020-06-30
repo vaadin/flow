@@ -431,7 +431,7 @@ public class OpenApiObjectGenerator {
     private Schema createSingleSchema(String fullQualifiedName,
             TypeDeclaration typeDeclaration) {
         Optional<String> description = typeDeclaration.getJavadoc()
-                .map(javadoc -> javadoc.getDescription().toText());
+                .map(javadoc -> ((Javadoc) javadoc).getDescription().toText());
         Schema schema = new ObjectSchema();
         schema.setName(fullQualifiedName);
         description.ifPresent(schema::setDescription);
