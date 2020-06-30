@@ -26,7 +26,7 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * Abstract data view implementation which handles parts that apply for any type
- * of data source.
+ * of data.
  *
  * @param <T>
  *            data type
