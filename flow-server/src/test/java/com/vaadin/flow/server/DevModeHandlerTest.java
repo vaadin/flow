@@ -40,6 +40,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -394,6 +395,29 @@ public class DevModeHandlerTest {
         handler.handleRequest(Mockito.mock(VaadinSession.class),
                 Mockito.mock(VaadinRequest.class),
                 Mockito.mock(VaadinResponse.class));
+    }
+
+    @Test
+    public void serveDevModeRequest_prepareTasksThrows_serveDevModeReturnsFalseAndDoesNotThrow()
+            throws IOException {
+        CompletableFuture<Void> throwFuture = new CompletableFuture<>();
+        throwFuture.completeExceptionally(new CustomRuntimeException());
+        DevModeHandler handler = DevModeHandler.start(0, configuration,
+                npmFolder, throwFuture);
+        try {
+            handler.handleRequest(Mockito.mock(VaadinSession.class),
+                    Mockito.mock(VaadinRequest.class),
+                    Mockito.mock(VaadinResponse.class));
+        } catch (CustomRuntimeException ignore) {
+            // this is expected and we just ignore it
+        }
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        // The following throws an exception without considering the
+        // fact that dev mode start was unsuccessful and there is no need to
+        // serve requests via serveDevModeRequest. In the current impl it
+        // doesn't throw and just return false
+        Assert.assertFalse(handler.serveDevModeRequest(request, response));
     }
 
     private VaadinServlet prepareServlet(int port)

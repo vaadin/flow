@@ -34,6 +34,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -104,6 +105,8 @@ public final class DevModeHandler implements RequestHandler {
     private boolean notified = false;
 
     private volatile String failedOutput;
+
+    private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
 
     /**
      * The local installation path of the webpack-dev-server node script.
@@ -195,6 +198,7 @@ public final class DevModeHandler implements RequestHandler {
             try {
                 devServerStartFuture.getNow(null);
             } catch (CompletionException exception) {
+                isDevServerFailedToStart.set(true);
                 throw getCause(exception);
             }
             return false;
@@ -248,6 +252,9 @@ public final class DevModeHandler implements RequestHandler {
      * Note: it considers the {@link HttpServletRequest#getPathInfo} that will
      * be the path passed to the 'webpack-dev-server' which is running in the
      * context root folder of the application.
+     * <p>
+     * Method returns {@code false} immediately if dev server failed on its
+     * startup.
      *
      * @param request
      *            the servlet request
@@ -259,6 +266,9 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
+        if (isDevServerFailedToStart.get()) {
+            return false;
+        }
         // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
