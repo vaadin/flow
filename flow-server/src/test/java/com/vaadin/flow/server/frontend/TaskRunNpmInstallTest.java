@@ -17,7 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -85,7 +87,8 @@ public class TaskRunNpmInstallTest {
 
     protected TaskRunNpmInstall createTask() {
         return new TaskRunNpmInstall(getClassFinder(), nodeUpdater, false,
-                false);
+                false, FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
     }
 
     @Test
@@ -230,7 +233,10 @@ public class TaskRunNpmInstallTest {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), nodeUpdater, false, true));
+                getClassFinder(), nodeUpdater, false, true,
+                FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+                ));
     }
 
     @Test
