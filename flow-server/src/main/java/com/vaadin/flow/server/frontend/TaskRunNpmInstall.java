@@ -18,13 +18,16 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -36,6 +39,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
@@ -61,12 +65,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private final NodeUpdater packageUpdater;
 
-    private final List<String> ignoredNodeFolders = Arrays
-            .asList(".bin", "pnpm", ".ignored_pnpm", ".pnpm", ".staging",
-                    ".vaadin", MODULES_YAML);
+    private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
+            "pnpm", ".ignored_pnpm", ".pnpm", ".staging", ".vaadin",
+            MODULES_YAML);
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final ClassFinder classFinder;
+
+    private final String nodeVersion;
+    private final URI nodeDownloadRoot;
 
     /**
      * Create an instance of the command.
@@ -80,13 +87,24 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            whether PNPM should be used instead of NPM
      * @param requireHomeNodeExec
      *            whether vaadin home node executable has to be used
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed automatically
+     *            by Vaadin, for example <code>"v12.16.0"</code>. Use
+     *            {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled corporate
+     *            environments where the node.js download can be provided from an intranet
+     *            mirror. Use {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      */
     TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
-            boolean enablePnpm, boolean requireHomeNodeExec) {
+            boolean enablePnpm, boolean requireHomeNodeExec,
+            String nodeVersion, URI nodeDownloadRoot) {
         this.classFinder = classFinder;
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
         this.requireHomeNodeExec = requireHomeNodeExec;
+        this.nodeVersion = Objects.requireNonNull(nodeVersion);
+        this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
     }
 
     @Override
@@ -115,7 +133,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         try {
             final JsonObject vaadin = packageUpdater.getPackageJson()
                     .getObject(VAADIN_DEP_KEY);
-            if(vaadin == null) {
+            if (vaadin == null) {
                 packageUpdater.log().warn("No vaadin object in package.json");
                 return;
             }
@@ -244,10 +262,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .listFiles(
                             (dir, name) -> !ignoredNodeFolders.contains(name));
             assert installedPackages != null;
-            return installedPackages.length == 0 || (
-                    installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                            .startsWith(installedPackages[0].getName())) || (
-                    installedPackages.length > 0 && isVaadinHashUpdated());
+            return installedPackages.length == 0
+                    || (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
+                            .startsWith(installedPackages[0].getName()))
+                    || (installedPackages.length > 0 && isVaadinHashUpdated());
         }
         return true;
     }
@@ -256,15 +274,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         final File localHashFile = getLocalHashFile();
         if (localHashFile.exists()) {
             try {
-                String fileContent = FileUtils
-                        .readFileToString(localHashFile, UTF_8.name());
+                String fileContent = FileUtils.readFileToString(localHashFile,
+                        UTF_8.name());
                 JsonObject content = Json.parse(fileContent);
                 if (content.hasKey(HASH_KEY)) {
                     final JsonObject packageJson = packageUpdater
                             .getPackageJson();
-                    return !content.getString(HASH_KEY)
-                            .equals(packageJson.getObject(VAADIN_DEP_KEY)
-                                    .getString(HASH_KEY));
+                    return !content.getString(HASH_KEY).equals(packageJson
+                            .getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
                 }
             } catch (IOException e) {
                 packageUpdater.log()
@@ -305,7 +322,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
         FrontendTools tools = new FrontendTools(baseDir,
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                nodeVersion, nodeDownloadRoot);
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
@@ -337,7 +355,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
         Process process = null;
         try {
             process = builder.inheritIO().start();
+            Process finalProcess = process;
+
+            // This will allow to destroy the process which does IO regardless
+            // whether it's executed in the same thread or another (may be
+            // daemon) thread
+            Runtime.getRuntime()
+                    .addShutdownHook(new Thread(finalProcess::destroyForcibly));
+
             int errorCode = process.waitFor();
+
             if (errorCode != 0) {
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
@@ -428,5 +455,4 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
     }
-
 }

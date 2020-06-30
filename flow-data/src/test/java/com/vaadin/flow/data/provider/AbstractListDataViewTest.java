@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableSupplier;
+import org.mockito.Mockito;
 
 public class AbstractListDataViewTest {
 
@@ -692,95 +694,51 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void updateItem_equalsBasedIdentity_noUpdatesExpected() {
+    public void updateItem_itemPresentInDataSet_refreshesItem() {
         Collection<Item> items = getTestItems();
 
-        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
+        ListDataProvider<Item> dataProvider =
+                Mockito.spy(DataProvider.ofCollection(items));
 
         ItemListDataView dataView = new ItemListDataView(
                 () -> dataProvider, component);
 
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
+        Iterator<Item> iterator = items.iterator();
+        Item firstItem = iterator.next();
+        firstItem.setValue("updatedValue");
 
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
+        dataView.updateItem(firstItem);
 
-        // No item is supposed to be updated since no items found matching
-        // equals() implementation
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("value1", firstItem.get().getValue());
-        Assert.assertEquals("descr1", firstItem.get().getDescription());
-    }
-
-    @Test
-    public void updateItem_equalsBasedIdentity_updatesExistingItem() {
-        Collection<Item> items = getTestItems();
-
-        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, component);
-
-        dataView.updateItem(
-                new Item(1L, "value1", "updatedDescr"));
-
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
-
-        // Item with id = 1 is supposed to be updated since description is
-        // not included in equals() method
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("value1", firstItem.get().getValue());
-        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
-    }
-
-    @Test
-    public void updateItem_idBasedIdentity_updatesExistingItem() {
-        Collection<Item> items = getTestItems();
-
-        ListDataProvider<Item> dataProvider = new
-                AbstractDataViewTest.CustomIdentityItemDataProvider(items);
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, component);
-
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
-
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
-
-        // Item with id = 1 supposed to be updated
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("updatedValue", firstItem.get().getValue());
-        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
-    }
-
-    @Test
-    public void updateItem_identifierProvider_updatesExistingItem() {
-        Collection<Item> items = getTestItems();
-
-        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, component);
+        Mockito.verify(dataProvider).refreshItem(firstItem);
 
         dataView.setIdentifierProvider(Item::getId);
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
+        Item secondItem = iterator.next();
+        secondItem.setValue("updatedValue");
 
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
+        Item secondItemDuplicate = new Item(2L);
+        dataView.updateItem(secondItemDuplicate);
+        Mockito.verify(dataProvider).refreshItem(secondItem);
+    }
 
-        // Item with id = 1 supposed to be updated
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("updatedValue", firstItem.get().getValue());
-        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
+    @Test
+    public void updateItem_itemNotPresent_itemNotRefreshed() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider =
+                Mockito.spy(DataProvider.ofCollection(items));
+
+        ItemListDataView dataView = new ItemListDataView(
+                () -> dataProvider, component);
+
+        Item updatedItem = new Item(42L, "updated", "descr1");
+        dataView.updateItem(updatedItem);
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .refreshItem(updatedItem);
+
+        updatedItem = new Item(1L, "updated", "descr1");
+        dataView.updateItem(updatedItem);
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .refreshItem(updatedItem);
     }
 
     private static class ListDataViewImpl extends AbstractListDataView<String> {
