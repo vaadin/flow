@@ -19,37 +19,34 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 
 /**
- * Event describing the data size change for a component data set.
- * The SizeChangedEvent will fired from beforeClientResponse so changes done
- * during the server round trip will only receive one event.
+ * Event describing the data item count change for a component data set.
+ * The ItemCountChangedEvent will fired from beforeClientResponse so changes
+ * done during the server round trip will only receive one event.
  *
- * @param <T>
- *         the event source type
+ * @param <T> the event source type
  * @since
  */
-public class SizeChangeEvent<T extends Component> extends ComponentEvent<T> {
-    private int size;
+public class ItemCountChangeEvent<T extends Component> extends ComponentEvent<T> {
+    private int itemCount;
 
     /**
      * Creates a new event using the given source and indicator whether the
      * event originated from the client side or the server side.
      *
-     * @param source
-     *         the source component
-     * @param size
-     *         new data size
+     * @param source    the source component
+     * @param itemCount new items count
      */
-    public SizeChangeEvent(T source, int size) {
+    public ItemCountChangeEvent(T source, int itemCount) {
         super(source, false);
-        this.size = size;
+        this.itemCount = itemCount;
     }
 
     /**
-     * Get the new size for the component data.
+     * Get the new items count for the component data.
      *
-     * @return data size
+     * @return items count
      */
-    public int getSize() {
-        return size;
+    public int getItemCount() {
+        return itemCount;
     }
 }

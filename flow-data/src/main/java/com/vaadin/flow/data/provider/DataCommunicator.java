@@ -107,8 +107,8 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
-    private int rowCountEstimate = -1;
-    private int rowCountEstimateIncrease = -1;
+    private int itemCountEstimate = -1;
+    private int itemCountEstimateIncrease = -1;
     private boolean definedSize = true;
     private boolean skipSizeCheckUntilReset;
     private boolean sizeReset;
@@ -397,79 +397,79 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Sets the row count estimate to use and switches component to undefined
+     * Sets the item count estimate to use and switches component to undefined
      * size. Any previously set count callback is cleared. The new estimate is
      * applied if the actual count has not been discovered and if the estimate
      * is greater than the number of requested items. Otherwise it is not
      * applied until there has been a reset.
      * <p>
-     * <em>NOTE:</em> setting row count estimate that is less than two pages
+     * <em>NOTE:</em> setting item count estimate that is less than two pages
      * (set with {@link #setPageSize(int)}) can cause extra requests initially
      * or after a reset.
      * 
-     * @param rowCountEstimate
-     *            the row count estimate to be used
+     * @param itemCountEstimate
+     *            the item count estimate to be used
      */
-    public void setRowCountEstimate(int rowCountEstimate) {
-        if (rowCountEstimate < 1) {
+    public void setItemCountEstimate(int itemCountEstimate) {
+        if (itemCountEstimate < 1) {
             throw new IllegalArgumentException(
-                    "Given row count estimate cannot be less than 1.");
+                    "Given item count estimate cannot be less than 1.");
         }
-        this.rowCountEstimate = rowCountEstimate;
+        this.itemCountEstimate = itemCountEstimate;
         this.countCallback = null;
         definedSize = false;
         if (!skipSizeCheckUntilReset
-                && requestedRange.getEnd() < rowCountEstimate) {
+                && requestedRange.getEnd() < itemCountEstimate) {
             sizeReset = true;
             requestFlush();
         }
     }
 
     /**
-     * Gets the row count estimate used.
+     * Gets the item count estimate used.
      * 
-     * @return the row count estimate used
+     * @return the item count estimate used
      */
-    public int getRowCountEstimate() {
-        if (rowCountEstimate < 1) {
+    public int getItemCountEstimate() {
+        if (itemCountEstimate < 1) {
             return pageSize * DEFAULT_PAGE_INCREASE_COUNT;
         }
-        return rowCountEstimate;
+        return itemCountEstimate;
     }
 
     /**
-     * Sets the row count estimate increase to use and switches the component to
+     * Sets the item count estimate increase to use and switches the component to
      * undefined size if not yet used. Any previously set count callback is
      * cleared. The step is used the next time that the count is adjusted.
      * <em>NOTE:</em> the increase should be greater than the
      * {@link #setPageSize(int)} or it may cause bad performance.
      * 
-     * @param rowCountEstimateIncrease
-     *            the row count estimate step to use
+     * @param itemCountEstimateIncrease
+     *            the item count estimate step to use
      */
-    public void setRowCountEstimateIncrease(int rowCountEstimateIncrease) {
-        if (rowCountEstimateIncrease < 1) {
+    public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
+        if (itemCountEstimateIncrease < 1) {
             throw new IllegalArgumentException(
-                    "rowCountEstimateIncrease cannot be less than 1");
+                    "itemCountEstimateIncrease cannot be less than 1");
         }
-        this.rowCountEstimateIncrease = rowCountEstimateIncrease;
+        this.itemCountEstimateIncrease = itemCountEstimateIncrease;
         this.countCallback = null;
         definedSize = false;
     }
 
     /**
-     * Gets the row count estimate increase used.
+     * Gets the item count estimate increase used.
      * 
-     * @return the row count estimate increase
+     * @return the item count estimate increase
      */
-    public int getRowCountEstimateIncrease() {
-        if (rowCountEstimateIncrease == -1) {
+    public int getItemCountEstimateIncrease() {
+        if (itemCountEstimateIncrease == -1) {
             return pageSize * DEFAULT_PAGE_INCREASE_COUNT;
         } else {
-            assert rowCountEstimate > 0 : "0 is not an increase";
+            assert itemCountEstimate > 0 : "0 is not an increase";
             // might be sensible to force this to be a multiple of page size,
             // but being lenient for now
-            return rowCountEstimateIncrease;
+            return itemCountEstimateIncrease;
         }
     }
 
@@ -478,8 +478,8 @@ public class DataCommunicator<T> implements Serializable {
      * count callback. Calling with value {@code true} will use the
      * {@link DataProvider#size(Query)} for getting the size. Calling with
      * {@code false} will use whatever has been set with
-     * {@link #setRowCountEstimate(int)} and increase the count when needed with
-     * {@link #setRowCountEstimateIncrease(int)}.
+     * {@link #setItemCountEstimate(int)} and increase the count when needed with
+     * {@link #setItemCountEstimateIncrease(int)}.
      * 
      * @param definedSize
      *            {@code true} for defined size, {@code false} for undefined
@@ -579,7 +579,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Getter method for determining the row count of the data. Can be
+     * Getter method for determining the item count of the data. Can be
      * overridden by a subclass that uses a specific type of DataProvider and/or
      * query.
      *
@@ -600,14 +600,14 @@ public class DataCommunicator<T> implements Serializable {
         int previousAssumedSize = assumedSize;
         if (resendEntireRange || sizeReset) {
             // things have reset
-            assumedSize = getRowCountEstimate();
+            assumedSize = getItemCountEstimate();
         }
 
         // increase size estimate if the last page is being fetched,
         // or if the estimate is less than what is shown on client
         while (requestedRange.getEnd() + pageSize > assumedSize) {
             // by default adjust size by multiple of page size
-            assumedSize += getRowCountEstimateIncrease();
+            assumedSize += getItemCountEstimateIncrease();
         }
     }
 
@@ -782,21 +782,21 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Fire a size change event if the last event was fired for a different size
-     * from the last sent one.
+     * Fire a item count change event if the last event was fired for a
+     * different size from the last sent one.
      *
-     * @param dataSize
-     *            data size to send
+     * @param itemCount
+     *            data item count to send
      */
-    private void fireSizeEvent(int dataSize) {
-        if (lastSent != dataSize) {
+    private void fireSizeEvent(int itemCount) {
+        if (lastSent != itemCount) {
             final Optional<Component> component = Element.get(stateNode)
                     .getComponent();
             if (component.isPresent()) {
                 ComponentUtil.fireEvent(component.get(),
-                        new SizeChangeEvent<>(component.get(), dataSize));
+                        new ItemCountChangeEvent<>(component.get(), itemCount));
             }
-            lastSent = dataSize;
+            lastSent = itemCount;
         }
     }
 

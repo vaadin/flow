@@ -74,6 +74,19 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void getItemCount_noFiltersSet_dataSizeObtained() {
+        Assert.assertEquals("Unexpected data item count", items.size(),
+                dataView.getItemCount());
+    }
+
+    @Test
+    public void getItemCount_filtersSet_filteredItemsObtained() {
+        dataProvider.setFilter(item -> item.equals("first"));
+        Assert.assertEquals("Unexpected data item count",
+                1, dataView.getItemCount());
+    }
+
+    @Test
     public void getNextItem_nextItemAvailable_nextItemFound() {
         Optional<String> middle = dataView.getNextItem("middle");
         Assert.assertTrue(middle.isPresent());
@@ -103,10 +116,10 @@ public class AbstractListDataViewTest {
 
     @Test
     public void setFilter_filterIsSet_filteredItemsObtained() {
-        Assert.assertEquals(items.size(), dataView.getSize());
+        Assert.assertEquals(items.size(), dataView.getItemCount());
         dataView.setFilter(item -> item.equals("first"));
         Assert.assertEquals("Filter was not applied to data size", 1,
-                dataView.getSize());
+                dataView.getItemCount());
         Assert.assertEquals("Expected item is missing from filtered data",
                 "first", dataView.getItems().findFirst().get());
     }
@@ -116,7 +129,7 @@ public class AbstractListDataViewTest {
         dataProvider.setFilter(item -> item.equals("first"));
         dataView.setFilter(null);
         Assert.assertEquals("Filter reset was not applied to data size",
-                items.size(), dataView.getSize());
+                items.size(), dataView.getItemCount());
         Assert.assertArrayEquals("Filter reset was not applied to data set",
                 items.toArray(), dataView.getItems().toArray());
     }
@@ -201,7 +214,7 @@ public class AbstractListDataViewTest {
         final String newItem = "new Item";
         dataView.addItem(newItem);
 
-        Assert.assertEquals(4, dataView.getSize());
+        Assert.assertEquals(4, dataView.getItemCount());
         Assert.assertTrue(dataView.contains(newItem));
         Optional<String> optionalItem = dataView.getNextItem("last");
         Assert.assertTrue(optionalItem.isPresent());
@@ -213,7 +226,7 @@ public class AbstractListDataViewTest {
         final String newItem = "first";
         dataView.addItem(newItem);
 
-        Assert.assertEquals(3, dataView.getSize());
+        Assert.assertEquals(3, dataView.getItemCount());
         Assert.assertTrue(dataView.contains(newItem));
     }
 
@@ -221,7 +234,7 @@ public class AbstractListDataViewTest {
     public void removeItem_itemRemovedFromDataset() {
         dataView.removeItem("middle");
 
-        Assert.assertEquals(2, dataView.getSize());
+        Assert.assertEquals(2, dataView.getItemCount());
         Assert.assertFalse(dataView.contains("middle"));
         Optional<String> optionalItem = dataView.getNextItem("first");
         Assert.assertTrue(optionalItem.isPresent());
@@ -231,7 +244,7 @@ public class AbstractListDataViewTest {
     @Test
     public void removeItem_notInList_dataSetNotChanged() {
         dataView.removeItem("not present");
-        Assert.assertEquals(3, dataView.getSize());
+        Assert.assertEquals(3, dataView.getItemCount());
     }
 
     @Test

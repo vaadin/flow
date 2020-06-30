@@ -57,10 +57,10 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public Registration addSizeChangeListener(
-            ComponentEventListener<SizeChangeEvent<?>> listener) {
+    public Registration addItemCountChangeListener(
+            ComponentEventListener<ItemCountChangeEvent<?>> listener) {
         Objects.requireNonNull(listener, "SizeChangeListener cannot be null");
-        return ComponentUtil.addListener(component, SizeChangeEvent.class,
+        return ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 
@@ -98,11 +98,6 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public Stream<T> getItems() {
         return dataProviderSupplier.get().fetch(new Query<>());
-    }
-
-    @Override
-    public int getSize() {
-        return dataProviderSupplier.get().size(new Query<>());
     }
 
     @Override

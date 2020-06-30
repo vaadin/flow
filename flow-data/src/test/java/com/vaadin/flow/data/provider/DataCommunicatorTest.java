@@ -393,23 +393,23 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void setSizeCallback_rowCountEstimatesWereSet_overridesRowCountEstimates() {
+    public void setSizeCallback_itemCountEstimatesWereSet_overridesItemCountEstimates() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 5000);
         dataProvider = Mockito.spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        final int rowCountEstimate = 200;
-        dataCommunicator.setRowCountEstimate(rowCountEstimate);
-        final int rowCountEstimateIncrease = 300;
-        dataCommunicator.setRowCountEstimateIncrease(rowCountEstimateIncrease);
+        final int itemCountEstimate = 200;
+        dataCommunicator.setItemCountEstimate(itemCountEstimate);
+        final int itemCountEstimateIncrease = 300;
+        dataCommunicator.setItemCountEstimateIncrease(itemCountEstimateIncrease);
         dataCommunicator.setRequestedRange(150, 50);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
         Assert.assertEquals("initial estimate+increase not used",
-                rowCountEstimate + rowCountEstimateIncrease,
+                itemCountEstimate + itemCountEstimateIncrease,
                 dataCommunicator.getDataSize());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
@@ -438,7 +438,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(dataProvider, null);
 
         final int initialSizeEstimate = 100;
-        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
         dataCommunicator.setRequestedRange(0, 50);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
@@ -471,7 +471,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         final int initialSizeEstimate = 111;
-        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
         dataCommunicator.setRequestedRange(50, 100);
@@ -493,7 +493,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, requestedRangeEnd);
 
         final int initialSizeEstimate = 49;
-        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
+        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
 
         fakeClientCommunication();
         Assert.assertEquals(
@@ -503,7 +503,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void setInitialRowCountEstimateAndIncrease_lessThanRequestedRange_estimateIncreaseUsed() {
+    public void setInitialItemCountEstimateAndIncrease_lessThanRequestedRange_estimateIncreaseUsed() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 5000);
         dataProvider = Mockito.spy(dataProvider);
@@ -512,20 +512,20 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(400, rangeLength);
 
         final int initialSizeEstimate = 300;
-        dataCommunicator.setRowCountEstimate(initialSizeEstimate);
-        final int rowCountEstimateIncrease = 99;
-        dataCommunicator.setRowCountEstimateIncrease(rowCountEstimateIncrease);
+        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
+        final int itemCountEstimateIncrease = 99;
+        dataCommunicator.setItemCountEstimateIncrease(itemCountEstimateIncrease);
 
         fakeClientCommunication();
         Assert.assertEquals(
                 "Size should be automatically adjusted for too small estimate",
-                initialSizeEstimate + (3 * rowCountEstimateIncrease),
+                initialSizeEstimate + (3 * itemCountEstimateIncrease),
                 dataCommunicator.getDataSize());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setInitialSizeEstimate_lessThanOne_throws() {
-        dataCommunicator.setRowCountEstimate(0);
+        dataCommunicator.setItemCountEstimate(0);
     }
 
     @Test
@@ -589,30 +589,30 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void rowCountEstimateAndStep_defaults() {
-        Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
+    public void itemCountEstimateAndStep_defaults() {
+        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
                 pageSize * 4);
-        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
+        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 pageSize * 4);
 
         int customPageSize = 100;
         dataCommunicator.setPageSize(customPageSize);
 
-        Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
+        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
                 customPageSize * 4);
-        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
+        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 customPageSize * 4);
 
-        int customRowCountEstimate = 123;
-        dataCommunicator.setRowCountEstimate(customRowCountEstimate);
-        int customRowCountEstimateStep = 456;
+        int customItemCountEstimate = 123;
+        dataCommunicator.setItemCountEstimate(customItemCountEstimate);
+        int customItemCountEstimateStep = 456;
         dataCommunicator
-                .setRowCountEstimateIncrease(customRowCountEstimateStep);
+                .setItemCountEstimateIncrease(customItemCountEstimateStep);
 
-        Assert.assertEquals(dataCommunicator.getRowCountEstimate(),
-                customRowCountEstimate);
-        Assert.assertEquals(dataCommunicator.getRowCountEstimateIncrease(),
-                customRowCountEstimateStep);
+        Assert.assertEquals(dataCommunicator.getItemCountEstimate(),
+                customItemCountEstimate);
+        Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
+                customItemCountEstimateStep);
     }
 
     private int getPageSizeIncrease() {

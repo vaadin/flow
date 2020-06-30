@@ -100,25 +100,24 @@ public class AbstractLazyDataViewTest {
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
         Assert.assertEquals(BackEndDataProvider.class,
                 dataView.getSupportedDataProviderType());
-        Assert.assertEquals(3, dataView.getSize());
         // no items are activated
         Assert.assertFalse(dataView.contains("foo"));
-        Assert.assertEquals(200, dataView.getRowCountEstimate());
-        Assert.assertEquals(200, dataView.getRowCountEstimateIncrease());
+        Assert.assertEquals(200, dataView.getItemCountEstimate());
+        Assert.assertEquals(200, dataView.getItemCountEstimateIncrease());
 
-        dataView.setRowCountUnknown();
+        dataView.setItemCountUnknown();
         Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
 
-        dataView.setRowCountCallback(query -> 5);
+        dataView.setItemCountCallback(query -> 5);
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
 
-        dataView.setRowCountEstimate(500);
+        dataView.setItemCountEstimate(500);
         Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
 
-        dataView.setRowCountFromDataProvider();
+        dataView.setItemCountFromDataProvider();
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
 
-        dataView.setRowCountEstimateIncrease(200);
+        dataView.setItemCountEstimateIncrease(200);
         Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
     }
 
@@ -137,7 +136,7 @@ public class AbstractLazyDataViewTest {
     public void existingDataView_dataProviderIsChangedToInMemory_throws() {
         dataCommunicator.setDataProvider(badProvider, null);
         // any method call should be enough to trigger the check for type
-        dataView.setRowCountUnknown();
+        dataView.setItemCountUnknown();
     }
 
     @Test
@@ -158,57 +157,6 @@ public class AbstractLazyDataViewTest {
         Assert.assertTrue(
                 "Item should be available during beforeClientResponse",
                 capturedContains.get());
-    }
-
-    @Test
-    public void size_withDefinedSize() {
-        dataCommunicator.setRequestedRange(0, 50);
-        Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
-
-        dataView.setRowCountCallback(query -> 5);
-
-        Assert.assertEquals("Invalid size reported", 5, dataView.getSize());
-    }
-
-    @Test
-    public void size_withUndefinedSize() {
-        dataCommunicator.setRequestedRange(0, 50);
-        dataView.setRowCountUnknown();
-
-        Assert.assertEquals("Invalid size reported", 0, dataView.getSize());
-
-        fakeClientCommunication();
-
-        Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
-
-        dataView.setRowCountEstimate(500);
-
-        // since the size was "locked", there is no estimate
-        Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
-
-        fakeClientCommunication();
-
-        Assert.assertEquals("Invalid size reported", 3, dataView.getSize());
-
-        // setting new data provider triggers new size from data provider
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            query.getOffset();
-            return Stream.generate(String::new).limit(query.getLimit());
-        }, query -> 333), null);
-
-        Assert.assertEquals("Invalid size reported", 333, dataView.getSize());
-
-        fakeClientCommunication();
-
-        Assert.assertEquals("Invalid size reported", 333, dataView.getSize());
-
-        dataView.setRowCountEstimate(300);
-
-        Assert.assertEquals("Invalid size reported", 0, dataView.getSize());
-
-        fakeClientCommunication();
-
-        Assert.assertEquals("Invalid size reported", 300, dataView.getSize());
     }
 
     @Test
@@ -235,15 +183,15 @@ public class AbstractLazyDataViewTest {
             return Stream.generate(String::new).limit(limit.get());
         }, query -> -1), null);
 
-        final int rowCountEstimate = 66;
-        dataCommunicator.setRowCountEstimate(rowCountEstimate);
+        final int itemCountEstimate = 66;
+        dataCommunicator.setItemCountEstimate(itemCountEstimate);
 
         fakeClientCommunication();
 
         Assert.assertEquals(
-                rowCountEstimate
-                        + dataCommunicator.getRowCountEstimateIncrease(),
-                dataView.getSize());
+                itemCountEstimate
+                        + dataCommunicator.getItemCountEstimateIncrease(),
+                dataCommunicator.getDataSize());
 
         limit.set(70);
         Stream<String> items = dataView.getItems();

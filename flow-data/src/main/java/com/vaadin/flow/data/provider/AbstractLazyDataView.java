@@ -19,7 +19,6 @@ package com.vaadin.flow.data.provider;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
 
 /**
  * Abstract lazy data view implementation which handles the interaction with a
@@ -73,66 +72,44 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         }
     }
 
-    /**
-     * Gets the size of the data source. With unknown size
-     * {@link #setRowCountUnknown()} this may be an estimate. <em>NOTE: as the
-     * size might change at any point - add a listener with the
-     * {@link #addSizeChangeListener(ComponentEventListener)} method to get
-     * notified when the data size has changed. Calling this method will also
-     * trigger a backend call when using either a
-     * {@link #setRowCountFromDataProvider()} or
-     * {@link #setRowCountCallback(CallbackDataProvider.CountCallback)} and the
-     * size is not yet fetched.</em>
-     * <p>
-     * If size is not yet known, like during the initial roundtrip, {@code 0} is
-     * returned as the size is determined during the "before client
-     * response"-phase.
-     * 
-     * @return the size of the data or the currently used estimated size
-     */
-    @Override
-    public int getSize() {
-        return getDataCommunicator().getDataSize();
-    }
-
     @Override
     protected Class<?> getSupportedDataProviderType() {
         return BackEndDataProvider.class;
     }
 
     @Override
-    public void setRowCountCallback(
+    public void setItemCountCallback(
             CallbackDataProvider.CountCallback<T, Void> callback) {
         getDataCommunicator().setCountCallback(callback);
     }
 
     @Override
-    public void setRowCountEstimate(int rowCountEstimate) {
-        getDataCommunicator().setRowCountEstimate(rowCountEstimate);
+    public void setItemCountEstimate(int itemCountEstimate) {
+        getDataCommunicator().setItemCountEstimate(itemCountEstimate);
     }
 
     @Override
-    public int getRowCountEstimate() {
-        return getDataCommunicator().getRowCountEstimate();
+    public int getItemCountEstimate() {
+        return getDataCommunicator().getItemCountEstimate();
     }
 
     @Override
-    public void setRowCountEstimateIncrease(int rowCountEstimateIncrease) {
-        getDataCommunicator().setRowCountEstimateIncrease(rowCountEstimateIncrease);
+    public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
+        getDataCommunicator().setItemCountEstimateIncrease(itemCountEstimateIncrease);
     }
 
     @Override
-    public int getRowCountEstimateIncrease() {
-        return getDataCommunicator().getRowCountEstimateIncrease();
+    public int getItemCountEstimateIncrease() {
+        return getDataCommunicator().getItemCountEstimateIncrease();
     }
 
     @Override
-    public void setRowCountFromDataProvider() {
+    public void setItemCountFromDataProvider() {
         getDataCommunicator().setDefinedSize(true);
     }
 
     @Override
-    public void setRowCountUnknown() {
+    public void setItemCountUnknown() {
         getDataCommunicator().setDefinedSize(false);
     }
 

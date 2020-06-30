@@ -80,26 +80,13 @@ public class AbstractDataViewTest {
     }
 
     @Test
-    public void getSize_noFiltersSet_dataSizeObtained() {
-        Assert.assertEquals("Unexpected size for data", items.size(),
-                dataView.getSize());
-    }
-
-    @Test
-    public void getSize_filtersSet_filteredItemsObtained() {
-        dataProvider.setFilter(item -> item.getValue().equals("first"));
-        Assert.assertEquals("Unexpected size for data",
-                1, dataView.getSize());
-    }
-
-    @Test
-    public void addListener_fireEvent_listenerIsCalled() {
+    public void addItemCountChangeListener_fireEvent_listenerNotified() {
         AtomicInteger fired = new AtomicInteger(0);
-        dataView.addSizeChangeListener(
-                event -> fired.compareAndSet(0, event.getSize()));
+        dataView.addItemCountChangeListener(
+                event -> fired.compareAndSet(0, event.getItemCount()));
 
         ComponentUtil
-                .fireEvent(component, new SizeChangeEvent<>(component, 10));
+                .fireEvent(component, new ItemCountChangeEvent<>(component, 10));
 
         Assert.assertEquals(10, fired.get());
     }
