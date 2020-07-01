@@ -109,10 +109,13 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   async validate(): Promise<ReadonlyArray<ValueError<any>>> {
+    // TODO: Replace reduce() with flat() when the following issue is solved
+    //  https://github.com/vaadin/flow/issues/8658
     const errors = (await Promise.all([
       ...this.requestValidationOfDescendants(),
       ...this.requestValidationWithAncestors()
-    ])).flat().filter(valueError => valueError) as ReadonlyArray<ValueError<any>>;
+    ])).reduce((acc, val) => acc.concat(val), [])
+        .filter(valueError => valueError) as ReadonlyArray<ValueError<any>>;
     this.setErrorsWithDescendants(errors.length ? errors : undefined);
     this.update();
     return this.errors;
