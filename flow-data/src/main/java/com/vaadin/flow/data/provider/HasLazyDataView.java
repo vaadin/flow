@@ -62,7 +62,7 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
                             + "component.getLazyDataView().withUndefinedSize();");
         }));
         V lazyDataView = getLazyDataView();
-        lazyDataView.setRowCountUnknown();
+        lazyDataView.setItemCountUnknown();
         return lazyDataView;
     }
 

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
@@ -34,6 +35,17 @@ import java.util.Optional;
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>>
         extends DataView<T> {
+    /**
+     * Get the full item count with filters if any set. As the item count
+     * might change at any point, it is recommended to add a listener with the
+     * {@link #addItemCountChangeListener(ComponentEventListener)} method
+     * instead to get notified when the item count has changed.
+     *
+     * @return filtered item count
+     * @see #addItemCountChangeListener(ComponentEventListener)
+     */
+    int getItemCount();
+
     /**
      * Gets the item after given item from the filtered and sorted data.
      * <p>

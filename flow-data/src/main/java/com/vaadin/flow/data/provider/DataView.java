@@ -43,17 +43,6 @@ public interface DataView<T> extends Serializable {
     Stream<T> getItems();
 
     /**
-     * Get the full data size with filters if any set. As the size might change
-     * at any point, it is recommended to add a listener with the
-     * {@link #addSizeChangeListener(ComponentEventListener)} method instead to
-     * get notified when the data size has changed.
-     *
-     * @return filtered data size
-     * @see #addSizeChangeListener(ComponentEventListener)
-     */
-    int getSize();
-
-    /**
      * Check if item is in the current data. Item may be filtered out or for
      * lazy data not in the currently loaded making it un-available.
      * <p>
@@ -78,19 +67,19 @@ public interface DataView<T> extends Serializable {
     boolean contains(T item);
 
     /**
-     * Add a size change listener that is fired when the data set size changes.
-     * This can happen for instance when filtering the data set.
+     * Add an item count change listener that is fired when the item
+     * count changes. This can happen for instance when filtering the data set.
      * <p>
-     * Size change listener is bound to the component and will be retained even
-     * if the data changes by setting of a new items or {@link DataProvider} to
-     * component.
+     * Item count change listener is bound to the component and will be
+     * retained even if the data changes by setting of a new items or
+     * {@link DataProvider} to component.
      *
      * @param listener
-     *            size change listener to register
+     *            item count change listener to register
      * @return registration for removing the listener
      */
-    Registration addSizeChangeListener(
-            ComponentEventListener<SizeChangeEvent<?>> listener);
+    Registration addItemCountChangeListener(
+            ComponentEventListener<ItemCountChangeEvent<?>> listener);
 
     /**
      * Sets an identifier provider, which returns an identifier for the given

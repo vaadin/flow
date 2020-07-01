@@ -68,6 +68,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
+    public int getItemCount() {
+        return getDataProvider().size(new Query<>());
+    }
+
+    @Override
     public Optional<T> getNextItem(T item) {
         int index = getItemIndex(item);
         if (index < 0) {
@@ -252,7 +257,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
      *         item index to validate
      */
     protected void validateItemIndex(int itemIndex) {
-        final int dataSize = getSize();
+        final int dataSize = getItemCount();
         if (dataSize == 0) {
             throw new IndexOutOfBoundsException(
                     String.format("Requested index %d on empty data.",
