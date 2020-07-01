@@ -16,20 +16,29 @@
 package com.vaadin.flow.server.communication;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
+import org.atmosphere.cpr.AtmosphereResourceEvent;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessTest;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -75,6 +84,46 @@ public class PushHandlerTest {
 
         Mockito.verify(service, Mockito.times(0)).requestStart(Mockito.any(),
                 Mockito.any());
+    }
+
+    @Test
+    public void connectionLost_currentInstancesAreCleared()
+            throws SessionExpiredException {
+        MockVaadinSession session = new MockVaadinSession() {
+            @Override
+            public Future<Void> access(Command command) {
+                command.execute();
+                return Mockito.mock(Future.class);
+            }
+        };
+        VaadinSession.setCurrent(session);
+        Assert.assertNotNull(VaadinSession.getCurrent());
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public com.vaadin.flow.server.VaadinSession findVaadinSession(
+                    VaadinRequest request) throws SessionExpiredException {
+                return session;
+            }
+
+            @Override
+            public UI findUI(VaadinRequest request) {
+                return null;
+            }
+        };
+
+        service.init();
+        PushHandler handler = new PushHandler(service);
+
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
+        Mockito.when(resource.getRequest()).thenReturn(request);
+
+        AtmosphereResourceEvent event = Mockito
+                .mock(AtmosphereResourceEvent.class);
+        Mockito.when(event.getResource()).thenReturn(resource);
+        handler.connectionLost(event);
+
+        Assert.assertNull(VaadinSession.getCurrent());
     }
 
     @Test

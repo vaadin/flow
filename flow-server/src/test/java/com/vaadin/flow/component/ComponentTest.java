@@ -1149,6 +1149,8 @@ public class ComponentTest {
                 .getFeature(SynchronizedPropertiesList.class);
 
         Set<String> props = list.getSynchronizedProperties();
+        ElementListenerMap feature = div.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
 
         Assert.assertTrue(props.contains("bar"));
         Assert.assertTrue(props.contains("baz"));
@@ -1214,6 +1216,18 @@ public class ComponentTest {
                 .fireEvent(createEvent("foo", div));
 
         Assert.assertEquals(1, count.get());
+    }
+
+    @Test
+    public void removeOnRegistration_registrationIsIdempotent() {
+        TestDiv div = new TestDiv();
+        Registration registration = div.addListener(ComponentEvent.class,
+                (ComponentEventListener) event -> {
+                });
+
+        registration.remove();
+        // It's still possible to call the same method one more time
+        registration.remove();
     }
 
     private DomEvent createEvent(String type, Component component) {
