@@ -325,6 +325,10 @@ public class DataCommunicator<T> implements Serializable {
      * @return the item
      */
     public T getActiveItemOnIndex(int index) {
+        if (activeKeyOrder.size() == 0) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Requested index %d on empty data.", index));
+        }
         int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
         if (index < activeStart || index > activeDataEnd) {
             throw new IndexOutOfBoundsException(String.format(

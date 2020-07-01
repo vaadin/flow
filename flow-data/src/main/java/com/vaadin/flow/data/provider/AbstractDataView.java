@@ -28,8 +28,7 @@ import com.vaadin.flow.shared.Registration;
  * Abstract data view implementation which handles parts that apply for any type
  * of data.
  *
- * @param <T>
- *            data type
+ * @param <T> data type
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
 
@@ -41,10 +40,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * the passed data provider is compatible with this data view
      * implementation.
      *
-     * @param dataProviderSupplier
-     *            supplier from which the DataProvider can be gotten
-     * @param component
-     *            the component that the dataView is bound to
+     * @param dataProviderSupplier supplier from which the DataProvider can be gotten
+     * @param component            the component that the dataView is bound to
      */
     public AbstractDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
@@ -75,10 +72,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * Verifies an obtained {@link DataProvider} type is appropriate for current
      * Data View type.
      *
-     * @param dataProviderType
-     *            data provider type to be verified
-     * @throws IllegalStateException
-     *             if data provider type is incompatible with data view type
+     * @param dataProviderType data provider type to be verified
+     * @throws IllegalStateException if data provider type is incompatible with data view type
      */
     protected final void verifyDataProviderType(Class<?> dataProviderType) {
         // TODO https://github.com/vaadin/flow/issues/8583
@@ -124,6 +119,29 @@ public abstract class AbstractDataView<T> implements DataView<T> {
             }
         } else {
             return identifierProviderObject;
+        }
+    }
+
+    /**
+     * Validates that the item index is within the accepted range based on
+     * the given item count.
+     *
+     * @param itemIndex
+     *         item index to validate
+     * @param itemCount
+     *         item count to check item index against
+     */
+    protected void validateItemIndex(int itemIndex, int itemCount) {
+        assert itemCount >= 0 : "Item count cannot be negative";
+        if (itemCount == 0) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Requested index %d on empty data.",
+                            itemIndex));
+        }
+        if (itemIndex < 0 || itemIndex >= itemCount) {
+            throw new IndexOutOfBoundsException(String.format(
+                    "Given index %d is outside of the accepted range '0 - %d'",
+                    itemIndex, itemCount - 1));
         }
     }
 }

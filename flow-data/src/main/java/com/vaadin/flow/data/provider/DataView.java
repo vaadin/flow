@@ -26,11 +26,21 @@ import com.vaadin.flow.shared.Registration;
  * Base view interface for getting information on current data set of a
  * Component.
  *
- * @param <T>
- *            data type
+ * @param <T> data type
  * @since
  */
 public interface DataView<T> extends Serializable {
+
+    /**
+     * Gets the item at the given index from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     *
+     * @param index item index number
+     * @return item on index
+     * @throws IndexOutOfBoundsException requested index is outside of the
+     *                                   available data set.
+     */
+    T getItem(int index);
 
     /**
      * Get the full data available to the component. Data is filtered and sorted
@@ -60,8 +70,7 @@ public interface DataView<T> extends Serializable {
      * item. The identifier is used for comparing the equality of items. Usage
      * example: {@code dataView.setIdentifiedProvider(Item::getId);}.
      *
-     * @param identifierProvider
-     *            function that returns the non-null identifier for a given item
+     * @param identifierProvider function that returns the non-null identifier for a given item
      */
     void setIdentifierProvider(IdentifierProvider<T> identifierProvider);
 }

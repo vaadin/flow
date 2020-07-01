@@ -109,6 +109,11 @@ public class AbstractDataViewTest {
         protected Class<?> getSupportedDataProviderType() {
             return DataProvider.class;
         }
+
+        @Override
+        public Item getItem(int index) {
+            return null;
+        }
     }
 
     static class CustomIdentityItemDataProvider

@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.data.provider;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -23,9 +24,8 @@ import com.vaadin.flow.component.Component;
 /**
  * Abstract lazy data view implementation which handles the interaction with a
  * data communicator.
- * 
- * @param <T>
- *            the type of data
+ *
+ * @param <T> the type of data
  */
 public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         implements LazyDataView<T> {
@@ -36,13 +36,11 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * Creates a new instance and verifies the passed data provider is
      * compatible with this data view implementation.
      *
-     * @param dataCommunicator
-     *            the data communicator of the component
-     * @param component
-     *            the component
+     * @param dataCommunicator the data communicator of the component
+     * @param component        the component
      */
     public AbstractLazyDataView(DataCommunicator<T> dataCommunicator,
-            Component component) {
+                                Component component) {
         super(dataCommunicator::getDataProvider, component);
         this.dataCommunicator = dataCommunicator;
     }
@@ -50,12 +48,32 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
     /**
      * Returns the data communicator for the component and checks that the data
      * provider is of the correct type.
-     * 
+     *
      * @return the data communicator
      */
     protected DataCommunicator<T> getDataCommunicator() {
         verifyDataProviderType(dataCommunicator.getDataProvider().getClass());
         return dataCommunicator;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public T getItem(int index) {
+        DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
+        if (verifiedDataCommunicator.isDefinedSize()) {
+            final int itemCount = this.dataCommunicator.getDataSize();
+            validateItemIndex(index, itemCount);
+            Optional<T> optionalItem =
+                    verifiedDataCommunicator.getDataProvider()
+                            .fetch(this.dataCommunicator.buildQuery(index, 1))
+                            .findFirst();
+            return optionalItem.orElseThrow(() ->
+                    new IllegalStateException(String.format(
+                            "Item with an index %d is expected to be fetched" +
+                                    " from backend, but not found", index)));
+        } else {
+            return verifiedDataCommunicator.getActiveItemOnIndex(index);
+        }
     }
 
     @SuppressWarnings("unchecked")

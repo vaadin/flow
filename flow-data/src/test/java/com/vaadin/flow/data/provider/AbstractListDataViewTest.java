@@ -332,34 +332,6 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void dataViewWithItem_rowOutsideSetRequested_exceptionThrown() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index 7 is outside of the accepted range '0 - 2'");
-
-        dataView.validateItemIndex(7);
-    }
-
-    @Test
-    public void dataViewWithItem_negativeRowRequested_exceptionThrown() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index -7 is outside of the accepted range '0 - 2'");
-
-        dataView.validateItemIndex(-7);
-    }
-
-    @Test
-    public void dataViewWithoutItems_exceptionThrown() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage("Requested index 5 on empty data.");
-
-        dataProvider = DataProvider.ofCollection(Collections.emptyList());
-        dataView = new ListDataViewImpl(() -> dataProvider, component);
-        dataView.validateItemIndex(5);
-    }
-
-    @Test
     public void addItemBefore_itemIsAddedAtExpectedPosition() {
         dataView.addItemBefore("newItem", "middle");
 
@@ -836,6 +808,34 @@ public class AbstractListDataViewTest {
         dataView.updateItem(updatedItem);
         Mockito.verify(dataProvider, Mockito.times(0))
                 .refreshItem(updatedItem);
+    }
+
+    @Test
+    public void getItem_correctIndex_itemFound() {
+        Assert.assertEquals("Wrong item returned for index", "first",
+                dataView.getItem(0));
+    }
+
+    @Test
+    public void getItem_negativeIndex_throwsException() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index -1 is outside of the accepted range '0 - 2'");
+        dataView.getItem(-1);
+    }
+
+    @Test
+    public void getItem_emptyDataSet_throwsException() {
+        dataProvider = DataProvider.ofItems();
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Requested index 0 on empty data.");
+        dataView.getItem(0);
+    }
+
+    @Test
+    public void getItem_indexOutsideOfSize_throwsException() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        dataView.getItem(items.size());
     }
 
     private static class ListDataViewImpl extends AbstractListDataView<String> {

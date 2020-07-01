@@ -25,7 +25,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -48,6 +50,9 @@ public class AbstractLazyDataViewTest {
     private DataCommunicatorTest.MockUI ui;
     @Mock
     private ArrayUpdater arrayUpdater;
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setup() {
@@ -243,6 +248,138 @@ public class AbstractLazyDataViewTest {
         Stream<String> items = dataView.getItems();
         Assert.assertEquals("Invalid amount of items returned", limit.get(),
                 items.count());
+    }
+
+    @Test
+    public void getItem_withDefinedSizeAndCorrectIndex() {
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> 3), null);
+
+        Assert.assertEquals("Invalid item on index 0", "foo",
+                dataView.getItem(0));
+    }
+
+    @Test
+    public void getItem_withDefinedSizeAndNegativeIndex() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index -1 is outside of the accepted range '0 - 2'");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> 3), null);
+
+        dataView.getItem(-1);
+    }
+
+    @Test
+    public void getItem_withDefinedSizeAndEmptyDataset() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Requested index 0 on empty data.");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.empty();
+        }, query -> 0), null);
+
+        dataView.getItem(0);
+    }
+
+    @Test
+    public void getItem_withDefinedSizeAndIndexOutsideOfRange() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index 3 is outside of the accepted range '0 - 2'");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> 3), null);
+
+        Assert.assertEquals("Invalid item on index 0", "foo",
+                dataView.getItem(3));
+    }
+
+    @Test
+    public void getItem_withUndefinedSizeAndCorrectIndex() {
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> -1), null);
+
+        dataCommunicator.setRowCountEstimate(5);
+        fakeClientCommunication();
+
+        Assert.assertEquals("Wrong item on index 0", "foo",
+                dataView.getItem(0));
+        Assert.assertEquals("Wrong item on index 2", "baz",
+                dataView.getItem(2));
+    }
+
+    @Test
+    public void getItem_withUndefinedSizeAndNegativeIndex() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index -1 is outside of the active range of the " +
+                        "component '0 - 2'");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> -1), null);
+
+        dataCommunicator.setRowCountEstimate(1);
+        fakeClientCommunication();
+
+        dataView.getItem(-1);
+    }
+
+    @Test
+    public void getItem_withUndefinedSizeAndEmptyDataset() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Requested index 0 on empty data.");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.empty();
+        }, query -> -1), null);
+
+        dataCommunicator.setRowCountEstimate(2);
+        fakeClientCommunication();
+
+        dataView.getItem(0);
+    }
+
+    @Test
+    public void getItem_withUndefinedSizeAndIndexOutsideOfRange() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index 3 is outside of the active range of the " +
+                        "component '0 - 2'");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> -1), null);
+
+        dataCommunicator.setRowCountEstimate(3);
+        fakeClientCommunication();
+
+        dataView.getItem(3);
     }
 
     private void fakeClientCommunication() {

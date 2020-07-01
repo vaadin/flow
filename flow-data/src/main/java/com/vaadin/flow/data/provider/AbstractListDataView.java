@@ -73,6 +73,13 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
+    public T getItem(int index) {
+        final int itemCount = getItemCount();
+        validateItemIndex(index, itemCount);
+        return getItems().skip(index).findFirst().orElse(null);
+    }
+
+    @Override
     public Optional<T> getNextItem(T item) {
         int index = getItemIndex(item);
         if (index < 0) {
