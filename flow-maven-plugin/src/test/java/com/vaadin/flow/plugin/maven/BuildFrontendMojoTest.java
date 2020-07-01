@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -134,6 +136,10 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
                 "false");
         ReflectionUtils.setVariableValueInObject(mojo, "optimizeBundle", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
+                FrontendTools.DEFAULT_NODE_VERSION);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
+                NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         flowPackagPath.mkdirs();
         generatedFolder.mkdirs();
