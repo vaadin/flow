@@ -3,7 +3,7 @@
 import {BinderNode} from "./BinderNode";
 import {Validator} from "./Validation";
 
-export const ModelSymbol = Symbol('Model');
+export const ItemModelSymbol = Symbol('ItemModel');
 export const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
@@ -96,20 +96,20 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     return [] as ReadonlyArray<unknown>;
   }
 
-  private readonly [ModelSymbol]: ModelConstructor<T, M>;
-  private readonly modelArgs: ReadonlyArray<any>;
-  private readonly models: M[] = [];
+  private readonly [ItemModelSymbol]: ModelConstructor<T, M>;
+  private readonly itemModelArgs: ReadonlyArray<any>;
+  private readonly itemModels: M[] = [];
 
   constructor(
     parent: ModelParent<ReadonlyArray<T>>,
     key: keyof any,
-    Model: ModelConstructor<T, M>,
-    modelArgs: ModelVariableArguments<typeof Model>,
+    ItemModel: ModelConstructor<T, M>,
+    itemModelArgs: ModelVariableArguments<typeof ItemModel>,
     ...validators: ReadonlyArray<Validator<ReadonlyArray<T>>>
   ) {
     super(parent, key, ...validators);
-    this[ModelSymbol] = Model;
-    this.modelArgs = modelArgs;
+    this[ItemModelSymbol] = ItemModel;
+    this.itemModelArgs = itemModelArgs;
   }
 
   /**
@@ -117,17 +117,17 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
    */
   *[Symbol.iterator](): IterableIterator<BinderNode<T, M>> {
     const array = getValue(this);
-    const Model = this[ModelSymbol];
-    if (array.length !== this.models.length) {
-      this.models.length = array.length;
+    const ItemModel = this[ItemModelSymbol];
+    if (array.length !== this.itemModels.length) {
+      this.itemModels.length = array.length;
     }
     for (const i of array.keys()) {
-      let model = this.models[i];
-      if (!model) {
-        model = new Model(this, i, ...this.modelArgs);
-        this.models[i] = model;
+      let itemModel = this.itemModels[i];
+      if (!itemModel) {
+        itemModel = new ItemModel(this, i, ...this.itemModelArgs);
+        this.itemModels[i] = itemModel;
       }
-      yield getBinderNode(model);
+      yield getBinderNode(itemModel);
     }
   }
 }
@@ -190,7 +190,7 @@ export function setValue<T>(model: AbstractModel<T>, value: T) {
  */
 export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, itemValue?: T) {
   if (!itemValue) {
-    itemValue = model[ModelSymbol].createEmptyValue();
+    itemValue = model[ItemModelSymbol].createEmptyValue();
   }
   setValue(model, [...getValue(model), itemValue]);
 }
@@ -204,7 +204,7 @@ export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M
  */
 export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, itemValue?: T) {
   if (!itemValue) {
-    itemValue = model[ModelSymbol].createEmptyValue();
+    itemValue = model[ItemModelSymbol].createEmptyValue();
   }
   setValue(model, [itemValue, ...getValue(model)]);
 }

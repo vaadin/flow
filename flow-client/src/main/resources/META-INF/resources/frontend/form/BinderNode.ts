@@ -22,8 +22,8 @@ import {
   getBinderNode,
   getName,
   getValue,
+  ItemModelSymbol,
   keySymbol,
-  ModelSymbol,
   ModelValue,
   ObjectModel,
   parentSymbol,
@@ -80,7 +80,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   get defaultValue(): T {
     if (this.parent && this.parent.model instanceof ArrayModel) {
       return this.parent.defaultArrayItemValue || (
-        this.parent.defaultArrayItemValue = this.parent.model[ModelSymbol].createEmptyValue()
+        this.parent.defaultArrayItemValue = this.parent.model[ItemModelSymbol].createEmptyValue()
       );
     }
 
