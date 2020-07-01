@@ -100,7 +100,7 @@ public class AbstractLazyDataViewTest {
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
         Assert.assertEquals(BackEndDataProvider.class,
                 dataView.getSupportedDataProviderType());
-        Assert.assertEquals(3, dataView.getDataCommunicator().getDataSize());
+        Assert.assertEquals(3, dataView.getDataCommunicator().getItemCount());
         // no items are activated
         Assert.assertFalse(dataView.contains("foo"));
         Assert.assertEquals(200, dataView.getItemCountEstimate());
@@ -161,6 +161,73 @@ public class AbstractLazyDataViewTest {
     }
 
     @Test
+    public void itemCount_definedItemCount() {
+        final AtomicInteger itemCount = new AtomicInteger(0);
+        dataView.addItemCountChangeListener(
+                event -> itemCount.set(event.getItemCount()));
+        dataCommunicator.setRequestedRange(0, 50);
+
+        Assert.assertEquals("Invalid item count reported", 0, itemCount.get());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+
+        dataView.setItemCountCallback(query -> 2);
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid item count reported", 2, itemCount.get());
+    }
+
+    @Test
+    public void itemCount_undefinedItemCount() {
+        final AtomicInteger itemCount = new AtomicInteger(0);
+        dataView.addItemCountChangeListener(
+                event -> itemCount.set(event.getItemCount()));
+        dataCommunicator.setRequestedRange(0, 50);
+        dataView.setItemCountUnknown();
+
+        Assert.assertEquals("Invalid item count reported", 0, itemCount.get());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+
+        dataView.setItemCountEstimate(500);
+
+        // since the size was "locked", there is no estimate
+        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
+
+        // setting new data provider triggers new size from data provider
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            return Stream.generate(String::new).limit(query.getLimit());
+        }, query -> 2), null);
+
+        Assert.assertEquals("Invalid item count reported", 3,
+                itemCount.get());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid item count reported", 2,
+                itemCount.get());
+
+        dataView.setItemCountEstimate(300);
+
+        Assert.assertEquals("Invalid item count reported", 2, itemCount.get());
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid item count reported", 300,
+                itemCount.get());
+    }
+
+    @Test
     public void getItems_withDefinedSize() {
         dataCommunicator.setRequestedRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
@@ -192,7 +259,7 @@ public class AbstractLazyDataViewTest {
         Assert.assertEquals(
                 itemCountEstimate
                         + dataCommunicator.getItemCountEstimateIncrease(),
-                dataCommunicator.getDataSize());
+                dataCommunicator.getItemCount());
 
         limit.set(70);
         Stream<String> items = dataView.getItems();

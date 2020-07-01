@@ -370,7 +370,7 @@ public class DataCommunicatorTest {
         Assert.assertTrue("SizeCallback not called",
                 sizeCallbackCall.getAndSet(false));
         Assert.assertEquals("Size not used", 100,
-                dataCommunicator.getDataSize());
+                dataCommunicator.getItemCount());
 
         Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
@@ -393,7 +393,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void setSizeCallback_itemCountEstimatesWereSet_overridesItemCountEstimates() {
+    public void setCountCallback_itemCountEstimatesWereSet_overridesItemCountEstimates() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 5000);
         dataProvider = Mockito.spy(dataProvider);
@@ -410,7 +410,7 @@ public class DataCommunicatorTest {
 
         Assert.assertEquals("initial estimate+increase not used",
                 itemCountEstimate + itemCountEstimateIncrease,
-                dataCommunicator.getDataSize());
+                dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
@@ -427,25 +427,25 @@ public class DataCommunicatorTest {
         Assert.assertTrue("SizeCallback not called",
                 sizeCallbackCall.getAndSet(false));
         Assert.assertEquals("Size not used", exactSize,
-                dataCommunicator.getDataSize());
+                dataCommunicator.getItemCount());
     }
 
     @Test
-    public void setInitialSizeEstimate_usedInitiallyThenDiscarded() {
+    public void setInitialCountEstimate_usedInitiallyThenDiscarded() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
         dataProvider = Mockito.spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        final int initialSizeEstimate = 100;
-        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
+        final int initialCountEstimate = 100;
+        dataCommunicator.setItemCountEstimate(initialCountEstimate);
         dataCommunicator.setRequestedRange(0, 50);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
 
         Assert.assertEquals("initial size estimate not used",
-                initialSizeEstimate, dataCommunicator.getDataSize());
+                initialCountEstimate, dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
@@ -454,14 +454,14 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertEquals("initial size estimate was not discarded",
-                initialSizeEstimate + getPageSizeIncrease(),
-                dataCommunicator.getDataSize());
+                initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(2)).fetch(Mockito.any());
     }
 
     @Test
-    public void setInitialSizeEstimate_lessThanCurrentFetchedSize_discarded() {
+    public void setInitialCountEstimate_lessThanCurrentFetchedSize_discarded() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
 
@@ -470,8 +470,8 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        final int initialSizeEstimate = 111;
-        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
+        final int initialCountEstimate = 111;
+        dataCommunicator.setItemCountEstimate(initialCountEstimate);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
         dataCommunicator.setRequestedRange(50, 100);
@@ -479,12 +479,12 @@ public class DataCommunicatorTest {
 
         Assert.assertEquals(
                 "too small initial size estimate should not be applied",
-                initialSizeEstimate + getPageSizeIncrease(),
-                dataCommunicator.getDataSize());
+                initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount());
     }
 
     @Test
-    public void setInitialSizeEstimate_lessThanRequestedRange_sizeIsIncreasedAutomatically() {
+    public void setInitialCountEstimate_lessThanRequestedRange_sizeIsIncreasedAutomatically() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 250);
         dataProvider = Mockito.spy(dataProvider);
@@ -492,14 +492,14 @@ public class DataCommunicatorTest {
         int requestedRangeEnd = 50;
         dataCommunicator.setRequestedRange(0, requestedRangeEnd);
 
-        final int initialSizeEstimate = 49;
-        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
+        final int initialCountEstimate = 49;
+        dataCommunicator.setItemCountEstimate(initialCountEstimate);
 
         fakeClientCommunication();
         Assert.assertEquals(
                 "Size should be automatically adjusted for too small estimate",
-                initialSizeEstimate + getPageSizeIncrease(),
-                dataCommunicator.getDataSize());
+                initialCountEstimate + getPageSizeIncrease(),
+                dataCommunicator.getItemCount());
     }
 
     @Test
@@ -511,20 +511,20 @@ public class DataCommunicatorTest {
         int rangeLength = 100;
         dataCommunicator.setRequestedRange(400, rangeLength);
 
-        final int initialSizeEstimate = 300;
-        dataCommunicator.setItemCountEstimate(initialSizeEstimate);
+        final int initialCountEstimate = 300;
+        dataCommunicator.setItemCountEstimate(initialCountEstimate);
         final int itemCountEstimateIncrease = 99;
         dataCommunicator.setItemCountEstimateIncrease(itemCountEstimateIncrease);
 
         fakeClientCommunication();
         Assert.assertEquals(
                 "Size should be automatically adjusted for too small estimate",
-                initialSizeEstimate + (3 * itemCountEstimateIncrease),
-                dataCommunicator.getDataSize());
+                initialCountEstimate + (3 * itemCountEstimateIncrease),
+                dataCommunicator.getItemCount());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void setInitialSizeEstimate_lessThanOne_throws() {
+    public void setInitialCountEstimate_lessThanOne_throws() {
         dataCommunicator.setItemCountEstimate(0);
     }
 

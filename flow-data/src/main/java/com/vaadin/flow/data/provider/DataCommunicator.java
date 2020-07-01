@@ -284,12 +284,12 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * This is the latest DataProvider size informed to the client or fetched
-     * from the DataProvider if client data has not been sent.
+     * This is the latest DataProvider item count informed to the client or
+     * fetched from the DataProvider if client data has not been sent.
      *
-     * @return size of available data
+     * @return count of available items
      */
-    public int getDataSize() {
+    public int getItemCount() {
         if (isDefinedSize()
                 && (resendEntireRange || assumeEmptyClient || sizeReset)) {
             // TODO it could be possible to cache the value returned here
@@ -597,7 +597,6 @@ public class DataCommunicator<T> implements Serializable {
 
     private void updateUndefinedSize() {
         assert !definedSize : "This method should never be called when using defined size";
-        int previousAssumedSize = assumedSize;
         if (resendEntireRange || sizeReset) {
             // things have reset
             assumedSize = getItemCountEstimate();
@@ -778,17 +777,17 @@ public class DataCommunicator<T> implements Serializable {
         // Phase 4: unregister passivated and updated items
         unregisterPassivatedKeys();
 
-        fireSizeEvent(assumedSize);
+        fireItemCountEvent(assumedSize);
     }
 
     /**
-     * Fire a item count change event if the last event was fired for a
-     * different size from the last sent one.
+     * Fire an item count change event if the last event was fired for a
+     * different count from the last sent one.
      *
      * @param itemCount
-     *            data item count to send
+     *            item count to send
      */
-    private void fireSizeEvent(int itemCount) {
+    private void fireItemCountEvent(int itemCount) {
         if (lastSent != itemCount) {
             final Optional<Component> component = Element.get(stateNode)
                     .getComponent();

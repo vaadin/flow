@@ -67,7 +67,7 @@ public interface DataView<T> extends Serializable {
     boolean contains(T item);
 
     /**
-     * Add an item count change listener that is fired when the data item
+     * Add an item count change listener that is fired when the item
      * count changes. This can happen for instance when filtering the data set.
      * <p>
      * Item count change listener is bound to the component and will be

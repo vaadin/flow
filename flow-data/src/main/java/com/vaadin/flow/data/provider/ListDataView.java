@@ -36,12 +36,12 @@ import java.util.Optional;
 public interface ListDataView<T, V extends ListDataView<T, ?>>
         extends DataView<T> {
     /**
-     * Get the full data item count with filters if any set. As the item count
+     * Get the full item count with filters if any set. As the item count
      * might change at any point, it is recommended to add a listener with the
      * {@link #addItemCountChangeListener(ComponentEventListener)} method
-     * instead to get notified when the data item count has changed.
+     * instead to get notified when the item count has changed.
      *
-     * @return filtered data item count
+     * @return filtered item count
      * @see #addItemCountChangeListener(ComponentEventListener)
      */
     int getItemCount();

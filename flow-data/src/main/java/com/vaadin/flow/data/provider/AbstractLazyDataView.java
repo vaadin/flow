@@ -65,7 +65,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         if (verifiedDataCommunicator.isDefinedSize()) {
             return verifiedDataCommunicator.getDataProvider()
                     .fetch(this.dataCommunicator.buildQuery(0,
-                            this.dataCommunicator.getDataSize()));
+                            this.dataCommunicator.getItemCount()));
         } else {
             return verifiedDataCommunicator.getDataProvider().fetch(
                     this.dataCommunicator.buildQuery(0, Integer.MAX_VALUE));

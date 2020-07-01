@@ -75,14 +75,14 @@ public class AbstractListDataViewTest {
 
     @Test
     public void getItemCount_noFiltersSet_dataSizeObtained() {
-        Assert.assertEquals("Unexpected data item count", items.size(),
+        Assert.assertEquals("Unexpected item count", items.size(),
                 dataView.getItemCount());
     }
 
     @Test
     public void getItemCount_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.equals("first"));
-        Assert.assertEquals("Unexpected data item count",
+        Assert.assertEquals("Unexpected item count",
                 1, dataView.getItemCount());
     }
 

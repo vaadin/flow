@@ -19,7 +19,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 
 /**
- * Event describing the data item count change for a component data set.
+ * Event describing the item count change for a component.
  * The ItemCountChangedEvent will fired from beforeClientResponse so changes
  * done during the server round trip will only receive one event.
  *

@@ -58,9 +58,9 @@ public class HasLazyDataViewTest {
         // to make things fail, just need to call size() which will trigger a size query
         //
         // Although we don't have getSize() method for lazy data view, it is
-        // still possible for developer to call getDataSize() from
+        // still possible for developer to call getItemCount() from
         // dataCommunicator.
-        testComponent.getDataCommunicator().getDataSize();
+        testComponent.getDataCommunicator().getItemCount();
     }
 
 }

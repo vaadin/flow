@@ -109,7 +109,7 @@ public abstract class AbstractListDataViewListenerTest {
         fakeClientCall(ui);
 
         dataView.addItemCountChangeListener(event -> {
-            Assert.assertEquals("Unexpected data item count", 1,
+            Assert.assertEquals("Unexpected item count", 1,
                     event.getItemCount());
             invocationChecker.set(true);
         });

@@ -26,7 +26,7 @@ public interface LazyDataView<T> extends DataView<T> {
 
     /**
      * Sets a callback that the component uses to get the exact item count
-     * (items) in the backend. Use this when it is cheap to get the exact item
+     * in the backend. Use this when it is cheap to get the exact item
      * count and it is desired that the user sees the "full scrollbar size".
      * <p>
      * The given callback will be queried for the count instead of the data
