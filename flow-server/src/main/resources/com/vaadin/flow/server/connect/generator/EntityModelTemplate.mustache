@@ -22,7 +22,7 @@ export default class {{{getClassNameFromImports classname ../../imports}}}Model<
   {{~^parentSchema}} extends ObjectModel<T> { {{~/parentSchema}}
   static createEmptyValue: () => {{{getClassNameFromImports classname ../../imports}}};
 {{#vars}}
-  public readonly {{name}}{{{getModelType this ../../imports}}} = {{{getModelConstructor this ../../imports}}};
+  public readonly {{name}} = {{{getModelConstructor this ../../imports}}};
 {{/vars}}
 }
 {{/model}}

@@ -101,6 +101,7 @@ public class TsFormEndpoint {
         List<MyEntity> children;
         String[] stringArray;
         Number[][] numberMatrix;
+        MyEntity[][] entityMatrix;
         Map<String, String> stringMap;
         Map<String, MyBaz> entityMap;
     }

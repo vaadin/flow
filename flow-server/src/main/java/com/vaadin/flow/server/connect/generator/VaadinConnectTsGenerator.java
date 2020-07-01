@@ -522,11 +522,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return getSimpleNameFromQualifiedName(dataType);
     }
 
-    private String getModelType(CodegenProperty property,
-            List<Map<String, String>> imports) {
-        String simpleName = getSimpleNameFromImports(property.datatype,
-                imports);
-
+    private String getModelType(String simpleName) {
         Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(simpleName);
         if (matcher.find()) {
             String variableName;
@@ -536,12 +532,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 matcher.reset(variableName);
             } while (matcher.find());
             if (!variableName.matches("any|boolean|number|string")) {
-                return ": " + getModelFullType(simpleName);
+                return getModelFullType(simpleName);
             }
         } else if (MAPPED_TYPE_NAME_PATTERN.matcher(simpleName).find()) {
-            return ": " + getModelFullType(simpleName);
+            return getModelFullType(simpleName);
         }
-        return "";
+        return fixNameForModel(simpleName);
     }
 
     private String getModelConstructor(CodegenProperty property,
@@ -556,7 +552,7 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             arguments = ", " + getModelVariableArguments(matcher.group(1))
                     + arguments;
         }
-        return "new " + fixNameForModel(simpleName) + "(this, '" + name + "'"
+        return "new " + getModelType(simpleName) + "(this, '" + name + "'"
                 + arguments + ")";
     }
 
@@ -1029,7 +1025,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("multiplelines", getMultipleLinesHelper());
         handlebars.registerHelper("getClassNameFromImports",
                 getClassNameFromImportsHelper());
-        handlebars.registerHelper("getModelType", getModelTypeHelper());
         handlebars.registerHelper("getModelConstructor",
                 getModelConstructorHelper());
     }
@@ -1049,11 +1044,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private Helper<String> getClassNameFromImportsHelper() {
         return (className, options) -> getSimpleNameFromImports(className,
-                (List<Map<String, String>>) options.param(0));
-    }
-
-    private Helper<CodegenProperty> getModelTypeHelper() {
-        return (prop, options) -> getModelType(prop,
                 (List<Map<String, String>>) options.param(0));
     }
 
