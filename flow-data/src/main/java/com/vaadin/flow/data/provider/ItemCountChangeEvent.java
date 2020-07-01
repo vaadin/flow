@@ -20,8 +20,18 @@ import com.vaadin.flow.component.ComponentEvent;
 
 /**
  * Event describing the item count change for a component.
- * The ItemCountChangedEvent will fired from beforeClientResponse so changes
- * done during the server round trip will only receive one event.
+ * The {@link ItemCountChangeEvent} will fired during the "before client
+ * response"-phase, so changes done during the server round trip will only
+ * receive one event.
+ * For example, this code will trigger only one event, although there are
+ * two methods called which cause the item count change:
+ * <pre>
+ * {@code
+ * dataView.addItemCountChangeListener(listener);
+ * dataView.addItem(newItem);
+ * dataView.setFilter(filter);
+ * }
+ * </pre>
  *
  * @param <T> the event source type
  * @since
