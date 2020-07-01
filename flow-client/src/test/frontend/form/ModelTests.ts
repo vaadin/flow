@@ -5,19 +5,21 @@ const {expect} = intern.getPlugin("chai");
 
 // API to test
 import {
+  appendItem,
+  ArrayModel,
   Binder,
+  keySymbol,
+  NotBlank,
   NotEmpty,
   NotNull,
-  Size,
-  NotBlank, keySymbol, prependItem, appendItem, removeItem
+  NumberModel,
+  Positive,
+  prependItem,
+  removeItem,
+  Size
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import {
-  IdEntity,
-  IdEntityModel,
-  TestEntity,
-  TestModel
-} from "./TestModels";
+import {IdEntity, IdEntityModel, TestEntity, TestModel} from "./TestModels";
 
 suite("form/Model", () => {
   let binder: Binder<TestEntity, TestModel>;
@@ -304,6 +306,22 @@ suite("form/Model", () => {
       for (let i = 0; i < nodes_2.length; i++) {
         expect(nodes_2[i].model[keySymbol]).to.be.equal(i)
       }
+    });
+
+    test("should pass variable arguments down", async () => {
+      const matrix = [[0, 1], [2, 3]];
+      binder.for(binder.model.fieldMatrixNumber).value = matrix;
+      let walkedCells = 0;
+      Array.from(binder.model.fieldMatrixNumber).forEach((rowBinder, i) => {
+        expect(rowBinder.model).to.be.instanceOf(ArrayModel);
+        Array.from(rowBinder.model).forEach((cellBinder, j) => {
+          expect(cellBinder.model).to.be.instanceOf(NumberModel);
+          expect(cellBinder.value).to.be.equal(matrix[i][j]);
+          expect(cellBinder.validators[0]).to.be.instanceOf(Positive);
+          walkedCells++;
+        });
+      });
+      expect(walkedCells).to.equal(4);
     });
   });
 });

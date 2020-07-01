@@ -42,6 +42,7 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.server.connect.Endpoint;
 
@@ -98,5 +99,10 @@ public class TsFormEndpoint {
         @FutureOrPresent LocalTime futureOrPresent;
         @Pattern(regexp = "\\d+\\..+") String pattern;
         List<MyEntity> children;
+        String[] stringArray;
+        Number[][] numberMatrix;
+        MyEntity[][] entityMatrix;
+        Map<String, String> stringMap;
+        Map<String, MyBaz> entityMap;
     }
 }

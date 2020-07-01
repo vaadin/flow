@@ -99,6 +99,10 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
     private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
+    private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
+            .compile("Array<(.*)>");
+    private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern.compile(
+            "\\{ \\[key: string\\]: (.*); \\}");
     private static final String OPERATION = "operation";
     private static final String IMPORT = "import";
 
@@ -518,19 +522,22 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return getSimpleNameFromQualifiedName(dataType);
     }
 
-    private String getModelType(CodegenProperty property,
-            List<Map<String, String>> imports) {
-        String simpleName = getSimpleNameFromImports(property.datatype,
-                imports);
-
-        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
-        if (matcher.find()
-                && !matcher.group(1).matches("any|boolean|number|string")) {
-            String itemModelType = fixNameForModel(matcher.group(1)) + MODEL;
-            return ": Array" + MODEL + "<ModelType<" + itemModelType + ">, "
-                    + itemModelType + ">";
+    private String getModelType(String simpleName) {
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(simpleName);
+        if (matcher.find()) {
+            String variableName;
+            do {
+                variableName = matcher.group(1);
+                // Loop to extract the item type for multi-dimensional arrays
+                matcher.reset(variableName);
+            } while (matcher.find());
+            if (!variableName.matches("any|boolean|number|string")) {
+                return getModelFullType(simpleName);
+            }
+        } else if (MAPPED_TYPE_NAME_PATTERN.matcher(simpleName).find()) {
+            return getModelFullType(simpleName);
         }
-        return "";
+        return fixNameForModel(simpleName);
     }
 
     private String getModelConstructor(CodegenProperty property,
@@ -538,26 +545,58 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         String name = property.name;
         String dataType = property.datatype;
         String simpleName = getSimpleNameFromImports(dataType, imports);
-        String validators = getConstrainsArguments(property);
+        String arguments = getConstrainsArguments(property);
 
-        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(simpleName);
         if (matcher.find()) {
-            simpleName = "Array" + MODEL + "(this, '" + name + "', "
-                    + fixNameForModel(matcher.group(1)) + MODEL + validators + ")";
-        } else {
-            simpleName = fixNameForModel(simpleName) + MODEL + "(this, '" + name
-                    + "'" + validators + ")";
+            arguments = ", " + getModelVariableArguments(matcher.group(1))
+                    + arguments;
         }
-        return "new " + simpleName;
+        return "new " + getModelType(simpleName) + "(this, '" + name + "'"
+                + arguments + ")";
+    }
+
+    private String getModelFullType(String name) {
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            String variableName = matcher.group(1);
+            return "Array" + MODEL + "<" + getModelVariableType(variableName)
+                    + ", " + getModelFullType(variableName) + ">";
+        }
+        matcher = MAPPED_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            return "Object" + MODEL + "<{ [key: string]: "
+                    + getModelVariableType(matcher.group(1)) + "; }>";
+        }
+        return fixNameForModel(name);
+    }
+
+    private String getModelVariableType(String variableName) {
+        if (variableName.matches("string|number|boolean")) {
+            return variableName;
+        }
+        return MODEL + "Type<" + getModelFullType(variableName) + ">";
+    }
+
+    private String getModelVariableArguments(String name) {
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            return fixNameForModel(name) + ", ["
+                    + getModelVariableArguments(matcher.group(1)) + "]";
+        } else {
+            return fixNameForModel(name) + ", []";
+        }
     }
 
     private String fixNameForModel(String name) {
-        if ("any".equals(name)) {
+        if (ARRAY_TYPE_NAME_PATTERN.matcher(name).find()) {
+            name = "Array";
+        } else if ("any".equals(name) || MAPPED_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = "Object";
         } else if (name.matches("string|number|boolean")) {
             name = GeneratorUtils.capitalize(name);
         }
-        return name;
+        return name + MODEL;
     }
 
     private String getConstrainsArguments(CodegenProperty property) {
@@ -986,7 +1025,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("multiplelines", getMultipleLinesHelper());
         handlebars.registerHelper("getClassNameFromImports",
                 getClassNameFromImportsHelper());
-        handlebars.registerHelper("getModelType", getModelTypeHelper());
         handlebars.registerHelper("getModelConstructor",
                 getModelConstructorHelper());
     }
@@ -1006,11 +1044,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private Helper<String> getClassNameFromImportsHelper() {
         return (className, options) -> getSimpleNameFromImports(className,
-                (List<Map<String, String>>) options.param(0));
-    }
-
-    private Helper<CodegenProperty> getModelTypeHelper() {
-        return (prop, options) -> getModelType(prop,
                 (List<Map<String, String>>) options.param(0));
     }
 
