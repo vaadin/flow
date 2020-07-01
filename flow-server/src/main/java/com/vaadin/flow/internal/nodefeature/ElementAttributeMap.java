@@ -124,20 +124,25 @@ public class ElementAttributeMap extends NodeMap {
      *            the value
      */
     public void setResource(String attribute, AbstractStreamResource resource) {
-        final URI targetUri;
-        if (VaadinSession.getCurrent() != null) {
-            final StreamResourceRegistry resourceRegistry =
-                    VaadinSession.getCurrent().getResourceRegistry();
-            targetUri = resourceRegistry.getTargetURI(resource);
-        } else {
-            targetUri = StreamResourceRegistry.getURI(resource);
-        }
-        set(attribute, targetUri.toASCIIString());
+        doSetResource(attribute, resource);
         if (getNode().isAttached()) {
             registerResource(attribute, resource);
         } else {
             deferRegistration(attribute, resource);
         }
+    }
+
+    private void doSetResource(String attribute,
+            AbstractStreamResource resource) {
+        final URI targetUri;
+        if (VaadinSession.getCurrent() != null) {
+            final StreamResourceRegistry resourceRegistry = VaadinSession
+                    .getCurrent().getResourceRegistry();
+            targetUri = resourceRegistry.getTargetURI(resource);
+        } else {
+            targetUri = StreamResourceRegistry.getURI(resource);
+        }
+        set(attribute, targetUri.toASCIIString());
     }
 
     private void ensurePendingRegistrations() {
@@ -182,10 +187,11 @@ public class ElementAttributeMap extends NodeMap {
                 // This explicit class instantiation is the workaround
                 // which fixes a JVM optimization+serialization bug.
                 // Do not convert to lambda
-                // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
                 .addAttachListener(new Command() {
                     @Override
                     public void execute() {
+                        doSetResource(attribute, resource);
                         registerResource(attribute, resource);
                     }
                 });
@@ -205,19 +211,18 @@ public class ElementAttributeMap extends NodeMap {
         if (handle != null) {
             handle.remove();
         }
-        pendingRegistrations.put(attribute,
-                getNode().addDetachListener(
-                        // This explicit class instantiation is the workaround
-                        // which fixes a JVM optimization+serialization bug.
-                        // Do not convert to lambda
-                        // Detected under  Win7_64 /JDK 1.8.0_152, 1.8.0_172
-                        // see ElementAttributeMap#deferRegistration
-                        new Command() {
-                            @Override
-                            public void execute() {
-                                ElementAttributeMap.this.unsetResource(attribute);
-                            }
-                        }));
+        pendingRegistrations.put(attribute, getNode().addDetachListener(
+                // This explicit class instantiation is the workaround
+                // which fixes a JVM optimization+serialization bug.
+                // Do not convert to lambda
+                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                // see ElementAttributeMap#deferRegistration
+                new Command() {
+                    @Override
+                    public void execute() {
+                        ElementAttributeMap.this.unsetResource(attribute);
+                    }
+                }));
     }
 
     private void unsetResource(String attribute) {
