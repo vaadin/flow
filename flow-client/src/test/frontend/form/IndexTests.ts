@@ -30,6 +30,7 @@ suite("form/Index", () => {
     await import("../../../main/resources/META-INF/resources/frontend/form");
     assert.isDefined($wnd.Vaadin);
     assert.isArray($wnd.Vaadin.registrations);
-    assert.deepInclude($wnd.Vaadin.registrations, {is: "@vaadin/form"});
+    const formRegistrations = $wnd.Vaadin.registrations.filter((r: any) => r.is === "@vaadin/form");
+    assert.lengthOf(formRegistrations, 1);
   });
 });
