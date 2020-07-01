@@ -2,11 +2,41 @@ const { suite, test} = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import { AssertFalse, AssertTrue, DecimalMax, DecimalMin, Digits, Email, Future, Max, Min, Negative, NegativeOrZero,
-  NotBlank, NotEmpty, NotNull, Null, Past, Pattern, Positive, PositiveOrZero, Required, Size }
-from "../../../main/resources/META-INF/resources/frontend/form";
+import {
+  AssertFalse,
+  AssertTrue,
+  DecimalMax,
+  DecimalMin,
+  Digits,
+  Email,
+  Future,
+  Max,
+  Min,
+  Negative,
+  NegativeOrZero,
+  NotBlank,
+  NotEmpty,
+  NotNull,
+  Null,
+  Past,
+  Pattern,
+  Positive,
+  PositiveOrZero,
+  Required,
+  Size
+}
+  from "../../../main/resources/META-INF/resources/frontend/form";
 
 suite("form/Validators", () => {
+
+  test("custom error message", () => {
+    assert.equal(new Size({min: 1, max: 2}).message,
+      'size must be between 1 and 2',
+      'when no custom error message is provided, the default error message should be used');
+    assert.equal(new Size({min: 1, max: 2, message: 'Please enter something with the size between 1 and 2'}).message,
+      'Please enter something with the size between 1 and 2',
+      'when a custom error message is provided, it should be used instead of the default one');
+  });
 
   test("Required", () => {
     const validator = new Required();
