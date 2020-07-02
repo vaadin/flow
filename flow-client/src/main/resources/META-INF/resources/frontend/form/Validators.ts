@@ -1,6 +1,16 @@
 /* tslint:disable:max-classes-per-file */
 
-import * as validator from 'validator';
+import * as isAfter from 'validator/lib/isAfter';
+import * as isBefore from 'validator/lib/isBefore';
+import * as isBoolean from 'validator/lib/isBoolean';
+import * as isDecimal from 'validator/lib/isDecimal';
+import * as isEmail from 'validator/lib/isEmail';
+// @ts-ignore (vlukashov: have not investigated why, but for the `isFloat` module the d.ts file is not accurate)
+import {default as isFloat} from 'validator/lib/isFloat';
+import * as isLength from 'validator/lib/isLength';
+import * as isNumeric from 'validator/lib/isNumeric';
+import * as matches from 'validator/lib/matches';
+import * as toFloat from 'validator/lib/toFloat';
 import { Validator } from './Validation';
 
 interface ValidatorAttributes {
@@ -69,7 +79,7 @@ export class Email extends AbstractValidator<string> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a well-formed email address', ...attrs });
   }
-  validate = (value: string) => validator.isEmail(value);
+  validate = (value: string) => isEmail(value);
 }
 export class Null extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
@@ -103,7 +113,7 @@ export class AssertTrue extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be true', ...attrs });
   }
-  validate = (value: any) => validator.isBoolean(String(value)) && String(value) === 'true';
+  validate = (value: any) => isBoolean(String(value)) && String(value) === 'true';
 }
 export class AssertFalse extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
@@ -123,7 +133,7 @@ export class Min extends ValueNumberValidator<any> {
       ..._asValueNumberAttributes(attrs)
     });
   }
-  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { min: this.value });
+  validate = (value: any) => isNumeric(String(value)) && isFloat(String(value), { min: this.value });
 }
 export class Max extends ValueNumberValidator<any> {
   constructor(attrs: ValueNumberAttributes | number | string) {
@@ -132,7 +142,7 @@ export class Max extends ValueNumberValidator<any> {
       ..._asValueNumberAttributes(attrs)
     });
   }
-  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { max: this.value });
+  validate = (value: any) => isNumeric(String(value)) && isFloat(String(value), { max: this.value });
 }
 
 function _inclusive(attrs: DecimalAttributes | string | number) {
@@ -148,7 +158,7 @@ export class DecimalMin extends ValueNumberValidator<any> {
     });
     this.inclusive = _inclusive(attrs);
   }
-  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { [this.inclusive ? 'min' : 'gt']: this.value });
+  validate = (value: any) => isNumeric(String(value)) && isFloat(String(value), { [this.inclusive ? 'min' : 'gt']: this.value });
 }
 export class DecimalMax extends ValueNumberValidator<any> {
   inclusive: boolean;
@@ -159,31 +169,31 @@ export class DecimalMax extends ValueNumberValidator<any> {
     });
     this.inclusive = _inclusive(attrs);
   }
-  validate = (value: any) => validator.isNumeric(String(value)) && validator.isFloat(String(value), { [this.inclusive ? 'max' : 'lt']: this.value })
+  validate = (value: any) => isNumeric(String(value)) && isFloat(String(value), { [this.inclusive ? 'max' : 'lt']: this.value })
 }
 export class Negative extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be less than 0', ...attrs });
   }
-  validate = (value: any) => validator.toFloat(`${value}`) < 0;
+  validate = (value: any) => toFloat(`${value}`) < 0;
 }
 export class NegativeOrZero extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be less than or equal to 0', ...attrs });
   }
-  validate = (value: any) => validator.toFloat(`${value}`) <= 0;
+  validate = (value: any) => toFloat(`${value}`) <= 0;
 }
 export class Positive extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be greater than 0', ...attrs });
   }
-  validate = (value: any) => validator.toFloat(`${value}`) > 0;
+  validate = (value: any) => toFloat(`${value}`) > 0;
 }
 export class PositiveOrZero extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be greater than or equal to 0', ...attrs });
   }
-  validate = (value: any) => validator.toFloat(`${value}`) >= 0;
+  validate = (value: any) => toFloat(`${value}`) >= 0;
 }
 
 function _min(attrs: SizeAttributes) {
@@ -209,7 +219,7 @@ export class Size extends AbstractValidator<string> {
     if (this.min && this.min > 0 && !new Required().validate(value)) {
       return false;
     }
-    return validator.isLength(value, this.min, this.max);
+    return isLength(value, this.min, this.max);
   }
 }
 
@@ -225,15 +235,15 @@ export class Digits extends AbstractValidator<string> {
     this.fraction = attrs.fraction;
   }
   validate = (value: any) =>
-    String(validator.toFloat(`${value}`)).replace(/(.*)\.\d+/, "$1").length === this.integer
-    && validator.isDecimal(`${value}`, { decimal_digits: `0,${this.fraction}` })
+    String(toFloat(`${value}`)).replace(/(.*)\.\d+/, "$1").length === this.integer
+    && isDecimal(`${value}`, { decimal_digits: `0,${this.fraction}` })
 }
 
 export class Past extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a past date', ...attrs });
   }
-  validate = (value: any) => validator.isBefore(value);
+  validate = (value: any) => isBefore(value);
 }
 export class PastOrPresent extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
@@ -245,7 +255,7 @@ export class Future extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a future date', ...attrs });
   }
-  validate = (value: any) => validator.isAfter(value);
+  validate = (value: any) => isAfter(value);
 }
 export class FutureOrPresent extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
@@ -269,5 +279,5 @@ export class Pattern extends AbstractValidator<string> {
     });
     this.regexp = _regexp(attrs);
   }
-  validate = (value: any) => validator.matches(value, this.regexp);
+  validate = (value: any) => matches(value, this.regexp);
 }
