@@ -26,9 +26,9 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.provider.HasDataView;
 import com.vaadin.flow.data.provider.IdentifierProvider;
+import com.vaadin.flow.data.provider.ItemCountChangeEvent;
 import com.vaadin.flow.data.provider.LazyDataView;
 import com.vaadin.flow.data.provider.ListDataView;
-import com.vaadin.flow.data.provider.SizeChangeEvent;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -55,39 +55,44 @@ public class HasHierarchicalDataProviderTest {
             TestListDataView, HasHierarchicalDataProvider<String>,
             HasDataView<String, TestDataView> {
         @Override
-        public void setRowCountCallback(
+        public void setItemCountCallback(
                 CallbackDataProvider.CountCallback<String, Void> callback) {
 
         }
 
         @Override
-        public void setRowCountFromDataProvider() {
+        public void setItemCountFromDataProvider() {
 
         }
 
         @Override
-        public void setRowCountEstimate(int rowCountEstimate) {
+        public void setItemCountEstimate(int rowCountEstimate) {
 
         }
 
         @Override
-        public int getRowCountEstimate() {
+        public int getItemCountEstimate() {
             return 0;
         }
 
         @Override
-        public void setRowCountEstimateIncrease(int rowCountEstimateIncrease) {
+        public void setItemCountEstimateIncrease(int rowCountEstimateIncrease) {
 
         }
 
         @Override
-        public int getRowCountEstimateIncrease() {
+        public int getItemCountEstimateIncrease() {
             return 0;
         }
 
         @Override
-        public void setRowCountUnknown() {
+        public void setItemCountUnknown() {
 
+        }
+
+        @Override
+        public int getItemCount() {
+            return 0;
         }
 
         @Override
@@ -201,18 +206,12 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public int getSize() {
-            return 0;
-        }
-
-        @Override
         public boolean contains(String item) {
             return false;
         }
 
         @Override
-        public Registration addSizeChangeListener(
-                ComponentEventListener<SizeChangeEvent<?>> listener) {
+        public Registration addItemCountChangeListener(ComponentEventListener<ItemCountChangeEvent<?>> listener) {
             return null;
         }
 
@@ -244,7 +243,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestDataView getDataView() {
+        public TestDataView getGenericDataView() {
             return null;
         }
     }
