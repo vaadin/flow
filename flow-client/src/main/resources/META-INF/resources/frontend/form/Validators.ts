@@ -249,7 +249,10 @@ export class PastOrPresent extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a date in the past or in the present', ...attrs });
   }
-  validate = () => { throw new Error('Form Validator for PastOrPresent not implemented yet') };
+  validate = (value: string) => {
+    const futureSecond = new Date().getTime() + 1000;
+    return isBefore(value, String(new Date(futureSecond)));
+  };
 }
 export class Future extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
@@ -261,7 +264,10 @@ export class FutureOrPresent extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a date in the present or in the future', ...attrs });
   }
-  validate = () => { throw new Error('Form Validator for FutureOrPresent not implemented yet') };
+  validate = (value: string) => {
+    const pastSecond = new Date().getTime() - 1000;
+    return isAfter(value, String(new Date(pastSecond)));
+  };
 }
 
 function _regexp(attrs: PatternAttributes | string | RegExp) {
