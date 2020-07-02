@@ -121,8 +121,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestListDataView updateItem(String item) {
-            return null;
+        public void refreshItem(String item) {
         }
 
         @Override
@@ -216,7 +215,8 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public Registration addItemCountChangeListener(ComponentEventListener<ItemCountChangeEvent<?>> listener) {
+        public Registration addItemCountChangeListener(
+                ComponentEventListener<ItemCountChangeEvent<?>> listener) {
             return null;
         }
 

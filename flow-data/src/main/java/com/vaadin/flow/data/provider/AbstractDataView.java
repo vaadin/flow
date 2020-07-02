@@ -33,6 +33,9 @@ import com.vaadin.flow.shared.Registration;
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
 
+    protected static final String NULL_ITEM_ERROR_MESSAGE = "Item cannot be null";
+    protected static final String NULL_IDENTIFIER_ERROR_MESSAGE = "Identity provider should not return null";
+
     protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
     protected Component component;
 
@@ -87,8 +90,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
             final String message = String.format(
                     "%s only supports '%s' or it's subclasses, but was given a '%s'."
                             + "%nUse either 'getLazyDataView()', 'getListDataView()'"
-                            + " or 'getGenericDataView()' according to the " +
-                            "used data type.",
+                            + " or 'getGenericDataView()' according to the "
+                            + "used data type.",
                     this.getClass().getSimpleName(),
                     supportedDataProviderType.getSimpleName(),
                     dataProviderType.getSuperclass().getSimpleName());
@@ -99,6 +102,13 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public Stream<T> getItems() {
         return dataProviderSupplier.get().fetch(new Query<>());
+    }
+
+    @Override
+    public void refreshItem(T item) {
+        Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
+        getItems().filter(i -> equals(item, i)).findFirst()
+                .ifPresent(i -> dataProviderSupplier.get().refreshItem(i));
     }
 
     @Override
@@ -125,5 +135,13 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         } else {
             return identifierProviderObject;
         }
+    }
+
+    protected boolean equals(T item, T compareTo) {
+        return Objects.equals(
+                Objects.requireNonNull(getIdentifierProvider().apply(item),
+                        NULL_IDENTIFIER_ERROR_MESSAGE),
+                Objects.requireNonNull(getIdentifierProvider().apply(compareTo),
+                        NULL_IDENTIFIER_ERROR_MESSAGE));
     }
 }

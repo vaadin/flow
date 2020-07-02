@@ -292,20 +292,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return index.get();
     }
 
-    private Object getIdentifier(T item) {
-        final Object itemIdentifier = getIdentifierProvider().apply(item);
-        Objects.requireNonNull(itemIdentifier,
-                "Identity provider should not return null");
-        return itemIdentifier;
-    }
-
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {
         dataProvider.getItems().removeIf(i -> equals(item, i));
-    }
-
-    private boolean equals(T item, T compareTo) {
-        final Object itemIdentifier = getIdentifier(item);
-        return Objects.equals(itemIdentifier, getIdentifier(compareTo));
     }
 
     private void addItemOnTarget(T item, T target,
