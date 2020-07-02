@@ -534,19 +534,19 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
         Assert.assertEquals("Wrong active item", new Item(0),
-                dataCommunicator.getActiveItemOnIndex(0));
+                dataCommunicator.getItem(0));
         Assert.assertEquals("Wrong active item", new Item(49),
-                dataCommunicator.getActiveItemOnIndex(49));
+                dataCommunicator.getItem(49));
 
         dataCommunicator.setRequestedRange(50, 50);
         fakeClientCommunication();
 
         Assert.assertEquals("Wrong active item", new Item(50),
-                dataCommunicator.getActiveItemOnIndex(50));
+                dataCommunicator.getItem(50));
         Assert.assertEquals("Wrong active item", new Item(69),
-                dataCommunicator.getActiveItemOnIndex(69));
+                dataCommunicator.getItem(69));
         Assert.assertEquals("Wrong active item", new Item(99),
-                dataCommunicator.getActiveItemOnIndex(99));
+                dataCommunicator.getItem(99));
     }
 
     @Test
@@ -577,15 +577,15 @@ public class DataCommunicatorTest {
                 dataCommunicator.isItemActive(new Item(100)));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void getActiveItemOnIndex_outsizeActiveRange_throws() {
+    @Test
+    public void getItem_outsizeActiveRange_throws() {
         dataCommunicator.setDataProvider(createDataProvider(300), null);
         dataCommunicator.setRequestedRange(50, 50);
         fakeClientCommunication();
 
         Assert.assertEquals("Wrong active item", new Item(50),
-                dataCommunicator.getActiveItemOnIndex(50));
-        dataCommunicator.getActiveItemOnIndex(49);
+                dataCommunicator.getItem(50));
+        dataCommunicator.getItem(49);
     }
 
     @Test
