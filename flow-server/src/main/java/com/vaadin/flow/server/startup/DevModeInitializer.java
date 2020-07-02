@@ -433,8 +433,9 @@ public class DevModeInitializer
     private static String getBaseDirectoryFallback() {
         String baseDirCandidate = System.getProperty("user.dir", ".");
         Path path = Paths.get(baseDirCandidate);
-        if (Files.isDirectory(path) && (Files.exists(path.resolve("pom.xml"))
-                || Files.exists(path.resolve("build.gradle")))) {
+        if (path.toFile().isDirectory()
+                && (path.resolve("pom.xml").toFile().exists()
+                        || path.resolve("build.gradle").toFile().exists())) {
             return path.toString();
         } else {
             throw new IllegalStateException(String.format(
