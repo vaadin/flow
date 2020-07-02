@@ -87,7 +87,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
             final String message = String.format(
                     "%s only supports '%s' or it's subclasses, but was given a '%s'."
                             + "%nUse either 'getLazyDataView()', 'getListDataView()'"
-                            + " or 'getDataView()' according to the used data type.",
+                            + " or 'getGenericDataView()' according to the " +
+                            "used data type.",
                     this.getClass().getSimpleName(),
                     supportedDataProviderType.getSimpleName(),
                     dataProviderType.getSuperclass().getSimpleName());

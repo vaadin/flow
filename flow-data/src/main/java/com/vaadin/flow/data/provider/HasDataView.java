@@ -71,5 +71,5 @@ public interface HasDataView<T, V extends DataView<T>> extends Serializable {
      *
      * @return DataView instance
      */
-    V getDataView();
+    V getGenericDataView();
 }
