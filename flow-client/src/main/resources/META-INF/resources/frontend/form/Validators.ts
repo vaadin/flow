@@ -254,7 +254,7 @@ export class FutureOrPresent extends AbstractValidator<any> {
   validate = () => { throw new Error('Form Validator for FutureOrPresent not implemented yet') };
 }
 
-function regexp(attrs: PatternAttributes | string | RegExp) {
+function _regexp(attrs: PatternAttributes | string | RegExp) {
   return typeof attrs === 'string' ? new RegExp(attrs)
     : attrs instanceof RegExp ? attrs
       : typeof attrs.regexp === 'string' ? new RegExp(attrs.regexp) : attrs.regexp;
@@ -263,8 +263,11 @@ function regexp(attrs: PatternAttributes | string | RegExp) {
 export class Pattern extends AbstractValidator<string> {
   regexp: RegExp;
   constructor(attrs: PatternAttributes | string | RegExp) {
-    super({ message: `must match "${regexp(attrs)}"`, ..._asValidatorAttributes(attrs) });
-    this.regexp = regexp(attrs);
+    super({
+      message: `must match the following regular expression: ${_regexp(attrs)}`,
+      ..._asValidatorAttributes(attrs)
+    });
+    this.regexp = _regexp(attrs);
   }
   validate = (value: any) => validator.matches(value, this.regexp);
 }
