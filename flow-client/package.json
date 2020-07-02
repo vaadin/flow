@@ -11,8 +11,9 @@
   "scripts": {
     "lint": "eslint \"src/main/resources/META-INF/resources/frontend/*.js\" && tslint --project .",
     "client": "node scripts/client.js",
+    "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
-    "build": "npm run client && tsc",
+    "build": "npm run client && npm run version && tsc",
     "compile": "npm run build && npm run lint",
     "test": "npm run build && npm run webpack && intern",
     "debug": "npm run build && webpack --config=webpack.tests.config.js -w >&2 | intern serveOnly"
