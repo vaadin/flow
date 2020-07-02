@@ -2,7 +2,6 @@
   "compilerOptions": {
     "sourceMap": true,
     "inlineSources": true,
-    "lib": ["DOM", "ES2019.Array"],
     "module": "esNext",
     "target": "es2015",
     "moduleResolution": "node",
