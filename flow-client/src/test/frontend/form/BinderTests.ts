@@ -171,7 +171,7 @@ suite("form/Binder", () => {
       sinon.assert.calledOnce(requestUpdateStub);
     });
 
-    test("should clear value", () => {
+    test("should clear value and default value", () => {
       binder.reset({
         ...expectedEmptyOrder,
         notes: "bar",
@@ -181,10 +181,22 @@ suite("form/Binder", () => {
         }
       });
       assert.notDeepEqual(binder.value, expectedEmptyOrder);
+      assert.notDeepEqual(binder.defaultValue, expectedEmptyOrder);
 
       binder.clear();
 
       assert.deepEqual(binder.value, expectedEmptyOrder);
+      assert.deepEqual(binder.defaultValue, expectedEmptyOrder);
+      sinon.assert.called(requestUpdateStub);
+    });
+
+    test("should forget visits on clear", () => {
+      const binderNode = binder.for(binder.model.customer.fullName);
+      binderNode.visited = true;
+
+      binder.clear();
+
+      assert.isFalse(binderNode.visited);
     });
   });
 

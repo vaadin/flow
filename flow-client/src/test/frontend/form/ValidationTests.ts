@@ -101,6 +101,21 @@ suite("form/Validation", () => {
     });
   });
 
+  suite('clearing', () => {
+    ['reset', 'clear'].forEach(methodName => {
+      test(`should reset validation on ${methodName}`, async() => {
+        await binder.validate();
+        expect(binder.invalid).to.be.true;
+        expect(binder.for(binder.model.customer.fullName).invalid).to.be.true;
+
+        (binder as any)[methodName]();
+
+        expect(binder.invalid).to.be.false;
+        expect(binder.for(binder.model.customer.fullName).invalid).to.be.false;
+      });
+    });
+  });
+
   suite('submitTo', () => {
     test("should be able to call submit() if onSubmit is pre configured", async () => {
       const binder = new Binder(view, OrderModel, {
