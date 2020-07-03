@@ -101,8 +101,6 @@ public class AbstractLazyDataViewTest {
         Assert.assertEquals(BackEndDataProvider.class,
                 dataView.getSupportedDataProviderType());
         Assert.assertEquals(3, dataView.getDataCommunicator().getItemCount());
-        // no items are activated
-        Assert.assertFalse(dataView.contains("foo"));
         Assert.assertEquals(200, dataView.getItemCountEstimate());
         Assert.assertEquals(200, dataView.getItemCountEstimateIncrease());
 
@@ -138,26 +136,6 @@ public class AbstractLazyDataViewTest {
         dataCommunicator.setDataProvider(badProvider, null);
         // any method call should be enough to trigger the check for type
         dataView.setItemCountUnknown();
-    }
-
-    @Test
-    public void contains_itemsNotFetched_canCheckForItemWithBeforeClientResponse() {
-        dataCommunicator.setRequestedRange(0, 50);
-
-        Assert.assertFalse("Item should not be loaded yet",
-                dataView.contains("foo"));
-
-        AtomicBoolean capturedContains = new AtomicBoolean(false);
-        ui.beforeClientResponse(component, executionContext -> {
-            capturedContains.set(dataView.contains(ITEM1));
-        });
-
-        fakeClientCommunication();
-
-        Assert.assertTrue("Item should be loaded", dataView.contains(ITEM1));
-        Assert.assertTrue(
-                "Item should be available during beforeClientResponse",
-                capturedContains.get());
     }
 
     @Test
