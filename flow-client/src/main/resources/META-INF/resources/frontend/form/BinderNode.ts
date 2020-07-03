@@ -199,16 +199,32 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     removeItem(this.model);
   }
 
-  protected async updateValidation(): Promise<ReadonlyArray<ValueError<any>>> {
+  protected clearValidation(): boolean {
     if (this[visitedSymbol]) {
-      return this.validate();
+      this[visitedSymbol] = false;
+    }
+    let needsUpdate = false;
+    if (this[errorsSymbol]) {
+      this[errorsSymbol] = undefined;
+      needsUpdate = true;
+    }
+    if ([...this.getChildBinderNodes()]
+      .filter(childBinderNode => childBinderNode.clearValidation())
+      .length > 0) {
+      needsUpdate = true;
+    }
+    return needsUpdate;
+  }
+
+  protected async updateValidation() {
+    if (this[visitedSymbol]) {
+      await this.validate();
     } else {
       if (this.dirty || this.invalid) {
         await Promise.all(
           [...this.getChildBinderNodes()].map(childBinderNode => childBinderNode.updateValidation())
         );
       }
-      return this.errors;
     }
   }
 

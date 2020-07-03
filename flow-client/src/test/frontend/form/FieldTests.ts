@@ -231,6 +231,20 @@ suite("form/Field", () => {
       assert.equal(orderViewWithTextField.binder.value.notes, 'foo');
       sinon.assert.calledOnce(orderViewWithTextField.requestUpdateSpy);
     });
+
+    test('should set visited on blur event', async () => {
+      const binder = orderViewWithTextField.binder;
+      const binderNode = binder.for(binder.model.notes);
+      expect(binderNode.visited).to.be.false;
+
+      orderViewWithTextField.notesField!.dispatchEvent(new CustomEvent(
+        'blur',
+        {bubbles: true, composed: true, cancelable: false}
+      ));
+      await orderViewWithTextField.updateComplete;
+
+      expect(binderNode.visited).to.be.true;
+    });
   });
 
   suite('field with input', () => {

@@ -78,15 +78,17 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     this.updateValidation();
   }
 
-  reset(defaultValue?: T) {
-    if (defaultValue !== undefined) {
-      this.defaultValue = defaultValue;
+  reset(defaultValue: T = this[defaultValueSymbol]) {
+    this.defaultValue = defaultValue;
+    if (this.value && this.clearValidation() && this.value === defaultValue) {
+      this.update(this.value);
     }
+
     this.value = this.defaultValue;
   }
 
   clear() {
-    this.value = this[emptyValueSymbol];
+    this.reset(this[emptyValueSymbol]);
   }
 
   async submit(): Promise<T|void>{
