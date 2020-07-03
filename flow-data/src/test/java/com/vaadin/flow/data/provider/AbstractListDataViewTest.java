@@ -771,7 +771,6 @@ public class AbstractListDataViewTest {
         firstItem.setValue("updatedValue");
 
         dataView.refreshItem(firstItem);
-
         Mockito.verify(dataProvider).refreshItem(firstItem);
 
         dataView.setIdentifierProvider(Item::getId);
@@ -780,7 +779,10 @@ public class AbstractListDataViewTest {
 
         Item secondItemDuplicate = new Item(2L);
         dataView.refreshItem(secondItemDuplicate);
-        Mockito.verify(dataProvider).refreshItem(secondItem);
+        // Verify that the refresh is made on a new object, no on an old
+        // object.
+        Mockito.verify(dataProvider).refreshItem(secondItemDuplicate);
+        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(secondItem);
     }
 
     @Test
