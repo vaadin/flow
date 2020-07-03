@@ -113,9 +113,4 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         getDataCommunicator().setDefinedSize(false);
     }
 
-    @Override
-    public boolean contains(T item) {
-        return getDataCommunicator().isItemActive(item);
-    }
-
 }

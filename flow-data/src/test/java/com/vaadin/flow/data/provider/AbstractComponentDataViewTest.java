@@ -28,7 +28,6 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,22 +87,6 @@ public abstract class AbstractComponentDataViewTest {
                 new ItemCountChangeEvent<>((Component) component, 10));
 
         Assert.assertEquals(10, fired.get());
-    }
-
-    @Test
-    public void contains_itemPresentInDataset_itemFound() {
-        Assert.assertTrue("Returned false for item that should exist",
-                dataView.contains("middle"));
-
-        dataView.setIdentifierProvider(item -> item.substring(0, 1));
-        Assert.assertTrue("The item was not found in the data",
-                dataView.contains("fourth"));
-    }
-
-    @Test
-    public void contains_itemNotPresentInDataset_itemNotFound() {
-        Assert.assertFalse("Returned false for item that should exist",
-                dataView.contains("non existing"));
     }
 
     protected abstract HasDataView<String, ? extends DataView<String>> getComponent();

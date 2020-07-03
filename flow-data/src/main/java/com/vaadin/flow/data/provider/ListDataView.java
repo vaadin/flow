@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
+import java.util.Optional;
+
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
-
-import java.util.Collection;
-import java.util.Optional;
 
 /**
  * DataView for a in-memory list data that provides information on the data and
@@ -35,6 +35,24 @@ import java.util.Optional;
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>>
         extends DataView<T> {
+
+    /**
+     * Check if item is present in the currently filtered data set.
+     * <p>
+     * By default, {@code equals} method implementation of the item is used for
+     * identity check. If a custom data provider is used, then the
+     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
+     * identity can be set up with a
+     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
+     *
+     * @param item
+     *            item to search for
+     * @return {@code true} if item is found in filtered data set
+     *
+     * @see #setIdentifierProvider(IdentifierProvider)
+     */
+    boolean contains(T item);
+
     /**
      * Get the full item count with filters if any set. As the item count
      * might change at any point, it is recommended to add a listener with the

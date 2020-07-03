@@ -53,12 +53,18 @@ public class AbstractListDataViewTest {
 
     private Component component;
 
+    private AbstractListDataView<Item> beanDataView;
+    private ListDataProvider<Item> itemListDataProvider;
+
     @Before
     public void init() {
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = DataProvider.ofCollection(items);
         component = new TestComponent();
         dataView = new ListDataViewImpl(() -> dataProvider, component);
+
+        itemListDataProvider = DataProvider.ofCollection(getTestItems());
+        beanDataView = new ItemListDataView(() -> itemListDataProvider, component);
     }
 
     @Test
@@ -207,6 +213,84 @@ public class AbstractListDataViewTest {
     public void contains_itemNotPresentedInDataSet_itemNotFound() {
         Assert.assertFalse("Non existent item found in data",
                 dataView.contains("absent item"));
+    }
+
+    @Test
+    public void setIdentifierProvider_defaultIdentity_equalsIsUsed() {
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "value1")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(4L, "value1")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderIdentity_getIdIsUsed() {
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "value1")));
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(4L, "value1")));
+    }
+
+    @Test
+    public void setIdentifierProvider_customIdentifierProvider_customIdentifierProviderIsUsed() {
+        beanDataView.setIdentifierProvider(Item::getValue);
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "value1")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertTrue(beanDataView.contains(
+                new Item(4L, "value1")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderHasChanged_newDataProviderIsUsed() {
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "non present")));
+
+        itemListDataProvider = DataProvider.ofItems(new Item(10L, "description10"));
+
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertTrue(beanDataView.contains(new Item(10L, "description10")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderHasChanged_identifierProviderRetained() {
+        Assert.assertFalse(beanDataView.contains(
+                new Item(4L, "non present", "descr1")));
+
+        beanDataView.setIdentifierProvider(Item::getDescription);
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(4L, "non present", "descr1")));
+
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(4L, "non present", "descr1")));
+    }
+
+    @Test
+    public void contains_filterApplied_itemFilteredOut() {
+        Assert.assertTrue(beanDataView.contains(new Item(1L, "value1")));
+
+        beanDataView.setFilter(item -> item.getId() > 1L);
+
+        Assert.assertFalse(beanDataView.contains(new Item(1L, "value1")));
+
+        Assert.assertTrue(beanDataView.contains(new Item(3L, "value3")));
     }
 
     @Test
