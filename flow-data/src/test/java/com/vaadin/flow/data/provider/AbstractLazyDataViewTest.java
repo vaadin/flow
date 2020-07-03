@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.function.SerializableConsumer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -193,13 +192,11 @@ public class AbstractLazyDataViewTest {
             return Stream.generate(String::new).limit(query.getLimit());
         }, query -> 2), null);
 
-        Assert.assertEquals("Invalid item count reported", 3,
-                itemCount.get());
+        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 2,
-                itemCount.get());
+        Assert.assertEquals("Invalid item count reported", 2, itemCount.get());
 
         dataView.setItemCountEstimate(300);
 
@@ -252,7 +249,7 @@ public class AbstractLazyDataViewTest {
     }
 
     @Test
-    public void getItem_withDefinedSizeAndCorrectIndex() {
+    public void getItem_correctIndex_itemObtained() {
         dataCommunicator.setRequestedRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -262,26 +259,14 @@ public class AbstractLazyDataViewTest {
 
         fakeClientCommunication();
 
-        // Request the item within the active range
-        Assert.assertEquals("Invalid item on index 0", "foo",
-                dataView.getItem(0));
-
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
-                query -> Stream.generate(String::new).skip(query.getOffset())
-                        .limit(query.getLimit()),
-                query -> 300), null);
-
-        fakeClientCommunication();
-
-        // Request an item outside the active range
-        Assert.assertNotNull(dataView.getItem(260));
+        Assert.assertEquals("Invalid item on index 1", "bar",
+                dataView.getItem(1));
     }
 
     @Test
-    public void getItem_withDefinedSizeAndNegativeIndex() {
+    public void getItem_negativeIndex_throws() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index -1 is outside of the accepted range '0 - 2'");
+        exceptionRule.expectMessage("Index must be non-negative");
         dataCommunicator.setRequestedRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -290,12 +275,11 @@ public class AbstractLazyDataViewTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-
         dataView.getItem(-1);
     }
 
     @Test
-    public void getItem_withDefinedSizeAndEmptyDataset() {
+    public void getItem_emptyData_throws() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         exceptionRule.expectMessage("Requested index 0 on empty data.");
         dataCommunicator.setRequestedRange(0, 50);
@@ -306,12 +290,11 @@ public class AbstractLazyDataViewTest {
         }, query -> 0), null);
 
         fakeClientCommunication();
-
         dataView.getItem(0);
     }
 
     @Test
-    public void getItem_withDefinedSizeAndIndexOutsideOfRange() {
+    public void getItem_outsideOfRange_throws() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         exceptionRule.expectMessage(
                 "Given index 3 is outside of the accepted range '0 - 2'");
@@ -323,203 +306,7 @@ public class AbstractLazyDataViewTest {
         }, query -> 3), null);
 
         fakeClientCommunication();
-
-        Assert.assertEquals("Invalid item on index 0", "foo",
-                dataView.getItem(3));
-    }
-
-    @Test
-    public void getItem_withDefinedSizeAndFiltering() {
-        final String initialFilter = "bar";
-        final String newFilter = "foo";
-
-        dataCommunicator.setRequestedRange(0, 50);
-        SerializableConsumer<String> newFilterProvider = dataCommunicator
-                .setDataProvider(DataProvider.fromFilteringCallbacks(query -> {
-                    query.getOffset();
-                    query.getLimit();
-                    return Stream.of("foo", "bar", "baz").filter(
-                            item -> item.equals(query.getFilter().get()));
-                }, query -> 1), initialFilter);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", initialFilter,
-                dataView.getItem(0));
-
-        newFilterProvider.accept(newFilter);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", newFilter,
-                dataView.getItem(0));
-    }
-
-    @Test
-    public void getItem_withDefinedSizeAndSorting() {
-        dataCommunicator.setRequestedRange(0, 50);
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            query.getOffset();
-            query.getLimit();
-            Stream<String> stream = Stream.of("foo", "bar", "baz");
-            if (query.getInMemorySorting() != null) {
-                stream = stream.sorted(query.getInMemorySorting());
-            }
-            return stream;
-        }, query -> 3), null);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", "foo",
-                dataView.getItem(0));
-
-        dataCommunicator.setInMemorySorting(String::compareTo);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", "bar",
-                dataView.getItem(0));
-    }
-
-    @Test
-    public void getItem_withUndefinedSizeAndCorrectIndex() {
-        dataCommunicator.setRequestedRange(0, 50);
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            query.getOffset();
-            query.getLimit();
-            return Stream.of("foo", "bar", "baz");
-        }, query -> -1), null);
-
-        dataCommunicator.setItemCountEstimate(5);
-        fakeClientCommunication();
-
-        // Request the item within the active range
-        Assert.assertEquals("Wrong item on index 0", "foo",
-                dataView.getItem(0));
-        Assert.assertEquals("Wrong item on index 2", "baz",
-                dataView.getItem(2));
-
-        // Request the item outside the active range
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            if (query.getOffset() > 70) {
-                return Stream.empty();
-            } else {
-                return Stream.generate(String::new).skip(query.getOffset())
-                        .limit(Math.min(query.getOffset() + query.getLimit(),
-                                70));
-            }
-        }, query -> -1), null);
-
-        final int itemCountEstimate = 60;
-        dataCommunicator.setItemCountEstimate(itemCountEstimate);
-
-        fakeClientCommunication();
-        Assert.assertNotNull(dataView.getItem(49));
-        Assert.assertNotNull(dataView.getItem(59));
-        Assert.assertNotNull(dataView.getItem(69));
-        Assert.assertNull(dataView.getItem(79));
-    }
-
-    @Test
-    public void getItem_withUndefinedSizeAndFiltering() {
-        final String initialFilter = "bar";
-        final String newFilter = "foo";
-
-        dataCommunicator.setRequestedRange(0, 50);
-        SerializableConsumer<String> newFilterProvider = dataCommunicator
-                .setDataProvider(DataProvider.fromFilteringCallbacks(query -> {
-                    query.getOffset();
-                    query.getLimit();
-                    return Stream.of("foo", "bar", "baz").filter(
-                            item -> item.equals(query.getFilter().get()));
-                }, query -> -1), initialFilter);
-
-        dataCommunicator.setItemCountEstimate(5);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", initialFilter,
-                dataView.getItem(0));
-
-        newFilterProvider.accept(newFilter);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", newFilter,
-                dataView.getItem(0));
-    }
-
-    @Test
-    public void getItem_withUndefinedSizeAndEmptyDataset() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage("Requested index 0 on empty data.");
-        dataCommunicator.setRequestedRange(0, 50);
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            query.getOffset();
-            query.getLimit();
-            return Stream.empty();
-        }, query -> -1), null);
-
-        dataCommunicator.setItemCountEstimate(2);
-        fakeClientCommunication();
-
-        dataView.getItem(0);
-    }
-
-    @Test
-    public void getItem_withUndefinedSizeAndIndexOutsideOfRange() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index 3 is outside of the accepted range '0 - 2'");
-        dataCommunicator.setRequestedRange(0, 50);
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            query.getOffset();
-            query.getLimit();
-            return Stream.of("foo", "bar", "baz");
-        }, query -> -1), null);
-
-        dataCommunicator.setItemCountEstimate(3);
-        fakeClientCommunication();
-
         dataView.getItem(3);
-    }
-
-    @Test
-    public void getItem_withUndefinedSizeAndSorting() {
-        dataCommunicator.setRequestedRange(0, 50);
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            query.getOffset();
-            query.getLimit();
-            Stream<String> stream = Stream.of("foo", "bar", "baz");
-            if (query.getInMemorySorting() != null) {
-                stream = stream.sorted(query.getInMemorySorting());
-            }
-            return stream;
-        }, query -> -1), null);
-
-        dataCommunicator.setItemCountEstimate(5);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", "foo",
-                dataView.getItem(0));
-
-        dataCommunicator.setInMemorySorting(String::compareTo);
-
-        fakeClientCommunication();
-        Assert.assertEquals("Invalid item on index 0", "bar",
-                dataView.getItem(0));
-    }
-
-    @Test
-    public void getItem_withUndefinedSizeAndNegativeIndex() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index -1 is outside of the accepted range '0 - 2'");
-        dataCommunicator.setRequestedRange(0, 50);
-        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
-            query.getOffset();
-            query.getLimit();
-            return Stream.of("foo", "bar", "baz");
-        }, query -> -1), null);
-
-        dataCommunicator.setItemCountEstimate(1);
-        fakeClientCommunication();
-
-        dataView.getItem(-1);
     }
 
     private void fakeClientCommunication() {

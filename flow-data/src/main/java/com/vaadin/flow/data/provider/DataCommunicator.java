@@ -323,30 +323,54 @@ public class DataCommunicator<T> implements Serializable {
      * not present in the cached active items.
      *
      * @param index
-     *            item index number
+     *            the index of the item to get
      * @return item on index
      * @throws IndexOutOfBoundsException
      *             requested index is outside of the filtered and sorted data
-     *             set or the data set is empty
+     *             set
      */
     @SuppressWarnings("unchecked")
     public T getItem(int index) {
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("Index must be non-negative");
+        }
         int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
-        if (index < activeStart || index > activeDataEnd) {
-            int dataSize = getItemCount();
-            if (dataSize == 0) {
-                throw new IndexOutOfBoundsException(String
-                        .format("Requested index %d on empty data.", index));
+        /*
+         * Check if the item on a requested index is already in the cache of
+         * active items. No matter is this currently a defined or undefined
+         * mode
+         */
+        if (index >= activeStart && index <= activeDataEnd) {
+            return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
+        } else {
+            final int itemCount = getItemCount();
+            final boolean definedSize = isDefinedSize();
+            /*
+             * The exception is thrown if the exact size is used and the data
+             * is empty, or the index is outside of the item count range,
+             * because we definitely know the item count from a backend.
+             */
+            if (definedSize) {
+                if (itemCount == 0) {
+                    throw new IndexOutOfBoundsException(String
+                            .format("Requested index %d on empty data.", index));
+                } else if (index >= itemCount) {
+                    throw new IndexOutOfBoundsException(String.format(
+                            "Given index %d is outside of the accepted range '0 - %d'",
+                            index, itemCount - 1));
+                }
             }
-            if (index < 0 || index >= dataSize) {
-                throw new IndexOutOfBoundsException(String.format(
-                        "Given index %d is outside of the accepted range '0 - %d'",
-                        index, dataSize - 1));
-            }
+            /*
+             * In case of undefined size we don't check the empty data or
+             * the item count, because item count = 0 may mean the
+             * flush (fetch) action hasn't been made yet. And even
+             * if the requested index is outside of the item count
+             * estimation, we can make the request, because the backend can
+             * have the item on that index (we simply not yet fetched
+             * this item during the scrolling).
+             */
             return (T) getDataProvider().fetch(buildQuery(index, 1)).findFirst()
                     .orElse(null);
-        } else {
-            return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
         }
     }
 

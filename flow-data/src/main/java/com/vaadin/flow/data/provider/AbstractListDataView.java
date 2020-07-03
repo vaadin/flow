@@ -173,8 +173,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     @Override
     public AbstractListDataView<T> updateItem(T item) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        getItems().filter(i -> equals(item, i)).findFirst()
+        //@formatter:off
+        getItems()
+                .filter(i -> equals(item, i))
+                .findFirst()
                 .ifPresent(getDataProvider()::refreshItem);
+        //@formatter:on
         return this;
     }
 
@@ -184,8 +188,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         if (!items.isEmpty()) {
             final ListDataProvider<T> dataProvider = getDataProvider();
             Collection<T> backendItems = dataProvider.getItems();
-            items.stream().filter(this::contains)
-                    .forEach(item -> removeItemIfPresent(item, dataProvider));
+            //@formatter:off
+            items.stream()
+                    .filter(this::contains)
+                    .forEach(item ->
+                            removeItemIfPresent(item, dataProvider));
+            //@formatter:on
             backendItems.addAll(items);
             dataProvider.refreshAll();
         }
@@ -249,14 +257,13 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
      * Validate that index is inside bounds of the data available.
      *
      * @param itemIndex
-     *         item index to validate
+     *            item index to validate
      */
     protected void validateItemIndex(int itemIndex) {
         final int dataSize = getItemCount();
         if (dataSize == 0) {
-            throw new IndexOutOfBoundsException(
-                    String.format("Requested index %d on empty data.",
-                            itemIndex));
+            throw new IndexOutOfBoundsException(String
+                    .format("Requested index %d on empty data.", itemIndex));
         }
         if (itemIndex < 0 || itemIndex >= dataSize) {
             throw new IndexOutOfBoundsException(String.format(
@@ -275,10 +282,13 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     private int getItemIndex(T item) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
         AtomicInteger index = new AtomicInteger(-1);
+        //@formatter:off
         if (!getItems().peek(t -> index.incrementAndGet())
-                .filter(t -> equals(item, t)).findFirst().isPresent()) {
+                .filter(t -> equals(item, t))
+                .findFirst().isPresent()) {
             return -1;
         }
+        //@formatter:on
         return index.get();
     }
 
