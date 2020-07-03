@@ -235,6 +235,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
             packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FORM_JARS);
             packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
+            packageJson.put("sideEffects", false);
         }
         return packageJson;
     }
