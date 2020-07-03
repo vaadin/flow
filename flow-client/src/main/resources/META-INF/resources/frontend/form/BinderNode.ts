@@ -268,7 +268,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     ];
   }
 
-  private setErrorsWithDescendants(errors?: ReadonlyArray<ValueError<any>>) {
+  protected setErrorsWithDescendants(errors?: ReadonlyArray<ValueError<any>>) {
     const name = this.name;
     const relatedErrors = errors ?
       errors.filter(valueError => getErrorPropertyName(valueError).startsWith(name)) : undefined;

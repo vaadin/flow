@@ -98,7 +98,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   }
 
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
-    const errors =await this.validate();
+    const errors = await this.validate();
     if (errors.length) {
       throw new ValidationError(errors);
     }
@@ -109,18 +109,20 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
       return await endpointMethod.call(this.context, this.value);
     } catch (error) {
       if (error.validationErrorData && error.validationErrorData.length) {
-        const valueErrors:Array<ValueError<any>> = [];
+        const valueErrors: Array<ValueError<any>> = [];
         error.validationErrorData.forEach((data:any) => {
           const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(data.message);
           const [property, value, message] = res ? res.splice(2) : [data.parameterName, undefined, data.message];
           valueErrors.push({ property, value, validator: new ServerValidator(message), message });
         });
+        this.setErrorsWithDescendants(valueErrors);
         error = new ValidationError(valueErrors);
       }
       throw (error);
     } finally {
       this[submittingSymbol] = false;
-      this.reset(this.value);
+      this.defaultValue = this.value;
+      this.update(this.value);
     }
   }
 
