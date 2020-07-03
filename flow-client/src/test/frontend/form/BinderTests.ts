@@ -180,6 +180,7 @@ suite("form/Binder", () => {
           fullName: "bar"
         }
       });
+      requestUpdateStub.reset();
       assert.notDeepEqual(binder.value, expectedEmptyOrder);
       assert.notDeepEqual(binder.defaultValue, expectedEmptyOrder);
 
@@ -187,7 +188,32 @@ suite("form/Binder", () => {
 
       assert.deepEqual(binder.value, expectedEmptyOrder);
       assert.deepEqual(binder.defaultValue, expectedEmptyOrder);
-      sinon.assert.called(requestUpdateStub);
+      sinon.assert.calledOnce(requestUpdateStub);
+    });
+
+    test("should update when clearing validation", async () => {
+      binder.clear();
+      const binderNode = binder.for(binder.model.customer.fullName);
+      await binderNode.validate();
+      assert.isTrue(binderNode.invalid);
+      requestUpdateStub.reset();
+
+      binder.clear();
+
+      assert.isFalse(binderNode.invalid);
+      sinon.assert.calledOnce(requestUpdateStub);
+    });
+
+    test("should not update excessively when nothing to clear", async () => {
+      binder.clear();
+      const binderNode = binder.for(binder.model.customer.fullName);
+      await binderNode.validate();
+      assert.isTrue(binderNode.invalid);
+      binder.clear();
+      requestUpdateStub.reset();
+
+      binder.clear();
+      sinon.assert.notCalled(requestUpdateStub);
     });
 
     test("should forget visits on clear", () => {
