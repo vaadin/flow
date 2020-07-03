@@ -344,13 +344,12 @@ public class DataCommunicator<T> implements Serializable {
             return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
         } else {
             final int itemCount = getItemCount();
-            final boolean definedSize = isDefinedSize();
             /*
              * The exception is thrown if the exact size is used and the data
              * is empty, or the index is outside of the item count range,
              * because we definitely know the item count from a backend.
              */
-            if (definedSize) {
+            if (isDefinedSize()) {
                 if (itemCount == 0) {
                     throw new IndexOutOfBoundsException(String
                             .format("Requested index %d on empty data.", index));
