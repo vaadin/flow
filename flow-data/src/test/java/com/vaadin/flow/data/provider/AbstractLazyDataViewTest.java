@@ -17,7 +17,6 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -25,7 +24,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -48,6 +49,9 @@ public class AbstractLazyDataViewTest {
     private DataCommunicatorTest.MockUI ui;
     @Mock
     private ArrayUpdater arrayUpdater;
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setup() {
@@ -187,13 +191,11 @@ public class AbstractLazyDataViewTest {
             return Stream.generate(String::new).limit(query.getLimit());
         }, query -> 2), null);
 
-        Assert.assertEquals("Invalid item count reported", 3,
-                itemCount.get());
+        Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
 
         fakeClientCommunication();
 
-        Assert.assertEquals("Invalid item count reported", 2,
-                itemCount.get());
+        Assert.assertEquals("Invalid item count reported", 2, itemCount.get());
 
         dataView.setItemCountEstimate(300);
 
@@ -243,6 +245,67 @@ public class AbstractLazyDataViewTest {
         Stream<String> items = dataView.getItems();
         Assert.assertEquals("Invalid amount of items returned", limit.get(),
                 items.count());
+    }
+
+    @Test
+    public void getItem_correctIndex_itemObtained() {
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> 3), null);
+
+        fakeClientCommunication();
+
+        Assert.assertEquals("Invalid item on index 1", "bar",
+                dataView.getItem(1));
+    }
+
+    @Test
+    public void getItem_negativeIndex_throws() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Index must be non-negative");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> 3), null);
+
+        fakeClientCommunication();
+        dataView.getItem(-1);
+    }
+
+    @Test
+    public void getItem_emptyData_throws() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Requested index 0 on empty data.");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.empty();
+        }, query -> 0), null);
+
+        fakeClientCommunication();
+        dataView.getItem(0);
+    }
+
+    @Test
+    public void getItem_outsideOfRange_throws() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index 3 is outside of the accepted range '0 - 2'");
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return Stream.of("foo", "bar", "baz");
+        }, query -> 3), null);
+
+        fakeClientCommunication();
+        dataView.getItem(3);
     }
 
     private void fakeClientCommunication() {

@@ -64,7 +64,7 @@ public class AbstractDataViewTest {
     public void getItems_filtersSet_filteredItemsObtained() {
         dataProvider.setFilter(item -> item.getValue().equals("first"));
         Assert.assertArrayEquals("Unexpected data set after filtering",
-                new String[] {"first"},
+                new String[] { "first" },
                 dataView.getItems().map(Item::getValue).toArray());
     }
 
@@ -72,7 +72,7 @@ public class AbstractDataViewTest {
     public void getItems_sortingSet_sortedItemsObtained() {
         dataProvider.setSortOrder(Item::getId, SortDirection.DESCENDING);
         Assert.assertArrayEquals("Unexpected items sorting",
-                new Long[] {3L, 2L, 1L},
+                new Long[] { 3L, 2L, 1L },
                 dataView.getItems().map(Item::getId).toArray());
     }
 
@@ -109,10 +109,14 @@ public class AbstractDataViewTest {
         protected Class<?> getSupportedDataProviderType() {
             return DataProvider.class;
         }
+
+        @Override
+        public Item getItem(int index) {
+            return null;
+        }
     }
 
-    static class CustomIdentityItemDataProvider
-            extends ListDataProvider<Item> {
+    static class CustomIdentityItemDataProvider extends ListDataProvider<Item> {
 
         public CustomIdentityItemDataProvider(Collection<Item> items) {
             super(items);

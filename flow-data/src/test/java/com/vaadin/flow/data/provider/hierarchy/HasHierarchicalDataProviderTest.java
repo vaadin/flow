@@ -66,7 +66,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void setItemCountEstimate(int rowCountEstimate) {
+        public void setItemCountEstimate(int itemCountEstimate) {
 
         }
 
@@ -76,7 +76,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public void setItemCountEstimateIncrease(int rowCountEstimateIncrease) {
+        public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
 
         }
 
@@ -197,6 +197,11 @@ public class HasHierarchicalDataProviderTest {
         public <V1 extends Comparable<? super V1>> TestListDataView addSortOrder(
                 ValueProvider<String, V1> valueProvider,
                 SortDirection sortDirection) {
+            return null;
+        }
+
+        @Override
+        public String getItem(int index) {
             return null;
         }
 

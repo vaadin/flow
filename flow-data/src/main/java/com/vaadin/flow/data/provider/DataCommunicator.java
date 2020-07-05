@@ -306,7 +306,7 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Returns whether the given item is part of the active items.
-     * 
+     *
      * @param item
      *            the item to check, not {@code null}
      * @return {@code true} if item is active, {@code false} if not
@@ -316,22 +316,61 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Returns the active item at the given index or throws a
-     * {@link IndexOutOfBoundsException} in case the item is not active at the
-     * moment.
-     * 
+     * Gets the item at the given index from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     * <p>
+     * Call to the backend is triggered if the item for a requested index is
+     * not present in the cached active items.
+     *
      * @param index
      *            the index of the item to get
-     * @return the item
+     * @return item on index
+     * @throws IndexOutOfBoundsException
+     *             requested index is outside of the filtered and sorted data
+     *             set
      */
-    public T getActiveItemOnIndex(int index) {
-        int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
-        if (index < activeStart || index > activeDataEnd) {
-            throw new IndexOutOfBoundsException(String.format(
-                    "Given index %d is outside of the active range of the component '%d - %d'",
-                    index, activeStart, activeDataEnd));
+    @SuppressWarnings("unchecked")
+    public T getItem(int index) {
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("Index must be non-negative");
         }
-        return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
+        int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
+        /*
+         * Check if the item on a requested index is already in the cache of
+         * active items. No matter is this currently a defined or undefined
+         * mode
+         */
+        if (index >= activeStart && index <= activeDataEnd) {
+            return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
+        } else {
+            final int itemCount = getItemCount();
+            /*
+             * The exception is thrown if the exact size is used and the data
+             * is empty, or the index is outside of the item count range,
+             * because we definitely know the item count from a backend.
+             */
+            if (isDefinedSize()) {
+                if (itemCount == 0) {
+                    throw new IndexOutOfBoundsException(String
+                            .format("Requested index %d on empty data.", index));
+                } else if (index >= itemCount) {
+                    throw new IndexOutOfBoundsException(String.format(
+                            "Given index %d is outside of the accepted range '0 - %d'",
+                            index, itemCount - 1));
+                }
+            }
+            /*
+             * In case of undefined size we don't check the empty data or
+             * the item count, because item count = 0 may mean the
+             * flush (fetch) action hasn't been made yet. And even
+             * if the requested index is outside of the item count
+             * estimation, we can make the request, because the backend can
+             * have the item on that index (we simply not yet fetched
+             * this item during the scrolling).
+             */
+            return (T) getDataProvider().fetch(buildQuery(index, 1)).findFirst()
+                    .orElse(null);
+        }
     }
 
     /**
@@ -351,7 +390,7 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the page size that is used to fetch items. The queries to data
      * provider are a multiple of the page size.
-     * 
+     *
      * @param pageSize
      *            the page size to set
      */
@@ -366,7 +405,7 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Returns the page size set to fetch items.
-     * 
+     *
      * @return the page size
      */
     public int getPageSize() {
@@ -376,7 +415,7 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the size callback to be used and switches the component to exact row
      * count. The new count will be used after this roundtrip.
-     * 
+     *
      * @param countCallback
      *            the size callback to use
      */
@@ -427,7 +466,7 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Gets the item count estimate used.
-     * 
+     *
      * @return the item count estimate used
      */
     public int getItemCountEstimate() {
@@ -459,7 +498,7 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Gets the item count estimate increase used.
-     * 
+     *
      * @return the item count estimate increase
      */
     public int getItemCountEstimateIncrease() {
@@ -507,7 +546,7 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Returns whether defined or undefined size is used.
-     * 
+     *
      * @return {@code true} for defined size, {@code false} for undefined size
      */
     public boolean isDefinedSize() {
@@ -529,7 +568,7 @@ public class DataCommunicator<T> implements Serializable {
      * Sets the {@link DataKeyMapper} used in this {@link DataCommunicator}. Key
      * mapper can be used to map keys sent to the client-side back to their
      * respective data objects.
-     * 
+     *
      * @param keyMapper
      *            the keyMapper
      */

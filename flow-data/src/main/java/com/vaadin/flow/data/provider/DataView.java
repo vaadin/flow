@@ -33,6 +33,19 @@ import com.vaadin.flow.shared.Registration;
 public interface DataView<T> extends Serializable {
 
     /**
+     * Gets the item at the given index from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     *
+     * @param index
+     *            item index number
+     * @return item on index
+     * @throws IndexOutOfBoundsException
+     *             requested index is outside of the filtered and sorted data
+     *             set
+     */
+    T getItem(int index);
+
+    /**
      * Get the full data available to the component. Data is filtered and sorted
      * the same way as in the component.
      *
