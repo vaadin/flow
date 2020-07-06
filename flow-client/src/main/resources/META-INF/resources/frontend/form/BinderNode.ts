@@ -234,6 +234,16 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
   }
 
+  protected setErrorsWithDescendants(errors?: ReadonlyArray<ValueError<any>>) {
+    const name = this.name;
+    const relatedErrors = errors ?
+      errors.filter(valueError => getErrorPropertyName(valueError).startsWith(name)) : undefined;
+    this[errorsSymbol] = relatedErrors;
+    for (const childBinderNode of this.getChildBinderNodes()) {
+      childBinderNode.setErrorsWithDescendants(relatedErrors);
+    }
+  }
+
   private *getChildBinderNodes(): Generator<BinderNode<any, AbstractModel<any>>> {
     if (this.model instanceof ObjectModel) {
       for (const key of Object.keys(this.model)) {
@@ -266,15 +276,5 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       ...this.runOwnValidators(),
       ...(this.parent ? this.parent.requestValidationWithAncestors() : [])
     ];
-  }
-
-  protected setErrorsWithDescendants(errors?: ReadonlyArray<ValueError<any>>) {
-    const name = this.name;
-    const relatedErrors = errors ?
-      errors.filter(valueError => getErrorPropertyName(valueError).startsWith(name)) : undefined;
-    this[errorsSymbol] = relatedErrors;
-    for (const childBinderNode of this.getChildBinderNodes()) {
-      childBinderNode.setErrorsWithDescendants(relatedErrors);
-    }
   }
 }
