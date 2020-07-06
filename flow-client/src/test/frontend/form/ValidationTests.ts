@@ -27,6 +27,7 @@ import { css, customElement, html, LitElement, query} from 'lit-element';
 @customElement('order-view')
 class OrderView extends LitElement {
   binder = new Binder(this, OrderModel);
+  @query('#submitting') submitting!: HTMLInputElement;
   @query('#notes') notes!: HTMLInputElement;
   @query('#fullName') fullName!: HTMLInputElement;
   @query('#nickName') nickName!: HTMLInputElement;
@@ -48,6 +49,7 @@ class OrderView extends LitElement {
         <input id="description${index}" ...="${field(description)}" />
         <input id="price${index}" ...="${field(price)}">
       </div>`)}
+    <div id="submitting">${this.binder.submitting}</div>
     `;
   }
 }
@@ -354,7 +356,7 @@ suite("form/Validation", () => {
 
     beforeEach(async () => {
       orderView = document.createElement('order-view') as OrderView;
-      binder = new Binder(orderView, OrderModel);
+      binder = orderView.binder;
       document.body.appendChild(orderView);
       return sleep(10);
     });
@@ -492,6 +494,54 @@ suite("form/Validation", () => {
       expect(item.products[0].price).to.be.equal(10);
       expect(item.notes).to.be.equal('foo');
       expect(item.customer.fullName).to.be.equal('manuel');
+    });
+
+    test('should display server validation error', async () => {
+      setValue(binder.model.customer.fullName, 'foobar');
+      setValue(binder.model.notes, 'whatever');
+      const requestUpdateSpy = sinon.spy(orderView, 'requestUpdate');
+      try {
+        await binder.submitTo(async () => {
+          requestUpdateSpy.resetHistory();
+          throw {
+            message: 'Validation error in endpoint "MyEndpoint" method "saveMyBean"',
+            validationErrorData: [{
+              message: 'Invalid notes',
+              parameterName: 'notes',
+            }]
+          }
+        });
+        expect.fail();
+      } catch (error) {
+        sinon.assert.calledOnce(requestUpdateSpy);
+        await orderView.updateComplete;
+        expect(binder.for(binder.model.notes).invalid).to.be.true;
+        expect(binder.for(binder.model.notes).ownErrors[0].message)
+          .to.equal('Invalid notes');
+      }
+    });
+
+    test("should display submitting state during submittion", async () => {
+      binder.for(binder.model.customer.fullName).value = 'Jane Doe';
+      binder.for(binder.model.notes).value = 'foo';
+      await orderView.updateComplete;
+      expect(binder.submitting).to.be.false;
+      const requestUpdateSpy = sinon.spy(orderView, 'requestUpdate');
+
+      const endpoint = sinon.stub().callsFake(async() => {
+        sinon.assert.called(requestUpdateSpy);
+        expect(binder.submitting).to.be.true;
+        await orderView.updateComplete;
+        expect(orderView.submitting.textContent).to.equal('true');
+        requestUpdateSpy.resetHistory();
+      });
+      await binder.submitTo(endpoint);
+
+      sinon.assert.called(endpoint);
+      sinon.assert.called(requestUpdateSpy);
+      expect(binder.submitting).to.be.false;
+      await orderView.updateComplete;
+      expect(orderView.submitting.textContent).to.equal('false');
     });
   });
 
