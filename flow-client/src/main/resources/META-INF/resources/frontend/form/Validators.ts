@@ -245,30 +245,37 @@ export class Past extends AbstractValidator<any> {
   }
   validate = (value: any) => isBefore(value);
 }
-export class PastOrPresent extends AbstractValidator<any> {
-  constructor(attrs?: ValidatorAttributes) {
-    super({ message: 'must be a date in the past or in the present', ...attrs });
-  }
-  validate = (value: string) => {
-    const futureSecond = new Date().getTime() + 1000;
-    return isBefore(value, String(new Date(futureSecond)));
-  };
-}
+/*
+  @PastOrPresent has no client-side implementation yet.
+  It would consider any input valid and let the server-side to do validation.
+  (It's not trivial to ensure the same granularity of _present_ as on the server-side:
+  year / month / day / minute).
+*/
+// export class PastOrPresent extends AbstractValidator<any> {
+//   constructor(attrs?: ValidatorAttributes) {
+//     super({ message: 'must be a date in the past or in the present', ...attrs });
+//   }
+//   validate = () => true;
+// }
 export class Future extends AbstractValidator<any> {
   constructor(attrs?: ValidatorAttributes) {
     super({ message: 'must be a future date', ...attrs });
   }
   validate = (value: any) => isAfter(value);
 }
-export class FutureOrPresent extends AbstractValidator<any> {
-  constructor(attrs?: ValidatorAttributes) {
-    super({ message: 'must be a date in the present or in the future', ...attrs });
-  }
-  validate = (value: string) => {
-    const pastSecond = new Date().getTime() - 1000;
-    return isAfter(value, String(new Date(pastSecond)));
-  };
-}
+
+/*
+  @FutureOrPresent has no client-side implementation yet.
+  It would consider any input valid and let the server-side to do validation.
+  (It's not trivial to ensure the same granularity of _present_ as on the server-side:
+  year / month / day / minute).
+*/
+// export class FutureOrPresent extends AbstractValidator<any> {
+//   constructor(attrs?: ValidatorAttributes) {
+//     super({ message: 'must be a date in the present or in the future', ...attrs });
+//   }
+//   validate = () => true;
+// }
 
 function _regexp(attrs: PatternAttributes | string | RegExp) {
   return typeof attrs === 'string' ? new RegExp(attrs)

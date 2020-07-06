@@ -10,7 +10,6 @@ import {
   Digits,
   Email,
   Future,
-  FutureOrPresent,
   Max,
   Min,
   Negative,
@@ -20,7 +19,6 @@ import {
   NotNull,
   Null,
   Past,
-  PastOrPresent,
   Pattern,
   Positive,
   PositiveOrZero,
@@ -230,13 +228,13 @@ suite("form/Validators", () => {
     assert.isFalse(validator.validate("3000-01-01"), 'future');
   });
 
-  test("PastOrPresent", () => {
-    const validator = new PastOrPresent();
-    assert.isNotTrue(validator.impliesRequired);
-    assert.isTrue(validator.validate("2019-12-31"), 'past');
-    assert.isTrue(validator.validate(String(new Date())), 'present');
-    assert.isFalse(validator.validate("3000-01-01"), 'future');
-  });
+  // test("PastOrPresent", () => {
+  //   const validator = new PastOrPresent();
+  //   assert.isNotTrue(validator.impliesRequired);
+  //   assert.isTrue(validator.validate("2019-12-31"), 'past');
+  //   assert.isTrue(validator.validate(String(new Date())), 'present');
+  //   assert.isFalse(validator.validate("3000-01-01"), 'future');
+  // });
 
   test("Future", () => {
     const validator = new Future();
@@ -246,13 +244,13 @@ suite("form/Validators", () => {
     assert.isTrue(validator.validate("3000-01-01"), 'future');
   });
 
-  test("FutureOrPresent", () => {
-    const validator = new FutureOrPresent();
-    assert.isNotTrue(validator.impliesRequired);
-    assert.isFalse(validator.validate("2019-12-31"), 'past');
-    assert.isTrue(validator.validate(String(new Date())), 'present');
-    assert.isTrue(validator.validate("3000-01-01"), 'future');
-  });
+  // test("FutureOrPresent", () => {
+  //   const validator = new FutureOrPresent();
+  //   assert.isNotTrue(validator.impliesRequired);
+  //   assert.isFalse(validator.validate("2019-12-31"), 'past');
+  //   assert.isTrue(validator.validate(String(new Date())), 'present');
+  //   assert.isTrue(validator.validate("3000-01-01"), 'future');
+  // });
 
   test("Pattern", () => {
     let validator = new Pattern(/^(\+\d+)?([ -]?\d+){4,14}$/);
