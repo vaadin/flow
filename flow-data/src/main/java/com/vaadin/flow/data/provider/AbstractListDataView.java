@@ -171,18 +171,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public AbstractListDataView<T> updateItem(T item) {
-        Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        //@formatter:off
-        getItems()
-                .filter(i -> equals(item, i))
-                .findFirst()
-                .ifPresent(getDataProvider()::refreshItem);
-        //@formatter:on
-        return this;
-    }
-
-    @Override
     public AbstractListDataView<T> addItems(Collection<T> items) {
         Objects.requireNonNull(items, NULL_COLLECTION_ERROR_MESSAGE);
         if (!items.isEmpty()) {
