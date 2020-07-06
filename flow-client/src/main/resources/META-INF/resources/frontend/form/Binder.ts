@@ -13,7 +13,7 @@ import {
   ValueError
 } from "./Validation";
 
-import { FieldStrategy, getDefaultFieldStrategy } from "./Field";
+import {FieldStrategy, getDefaultFieldStrategy} from "./Field";
 
 const submittingSymbol = Symbol('submitting');
 const defaultValueSymbol = Symbol('defaultValue');
@@ -78,9 +78,22 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     this.updateValidation();
   }
 
+  /**
+   * Reset the form value to default value and clear validation errors
+   *
+   * @param defaultValue When present, sets the argument as the new default
+   * value before resetting, otherwise the previous default is used.
+   */
   reset(defaultValue: T = this[defaultValueSymbol]) {
     this.defaultValue = defaultValue;
-    if (this.value && this.clearValidation() && this.value === defaultValue) {
+    if (
+      // Skip when no value is set yet (e. g., invoked from constructor)
+      this.value
+      // Clear validation state, then proceed if update is needed
+      && this.clearValidation()
+      // When value is dirty, another update is coming from invoking the value
+      // setter below, so we skip this one to prevent duplicate updates
+      && this.value === defaultValue) {
       this.update(this.value);
     }
 
