@@ -50,6 +50,8 @@ public class ItemCountChangeEvent<T extends Component>
      *            the source component
      * @param itemCount
      *            new items count
+     * @param itemCountEstimated
+     *            whether item count is an estimate
      */
     public ItemCountChangeEvent(T source, int itemCount, boolean itemCountEstimated) {
         super(source, false);

@@ -805,7 +805,7 @@ public class DataCommunicator<T> implements Serializable {
                  * request for the previous pages, we'll cancel this flush and
                  * tweak the requested range and flush again.
                  */
-                if (assumedSize != 0 && activation.getActiveKeys().size() == 0) {
+                if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
                     int delta = requestedRange.length();
                     requestedRange = requestedRange.offsetBy(-delta);
                     requestFlush(true); // to avoid recursiveness
