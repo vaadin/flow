@@ -18,11 +18,17 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -526,6 +532,50 @@ public class DataCommunicatorTest {
                 dataCommunicator.getItemCount());
     }
 
+    @Test
+    public void setInitialItemCountEstimateAndIncrease_requestedItemsMuchHigherThanExactCount_exactCountIsResolvedOnServer() {
+        final int exactSize = 200;
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(exactSize);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        final int itemCountEstimate = 1000;
+        dataCommunicator.setItemCountEstimate(itemCountEstimate);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals(itemCountEstimate, dataCommunicator.getItemCount());
+
+        // if the user scrolls far from the exact size of the backend,
+        // the exact size is resolved on the server side without causing a new
+        // roundtrip where the client will request items because it received less
+        // items than expected
+        dataCommunicator.setRequestedRange(900, 100);
+        fakeClientCommunication();
+
+        Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
+        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
+        // initial call 0-50, 900-1000, 800-900, 700-800, ... 100-200
+        Mockito.verify(dataProvider, Mockito.times(10)).fetch(Mockito.any());
+    }
+
+    @Test
+    public void setInitialItemCountEstimateAndIncrease_backendEmpty_noEndlessFlushLoop() {
+        final int exactSize = 0;
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(exactSize);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        final int itemCountEstimate = 1000;
+        dataCommunicator.setItemCountEstimate(itemCountEstimate);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
+        Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
+        Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void setInitialCountEstimate_lessThanOne_throws() {
         dataCommunicator.setItemCountEstimate(0);
@@ -902,6 +952,109 @@ public class DataCommunicatorTest {
                 customItemCountEstimate);
         Assert.assertEquals(dataCommunicator.getItemCountEstimateIncrease(),
                 customItemCountEstimateStep);
+    }
+
+    @Test
+    public void itemCountChangeEvent_exactSize_correctCountAndIsCountEstimated() {
+        final TestComponent component = new TestComponent();
+        ui.add(component);
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
+                data -> {
+                }, component.getElement().getNode());
+        pageSize = 50;
+        dataCommunicator.setPageSize(pageSize);
+        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
+        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
+                ((ComponentEventListener) event -> {
+                    Assert.assertNull(cachedEvent.get());
+                    cachedEvent.set((ItemCountChangeEvent<?>) event);
+                }));
+        int exactCount = 500;
+        dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
+        dataCommunicator.setRequestedRange(0, 50);
+        // exact size
+        fakeClientCommunication();
+
+        ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
+
+        Assert.assertEquals("Invalid count provided", exactCount,
+                event.getItemCount());
+        Assert.assertFalse(event.isItemCountEstimated());
+        // no new event fired
+        dataCommunicator.setRequestedRange(450, 50);
+        fakeClientCommunication();
+        Assert.assertNull(cachedEvent.get());
+
+        // creating a new data provider with same exact size -> no new event fired
+        dataCommunicator.setDataProvider(createDataProvider(500), null);
+        fakeClientCommunication();
+        Assert.assertNull(cachedEvent.get());
+
+        // new data provider with different size
+        dataCommunicator.setDataProvider(createDataProvider(exactCount = 1000), null);
+        fakeClientCommunication();
+        event = cachedEvent.getAndSet(null);
+
+        Assert.assertEquals("Invalid count provided", exactCount,
+                event.getItemCount());
+        Assert.assertFalse(event.isItemCountEstimated());
+    }
+
+    @Test
+    public void itemCountChangeEvent_estimatedCount_estimateUsedUntilEndReached() {
+        final TestComponent component = new TestComponent();
+        ui.add(component);
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
+                data -> {
+                }, component.getElement().getNode());
+        pageSize = 50;
+        dataCommunicator.setPageSize(pageSize);
+        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
+        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
+                ((ComponentEventListener) event -> {
+                    Assert.assertNull(cachedEvent.get());
+                    cachedEvent.set((ItemCountChangeEvent<?>) event);
+                }));
+        int exactCount = 500;
+        dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
+        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setDefinedSize(false);
+        // initial estimate count of 200
+        fakeClientCommunication();
+
+        ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
+        Assert.assertEquals("Invalid count provided", 200,
+                event.getItemCount());
+        Assert.assertTrue(event.isItemCountEstimated());
+
+        dataCommunicator.setRequestedRange(150, 50);
+        fakeClientCommunication();
+
+        event = cachedEvent.getAndSet(null);
+        Assert.assertEquals("Invalid count provided", 400,
+                event.getItemCount());
+        Assert.assertTrue(event.isItemCountEstimated());
+
+        dataCommunicator.setRequestedRange(350, 50);
+        fakeClientCommunication();
+
+        event = cachedEvent.getAndSet(null);
+        Assert.assertEquals("Invalid count provided", 600,
+                event.getItemCount());
+        Assert.assertTrue(event.isItemCountEstimated());
+
+        dataCommunicator.setRequestedRange(550, 50);
+        fakeClientCommunication();
+
+        // reaching exact size
+        event = cachedEvent.getAndSet(null);
+        Assert.assertEquals("Invalid count provided", 500,
+                event.getItemCount());
+        Assert.assertFalse(event.isItemCountEstimated());
+    }
+
+    @Tag("test-component")
+    private static class TestComponent extends Component {
     }
 
     private int getPageSizeIncrease() {

@@ -110,7 +110,7 @@ public class DataCommunicator<T> implements Serializable {
     private int itemCountEstimate = -1;
     private int itemCountEstimateIncrease = -1;
     private boolean definedSize = true;
-    private boolean skipSizeCheckUntilReset;
+    private boolean skipCountIncreaseUntilReset;
     private boolean sizeReset;
     private int pageSize;
 
@@ -183,7 +183,7 @@ public class DataCommunicator<T> implements Serializable {
      * It effectively resends all available data.
      */
     public void reset() {
-        skipSizeCheckUntilReset = false;
+        skipCountIncreaseUntilReset = false;
         sizeReset = true;
         resendEntireRange = true;
         dataGenerator.destroyAllData();
@@ -429,7 +429,7 @@ public class DataCommunicator<T> implements Serializable {
         }
         this.countCallback = countCallback;
         definedSize = true;
-        skipSizeCheckUntilReset = false;
+        skipCountIncreaseUntilReset = false;
         // there is no reset but we need to get the defined size
         sizeReset = true;
         requestFlush();
@@ -457,7 +457,7 @@ public class DataCommunicator<T> implements Serializable {
         this.itemCountEstimate = itemCountEstimate;
         this.countCallback = null;
         definedSize = false;
-        if (!skipSizeCheckUntilReset
+        if (!skipCountIncreaseUntilReset
                 && requestedRange.getEnd() < itemCountEstimate) {
             sizeReset = true;
             requestFlush();
@@ -477,8 +477,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Sets the item count estimate increase to use and switches the component to
-     * undefined size if not yet used. Any previously set count callback is
+     * Sets the item count estimate increase to use and switches the component
+     * to undefined size if not yet used. Any previously set count callback is
      * cleared. The step is used the next time that the count is adjusted.
      * <em>NOTE:</em> the increase should be greater than the
      * {@link #setPageSize(int)} or it may cause bad performance.
@@ -517,8 +517,8 @@ public class DataCommunicator<T> implements Serializable {
      * count callback. Calling with value {@code true} will use the
      * {@link DataProvider#size(Query)} for getting the size. Calling with
      * {@code false} will use whatever has been set with
-     * {@link #setItemCountEstimate(int)} and increase the count when needed with
-     * {@link #setItemCountEstimateIncrease(int)}.
+     * {@link #setItemCountEstimate(int)} and increase the count when needed
+     * with {@link #setItemCountEstimateIncrease(int)}.
      * 
      * @param definedSize
      *            {@code true} for defined size, {@code false} for undefined
@@ -528,7 +528,7 @@ public class DataCommunicator<T> implements Serializable {
         if (this.definedSize != definedSize) {
             this.definedSize = definedSize;
             countCallback = null;
-            skipSizeCheckUntilReset = false;
+            skipCountIncreaseUntilReset = false;
             if (definedSize) {
                 // Always fetch explicit count from data provider
                 requestFlush();
@@ -734,7 +734,11 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush() {
-        if (flushRequest == null) {
+        requestFlush(false);
+    }
+
+    private void requestFlush(boolean forced) {
+        if (flushRequest == null || forced) {
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -771,7 +775,8 @@ public class DataCommunicator<T> implements Serializable {
         // With defined size the backend is only queried when necessary
         if (definedSize && (resendEntireRange || sizeReset)) {
             assumedSize = getDataProviderSize();
-        } else if (!definedSize && (!skipSizeCheckUntilReset || sizeReset)) {
+        } else if (!definedSize
+                && (!skipCountIncreaseUntilReset || sizeReset)) {
             // with undefined size, size estimate is checked when scrolling down
             updateUndefinedSize();
         }
@@ -792,7 +797,20 @@ public class DataCommunicator<T> implements Serializable {
                 // the end has been reached
                 assumedSize = requestedRange.getStart()
                         + activation.getActiveKeys().size();
-                skipSizeCheckUntilReset = true;
+                skipCountIncreaseUntilReset = true;
+                /*
+                 * If the fetch query returned 0 items, it means that the user
+                 * has scrolled past the end of the exact item count. Instead of
+                 * returning 0 items to the client and letting it incrementally
+                 * request for the previous pages, we'll cancel this flush and
+                 * tweak the requested range and flush again.
+                 */
+                if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
+                    int delta = requestedRange.length();
+                    requestedRange = requestedRange.offsetBy(-delta);
+                    requestFlush(true); // to avoid recursiveness
+                    return;
+                }
             }
             effectiveRequested = requestedRange
                     .restrictTo(Range.withLength(0, assumedSize));
@@ -832,7 +850,9 @@ public class DataCommunicator<T> implements Serializable {
                     .getComponent();
             if (component.isPresent()) {
                 ComponentUtil.fireEvent(component.get(),
-                        new ItemCountChangeEvent<>(component.get(), itemCount));
+                        new ItemCountChangeEvent<>(component.get(), itemCount,
+                                !(isDefinedSize()
+                                        || skipCountIncreaseUntilReset)));
             }
             lastSent = itemCount;
         }

@@ -111,6 +111,7 @@ public abstract class AbstractListDataViewListenerTest {
         dataView.addItemCountChangeListener(event -> {
             Assert.assertEquals("Unexpected item count", 1,
                     event.getItemCount());
+            Assert.assertFalse(event.isItemCountEstimated());
             invocationChecker.set(true);
         });
 
