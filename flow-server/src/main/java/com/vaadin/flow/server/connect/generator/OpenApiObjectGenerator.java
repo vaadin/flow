@@ -504,7 +504,7 @@ public class OpenApiObjectGenerator {
             str += str.contains("(") ? "" : "()";
 
             if (str.matches(
-                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
+                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|Future|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
                 annotations.add(str);
             }
         });

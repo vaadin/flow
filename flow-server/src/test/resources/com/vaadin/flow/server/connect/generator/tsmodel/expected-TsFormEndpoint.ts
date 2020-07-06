@@ -6,7 +6,7 @@ import MyEntity from './MyEntity';
 import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType} from '@vaadin/form';
 
 // @ts-ignore
-import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
+import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,Future,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
 
 /**
  * This module is generated from com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity.
@@ -28,7 +28,6 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
   public readonly entityMatrix = new ArrayModel<ModelType<ArrayModel<ModelType<MyEntityModel>, MyEntityModel>>, ArrayModel<ModelType<MyEntityModel>, MyEntityModel>>(this, 'entityMatrix', ArrayModel, [MyEntityModel, []]);
   public readonly foo = new StringModel(this, 'foo');
   public readonly future = new StringModel(this, 'future', new Future());
-  public readonly futureOrPresent = new ObjectModel(this, 'futureOrPresent', new FutureOrPresent());
   public readonly isNull = new StringModel(this, 'isNull', new Null());
   public readonly list = new ArrayModel(this, 'list', StringModel, [], new NotEmpty());
   public readonly max = new NumberModel(this, 'max', new Max(2));
@@ -40,7 +39,6 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
   public readonly notNull = new StringModel(this, 'notNull', new NotNull());
   public readonly numberMatrix = new ArrayModel(this, 'numberMatrix', ArrayModel, [NumberModel, []]);
   public readonly past = new StringModel(this, 'past', new Past());
-  public readonly pastOrPresent = new ObjectModel(this, 'pastOrPresent', new PastOrPresent());
   public readonly pattern = new StringModel(this, 'pattern', new Pattern({regexp:"\\d+\\..+"}));
   public readonly positive = new NumberModel(this, 'positive', new Positive());
   public readonly positiveOrCero = new NumberModel(this, 'positiveOrCero', new PositiveOrZero());
