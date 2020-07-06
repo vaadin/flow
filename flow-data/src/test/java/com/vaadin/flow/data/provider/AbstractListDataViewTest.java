@@ -757,7 +757,7 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void updateItem_itemPresentInDataSet_refreshesItem() {
+    public void refreshItem_itemPresentInDataSet_refreshesItem() {
         Collection<Item> items = getTestItems();
 
         ListDataProvider<Item> dataProvider = Mockito
@@ -770,8 +770,7 @@ public class AbstractListDataViewTest {
         Item firstItem = iterator.next();
         firstItem.setValue("updatedValue");
 
-        dataView.updateItem(firstItem);
-
+        dataView.refreshItem(firstItem);
         Mockito.verify(dataProvider).refreshItem(firstItem);
 
         dataView.setIdentifierProvider(Item::getId);
@@ -779,12 +778,15 @@ public class AbstractListDataViewTest {
         secondItem.setValue("updatedValue");
 
         Item secondItemDuplicate = new Item(2L);
-        dataView.updateItem(secondItemDuplicate);
-        Mockito.verify(dataProvider).refreshItem(secondItem);
+        dataView.refreshItem(secondItemDuplicate);
+        // Verify that the refresh is made on a new object, no on an old
+        // object.
+        Mockito.verify(dataProvider).refreshItem(secondItemDuplicate);
+        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(secondItem);
     }
 
     @Test
-    public void updateItem_itemNotPresent_itemNotRefreshed() {
+    public void refreshItem_itemNotPresent_itemNotRefreshed() {
         Collection<Item> items = getTestItems();
 
         ListDataProvider<Item> dataProvider = Mockito
@@ -794,11 +796,11 @@ public class AbstractListDataViewTest {
                 component);
 
         Item updatedItem = new Item(42L, "updated", "descr1");
-        dataView.updateItem(updatedItem);
+        dataView.refreshItem(updatedItem);
         Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(updatedItem);
 
         updatedItem = new Item(1L, "updated", "descr1");
-        dataView.updateItem(updatedItem);
+        dataView.refreshItem(updatedItem);
         Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(updatedItem);
     }
 

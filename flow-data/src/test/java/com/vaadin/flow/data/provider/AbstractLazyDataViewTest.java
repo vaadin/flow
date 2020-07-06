@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -307,6 +308,78 @@ public class AbstractLazyDataViewTest {
         fakeClientCommunication();
         dataView.getItem(3);
     }
+
+    @Test
+    public void refreshItem_itemPresentInDataSet_refreshesItem() {
+        Item item1 = new Item(0L, "value1");
+        Item item2 = new Item(1L, "value2");
+
+        DataProvider<Item, Void> dataProvider = Mockito
+                .spy(DataProvider.fromCallbacks(query -> {
+                    query.getOffset();
+                    query.getLimit();
+                    return Stream.of(item1, item2);
+                }, query -> 2));
+
+        DataCommunicator<Item> dataCommunicator = Mockito
+                .spy(new DataCommunicator<>((item, jsonObject) -> {
+                }, arrayUpdater, null, component.getElement().getNode()));
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(
+                dataCommunicator, component) {
+        };
+
+        item1.setValue("updatedValue1");
+        dataView.refreshItem(item1);
+
+        // Verify that the refresh request causes both data provider and
+        // data communicator invocation.
+        Mockito.verify(dataProvider).refreshItem(item1);
+        Mockito.verify(dataCommunicator).refresh(item1);
+
+        dataView.setIdentifierProvider(Item::getId);
+
+        Item updatedItem2 = new Item(1L, "updatedValue2");
+        dataView.refreshItem(updatedItem2);
+        // Verify that the refresh is made on a new object, no on an old
+        // object.
+        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
+        Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
+        Mockito.verify(dataProvider).refreshItem(updatedItem2);
+        Mockito.verify(dataCommunicator).refresh(updatedItem2);
+    }
+
+     @Test
+     public void refreshItem_itemNotPresent_itemNotRefreshed() {
+         Item item1 = new Item(0L, "value1");
+
+         DataProvider<Item, Void> dataProvider = Mockito
+                 .spy(DataProvider.fromCallbacks(query -> {
+                     query.getOffset();
+                     query.getLimit();
+                     return Stream.of(item1);
+                 }, query -> 1));
+
+         DataCommunicator<Item> dataCommunicator = Mockito
+                 .spy(new DataCommunicator<>((item, jsonObject) -> {
+                 }, arrayUpdater, null, component.getElement().getNode()));
+
+         dataCommunicator.setDataProvider(dataProvider, null);
+
+         AbstractLazyDataView<Item> dataView = new AbstractLazyDataView<Item>(
+                 dataCommunicator, component) {
+         };
+
+         Item item2 = new Item(1L, "value1");
+         dataView.refreshItem(item1);
+
+         // Verify that the refresh request is not promoted to data provider and
+         // data communicator, because item with id=1 is not found.
+         Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
+         Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
+     }
 
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();

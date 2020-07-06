@@ -171,18 +171,6 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public AbstractListDataView<T> updateItem(T item) {
-        Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        //@formatter:off
-        getItems()
-                .filter(i -> equals(item, i))
-                .findFirst()
-                .ifPresent(getDataProvider()::refreshItem);
-        //@formatter:on
-        return this;
-    }
-
-    @Override
     public AbstractListDataView<T> addItems(Collection<T> items) {
         Objects.requireNonNull(items, NULL_COLLECTION_ERROR_MESSAGE);
         if (!items.isEmpty()) {
@@ -292,20 +280,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return index.get();
     }
 
-    private Object getIdentifier(T item) {
-        final Object itemIdentifier = getIdentifierProvider().apply(item);
-        Objects.requireNonNull(itemIdentifier,
-                "Identity provider should not return null");
-        return itemIdentifier;
-    }
-
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {
         dataProvider.getItems().removeIf(i -> equals(item, i));
-    }
-
-    private boolean equals(T item, T compareTo) {
-        final Object itemIdentifier = getIdentifier(item);
-        return Objects.equals(itemIdentifier, getIdentifier(compareTo));
     }
 
     private void addItemOnTarget(T item, T target,

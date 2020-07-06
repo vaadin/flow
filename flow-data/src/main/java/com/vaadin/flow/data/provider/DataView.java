@@ -54,6 +54,26 @@ public interface DataView<T> extends Serializable {
     Stream<T> getItems();
 
     /**
+     * Notifies the component that the item has been updated and thus should be
+     * refreshed.
+     * <p>
+     * For this to work properly, the item must either implement
+     * {@link Object#equals(Object)} and {@link Object#hashCode()} to consider
+     * both the old and the new item instances to be equal, or alternatively
+     * use the {@link #setIdentifierProvider(IdentifierProvider)} to set
+     * an appropriate item's identifier.
+     * <p>
+     * This method delegates the update to
+     * {@link DataProvider#refreshItem(Object)}.
+     *
+     * @param item
+     *            item containing updated state
+     *
+     * @see #setIdentifierProvider(IdentifierProvider)
+     */
+    void refreshItem(T item);
+
+    /**
      * Add an item count change listener that is fired when the item
      * count changes. This can happen for instance when filtering the data set.
      * <p>
