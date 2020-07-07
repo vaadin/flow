@@ -273,21 +273,12 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
-        boolean isRouterLink = NavigationTrigger.ROUTER_LINK
-                .equals(event.getTrigger());
-
-        if (event instanceof ErrorNavigationEvent) {
-            // Push history in case the exception was due to route not
-            // found (#8544)
-            if (isRouterLinkNotFoundNavigationError(
-                    (ErrorNavigationEvent) event)) {
-                pushHistoryState(event);
-            }
-        } else if (isRouterLink) {
+        if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             /*
              * When the event trigger is a RouterLink, pushing history state
              * should be done in client-side. See
              * ScrollPositionHandler#afterNavigation(JsonObject).
+             * Also in the route not found case #8544.
              */
             JsonValue state = event.getState()
                     .orElseThrow(() -> new IllegalStateException(
@@ -296,7 +287,7 @@ public abstract class AbstractNavigationStateRenderer
             ui.getPage().executeJs(
                     "this.scrollPositionHandlerAfterServerNavigation($0);",
                     state);
-        } else if (!event.isForwardTo()
+        } else if (!(event instanceof ErrorNavigationEvent) && !event.isForwardTo()
                 && (!ui.getInternals().hasLastHandledLocation()
                         || !event.getLocation().getPathWithQueryParameters()
                                 .equals(ui.getInternals()
