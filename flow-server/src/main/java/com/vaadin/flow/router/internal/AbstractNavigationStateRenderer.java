@@ -280,14 +280,18 @@ public abstract class AbstractNavigationStateRenderer
              * ScrollPositionHandler#afterNavigation(JsonObject).
              * Also in the route not found case #8544.
              */
-            JsonValue state = event.getState()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "When the navigation trigger is ROUTER_LINK, event state should not be null."));
-
-            ui.getPage().executeJs(
-                    "this.scrollPositionHandlerAfterServerNavigation($0);",
-                    state);
-        } else if (!(event instanceof ErrorNavigationEvent) && !event.isForwardTo()
+            
+            Optional<JsonValue> maybeState = event.getState();
+            if (maybeState.isPresent()) {
+                ui.getPage().executeJs(
+                        "this.scrollPositionHandlerAfterServerNavigation($0);",
+                        maybeState.get());
+            } else if (!(event instanceof ErrorNavigationEvent)) {
+                throw new IllegalStateException(
+                        "When the navigation trigger is ROUTER_LINK, event state should not be null.");
+            }
+        } else if (!(event instanceof ErrorNavigationEvent)
+                && !event.isForwardTo()
                 && (!ui.getInternals().hasLastHandledLocation()
                         || !event.getLocation().getPathWithQueryParameters()
                                 .equals(ui.getInternals()
@@ -306,14 +310,6 @@ public abstract class AbstractNavigationStateRenderer
         // Enable navigating back
         event.getUI().getPage().getHistory().pushState(null,
                 event.getLocation());
-    }
-
-    private boolean isRouterLinkNotFoundNavigationError(
-            ErrorNavigationEvent event) {
-        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                && event.getErrorParameter() != null
-                && event.getErrorParameter()
-                        .getCaughtException() instanceof NotFoundException;
     }
 
     /**
