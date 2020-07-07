@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-embedding</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-embedding-generic</artifactId>
     <name>Flow Embedding, generic tests</name>
