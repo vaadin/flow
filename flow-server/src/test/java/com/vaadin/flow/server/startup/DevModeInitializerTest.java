@@ -438,6 +438,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         }
     }
 
+    @Test
+    public void onStartup_fallbackBaseDirIsGradleProjectDirectory_isAccepted()
+            throws Exception {
+        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        TemporaryFolder tmp = new TemporaryFolder();
+        tmp.create();
+        tmp.newFile("build.gradle");
+        baseDir = tmp.getRoot().getPath();
+
+        String originalUserDirValue = null;
+        try {
+            originalUserDirValue = System.getProperty("user.dir");
+            System.setProperty("user.dir", baseDir);
+            devModeInitializer.onStartup(classes, servletContext);
+        } finally {
+            if (originalUserDirValue != null) {
+                System.setProperty("user.dir", originalUserDirValue);
+            }
+        }
+    }
+
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
         loadingJarsWithProtocol_allFilesExist(resourcesFolder, s -> {
