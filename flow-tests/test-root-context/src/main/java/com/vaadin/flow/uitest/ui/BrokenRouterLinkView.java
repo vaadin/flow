@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
@@ -26,6 +27,10 @@ public class BrokenRouterLinkView extends AbstractDivView {
     public BrokenRouterLinkView() {
         final RouterLink routerLink = new RouterLink("Broken",
                 BrokenRouterLinkView.class);
+        Div spacer = new Div();
+        spacer.setHeight("5000px");
+        add(spacer);
+
         routerLink.getElement().setAttribute("href", "somewhere_non_existent");
         routerLink.setId(LINK_ID);
         add(routerLink);
