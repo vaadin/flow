@@ -22,9 +22,9 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-// https://github.com/vaadin/flow/issues/8544
 public class BrokenRouterLinkIT extends ChromeBrowserTest {
 
+    // https://github.com/vaadin/flow/issues/8544
     @Test
     public void testRouterLink_linkIsBroken_urlIsUpdated() {
         open();
@@ -36,6 +36,24 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
         link.click();
 
         Assert.assertTrue(getDriver().getCurrentUrl().endsWith(href));
+    }
 
+    // https://github.com/vaadin/flow/issues/8693
+    @Test
+    public void testRouterLink_visitBrokenLinkAndBack_scrollPositionIsRetained() {
+        open();
+
+        executeScript("window.scrollTo(0,100)");
+
+        WebElement link = findElement(By.id(BrokenRouterLinkView.LINK_ID));
+        link.click();
+
+        long y0 = (Long) executeScript("return window.scrollY");
+        Assert.assertEquals(0L, y0);
+
+        getDriver().navigate().back();
+
+        long y1 = (Long) executeScript("return window.scrollY");
+        Assert.assertEquals(100L, y1);
     }
 }
