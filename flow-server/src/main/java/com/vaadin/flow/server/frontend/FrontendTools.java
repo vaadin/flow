@@ -405,9 +405,9 @@ public class FrontendTools {
 
         proxyList.addAll(readProxySettingsFromSystemProperties());
         proxyList.addAll(
-                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
-        proxyList.addAll(
                 readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc));
+        proxyList.addAll(
+                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
         proxyList.addAll(readProxySettingsFromEnvironmentVariables());
 
         return proxyList;
