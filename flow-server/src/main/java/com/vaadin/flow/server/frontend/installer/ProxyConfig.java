@@ -114,7 +114,7 @@ public class ProxyConfig {
      */
     public static class Proxy implements Serializable {
         private static final Pattern PROXY_URL_REGEX = Pattern
-                .compile("(\\w+)://(([^:]+):(.*)@)?([^:]+)(:(\\d*))?");
+                .compile("(\\w+)://(([^:]+):(.*)@)?([^:]+)(:(\\d*))?(/)?");
 
         /**
          * Id of proxy.
