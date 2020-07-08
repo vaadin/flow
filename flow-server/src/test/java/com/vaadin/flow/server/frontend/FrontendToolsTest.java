@@ -319,7 +319,7 @@ public class FrontendToolsTest {
             System.setProperty(FrontendUtils.SYSTEM_HTTP_PROXY_PROPERTY_KEY,
                     "http://anotheruser:anotherpassword@aanotherhost:9090");
             System.setProperty(FrontendUtils.SYSTEM_HTTPS_PROXY_PROPERTY_KEY,
-                    "http://anotherusers:anotherpasswords@aanotherhosts:9091");
+                    "http://anotherusers:anotherpasswords@aanotherhosts:9091/");
 
             proxyList = tools.getProxies();
         } finally {
