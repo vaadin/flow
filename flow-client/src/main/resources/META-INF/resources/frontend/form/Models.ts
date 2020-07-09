@@ -8,6 +8,7 @@ export const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
 export const keysSymbol = Symbol('keys');
+export const getKeyModelSymbol = Symbol('getKeyModel');
 export const fromStringSymbol = Symbol('fromString');
 export const validatorsSymbol = Symbol('validators');
 export const binderNodeSymbol = Symbol('binderNode');
@@ -99,7 +100,7 @@ export class ObjectModel<T> extends AbstractModel<T> {
 
   [keysSymbol]: {[key in keyof T]?: AbstractModel<T[key]>} = {};
 
-  protected getKey<
+  protected [getKeyModelSymbol]<
     K extends keyof T,
     C extends new(parent: ModelParent<T[K]>, key: keyof any, ...args: any[]) => any
   >(
