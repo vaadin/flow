@@ -3,6 +3,7 @@
 import {
   ArrayModel,
   BooleanModel,
+  ModelConstructor,
   NumberModel,
   ObjectModel,
   Pattern,
@@ -17,7 +18,9 @@ export interface IdEntity {
 }
 export class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
   static createEmptyValue: () => IdEntity;
-  readonly idString = new StringModel(this, 'idString');
+  get idString(): StringModel {
+    return this.getKey('idString', StringModel, []);
+  }
 }
 
 export interface Product extends IdEntity {
@@ -27,9 +30,18 @@ export interface Product extends IdEntity {
 }
 export class ProductModel<T extends Product = Product> extends IdEntityModel<T> {
   static createEmptyValue: () => Product;
-  readonly description = new StringModel(this, 'description', new Required());
-  readonly price = new NumberModel(this, 'price', new Positive());
-  readonly isInStock = new BooleanModel(this, 'isInStock');
+
+  get description() {
+    return this.getKey('description', StringModel, [new Required()]);
+  }
+
+  get price() {
+    return this.getKey('price', NumberModel, [new Positive()]);
+  }
+
+  get isInStock() {
+    return this.getKey('isInStock', BooleanModel, []);
+  }
 }
 
 interface Customer extends IdEntity {
@@ -38,8 +50,14 @@ interface Customer extends IdEntity {
 }
 export class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
   static createEmptyValue: () => Customer;
-  readonly fullName = new StringModel(this, 'fullName', new Size({min: 4}), new Required());
-  readonly nickName = new StringModel(this, 'nickName', new Pattern("....*"));
+
+  get fullName() {
+    return this.getKey('fullName', StringModel, [new Size({min: 4}), new Required()]) as StringModel;
+  }
+
+  get nickName() {
+    return this.getKey('nickName', StringModel, [new Pattern("....*")]) as StringModel;
+  }
 }
 
 export interface Order extends IdEntity {
@@ -50,10 +68,22 @@ export interface Order extends IdEntity {
 }
 export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   static createEmptyValue: () => Order;
-  readonly customer = new CustomerModel(this, 'customer', new Required());
-  readonly notes = new StringModel(this, 'notes', new Required());
-  readonly priority = new NumberModel(this, 'priority');
-  readonly products = new ArrayModel(this, 'products', ProductModel, []);
+
+  get customer(): CustomerModel {
+    return this.getKey('customer', CustomerModel, [new Required()]);
+  }
+
+  get notes(): StringModel {
+    return this.getKey('notes', StringModel, [new Required()]);
+  }
+
+  get priority(): NumberModel {
+    return this.getKey('priority', NumberModel, []);
+  }
+
+  get products(): ArrayModel<Product, ProductModel> {
+    return this.getKey('products', ArrayModel as ModelConstructor<ReadonlyArray<Product>, ArrayModel<Product, ProductModel>>, [ProductModel, []]);
+  }
 }
 
 export interface TestEntity {
@@ -67,11 +97,32 @@ export interface TestEntity {
 }
 export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T> {
   static createEmptyValue: () => TestEntity;
-  fieldString = new StringModel(this, 'fieldString');
-  fieldNumber = new NumberModel(this, 'fieldNumber');
-  fieldBoolean = new BooleanModel(this, 'fieldBoolean');
-  fieldObject = new ObjectModel(this, 'fieldObject');
-  fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel, []);
-  fieldArrayModel = new ArrayModel(this, 'fieldArrayModel', IdEntityModel, []);
-  fieldMatrixNumber = new ArrayModel(this, 'fieldMatrixNumber', ArrayModel, [NumberModel, [new Positive()]]);
+
+  get fieldString() {
+    return this.getKey('fieldString', StringModel, []) as StringModel;
+  }
+
+  get fieldNumber() {
+    return this.getKey('fieldNumber', NumberModel, []) as NumberModel;
+  }
+
+  get fieldBoolean() {
+    return this.getKey('fieldBoolean', BooleanModel, []) as BooleanModel;
+  }
+
+  get fieldObject() {
+    return this.getKey('fieldObject', ObjectModel, []) as ObjectModel<object>;
+  }
+
+  get fieldArrayString() {
+    return this.getKey('fieldArrayString', ArrayModel, [StringModel, []]) as ArrayModel<string, StringModel>;
+  }
+
+  get fieldArrayModel() {
+    return this.getKey('fieldArrayModel', ArrayModel, [IdEntityModel, []]) as ArrayModel<IdEntity, IdEntityModel>;
+  }
+
+  get fieldMatrixNumber() {
+    return this.getKey('fieldMatrixNumber', ArrayModel, [ArrayModel, [NumberModel, [new Positive()]]]) as ArrayModel<ReadonlyArray<number>, ArrayModel<number, NumberModel>>;
+  }
 }

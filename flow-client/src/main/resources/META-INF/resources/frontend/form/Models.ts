@@ -7,6 +7,7 @@ export const ItemModelSymbol = Symbol('ItemModel');
 export const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
+export const keysSymbol = Symbol('keys');
 export const fromStringSymbol = Symbol('fromString');
 export const validatorsSymbol = Symbol('validators');
 export const binderNodeSymbol = Symbol('binderNode');
@@ -80,14 +81,35 @@ export class StringModel extends PrimitiveModel<string> implements HasFromString
 
 export class ObjectModel<T> extends AbstractModel<T> {
   static createEmptyValue() {
-    const modelInstance = new this({value: undefined as any}, 'value')
-    return Object.keys(modelInstance).reduce(
-      (obj: any, key: keyof any) => {
-        (obj = (obj || {}))[key] = (
-          (modelInstance as any)[key].constructor as ModelConstructor<any, AbstractModel<any>>
-        ).createEmptyValue();
-        return obj;
-      }, null);
+    const modelInstance = new this({value: undefined as any}, 'value');
+    let obj = {};
+    for (let proto = Object.getPrototypeOf(modelInstance); proto !== ObjectModel.prototype; proto = Object.getPrototypeOf(proto)) {
+      obj = Object.getOwnPropertyNames(proto)
+        .filter(propertyName => propertyName !== 'constructor')
+        .reduce((o, propertyName) => {
+          (o as any)[propertyName] = (
+            (modelInstance as any)[propertyName]
+              .constructor as ModelConstructor<any, AbstractModel<any>>
+          ).createEmptyValue();
+          return o;
+        }, obj)
+    }
+    return obj;
+  }
+
+  [keysSymbol]: {[key in keyof T]?: AbstractModel<T[key]>} = {};
+
+  protected getKey<
+    K extends keyof T,
+    C extends new(parent: ModelParent<T[K]>, key: keyof any, ...args: any[]) => any
+  >(
+    key: K,
+    ValueModel: C,
+    valueModelArgs: ReadonlyArray<any>
+  ): InstanceType<C> {
+    return this[keysSymbol][key] !== undefined ?
+      (this[keysSymbol][key] as InstanceType<C>)
+      : (this[keysSymbol][key] = new ValueModel(this, key, ...valueModelArgs));
   }
 }
 
