@@ -522,38 +522,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return getSimpleNameFromQualifiedName(dataType);
     }
 
-    private String getModelType(String simpleName) {
-        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(simpleName);
-        if (matcher.find()) {
-            String variableName;
-            do {
-                variableName = matcher.group(1);
-                // Loop to extract the item type for multi-dimensional arrays
-                matcher.reset(variableName);
-            } while (matcher.find());
-            if (!variableName.matches("any|boolean|number|string")) {
-                return getModelFullType(simpleName);
-            }
-        } else if (MAPPED_TYPE_NAME_PATTERN.matcher(simpleName).find()) {
-            return getModelFullType(simpleName);
-        }
-        return fixNameForModel(simpleName);
-    }
-
-    private String getModelConstructor(CodegenProperty property,
+    private String getModelArguments(CodegenProperty property,
             List<Map<String, String>> imports) {
         String name = property.name;
         String dataType = property.datatype;
         String simpleName = getSimpleNameFromImports(dataType, imports);
-        String arguments = getConstrainsArguments(property);
-
-        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(simpleName);
-        if (matcher.find()) {
-            arguments = ", " + getModelVariableArguments(matcher.group(1))
-                    + arguments;
-        }
-        return "new " + getModelType(simpleName) + "(this, '" + name + "'"
-                + arguments + ")";
+        return getModelVariableArguments(simpleName,
+                getConstrainsArguments(property));
     }
 
     private String getModelFullType(String name) {
@@ -578,14 +553,24 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return MODEL + "Type<" + getModelFullType(variableName) + ">";
     }
 
-    private String getModelVariableArguments(String name) {
+    private String getModelVariableArguments(String name,
+            List<String> constrainArguments) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(fixNameForModel(name));
+        stringBuilder.append(", [");
         Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
+        List<String> arguments = new ArrayList<>();
         if (matcher.find()) {
-            return fixNameForModel(name) + ", ["
-                    + getModelVariableArguments(matcher.group(1)) + "]";
-        } else {
-            return fixNameForModel(name) + ", []";
+            arguments.add(getModelVariableArguments(matcher.group(1),
+                    Collections.emptyList()));
         }
+        if (!constrainArguments.isEmpty()) {
+            arguments.addAll(constrainArguments);
+        }
+        stringBuilder
+                .append(arguments.stream().collect(Collectors.joining(", ")));
+        stringBuilder.append("]");
+        return stringBuilder.toString();
     }
 
     private String fixNameForModel(String name) {
@@ -599,16 +584,15 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return name + MODEL;
     }
 
-    private String getConstrainsArguments(CodegenProperty property) {
-        StringBuilder ret = new StringBuilder();
+    private List<String> getConstrainsArguments(CodegenProperty property) {
         List<String> annotations = (List) property.getVendorExtensions()
                 .get(CONSTRAINT_ANNOTATIONS);
         if (annotations != null) {
-            for (String annotation : annotations) {
-                ret.append(", new " + annotation);
-            }
+            return annotations.stream()
+                    .map(annotation -> String.format("new " + "%s", annotation))
+                    .collect(Collectors.toList());
         }
-        return ret.toString();
+        return Collections.emptyList();
     }
 
     private String getSimpleNameFromComplexType(String dataType,
@@ -1025,8 +1009,10 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("multiplelines", getMultipleLinesHelper());
         handlebars.registerHelper("getClassNameFromImports",
                 getClassNameFromImportsHelper());
-        handlebars.registerHelper("getModelConstructor",
-                getModelConstructorHelper());
+        handlebars.registerHelper("getModelArguments",
+                getModelArgumentsHelper());
+        handlebars.registerHelper("getModelFullType",
+                getModelFullTypeHelper());
     }
 
     private Helper<String> getMultipleLinesHelper() {
@@ -1047,9 +1033,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 (List<Map<String, String>>) options.param(0));
     }
 
-    private Helper<CodegenProperty> getModelConstructorHelper() {
-        return (prop, options) -> getModelConstructor(prop,
+    private Helper<CodegenProperty> getModelArgumentsHelper() {
+        return (prop, options) -> getModelArguments(prop,
                 (List<Map<String, String>>) options.param(0));
+    }
+
+    private Helper<CodegenProperty> getModelFullTypeHelper() {
+        return (prop, options) -> getModelFullType(getSimpleNameFromImports(
+                prop.datatype, (List<Map<String, String>>) options.param(0)));
     }
 
     /**
