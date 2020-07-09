@@ -97,7 +97,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>6.2.1</testbench.version>
+        <testbench.version>6.3.0</testbench.version>
         <jetty.version>9.4.27.v20200227</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
