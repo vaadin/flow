@@ -1,7 +1,6 @@
 import {BinderNode} from "./BinderNode";
 import {
   AbstractModel,
-  HasValue,
   ModelConstructor,
   parentSymbol
 } from "./Models";
@@ -42,8 +41,8 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     Model: ModelConstructor<T, M>,
     config?: BinderConfiguration<T>
   ) {
-    super(new Model({value: Model.createEmptyValue()}, 'value'));
-    this[emptyValueSymbol] = (this.model[parentSymbol] as HasValue<T>).value;
+    super(new Model({value: undefined}, 'value', false));
+    this[emptyValueSymbol] = (this.model[parentSymbol] as {value: T}).value;
     // @ts-ignore
     this.model[parentSymbol] = this;
 

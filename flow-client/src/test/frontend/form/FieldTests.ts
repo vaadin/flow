@@ -12,7 +12,6 @@ import { expect } from "chai";
 import {
   Binder,
   field,
-  setValue,
   GenericFieldStrategy,
   CheckedFieldStrategy,
   SelectedFieldStrategy,
@@ -112,7 +111,7 @@ suite("form/Field", () => {
     });
 
     test('should only set name attribute once', async () => {
-      setValue(orderViewWithTextField.binder.model.notes, 'foo');
+      orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
       await orderViewWithTextField.updateComplete;
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.notesField!.setAttributeSpy, 'name', 'notes');
     });
@@ -121,9 +120,9 @@ suite("form/Field", () => {
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.customerFullNameField!.requiredSpy.set, true);
       sinon.assert.notCalled(orderViewWithTextField.customerNickNameField!.requiredSpy.set);
 
-      setValue(orderViewWithTextField.binder.model.customer.fullName, 'foo');
+      orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.customer.fullName).value = 'foo';
       await orderViewWithTextField.updateComplete;
-      setValue(orderViewWithTextField.binder.model.customer.nickName, 'bar');
+      orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.customer.nickName).value = 'bar';
       await orderViewWithTextField.updateComplete;
 
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.customerFullNameField!.requiredSpy.set, true);
@@ -131,7 +130,7 @@ suite("form/Field", () => {
     });
 
     test('should set value property on setValue', async () => {
-      setValue(orderViewWithTextField.binder.model.notes, 'foo');
+      orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
       await orderViewWithTextField.updateComplete;
       sinon.assert.calledOnceWithExactly(orderViewWithTextField.notesField!.valueSpy.set, 'foo');
     });
@@ -173,7 +172,7 @@ suite("form/Field", () => {
     });
 
     test('should set default value on reset without argument', async () => {
-      setValue(orderViewWithTextField.binder.model.notes, 'foo');
+      orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
       await orderViewWithTextField.updateComplete;
       orderViewWithTextField.notesField!.valueSpy.set.resetHistory();
 
@@ -186,7 +185,7 @@ suite("form/Field", () => {
     test('should update binder value on setValue', async () => {
       orderViewWithTextField.requestUpdateSpy.resetHistory();
 
-      setValue(orderViewWithTextField.binder.model.notes, 'foo');
+      orderViewWithTextField.binder.for(orderViewWithTextField.binder.model.notes).value = 'foo';
       await orderViewWithTextField.updateComplete;
 
       assert.equal(orderViewWithTextField.binder.value.notes, 'foo');
@@ -304,9 +303,9 @@ suite("form/Field", () => {
       sinon.assert.calledOnce(orderViewWithInput.customerNickNameField!.setAttributeSpy);
       assert.deepEqual(orderViewWithInput.customerNickNameField!.setAttributeSpy.getCall(0).args, ['name', 'customer.nickName']);
 
-      setValue(orderViewWithInput.binder.model.customer.fullName, 'foo');
+      orderViewWithInput.binder.for(orderViewWithInput.binder.model.customer.fullName).value = 'foo';
       await orderViewWithInput.updateComplete;
-      setValue(orderViewWithInput.binder.model.customer.nickName, 'bar');
+      orderViewWithInput.binder.for(orderViewWithInput.binder.model.customer.nickName).value = 'bar';
       await orderViewWithInput.updateComplete;
 
       sinon.assert.calledTwice(orderViewWithInput.customerFullNameField!.setAttributeSpy);

@@ -10,16 +10,17 @@ export const keySymbol = Symbol('key');
 export const fromStringSymbol = Symbol('fromString');
 export const validatorsSymbol = Symbol('validators');
 export const binderNodeSymbol = Symbol('binderNode');
+export const optionalSymbol = Symbol('optional');
 
 export const getPropertyModel = Symbol('getPropertyModel');
 const properties = Symbol('properties');
 
 interface HasFromString<T> {
-  [fromStringSymbol](value: string): T
+  [fromStringSymbol](value: string): T;
 }
 
 export interface HasValue<T> {
-  value: T
+  value?: T;
 }
 
 export type ModelParent<T> = AbstractModel<any> | HasValue<T>;
@@ -27,7 +28,7 @@ export type ModelValue<M extends AbstractModel<any>> = ReturnType<M["valueOf"]>;
 
 export interface ModelConstructor<T, M extends AbstractModel<T>> {
   createEmptyValue: () => T;
-  new(parent: ModelParent<T>, key: keyof any, ...args: any[]): M;
+  new(parent: ModelParent<T>, key: keyof any, optional: boolean, ...args: any[]): M;
 }
 
 type ModelVariableArguments<C extends ModelConstructor<any, AbstractModel<any>>> =
@@ -36,22 +37,24 @@ type ModelVariableArguments<C extends ModelConstructor<any, AbstractModel<any>>>
 export abstract class AbstractModel<T> {
   static createEmptyValue(): unknown {
     return undefined;
-  };
+  }
 
   readonly [parentSymbol]: ModelParent<T>;
   readonly [validatorsSymbol]: ReadonlyArray<Validator<T>>;
+  readonly [optionalSymbol]: boolean;
 
   [binderNodeSymbol]?: BinderNode<T, this>;
-
-  private [keySymbol]: keyof any;
+  [keySymbol]: keyof any;
 
   constructor(
     parent: ModelParent<T>,
     key: keyof any,
+    optional: boolean,
     ...validators: ReadonlyArray<Validator<T>>
   ) {
     this[parentSymbol] = parent;
     this[keySymbol] = key;
+    this[optionalSymbol] = optional;
     this[validatorsSymbol] = validators;
   }
 
@@ -59,7 +62,7 @@ export abstract class AbstractModel<T> {
     return String(this.valueOf());
   }
   valueOf(): T {
-    return getValue(this);
+    return getBinderNode(this).value;
   }
 }
 
@@ -83,19 +86,26 @@ export class StringModel extends PrimitiveModel<string> implements HasFromString
 
 export class ObjectModel<T> extends AbstractModel<T> {
   static createEmptyValue() {
-    const modelInstance = new this({value: undefined as any}, 'value');
+    const modelInstance = new this({value: undefined}, 'value', false);
     let obj = {};
     // Iterate the model class hierarchy up to the ObjectModel, and extract
     // the property getter names from every prototypes
-    for (let proto = Object.getPrototypeOf(modelInstance); proto !== ObjectModel.prototype; proto = Object.getPrototypeOf(proto)) {
+    for (
+      let proto = Object.getPrototypeOf(modelInstance);
+      proto !== ObjectModel.prototype;
+      proto = Object.getPrototypeOf(proto)
+    ) {
       obj = Object.getOwnPropertyNames(proto)
         .filter(propertyName => propertyName !== 'constructor')
         // Initialise the properties in the value object with empty value
         .reduce((o, propertyName) => {
-          (o as any)[propertyName] = (
-            (modelInstance as any)[propertyName]
-              .constructor as ModelConstructor<any, AbstractModel<any>>
-          ).createEmptyValue();
+          const propertyModel = (modelInstance as any)[propertyName] as AbstractModel<any>;
+          // Skip initialising optional properties
+          if (!propertyModel[optionalSymbol]) {
+            (o as any)[propertyName] = (
+              propertyModel.constructor as ModelConstructor<any, AbstractModel<any>>
+            ).createEmptyValue();
+          }
           return o;
         }, obj)
     }
@@ -106,15 +116,16 @@ export class ObjectModel<T> extends AbstractModel<T> {
 
   protected [getPropertyModel]<
     N extends keyof T,
-    C extends new(parent: ModelParent<T[N]>, key: keyof any, ...args: any[]) => any
+    C extends new(parent: ModelParent<T[N]>, key: keyof any, optional: boolean, ...args: any[]) => any
   >(
     name: N,
     ValueModel: C,
-    valueModelArgs: ReadonlyArray<any>
+    valueModelArgs: any[]
   ): InstanceType<C> {
+    const [optional, ...rest] = valueModelArgs;
     return this[properties][name] !== undefined ?
       (this[properties][name] as InstanceType<C>)
-      : (this[properties][name] = new ValueModel(this, name, ...valueModelArgs));
+      : (this[properties][name] = new ValueModel(this, name, optional, ...rest));
   }
 }
 
@@ -130,11 +141,12 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
   constructor(
     parent: ModelParent<ReadonlyArray<T>>,
     key: keyof any,
+    optional: boolean,
     ItemModel: ModelConstructor<T, M>,
     itemModelArgs: ModelVariableArguments<typeof ItemModel>,
     ...validators: ReadonlyArray<Validator<ReadonlyArray<T>>>
   ) {
-    super(parent, key, ...validators);
+    super(parent, key, optional, ...validators);
     this[ItemModelSymbol] = ItemModel;
     this.itemModelArgs = itemModelArgs;
   }
@@ -143,7 +155,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
    * Iterates the current array value and yields a binder node for every item.
    */
   *[Symbol.iterator](): IterableIterator<BinderNode<T, M>> {
-    const array = getValue(this);
+    const array = getBinderNode(this).value;
     const ItemModel = this[ItemModelSymbol];
     if (array.length !== this.itemModels.length) {
       this.itemModels.length = array.length;
@@ -151,7 +163,8 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     for (const i of array.keys()) {
       let itemModel = this.itemModels[i];
       if (!itemModel) {
-        itemModel = new ItemModel(this, i, ...this.itemModelArgs);
+        const [optional, ...rest] = this.itemModelArgs;
+        itemModel = new ItemModel(this, i, optional, ...rest);
         this.itemModels[i] = itemModel;
       }
       yield getBinderNode(itemModel);
@@ -163,89 +176,4 @@ export function getBinderNode<M extends AbstractModel<any>, T = ModelValue<M>>(m
   return model[binderNodeSymbol] || (
     model[binderNodeSymbol] = new BinderNode(model)
   );
-}
-
-export function getName(model: AbstractModel<any>) {
-  if ('value' in model[parentSymbol]) {
-    return '';
-  }
-
-  let name = String(model[keySymbol]);
-  model = model[parentSymbol] as AbstractModel<any>;
-
-  while (!('value' in model[parentSymbol])) {
-    name = `${String(model[keySymbol])}.${name}`;
-    model = model[parentSymbol] as AbstractModel<any>;
-  }
-
-  return name;
-}
-
-export function getValue<T>(model: AbstractModel<T>): T {
-  const parent = model[parentSymbol];
-  return ('value' in parent)
-    ? parent.value
-    : getValue(parent)[model[keySymbol]];
-}
-
-export function setValue<T>(model: AbstractModel<T>, value: T) {
-  const parent = model[parentSymbol];
-  if (value === getValue(model)) {
-    return;
-  }
-
-  if ('value' in parent) {
-    parent.value = value;
-  } else if (parent instanceof ArrayModel) {
-    const array = getValue(parent).slice();
-    array[model[keySymbol] as number] = value;
-    setValue(parent, array);
-  } else {
-    setValue(parent, {
-      ...getValue(parent),
-      [model[keySymbol]]: value
-    });
-  }
-}
-
-/**
- * Append an item to the array model’s value.
- *
- * @param model the array model
- * @param itemValue optional new item value, empty item is
- * appended if omitted
- */
-export function appendItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, itemValue?: T) {
-  if (!itemValue) {
-    itemValue = model[ItemModelSymbol].createEmptyValue();
-  }
-  setValue(model, [...getValue(model), itemValue]);
-}
-
-/**
- * Prepend an item to the array model’s value.
- *
- * @param model the array model
- * @param itemValue optional new item value, empty item is
- * prepended if omitted
- */
-export function prependItem<T, M extends AbstractModel<T>>(model: ArrayModel<T, M>, itemValue?: T) {
-  if (!itemValue) {
-    itemValue = model[ItemModelSymbol].createEmptyValue();
-  }
-  setValue(model, [itemValue, ...getValue(model)]);
-}
-
-/**
- * Remove the item from its parent array.
- *
- * @param model the array item model
- */
-export function removeItem<M extends AbstractModel<any>>(model: M) {
-  if (!(model[parentSymbol] instanceof ArrayModel)) {
-    throw new TypeError('Model is not an array item');
-  }
-  const arrayModel = model[parentSymbol] as ArrayModel<any, M>;
-  const itemIndex = model[keySymbol] as number;
-  setValue(arrayModel, getValue(arrayModel).filter((_, i) => i !== itemIndex));
 }

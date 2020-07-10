@@ -4,8 +4,6 @@ import { Binder } from "./Binder";
 import {
   AbstractModel,
   getBinderNode,
-  getName,
-  getValue,
 } from "./Models";
 import { Required } from "./Validators";
 
@@ -46,7 +44,7 @@ export class ServerValidator implements Validator<any> {
 }
 
 export async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>): Promise<ReadonlyArray<ValueError<T>>> {
-  const value = getValue(model);
+  const value = getBinderNode(model).value;
   // if model is not required and value empty, do not run any validator
   if (!getBinderNode(model).required && !new Required().validate(value)) {
     return [];
@@ -54,7 +52,7 @@ export async function runValidator<T>(model: AbstractModel<T>, validator: Valida
   return (async () => validator.validate(value, getBinderNode(model).binder))()
     .then(result => {
       if (result === false) {
-        return [{ property: getName(model), value, validator, message: validator.message }];
+        return [{ property: getBinderNode(model).name, value, validator, message: validator.message }];
       } else if (result === true || Array.isArray(result) && result.length === 0) {
         return [];
       } else if (Array.isArray(result)) {

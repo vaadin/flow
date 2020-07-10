@@ -103,6 +103,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             .compile("Array<(.*)>");
     private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern.compile(
             "\\{ \\[key: string\\]: (.*); \\}");
+    private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN =
+            Pattern.compile("^(string|number|boolean)");
     private static final String OPERATION = "operation";
     private static final String IMPORT = "import";
 
@@ -546,8 +548,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private String getModelVariableType(String variableName) {
-        if (variableName.matches("string|number|boolean")) {
-            return variableName;
+        Matcher matcher = PRIMITIVE_TYPE_NAME_PATTERN.matcher(variableName);
+        if (matcher.find()) {
+            return matcher.group(1);
         }
         return MODEL + "Type<" + getModelFullType(variableName) + ">";
     }
@@ -557,8 +560,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(fixNameForModel(name));
         stringBuilder.append(", [");
-        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
         List<String> arguments = new ArrayList<>();
+        if (name.endsWith(OPTIONAL_SUFFIX)) {
+            arguments.add("true");
+            name = removeOptionalSuffix(name);
+        } else {
+            arguments.add("false");
+        }
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
         if (matcher.find()) {
             arguments.add(getModelVariableArguments(matcher.group(1),
                     Collections.emptyList()));
@@ -572,12 +581,20 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return stringBuilder.toString();
     }
 
+    private String removeOptionalSuffix(String name) {
+        if (name.endsWith(OPTIONAL_SUFFIX)) {
+            return name.substring(0, name.length() - OPTIONAL_SUFFIX.length());
+        }
+        return name;
+    }
+
     private String fixNameForModel(String name) {
+        name = removeOptionalSuffix(name);
         if (ARRAY_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = "Array";
         } else if ("any".equals(name) || MAPPED_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = "Object";
-        } else if (name.matches("string|number|boolean")) {
+        } else if (PRIMITIVE_TYPE_NAME_PATTERN.matcher(name).find()) {
             name = GeneratorUtils.capitalize(name);
         }
         return name + MODEL;

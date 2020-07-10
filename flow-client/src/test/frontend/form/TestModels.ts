@@ -20,7 +20,7 @@ export interface IdEntity {
 export class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
   static createEmptyValue: () => IdEntity;
   get idString(): StringModel {
-    return this[getPropertyModel]('idString', StringModel, []);
+    return this[getPropertyModel]('idString', StringModel, [false]);
   }
 }
 
@@ -33,15 +33,15 @@ export class ProductModel<T extends Product = Product> extends IdEntityModel<T> 
   static createEmptyValue: () => Product;
 
   get description() {
-    return this[getPropertyModel]('description', StringModel, [new Required()]);
+    return this[getPropertyModel]('description', StringModel, [false, new Required()]);
   }
 
   get price() {
-    return this[getPropertyModel]('price', NumberModel, [new Positive()]);
+    return this[getPropertyModel]('price', NumberModel, [false, new Positive()]);
   }
 
   get isInStock() {
-    return this[getPropertyModel]('isInStock', BooleanModel, []);
+    return this[getPropertyModel]('isInStock', BooleanModel, [false]);
   }
 }
 
@@ -53,11 +53,11 @@ export class CustomerModel<T extends Customer = Customer> extends IdEntityModel<
   static createEmptyValue: () => Customer;
 
   get fullName() {
-    return this[getPropertyModel]('fullName', StringModel, [new Size({min: 4}), new Required()]) as StringModel;
+    return this[getPropertyModel]('fullName', StringModel, [false, new Size({min: 4}), new Required()]) as StringModel;
   }
 
   get nickName() {
-    return this[getPropertyModel]('nickName', StringModel, [new Pattern("....*")]) as StringModel;
+    return this[getPropertyModel]('nickName', StringModel, [false, new Pattern("....*")]) as StringModel;
   }
 }
 
@@ -71,19 +71,19 @@ export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   static createEmptyValue: () => Order;
 
   get customer(): CustomerModel {
-    return this[getPropertyModel]('customer', CustomerModel, [new Required()]);
+    return this[getPropertyModel]('customer', CustomerModel, [false, new Required()]);
   }
 
   get notes(): StringModel {
-    return this[getPropertyModel]('notes', StringModel, [new Required()]);
+    return this[getPropertyModel]('notes', StringModel, [false, new Required()]);
   }
 
   get priority(): NumberModel {
-    return this[getPropertyModel]('priority', NumberModel, []);
+    return this[getPropertyModel]('priority', NumberModel, [false]);
   }
 
   get products(): ArrayModel<Product, ProductModel> {
-    return this[getPropertyModel]('products', ArrayModel as ModelConstructor<ReadonlyArray<Product>, ArrayModel<Product, ProductModel>>, [ProductModel, []]);
+    return this[getPropertyModel]('products', ArrayModel as ModelConstructor<ReadonlyArray<Product>, ArrayModel<Product, ProductModel>>, [false, ProductModel, [false]]);
   }
 }
 
@@ -100,30 +100,30 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
   static createEmptyValue: () => TestEntity;
 
   get fieldString() {
-    return this[getPropertyModel]('fieldString', StringModel, []) as StringModel;
+    return this[getPropertyModel]('fieldString', StringModel, [false]) as StringModel;
   }
 
   get fieldNumber() {
-    return this[getPropertyModel]('fieldNumber', NumberModel, []) as NumberModel;
+    return this[getPropertyModel]('fieldNumber', NumberModel, [false]) as NumberModel;
   }
 
   get fieldBoolean() {
-    return this[getPropertyModel]('fieldBoolean', BooleanModel, []) as BooleanModel;
+    return this[getPropertyModel]('fieldBoolean', BooleanModel, [false]) as BooleanModel;
   }
 
   get fieldObject() {
-    return this[getPropertyModel]('fieldObject', ObjectModel, []) as ObjectModel<object>;
+    return this[getPropertyModel]('fieldObject', ObjectModel, [false]) as ObjectModel<object>;
   }
 
   get fieldArrayString() {
-    return this[getPropertyModel]('fieldArrayString', ArrayModel, [StringModel, []]) as ArrayModel<string, StringModel>;
+    return this[getPropertyModel]('fieldArrayString', ArrayModel, [false, StringModel, [false]]) as ArrayModel<string, StringModel>;
   }
 
   get fieldArrayModel() {
-    return this[getPropertyModel]('fieldArrayModel', ArrayModel, [IdEntityModel, []]) as ArrayModel<IdEntity, IdEntityModel>;
+    return this[getPropertyModel]('fieldArrayModel', ArrayModel, [false, IdEntityModel, [false]]) as ArrayModel<IdEntity, IdEntityModel>;
   }
 
   get fieldMatrixNumber() {
-    return this[getPropertyModel]('fieldMatrixNumber', ArrayModel, [ArrayModel, [NumberModel, [new Positive()]]]) as ArrayModel<ReadonlyArray<number>, ArrayModel<number, NumberModel>>;
+    return this[getPropertyModel]('fieldMatrixNumber', ArrayModel, [false, ArrayModel, [false, NumberModel, [false, new Positive()]]]) as ArrayModel<ReadonlyArray<number>, ArrayModel<number, NumberModel>>;
   }
 }

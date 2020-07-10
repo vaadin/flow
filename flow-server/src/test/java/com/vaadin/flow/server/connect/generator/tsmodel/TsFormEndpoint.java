@@ -43,6 +43,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.vaadin.flow.server.connect.Endpoint;
 
@@ -104,5 +105,9 @@ public class TsFormEndpoint {
         MyEntity[][] entityMatrix;
         Map<String, String> stringMap;
         Map<String, MyBaz> entityMap;
+        Optional<String> optionalString;
+        Optional<MyEntity> optionalEntity;
+        Optional<List<Optional<String>>> optionalList;
+        Optional<Optional<String>[][]> optionalMatrix;
     }
 }

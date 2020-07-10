@@ -5,7 +5,6 @@ const {expect} = intern.getPlugin("chai");
 
 // API to test
 import {
-  appendItem,
   ArrayModel,
   Binder,
   keySymbol,
@@ -14,8 +13,6 @@ import {
   NotNull,
   NumberModel,
   Positive,
-  prependItem,
-  removeItem,
   Size
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
@@ -94,59 +91,6 @@ suite("form/Model", () => {
       });
     });
 
-    test('should support prependItem', async () => {
-      prependItem(binder.model.fieldArrayString);
-      prependItem(binder.model.fieldArrayString, 'new');
-
-      expect(binder.value.fieldArrayString)
-        .to.deep.equal(['new', '', 'foo', 'bar']);
-
-      prependItem(binder.model.fieldArrayModel);
-      prependItem(binder.model.fieldArrayModel, {idString: 'new'});
-
-      expect(binder.value.fieldArrayModel).to.deep.equal([
-        {idString: 'new'},
-        {idString: ''},
-        {idString: 'id0'},
-        {idString: 'id1'}
-      ]);
-    });
-
-    test('should support appendItem', async () => {
-      appendItem(binder.model.fieldArrayString);
-      appendItem(binder.model.fieldArrayString, 'new');
-
-      expect(binder.value.fieldArrayString)
-        .to.deep.equal(['foo', 'bar', '', 'new']);
-
-      appendItem(binder.model.fieldArrayModel);
-      appendItem(binder.model.fieldArrayModel, {idString: 'new'});
-
-      expect(binder.value.fieldArrayModel).to.deep.equal([
-        {idString: 'id0'},
-        {idString: 'id1'},
-        {idString: ''},
-        {idString: 'new'}
-      ]);
-    });
-
-    test('should support removeItem', async () => {
-      appendItem(binder.model.fieldArrayString);
-      const stringModels = [...binder.model.fieldArrayString];
-      removeItem(stringModels[1].model);
-
-      expect(binder.value.fieldArrayString).to.deep.equal(['foo', '']);
-
-      appendItem(binder.model.fieldArrayModel);
-      const entityModels = [...binder.model.fieldArrayModel];
-      removeItem(entityModels[1].model);
-
-      expect(binder.value.fieldArrayModel).to.deep.equal([
-        {idString: 'id0'},
-        {idString: ''}
-      ]);
-    });
-
     test('should support prependItem on binder node', async () => {
       binder.for(binder.model.fieldArrayString).prependItem();
       binder.for(binder.model.fieldArrayString).prependItem('new');
@@ -183,17 +127,17 @@ suite("form/Model", () => {
       ]);
     });
 
-    test('should support removeItem on binder node', async () => {
+    test('should support removeSelf on binder node', async () => {
       binder.for(binder.model.fieldArrayString).appendItem();
       const stringModels = [...binder.model.fieldArrayString];
-      binder.for(stringModels[1].model).removeItem();
+      binder.for(stringModels[1].model).removeSelf();
 
       expect(binder.for(binder.model.fieldArrayString).value)
         .to.deep.equal(['foo', '']);
 
       binder.for(binder.model.fieldArrayModel).appendItem();
       const entityModels = [...binder.model.fieldArrayModel];
-      binder.for(entityModels[1].model).removeItem();
+      binder.for(entityModels[1].model).removeSelf();
 
       expect(binder.for(binder.model.fieldArrayModel).value).to.deep.equal([
         {idString: 'id0'},
@@ -229,28 +173,16 @@ suite("form/Model", () => {
       });
     });
 
-    test('should throw for removeItem on non-array item binder node', async () => {
+    test('should throw for removeSelf on non-array item binder node', async () => {
       expect(() => {
-        binder.removeItem();
+        binder.removeSelf();
       }).to.throw('array');
 
       Object.values(binder.model).forEach(model => {
         const binderNode = binder.for(model);
         expect(() => {
-          binderNode.removeItem();
+          binderNode.removeSelf();
         }).to.throw('array');
-      });
-    });
-
-    test('should throw for removeItem on non-array item model', async () => {
-      expect(() => {
-        removeItem(binder.model)
-      }).to.throw('');
-
-      Object.values(binder.model).forEach(model => {
-        expect(() => {
-          removeItem(model)
-        }).to.throw('');
       });
     });
 
@@ -298,7 +230,7 @@ suite("form/Model", () => {
       binder.for(nodes_1[0].model.idString).value = 'foo';
       expect(binder.model.fieldArrayModel.valueOf()[0].idString).to.be.equal('foo');
 
-      prependItem(binder.model.fieldArrayModel);
+      binder.for(binder.model.fieldArrayModel).prependItem();
       expect(binder.model.fieldArrayModel.valueOf()[1].idString).to.be.equal('foo');
 
       const nodes_2 = [...binder.model.fieldArrayModel].slice();

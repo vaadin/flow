@@ -16,20 +16,15 @@
 import {Binder} from "./Binder";
 import {
   AbstractModel,
-  appendItem,
   ArrayModel,
   binderNodeSymbol,
   getBinderNode,
-  getName,
-  getValue,
   ItemModelSymbol,
   keySymbol,
+  ModelConstructor,
   ModelValue,
   ObjectModel,
   parentSymbol,
-  prependItem,
-  removeItem,
-  setValue,
   validatorsSymbol
 } from "./Models";
 import {Validator, ValueError} from "./Validation";
@@ -37,20 +32,20 @@ import {Validator, ValueError} from "./Validation";
 const errorsSymbol = Symbol('ownErrorsSymbol');
 const visitedSymbol = Symbol('visited');
 
-function getErrorPropertyName(valueError: ValueError<any>) {
+function getErrorPropertyName(valueError: ValueError<any>): string {
   return typeof valueError.property === 'string'
     ? valueError.property
-    : getName(valueError.property)
+    : getBinderNode(valueError.property).name;
 }
 
 export class BinderNode<T, M extends AbstractModel<T>> {
   private [visitedSymbol]: boolean = false;
   private [validatorsSymbol]: ReadonlyArray<Validator<T>>;
   private [errorsSymbol]?: ReadonlyArray<ValueError<T>>;
-  private defaultArrayItemValue?: T;
 
   constructor(readonly model: M) {
-    this.model[binderNodeSymbol] = this;
+    model[binderNodeSymbol] = this;
+    this.initializeValue();
     this[validatorsSymbol] = model[validatorsSymbol];
   }
 
@@ -66,24 +61,24 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get name(): string {
-    return getName(this.model);
+    let model = this.model as AbstractModel<any>;
+    const strings = [];
+    while (model[parentSymbol] instanceof AbstractModel) {
+      strings.unshift(String(model[keySymbol]));
+      model = model[parentSymbol] as AbstractModel<any>;
+    }
+    return strings.join('.');
   }
 
   get value(): T {
-    return getValue(this.model);
+    return this.parent!.value[this.model[keySymbol]];
   }
 
   set value(value: T) {
-    setValue(this.model, value);
+    this.setValueProperty('value', value);
   }
 
   get defaultValue(): T {
-    if (this.parent && this.parent.model instanceof ArrayModel) {
-      return this.parent.defaultArrayItemValue || (
-        this.parent.defaultArrayItemValue = this.parent.model[ItemModelSymbol].createEmptyValue()
-      );
-    }
-
     return this.parent!.defaultValue[this.model[keySymbol]];
   }
 
@@ -171,7 +166,12 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       throw new Error('Model is not an array');
     }
 
-    appendItem(this.model as ArrayModel<IT, AbstractModel<IT>>, itemValue);
+    if (!itemValue) {
+      itemValue = this.model[ItemModelSymbol].createEmptyValue();
+    }
+    this.value = (
+      [...((this.value as unknown) as ReadonlyArray<IT>), itemValue] as unknown
+    ) as T;
   }
 
   /**
@@ -187,16 +187,25 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       throw new Error('Model is not an array');
     }
 
-    prependItem(this.model as ArrayModel<IT, AbstractModel<IT>>, itemValue);
+    if (!itemValue) {
+      itemValue = this.model[ItemModelSymbol].createEmptyValue();
+    }
+    this.value = (
+      [itemValue, ...((this.value as unknown) as ReadonlyArray<IT>)] as unknown
+    ) as T;
   }
 
   /**
-   * Remove the item from the parent array value.
+   * Remove itself from the parent array value.
    *
    * Requires the context model to be an array item reference.
    */
-  removeItem() {
-    removeItem(this.model);
+  removeSelf() {
+    if (!(this.model[parentSymbol] instanceof ArrayModel)) {
+      throw new TypeError('Model is not an array item');
+    }
+    const itemIndex = this.model[keySymbol] as number;
+    this.parent!.value = ((this.parent!.value as ReadonlyArray<T>).filter((_, i) => i !== itemIndex));
   }
 
   protected clearValidation(): boolean {
@@ -277,6 +286,45 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     this[errorsSymbol] = relatedErrors;
     for (const childBinderNode of this.getChildBinderNodes()) {
       childBinderNode.setErrorsWithDescendants(relatedErrors);
+    }
+  }
+
+  private initializeValue() {
+    if (this.parent && this.parent.value === undefined) {
+      this.parent.initializeValue();
+    }
+
+    let value = this.parent
+      ? this.parent.value[this.model[keySymbol]]
+      : undefined;
+
+    if (value === undefined) {
+      value = (
+        this.model.constructor as ModelConstructor<T, M>
+      ).createEmptyValue();
+      this.setValueProperty('value', value);
+    }
+    if (this.parent && this.defaultValue === undefined) {
+      this.setValueProperty('defaultValue', value);
+    }
+  }
+
+  private setValueProperty(valueProperty: 'value' | 'defaultValue', value: T) {
+    const modelParent = this.model[parentSymbol];
+    if (modelParent instanceof ArrayModel) {
+      // Value contained in array - replace array in parent
+      const array = (this.parent![valueProperty] as ReadonlyArray<T>).slice();
+      array[this.model[keySymbol] as number] = value;
+      this.parent!.setValueProperty(valueProperty, array);
+    } else if (modelParent instanceof ObjectModel) {
+      // Value contained in object - replace object in parent
+      this.parent!.setValueProperty(valueProperty, {
+        ...this.parent!.value,
+        [this.model[keySymbol]]: value
+      });
+    } else {
+      // Value contained elsewhere, probably binder - use value property setter
+      (modelParent as any)[valueProperty] = value;
     }
   }
 }
