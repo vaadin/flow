@@ -6,7 +6,7 @@ import {{{getClassNameFromImports classname ../../imports}}} from './{{{getClass
 {{/model}}{{/models}}
 
 // @ts-ignore
-import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,getKeyModelSymbol} from '@vaadin/form';
+import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,getPropertyModel} from '@vaadin/form';
 
 // @ts-ignore
 import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
@@ -24,7 +24,7 @@ export default class {{{getClassNameFromImports classname ../../imports}}}Model<
 {{#vars}}
 
   get {{name}}(): {{{getModelFullType this ../../imports}}} {
-    return this[getKeyModelSymbol](this, '{{name}}', {{{getModelArguments this ../../imports}}});
+    return this[getPropertyModel](this, '{{name}}', {{{getModelArguments this ../../imports}}});
   }
 {{/vars}}
 }

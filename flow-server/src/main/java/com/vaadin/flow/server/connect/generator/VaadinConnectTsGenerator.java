@@ -524,7 +524,6 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     private String getModelArguments(CodegenProperty property,
             List<Map<String, String>> imports) {
-        String name = property.name;
         String dataType = property.datatype;
         String simpleName = getSimpleNameFromImports(dataType, imports);
         return getModelVariableArguments(simpleName,

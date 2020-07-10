@@ -3,7 +3,7 @@ import MyEntityIdModel from './MyEntityIdModel';
 import MyEntity from './MyEntity';
 
 // @ts-ignore
-import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,getKeyModelSymbol} from '@vaadin/form';
+import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,getPropertyModel} from '@vaadin/form';
 
 // @ts-ignore
 import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
@@ -16,138 +16,138 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
   static createEmptyValue: () => MyEntity;
 
   get assertFalse(): StringModel {
-    return this[getKeyModelSymbol](this, 'assertFalse', StringModel, [new AssertFalse()]);
+    return this[getPropertyModel](this, 'assertFalse', StringModel, [new AssertFalse()]);
   }
 
   get assertTrue(): StringModel {
-    return this[getKeyModelSymbol](this, 'assertTrue', StringModel, [new AssertTrue()]);
+    return this[getPropertyModel](this, 'assertTrue', StringModel, [new AssertTrue()]);
   }
 
   get bar(): MyBazModel {
-    return this[getKeyModelSymbol](this, 'bar', MyBazModel, []);
+    return this[getPropertyModel](this, 'bar', MyBazModel, []);
   }
 
   get baz(): ArrayModel<ModelType<MyBazModel>, MyBazModel> {
-    return this[getKeyModelSymbol](this, 'baz', ArrayModel, [MyBazModel, []]);
+    return this[getPropertyModel](this, 'baz', ArrayModel, [MyBazModel, []]);
   }
 
   get bool(): BooleanModel {
-    return this[getKeyModelSymbol](this, 'bool', BooleanModel, []);
+    return this[getPropertyModel](this, 'bool', BooleanModel, []);
   }
 
   get children(): ArrayModel<ModelType<MyEntityModel>, MyEntityModel> {
-    return this[getKeyModelSymbol](this, 'children', ArrayModel, [MyEntityModel, []]);
+    return this[getPropertyModel](this, 'children', ArrayModel, [MyEntityModel, []]);
   }
 
   get decimalMax(): NumberModel {
-    return this[getKeyModelSymbol](this, 'decimalMax', NumberModel, [new DecimalMax({value:"0.01", inclusive:false})]);
+    return this[getPropertyModel](this, 'decimalMax', NumberModel, [new DecimalMax({value:"0.01", inclusive:false})]);
   }
 
   get decimalMin(): NumberModel {
-    return this[getKeyModelSymbol](this, 'decimalMin', NumberModel, [new DecimalMin("0.01")]);
+    return this[getPropertyModel](this, 'decimalMin', NumberModel, [new DecimalMin("0.01")]);
   }
 
   get digits(): StringModel {
-    return this[getKeyModelSymbol](this, 'digits', StringModel, [new Digits({integer:5, fraction:2})]);
+    return this[getPropertyModel](this, 'digits', StringModel, [new Digits({integer:5, fraction:2})]);
   }
 
   get email(): StringModel {
-    return this[getKeyModelSymbol](this, 'email', StringModel, [new Email({message:"foo"})]);
+    return this[getPropertyModel](this, 'email', StringModel, [new Email({message:"foo"})]);
   }
 
   get entityMap(): ObjectModel<{ [key: string]: ModelType<MyBazModel>; }> {
-    return this[getKeyModelSymbol](this, 'entityMap', ObjectModel, []);
+    return this[getPropertyModel](this, 'entityMap', ObjectModel, []);
   }
 
   get entityMatrix(): ArrayModel<ModelType<ArrayModel<ModelType<MyEntityModel>, MyEntityModel>>, ArrayModel<ModelType<MyEntityModel>, MyEntityModel>> {
-    return this[getKeyModelSymbol](this, 'entityMatrix', ArrayModel, [ArrayModel, [MyEntityModel, []]]);
+    return this[getPropertyModel](this, 'entityMatrix', ArrayModel, [ArrayModel, [MyEntityModel, []]]);
   }
 
   get foo(): StringModel {
-    return this[getKeyModelSymbol](this, 'foo', StringModel, []);
+    return this[getPropertyModel](this, 'foo', StringModel, []);
   }
 
   get future(): StringModel {
-    return this[getKeyModelSymbol](this, 'future', StringModel, [new Future()]);
+    return this[getPropertyModel](this, 'future', StringModel, [new Future()]);
   }
 
   get futureOrPresent(): ObjectModel {
-    return this[getKeyModelSymbol](this, 'futureOrPresent', ObjectModel, [new FutureOrPresent()]);
+    return this[getPropertyModel](this, 'futureOrPresent', ObjectModel, [new FutureOrPresent()]);
   }
 
   get isNull(): StringModel {
-    return this[getKeyModelSymbol](this, 'isNull', StringModel, [new Null()]);
+    return this[getPropertyModel](this, 'isNull', StringModel, [new Null()]);
   }
 
   get list(): ArrayModel<string, StringModel> {
-    return this[getKeyModelSymbol](this, 'list', ArrayModel, [StringModel, [], new NotEmpty()]);
+    return this[getPropertyModel](this, 'list', ArrayModel, [StringModel, [], new NotEmpty()]);
   }
 
   get max(): NumberModel {
-    return this[getKeyModelSymbol](this, 'max', NumberModel, [new Max(2)]);
+    return this[getPropertyModel](this, 'max', NumberModel, [new Max(2)]);
   }
 
   get min(): NumberModel {
-    return this[getKeyModelSymbol](this, 'min', NumberModel, [new Min({value:1, message:"foo"})]);
+    return this[getPropertyModel](this, 'min', NumberModel, [new Min({value:1, message:"foo"})]);
   }
 
   get negative(): NumberModel {
-    return this[getKeyModelSymbol](this, 'negative', NumberModel, [new Negative()]);
+    return this[getPropertyModel](this, 'negative', NumberModel, [new Negative()]);
   }
 
   get negativeOrCero(): NumberModel {
-    return this[getKeyModelSymbol](this, 'negativeOrCero', NumberModel, [new NegativeOrZero()]);
+    return this[getPropertyModel](this, 'negativeOrCero', NumberModel, [new NegativeOrZero()]);
   }
 
   get notBlank(): StringModel {
-    return this[getKeyModelSymbol](this, 'notBlank', StringModel, [new NotBlank()]);
+    return this[getPropertyModel](this, 'notBlank', StringModel, [new NotBlank()]);
   }
 
   get notEmpty(): StringModel {
-    return this[getKeyModelSymbol](this, 'notEmpty', StringModel, [new NotEmpty(), new NotNull()]);
+    return this[getPropertyModel](this, 'notEmpty', StringModel, [new NotEmpty(), new NotNull()]);
   }
 
   get notNull(): StringModel {
-    return this[getKeyModelSymbol](this, 'notNull', StringModel, [new NotNull()]);
+    return this[getPropertyModel](this, 'notNull', StringModel, [new NotNull()]);
   }
 
   get numberMatrix(): ArrayModel<ModelType<ArrayModel<number, NumberModel>>, ArrayModel<number, NumberModel>> {
-    return this[getKeyModelSymbol](this, 'numberMatrix', ArrayModel, [ArrayModel, [NumberModel, []]]);
+    return this[getPropertyModel](this, 'numberMatrix', ArrayModel, [ArrayModel, [NumberModel, []]]);
   }
 
   get past(): StringModel {
-    return this[getKeyModelSymbol](this, 'past', StringModel, [new Past()]);
+    return this[getPropertyModel](this, 'past', StringModel, [new Past()]);
   }
 
   get pastOrPresent(): ObjectModel {
-    return this[getKeyModelSymbol](this, 'pastOrPresent', ObjectModel, [new PastOrPresent()]);
+    return this[getPropertyModel](this, 'pastOrPresent', ObjectModel, [new PastOrPresent()]);
   }
 
   get pattern(): StringModel {
-    return this[getKeyModelSymbol](this, 'pattern', StringModel, [new Pattern({regexp:"\\d+\\..+"})]);
+    return this[getPropertyModel](this, 'pattern', StringModel, [new Pattern({regexp:"\\d+\\..+"})]);
   }
 
   get positive(): NumberModel {
-    return this[getKeyModelSymbol](this, 'positive', NumberModel, [new Positive()]);
+    return this[getPropertyModel](this, 'positive', NumberModel, [new Positive()]);
   }
 
   get positiveOrCero(): NumberModel {
-    return this[getKeyModelSymbol](this, 'positiveOrCero', NumberModel, [new PositiveOrZero()]);
+    return this[getPropertyModel](this, 'positiveOrCero', NumberModel, [new PositiveOrZero()]);
   }
 
   get size(): StringModel {
-    return this[getKeyModelSymbol](this, 'size', StringModel, [new Size()]);
+    return this[getPropertyModel](this, 'size', StringModel, [new Size()]);
   }
 
   get size1(): StringModel {
-    return this[getKeyModelSymbol](this, 'size1', StringModel, [new Size({min:1})]);
+    return this[getPropertyModel](this, 'size1', StringModel, [new Size({min:1})]);
   }
 
   get stringArray(): ArrayModel<string, StringModel> {
-    return this[getKeyModelSymbol](this, 'stringArray', ArrayModel, [StringModel, []]);
+    return this[getPropertyModel](this, 'stringArray', ArrayModel, [StringModel, []]);
   }
 
   get stringMap(): ObjectModel<{ [key: string]: string; }> {
-    return this[getKeyModelSymbol](this, 'stringMap', ObjectModel, []);
+    return this[getPropertyModel](this, 'stringMap', ObjectModel, []);
   }
 }

@@ -7,11 +7,12 @@ export const ItemModelSymbol = Symbol('ItemModel');
 export const parentSymbol = Symbol('parent');
 
 export const keySymbol = Symbol('key');
-export const keysSymbol = Symbol('keys');
-export const getKeyModelSymbol = Symbol('getKeyModel');
 export const fromStringSymbol = Symbol('fromString');
 export const validatorsSymbol = Symbol('validators');
 export const binderNodeSymbol = Symbol('binderNode');
+
+export const getPropertyModel = Symbol('getPropertyModel');
+const properties = Symbol('properties');
 
 interface HasFromString<T> {
   [fromStringSymbol](value: string): T
@@ -84,9 +85,12 @@ export class ObjectModel<T> extends AbstractModel<T> {
   static createEmptyValue() {
     const modelInstance = new this({value: undefined as any}, 'value');
     let obj = {};
+    // Iterate the model class hierarchy up to the ObjectModel, and extract
+    // the property getter names from every prototypes
     for (let proto = Object.getPrototypeOf(modelInstance); proto !== ObjectModel.prototype; proto = Object.getPrototypeOf(proto)) {
       obj = Object.getOwnPropertyNames(proto)
         .filter(propertyName => propertyName !== 'constructor')
+        // Initialise the properties in the value object with empty value
         .reduce((o, propertyName) => {
           (o as any)[propertyName] = (
             (modelInstance as any)[propertyName]
@@ -98,19 +102,19 @@ export class ObjectModel<T> extends AbstractModel<T> {
     return obj;
   }
 
-  [keysSymbol]: {[key in keyof T]?: AbstractModel<T[key]>} = {};
+  private [properties]: {[name in keyof T]?: AbstractModel<T[name]>} = {};
 
-  protected [getKeyModelSymbol]<
-    K extends keyof T,
-    C extends new(parent: ModelParent<T[K]>, key: keyof any, ...args: any[]) => any
+  protected [getPropertyModel]<
+    N extends keyof T,
+    C extends new(parent: ModelParent<T[N]>, key: keyof any, ...args: any[]) => any
   >(
-    key: K,
+    name: N,
     ValueModel: C,
     valueModelArgs: ReadonlyArray<any>
   ): InstanceType<C> {
-    return this[keysSymbol][key] !== undefined ?
-      (this[keysSymbol][key] as InstanceType<C>)
-      : (this[keysSymbol][key] = new ValueModel(this, key, ...valueModelArgs));
+    return this[properties][name] !== undefined ?
+      (this[properties][name] as InstanceType<C>)
+      : (this[properties][name] = new ValueModel(this, name, ...valueModelArgs));
   }
 }
 
