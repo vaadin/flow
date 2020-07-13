@@ -113,6 +113,30 @@ public class Query<T, F> implements Serializable {
     public int getLimit() {
         return limit;
     }
+    
+	/**
+	 * Returns a zero-based page index to be retrieved.
+	 * <p>
+	 * Vaadin asks data from the backend in paged manner. This shorthand calculates
+	 * the page index for backends using paged data access, such as Spring Data
+	 * repositores.
+	 * 
+	 * @return the zero-based page index
+	 */
+    public int getPage() {
+    	return offset/limit;
+    }
+    
+    /**
+     * Returns the page size that should be returned. The amount of items can be smaller if there is no more items available in the backend.
+     * <p>
+     * Vaadin asks data from the backend in paged manner. This is an alias for {@link #getLimit()}.
+     * 
+     * @return the page size used for data access
+     */
+    public int getPageSize() {
+    	return limit;
+    }
 
     /**
      * Gets the sorting for items to fetch. This list of sort orders is used for
