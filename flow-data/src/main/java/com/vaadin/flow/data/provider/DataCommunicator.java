@@ -445,7 +445,7 @@ public class DataCommunicator<T> implements Serializable {
      * <em>NOTE:</em> setting item count estimate that is less than two pages
      * (set with {@link #setPageSize(int)}) can cause extra requests initially
      * or after a reset.
-     * 
+     *
      * @param itemCountEstimate
      *            the item count estimate to be used
      */
@@ -482,7 +482,7 @@ public class DataCommunicator<T> implements Serializable {
      * cleared. The step is used the next time that the count is adjusted.
      * <em>NOTE:</em> the increase should be greater than the
      * {@link #setPageSize(int)} or it may cause bad performance.
-     * 
+     *
      * @param itemCountEstimateIncrease
      *            the item count estimate step to use
      */
@@ -519,7 +519,7 @@ public class DataCommunicator<T> implements Serializable {
      * {@code false} will use whatever has been set with
      * {@link #setItemCountEstimate(int)} and increase the count when needed
      * with {@link #setItemCountEstimateIncrease(int)}.
-     * 
+     *
      * @param definedSize
      *            {@code true} for defined size, {@code false} for undefined
      *            size
@@ -660,19 +660,44 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Fetches a list of items from the DataProvider.
+     * <p>
+     * <em>NOTE:</em> the {@code limit} parameter shows how many items the
+     * client wants to fetch, but the actual number of results may be greater,
+     * and vary from {@code 0 to pages * pageSize}.
      *
      * @param offset
      *            the starting index of the range
      * @param limit
-     *            the max number of results
+     *            the desired number of results
      * @return the list of items in given range
      *
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
-        QueryTrace query = new QueryTrace(offset, limit, backEndSorting,
+        Stream<T> stream = Stream.empty();
+        QueryTrace query = new QueryTrace(offset, pageSize, backEndSorting,
                 inMemorySorting, filter);
-        Stream<T> stream = getDataProvider().fetch(query);
+        /*
+         * Items limit value may not be necessarily multiply of page size,
+         * and thus the pages count is rounded to closest smallest integer.
+         */
+        final int pages = (int) Math.ceil((double) limit / pageSize);
+
+        if (limit > pageSize) {
+            /*
+             * Requested range is split to one or more pages by default,
+             * and queried from backend page by page
+             */
+            for (int page = 0; page < pages; page++) {
+                final int newOffset = offset + page * pageSize;
+                query = new QueryTrace(newOffset, pageSize, backEndSorting,
+                        inMemorySorting, filter);
+                stream = Stream.concat(stream, getDataProvider().fetch(query));
+            }
+        } else {
+            stream = getDataProvider().fetch(query);
+        }
+
         if (stream.isParallel()) {
             LoggerFactory.getLogger(DataCommunicator.class)
                     .debug("Data provider {} has returned "
@@ -682,20 +707,21 @@ public class DataCommunicator<T> implements Serializable {
             assert !stream.isParallel();
         }
 
-        SizeVerifier verifier = new SizeVerifier<>(limit);
+        // the number of results can be in range from 0 to pages * pageSize
+        SizeVerifier verifier = new SizeVerifier<>(pages * pageSize);
         stream = stream.peek(verifier);
 
         /*
          * These restrictions are used to help users to see that they have done
          * a mistake instead of just letting things work in an unintended way.
          */
-        if (!query.isLimitCalled()) {
+        if (!query.isLimitCalled() && !query.isPageSizeCalled()) {
             throw new IllegalStateException(
-                    getInvalidContractMessage("getLimit"));
+                    getInvalidContractMessage("getLimit or getPageSize"));
         }
-        if (!query.isOffsetCalled()) {
+        if (!query.isOffsetCalled() && !query.isPageCalled()) {
             throw new IllegalStateException(
-                    getInvalidContractMessage("getOffset"));
+                    getInvalidContractMessage("getOffset or getPage"));
         }
         return stream;
     }

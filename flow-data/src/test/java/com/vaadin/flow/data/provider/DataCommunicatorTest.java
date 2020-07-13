@@ -18,10 +18,10 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -239,7 +240,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void dataProviderBreaksContract_limitIsNotCalled_throw() {
+    public void dataProviderBreaksContract_limitOrPageSizeAreNotCalled_throw() {
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
@@ -254,12 +255,13 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit"));
+                "The data provider hasn't ever called getLimit or " +
+                        "getPageSize"));
         dataCommunicator.fetchFromProvider(0, 1);
     }
 
     @Test
-    public void dataProviderBreaksContract_offsetIsNotCalled_throw() {
+    public void dataProviderBreaksContract_offsetOrPageAreNotCalled_throw() {
         List<Item> items = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
@@ -268,21 +270,36 @@ public class DataCommunicatorTest {
                 .fromCallbacks(query -> {
                     query.getLimit();
                     return items.stream();
-                }, query -> {
-                    return items.size();
-                });
+                }, query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getOffset"));
+                "The data provider hasn't ever called getOffset or getPage"));
         dataCommunicator.fetchFromProvider(1, 1);
+    }
+
+    @Test
+    public void dataProviderContract_pageAndPageSizeAreCalled_itemsFetched() {
+        List<Item> items = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            items.add(new Item(i));
+        }
+        DataProvider<Item, Void> dataProvider = DataProvider
+                .fromCallbacks(query -> {
+                    query.getPage();
+                    query.getPageSize();
+                    return items.stream();
+                }, query -> items.size());
+        dataCommunicator.setDataProvider(dataProvider, null);
+        Assert.assertEquals(2,
+                dataCommunicator.fetchFromProvider(1, 1).count());
     }
 
     @Test
     public void dataProviderBreaksContract_tooManyItems_throw() {
         List<Item> items = new ArrayList<>();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 10; i++) {
             items.add(new Item(i));
         }
         DataProvider<Item, Void> dataProvider = DataProvider
@@ -290,16 +307,17 @@ public class DataCommunicatorTest {
                     query.getOffset();
                     query.getLimit();
                     return items.stream();
-                }, query -> {
-                    return items.size();
-                });
+                }, query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(2);
 
-        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 1);
+        // limit is less than two pages (4), but the backed returns more than
+        // 4 items, which is incorrect
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 3);
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "exceeds the limit specified by the query (1)."));
+                "exceeds the limit specified by the query (4)."));
 
         stream.forEach(item -> {
         });
@@ -555,8 +573,9 @@ public class DataCommunicatorTest {
 
         Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
-        // initial call 0-50, 900-1000, 800-900, 700-800, ... 100-200
-        Mockito.verify(dataProvider, Mockito.times(10)).fetch(Mockito.any());
+        // 1. initial call 0-50, 2. then: 900-950, 950-1000, 800-850, 850-900,
+        // ... 100-150, 150-200
+        Mockito.verify(dataProvider, Mockito.times(19)).fetch(Mockito.any());
     }
 
     @Test
@@ -1051,6 +1070,107 @@ public class DataCommunicatorTest {
         Assert.assertEquals("Invalid count provided", 500,
                 event.getItemCount());
         Assert.assertFalse(event.isItemCountEstimated());
+    }
+
+    @Test
+    public void fetchFromProvider_pageSizeLessThanLimit_multiplePagedQueries() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(100);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setPageSize(10);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 30);
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+
+        Mockito.verify(dataProvider, Mockito.times(3)).fetch(
+                queryCaptor.capture());
+
+        List<Item> items = stream.collect(Collectors.toList());
+        Assert.assertEquals(30, items.size());
+
+        Assert.assertEquals(
+                IntStream.range(0, 30).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
+
+        List<Query> allQueries = queryCaptor.getAllValues();
+        Assert.assertEquals(3, allQueries.size());
+
+        Query query = allQueries.get(0);
+        Assert.assertEquals(0, query.getOffset());
+        Assert.assertEquals(10, query.getLimit());
+        Assert.assertEquals(0, query.getPage());
+        Assert.assertEquals(10, query.getPageSize());
+
+        query = allQueries.get(1);
+        Assert.assertEquals(10, query.getOffset());
+        Assert.assertEquals(10, query.getLimit());
+        Assert.assertEquals(1, query.getPage());
+        Assert.assertEquals(10, query.getPageSize());
+
+        query = allQueries.get(2);
+        Assert.assertEquals(20, query.getOffset());
+        Assert.assertEquals(10, query.getLimit());
+        Assert.assertEquals(2, query.getPage());
+        Assert.assertEquals(10, query.getPageSize());
+    }
+
+    @Test
+    public void fetchFromProvider_limitEqualsPageSize_singleQuery() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(100);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 50);
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+
+        Mockito.verify(dataProvider).fetch(queryCaptor.capture());
+
+        List<Item> items = stream.collect(Collectors.toList());
+        Assert.assertEquals(50, items.size());
+
+        Assert.assertEquals(
+                IntStream.range(0, 50).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
+
+        Query query = queryCaptor.getValue();
+        Assert.assertEquals(0, query.getOffset());
+        Assert.assertEquals(50, query.getLimit());
+        Assert.assertEquals(0, query.getPage());
+        Assert.assertEquals(50, query.getPageSize());
+    }
+
+    @Test
+    public void fetchFromProvider_limitLessThanPageSize_singleQuery() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(100);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(10, 40);
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+
+        Mockito.verify(dataProvider).fetch(queryCaptor.capture());
+
+        List<Item> items = stream.collect(Collectors.toList());
+        Assert.assertEquals(50, items.size());
+
+        Assert.assertEquals(
+                IntStream.range(10, 60).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
+
+        Query query = queryCaptor.getValue();
+        Assert.assertEquals(10, query.getOffset());
+        Assert.assertEquals(50, query.getLimit());
+        Assert.assertEquals(0, query.getPage());
+        Assert.assertEquals(50, query.getPageSize());
     }
 
     @Tag("test-component")
