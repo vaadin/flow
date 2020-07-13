@@ -52,7 +52,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   get parent(): BinderNode<any, AbstractModel<any>> | undefined {
     const modelParent = this.model[parentSymbol];
     return modelParent instanceof AbstractModel
-      ? modelParent[binderNodeSymbol]
+      ? getBinderNode(modelParent)
       : undefined;
   }
 
@@ -75,7 +75,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   set value(value: T) {
-    this.setValueProperty('value', value);
+    this.setValueState(value);
   }
 
   get defaultValue(): T {
@@ -290,7 +290,8 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   private initializeValue() {
-    if (this.parent && this.parent.value === undefined) {
+    // First, make sure parents have value initialized
+    if (this.parent && ((this.parent.value === undefined) || (this.parent.defaultValue === undefined))) {
       this.parent.initializeValue();
     }
 
@@ -299,32 +300,35 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       : undefined;
 
     if (value === undefined) {
-      value = (
-        this.model.constructor as ModelConstructor<T, M>
-      ).createEmptyValue();
-      this.setValueProperty('value', value);
-    }
-    if (this.parent && this.defaultValue === undefined) {
-      this.setValueProperty('defaultValue', value);
+      // Initialize value if necessary
+      value = value !== undefined
+        ? value
+        : (this.model.constructor as ModelConstructor<T, M>).createEmptyValue()
+      this.setValueState(value, this.defaultValue === undefined);
     }
   }
 
-  private setValueProperty(valueProperty: 'value' | 'defaultValue', value: T) {
+  private setValueState(value: T, keepPristine: boolean = false) {
     const modelParent = this.model[parentSymbol];
     if (modelParent instanceof ArrayModel) {
       // Value contained in array - replace array in parent
-      const array = (this.parent![valueProperty] as ReadonlyArray<T>).slice();
+      const array = (this.parent!.value as ReadonlyArray<T>).slice();
       array[this.model[keySymbol] as number] = value;
-      this.parent!.setValueProperty(valueProperty, array);
+      this.parent!.setValueState(array, keepPristine);
     } else if (modelParent instanceof ObjectModel) {
       // Value contained in object - replace object in parent
-      this.parent!.setValueProperty(valueProperty, {
+      const object = {
         ...this.parent!.value,
         [this.model[keySymbol]]: value
-      });
+      };
+      this.parent!.setValueState(object, keepPristine);
     } else {
       // Value contained elsewhere, probably binder - use value property setter
-      (modelParent as any)[valueProperty] = value;
+      const binder = modelParent as Binder<T, M>;
+      if (keepPristine && !binder.dirty) {
+        binder.defaultValue = value;
+      }
+      binder.value = value;
     }
   }
 }

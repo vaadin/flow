@@ -116,7 +116,7 @@ export class ObjectModel<T> extends AbstractModel<T> {
 
   protected [getPropertyModel]<
     N extends keyof T,
-    C extends new(parent: ModelParent<T[N]>, key: keyof any, optional: boolean, ...args: any[]) => any
+    C extends new(parent: ModelParent<NonNullable<T[N]>>, key: keyof any, optional: boolean, ...args: any[]) => any
   >(
     name: N,
     ValueModel: C,

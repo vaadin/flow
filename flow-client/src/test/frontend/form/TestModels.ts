@@ -127,3 +127,19 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
     return this[getPropertyModel]('fieldMatrixNumber', ArrayModel, [false, ArrayModel, [false, NumberModel, [false, new Positive()]]]) as ArrayModel<ReadonlyArray<number>, ArrayModel<number, NumberModel>>;
   }
 }
+
+export interface Employee extends IdEntity {
+  fullName: string;
+  supervisor?: Employee;
+}
+export class EmployeeModel<T extends Employee = Employee> extends IdEntityModel<T> {
+  static createEmptyValue: () => Employee;
+
+  get fullName() {
+    return this[getPropertyModel]('fullName', StringModel, [false]) as StringModel;
+  }
+
+  get supervisor(): EmployeeModel {
+    return this[getPropertyModel]('supervisor', EmployeeModel, [true]);
+  }
+}
