@@ -62,7 +62,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public Registration addItemCountChangeListener(
             ComponentEventListener<ItemCountChangeEvent<?>> listener) {
-        Objects.requireNonNull(listener, "SizeChangeListener cannot be null");
+        Objects.requireNonNull(listener, "ItemCountChangeListener cannot be null");
         return ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 (ComponentEventListener) listener);
     }

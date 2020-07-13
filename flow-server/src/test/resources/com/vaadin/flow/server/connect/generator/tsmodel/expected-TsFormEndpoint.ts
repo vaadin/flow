@@ -6,7 +6,7 @@ import MyEntity from './MyEntity';
 import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,getPropertyModel} from '@vaadin/form';
 
 // @ts-ignore
-import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
+import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,Future,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
 
 /**
  * This module is generated from com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity.
@@ -71,10 +71,6 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
     return this[getPropertyModel](this, 'future', StringModel, [false, new Future()]);
   }
 
-  get futureOrPresent(): ObjectModel {
-    return this[getPropertyModel](this, 'futureOrPresent', ObjectModel, [false, new FutureOrPresent()]);
-  }
-
   get isNull(): StringModel {
     return this[getPropertyModel](this, 'isNull', StringModel, [false, new Null()]);
   }
@@ -133,10 +129,6 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
 
   get past(): StringModel {
     return this[getPropertyModel](this, 'past', StringModel, [false, new Past()]);
-  }
-
-  get pastOrPresent(): ObjectModel {
-    return this[getPropertyModel](this, 'pastOrPresent', ObjectModel, [false, new PastOrPresent()]);
   }
 
   get pattern(): StringModel {

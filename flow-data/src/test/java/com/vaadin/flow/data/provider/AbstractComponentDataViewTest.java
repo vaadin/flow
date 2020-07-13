@@ -84,7 +84,7 @@ public abstract class AbstractComponentDataViewTest {
                 event -> fired.compareAndSet(0, event.getItemCount()));
 
         ComponentUtil.fireEvent((Component) component,
-                new ItemCountChangeEvent<>((Component) component, 10));
+                new ItemCountChangeEvent<>((Component) component, 10, false));
 
         Assert.assertEquals(10, fired.get());
     }

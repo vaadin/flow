@@ -74,12 +74,19 @@ public interface DataView<T> extends Serializable {
     void refreshItem(T item);
 
     /**
-     * Add an item count change listener that is fired when the item
-     * count changes. This can happen for instance when filtering the data set.
+     * Add an item count change listener that is fired when the item count
+     * changes. This can happen for instance when filtering the items.
      * <p>
-     * Item count change listener is bound to the component and will be
-     * retained even if the data changes by setting of a new items or
+     * Item count change listener is bound to the component and will be retained
+     * even if the data changes by setting of a new items or
      * {@link DataProvider} to component.
+     * <p>
+     * <em>NOTE:</em> when the component supports lazy loading (implements
+     * {@link HasLazyDataView}) and a count callback has not been provided, an
+     * estimate of the item count is used and increased until the actual count
+     * has been reached. When the estimate is used, the event is fired with the
+     * {@link ItemCountChangeEvent#isItemCountEstimated()} returning
+     * {@code true}.
      *
      * @param listener
      *            item count change listener to register

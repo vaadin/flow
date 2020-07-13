@@ -83,7 +83,7 @@ public class AbstractDataViewTest {
                 event -> fired.compareAndSet(0, event.getItemCount()));
 
         ComponentUtil
-                .fireEvent(component, new ItemCountChangeEvent<>(component, 10));
+                .fireEvent(component, new ItemCountChangeEvent<>(component, 10, false));
 
         Assert.assertEquals(10, fired.get());
     }
