@@ -124,7 +124,7 @@ public class Query<T, F> implements Serializable {
 	 * @return the zero-based page index
 	 */
     public int getPage() {
-    	return offset/limit;
+    	return getOffset()/getLimit();
     }
     
     /**
@@ -135,7 +135,7 @@ public class Query<T, F> implements Serializable {
      * @return the page size used for data access
      */
     public int getPageSize() {
-    	return limit;
+    	return getLimit();
     }
 
     /**
