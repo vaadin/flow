@@ -679,9 +679,13 @@ public class DataCommunicator<T> implements Serializable {
                 inMemorySorting, filter);
         /*
          * Items limit value may not be necessarily multiply of page size,
-         * and thus the pages count is rounded to closest smallest integer.
+         * and thus the pages count is rounded to closest smallest integer in
+         * order to overlap the requested range.
+         * Integer division is used here for simplicity and to avoid
+         * double-int-double conversion. Divisor minus one is placed on
+         * numerator part to ensure upwards rounding.
          */
-        final int pages = (int) Math.ceil((double) limit / pageSize);
+        final int pages = (limit + pageSize - 1) / pageSize;
 
         if (limit > pageSize) {
             /*
