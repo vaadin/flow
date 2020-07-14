@@ -105,5 +105,9 @@ public class TsFormEndpoint {
         Optional<MyEntity> optionalEntity;
         Optional<List<Optional<String>>> optionalList;
         Optional<Optional<String>[][]> optionalMatrix;
+        @Nullable String nullableString;
+        @Nullable MyEntity nullableEntity;
+        @Nullable List<Optional<String>> nullableList;
+        @Nullable Optional<String>[][] nullableMatrix;
     }
 }

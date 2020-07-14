@@ -527,8 +527,9 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private String getModelArguments(CodegenProperty property,
             List<Map<String, String>> imports) {
         String dataType = property.datatype;
+        boolean optional = !property.required;
         String simpleName = getSimpleNameFromImports(dataType, imports);
-        return getModelVariableArguments(simpleName,
+        return getModelVariableArguments(simpleName, optional,
                 getConstrainsArguments(property));
     }
 
@@ -555,22 +556,20 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return MODEL + "Type<" + getModelFullType(variableName) + ">";
     }
 
-    private String getModelVariableArguments(String name,
+    private String getModelVariableArguments(String name, boolean optional,
             List<String> constrainArguments) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(fixNameForModel(name));
         stringBuilder.append(", [");
         List<String> arguments = new ArrayList<>();
-        if (name.endsWith(OPTIONAL_SUFFIX)) {
-            arguments.add("true");
-            name = removeOptionalSuffix(name);
-        } else {
-            arguments.add("false");
-        }
+        arguments.add(String.valueOf(optional));
         Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
         if (matcher.find()) {
-            arguments.add(getModelVariableArguments(matcher.group(1),
-                    Collections.emptyList()));
+            String arrayTypeName = matcher.group(1);
+            boolean arrayTypeOptional = arrayTypeName.endsWith(OPTIONAL_SUFFIX);
+            arrayTypeName = removeOptionalSuffix(arrayTypeName);
+            arguments.add(getModelVariableArguments(arrayTypeName, arrayTypeOptional, 
+                Collections.emptyList()));
         }
         if (!constrainArguments.isEmpty()) {
             arguments.addAll(constrainArguments);
