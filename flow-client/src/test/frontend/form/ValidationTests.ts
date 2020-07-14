@@ -495,8 +495,8 @@ suite("form/Validation", () => {
     });
 
     test('should display server validation error', async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value='foobar';
+      binder.for(binder.model.notes).value='whatever';
       const requestUpdateSpy = sinon.spy(orderView, 'requestUpdate');
       try {
         await binder.submitTo(async () => {
