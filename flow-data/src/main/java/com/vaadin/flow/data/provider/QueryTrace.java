@@ -32,10 +32,6 @@ class QueryTrace<T, F> extends Query<T, F> {
 
     private boolean isLimitCalled;
 
-    private boolean isPageCalled;
-
-    private boolean isPageSizeCalled;
-
     /**
      * {@inheritDoc}
      */
@@ -56,18 +52,6 @@ class QueryTrace<T, F> extends Query<T, F> {
         return super.getLimit();
     }
 
-    @Override
-    public int getPage() {
-        isPageCalled = true;
-        return super.getPage();
-    }
-
-    @Override
-    public int getPageSize() {
-        isPageSizeCalled = true;
-        return super.getPageSize();
-    }
-
     boolean isOffsetCalled() {
         return isOffsetCalled;
     }
@@ -76,11 +60,4 @@ class QueryTrace<T, F> extends Query<T, F> {
         return isLimitCalled;
     }
 
-    public boolean isPageCalled() {
-        return isPageCalled;
-    }
-
-    public boolean isPageSizeCalled() {
-        return isPageSizeCalled;
-    }
 }

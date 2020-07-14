@@ -246,11 +246,7 @@ public class DataCommunicatorTest {
             items.add(new Item(i));
         }
         DataProvider<Item, Void> dataProvider = DataProvider
-                .fromCallbacks(query -> {
-                    return items.stream();
-                }, query -> {
-                    return items.size();
-                });
+                .fromCallbacks(query -> items.stream(), query -> items.size());
         dataCommunicator.setDataProvider(dataProvider, null);
 
         expectedException.expect(IllegalStateException.class);

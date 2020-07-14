@@ -715,11 +715,11 @@ public class DataCommunicator<T> implements Serializable {
          * These restrictions are used to help users to see that they have done
          * a mistake instead of just letting things work in an unintended way.
          */
-        if (!query.isLimitCalled() && !query.isPageSizeCalled()) {
+        if (!query.isLimitCalled()) {
             throw new IllegalStateException(
                     getInvalidContractMessage("getLimit or getPageSize"));
         }
-        if (!query.isOffsetCalled() && !query.isPageCalled()) {
+        if (!query.isOffsetCalled()) {
             throw new IllegalStateException(
                     getInvalidContractMessage("getOffset or getPage"));
         }
