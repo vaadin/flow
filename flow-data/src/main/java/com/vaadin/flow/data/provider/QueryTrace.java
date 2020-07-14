@@ -19,8 +19,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Allows to trace {@link Query#getOffset()} and {@link Query#getLimit()} method
- * calls.
+ * Allows to trace {@link Query#getOffset()}, {@link Query#getLimit()},
+ * {@link Query#getPage()} and {@link Query#getPageSize()} method calls.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -59,4 +59,5 @@ class QueryTrace<T, F> extends Query<T, F> {
     boolean isLimitCalled() {
         return isLimitCalled;
     }
+
 }
