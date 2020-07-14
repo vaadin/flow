@@ -16,17 +16,21 @@
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-// https://github.com/vaadin/flow/issues/8544
 public class BrokenRouterLinkIT extends ChromeBrowserTest {
 
+    // https://github.com/vaadin/flow/issues/8544
     @Test
     public void testRouterLink_linkIsBroken_urlIsUpdated() {
+        // enable after https://github.com/vaadin/vaadin-router/issues/43 is fixed
+        Assume.assumeFalse(isClientRouter());
+
         open();
 
         WebElement link = findElement(By.id(BrokenRouterLinkView.LINK_ID));
@@ -36,6 +40,27 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
         link.click();
 
         Assert.assertTrue(getDriver().getCurrentUrl().endsWith(href));
+    }
 
+    // https://github.com/vaadin/flow/issues/8693
+    @Test
+    public void testRouterLink_visitBrokenLinkAndBack_scrollPositionIsRetained() {
+        // enable after https://github.com/vaadin/vaadin-router/issues/43 is fixed
+        Assume.assumeFalse(isClientRouter());
+
+        open();
+
+        executeScript("window.scrollTo(0,100)");
+
+        WebElement link = findElement(By.id(BrokenRouterLinkView.LINK_ID));
+        link.click();
+
+        long y0 = (Long) executeScript("return window.scrollY");
+        Assert.assertEquals(0L, y0);
+
+        getDriver().navigate().back();
+
+        long y1 = (Long) executeScript("return window.scrollY");
+        Assert.assertEquals(100L, y1);
     }
 }
