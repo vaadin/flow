@@ -12,8 +12,8 @@ export const validatorsSymbol = Symbol('validators');
 export const binderNodeSymbol = Symbol('binderNode');
 export const optionalSymbol = Symbol('optional');
 
-export const getPropertyModel = Symbol('getPropertyModel');
-const properties = Symbol('properties');
+export const getPropertyModelSymbol = Symbol('getPropertyModel');
+const propertiesSymbol = Symbol('properties');
 
 interface HasFromString<T> {
   [fromStringSymbol](value: string): T;
@@ -112,9 +112,9 @@ export class ObjectModel<T> extends AbstractModel<T> {
     return obj;
   }
 
-  private [properties]: {[name in keyof T]?: AbstractModel<T[name]>} = {};
+  private [propertiesSymbol]: {[name in keyof T]?: AbstractModel<T[name]>} = {};
 
-  protected [getPropertyModel]<
+  protected [getPropertyModelSymbol]<
     N extends keyof T,
     C extends new(parent: ModelParent<NonNullable<T[N]>>, key: keyof any, optional: boolean, ...args: any[]) => any
   >(
@@ -123,9 +123,9 @@ export class ObjectModel<T> extends AbstractModel<T> {
     valueModelArgs: any[]
   ): InstanceType<C> {
     const [optional, ...rest] = valueModelArgs;
-    return this[properties][name] !== undefined ?
-      (this[properties][name] as InstanceType<C>)
-      : (this[properties][name] = new ValueModel(this, name, optional, ...rest));
+    return this[propertiesSymbol][name] !== undefined ?
+      (this[propertiesSymbol][name] as InstanceType<C>)
+      : (this[propertiesSymbol][name] = new ValueModel(this, name, optional, ...rest));
   }
 }
 
