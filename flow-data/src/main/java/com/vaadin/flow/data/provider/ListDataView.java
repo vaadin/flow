@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ComponentEventListener;
@@ -25,12 +26,11 @@ import com.vaadin.flow.function.ValueProvider;
 
 /**
  * DataView for a in-memory list data that provides information on the data and
- * allows operations on it.
+ * allows operations on it. Mutation operations can be used only if the backing
+ * {@link List} is mutable.
  *
- * @param <T>
- *            data type
- * @param <V>
- *            ListDataView type
+ * @param <T> data type
+ * @param <V> ListDataView type
  * @since
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>>
@@ -95,21 +95,26 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     Optional<T> getPreviousItem(T item);
 
     /**
-     * Adds an item to the data list if it is not already present.
-     *
-     * @param item
-     *            item to add
-     * @return this ListDataView instance
-     * @throws UnsupportedOperationException
-     *             if backing collection doesn't support modification
-     * @see #addItemBefore(Object, Object)
-     * @see #addItemAfter(Object, Object)
-     * @see #removeItem(Object)
-     */
+	 * Adds an item to the data list if it is not already present.
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
+	 *
+	 * @param item item to add
+	 * @return this ListDataView instance
+	 * @throws UnsupportedOperationException if backing collection doesn't support
+	 *                                       modification
+	 * @see #addItemBefore(Object, Object)
+	 * @see #addItemAfter(Object, Object)
+	 * @see #removeItem(Object)
+	 */
     V addItem(T item);
 
     /**
      * Adds an item after the given target item.
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
      * <p>
      * If the item is already present in the data provider, then it is moved.
      * <p>
@@ -131,6 +136,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Adds an item before the given target item.
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
      * <p>
      * If the item is already present in the data provider, then it is moved.
      * <p>
@@ -152,6 +160,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Adds multiple items to the data list.
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
      * <p>
      * Any items that already present in the data provider are moved to the end.
      *
@@ -169,7 +180,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds multiple items after the given target item. The full collection is
      * added in order after the target.
-     * <p>
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
      * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
@@ -191,6 +204,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds multiple items before the given target item. The full collection is
      * added in order before the target.
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
      * <p>
      * Any items that already present in the data provider are moved.
      * <p>
@@ -212,7 +228,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Remove an item from the data list.
-     *
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
+	 *
      * @param item
      *            item to remove
      * @return this ListDataView instance
@@ -225,7 +244,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Remove multiple items from the data list.
-     *
+	 * <p>
+	 * The backing {@link List} must be mutable to use this method. Immutable data
+	 * structure will throw an exception.
+	 *
      * @param items
      *            collection of items to remove
      * @return this ListDataView instance
