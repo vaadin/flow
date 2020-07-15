@@ -171,7 +171,7 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
     return this[getPropertyModel]('stringArray', ArrayModel, [false, StringModel, [false]]);
   }
 
-  get stringMap(): ObjectModel {
+  get stringMap(): ObjectModel<{ [key: string]: string; }> {
     return this[getPropertyModel]('stringMap', ObjectModel, [false]);
   }
 }
