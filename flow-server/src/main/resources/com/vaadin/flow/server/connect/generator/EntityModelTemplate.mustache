@@ -24,7 +24,7 @@ export default class {{{getClassNameFromImports classname ../../imports}}}Model<
 {{#vars}}
 
   get {{name}}(): {{{getModelFullType this ../../imports}}} {
-    return this[getPropertyModel](this, '{{name}}', {{{getModelArguments this ../../imports}}});
+    return this[getPropertyModel]('{{name}}', {{{getModelArguments this ../../imports}}});
   }
 {{/vars}}
 }
