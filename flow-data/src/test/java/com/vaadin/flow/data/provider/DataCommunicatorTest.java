@@ -1076,7 +1076,8 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setPageSize(10);
         dataCommunicator.setDataProvider(dataProvider, null);
-        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 30);
+        // Use a limit value so that it's not multiple by page size
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 23);
 
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
@@ -1167,6 +1168,39 @@ public class DataCommunicatorTest {
         Assert.assertEquals(50, query.getLimit());
         Assert.assertEquals(0, query.getPage());
         Assert.assertEquals(50, query.getPageSize());
+    }
+
+    @Test
+    public void fetchFromProvider_disablePaging_singleQueryWithLimit() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(200);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setMultiplePagesOverLimit(false);
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // Use a limit value so that it's not multiple by page size
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 123);
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+
+        Mockito.verify(dataProvider).fetch(queryCaptor.capture());
+
+        List<Item> items = stream.collect(Collectors.toList());
+        Assert.assertEquals(123, items.size());
+
+        Assert.assertEquals(
+                IntStream.range(0, 123).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
+
+        List<Query> allQueries = queryCaptor.getAllValues();
+        Assert.assertEquals(1, allQueries.size());
+
+        Query query = allQueries.get(0);
+        Assert.assertEquals(0, query.getOffset());
+        Assert.assertEquals(123, query.getLimit());
+        Assert.assertEquals(0, query.getPage());
+        Assert.assertEquals(123, query.getPageSize());
     }
 
     @Tag("test-component")
