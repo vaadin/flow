@@ -52,6 +52,15 @@ public class AfterNavigationEvent extends EventObject {
     }
 
     /**
+     * Get the {@link LocationChangeEvent}.
+     *
+     * @return the {@link LocationChangeEvent}, not {@code null}
+     */
+    public LocationChangeEvent getLocationChangeEvent() {
+        return event;
+    }
+
+    /**
      * Get the active chain that we have after navigation.
      *
      * @return unmodifiable list of active view chain
