@@ -31,9 +31,6 @@ public class PreserveOnRefreshShortcutIT extends ChromeBrowserTest {
     @Test
     public void replaceComponentAfterRefresh_componentIsReplaced() {
         open();
-        if (hasClientIssue("7587")) {
-            return;
-        }
 
         waitPageLoad();
 

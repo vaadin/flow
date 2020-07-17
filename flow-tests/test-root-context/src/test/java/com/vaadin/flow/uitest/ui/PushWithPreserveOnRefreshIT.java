@@ -31,10 +31,6 @@ public class PushWithPreserveOnRefreshIT extends ChromeBrowserTest {
     public void ensurePushWorksAfterRefresh() {
         open();
 
-        if (hasClientIssue("7587")) {
-            return;
-        }
-
         WebElement loadingIndicator = findElement(
                 By.className("v-loading-indicator"));
 
