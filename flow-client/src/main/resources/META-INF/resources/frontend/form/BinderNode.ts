@@ -262,10 +262,12 @@ export class BinderNode<T, M extends AbstractModel<T>> {
 
   private *getChildBinderNodes(): Generator<BinderNode<any, AbstractModel<any>>> {
     if (this.model instanceof ObjectModel) {
-      for (const key of Object.keys(this.value)) {
-        const childModel = (this.model as any)[key] as AbstractModel<any>;
-        if (childModel) {
-          yield getBinderNode(childModel);
+      if (this.value) {
+        for (const key of Object.keys(this.value)) {
+          const childModel = (this.model as any)[key] as AbstractModel<any>;
+          if (childModel) {
+            yield getBinderNode(childModel);
+          }
         }
       }
     } else if (this.model instanceof ArrayModel) {

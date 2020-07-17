@@ -11,7 +11,7 @@ import {
   BinderConfiguration,
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import {Employee, EmployeeModel, Order, OrderModel} from "./TestModels";
+import {Employee, EmployeeModel, Order, OrderModel, TestEntity, TestModel} from "./TestModels";
 
 import {customElement, LitElement} from 'lit-element';
 
@@ -226,6 +226,20 @@ suite("form/Binder", () => {
       binder.clear();
 
       assert.isFalse(binderNode.visited);
+    });
+
+    test('should be able to set null to object type property', () => {
+      const myBinder:Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
+      myBinder.for(myBinder.model.fieldAny).value = null;
+      myBinder.for(myBinder.model.fieldAny).validate();
+      assert.isFalse(myBinder.invalid);
+    });
+
+    test('should be able to set undefined to object type property', () => {
+      const myBinder:Binder<TestEntity, TestModel<TestEntity>> = new Binder(document.createElement('div'), TestModel);
+      myBinder.for(myBinder.model.fieldAny).value = undefined;
+      myBinder.for(myBinder.model.fieldAny).validate();
+      assert.isFalse(myBinder.invalid);
     });
   });
 

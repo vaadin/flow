@@ -95,6 +95,7 @@ export interface TestEntity {
   fieldArrayString: string[];
   fieldArrayModel: IdEntity[];
   fieldMatrixNumber: number[][];
+  fieldAny: any;
 }
 export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T> {
   static createEmptyValue: () => TestEntity;
@@ -125,6 +126,10 @@ export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T>
 
   get fieldMatrixNumber() {
     return this[getPropertyModelSymbol]('fieldMatrixNumber', ArrayModel, [false, ArrayModel, [false, NumberModel, [false, new Positive()]]]) as ArrayModel<ReadonlyArray<number>, ArrayModel<number, NumberModel>>;
+  }
+
+  get fieldAny() {
+    return this[getPropertyModelSymbol]('fieldAny', ObjectModel, [false]) as ObjectModel<any>;
   }
 }
 
