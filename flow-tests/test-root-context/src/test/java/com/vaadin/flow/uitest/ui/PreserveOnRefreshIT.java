@@ -23,9 +23,6 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
     @Test
     public void refresh_componentAndUiChildrenReused() throws IOException {
         open();
-        if (hasClientIssue("7587")) {
-            return;
-        }
 
         final String componentId = getString(COMPONENT_ID);
         final String notificationId = getString(NOTIFICATION_ID);
@@ -47,9 +44,6 @@ public class PreserveOnRefreshIT extends AbstractStreamResourceIT {
     @Test
     public void navigateToNonRefreshing_componentIsRecreated() {
         open();
-        if (hasClientIssue("7587")) {
-            return;
-        }
 
         final String componentId = getString(COMPONENT_ID);
         final String notificationId = getString(NOTIFICATION_ID);
