@@ -42,6 +42,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   private [visitedSymbol]: boolean = false;
   private [validatorsSymbol]: ReadonlyArray<Validator<T>>;
   private [errorsSymbol]?: ReadonlyArray<ValueError<T>>;
+  private defaultArrayItemValue?: T;
 
   constructor(readonly model: M) {
     model[binderNodeSymbol] = this;
@@ -79,6 +80,12 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get defaultValue(): T {
+    if (this.parent && this.parent.model instanceof ArrayModel) {
+      return this.parent.defaultArrayItemValue || (
+        this.parent.defaultArrayItemValue = this.parent.model[ItemModelSymbol].createEmptyValue()
+      );
+    }
+
     return this.parent!.defaultValue[this.model[keySymbol]];
   }
 

@@ -1,11 +1,11 @@
+// @ts-nocheck
+
 import MyBazModel from './MyBazModel';
 import MyEntityIdModel from './MyEntityIdModel';
 import MyEntity from './MyEntity';
 
-// @ts-ignore
 import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,getPropertyModelSymbol} from '@vaadin/form';
 
-// @ts-ignore
 import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,Future,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
 
 /**

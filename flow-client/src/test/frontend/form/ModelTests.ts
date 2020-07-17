@@ -127,6 +127,19 @@ suite("form/Model", () => {
       ]);
     });
 
+    /**
+     * default value is used for checking dirty state
+     * use case: adding a new order line, which contains a product 
+     * and a quantity field. The product model's dirty state is
+     * comparing the default value, which is getting from the parent
+     * order line model, which is an array item.
+    */
+    test('array item defaultValue should not be undefined', async () => {
+      binder.for(binder.model.fieldArrayModel).appendItem();
+      const entityModels = [...binder.model.fieldArrayModel];
+      expect(binder.for(entityModels[0].model).defaultValue).to.be.not.undefined;
+    });
+
     test('should support removeSelf on binder node', async () => {
       binder.for(binder.model.fieldArrayString).appendItem();
       const stringModels = [...binder.model.fieldArrayString];
