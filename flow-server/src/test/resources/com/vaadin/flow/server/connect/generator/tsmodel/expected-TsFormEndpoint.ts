@@ -1,11 +1,11 @@
+// @ts-nocheck
+
 import MyBazModel from './MyBazModel';
 import MyEntityIdModel from './MyEntityIdModel';
 import MyEntity from './MyEntity';
 
-// @ts-ignore
-import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType} from '@vaadin/form';
+import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,getPropertyModelSymbol} from '@vaadin/form';
 
-// @ts-ignore
 import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,Future,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
 
 /**
@@ -14,36 +14,164 @@ import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,Neg
  */
 export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEntityIdModel<T> {
   static createEmptyValue: () => MyEntity;
-  public readonly assertFalse = new StringModel(this, 'assertFalse', new AssertFalse());
-  public readonly assertTrue = new StringModel(this, 'assertTrue', new AssertTrue());
-  public readonly bar = new MyBazModel(this, 'bar');
-  public readonly baz = new ArrayModel<ModelType<MyBazModel>, MyBazModel>(this, 'baz', MyBazModel, []);
-  public readonly bool = new BooleanModel(this, 'bool');
-  public readonly children = new ArrayModel<ModelType<MyEntityModel>, MyEntityModel>(this, 'children', MyEntityModel, []);
-  public readonly decimalMax = new NumberModel(this, 'decimalMax', new DecimalMax({value:"0.01", inclusive:false}));
-  public readonly decimalMin = new NumberModel(this, 'decimalMin', new DecimalMin("0.01"));
-  public readonly digits = new StringModel(this, 'digits', new Digits({integer:5, fraction:2}));
-  public readonly email = new StringModel(this, 'email', new Email({message:"foo"}));
-  public readonly entityMap = new ObjectModel<{ [key: string]: ModelType<MyBazModel>; }>(this, 'entityMap');
-  public readonly entityMatrix = new ArrayModel<ModelType<ArrayModel<ModelType<MyEntityModel>, MyEntityModel>>, ArrayModel<ModelType<MyEntityModel>, MyEntityModel>>(this, 'entityMatrix', ArrayModel, [MyEntityModel, []]);
-  public readonly foo = new StringModel(this, 'foo');
-  public readonly future = new StringModel(this, 'future', new Future());
-  public readonly isNull = new StringModel(this, 'isNull', new Null());
-  public readonly list = new ArrayModel(this, 'list', StringModel, [], new NotEmpty());
-  public readonly max = new NumberModel(this, 'max', new Max(2));
-  public readonly min = new NumberModel(this, 'min', new Min({value:1, message:"foo"}));
-  public readonly negative = new NumberModel(this, 'negative', new Negative());
-  public readonly negativeOrCero = new NumberModel(this, 'negativeOrCero', new NegativeOrZero());
-  public readonly notBlank = new StringModel(this, 'notBlank', new NotBlank());
-  public readonly notEmpty = new StringModel(this, 'notEmpty', new NotEmpty(), new NotNull());
-  public readonly notNull = new StringModel(this, 'notNull', new NotNull());
-  public readonly numberMatrix = new ArrayModel(this, 'numberMatrix', ArrayModel, [NumberModel, []]);
-  public readonly past = new StringModel(this, 'past', new Past());
-  public readonly pattern = new StringModel(this, 'pattern', new Pattern({regexp:"\\d+\\..+"}));
-  public readonly positive = new NumberModel(this, 'positive', new Positive());
-  public readonly positiveOrCero = new NumberModel(this, 'positiveOrCero', new PositiveOrZero());
-  public readonly size = new StringModel(this, 'size', new Size());
-  public readonly size1 = new StringModel(this, 'size1', new Size({min:1}));
-  public readonly stringArray = new ArrayModel(this, 'stringArray', StringModel, []);
-  public readonly stringMap = new ObjectModel<{ [key: string]: string; }>(this, 'stringMap');
+
+  get assertFalse(): StringModel {
+    return this[getPropertyModelSymbol]('assertFalse', StringModel, [false, new AssertFalse()]);
+  }
+
+  get assertTrue(): StringModel {
+    return this[getPropertyModelSymbol]('assertTrue', StringModel, [false, new AssertTrue()]);
+  }
+
+  get bar(): MyBazModel {
+    return this[getPropertyModelSymbol]('bar', MyBazModel, [false]);
+  }
+
+  get baz(): ArrayModel<ModelType<MyBazModel>, MyBazModel> {
+    return this[getPropertyModelSymbol]('baz', ArrayModel, [false, MyBazModel, [false]]);
+  }
+
+  get bool(): BooleanModel {
+    return this[getPropertyModelSymbol]('bool', BooleanModel, [false]);
+  }
+
+  get children(): ArrayModel<ModelType<MyEntityModel>, MyEntityModel> {
+    return this[getPropertyModelSymbol]('children', ArrayModel, [false, MyEntityModel, [false]]);
+  }
+
+  get decimalMax(): NumberModel {
+    return this[getPropertyModelSymbol]('decimalMax', NumberModel, [false, new DecimalMax({value:"0.01", inclusive:false})]);
+  }
+
+  get decimalMin(): NumberModel {
+    return this[getPropertyModelSymbol]('decimalMin', NumberModel, [false, new DecimalMin("0.01")]);
+  }
+
+  get digits(): StringModel {
+    return this[getPropertyModelSymbol]('digits', StringModel, [false, new Digits({integer:5, fraction:2})]);
+  }
+
+  get email(): StringModel {
+    return this[getPropertyModelSymbol]('email', StringModel, [false, new Email({message:"foo"})]);
+  }
+
+  get entityMap(): ObjectModel<{ [key: string]: ModelType<MyBazModel>; }> {
+    return this[getPropertyModelSymbol]('entityMap', ObjectModel, [false]);
+  }
+
+  get entityMatrix(): ArrayModel<ModelType<ArrayModel<ModelType<MyEntityModel>, MyEntityModel>>, ArrayModel<ModelType<MyEntityModel>, MyEntityModel>> {
+    return this[getPropertyModelSymbol]('entityMatrix', ArrayModel, [false, ArrayModel, [false, MyEntityModel, [false]]]);
+  }
+
+  get foo(): StringModel {
+    return this[getPropertyModelSymbol]('foo', StringModel, [false]);
+  }
+
+  get future(): StringModel {
+    return this[getPropertyModelSymbol]('future', StringModel, [false, new Future()]);
+  }
+
+  get isNull(): StringModel {
+    return this[getPropertyModelSymbol]('isNull', StringModel, [false, new Null()]);
+  }
+
+  get list(): ArrayModel<string, StringModel> {
+    return this[getPropertyModelSymbol]('list', ArrayModel, [false, StringModel, [false], new NotEmpty()]);
+  }
+
+  get max(): NumberModel {
+    return this[getPropertyModelSymbol]('max', NumberModel, [false, new Max(2)]);
+  }
+
+  get min(): NumberModel {
+    return this[getPropertyModelSymbol]('min', NumberModel, [false, new Min({value:1, message:"foo"})]);
+  }
+
+  get negative(): NumberModel {
+    return this[getPropertyModelSymbol]('negative', NumberModel, [false, new Negative()]);
+  }
+
+  get negativeOrCero(): NumberModel {
+    return this[getPropertyModelSymbol]('negativeOrCero', NumberModel, [false, new NegativeOrZero()]);
+  }
+
+  get notBlank(): StringModel {
+    return this[getPropertyModelSymbol]('notBlank', StringModel, [false, new NotBlank()]);
+  }
+
+  get notEmpty(): StringModel {
+    return this[getPropertyModelSymbol]('notEmpty', StringModel, [false, new NotEmpty(), new NotNull()]);
+  }
+
+  get notNull(): StringModel {
+    return this[getPropertyModelSymbol]('notNull', StringModel, [false, new NotNull()]);
+  }
+
+  get nullableEntity(): MyEntityModel {
+    return this[getPropertyModelSymbol]('nullableEntity', MyEntityModel, [true]);
+  }
+
+  get nullableList(): ArrayModel<string, StringModel> {
+    return this[getPropertyModelSymbol]('nullableList', ArrayModel, [true, StringModel, [true]]);
+  }
+
+  get nullableMatrix(): ArrayModel<ModelType<ArrayModel<string, StringModel>>, ArrayModel<string, StringModel>> {
+    return this[getPropertyModelSymbol]('nullableMatrix', ArrayModel, [true, ArrayModel, [false, StringModel, [true]]]);
+  }
+
+  get nullableString(): StringModel {
+    return this[getPropertyModelSymbol]('nullableString', StringModel, [true]);
+  }
+
+  get numberMatrix(): ArrayModel<ModelType<ArrayModel<number, NumberModel>>, ArrayModel<number, NumberModel>> {
+    return this[getPropertyModelSymbol]('numberMatrix', ArrayModel, [false, ArrayModel, [false, NumberModel, [false]]]);
+  }
+
+  get optionalEntity(): MyEntityModel {
+    return this[getPropertyModelSymbol]('optionalEntity', MyEntityModel, [true]);
+  }
+
+  get optionalList(): ArrayModel<string, StringModel> {
+    return this[getPropertyModelSymbol]('optionalList', ArrayModel, [true, StringModel, [true]]);
+  }
+
+  get optionalMatrix(): ArrayModel<ModelType<ArrayModel<string, StringModel>>, ArrayModel<string, StringModel>> {
+    return this[getPropertyModelSymbol]('optionalMatrix', ArrayModel, [true, ArrayModel, [false, StringModel, [true]]]);
+  }
+
+  get optionalString(): StringModel {
+    return this[getPropertyModelSymbol]('optionalString', StringModel, [true]);
+  }
+
+  get past(): StringModel {
+    return this[getPropertyModelSymbol]('past', StringModel, [false, new Past()]);
+  }
+
+  get pattern(): StringModel {
+    return this[getPropertyModelSymbol]('pattern', StringModel, [false, new Pattern({regexp:"\\d+\\..+"})]);
+  }
+
+  get positive(): NumberModel {
+    return this[getPropertyModelSymbol]('positive', NumberModel, [false, new Positive()]);
+  }
+
+  get positiveOrCero(): NumberModel {
+    return this[getPropertyModelSymbol]('positiveOrCero', NumberModel, [false, new PositiveOrZero()]);
+  }
+
+  get size(): StringModel {
+    return this[getPropertyModelSymbol]('size', StringModel, [false, new Size()]);
+  }
+
+  get size1(): StringModel {
+    return this[getPropertyModelSymbol]('size1', StringModel, [false, new Size({min:1})]);
+  }
+
+  get stringArray(): ArrayModel<string, StringModel> {
+    return this[getPropertyModelSymbol]('stringArray', ArrayModel, [false, StringModel, [false]]);
+  }
+
+  get stringMap(): ObjectModel<{ [key: string]: string; }> {
+    return this[getPropertyModelSymbol]('stringMap', ObjectModel, [false]);
+  }
 }

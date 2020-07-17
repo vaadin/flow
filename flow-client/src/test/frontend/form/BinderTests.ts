@@ -9,17 +9,17 @@ const {sinon} = intern.getPlugin('sinon');
 import {
   Binder,
   BinderConfiguration,
-  getName,
-  getValue,
-  setValue
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import {Order, OrderModel} from "./TestModels";
+import {Employee, EmployeeModel, Order, OrderModel} from "./TestModels";
 
 import {customElement, LitElement} from 'lit-element';
 
 @customElement('lit-order-view')
 class LitOrderView extends LitElement {}
+
+@customElement('lit-employee-view')
+class LitEmployeeView extends LitElement {}
 
 suite("form/Binder", () => {
   const litOrderView = document.createElement('lit-order-view') as LitOrderView;
@@ -48,7 +48,7 @@ suite("form/Binder", () => {
   test("should be able to create a binder with a default onchange listener", () => {
     const binder = new Binder(litOrderView, OrderModel);
 
-    setValue(binder.model.notes, "foo");
+    binder.for(binder.model.notes).value = "foo";
 
     sinon.assert.calledTwice(requestUpdateStub);
   });
@@ -61,7 +61,7 @@ suite("form/Binder", () => {
 
     const binder = new Binder(litOrderView, OrderModel, config);
 
-    setValue(binder.model.notes, "foo");
+    binder.for(binder.model.notes).value = "foo";
 
     assert.equal(foo, 'baz');
   });
@@ -90,8 +90,8 @@ suite("form/Binder", () => {
     });
 
     test("should have name for models", () => {
-      assert.equal(getName(binder.model.notes), "notes");
-      assert.equal(getName(binder.model.customer.fullName), "customer.fullName");
+      assert.equal(binder.for(binder.model.notes).name, "notes");
+      assert.equal(binder.for(binder.model.customer.fullName).name, "customer.fullName");
     });
 
     test("should have initial defaultValue", () => {
@@ -110,16 +110,19 @@ suite("form/Binder", () => {
 
     test("should have initial value", () => {
       assert.equal(binder.value, binder.defaultValue);
-      assert.equal(getValue(binder.model), binder.value);
-      assert.equal(getValue(binder.model.notes), "");
-      assert.equal(getValue(binder.model.customer.fullName), "");
+      assert.equal(binder.for(binder.model).value, binder.value);
+      assert.equal(binder.for(binder.model.notes).value, "");
+      assert.equal(binder.for(binder.model.customer.fullName).value, "");
+      assert.equal(binder.model.valueOf(), binder.value);
+      assert.equal(binder.model.notes.valueOf(), "");
+      assert.equal(binder.model.customer.fullName.valueOf(), "");
     });
 
     test("should change value on setValue", () => {
       // Sanity check: requestUpdate should not be called
       sinon.assert.notCalled(requestUpdateStub);
 
-      setValue(binder.model.notes, "foo");
+      binder.for(binder.model.notes).value = "foo";
       assert.equal(binder.value.notes, "foo");
       sinon.assert.calledOnce(requestUpdateStub);
     });
@@ -127,22 +130,22 @@ suite("form/Binder", () => {
     test("should change value on deep setValue", () => {
       sinon.assert.notCalled(requestUpdateStub);
 
-      setValue(binder.model.customer.fullName, "foo");
+      binder.for(binder.model.customer.fullName).value = "foo";
       assert.equal(binder.value.customer.fullName, "foo");
       sinon.assert.calledOnce(litOrderView.requestUpdate);
     });
 
     test("should not change defaultValue on setValue", () => {
-      setValue(binder.model.notes, "foo");
-      setValue(binder.model.customer.fullName, "foo");
+      binder.for(binder.model.notes).value = "foo";
+      binder.for(binder.model.customer.fullName).value = "foo";
 
       assert.equal(binder.defaultValue.notes, "");
       assert.equal(binder.defaultValue.customer.fullName, "");
     });
 
     test("should reset to default value", () => {
-      setValue(binder.model.notes, "foo");
-      setValue(binder.model.customer.fullName, "foo");
+      binder.for(binder.model.notes).value = "foo";
+      binder.for(binder.model.customer.fullName).value = "foo";
       requestUpdateStub.reset();
 
       binder.reset();
@@ -153,8 +156,8 @@ suite("form/Binder", () => {
     });
 
     test("should reset to provided value", () => {
-      setValue(binder.model.notes, "foo");
-      setValue(binder.model.customer.fullName, "foo");
+      binder.for(binder.model.notes).value = "foo";
+      binder.for(binder.model.customer.fullName).value = "foo";
       requestUpdateStub.reset();
 
       binder.reset({
@@ -226,5 +229,71 @@ suite("form/Binder", () => {
     });
   });
 
+  suite("optional", () => {
+    let binder: Binder<Employee, EmployeeModel<Employee>>;
+    const litEmployeeView = document.createElement('lit-employee-view') as LitEmployeeView;
 
+    const expectedEmptyEmployee: Employee = {
+      idString: '',
+      fullName: ''
+    };
+
+    beforeEach(() => {
+      binder = new Binder(
+        litEmployeeView,
+        EmployeeModel
+      );
+    });
+
+    function getOnlyEmployeeData(e: Employee) {
+      const {idString, fullName} = e;
+      return {idString, fullName};
+    }
+
+    test('should not initialize optional in empty value', () => {
+      const emptyValue = EmployeeModel.createEmptyValue();
+      assert.isUndefined(emptyValue.supervisor);
+    });
+
+    test('should not initialize optional in binder value and default value', () => {
+      assert.isUndefined(binder.defaultValue.supervisor);
+      assert.deepEqual(binder.defaultValue, expectedEmptyEmployee);
+      assert.isUndefined(binder.value.supervisor);
+      assert.deepEqual(binder.value, expectedEmptyEmployee);
+    });
+
+    test('should initialize optional on binderNode access', () => {
+      binder.for(binder.model.supervisor);
+
+      assert.isDefined(binder.defaultValue.supervisor);
+      assert.deepEqual(binder.defaultValue.supervisor, expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue), expectedEmptyEmployee);
+      assert.isDefined(binder.value.supervisor);
+      assert.deepEqual(binder.value.supervisor, expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.value), expectedEmptyEmployee);
+    });
+
+    test('should initialize optional on deep binderNode access', () => {
+      binder.for(binder.model.supervisor.supervisor);
+
+      assert.isDefined(binder.defaultValue.supervisor!.supervisor);
+      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue), expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue.supervisor!), expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue.supervisor!.supervisor!), expectedEmptyEmployee);
+      assert.isDefined(binder.value.supervisor!.supervisor);
+      assert.deepEqual(getOnlyEmployeeData(binder.value), expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.value.supervisor!), expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.value.supervisor!.supervisor!), expectedEmptyEmployee);
+    });
+
+    test('should not become dirty on binderNode access', () => {
+      assert.isFalse(binder.dirty);
+
+      binder.for(binder.model.supervisor);
+      assert.isFalse(binder.dirty);
+
+      binder.for(binder.model.supervisor.supervisor);
+      assert.isFalse(binder.dirty);
+    });
+  });
 });

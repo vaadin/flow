@@ -12,9 +12,7 @@ import { expect } from "chai";
 import {
   Binder,
   field,
-  getName,
   Required,
-  setValue,
   ValidationError,
   Validator,
   ValueError
@@ -138,8 +136,8 @@ suite("form/Validation", () => {
     });
 
     test("should re-throw on server failure", async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value = 'foobar';
+      binder.for(binder.model.notes).value = 'whatever';
       try {
         await binder.submitTo(async() => {throw new Error('whatever')});
         expect.fail();
@@ -149,8 +147,8 @@ suite("form/Validation", () => {
     });
 
     test("should wrap server validation error", async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value = 'foobar';
+      binder.for(binder.model.notes).value = 'whatever';
       try {
         await binder.submitTo(async() => {throw {
           message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
@@ -168,8 +166,8 @@ suite("form/Validation", () => {
     });
 
     test("should wrap server validation error with any message", async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value = 'foobar';
+      binder.for(binder.model.notes).value = 'whatever';
       try {
         await binder.submitTo(async() => {throw {
           message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
@@ -188,7 +186,7 @@ suite("form/Validation", () => {
 
     test("record level cross field validation", async () => {
       const byPropertyName = (value: string) => ((error: ValueError<any>) => {
-        const propertyName = typeof error.property === 'string' ? error.property : getName(error.property);
+        const propertyName = typeof error.property === 'string' ? error.property : binder.for(error.property).name;
         return propertyName === value;
       });
 
@@ -204,13 +202,13 @@ suite("form/Validation", () => {
       };
       binder.addValidator(recordValidator);
 
-      setValue(binder.model.customer.fullName, "foo");
+      binder.for(binder.model.customer.fullName).value = 'foo';
       await binder.validate().then(errors => {
         const crossFieldError = errors.find(error => error.validator === recordValidator);
         expect(crossFieldError, 'recordValidator should not cause an error').to.be.undefined;
       });
 
-      setValue(binder.model.customer.nickName, "foo");
+      binder.for(binder.model.customer.nickName).value = 'foo';
       return binder.validate().then(errors => {
         const crossFieldError = errors.find(byPropertyName('customer.nickName'));
         expect(crossFieldError).not.to.be.undefined;
@@ -270,7 +268,7 @@ suite("form/Validation", () => {
     });
 
     test("should fail after adding validators to properties if property is not required but it has a value", async () => {
-      setValue(binder.model.idString, 'bar');
+      binder.for(binder.model.idString).value = 'bar';
       binder.for(binder.model.idString).addValidator({message: 'foo', validate: () => false});
       const errors = await binder.validate();
       expect(errors[0].message).to.equal("foo");
@@ -497,8 +495,8 @@ suite("form/Validation", () => {
     });
 
     test('should display server validation error', async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value='foobar';
+      binder.for(binder.model.notes).value='whatever';
       const requestUpdateSpy = sinon.spy(orderView, 'requestUpdate');
       try {
         await binder.submitTo(async () => {
