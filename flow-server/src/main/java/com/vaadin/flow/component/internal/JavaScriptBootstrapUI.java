@@ -400,12 +400,8 @@ public class JavaScriptBootstrapUI extends UI {
             JavaScriptBootstrapUI newJsUI = castToJavaScriptUI(newUI);
             JavaScriptBootstrapUI oldJsUI = castToJavaScriptUI(oldUI);
 
-            Element oldRoot = oldJsUI.wrapperElement == null
-                    ? oldJsUI.getElement()
-                    : oldJsUI.wrapperElement;
-            Element newRoot = newJsUI.wrapperElement == null
-                    ? newJsUI.getElement()
-                    : newJsUI.wrapperElement;
+            Element oldRoot = oldJsUI.getElement();
+            Element newRoot = newJsUI.getElement();
 
             oldRoot.getChildren().collect(Collectors.toList())
                     .forEach(element -> {
