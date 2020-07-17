@@ -115,7 +115,7 @@ public class DataCommunicator<T> implements Serializable {
     private int pageSize;
 
     // Paged queries are enabled by default
-    private boolean multiplePagesOverLimit = true;
+    private boolean pagingEnabled = true;
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
@@ -631,21 +631,21 @@ public class DataCommunicator<T> implements Serializable {
      * @return {@code true} for paged queries, {@code false} for offset/limit
      *         queries
      * 
-     * @see #setMultiplePagesOverLimit(boolean)
+     * @see #setPagingEnabled(boolean)
      */
-    public boolean isMultiplePagesOverLimit() {
-        return multiplePagesOverLimit;
+    public boolean isPagingEnabled() {
+        return pagingEnabled;
     }
 
     /**
      * Sets whether paged queries or offset/limit queries will be used.
      * 
-     * @param multiplePagesOverLimit
+     * @param pagingEnabled
      *            {@code true} for paged queries, {@code false} for offset/limit
      *            queries
      */
-    public void setMultiplePagesOverLimit(boolean multiplePagesOverLimit) {
-        this.multiplePagesOverLimit = multiplePagesOverLimit;
+    public void setPagingEnabled(boolean pagingEnabled) {
+        this.pagingEnabled = pagingEnabled;
     }
 
     /**
@@ -708,7 +708,7 @@ public class DataCommunicator<T> implements Serializable {
         Stream<T> stream = Stream.empty();
         QueryTrace query = null;
 
-        if (multiplePagesOverLimit) {
+        if (pagingEnabled) {
             /*
              * Items limit value may not be necessarily multiply of page size,
              * and thus the pages count is rounded to closest smallest integer

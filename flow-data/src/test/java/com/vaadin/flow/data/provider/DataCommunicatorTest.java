@@ -1176,7 +1176,7 @@ public class DataCommunicatorTest {
                 createDataProvider(200);
         dataProvider = Mockito.spy(dataProvider);
 
-        dataCommunicator.setMultiplePagesOverLimit(false);
+        dataCommunicator.setPagingEnabled(false);
         dataCommunicator.setDataProvider(dataProvider, null);
         // Use a limit value so that it's not multiple by page size
         Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 123);
