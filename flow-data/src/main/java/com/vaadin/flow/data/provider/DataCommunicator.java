@@ -114,6 +114,9 @@ public class DataCommunicator<T> implements Serializable {
     private boolean sizeReset;
     private int pageSize;
 
+    // Paged queries are enabled by default
+    private boolean pagingEnabled = true;
+
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
         private int size;
@@ -618,6 +621,34 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
+     * Returns whether paged queries are enabled or not.
+     * <p>
+     * When the paged queries are supported, the {@link Query#getPage()} and
+     * {@link Query#getPageSize()} can be used to fetch items from the paged
+     * repositories. Otherwise, one should use {@link Query#getOffset()} and
+     * {@link Query#getLimit()}. Paged queries are enabled by default.
+     *
+     * @return {@code true} for paged queries, {@code false} for offset/limit
+     *         queries
+     * 
+     * @see #setPagingEnabled(boolean)
+     */
+    public boolean isPagingEnabled() {
+        return pagingEnabled;
+    }
+
+    /**
+     * Sets whether paged queries or offset/limit queries will be used.
+     * 
+     * @param pagingEnabled
+     *            {@code true} for paged queries, {@code false} for offset/limit
+     *            queries
+     */
+    public void setPagingEnabled(boolean pagingEnabled) {
+        this.pagingEnabled = pagingEnabled;
+    }
+
+    /**
      * Getter method for determining the item count of the data. Can be
      * overridden by a subclass that uses a specific type of DataProvider and/or
      * query.
@@ -675,30 +706,40 @@ public class DataCommunicator<T> implements Serializable {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
         Stream<T> stream = Stream.empty();
-        QueryTrace query = new QueryTrace(offset, pageSize, backEndSorting,
-                inMemorySorting, filter);
-        /*
-         * Items limit value may not be necessarily multiply of page size,
-         * and thus the pages count is rounded to closest smallest integer in
-         * order to overlap the requested range.
-         * Integer division is used here for simplicity and to avoid
-         * double-int-double conversion. Divisor minus one is placed on
-         * numerator part to ensure upwards rounding.
-         */
-        final int pages = (limit + pageSize - 1) / pageSize;
+        QueryTrace query = null;
 
-        if (limit > pageSize) {
+        if (pagingEnabled) {
             /*
-             * Requested range is split to one or more pages by default,
-             * and queried from backend page by page
+             * Items limit value may not be necessarily multiply of page size,
+             * and thus the pages count is rounded to closest smallest integer
+             * in order to overlap the requested range. Integer division is used
+             * here for simplicity and to avoid double-int-double conversion.
+             * Divisor minus one is placed on numerator part to ensure upwards
+             * rounding.
              */
-            for (int page = 0; page < pages; page++) {
-                final int newOffset = offset + page * pageSize;
-                query = new QueryTrace(newOffset, pageSize, backEndSorting,
+            final int pages = (limit + pageSize - 1) / pageSize;
+
+            if (limit > pageSize) {
+                /*
+                 * Requested range is split to several pages, and queried from
+                 * backend page by page
+                 */
+                for (int page = 0; page < pages; page++) {
+                    final int newOffset = offset + page * pageSize;
+                    query = new QueryTrace(newOffset, pageSize, backEndSorting,
+                            inMemorySorting, filter);
+                    stream = Stream.concat(stream,
+                            getDataProvider().fetch(query));
+                }
+            } else {
+                query = new QueryTrace(offset, pageSize, backEndSorting,
                         inMemorySorting, filter);
-                stream = Stream.concat(stream, getDataProvider().fetch(query));
+                stream = getDataProvider().fetch(query);
             }
+            limit = pages * pageSize;
         } else {
+            query = new QueryTrace(offset, limit, backEndSorting,
+                    inMemorySorting, filter);
             stream = getDataProvider().fetch(query);
         }
 
@@ -711,9 +752,10 @@ public class DataCommunicator<T> implements Serializable {
             assert !stream.isParallel();
         }
 
-        // the number of results can be in range from 0 to pages * pageSize
-        SizeVerifier verifier = new SizeVerifier<>(pages * pageSize);
+        SizeVerifier verifier = new SizeVerifier<>(limit);
         stream = stream.peek(verifier);
+
+        assert query != null : "Fetch query cannot be null";
 
         /*
          * These restrictions are used to help users to see that they have done
