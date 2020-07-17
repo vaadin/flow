@@ -380,6 +380,24 @@ public class AbstractLazyDataViewTest {
          Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
          Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
      }
+     
+     @Test
+     public void paged_access_methods_in_query_object() {
+    	 Query<Item, Void> query;
+    	 
+    	 query = new Query<>(0, 20, null, null, null);
+    	 Assert.assertEquals(0L, query.getPage());
+    	 Assert.assertEquals(20, query.getPageSize());
+    	 
+    	 query = new Query<>(20, 20, null, null, null);
+    	 Assert.assertEquals(1L, query.getPage());
+    	 Assert.assertEquals(20, query.getPageSize());
+
+    	 query = new Query<>(200, 40, null, null, null);
+    	 Assert.assertEquals(5L, query.getPage());
+    	 Assert.assertEquals(40, query.getPageSize());
+    	 
+     }
 
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
