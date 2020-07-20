@@ -137,7 +137,7 @@ suite("form/Field", () => {
 
     test('should set given non-empty value on reset with argument', async () => {
       const emptyOrder = OrderModel.createEmptyValue();
-      orderViewWithTextField.binder.reset({
+      orderViewWithTextField.binder.read({
         ...emptyOrder,
         notes: "foo",
         customer: {
@@ -153,7 +153,7 @@ suite("form/Field", () => {
 
     test('should set given empty value on reset with argument', async () => {
       const emptyOrder = OrderModel.createEmptyValue();
-      orderViewWithTextField.binder.reset({
+      orderViewWithTextField.binder.read({
         ...emptyOrder,
         notes: "foo",
         customer: {
@@ -164,7 +164,7 @@ suite("form/Field", () => {
       await orderViewWithTextField.updateComplete;
       orderViewWithTextField.notesField!.valueSpy.set.resetHistory();
 
-      orderViewWithTextField.binder.reset(OrderModel.createEmptyValue());
+      orderViewWithTextField.binder.read(OrderModel.createEmptyValue());
       await orderViewWithTextField.updateComplete;
 
       sinon.assert.calledWith(orderViewWithTextField.notesField!.valueSpy.set, '');
