@@ -35,6 +35,13 @@ function _echoLocalDate(
 }
 export {_echoLocalDate as echoLocalDate};
 
+function _echoLocalTime(
+  localTime: string
+): Promise<string> {
+  return client.call('DateTimeEndpoint', 'echoLocalTime', {localTime});
+}
+export {_echoLocalTime as echoLocalTime};
+
 function _echoLocalDateTime(
   localDateTime: string
 ): Promise<string> {

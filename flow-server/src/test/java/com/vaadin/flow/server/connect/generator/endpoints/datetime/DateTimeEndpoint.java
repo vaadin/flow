@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect.generator.endpoints.datetime;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,10 @@ public class DateTimeEndpoint {
 
     public LocalDateTime echoLocalDateTime(LocalDateTime localDateTime) {
         return localDateTime;
+    }
+
+    public LocalTime echoLocalTime(LocalTime localTime) {
+        return localTime;
     }
 
     public List<LocalDateTime> echoListLocalDateTime(

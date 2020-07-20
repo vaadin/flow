@@ -94,6 +94,7 @@ public class TsFormEndpoint {
         @Digits(integer=5, fraction = 2) String digits;
         @Past LocalDate past;
         @Future LocalDate future;
+        LocalTime localTime;
         @Pattern(regexp = "\\d+\\..+") String pattern;
         List<MyEntity> children;
         String[] stringArray;

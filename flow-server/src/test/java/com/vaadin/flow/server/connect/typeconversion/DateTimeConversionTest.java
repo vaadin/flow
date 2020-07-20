@@ -71,6 +71,26 @@ public class DateTimeConversionTest extends BaseTypeConversionTest {
     }
     // endregion
 
+    // region LocalTime tests
+    // LocalTime uses java.time.format.DateTimeFormatter.ISO_LOCAL_DATE as
+    // default
+    // format
+
+    @Test
+    public void should_ConvertToLocalTime_When_ReceiveALocalTime() {
+        String inputTime = "\"12:12:12\"";
+        String expectedTimestamp = "\"13:12:12\"";
+        assertEqualExpectedValueWhenCallingMethod("addOneHourLocalTime",
+        inputTime, expectedTimestamp);
+    }
+
+    @Test
+    public void should_FailToConvertToLocalTime_When_ReceiveWrongFormat() {
+        String inputTime = "\"12+12+12\"";
+        assert400ResponseWhenCallingMethod("addOneHourLocalTime", inputTime);
+    }
+    // endregion
+
     // region LocalDateTime tests
     // LocalDate uses java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME as
     // default format

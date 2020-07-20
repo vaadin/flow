@@ -19,6 +19,7 @@ package com.vaadin.flow.server.connect;
 import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -132,6 +133,22 @@ public class ExplicitNullableTypeCheckerTest {
         Assert.assertNotNull(error);
         Assert.assertTrue(error.contains("null"));
         Assert.assertTrue(error.contains("LocalDateTime"));
+    }
+
+    @Test
+    public void should_ReturnNull_When_GivenNonNullValue_ForLocalTimeType() {
+        Assert.assertNull(explicitNullableTypeChecker
+                .checkValueForType(LocalTime.now(), LocalTime.class));
+    }
+
+    @Test
+    public void should_ReturnError_When_GivenNullValue_ForLcalTimeType() {
+        String error = explicitNullableTypeChecker.checkValueForType(null,
+                LocalTime.class);
+
+        Assert.assertNotNull(error);
+        Assert.assertTrue(error.contains("null"));
+        Assert.assertTrue(error.contains("LocalTime"));
     }
 
     @Test

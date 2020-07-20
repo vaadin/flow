@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect.typeconversion;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,6 +115,10 @@ public class VaadinConnectTypeConversionEndpoints {
 
     public LocalDate addOneDayLocalDate(LocalDate value) {
         return value.plus(1, ChronoUnit.DAYS);
+    }
+
+    public LocalTime addOneHourLocalTime(LocalTime value) {
+        return value.plus(1, ChronoUnit.HOURS);
     }
 
     public LocalDateTime addOneDayOneHourLocalDateTime(LocalDateTime value) {
