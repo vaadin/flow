@@ -588,9 +588,9 @@
             </properties>
         </profile>
         <profile>
-            <id>java11</id>
+            <id>java14</id>
             <activation>
-                <jdk>11</jdk>
+                <jdk>14</jdk>
             </activation>
             <properties>
                 <maven.compiler.release>8</maven.compiler.release>
