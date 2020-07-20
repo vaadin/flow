@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect.generator;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -141,7 +142,7 @@ class SchemaResolver {
 
     private boolean isDateTimeType(ResolvedType resolvedType) {
         return resolvedType.isReferenceType()
-                && isTypeOf(resolvedType, LocalDateTime.class, Instant.class);
+                && isTypeOf(resolvedType, LocalDateTime.class, Instant.class, LocalTime.class);
     }
 
     private boolean isDateType(ResolvedType resolvedType) {

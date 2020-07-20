@@ -79,6 +79,10 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
     return this[getPropertyModelSymbol]('list', ArrayModel, [false, StringModel, [false], new NotEmpty()]);
   }
 
+  get localTime(): StringModel {
+    return this[getPropertyModelSymbol]('localTime', StringModel, [false]);
+  }
+
   get max(): NumberModel {
     return this[getPropertyModelSymbol]('max', NumberModel, [false, new Max(2)]);
   }
