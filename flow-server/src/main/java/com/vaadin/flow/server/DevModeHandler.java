@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -117,6 +118,8 @@ public final class DevModeHandler implements RequestHandler {
     private final AtomicReference<Process> webpackProcess = new AtomicReference<>();
     private final boolean reuseDevServer;
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
+    private final File devServerPortFile;
+
 
     private StringBuilder cumulativeOutput = new StringBuilder();
 
@@ -127,6 +130,7 @@ public final class DevModeHandler implements RequestHandler {
 
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
+        devServerPortFile = getDevServerPortFile(npmFolder);
 
         devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
             // this will throw an exception if an exception has been thrown by
@@ -225,7 +229,7 @@ public final class DevModeHandler implements RequestHandler {
             CompletableFuture<Void> waitFor) {
 
         if (runningPort == 0) {
-            runningPort = getRunningDevServerPort();
+            runningPort = getRunningDevServerPort(npmFolder);
         }
 
         return new DevModeHandler(configuration, runningPort, npmFolder,
@@ -464,7 +468,7 @@ public final class DevModeHandler implements RequestHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     public void removeRunningDevServerPort() {
-        FileUtils.deleteQuietly(LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE);
+        FileUtils.deleteQuietly(devServerPortFile);
     }
 
     private void runOnFutureComplete(DeploymentConfiguration config,
@@ -478,9 +482,8 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private void saveRunningDevServerPort() {
-        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
         try {
-            FileUtils.writeStringToFile(portFile, String.valueOf(port),
+            FileUtils.writeStringToFile(devServerPortFile, String.valueOf(port),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -645,9 +648,9 @@ public final class DevModeHandler implements RequestHandler {
         return new Pair<>(webpack, webpackConfig);
     }
 
-    private static int getRunningDevServerPort() {
+    private static int getRunningDevServerPort(File npmFolder) {
         int port = 0;
-        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
+        File portFile = getDevServerPortFile(npmFolder);
         if (portFile.canRead()) {
             try {
                 String portString = FileUtils
@@ -742,18 +745,21 @@ public final class DevModeHandler implements RequestHandler {
         devServerStartFuture.join();
     }
 
-    private static final class LazyDevServerPortFileInit {
 
-        private static final File DEV_SERVER_PORT_FILE = createDevServerPortFile();
+    private static File getDevServerPortFile(File npmFolder) {
+        // The thread group is the same in each servlet-container restart
+        String threadGroup = String
+                .valueOf(Thread.currentThread().getThreadGroup().hashCode());
+        String frontendBuildPath = npmFolder.getAbsolutePath();
 
-        private static File createDevServerPortFile() {
-            try {
-                return File.createTempFile("flow-dev-server", "port");
-            } catch (IOException exception) {
-                throw new UncheckedIOException(exception);
-            }
-        }
-
+        // #8723: keep webpack alive when Jetty restarts.
+        // Thread group ID prevents the port file from being picked up after JVM
+        // restart. Frontend path ensures uniqueness when multiple devmode apps
+        // are deployed.
+        String uniqueUid = UUID
+                .nameUUIDFromBytes((threadGroup + frontendBuildPath)
+                        .getBytes(StandardCharsets.UTF_8))
+                .toString();
+        return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
     }
-
 }
