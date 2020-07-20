@@ -51,7 +51,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     }
     this[onChangeSymbol] = config?.onChange || this[onChangeSymbol];
     this[onSubmitSymbol] = config?.onSubmit || this[onSubmitSymbol];
-    this.reset(this[emptyValueSymbol]);
+    this.read(this[emptyValueSymbol]);
   }
 
   get defaultValue() {
@@ -78,13 +78,13 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   }
 
   /**
-   * Reset the form value to default value and clear validation errors
+   * Read the given value into the form and clear validation errors
    *
-   * @param defaultValue When present, sets the argument as the new default
+   * @param value Sets the argument as the new default
    * value before resetting, otherwise the previous default is used.
    */
-  reset(defaultValue: T = this[defaultValueSymbol]) {
-    this.defaultValue = defaultValue;
+  read(value: T) {
+    this.defaultValue = value;
     if (
       // Skip when no value is set yet (e. g., invoked from constructor)
       this.value
@@ -92,15 +92,19 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
       && this.clearValidation()
       // When value is dirty, another update is coming from invoking the value
       // setter below, so we skip this one to prevent duplicate updates
-      && this.value === defaultValue) {
+      && this.value === value) {
       this.update(this.value);
     }
 
     this.value = this.defaultValue;
   }
 
+  reset(){
+    this.read(this[defaultValueSymbol])
+  }
+
   clear() {
-    this.reset(this[emptyValueSymbol]);
+    this.read(this[emptyValueSymbol]);
   }
 
   async submit(): Promise<T|void>{

@@ -160,7 +160,7 @@ suite("form/Binder", () => {
       binder.for(binder.model.customer.fullName).value = "foo";
       requestUpdateStub.reset();
 
-      binder.reset({
+      binder.read({
         ...expectedEmptyOrder,
         notes: "bar",
         customer: {
@@ -175,7 +175,7 @@ suite("form/Binder", () => {
     });
 
     test("should clear value and default value", () => {
-      binder.reset({
+      binder.read({
         ...expectedEmptyOrder,
         notes: "bar",
         customer: {
