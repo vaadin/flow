@@ -397,7 +397,6 @@ public class DataCommunicator<T> implements Serializable {
      * @param pageSize
      *            the page size to set
      */
-    // TODO https://github.com/vaadin/flow/issues/8557
     public void setPageSize(int pageSize) {
         if (pageSize < 1) {
             throw new IllegalArgumentException(String.format(
