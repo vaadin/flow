@@ -28,10 +28,10 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
     // https://github.com/vaadin/flow/issues/8544
     @Test
     public void testRouterLink_linkIsBroken_urlIsUpdated() {
+        open();
+
         // enable after https://github.com/vaadin/vaadin-router/issues/43 is fixed
         Assume.assumeFalse(isClientRouter());
-
-        open();
 
         WebElement link = findElement(By.id(BrokenRouterLinkView.LINK_ID));
 
@@ -45,10 +45,10 @@ public class BrokenRouterLinkIT extends ChromeBrowserTest {
     // https://github.com/vaadin/flow/issues/8693
     @Test
     public void testRouterLink_visitBrokenLinkAndBack_scrollPositionIsRetained() {
+        open();
+
         // enable after https://github.com/vaadin/vaadin-router/issues/43 is fixed
         Assume.assumeFalse(isClientRouter());
-
-        open();
 
         executeScript("window.scrollTo(0,100)");
 
