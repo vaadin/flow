@@ -541,6 +541,25 @@ suite("form/Validation", () => {
       await orderView.updateComplete;
       expect(orderView.submitting.textContent).to.equal('false');
     });
+
+    // https://github.com/vaadin/flow/issues/8688
+    test("should update binder properties after submit when a field changes value", async () => {
+      try {
+        await orderView.binder.submitTo(async (item) => item);
+        expect.fail();
+      } catch (error) {
+      }
+      const errorsOnSubmit = binder.errors.length;
+
+      orderView.notes.value = 'foo';
+      await fireEvent(orderView.notes, 'change');
+      
+      const numberOfValidatorsOnNotesField = binder.for(binder.model.notes).validators.length;
+
+      if(errorsOnSubmit>=1){
+        assert.equal(errorsOnSubmit-numberOfValidatorsOnNotesField, binder.errors.length);
+      }
+    });
   });
 
 });

@@ -150,7 +150,7 @@ export const field = directive(<T>(
     fieldState.strategy.required = fieldState.required = required;
   }
 
-  const firstError = binderNode.ownErrors[0];
+  const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
   const errorMessage = firstError && firstError.message || '';
   if (errorMessage !== fieldState.errorMessage) {
     fieldState.strategy.errorMessage = fieldState.errorMessage = errorMessage;
