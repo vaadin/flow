@@ -15,7 +15,13 @@
  */
 package com.vaadin.flow.server.connect.generator;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Optional;
+
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.expr.AnnotationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 
 /**
  * A set of static methods used in CCDM generators, so as flow do not depend on
@@ -98,4 +104,13 @@ final class GeneratorUtils {
         return endsWith(s, p) ? s.substring(0, s.lastIndexOf(p)) : s;
     }
 
+    static boolean hasAnnotation(NodeWithAnnotations<?> declaration, CompilationUnit compilationUnit,
+            Class<? extends Annotation> annotation) {
+        Optional<AnnotationExpr> endpointAnnotation = declaration.getAnnotationByClass(annotation);
+        if (endpointAnnotation.isPresent()) {
+            return compilationUnit.getImports().stream()
+                    .anyMatch(importDeclaration -> annotation.getName().equals(importDeclaration.getNameAsString()));
+        }
+        return false;
+    }
 }
