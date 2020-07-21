@@ -114,6 +114,12 @@ public final class DevModeHandler implements RequestHandler {
      */
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
+    /**
+     * UUID system property for identifying JVM restart.
+     */
+    private static final String WEBPACK_PORTFILE_UUID_PROPERTY = "vaadin.frontend.webpack.portfile.uuid";
+
+
     private volatile int port;
     private final AtomicReference<Process> webpackProcess = new AtomicReference<>();
     private final boolean reuseDevServer;
@@ -747,18 +753,19 @@ public final class DevModeHandler implements RequestHandler {
 
 
     private static File getDevServerPortFile(File npmFolder) {
-        // The thread group is the same in each servlet-container restart
-        String threadGroup = String
-                .valueOf(Thread.currentThread().getThreadGroup().hashCode());
+        // UUID changes between JVM restarts
+        String jvmUuid = System.getProperty(WEBPACK_PORTFILE_UUID_PROPERTY);
+        if (jvmUuid == null) {
+            jvmUuid = UUID.randomUUID().toString();
+            System.setProperty(WEBPACK_PORTFILE_UUID_PROPERTY, jvmUuid);
+        }
+
+        // Frontend path ensures uniqueness for multiple devmode apps running
+        // simultaneously
         String frontendBuildPath = npmFolder.getAbsolutePath();
 
-        // #8723: keep webpack alive when Jetty restarts.
-        // Thread group ID prevents the port file from being picked up after JVM
-        // restart. Frontend path ensures uniqueness when multiple devmode apps
-        // are deployed.
-        String uniqueUid = UUID
-                .nameUUIDFromBytes((threadGroup + frontendBuildPath)
-                        .getBytes(StandardCharsets.UTF_8))
+        String uniqueUid = UUID.nameUUIDFromBytes(
+                (jvmUuid + frontendBuildPath).getBytes(StandardCharsets.UTF_8))
                 .toString();
         return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
     }
