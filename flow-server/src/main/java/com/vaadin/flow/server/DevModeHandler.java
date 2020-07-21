@@ -19,7 +19,9 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -489,6 +491,7 @@ public final class DevModeHandler implements RequestHandler {
 
     private void saveRunningDevServerPort() {
         try {
+            getLogger().warn("Writing port {} to {}", port, devServerPortFile);
             FileUtils.writeStringToFile(devServerPortFile, String.valueOf(port),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -758,15 +761,32 @@ public final class DevModeHandler implements RequestHandler {
         if (jvmUuid == null) {
             jvmUuid = UUID.randomUUID().toString();
             System.setProperty(WEBPACK_PORTFILE_UUID_PROPERTY, jvmUuid);
+            getLogger().warn("New JVM UUID: {}", jvmUuid);
+        } else {
+            getLogger().warn("Existing JVM UUID: {}", jvmUuid);
         }
 
         // Frontend path ensures uniqueness for multiple devmode apps running
         // simultaneously
         String frontendBuildPath = npmFolder.getAbsolutePath();
+        getLogger().warn("Frontend build path: {}", frontendBuildPath);
 
         String uniqueUid = UUID.nameUUIDFromBytes(
                 (jvmUuid + frontendBuildPath).getBytes(StandardCharsets.UTF_8))
                 .toString();
-        return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
+        final File file = new File(System.getProperty("java.io.tmpdir"), uniqueUid);
+        getLogger().warn("Portfile: {}", file);
+        if (file.exists()) {
+            try {
+                getLogger().warn("Contains:");
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String st;
+                while ((st = br.readLine()) != null)
+                    getLogger().warn(st);
+            } catch (IOException ioe) {
+                throw new UncheckedIOException(ioe);
+            }
+        }
+        return file;
     }
 }
