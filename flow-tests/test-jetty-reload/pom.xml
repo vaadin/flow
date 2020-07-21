@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>flow-tests</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>4.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-test-jetty-reload</artifactId>
+    <name>Flow tests for Jetty reload in dev mode</name>
+
+    <packaging>war</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Run flow plugin to build frontend -->
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <configuration>
+                    <productionMode>false</productionMode>
+                </configuration>
+            </plugin>
+            <!-- Run jetty before integration tests, and stop after -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Scan target/scantrigger in 1 second intervals -->
+                    <scanIntervalSeconds>1</scanIntervalSeconds>
+                    <scanTargetPatterns>
+                        <scanTargetPattern>
+                            <directory>${project.build.directory}</directory>
+                            <includes>
+                                <include>**/scantrigger</include>
+                            </includes>
+                        </scanTargetPattern>
+                    </scanTargetPatterns>
+                     <systemProperties>
+                        <systemProperty>
+                            <name>jetty.scantrigger</name>
+                            <value>${project.build.directory}/scantrigger</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+     </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>local-run</id>
+            <activation>
+                <property>
+                    <name>!test.use.hub</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.lazerycode.selenium</groupId>
+                        <artifactId>driver-binary-downloader-maven-plugin</artifactId>
+                        <version>${driver.binary.downloader.maven.plugin.version}</version>
+                        <configuration>
+                            <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
+                            <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
+                            <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
+                            <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>selenium</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
