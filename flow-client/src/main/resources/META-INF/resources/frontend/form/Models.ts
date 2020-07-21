@@ -3,20 +3,19 @@
 import {BinderNode} from "./BinderNode";
 import {Validator} from "./Validation";
 
-export const ItemModelSymbol = Symbol('ItemModel');
-export const parentSymbol = Symbol('parent');
+export const _ItemModel = Symbol('ItemModel');
+export const _parent = Symbol('parent');
+export const _key = Symbol('key');
+export const _fromString = Symbol('fromString');
+export const _validators = Symbol('validators');
+export const _binderNode = Symbol('binderNode');
+export const _getPropertyModel = Symbol('getPropertyModel');
 
-export const keySymbol = Symbol('key');
-export const fromStringSymbol = Symbol('fromString');
-export const validatorsSymbol = Symbol('validators');
-export const binderNodeSymbol = Symbol('binderNode');
-export const optionalSymbol = Symbol('optional');
-
-export const getPropertyModelSymbol = Symbol('getPropertyModel');
-const propertiesSymbol = Symbol('properties');
+const _properties = Symbol('properties');
+const _optional = Symbol('optional');
 
 interface HasFromString<T> {
-  [fromStringSymbol](value: string): T;
+  [_fromString](value: string): T;
 }
 
 export interface HasValue<T> {
@@ -39,12 +38,12 @@ export abstract class AbstractModel<T> {
     return undefined;
   }
 
-  readonly [parentSymbol]: ModelParent<T>;
-  readonly [validatorsSymbol]: ReadonlyArray<Validator<T>>;
-  readonly [optionalSymbol]: boolean;
+  readonly [_parent]: ModelParent<T>;
+  readonly [_validators]: ReadonlyArray<Validator<T>>;
+  readonly [_optional]: boolean;
 
-  [binderNodeSymbol]?: BinderNode<T, this>;
-  [keySymbol]: keyof any;
+  [_binderNode]?: BinderNode<T, this>;
+  [_key]: keyof any;
 
   constructor(
     parent: ModelParent<T>,
@@ -52,10 +51,10 @@ export abstract class AbstractModel<T> {
     optional: boolean,
     ...validators: ReadonlyArray<Validator<T>>
   ) {
-    this[parentSymbol] = parent;
-    this[keySymbol] = key;
-    this[optionalSymbol] = optional;
-    this[validatorsSymbol] = validators;
+    this[_parent] = parent;
+    this[_key] = key;
+    this[_optional] = optional;
+    this[_validators] = validators;
   }
 
   toString() {
@@ -71,17 +70,17 @@ export abstract class PrimitiveModel<T> extends AbstractModel<T> {
 
 export class BooleanModel extends PrimitiveModel<boolean> implements HasFromString<boolean> {
   static createEmptyValue = Boolean;
-  [fromStringSymbol] = Boolean;
+  [_fromString] = Boolean;
 }
 
 export class NumberModel extends PrimitiveModel<number> implements HasFromString<number> {
   static createEmptyValue = Number;
-  [fromStringSymbol] = Number;
+  [_fromString] = Number;
 }
 
 export class StringModel extends PrimitiveModel<string> implements HasFromString<string> {
   static createEmptyValue = String;
-  [fromStringSymbol] = String;
+  [_fromString] = String;
 }
 
 export class ObjectModel<T> extends AbstractModel<T> {
@@ -101,7 +100,7 @@ export class ObjectModel<T> extends AbstractModel<T> {
         .reduce((o, propertyName) => {
           const propertyModel = (modelInstance as any)[propertyName] as AbstractModel<any>;
           // Skip initialising optional properties
-          if (!propertyModel[optionalSymbol]) {
+          if (!propertyModel[_optional]) {
             (o as any)[propertyName] = (
               propertyModel.constructor as ModelConstructor<any, AbstractModel<any>>
             ).createEmptyValue();
@@ -112,9 +111,9 @@ export class ObjectModel<T> extends AbstractModel<T> {
     return obj;
   }
 
-  private [propertiesSymbol]: {[name in keyof T]?: AbstractModel<T[name]>} = {};
+  private [_properties]: {[name in keyof T]?: AbstractModel<T[name]>} = {};
 
-  protected [getPropertyModelSymbol]<
+  protected [_getPropertyModel]<
     N extends keyof T,
     C extends new(parent: ModelParent<NonNullable<T[N]>>, key: keyof any, optional: boolean, ...args: any[]) => any
   >(
@@ -123,9 +122,9 @@ export class ObjectModel<T> extends AbstractModel<T> {
     valueModelArgs: any[]
   ): InstanceType<C> {
     const [optional, ...rest] = valueModelArgs;
-    return this[propertiesSymbol][name] !== undefined ?
-      (this[propertiesSymbol][name] as InstanceType<C>)
-      : (this[propertiesSymbol][name] = new ValueModel(this, name, optional, ...rest));
+    return this[_properties][name] !== undefined ?
+      (this[_properties][name] as InstanceType<C>)
+      : (this[_properties][name] = new ValueModel(this, name, optional, ...rest));
   }
 }
 
@@ -134,7 +133,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     return [] as ReadonlyArray<unknown>;
   }
 
-  private readonly [ItemModelSymbol]: ModelConstructor<T, M>;
+  private readonly [_ItemModel]: ModelConstructor<T, M>;
   private readonly itemModelArgs: ReadonlyArray<any>;
   private readonly itemModels: M[] = [];
 
@@ -147,7 +146,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
     ...validators: ReadonlyArray<Validator<ReadonlyArray<T>>>
   ) {
     super(parent, key, optional, ...validators);
-    this[ItemModelSymbol] = ItemModel;
+    this[_ItemModel] = ItemModel;
     this.itemModelArgs = itemModelArgs;
   }
 
@@ -156,7 +155,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
    */
   *[Symbol.iterator](): IterableIterator<BinderNode<T, M>> {
     const array = getBinderNode(this).value;
-    const ItemModel = this[ItemModelSymbol];
+    const ItemModel = this[_ItemModel];
     if (array.length !== this.itemModels.length) {
       this.itemModels.length = array.length;
     }
@@ -173,7 +172,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
 }
 
 export function getBinderNode<M extends AbstractModel<any>, T = ModelValue<M>>(model: M): BinderNode<T, M> {
-  return model[binderNodeSymbol] || (
-    model[binderNodeSymbol] = new BinderNode(model)
+  return model[_binderNode] || (
+    model[_binderNode] = new BinderNode(model)
   );
 }

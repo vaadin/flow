@@ -1,8 +1,8 @@
 import {BinderNode} from "./BinderNode";
 import {
+  _parent,
   AbstractModel,
-  ModelConstructor,
-  parentSymbol
+  ModelConstructor
 } from "./Models";
 import {
   runValidator,
@@ -14,27 +14,27 @@ import {
 
 import {FieldStrategy, getDefaultFieldStrategy} from "./Field";
 
-const submittingSymbol = Symbol('submitting');
-const defaultValueSymbol = Symbol('defaultValue');
-const valueSymbol = Symbol('value');
-const emptyValueSymbol = Symbol('emptyValue');
-const onChangeSymbol = Symbol('onChange');
-const onSubmitSymbol = Symbol('onSubmit');
-const validationsSymbol = Symbol('validations');
-const validatingSymbol = Symbol('validating');
-const validationRequestSymbol = Symbol('validationRequest');
+const _submitting = Symbol('submitting');
+const _defaultValue = Symbol('defaultValue');
+const _value = Symbol('value');
+const _emptyValue = Symbol('emptyValue');
+const _onChange = Symbol('onChange');
+const _onSubmit = Symbol('onSubmit');
+const _validations = Symbol('validations');
+const _validating = Symbol('validating');
+const _validationRequestSymbol = Symbol('validationRequest');
 
 export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
-  private [defaultValueSymbol]: T;
-  private [valueSymbol]: T;
-  private [emptyValueSymbol]: T;
-  private [submittingSymbol]: boolean = false;
-  private [validatingSymbol]: boolean = false;
-  private [validationRequestSymbol]: Promise<void> | undefined = undefined;
-  private [onChangeSymbol]: (oldValue?: T) => void;
-  private [onSubmitSymbol]: (value: T) => Promise<T|void>;
+  private [_defaultValue]: T;
+  private [_value]: T;
+  private [_emptyValue]: T;
+  private [_submitting]: boolean = false;
+  private [_validating]: boolean = false;
+  private [_validationRequestSymbol]: Promise<void> | undefined = undefined;
+  private [_onChange]: (oldValue?: T) => void;
+  private [_onSubmit]: (value: T) => Promise<T|void>;
 
-  private [validationsSymbol]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> = new Map();
+  private [_validations]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> = new Map();
 
   constructor(
     public context: Element,
@@ -42,37 +42,37 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     config?: BinderConfiguration<T>
   ) {
     super(new Model({value: undefined}, 'value', false));
-    this[emptyValueSymbol] = (this.model[parentSymbol] as {value: T}).value;
+    this[_emptyValue] = (this.model[_parent] as {value: T}).value;
     // @ts-ignore
-    this.model[parentSymbol] = this;
+    this.model[_parent] = this;
 
     if (typeof (context as any).requestUpdate === 'function') {
-      this[onChangeSymbol] = () => (context as any).requestUpdate();
+      this[_onChange] = () => (context as any).requestUpdate();
     }
-    this[onChangeSymbol] = config?.onChange || this[onChangeSymbol];
-    this[onSubmitSymbol] = config?.onSubmit || this[onSubmitSymbol];
-    this.read(this[emptyValueSymbol]);
+    this[_onChange] = config?.onChange || this[_onChange];
+    this[_onSubmit] = config?.onSubmit || this[_onSubmit];
+    this.read(this[_emptyValue]);
   }
 
   get defaultValue() {
-    return this[defaultValueSymbol];
+    return this[_defaultValue];
   }
 
   set defaultValue(newValue) {
-    this[defaultValueSymbol] = newValue;
+    this[_defaultValue] = newValue;
   }
 
   get value() {
-    return this[valueSymbol];
+    return this[_value];
   }
 
   set value(newValue) {
-    if (newValue === this[valueSymbol]) {
+    if (newValue === this[_value]) {
       return;
     }
 
-    const oldValue = this[valueSymbol];
-    this[valueSymbol] = newValue;
+    const oldValue = this[_value];
+    this[_value] = newValue;
     this.update(oldValue);
     this.updateValidation();
   }
@@ -100,16 +100,16 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   }
 
   reset(){
-    this.read(this[defaultValueSymbol])
+    this.read(this[_defaultValue])
   }
 
   clear() {
-    this.read(this[emptyValueSymbol]);
+    this.read(this[_emptyValue]);
   }
 
   async submit(): Promise<T|void>{
-    if(this[onSubmitSymbol]!==undefined){
-      this.submitTo(this[onSubmitSymbol]);
+    if(this[_onSubmit]!==undefined){
+      this.submitTo(this[_onSubmit]);
     }
   }
 
@@ -119,7 +119,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
       throw new ValidationError(errors);
     }
 
-    this[submittingSymbol] = true;
+    this[_submitting] = true;
     this.update(this.value);
     try {
       return await endpointMethod.call(this.context, this.value);
@@ -136,7 +136,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
       }
       throw (error);
     } finally {
-      this[submittingSymbol] = false;
+      this[_submitting] = false;
       this.defaultValue = this.value;
       this.update(this.value);
     }
@@ -144,11 +144,11 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
 
   async requestValidation<NT, NM extends AbstractModel<NT>>(model: NM, validator: Validator<NT>): Promise<ReadonlyArray<ValueError<NT>>> {
     let modelValidations: Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
-    if (this[validationsSymbol].has(model)) {
-      modelValidations = this[validationsSymbol].get(model) as Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
+    if (this[_validations].has(model)) {
+      modelValidations = this[_validations].get(model) as Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
     } else {
       modelValidations = new Map();
-      this[validationsSymbol].set(model, modelValidations);
+      this[_validations].set(model, modelValidations);
     }
 
     await this.performValidation();
@@ -163,9 +163,9 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
 
     modelValidations.delete(validator);
     if (modelValidations.size === 0) {
-      this[validationsSymbol].delete(model);
+      this[_validations].delete(model);
     }
-    if (this[validationsSymbol].size === 0) {
+    if (this[_validations].size === 0) {
       this.completeValidation();
     }
 
@@ -177,30 +177,30 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   }
 
   get submitting() {
-    return this[submittingSymbol];
+    return this[_submitting];
   }
 
   get validating() {
-    return this[validatingSymbol];
+    return this[_validating];
   }
 
   protected performValidation(): Promise<void> | void {
-    if (!this[validationRequestSymbol]) {
-      this[validatingSymbol] = true;
-      this[validationRequestSymbol] = Promise.resolve().then(() => {
-        this[validationRequestSymbol] = undefined;
+    if (!this[_validationRequestSymbol]) {
+      this[_validating] = true;
+      this[_validationRequestSymbol] = Promise.resolve().then(() => {
+        this[_validationRequestSymbol] = undefined;
       });
     }
-    return this[validationRequestSymbol];
+    return this[_validationRequestSymbol];
   }
 
   protected completeValidation() {
-    this[validatingSymbol] = false;
+    this[_validating] = false;
   }
 
   protected update(oldValue: T) {
-    if(this[onChangeSymbol]){
-      this[onChangeSymbol].call(this.context, oldValue);
+    if(this[_onChange]){
+      this[_onChange].call(this.context, oldValue);
     }
   }
 }

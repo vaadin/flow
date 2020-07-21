@@ -2,12 +2,10 @@
 
 import { directive, Part, PropertyPart } from "lit-html";
 import {
+  _fromString,
   AbstractModel,
-  fromStringSymbol,
   getBinderNode
 } from "./Models";
-
-export const fieldSymbol = Symbol('field');
 
 interface Field {
   required: boolean,
@@ -115,7 +113,7 @@ export const field = directive(<T>(
 
     const updateValueFromElement = () => {
       fieldState.value = fieldState.strategy.value;
-      const convert = typeof fieldState.value === 'string' && (model as any)[fromStringSymbol];
+      const convert = typeof fieldState.value === 'string' && (model as any)[_fromString];
       binderNode.value = convert ? convert(fieldState.value) : fieldState.value;
       if (effect !== undefined) {
         effect.call(element, element);
