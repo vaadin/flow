@@ -5,7 +5,7 @@
             <version id="84.0.4147.30">
                 <bitrate thirtytwobit="true" sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/84.0.4147.30/chromedriver_win32.zip</filelocation>
-                    <hash>3bf0e106a93382efd7a5bb3b55b182a6</hash>
+                    <hash>88865caf39e8e565d7fe05f7f2dac860d41e70bc</hash>
                     <hashtype>sha1</hashtype>
                 </bitrate>
             </version>
@@ -16,7 +16,7 @@
             <version id="84.0.4147.30">
                 <bitrate sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/84.0.4147.30/chromedriver_linux64.zip</filelocation>
-                    <hash>beffb1bca07d8f4fd23213b292ef963b</hash>
+                    <hash>2518c34ae056ca6264eae2cceb90d544e1dc35bb</hash>
                     <hashtype>sha1</hashtype>
                 </bitrate>
             </version>
@@ -27,7 +27,7 @@
             <version id="84.0.4147.30">
                 <bitrate sixtyfourbit="true">
                     <filelocation>https://chromedriver.storage.googleapis.com/84.0.4147.30/chromedriver_mac64.zip</filelocation>
-                    <hash>b2ff30e148ae11a78e0f13e93b29f271</hash>
+                    <hash>3688167f9f4f0e7a240cc215b332500fb33eec9f</hash>
                     <hashtype>sha1</hashtype>
                 </bitrate>
             </version>
