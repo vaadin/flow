@@ -29,7 +29,7 @@ import {
 } from "./Models";
 import {Validator, ValueError} from "./Validation";
 
-const errorsSymbol = Symbol('ownErrorsSymbol');
+const ownErrorsSymbol = Symbol('ownErrorsSymbol');
 const visitedSymbol = Symbol('visited');
 
 function getErrorPropertyName(valueError: ValueError<any>): string {
@@ -41,7 +41,7 @@ function getErrorPropertyName(valueError: ValueError<any>): string {
 export class BinderNode<T, M extends AbstractModel<T>> {
   private [visitedSymbol]: boolean = false;
   private [validatorsSymbol]: ReadonlyArray<Validator<T>>;
-  private [errorsSymbol]?: ReadonlyArray<ValueError<T>>;
+  private [ownErrorsSymbol]?: ReadonlyArray<ValueError<T>>;
   private defaultArrayItemValue?: T;
 
   constructor(readonly model: M) {
@@ -120,7 +120,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
         .filter(valueError => valueError) as ReadonlyArray<ValueError<any>>;
     this.setErrorsWithDescendants(errors.length ? errors : undefined);
     this.update();
-    return this.errors;
+    return errors;
   }
 
   addValidator(validator: Validator<T>) {
@@ -139,17 +139,17 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get errors(): ReadonlyArray<ValueError<any>> {
-    return this[errorsSymbol] || [
+    const descendantsErrors = [
       ...this.getChildBinderNodes()
     ].reduce((errors, childBinderNode) => [
       ...errors,
       ...childBinderNode.errors
-    ], [] as ReadonlyArray<any>);
+    ], [] as ReadonlyArray<any>)
+    return descendantsErrors.concat(this.ownErrors);
   }
 
   get ownErrors() {
-    const name = this.name;
-    return this.errors.filter(valueError => getErrorPropertyName(valueError) === name);
+    return this[ownErrorsSymbol] ? this[ownErrorsSymbol] : [];
   }
 
   get invalid() {
@@ -220,8 +220,8 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       this[visitedSymbol] = false;
     }
     let needsUpdate = false;
-    if (this[errorsSymbol]) {
-      this[errorsSymbol] = undefined;
+    if (this[ownErrorsSymbol]) {
+      this[ownErrorsSymbol] = undefined;
       needsUpdate = true;
     }
     if ([...this.getChildBinderNodes()]
@@ -252,9 +252,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
 
   protected setErrorsWithDescendants(errors?: ReadonlyArray<ValueError<any>>) {
     const name = this.name;
+    const ownErrors = errors ?
+      errors.filter(valueError => getErrorPropertyName(valueError) === name) : undefined;
     const relatedErrors = errors ?
       errors.filter(valueError => getErrorPropertyName(valueError).startsWith(name)) : undefined;
-    this[errorsSymbol] = relatedErrors;
+    this[ownErrorsSymbol] = ownErrors;
     for (const childBinderNode of this.getChildBinderNodes()) {
       childBinderNode.setErrorsWithDescendants(relatedErrors);
     }
