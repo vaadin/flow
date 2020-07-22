@@ -421,7 +421,6 @@ public class DevModeInitializer
     public void contextDestroyed(ServletContextEvent ctx) {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         if (handler != null && !handler.reuseDevServer()) {
-            log().warn("Stopped because context was destroyed");
             handler.stop();
         }
     }
