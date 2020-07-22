@@ -336,7 +336,7 @@ public class OpenApiObjectGenerator {
                     .orElse(classDeclaration.getNameAsString());
             qualifiedNameToPath.put(className, storage.getPath().toString());
         });
-        if (!endpointAnnotation.isPresent()) {
+        if (!GeneratorUtils.hasAnnotation(classDeclaration, compilationUnit, Endpoint.class)) {
             nonEndpointMap.put(classDeclaration.resolve().getQualifiedName(),
                     classDeclaration);
         } else {
@@ -348,7 +348,7 @@ public class OpenApiObjectGenerator {
                 endpointsJavadoc.put(classDeclaration, "");
             }
             pathItems.putAll(createPathItems(
-                    getEndpointName(classDeclaration, endpointAnnotation.get()),
+                    getEndpointName(classDeclaration, endpointAnnotation.orElse(null)),
                     classDeclaration));
         }
     }
