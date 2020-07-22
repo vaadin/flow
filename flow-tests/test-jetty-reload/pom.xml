@@ -60,15 +60,16 @@
                             </includes>
                         </scanTargetPattern>
                     </scanTargetPatterns>
-                     <systemProperties>
+                    <systemProperties>
+                        <force>true</force>
                         <systemProperty>
                             <name>jetty.scantrigger</name>
                             <value>${project.build.directory}/scantrigger</value>
                         </systemProperty>
-                         <systemProperty>
-                             <name>vaadin.reuseDevServer</name>
-                             <value>true</value>
-                         </systemProperty>
+                        <systemProperty>
+                            <name>vaadin.reuseDevServer</name>
+                            <value>true</value>
+                        </systemProperty>
                     </systemProperties>
                 </configuration>
             </plugin>
