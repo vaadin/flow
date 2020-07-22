@@ -104,13 +104,12 @@ final class GeneratorUtils {
         return endsWith(s, p) ? s.substring(0, s.lastIndexOf(p)) : s;
     }
 
-    @SuppressWarnings("squid:S1872")
     static boolean hasAnnotation(NodeWithAnnotations<?> declaration, CompilationUnit compilationUnit,
             Class<? extends Annotation> annotation) {
         Optional<AnnotationExpr> endpointAnnotation = declaration.getAnnotationByClass(annotation);
         if (endpointAnnotation.isPresent()) {
             return compilationUnit.getImports().stream()
-                    .anyMatch(importDeclaration -> annotation.getName().equals(importDeclaration.getNameAsString()));
+                    .anyMatch(importDeclaration -> annotation.getName().equals(importDeclaration.getNameAsString())); // NOSONAR
         }
         return false;
     }
