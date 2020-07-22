@@ -348,7 +348,7 @@ public class OpenApiObjectGenerator {
                 endpointsJavadoc.put(classDeclaration, "");
             }
             pathItems.putAll(createPathItems(
-                    getEndpointName(classDeclaration, endpointAnnotation.get()),
+                    getEndpointName(classDeclaration, endpointAnnotation.orElse(null)),
                     classDeclaration));
         }
     }
