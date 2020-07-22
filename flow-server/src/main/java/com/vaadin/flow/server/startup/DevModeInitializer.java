@@ -422,6 +422,8 @@ public class DevModeInitializer
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
         if (handler != null && !handler.reuseDevServer()) {
             log().warn("Stopped because context was destroyed");
+            log().warn("System property vaadin.reuseDevServer = {}",
+                    System.getProperty("vaadin.reuseDevServer"));
             handler.stop();
         }
     }

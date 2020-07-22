@@ -261,6 +261,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
                             .getBoolean(SERVLET_PARAMETER_ENABLE_DEV_SERVER)));
         }
         if (buildInfo.hasKey(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
+            logger.warn(
+                    "Set reuseDevServer to {} because we had it in buildInfo",
+                    buildInfo.getBoolean(SERVLET_PARAMETER_REUSE_DEV_SERVER));
             initParameters.setProperty(SERVLET_PARAMETER_REUSE_DEV_SERVER,
                     String.valueOf(buildInfo
                             .getBoolean(SERVLET_PARAMETER_REUSE_DEV_SERVER)));
