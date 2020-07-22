@@ -15,22 +15,22 @@
  */
 import {Binder} from "./Binder";
 import {
+  _binderNode,
+  _ItemModel,
+  _key,
+  _parent,
+  _validators,
   AbstractModel,
   ArrayModel,
-  binderNodeSymbol,
   getBinderNode,
-  ItemModelSymbol,
-  keySymbol,
   ModelConstructor,
   ModelValue,
-  ObjectModel,
-  parentSymbol,
-  validatorsSymbol
+  ObjectModel
 } from "./Models";
 import {Validator, ValueError} from "./Validation";
 
-const ownErrorsSymbol = Symbol('ownErrorsSymbol');
-const visitedSymbol = Symbol('visited');
+const _ownErrors = Symbol('ownErrorsSymbol');
+const _visited = Symbol('visited');
 
 function getErrorPropertyName(valueError: ValueError<any>): string {
   return typeof valueError.property === 'string'
@@ -39,19 +39,19 @@ function getErrorPropertyName(valueError: ValueError<any>): string {
 }
 
 export class BinderNode<T, M extends AbstractModel<T>> {
-  private [visitedSymbol]: boolean = false;
-  private [validatorsSymbol]: ReadonlyArray<Validator<T>>;
-  private [ownErrorsSymbol]?: ReadonlyArray<ValueError<T>>;
+  private [_visited]: boolean = false;
+  private [_validators]: ReadonlyArray<Validator<T>>;
+  private [_ownErrors]?: ReadonlyArray<ValueError<T>>;
   private defaultArrayItemValue?: T;
 
   constructor(readonly model: M) {
-    model[binderNodeSymbol] = this;
+    model[_binderNode] = this;
     this.initializeValue();
-    this[validatorsSymbol] = model[validatorsSymbol];
+    this[_validators] = model[_validators];
   }
 
   get parent(): BinderNode<any, AbstractModel<any>> | undefined {
-    const modelParent = this.model[parentSymbol];
+    const modelParent = this.model[_parent];
     return modelParent instanceof AbstractModel
       ? getBinderNode(modelParent)
       : undefined;
@@ -64,15 +64,15 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   get name(): string {
     let model = this.model as AbstractModel<any>;
     const strings = [];
-    while (model[parentSymbol] instanceof AbstractModel) {
-      strings.unshift(String(model[keySymbol]));
-      model = model[parentSymbol] as AbstractModel<any>;
+    while (model[_parent] instanceof AbstractModel) {
+      strings.unshift(String(model[_key]));
+      model = model[_parent] as AbstractModel<any>;
     }
     return strings.join('.');
   }
 
   get value(): T {
-    return this.parent!.value[this.model[keySymbol]];
+    return this.parent!.value[this.model[_key]];
   }
 
   set value(value: T) {
@@ -82,11 +82,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   get defaultValue(): T {
     if (this.parent && this.parent.model instanceof ArrayModel) {
       return this.parent.defaultArrayItemValue || (
-        this.parent.defaultArrayItemValue = this.parent.model[ItemModelSymbol].createEmptyValue()
+        this.parent.defaultArrayItemValue = this.parent.model[_ItemModel].createEmptyValue()
       );
     }
 
-    return this.parent!.defaultValue[this.model[keySymbol]];
+    return this.parent!.defaultValue[this.model[_key]];
   }
 
   get dirty(): boolean {
@@ -94,11 +94,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get validators(): ReadonlyArray<Validator<T>> {
-    return this[validatorsSymbol];
+    return this[_validators];
   }
 
   set validators(validators: ReadonlyArray<Validator<T>>) {
-    this[validatorsSymbol] = validators;
+    this[_validators] = validators;
   }
 
   for<NM extends AbstractModel<any>>(model: NM) {
@@ -124,16 +124,16 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   addValidator(validator: Validator<T>) {
-    this.validators = [...this[validatorsSymbol], validator];
+    this.validators = [...this[_validators], validator];
   }
 
   get visited() {
-    return this[visitedSymbol];
+    return this[_visited];
   }
 
   set visited(v) {
-    if (this[visitedSymbol] !== v) {
-      this[visitedSymbol] = v;
+    if (this[_visited] !== v) {
+      this[_visited] = v;
       this.updateValidation();
     }
   }
@@ -149,7 +149,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get ownErrors() {
-    return this[ownErrorsSymbol] ? this[ownErrorsSymbol] : [];
+    return this[_ownErrors] ? this[_ownErrors] : [];
   }
 
   get invalid() {
@@ -157,7 +157,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   get required() {
-    return this[validatorsSymbol].some(validator => validator.impliesRequired);
+    return this[_validators].some(validator => validator.impliesRequired);
   }
 
   /**
@@ -174,7 +174,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
 
     if (!itemValue) {
-      itemValue = this.model[ItemModelSymbol].createEmptyValue();
+      itemValue = this.model[_ItemModel].createEmptyValue();
     }
     this.value = (
       [...((this.value as unknown) as ReadonlyArray<IT>), itemValue] as unknown
@@ -195,7 +195,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
 
     if (!itemValue) {
-      itemValue = this.model[ItemModelSymbol].createEmptyValue();
+      itemValue = this.model[_ItemModel].createEmptyValue();
     }
     this.value = (
       [itemValue, ...((this.value as unknown) as ReadonlyArray<IT>)] as unknown
@@ -208,20 +208,20 @@ export class BinderNode<T, M extends AbstractModel<T>> {
    * Requires the context model to be an array item reference.
    */
   removeSelf() {
-    if (!(this.model[parentSymbol] instanceof ArrayModel)) {
+    if (!(this.model[_parent] instanceof ArrayModel)) {
       throw new TypeError('Model is not an array item');
     }
-    const itemIndex = this.model[keySymbol] as number;
+    const itemIndex = this.model[_key] as number;
     this.parent!.value = ((this.parent!.value as ReadonlyArray<T>).filter((_, i) => i !== itemIndex));
   }
 
   protected clearValidation(): boolean {
-    if (this[visitedSymbol]) {
-      this[visitedSymbol] = false;
+    if (this[_visited]) {
+      this[_visited] = false;
     }
     let needsUpdate = false;
-    if (this[ownErrorsSymbol]) {
-      this[ownErrorsSymbol] = undefined;
+    if (this[_ownErrors]) {
+      this[_ownErrors] = undefined;
       needsUpdate = true;
     }
     if ([...this.getChildBinderNodes()]
@@ -233,7 +233,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   protected async updateValidation() {
-    if (this[visitedSymbol]) {
+    if (this[_visited]) {
       await this.validate();
     } else {
       if (this.dirty || this.invalid) {
@@ -256,7 +256,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       errors.filter(valueError => getErrorPropertyName(valueError) === name) : undefined;
     const relatedErrors = errors ?
       errors.filter(valueError => getErrorPropertyName(valueError).startsWith(name)) : undefined;
-    this[ownErrorsSymbol] = ownErrors;
+    this[_ownErrors] = ownErrors;
     for (const childBinderNode of this.getChildBinderNodes()) {
       childBinderNode.setErrorsWithDescendants(relatedErrors);
     }
@@ -280,7 +280,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   private runOwnValidators(): ReadonlyArray<Promise<ReadonlyArray<ValueError<any>>>> {
-    return this[validatorsSymbol].map(
+    return this[_validators].map(
       validator => this.binder.requestValidation(this.model, validator)
     );
   }
@@ -307,7 +307,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
 
     let value = this.parent
-      ? this.parent.value[this.model[keySymbol]]
+      ? this.parent.value[this.model[_key]]
       : undefined;
 
     if (value === undefined) {
@@ -320,17 +320,17 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   private setValueState(value: T, keepPristine: boolean = false) {
-    const modelParent = this.model[parentSymbol];
+    const modelParent = this.model[_parent];
     if (modelParent instanceof ArrayModel) {
       // Value contained in array - replace array in parent
       const array = (this.parent!.value as ReadonlyArray<T>).slice();
-      array[this.model[keySymbol] as number] = value;
+      array[this.model[_key] as number] = value;
       this.parent!.setValueState(array, keepPristine);
     } else if (modelParent instanceof ObjectModel) {
       // Value contained in object - replace object in parent
       const object = {
         ...this.parent!.value,
-        [this.model[keySymbol]]: value
+        [this.model[_key]]: value
       };
       this.parent!.setValueState(object, keepPristine);
     } else {

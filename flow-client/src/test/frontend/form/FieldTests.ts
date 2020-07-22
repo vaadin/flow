@@ -436,7 +436,6 @@ suite("form/Field", () => {
 
         const part = new PropertyPart(new AttributeCommitter(element, '..', []));
         field(model)(part);
-        // const strategy = (model as any)[fieldSymbol];
         delete (element.constructor as any).version;
 
         expect(currentStrategy instanceof VaadinFieldStrategy).to.be.true;

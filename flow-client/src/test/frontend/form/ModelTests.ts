@@ -5,9 +5,9 @@ const {expect} = intern.getPlugin("chai");
 
 // API to test
 import {
+  _key,
   ArrayModel,
   Binder,
-  keySymbol,
   NotBlank,
   NotEmpty,
   NotNull,
@@ -83,7 +83,7 @@ suite("form/Model", () => {
           const iteratorResult = iterator.next();
           expect(iteratorResult.done).to.be.false;
           const binderNode = iteratorResult.value;
-          expect(binderNode.model[keySymbol]).to.equal(i);
+          expect(binderNode.model[_key]).to.equal(i);
           expect(binderNode.value).to.equal(values[i]);
         }
 
@@ -237,7 +237,7 @@ suite("form/Model", () => {
       [0, 1].forEach(i => expect(nodes_1[i].value).to.be.equal(idEntities[i]));
 
       for (let i = 0; i < nodes_1.length; i++) {
-        expect(nodes_1[i].model[keySymbol]).to.be.equal(i)
+        expect(nodes_1[i].model[_key]).to.be.equal(i)
       }
 
       binder.for(nodes_1[0].model.idString).value = 'foo';
@@ -249,7 +249,7 @@ suite("form/Model", () => {
       const nodes_2 = [...binder.model.fieldArrayModel].slice();
       expect(nodes_2.length).to.be.equal(3);
       for (let i = 0; i < nodes_2.length; i++) {
-        expect(nodes_2[i].model[keySymbol]).to.be.equal(i)
+        expect(nodes_2[i].model[_key]).to.be.equal(i)
       }
     });
 
