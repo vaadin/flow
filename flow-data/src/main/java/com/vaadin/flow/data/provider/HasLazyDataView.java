@@ -21,6 +21,11 @@ import java.util.Collection;
 /**
  * Interface that defines methods for fetching items lazily from a backend. The
  * API will return a {@link LazyDataView}.
+ * <p>
+ * <em>Note:</em> This interface does not expose any API for setting or removing
+ * a filter to/from a component, nor it allows the component set up the certain
+ * filter type. If you need an API for filtering, please use
+ * {@link HasFilterableLazyDataView}.
  *
  * @param <T>
  *            item type
@@ -50,18 +55,18 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
      */
     default V setItems(
             CallbackDataProvider.FetchCallback<T, Void> fetchCallback) {
-        setItems(DataProvider.fromCallbacks(fetchCallback, query -> {
-            throw new IllegalStateException(
-                    "Trying to use exact size with a lazy loading component"
-                            + " without either providing a count callback for the"
-                            + " component to fetch the count of the items or a data"
-                            + " provider that implements the size query. Provide the "
-                            + "callback for fetching item count with%n"
-                            + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
-                            + "%nor switch to undefined size with%n"
-                            + "component.getLazyDataView().withUndefinedSize();");
-        }));
-        V lazyDataView = getLazyDataView();
+        V lazyDataView = setItems(
+                DataProvider.fromCallbacks(fetchCallback, query -> {
+                    throw new IllegalStateException(
+                            "Trying to use exact size with a lazy loading component"
+                                    + " without either providing a count callback for the"
+                                    + " component to fetch the count of the items or a data"
+                                    + " provider that implements the size query. Provide the "
+                                    + "callback for fetching item count with%n"
+                                    + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
+                                    + "%nor switch to undefined size with%n"
+                                    + "component.getLazyDataView().withUndefinedSize();");
+                }));
         lazyDataView.setItemCountUnknown();
         return lazyDataView;
     }
@@ -93,8 +98,8 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
     default V setItems(
             CallbackDataProvider.FetchCallback<T, Void> fetchCallback,
             CallbackDataProvider.CountCallback<T, Void> countCallback) {
-        setItems(DataProvider.fromCallbacks(fetchCallback, countCallback));
-        return getLazyDataView();
+        return setItems(
+                DataProvider.fromCallbacks(fetchCallback, countCallback));
     }
 
     /**
@@ -115,9 +120,10 @@ public interface HasLazyDataView<T, V extends LazyDataView<T>>
     V setItems(BackEndDataProvider<T, Void> dataProvider);
 
     /**
-     * Get the LazyDataView for the component that allows access to the items in
-     * the component. Throws an exception if the items are not provided lazyly
-     * and another data view type should be used, like {@link ListDataView}.
+     * Gets the LazyDataView for the component that allows access to the items
+     * in the component. Throws an exception if the items are not provided
+     * lazily and another data view type should be used, like
+     * {@link ListDataView}.
      *
      * @return LazyDataView instance
      * @throws IllegalStateException

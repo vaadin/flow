@@ -34,7 +34,7 @@ import org.mockito.MockitoAnnotations;
 
 import elemental.json.JsonValue;
 
-public class AbstractLazyDataViewTest {
+public class AbstractLazyDataViewTest extends BaseLazyDataViewTest {
 
     private static final String ITEM1 = "foo";
 
@@ -47,40 +47,16 @@ public class AbstractLazyDataViewTest {
     private DataCommunicator<String> dataCommunicator;
     private AbstractLazyDataView<String> dataView;
     private Component component;
-    private DataCommunicatorTest.MockUI ui;
-    @Mock
-    private ArrayUpdater arrayUpdater;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setup() {
-        MockitoAnnotations.initMocks(this);
+        initMocks();
+
         component = new TestComponent();
-        ui = new DataCommunicatorTest.MockUI();
         ui.add(component);
-
-        ArrayUpdater.Update update = new ArrayUpdater.Update() {
-
-            @Override
-            public void clear(int start, int length) {
-
-            }
-
-            @Override
-            public void set(int start, List<JsonValue> items) {
-
-            }
-
-            @Override
-            public void commit(int updateId) {
-
-            }
-        };
-
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(update);
 
         badProvider = DataProvider.ofItems("foo", "bar");
         dataProvider = DataProvider.fromCallbacks(query -> {
@@ -89,8 +65,7 @@ public class AbstractLazyDataViewTest {
             query.getLimit();
             return Stream.of(ITEM1, "bar", "baz");
         }, query -> 3);
-        dataCommunicator = new DataCommunicator<>((item, jsonObject) -> {
-        }, arrayUpdater, null, component.getElement().getNode());
+        dataCommunicator = getDataCommunicator(component);
         // need to set a lazy data provider to communicator or type check fails
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setPageSize(50);
@@ -380,28 +355,4 @@ public class AbstractLazyDataViewTest {
          Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(item2);
          Mockito.verify(dataCommunicator, Mockito.times(0)).refresh(item2);
      }
-     
-     @Test
-     public void paged_access_methods_in_query_object() {
-    	 Query<Item, Void> query;
-    	 
-    	 query = new Query<>(0, 20, null, null, null);
-    	 Assert.assertEquals(0L, query.getPage());
-    	 Assert.assertEquals(20, query.getPageSize());
-    	 
-    	 query = new Query<>(20, 20, null, null, null);
-    	 Assert.assertEquals(1L, query.getPage());
-    	 Assert.assertEquals(20, query.getPageSize());
-
-    	 query = new Query<>(200, 40, null, null, null);
-    	 Assert.assertEquals(5L, query.getPage());
-    	 Assert.assertEquals(40, query.getPageSize());
-    	 
-     }
-
-    private void fakeClientCommunication() {
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        ui.getInternals().getStateTree().collectChanges(ignore -> {
-        });
-    }
 }

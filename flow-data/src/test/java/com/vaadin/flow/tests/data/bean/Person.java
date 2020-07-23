@@ -43,6 +43,10 @@ public class Person implements Serializable {
         this.address = address;
     }
 
+    public Person(String firstName, String lastName, int age) {
+        this(firstName, lastName, "test@mail.com", age, Sex.UNKNOWN, null);
+    }
+
     public String getFirstName() {
         return firstName;
     }

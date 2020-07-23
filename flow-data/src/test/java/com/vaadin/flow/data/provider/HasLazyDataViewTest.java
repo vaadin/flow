@@ -23,8 +23,9 @@ public class HasLazyDataViewTest {
         }
 
         @Override
-        public AbstractLazyDataView<String> setItems(BackEndDataProvider<String, Void> dataProvider) {
-            dataCommunicator.setDataProvider(dataProvider,null);
+        public AbstractLazyDataView<String> setItems(
+                BackEndDataProvider<String, Void> dataProvider) {
+            dataCommunicator.setDataProvider(dataProvider, null);
             return getLazyDataView();
         }
 
@@ -46,16 +47,28 @@ public class HasLazyDataViewTest {
     public void setItemsCountCallback_switchesToDefinedSize_throwsOnSizeQuery() {
         TestComponent testComponent = new TestComponent();
         // uses a NOOP count callback that will throw when called
-        testComponent.setItems(query -> Stream.of("foo","bar","baz"));
+        testComponent.setItems(query -> Stream.of("foo", "bar", "baz"));
 
-        Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
+        Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator()
+                .isDefinedSize());
 
         testComponent.getLazyDataView().setItemCountFromDataProvider();
 
-        Assert.assertTrue(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
+        Assert.assertTrue(testComponent.getLazyDataView().getDataCommunicator()
+                .isDefinedSize());
 
         expectedException.expect(IllegalStateException.class);
-        // to make things fail, just need to call size() which will trigger a size query
+        expectedException.expectMessage(
+                "Trying to use exact size with a lazy loading component"
+                        + " without either providing a count callback for the"
+                        + " component to fetch the count of the items or a data"
+                        + " provider that implements the size query. Provide the "
+                        + "callback for fetching item count with%n"
+                        + "component.getLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
+                        + "%nor switch to undefined size with%n"
+                        + "component.getLazyDataView().withUndefinedSize();");
+        // to make things fail, just need to call size() which will trigger a
+        // size query
         //
         // Although we don't have getSize() method for lazy data view, it is
         // still possible for developer to call getItemCount() from
