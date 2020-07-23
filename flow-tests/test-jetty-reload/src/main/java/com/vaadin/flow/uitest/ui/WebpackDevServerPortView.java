@@ -48,7 +48,7 @@ public class WebpackDevServerPortView extends Div {
         add(portSpan);
 
         final NativeButton triggerButton = new NativeButton("Trigger reload",
-                e -> {
+                event -> {
                     try {
                         touch(new File(
                                 System.getProperty("jetty.scantrigger")));
