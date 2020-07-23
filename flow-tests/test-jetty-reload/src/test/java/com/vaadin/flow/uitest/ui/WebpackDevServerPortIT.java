@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.List;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -28,7 +30,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class WebpackDevServerPortIT extends ChromeBrowserTest {
 
     @Test
-    public void webpackDevServerPortShouldBeReusedOnReload() {
+    public void webpackDevServerPortShouldBeReusedOnReload()
+            throws InterruptedException {
         open();
 
         String initialUUID = findElement(
@@ -43,21 +46,22 @@ public class WebpackDevServerPortIT extends ChromeBrowserTest {
         findElement(By.id(WebpackDevServerPortView.TRIGGER_RELOAD_ID)).click();
 
         // keep refreshing until page comes back (the UUID has changed)
+        int totalWaitTime = 20000;
         boolean reconnected = false;
-        for (int i = 0; i < 10; i++) {
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() < startTime + totalWaitTime
+                && !reconnected) {
+            Thread.sleep(2000);
             getDriver().navigate().refresh();
-            try {
-                waitUntil(driver -> !initialUUID.equals(
-                        findElement(By.id(WebpackDevServerPortView.UUID_ID))
-                                .getText()),
-                        2);
-            } catch (TimeoutException e) {
-                continue;
+            List<WebElement> elements = findElements(
+                    By.id(WebpackDevServerPortView.UUID_ID));
+            if (!elements.isEmpty()
+                    && !elements.get(0).getText().equals(initialUUID)) {
+                reconnected = true;
             }
-            reconnected = true;
-            break;
         }
-        Assert.assertTrue(reconnected);
+        Assert.assertTrue("unable to verify connection to new Jetty instance",
+                reconnected);
 
         // then the port number is unchanged
         String port = findElement(
