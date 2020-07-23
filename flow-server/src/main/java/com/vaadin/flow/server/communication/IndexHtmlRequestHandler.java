@@ -174,10 +174,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
         String frontendDir = FrontendUtils.getProjectFrontendDir(
                 request.getService().getDeploymentConfiguration());
+        String indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
         String message = String
-                .format("Failed to load content of '%1$s%2$cindex.html'."
-                        + "It is required to have '%1$s%2$cindex.html' file when "
-                        + "using client side bootstrapping.", frontendDir, File.separatorChar);
+                .format("Failed to load content of '%1$s'."
+                        + "It is required to have '%1$s' file when "
+                        + "using client side bootstrapping.", indexHtmlFilePath);
         throw new IOException(message);
     }
 
