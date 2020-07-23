@@ -551,7 +551,8 @@ class VaadinDevmodeGizmo extends LitElement {
       status: {type: String},
       reloadConnectionBaseUri: {type: String},
       liveReloadBackend: {type: String},
-      springBootDevToolsPort: {type: Number}
+      springBootDevToolsPort: {type: Number},
+      reloadURL: {type: String}
     };
   }
 
@@ -659,6 +660,7 @@ class VaadinDevmodeGizmo extends LitElement {
     this.status = VaadinDevmodeGizmo.UNAVAILABLE;
     this.connection = null;
     this.nextMessageId = 1;
+    this.reloadURL = 'about:blank';
   }
 
   openWebSocketConnection() {
@@ -761,13 +763,49 @@ class VaadinDevmodeGizmo extends LitElement {
           const nextReload = lastReload ? (parseInt(lastReload) + 1) : 1;
           window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
           window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
-          window.location.reload();
+          this.reload();
         }
         break;
 
       default:
         console.warn('Unknown command received from the live reload server:', command);
     }
+  }
+
+  reload() {
+      const iframe = this.shadowRoot.querySelector('#reload-frame');
+      if (!iframe.contentWindow) {
+          // if gizmo is detached (an old one from previous page before reload has happened)
+          // then iframe has no content window anymore
+          return;
+      }
+      iframe.contentWindow.expired = true;
+      iframe.contentWindow.location.reload(true);
+      const transferIframe = function() {
+          window.document.getElementsByTagName('html')[0].innerHTML =
+              iframe.contentDocument.getElementsByTagName('html')[0].innerHTML;
+      };
+      const checkLoad = function() {
+          const iframeDoc = iframe.contentDocument;
+          if (iframeDoc && iframe.contentWindow && iframeDoc.getElementsByTagName('html').length > 0) {
+              setTimeout(load, 100);
+          } else {
+              setTimeout(checkLoad, 100);
+          }
+      };
+      const load = function(initial) {
+          if (iframe.contentWindow.Vaadin) {
+              if (iframe.contentDocument.body.querySelector('#outlet').children.length > 0
+                      && !iframe.contentWindow.expired) {
+                  setTimeout(transferIframe, 100);
+              } else {
+                  setTimeout(load, 100);
+              }
+          } else {
+              iframe.contentWindow.expired = false;
+          }
+      };
+      checkLoad();
   }
 
   handleError(msg) {
@@ -787,6 +825,11 @@ class VaadinDevmodeGizmo extends LitElement {
     this.disableEventListener = e => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
     document.body.addEventListener('click', this.disableEventListener);
+    const self = this;
+    window.onpopstate = function(event) {
+        const iframe = self.shadowRoot.querySelector('#reload-frame');
+        iframe.src = window.location.href;
+    };
     this.openWebSocketConnection();
 
     const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
@@ -974,7 +1017,7 @@ class VaadinDevmodeGizmo extends LitElement {
               <input id="toggle" type="checkbox"
                   ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
                   ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
-                  @change=${e => this.setActive(e.target.checked)}/>
+                  @ch   ange=${e => this.setActive(e.target.checked)}/>
               <span class="slider"></span>
               <span class="live-reload-text">Live reload</span>
           </label>
@@ -1004,7 +1047,8 @@ class VaadinDevmodeGizmo extends LitElement {
       ? html`<span class="status-description">${this.splashMessage}</span></div>`
       : html`<span class="status-description">Live reload ${this.status} </span><span class="ahreflike">Details</span></div>`
     }
-    </div>`;
+    </div>
+    <iframe style='display: none;' width='0px' height='0px' src='${window.location.href}' id='reload-frame'"></iframe>`;
   }
 }
 
