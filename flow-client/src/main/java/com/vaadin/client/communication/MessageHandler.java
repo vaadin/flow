@@ -264,6 +264,17 @@ public class MessageHandler {
             return;
         }
 
+        /**
+         * Should only prepare resync after the 
+         * if (locked || !isNextExpectedMessage(serverId)) {...}
+         * since stateTree.repareForResync() will remove the nodes,
+         * and if locked is true, it will return without handling 
+         * the message, thus won't adding nodes back. 
+         * 
+         * This is related to https://github.com/vaadin/flow/issues/8699
+         * It seems that the reason is that `connectClient` is removed 
+         * from the rootNode(<body> element) during a resync and not added back.
+         */
         if(isResynchronize(valueMap)){
             // Unregister all nodes and rebuild the state tree
             registry.getStateTree().prepareForResync();
