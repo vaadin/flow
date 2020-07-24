@@ -780,10 +780,12 @@ class VaadinDevmodeGizmo extends LitElement {
           return;
       }
       iframe.contentWindow.expired = true;
+      // Set 3 minutes as a timeout for reload
+      iframe.reloadTimeoutDate = new Date(new Date().getTime() + 3 * 60000);
       iframe.contentWindow.location.reload(true);
       const transferIframe = function() {
-          window.document.getElementsByTagName('html')[0].innerHTML =
-              iframe.contentDocument.getElementsByTagName('html')[0].innerHTML;
+          window.document.head.innerHTML = iframe.contentDocument.head.innerHTML;
+          window.document.body.innerHTML = iframe.contentDocument.body.innerHTML;
       };
       const checkLoad = function() {
           const iframeDoc = iframe.contentDocument;
@@ -793,19 +795,29 @@ class VaadinDevmodeGizmo extends LitElement {
               setTimeout(checkLoad, 100);
           }
       };
-      const load = function(initial) {
+      const load = function() {
           if (iframe.contentWindow.Vaadin) {
-              if (iframe.contentDocument.body.querySelector('#outlet').children.length > 0
-                      && !iframe.contentWindow.expired) {
+              let contentIsPopulated = true;
+              if (document.body.querySelector('#outlet')) {
+                  contentIsPopulated = iframe.contentDocument.body.querySelector('#outlet')
+                      && iframe.contentDocument.body.querySelector('#outlet').children.length > 0;
+              } else {
+                  contentIsPopulated = iframe.contentDocument.body.children.length >= document.body.children.length;
+              }
+              if (contentIsPopulated && !iframe.contentWindow.expired) {
                   setTimeout(transferIframe, 100);
               } else {
                   setTimeout(load, 100);
               }
+          } else if (new Date() <= iframe.reloadTimeoutDate) {
+              // After the reload the page content is unexpected: it's not a Vaadin page,
+              // it might be that the server has not yet restarted. Let's increase the time of the next attempt
+              setTimeout(checkLoad, 3000);
           } else {
-              iframe.contentWindow.expired = false;
+              delete(iframe.reloadTimeoutDate);
           }
       };
-      checkLoad();
+      setTimeout(checkLoad, 0);
   }
 
   handleError(msg) {
