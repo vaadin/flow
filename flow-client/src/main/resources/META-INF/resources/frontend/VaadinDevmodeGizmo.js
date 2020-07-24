@@ -551,8 +551,7 @@ class VaadinDevmodeGizmo extends LitElement {
       status: {type: String},
       reloadConnectionBaseUri: {type: String},
       liveReloadBackend: {type: String},
-      springBootDevToolsPort: {type: Number},
-      reloadURL: {type: String}
+      springBootDevToolsPort: {type: Number}
     };
   }
 
