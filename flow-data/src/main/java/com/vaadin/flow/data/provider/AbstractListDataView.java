@@ -311,7 +311,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
          * position towards to target item.
          */
         removeItemIfPresent(item, dataProvider);
-        itemList.add(insertItemsIndexProvider.apply(getItemIndex(target)),
+        itemList.add(insertItemsIndexProvider.apply(itemList.indexOf(target)),
                 item);
         dataProvider.refreshAll();
     }
@@ -359,7 +359,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 removeItemIfPresent(item, dataProvider);
             }
         });
-        int targetItemIndex = getItemIndex(target);
+        int targetItemIndex = itemList.indexOf(target);
 
         /*
          * If the target item is in a collection then remove it from backend and
