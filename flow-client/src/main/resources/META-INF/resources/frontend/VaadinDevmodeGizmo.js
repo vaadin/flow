@@ -1029,7 +1029,7 @@ class VaadinDevmodeGizmo extends LitElement {
               <input id="toggle" type="checkbox"
                   ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
                   ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
-                  @ch   ange=${e => this.setActive(e.target.checked)}/>
+                  @change=${e => this.setActive(e.target.checked)}/>
               <span class="slider"></span>
               <span class="live-reload-text">Live reload</span>
           </label>
