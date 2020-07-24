@@ -231,13 +231,64 @@ class VaadinDevmodeGizmo extends LitElement {
           const nextReload = lastReload ? (parseInt(lastReload) + 1) : 1;
           window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
           window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
-          window.location.reload();
+          this.reload();
         }
         break;
 
       default:
         console.warn('Unknown command received from the live reload server:', command);
     }
+  }
+
+  reload() {
+    const iframe = this.shadowRoot.querySelector('#reload-frame');
+    if (!iframe.contentWindow) {
+      // if gizmo is detached (an old one from previous page before reload has
+      // happened)
+      // then iframe has no content window anymore
+      return;
+    }
+    iframe.contentWindow.expired = true;
+    // Set 3 minutes as a timeout for reload
+    iframe.reloadTimeoutDate = new Date(new Date().getTime() + 3 * 60000);
+    iframe.contentWindow.location.reload(true);
+    const transferIframe = function() {
+      window.document.head.innerHTML = iframe.contentDocument.head.innerHTML;
+      window.document.body.innerHTML = iframe.contentDocument.body.innerHTML;
+    };
+    const checkLoad = function() {
+      const iframeDoc = iframe.contentDocument;
+      if (iframeDoc && iframe.contentWindow && iframeDoc.getElementsByTagName('html').length > 0) {
+        setTimeout(load, 100);
+      } else {
+        setTimeout(checkLoad, 100);
+      }
+    };
+    const load = function() {
+      if (iframe.contentWindow.Vaadin) {
+        let contentIsPopulated = true;
+        if (document.body.querySelector('#outlet')) {
+          contentIsPopulated = iframe.contentDocument.body.querySelector('#outlet')
+              && iframe.contentDocument.body.querySelector('#outlet').children.length > 0;
+        } else {
+          contentIsPopulated = iframe.contentDocument.body.children.length >= document.body.children.length;
+        }
+        if (contentIsPopulated && !iframe.contentWindow.expired) {
+          setTimeout(transferIframe, 100);
+        } else {
+          setTimeout(load, 100);
+        }
+      } else if (new Date() <= iframe.reloadTimeoutDate) {
+        // After the reload the page content is unexpected: it's not a
+        // Vaadin page,
+        // it might be that the server has not yet restarted. Let's
+        // increase the time of the next attempt
+        setTimeout(checkLoad, 3000);
+      } else {
+        delete(iframe.reloadTimeoutDate);
+      }
+    };
+    setTimeout(checkLoad, 0);
   }
 
   handleError(msg) {
@@ -344,7 +395,8 @@ class VaadinDevmodeGizmo extends LitElement {
                          ${this.messages.map(i => html`<div>${i}</div>`)}
                     </div>
                 </div>
-            </div>`;
+            </div>
+            <iframe style='display: none;' width='0px' height='0px' src='${window.location.href}' id='reload-frame'></iframe>`;
   }
 }
 
