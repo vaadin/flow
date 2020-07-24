@@ -660,7 +660,6 @@ class VaadinDevmodeGizmo extends LitElement {
     this.status = VaadinDevmodeGizmo.UNAVAILABLE;
     this.connection = null;
     this.nextMessageId = 1;
-    this.reloadURL = 'about:blank';
   }
 
   openWebSocketConnection() {
@@ -1060,7 +1059,7 @@ class VaadinDevmodeGizmo extends LitElement {
       : html`<span class="status-description">Live reload ${this.status} </span><span class="ahreflike">Details</span></div>`
     }
     </div>
-    <iframe style='display: none;' width='0px' height='0px' src='${window.location.href}' id='reload-frame'"></iframe>`;
+    <iframe style='display: none;' width='0px' height='0px' src='${window.location.href}' id='reload-frame'></iframe>`;
   }
 }
 
