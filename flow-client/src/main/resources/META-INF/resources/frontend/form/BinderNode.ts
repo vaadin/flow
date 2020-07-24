@@ -38,6 +38,14 @@ function getErrorPropertyName(valueError: ValueError<any>): string {
     : getBinderNode(valueError.property).name;
 }
 
+/**
+ * The BinderNode<T, M> class provides the form binding related APIs 
+ * with respect to a particular model instance.
+ * 
+ * Structurally, model instances form a tree, in which the object 
+ * and array models have child nodes of field and array item model 
+ * instances.
+ */
 export class BinderNode<T, M extends AbstractModel<T>> {
   private [_visited]: boolean = false;
   private [_validators]: ReadonlyArray<Validator<T>>;
@@ -50,6 +58,9 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     this[_validators] = model[_validators];
   }
 
+  /**
+   * The parent node, if this binder node corresponds to a nested model, otherwise undefined for the top-level binder.
+   */
   get parent(): BinderNode<any, AbstractModel<any>> | undefined {
     const modelParent = this.model[_parent];
     return modelParent instanceof AbstractModel
@@ -57,10 +68,16 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       : undefined;
   }
 
+  /**
+   * The binder for the top-level model.
+   */
   get binder(): Binder<any, AbstractModel<any>> {
     return this.parent ? this.parent.binder : (this as any);
   }
 
+  /**
+   * The name generated from the model structure, used to set the name attribute on the field components.
+   */
   get name(): string {
     let model = this.model as AbstractModel<any>;
     const strings = [];
@@ -71,6 +88,9 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return strings.join('.');
   }
 
+  /**
+   * The current value related to the model
+   */
   get value(): T {
     return this.parent!.value[this.model[_key]];
   }
@@ -79,6 +99,9 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     this.setValueState(value);
   }
 
+  /**
+   * The default value related to the model
+   */
   get defaultValue(): T {
     if (this.parent && this.parent.model instanceof ArrayModel) {
       return this.parent.defaultArrayItemValue || (
@@ -89,10 +112,16 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return this.parent!.defaultValue[this.model[_key]];
   }
 
+  /**
+   * True if the current value is different from the defaultValue.
+   */
   get dirty(): boolean {
     return this.value !== this.defaultValue;
   }
 
+  /**
+   * The array of validators for the model. The default value is defined in the model.
+   */
   get validators(): ReadonlyArray<Validator<T>> {
     return this[_validators];
   }
@@ -101,6 +130,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     this[_validators] = validators;
   }
 
+  /**
+   * Returns a binder node for the nested model instance.
+   * 
+   * @param model The nested model instance
+   */
   for<NM extends AbstractModel<any>>(model: NM) {
     const binderNode = getBinderNode(model);
     if (binderNode.binder !== this.binder) {
@@ -110,6 +144,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return binderNode;
   }
 
+  /**
+   * Runs all validation callbacks potentially affecting this 
+   * or any nested model. Returns the combined array of all 
+   * errors as in the errors property.
+   */
   async validate(): Promise<ReadonlyArray<ValueError<any>>> {
     // TODO: Replace reduce() with flat() when the following issue is solved
     //  https://github.com/vaadin/flow/issues/8658
@@ -123,10 +162,18 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return errors;
   }
 
+  /**
+   * A helper method to add a validator
+   * 
+   * @param validator a validator
+   */
   addValidator(validator: Validator<T>) {
     this.validators = [...this[_validators], validator];
   }
 
+  /**
+   * True if the bound field was ever focused and blurred by the user.
+   */
   get visited() {
     return this[_visited];
   }
@@ -138,6 +185,9 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     }
   }
 
+  /**
+   * The combined array of all errors for this node’s model and all its nested models
+   */
   get errors(): ReadonlyArray<ValueError<any>> {
     const descendantsErrors = [
       ...this.getChildBinderNodes()
@@ -148,14 +198,23 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     return descendantsErrors.concat(this.ownErrors);
   }
 
+  /**
+   * The array of validation errors directly related with the model.
+   */
   get ownErrors() {
     return this[_ownErrors] ? this[_ownErrors] : [];
   }
 
+  /**
+   * Indicates if there is any error for the node's model.
+   */
   get invalid() {
     return this.errors.length > 0;
   }
 
+  /**
+   * True if the value is required to be non-empty.
+   */
   get required() {
     return this[_validators].some(validator => validator.impliesRequired);
   }

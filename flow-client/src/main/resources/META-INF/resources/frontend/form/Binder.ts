@@ -24,6 +24,14 @@ const _validations = Symbol('validations');
 const _validating = Symbol('validating');
 const _validationRequestSymbol = Symbol('validationRequest');
 
+/**
+ * A Binder controls all aspects of a single form. 
+ * Typically it is used to get and set the form value, 
+ * access the form model, validate, reset, and submit the form.
+ * 
+ * @param <T> is the type of the value that binds to a form
+ * @param <M> is the type of the model that describes the structure of the value
+ */
 export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
   private [_defaultValue]: T;
   private [_value]: T;
@@ -36,6 +44,18 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
 
   private [_validations]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> = new Map();
 
+  /**
+   * 
+   * @param context The form view component instance to update.
+   * @param Model The constructor (the class reference) of the form model. The Binder instantiates the top-level model
+   * @param config The options object, which can be used to config the onChange and onSubmit callbacks.
+   * 
+   * ```
+   * binder = new Binder(orderView, OrderModel);
+   * or
+   * binder = new Binder(orderView, OrderModel, {onSubmit: async (order) => {endpoint.save(order)}});
+   * ```
+   */
   constructor(
     public context: Element,
     Model: ModelConstructor<T, M>,
@@ -54,6 +74,9 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     this.read(this[_emptyValue]);
   }
 
+  /**
+   * The initial value of the form, before any fields are edited by the user.
+   */
   get defaultValue() {
     return this[_defaultValue];
   }
@@ -62,6 +85,9 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     this[_defaultValue] = newValue;
   }
 
+  /**
+   * The current value of the form.
+   */
   get value() {
     return this[_value];
   }
@@ -99,20 +125,37 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     this.value = this.defaultValue;
   }
 
+  /**
+   * Reset the form to the previous value
+   */
   reset(){
     this.read(this[_defaultValue])
   }
 
+  /**
+   * Sets the form to empty value, as defined in the Model.
+   */
   clear() {
     this.read(this[_emptyValue]);
   }
 
+  /**
+   * Submit the current form value to a predefined
+   * onSubmit callback.
+   * 
+   * It's a no-op if the onSubmit callback is undefined.
+   */
   async submit(): Promise<T|void>{
     if(this[_onSubmit]!==undefined){
       this.submitTo(this[_onSubmit]);
     }
   }
 
+  /**
+   * Submit the current form value to callback
+   * 
+   * @param endpointMethod the callback function
+   */
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
     const errors = await this.validate();
     if (errors.length) {
@@ -172,14 +215,29 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
     return valueErrors;
   }
 
+  /**
+   * Determines and returns the field directive strategy for the bound element. 
+   * Override to customise the binding strategy for a component. 
+   * The Binder extends BinderNode, see the inherited properties and methods below.
+   * 
+   * @param elm the bound element 
+   */
   getFieldStrategy(elm: any): FieldStrategy {
     return getDefaultFieldStrategy(elm);
   }
 
+  /**
+   * Indicates the submitting status of the form.
+   * True if the form was submitted, but the submit promise is not resolved yet.
+   */
   get submitting() {
     return this[_submitting];
   }
 
+  /**
+   * Indicates the validating status of the form.
+   * True when there is an ongoing validation.
+   */
   get validating() {
     return this[_validating];
   }

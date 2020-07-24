@@ -84,6 +84,16 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
   return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
 }
 
+/**
+ * Binds a form field component into a model.
+ * 
+ * Exmaple usage:
+ * 
+ * ```
+ * <vaadin-text-field ...="${field(model.name)}">
+ * </vaadin-text-field>
+ * ```
+ */
 export const field = directive(<T>(
   model: AbstractModel<T>,
   effect?: (element: Element) => void
