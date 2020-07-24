@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiFunction;
@@ -267,11 +268,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(T item) {
+    private int getItemIndex(T item, Stream<T> stream) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
         AtomicInteger index = new AtomicInteger(-1);
         //@formatter:off
-        if (!getItems().peek(t -> index.incrementAndGet())
+        if (!stream.peek(t -> index.incrementAndGet())
                 .filter(t -> equals(item, t))
                 .findFirst().isPresent()) {
             return -1;
@@ -279,6 +280,11 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         //@formatter:on
         return index.get();
     }
+    
+    private int getItemIndex(T item) {
+    	return getItemIndex(item, getItems());
+    }
+    
 
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {
         dataProvider.getItems().removeIf(i -> equals(item, i));
@@ -311,7 +317,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
          * position towards to target item.
          */
         removeItemIfPresent(item, dataProvider);
-        itemList.add(insertItemsIndexProvider.apply(itemList.indexOf(target)),
+        itemList.add(insertItemsIndexProvider.apply(getItemIndex(target, itemList.stream())),
                 item);
         dataProvider.refreshAll();
     }
@@ -359,7 +365,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 removeItemIfPresent(item, dataProvider);
             }
         });
-        int targetItemIndex = itemList.indexOf(target);
+        int targetItemIndex = getItemIndex(target, itemList.stream());
 
         /*
          * If the target item is in a collection then remove it from backend and
