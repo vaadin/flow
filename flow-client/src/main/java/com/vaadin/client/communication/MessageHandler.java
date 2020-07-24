@@ -275,7 +275,7 @@ public class MessageHandler {
          * It seems that the reason is that `connectClient` is removed 
          * from the rootNode(<body> element) during a resync and not added back.
          */
-        if(isResynchronize(valueMap)){
+        if (isResynchronize(valueMap)) {
             // Unregister all nodes and rebuild the state tree
             registry.getStateTree().prepareForResync();
         }
