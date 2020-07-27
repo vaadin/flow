@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A helper class to break circular nullable checking
+ * A helper class to break circular nullable checking.
  */
 class BeanValueTypeCheckHelper {
     private Map<Type, Set<Object>> cache;

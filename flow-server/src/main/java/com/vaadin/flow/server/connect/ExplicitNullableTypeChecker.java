@@ -43,11 +43,11 @@ import org.slf4j.LoggerFactory;
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
+    private BeanValueTypeCheckHelper beanValueTypeCheckCache = new BeanValueTypeCheckHelper();
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinConnectController.class);
     }
-
-    private BeanValueTypeCheckHelper beanValueTypeCheckCache = new BeanValueTypeCheckHelper();
 
     /**
      * Validates the given value for the given expected method return value
