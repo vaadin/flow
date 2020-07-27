@@ -47,6 +47,8 @@ public class ExplicitNullableTypeChecker {
         return LoggerFactory.getLogger(VaadinConnectController.class);
     }
 
+    private BeanValueTypeCheckHelper beanValueTypeCheckCache = new BeanValueTypeCheckHelper();
+
     /**
      * Validates the given value for the given expected method return value
      * type.
@@ -93,7 +95,7 @@ public class ExplicitNullableTypeChecker {
 
         if (value != null) {
             if (Iterable.class.isAssignableFrom(clazz)) {
-                return checkIterable((Iterable) value, expectedType);
+                return checkIterable((Iterable<?>) value, expectedType);
             } else if (clazz.isArray() && value instanceof Object[]) {
                 return checkIterable(Arrays.asList((Object[]) value),
                         expectedType);
@@ -129,7 +131,7 @@ public class ExplicitNullableTypeChecker {
                 expectedType.getTypeName());
     }
 
-    private String checkIterable(Iterable value, Type expectedType) {
+    private String checkIterable(Iterable<?> value, Type expectedType) {
         Type itemType = Object.class;
         String iterableDescription = "iterable";
         if (expectedType instanceof ParameterizedType) {
@@ -203,6 +205,10 @@ public class ExplicitNullableTypeChecker {
     }
 
     private String checkBeanFields(Object value, Type expectedType) {
+        if (beanValueTypeCheckCache.hasVisited(value, expectedType)) {
+            return null;
+        }
+        beanValueTypeCheckCache.markAsVisited(value, expectedType);
         Class<?> clazz = (Class<?>) expectedType;
         try {
             for (PropertyDescriptor propertyDescriptor : Introspector

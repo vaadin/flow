@@ -377,6 +377,22 @@ public class ExplicitNullableTypeCheckerTest {
                 Person.class));
     }
 
+    @Test
+    public void should_ReturnNull_When_GivenNonNull_CircularReference_BeanProperties() {
+        final Employee employee = new Employee();
+        final Company company = new Company();
+
+        employee.setId(1);
+        employee.setCompany(company);
+
+        company.setId(1);
+        company.setEmployees(Arrays.asList(employee));
+
+        Assert.assertNull(explicitNullableTypeChecker.checkValueForType(employee, Employee.class));
+
+        Assert.assertNull(explicitNullableTypeChecker.checkValueForType(company, Company.class));
+    }
+
     public List<String> parametrizedListMethod(String... args) {
         final List<String> list = new ArrayList<String>();
         for (String arg : args) {
@@ -453,6 +469,30 @@ public class ExplicitNullableTypeCheckerTest {
 
         public void setName(String name) {
             this.name = name;
+        }
+    }
+
+    static private class Employee extends AbstractEntity<Integer> {
+        private Company company;
+
+        public Company getCompany() {
+            return company;
+        }
+
+        public void setCompany(Company company) {
+            this.company = company;
+        }
+    }
+
+    static private class Company extends AbstractEntity<Integer> {
+        private List<Employee> employees;
+
+        public List<Employee> getEmployees() {
+            return employees;
+        }
+
+        public void setEmployees(List<Employee> employees) {
+            this.employees = employees;
         }
     }
 }
