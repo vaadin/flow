@@ -80,6 +80,21 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_BROTLI = "brotli";
 
     /**
+     * Configuration name for loading the ES5 adapters.
+     */
+    public static final String LOAD_ES5_ADAPTERS = "load.es5.adapters";
+
+    /**
+     * Configuration name for the frontend URL prefix for ES6.
+     */
+    public static final String FRONTEND_URL_ES6 = "frontend.url.es6";
+
+    /**
+     * Configuration name for the frontend URL prefix for ES5.
+     */
+    public static final String FRONTEND_URL_ES5 = "frontend.url.es5";
+
+    /**
      * Configuration name for the WebPack profile statistics json file to use to
      * determine template contents.
      * <p>
@@ -184,4 +199,14 @@ public class InitParameters implements Serializable {
      * BabelMultiTargetPlugin in dev mode.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_TRANSPILE = "devmode.transpile";
+
+    /**
+     * Property boolean for marking stats.json to be fetched from external
+     * location.
+     */
+    public static final String EXTERNAL_STATS_FILE = "external.stats.file";
+    /**
+     * Property String for external stats.json location url.
+     */
+    public static final String EXTERNAL_STATS_URL = "external.stats.url";
 }
