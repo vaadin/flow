@@ -310,7 +310,8 @@ export class Flow {
         ${httpRequest.responseText}`));
 
       httpRequest.onload = () => {
-        if (httpRequest.getResponseHeader('content-type') === 'application/json') {
+        const contentType = httpRequest.getResponseHeader('content-type');
+        if (contentType && contentType.indexOf('application/json') !== -1) {
           resolve(JSON.parse(httpRequest.responseText));
         } else {
           httpRequest.onerror();
