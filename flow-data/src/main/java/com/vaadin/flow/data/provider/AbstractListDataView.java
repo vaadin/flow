@@ -146,7 +146,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public boolean contains(T item) {
-        return getItems().anyMatch(i -> equals(item, i));
+        return getItems().anyMatch(nextItem -> equals(item, nextItem));
     }
 
     @Override
@@ -272,8 +272,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
         AtomicInteger index = new AtomicInteger(-1);
         //@formatter:off
-        if (!stream.peek(t -> index.incrementAndGet())
-                .filter(t -> equals(item, t))
+        if (!stream.peek(nextItem -> index.incrementAndGet())
+                .filter(nextItem -> equals(item, nextItem))
                 .findFirst().isPresent()) {
             return -1;
         }
@@ -286,7 +286,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
     }
 
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {
-        dataProvider.getItems().removeIf(i -> equals(item, i));
+        dataProvider.getItems().removeIf(nextItem -> equals(item, nextItem));
     }
 
     private void addItemOnTarget(T item, T target,
