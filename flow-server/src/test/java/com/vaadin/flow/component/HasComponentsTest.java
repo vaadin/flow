@@ -83,6 +83,40 @@ public class HasComponentsTest {
     }
 
     @Test
+    public void remove_removeSeveralComponents_oneHasParent_nothingRemovedAndThrows() {
+        TestComponent component = createTestStructure();
+
+        TestComponent child = new TestComponent();
+        component.add(child);
+
+        TestComponent another = createTestStructure();
+        TestComponent innerComponent = new TestComponent();
+        another.add(innerComponent);
+
+        try {
+            component.remove(child, innerComponent);
+            Assert.fail();
+        } catch (IllegalArgumentException exception) {
+            Assert.assertEquals(component, child.getParent().get());
+        }
+    }
+
+    @Test
+    public void remove_removeSeveralComponents_oneHasNoParent_childIsRemoved() {
+        TestComponent component = createTestStructure();
+
+        TestComponent child = new TestComponent();
+        component.add(child);
+
+        TestComponent notAChild = new TestComponent();
+
+        component.remove(notAChild, child);
+        Assert.assertFalse(child.getParent().isPresent());
+        Assert.assertFalse(component.getChildren()
+                .filter(comp -> comp.equals(child)).findAny().isPresent());
+    }
+
+    @Test
     public void remove_removeComponentWithCorrectParent() {
         TestComponent component = createTestStructure();
         TestComponent innerComponent = new TestComponent();
