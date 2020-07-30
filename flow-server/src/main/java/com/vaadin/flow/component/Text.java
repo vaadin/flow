@@ -19,6 +19,17 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * A component which encapsulates the given text in a text node.
+ * <p>
+ * Text node doesn't support setting any attribute or property so you may not
+ * use Element API (and {@link Text} doesn't provide any such contract) for
+ * setting attribute/property. It implies that you may not style this component
+ * as well. Any attempt to set attribute/property value throws an exception. The
+ * only available API for a {@link Text} component is set the text.
+ * <p>
+ * If you need a text component which can be styled then check {@code Span}
+ * class (from {@code flow-html-components}) module.
+ *
+ * @see {@code span} HTML element
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -67,6 +78,25 @@ public class Text extends Component implements HasText {
                 + "represent an HTML Element but a text Node on the client side.");
     }
 
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public void setId(String id) {
+        super.setId(id);
+    }
+
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
     @Override
     public void setVisible(boolean visible) {
         throw new UnsupportedOperationException("Cannot change "
