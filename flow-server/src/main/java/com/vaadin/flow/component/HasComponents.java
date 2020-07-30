@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.LoggerFactory;
@@ -70,10 +72,12 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param components
      *            the components to remove
      * @throws IllegalArgumentException
-     *             if any of the components is not a child of this component
+     *             if there is a component whose non {@code null} parent is not
+     *             this component
      */
     default void remove(Component... components) {
         Objects.requireNonNull(components, "Components should not be null");
+        List<Component> toRemove = new ArrayList<>(components.length);
         for (Component component : components) {
             Objects.requireNonNull(component,
                     "Component to remove cannot be null");
@@ -81,15 +85,17 @@ public interface HasComponents extends HasElement, HasEnabled {
             if (parent == null) {
                 LoggerFactory.getLogger(HasComponents.class).debug(
                         "Remove of a component with no parent does nothing.");
-                return;
+                continue;
             }
             if (getElement().equals(parent)) {
-                getElement().removeChild(component.getElement());
+                toRemove.add(component);
             } else {
                 throw new IllegalArgumentException("The given component ("
                         + component + ") is not a child of this component");
             }
         }
+        toRemove.stream().map(Component::getElement)
+                .forEach(getElement()::removeChild);
     }
 
     /**
