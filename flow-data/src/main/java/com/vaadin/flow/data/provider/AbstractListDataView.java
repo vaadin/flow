@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiFunction;
@@ -145,7 +146,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
 
     @Override
     public boolean contains(T item) {
-        return getItems().anyMatch(i -> equals(item, i));
+        return getItems().anyMatch(nextItem -> equals(item, nextItem));
     }
 
     @Override
@@ -267,12 +268,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
-    private int getItemIndex(T item) {
+    private int getItemIndex(T item, Stream<T> stream) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
         AtomicInteger index = new AtomicInteger(-1);
         //@formatter:off
-        if (!getItems().peek(t -> index.incrementAndGet())
-                .filter(t -> equals(item, t))
+        if (!stream.peek(nextItem -> index.incrementAndGet())
+                .filter(nextItem -> equals(item, nextItem))
                 .findFirst().isPresent()) {
             return -1;
         }
@@ -280,8 +281,12 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return index.get();
     }
 
+    private int getItemIndex(T item) {
+        return getItemIndex(item, getItems());
+    }
+
     private void removeItemIfPresent(T item, ListDataProvider<T> dataProvider) {
-        dataProvider.getItems().removeIf(i -> equals(item, i));
+        dataProvider.getItems().removeIf(nextItem -> equals(item, nextItem));
     }
 
     private void addItemOnTarget(T item, T target,
@@ -311,8 +316,8 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
          * position towards to target item.
          */
         removeItemIfPresent(item, dataProvider);
-        itemList.add(insertItemsIndexProvider.apply(getItemIndex(target)),
-                item);
+        itemList.add(insertItemsIndexProvider.apply(getItemIndex(target,
+                itemList.stream())), item);
         dataProvider.refreshAll();
     }
 
@@ -359,7 +364,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
                 removeItemIfPresent(item, dataProvider);
             }
         });
-        int targetItemIndex = getItemIndex(target);
+        int targetItemIndex = getItemIndex(target, itemList.stream());
 
         /*
          * If the target item is in a collection then remove it from backend and

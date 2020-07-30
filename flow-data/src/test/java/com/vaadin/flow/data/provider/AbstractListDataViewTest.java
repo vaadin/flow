@@ -378,6 +378,16 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItemBefore_addItemInFilteredDataSet_itemAddedBeforeTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemBefore("newItem", "last");
+
+        Assert.assertArrayEquals(
+                new String[] { "middle", "newItem", "last"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
     public void addItemAfter_itemIsAddedAtExpectedPosition() {
         dataView.addItemAfter("newItem", "middle");
 
@@ -425,6 +435,16 @@ public class AbstractListDataViewTest {
                 "Item to insert after is not available in the data");
 
         dataView.addItemAfter("newItem", "notExistent");
+    }
+
+    @Test
+    public void addItemAfter_addItemInFilteredDataSet_itemAddedAfterTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemAfter("newItem", "last");
+
+        Assert.assertArrayEquals(
+                new String[] { "middle", "last", "newItem"},
+                dataView.getItems().toArray(String[]::new));
     }
 
     @Test
@@ -529,6 +549,18 @@ public class AbstractListDataViewTest {
                 dataView.getItems().toArray(String[]::new));
     }
 
+
+    @Test
+    public void addItemsAfter_addItemsInFilteredDataSet_itemsAddedAfterTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemsAfter(Arrays.asList("newItem1", "newItem2"),
+                "last");
+
+        Assert.assertArrayEquals(
+                new String[] { "middle", "last", "newItem1", "newItem2"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
     @Test
     public void addItemsBefore_allItemsAreAddedBeforeTargetItem() {
         dataView.addItemsBefore(Arrays.asList("newOne", "newTwo", "newThree"),
@@ -595,6 +627,17 @@ public class AbstractListDataViewTest {
     public void addItemsBefore_emptyCollectionPassed_dataNotChanged() {
         dataView.addItemsBefore(Collections.emptyList(), "any");
         Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemsBefore_addItemsInFilteredDataSet_itemsAddedBeforeTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemsBefore(Arrays.asList("newItem1", "newItem2"),
+                "last");
+
+        Assert.assertArrayEquals(
+                new String[] { "middle", "newItem1", "newItem2", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
