@@ -344,9 +344,54 @@ class VaadinDevmodeGizmo extends LitElement {
     this.messages.push(msg);
   }
 
-  demoteNotification() {
-    if (this.notification) {
-      this.showMessage(this.notification);
+  dismissNotification(id) {
+    const index = this.findNotificationIndex(id);
+    if (index !== -1 && !this.notifications[index].deleted) {
+      const notification = this.notifications[index];
+
+      // user is explicitly dismissing a notification---after that we won't bug them with it
+      if (notification.dontShowAgain && notification.persistentId && !VaadinDevmodeGizmo.notificationDismissed(notification.persistentId)) {
+        let dismissed = window.localStorage.getItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
+        if (dismissed === null) {
+          dismissed = notification.persistentId;
+        } else {
+          dismissed = dismissed + ',' + notification.persistentId;
+        }
+        window.localStorage.setItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE, dismissed);
+      }
+
+      notification.deleted = true;
+      this.showMessage(notification.type, notification.message, notification.details, notification.link);
+
+      const self = this;
+      // give some time for the animation
+      setTimeout(() => {
+        const index = self.findNotificationIndex(id);
+        if (index != -1) {
+          this.notifications.splice(index, 1);
+          this.requestUpdate();
+        }
+      }, this.__transitionDuration);
+    }
+  }
+
+  findNotificationIndex(id) {
+      let index = -1;
+      this.notifications.some((notification, idx) => {
+          if (notification.id === id) {
+              index = idx;
+              return true;
+          }
+      });
+      return index;
+  }
+
+  toggleDontShowAgain(id) {
+    const index = this.notifications.findIndex(notification => notification.id === id);
+    if (index !== -1 && !this.notifications[index].deleted) {
+      const notification = this.notifications[index];
+      notification.dontShowAgain = !notification.dontShowAgain;
+      this.requestUpdate();
     }
     this.showNotification(null);
   }
