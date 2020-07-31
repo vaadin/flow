@@ -970,7 +970,7 @@ class VaadinDevmodeGizmo extends LitElement {
     }
   }
 
-  findNotificationIndex(id)     {
+  findNotificationIndex(id) {
       let index = -1;
       this.notifications.some((notification, idx) => {
           if (notification.id === id) {
