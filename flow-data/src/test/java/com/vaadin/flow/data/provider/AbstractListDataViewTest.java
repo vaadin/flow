@@ -76,7 +76,7 @@ public class AbstractListDataViewTest {
                 "ListDataViewImpl only supports 'ListDataProvider' "
                         + "or it's subclasses, but was given a "
                         + "'AbstractBackEndDataProvider'");
-        new ListDataViewImpl(() -> dataProvider, null);
+        new ListDataViewImpl(() -> dataProvider, new TestComponent());
     }
 
     @Test
@@ -182,7 +182,7 @@ public class AbstractListDataViewTest {
     @Test
     public void addSortOrder_twoOrdersAdded_itemsSortedByCompositeOrders() {
         dataProvider = DataProvider.ofItems("b3", "a1", "a2");
-        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView = new ListDataViewImpl(() -> dataProvider, new TestComponent());
         dataView.addSortOrder((item) -> item.charAt(0),
                 SortDirection.DESCENDING);
         Assert.assertEquals("Unexpected data set order (order 1)", "b3,a1,a2",
@@ -675,7 +675,8 @@ public class AbstractListDataViewTest {
 
         final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
                 items);
-        dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider,
+                new TestComponent());
 
         dataView.addItemAfter("newItem", "item1");
     }
