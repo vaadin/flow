@@ -19,11 +19,11 @@ package com.vaadin.flow.data.provider;
 import com.vaadin.flow.function.SerializableBiFunction;
 
 /**
- * A callback interface that is used to combine a new configured filter (given
- * as a first argument) and a component's previous configured filter (given as a
- * second argument).
+ * A callback that is used to combine a new configured filter (given as a first
+ * argument) and a component's current filter (given as a second argument).
  * 
- * @param <F> the filter type
+ * @param <F>
+ *            the filter type
  */
 @FunctionalInterface
 public interface FilterCombiner<F> extends SerializableBiFunction<F, F, F> {

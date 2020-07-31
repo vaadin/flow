@@ -56,7 +56,7 @@ public interface FilterableLazyDataView<T, F> extends LazyDataView<T> {
      * 
      * @param filterCombiner
      *            function for combining a previous component's configured
-     *            filter and a new configured filter
+     *            filter and a new configured filter, not <code>null</code>
      *
      * @see #setFilter(Object)
      */

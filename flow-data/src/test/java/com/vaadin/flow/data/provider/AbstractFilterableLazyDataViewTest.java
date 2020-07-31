@@ -203,7 +203,7 @@ public class AbstractFilterableLazyDataViewTest extends BaseLazyDataViewTest {
         }
 
         @Override
-        public <Q> AbstractFilterableLazyDataView<Person, PersonFilter> setItemsWithFilter(
+        public <Q> AbstractFilterableLazyDataView<Person, PersonFilter> setItemsWithConvertedFilter(
                 CallbackDataProvider.FetchCallback<Person, Q> fetchCallback,
                 CallbackDataProvider.CountCallback<Person, Q> countCallback,
                 SerializableFunction<PersonFilter, Q> filterConverter) {
@@ -229,19 +229,19 @@ public class AbstractFilterableLazyDataViewTest extends BaseLazyDataViewTest {
     }
 
     private DataProvider<Person, PersonFilter> getDataProvider() {
-        return DataProvider.fromFilteringCallbacks(this::getFilteredPersons,
+        return DataProvider.fromFilteringCallbacks(
+                query -> getFilteredPersons(query).skip(query.getOffset())
+                        .limit(query.getLimit()),
                 query -> (int) getFilteredPersons(query).count());
     }
 
     private Stream<Person> getFilteredPersons(
             Query<Person, PersonFilter> query) {
-        return IntStream.range(0, 100)
-                .mapToObj(index -> new Person("John" + index, "Doe" + index,
-                        index % 10))
+        return IntStream.range(0, 100).mapToObj(
+                index -> new Person("John" + index, "Doe" + index, index % 10))
                 .filter(person -> query.getFilter()
                         .map(personFilter -> personFilter.apply(person))
-                        .orElse(true))
-                .limit(query.getLimit()).skip(query.getOffset());
+                        .orElse(true));
     }
 
     private static class PersonFilter {

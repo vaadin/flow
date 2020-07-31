@@ -47,13 +47,15 @@ public abstract class AbstractFilterableLazyDataView<T, F> extends
      * items filtering.
      *
      * @param dataCommunicator
-     *            the data communicator of the component
+     *            the data communicator of the component, not <code>null</code>
      * @param component
-     *            the component
+     *            the component, not <code>null</code>
      * @param filterConsumer
-     *            callback for changing the filter value in component
+     *            callback for changing the filter value in component, not
+     *            <code>null</code>
      * @param filterSupplier
-     *            supplier for component's internal filter value
+     *            supplier for component's internal filter value, not
+     *            <code>null</code>
      */
     public AbstractFilterableLazyDataView(DataCommunicator<T> dataCommunicator,
             Component component, SerializableConsumer<F> filterConsumer,
@@ -62,7 +64,7 @@ public abstract class AbstractFilterableLazyDataView<T, F> extends
         Objects.requireNonNull(filterConsumer,
                 "Filter consumer cannot be null");
         Objects.requireNonNull(filterSupplier,
-                "Filter supplier cannot be " + "null");
+                "Filter supplier cannot be null");
         this.filterConsumer = filterConsumer;
         this.filterSupplier = filterSupplier;
         this.filterCombiner = FilterCombiner.identity();
@@ -77,7 +79,8 @@ public abstract class AbstractFilterableLazyDataView<T, F> extends
 
     @Override
     public void setFilterCombiner(FilterCombiner<F> filterCombiner) {
-        Objects.requireNonNull(filterCombiner, "Filter combiner cannot be null");
+        Objects.requireNonNull(filterCombiner,
+                "Filter combiner cannot be null");
         this.filterCombiner = filterCombiner;
     }
 

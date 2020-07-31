@@ -22,8 +22,8 @@ import java.util.Collection;
 import com.vaadin.flow.function.SerializableFunction;
 
 /**
- * Interface that defines methods for fetching items lazily from a backend
- * taking into account the configured filter. The API will return a
+ * Defines the methods for fetching items lazily from a backend taking into
+ * account the configured filter. The API will return a
  * {@link FilterableLazyDataView}.
  * <p>
  * <em>Note:</em> If you don't need a configured filter in your data access
@@ -51,15 +51,23 @@ public interface HasFilterableLazyDataView<T, F, V extends FilterableLazyDataVie
      * later on fetched with {@link #getFilterableLazyDataView()}. For using
      * in-memory data, like {@link java.util.Collection}, use
      * {@link HasListDataView#setItems(Collection)} instead.
+     * <p>
+     * <em>Note:</em> this method is mutually exclusive with the other
+     * callbacks/data provider setting methods of {@code
+     * HasFilterableLazyDataView}, i.e. calling each of them means that the
+     * previously set callbacks/data providers will be replaced by a new ones.
      *
      * @param fetchCallback
      *            function that returns a stream of items from the backend based
-     *            on the offset, limit and filter provided by the query object
+     *            on the offset, limit and filter provided by the query object,
+     *            not <code>null</code>
      * @return FilterableLazyDataView instance for further configuration
+     *
+     * @see #setItemsWithConvertedFilter(CallbackDataProvider.FetchCallback, SerializableFunction)
      */
     default V setItemsWithFilter(
             CallbackDataProvider.FetchCallback<T, F> fetchCallback) {
-        return setItemsWithFilter(fetchCallback,
+        return setItemsWithConvertedFilter(fetchCallback,
                 SerializableFunction.identity());
     }
 
@@ -80,14 +88,21 @@ public interface HasFilterableLazyDataView<T, F, V extends FilterableLazyDataVie
      * later on fetched with {@link #getFilterableLazyDataView()}. For using
      * in-memory data, like {@link java.util.Collection}, use
      * {@link HasListDataView#setItems(Collection)} instead.
+     * <p>
+     * <em>Note:</em> this method is mutually exclusive with the other
+     * callbacks/data provider setting methods of {@code
+     * HasFilterableLazyDataView}, i.e. calling each of them means that the
+     * previously set callbacks/data providers will be replaced by a new ones.
      *
      * @param fetchCallback
      *            function that returns a stream of items from the back end for
-     *            a query
+     *            a query, not <code>null</code>
      * @param countCallback
      *            function that return the number of items in the back end for a
-     *            query
+     *            query, not <code>null</code>
      * @return FilterableLazyDataView instance for further configuration
+     *
+     * @see #setItemsWithFilter(BackEndDataProvider)
      */
     default V setItemsWithFilter(
             CallbackDataProvider.FetchCallback<T, F> fetchCallback,
@@ -109,10 +124,15 @@ public interface HasFilterableLazyDataView<T, F, V extends FilterableLazyDataVie
      * later on fetched with {@link #getFilterableLazyDataView()}. For using
      * in-memory data, like {@link java.util.Collection}, use
      * {@link HasListDataView#setItems(Collection)} instead.
-     * 
+     * <p>
+     * <em>Note:</em> this method is mutually exclusive with the other
+     * callbacks/data provider setting methods of {@code
+     * HasFilterableLazyDataView}, i.e. calling each of them means that the
+     * previously set callbacks/data providers will be replaced by a new ones.
+     *
      * @param fetchCallback
      *            function that returns a stream of items from the back end for
-     *            a query
+     *            a query, not <code>null</code>
      * @param filterConverter
      *            a function that converts the component's configured filter to
      *            the filter values expected by the fetch callback, not
@@ -120,21 +140,24 @@ public interface HasFilterableLazyDataView<T, F, V extends FilterableLazyDataVie
      * @param <Q>
      *            fetch callback filter type
      * @return FilterableLazyDataView instance for further configuration
+     *
+     * @see #setItemsWithConvertedFilter(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback, SerializableFunction)
      */
-    default <Q> V setItemsWithFilter(
+    default <Q> V setItemsWithConvertedFilter(
             CallbackDataProvider.FetchCallback<T, Q> fetchCallback,
             SerializableFunction<F, Q> filterConverter) {
-        V filterableLazyDataView = setItemsWithFilter(fetchCallback, query -> {
-            throw new IllegalStateException(
-                    "Trying to use exact size with a lazy loading component"
-                            + " without either providing a count callback for the"
-                            + " component to fetch the count of the items or a data"
-                            + " provider that implements the size query. Provide the "
-                            + "callback for fetching item count with%n"
-                            + "component.getFilterableLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
-                            + "%nor switch to undefined size with%n"
-                            + "component.getFilterableLazyDataView().withUndefinedSize();");
-        }, filterConverter);
+        V filterableLazyDataView = setItemsWithConvertedFilter(fetchCallback,
+                query -> {
+                    throw new IllegalStateException(
+                            "Trying to use exact size with a lazy loading component"
+                                    + " without either providing a count callback for the"
+                                    + " component to fetch the count of the items or a data"
+                                    + " provider that implements the size query. Provide the "
+                                    + "callback for fetching item count with%n"
+                                    + "component.getFilterableLazyDataView().withDefinedSize(CallbackDataProvider.CountCallback);"
+                                    + "%nor switch to undefined size with%n"
+                                    + "component.getFilterableLazyDataView().withUndefinedSize();");
+                }, filterConverter);
         filterableLazyDataView.setItemCountUnknown();
         return filterableLazyDataView;
     }
@@ -144,17 +167,24 @@ public interface HasFilterableLazyDataView<T, F, V extends FilterableLazyDataVie
      * from a backend. Note that component will query the data provider for the
      * item count. In case that is not desired for performance reasons, use
      * {@link #setItemsWithFilter(CallbackDataProvider.FetchCallback)} or
-     * {@link #setItemsWithFilter(CallbackDataProvider.FetchCallback, SerializableFunction)}
+     * {@link #setItemsWithConvertedFilter(CallbackDataProvider.FetchCallback, SerializableFunction)}
      * instead.
      * <p>
      * The returned data view object can be used for further configuration, or
      * later on fetched with {@link #getFilterableLazyDataView()}. For using
      * in-memory data, like {@link java.util.Collection}, use
      * {@link HasListDataView#setItems(Collection)} instead.
+     * <p>
+     * <em>Note:</em> this method is mutually exclusive with the other
+     * callbacks/data provider setting methods of {@code
+     * HasFilterableLazyDataView}, i.e. calling each of them means that the
+     * previously set callbacks/data providers will be replaced by a new ones.
      *
      * @param dataProvider
-     *            BackEndDataProvider instance
+     *            BackEndDataProvider instance, not <code>null</code>
      * @return FilterableLazyDataView instance for further configuration
+     *
+     * @see #setItemsWithFilter(CallbackDataProvider.FetchCallback, CallbackDataProvider.CountCallback)
      */
     V setItemsWithFilter(BackEndDataProvider<T, F> dataProvider);
 
@@ -175,13 +205,18 @@ public interface HasFilterableLazyDataView<T, F, V extends FilterableLazyDataVie
      * later on fetched with {@link #getFilterableLazyDataView()}. For using
      * in-memory data, like {@link java.util.Collection}, use
      * {@link HasListDataView#setItems(Collection)} instead.
+     * <p>
+     * <em>Note:</em> this method is mutually exclusive with the other
+     * callbacks/data provider setting methods of {@code
+     * HasFilterableLazyDataView}, i.e. calling each of them means that the
+     * previously set callbacks/data providers will be replaced by a new ones.
      *
      * @param fetchCallback
      *            function that returns a stream of items from the back end for
-     *            a query
+     *            a query, not <code>null</code>
      * @param countCallback
      *            function that return the number of items in the back end for a
-     *            query
+     *            query, not <code>null</code>
      * @param filterConverter
      *            a function that converts the component's configured filter to
      *            the filter values expected by the fetch callback, not
@@ -189,8 +224,11 @@ public interface HasFilterableLazyDataView<T, F, V extends FilterableLazyDataVie
      * @param <Q>
      *            fetch/count callback filter type
      * @return FilterableLazyDataView instance for further configuration
+     *
+     * @see #setItemsWithConvertedFilter(CallbackDataProvider.FetchCallback, SerializableFunction)
+     * @see #setItemsWithFilter(CallbackDataProvider.FetchCallback)
      */
-    <Q> V setItemsWithFilter(
+    <Q> V setItemsWithConvertedFilter(
             CallbackDataProvider.FetchCallback<T, Q> fetchCallback,
             CallbackDataProvider.CountCallback<T, Q> countCallback,
             SerializableFunction<F, Q> filterConverter);

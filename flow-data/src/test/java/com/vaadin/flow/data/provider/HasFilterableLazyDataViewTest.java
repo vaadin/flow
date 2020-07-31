@@ -53,7 +53,7 @@ public class HasFilterableLazyDataViewTest {
         }
 
         @Override
-        public <Q> AbstractFilterableLazyDataView<T, String> setItemsWithFilter(
+        public <Q> AbstractFilterableLazyDataView<T, String> setItemsWithConvertedFilter(
                 CallbackDataProvider.FetchCallback<T, Q> fetchCallback,
                 CallbackDataProvider.CountCallback<T, Q> countCallback,
                 SerializableFunction<String, Q> filterConverter) {

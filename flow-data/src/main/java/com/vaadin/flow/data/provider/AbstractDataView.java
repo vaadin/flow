@@ -45,15 +45,16 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      * implementation.
      *
      * @param dataProviderSupplier
-     *            supplier from which the DataProvider can be gotten
+     *            supplier from which the DataProvider can be gotten, not <code>null</code>
      * @param component
-     *            the component that the dataView is bound to
+     *            the component that the dataView is bound to, not <code>null</code>
      */
     public AbstractDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
             Component component) {
         Objects.requireNonNull(dataProviderSupplier,
                 "DataProvider supplier cannot be null");
+        Objects.requireNonNull(component, "Component cannot be null");
         this.dataProviderSupplier = dataProviderSupplier;
         this.component = component;
         verifyDataProviderType(dataProviderSupplier.get().getClass());

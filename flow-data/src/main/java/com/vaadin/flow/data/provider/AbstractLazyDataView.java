@@ -38,9 +38,9 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * compatible with this data view implementation.
      *
      * @param dataCommunicator
-     *            the data communicator of the component
+     *            the data communicator of the component, not <code>null</code>
      * @param component
-     *            the component
+     *            the component, not <code>null</code>
      */
     public AbstractLazyDataView(DataCommunicator<T> dataCommunicator,
             Component component) {
