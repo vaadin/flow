@@ -24,12 +24,10 @@ import com.vaadin.flow.dom.Element;
  * use Element API (and {@link Text} doesn't provide any such contract) for
  * setting attribute/property. It implies that you may not style this component
  * as well. Any attempt to set attribute/property value throws an exception. The
- * only available API for a {@link Text} component is set the text.
+ * only available API for a {@link Text} component is set a text.
  * <p>
  * If you need a text component which can be styled then check {@code Span}
  * class (from {@code flow-html-components}) module.
- *
- * @see {@code span} HTML element
  *
  * @author Vaadin Ltd
  * @since 1.0
