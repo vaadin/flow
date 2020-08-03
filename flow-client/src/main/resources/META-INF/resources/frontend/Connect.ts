@@ -419,7 +419,42 @@ export const login = async (username: string, password: string): Promise<LoginRe
   };
 }
 
+export async function logout() {
+  // this assumes the default Spring Security logout configuration (handler URL)
+  const response = await fetch('/logout');
+
+  // TODO: find a more efficient way to get a new CSRF token
+  // parsing the full response body just to get a token may be wasteful
+  const token = getCsrfTokenFromResponseBody(await response.text());
+  (window as any).Vaadin.TypeScript.csrfToken = token;
+}
+
 const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
   const match = body.match(/window\.Vaadin = \{TypeScript: \{"csrfToken":"([0-9a-zA-Z\-]{36})"}};/i);
   return match ? match[1] : undefined;
+}
+
+export type EndpointCallContine = (token: string) => void;
+export type OnInvalidSessionCallback = (continueFunc: EndpointCallContine) => void;
+
+export class InvalidSessionMiddleWare {
+  static create(onInvalidSessionCallback: OnInvalidSessionCallback){
+    const middleWare = async (context: MiddlewareContext, next: MiddlewareNext): Promise<Response> => {
+      const clonedContext = { ...context };
+      clonedContext.request = context.request.clone();
+      const response = await next(context);
+      if (response.status === 401) {
+        return new Promise(async resolve => {
+          const continueFunc = (token: string) => {
+            clonedContext.request.headers.set('X-CSRF-Token', token);
+            resolve(next(clonedContext));
+          }
+          onInvalidSessionCallback(continueFunc);
+        });
+      } else {
+        return response;
+      }
+    };
+    return middleWare;
+  }
 }
