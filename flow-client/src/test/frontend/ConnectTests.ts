@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, EndpointError, EndpointValidationError, EndpointResponseError } from "../../main/resources/META-INF/resources/frontend/Connect";
+import { ConnectClient, EndpointError, EndpointValidationError, EndpointResponseError, login } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -396,5 +396,72 @@ describe('ConnectClient', () => {
         await client.call('FooEndpoint', 'fooMethod', {fooParam: 'foo'});
       });
     });
+
+    describe('login', () => {
+      afterEach(() => fetchMock.restore());
+
+      it('on invalid credential', async ()=>{
+        const response = new Response(
+          '',
+          {
+            redirected: true,
+            ok: true,
+            url:'/login?error'
+        });
+        fetchMock.post('/login', response);
+        const result = await login('invalid-username', 'invalid-password');
+        const expectedResult = {
+          error: true,
+          errorTitle: 'Incorrect username or password.',
+          errorMessage: 'Check that you have entered the correct username and password and try again.'};
+        
+        expect(fetchMock.calls()).to.have.lengthOf(1);
+        expect(result).to.deep.equal(expectedResult);
+      })
+
+      it('on valid credential', async ()=>{
+        const body = 'window.Vaadin = {TypeScript: {"csrfToken":"6a60700e-852b-420f-a126-a1c61b73d1ba"}};';
+        const response = new Response(
+          body,
+          {
+            status: 302,
+            redirected: true,
+            ok: true,
+            url:'/',
+          });
+        fetchMock.post('/login', response);
+        const result = await login('valid-username', 'valid-password');
+        const expectedResult = {
+          error: false,
+          errorTitle: '',
+          errorMessage: '',
+          token: '6a60700e-852b-420f-a126-a1c61b73d1ba'
+        };
+        
+        expect(fetchMock.calls()).to.have.lengthOf(1);
+        expect(result).to.deep.equal(expectedResult);
+      })
+
+      it('on other erros', async ()=>{
+        const body = 'Unexpected error';
+        const errorResponse = new Response(
+            body,
+            {
+              status: 500,
+              statusText: 'Internal Server Error'
+            }
+        );
+        fetchMock.post('/login', errorResponse);
+        const result = await login('valid-username', 'valid-password');
+        const expectedResult = {
+          error: true,
+          errorTitle: 'Communication error.',
+          errorMessage: 'Please check your network connection and try again.'
+        };
+        
+        expect(fetchMock.calls()).to.have.lengthOf(1);
+        expect(result).to.deep.equal(expectedResult);
+      })
+    })
   });
 });
