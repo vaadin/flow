@@ -242,7 +242,7 @@ export class ConnectClient {
   /**
    * The Vaadin Connect backend prefix
    */
-  prefix: string = 'connect';
+  prefix: string = '/connect';
 
   /**
    * The array of middlewares that are invoked during a call.
