@@ -401,14 +401,7 @@ describe('ConnectClient', () => {
       afterEach(() => fetchMock.restore());
 
       it('on invalid credential', async ()=>{
-        const response = new Response(
-          '',
-          {
-            redirected: true,
-            ok: true,
-            url:'/login?error'
-        });
-        fetchMock.post('/login', response);
+        fetchMock.post('/login', { redirectUrl: '/login?error' });
         const result = await login('invalid-username', 'invalid-password');
         const expectedResult = {
           error: true,
@@ -420,16 +413,10 @@ describe('ConnectClient', () => {
       })
 
       it('on valid credential', async ()=>{
-        const body = 'window.Vaadin = {TypeScript: {"csrfToken":"6a60700e-852b-420f-a126-a1c61b73d1ba"}};';
-        const response = new Response(
-          body,
-          {
-            status: 302,
-            redirected: true,
-            ok: true,
-            url:'/',
-          });
-        fetchMock.post('/login', response);
+        fetchMock.post('/login', {
+          body: 'window.Vaadin = {TypeScript: {"csrfToken":"6a60700e-852b-420f-a126-a1c61b73d1ba"}};',
+          redirectUrl: '/'
+        });
         const result = await login('valid-username', 'valid-password');
         const expectedResult = {
           error: false,

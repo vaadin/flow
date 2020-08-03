@@ -399,6 +399,7 @@ export const login = async (username: string, password: string): Promise<LoginRe
       // parsing the full response body just to get a token may be wasteful
       const token = getCsrfTokenFromResponseBody(await response.text());
       if (token) {
+        (window as any).Vaadin.TypeScript = (window as any).Vaadin.TypeScript || {};
         (window as any).Vaadin.TypeScript.csrfToken = token;
         result = {
           error: false,
