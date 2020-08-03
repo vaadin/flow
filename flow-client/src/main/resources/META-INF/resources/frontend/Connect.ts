@@ -434,8 +434,8 @@ const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
   return match ? match[1] : undefined;
 }
 
-export type EndpointCallContine = (token: string) => void;
-export type OnInvalidSessionCallback = (continueFunc: EndpointCallContine) => void;
+export type EndpointCallContinue = (token: string) => void;
+export type OnInvalidSessionCallback = (continueFunc: EndpointCallContinue) => void;
 
 export class InvalidSessionMiddleWare {
   static create(onInvalidSessionCallback: OnInvalidSessionCallback){
