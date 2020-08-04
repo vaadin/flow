@@ -31,14 +31,45 @@ public class EmailValidator extends RegexpValidator {
             + "\\." + "[a-zA-Z0-9-]{2,}" // tld
             + "$";
 
+    private final boolean allowEmptyValue;
+
+    /**
+     * Creates a validator for checking that a string is a syntactically valid
+     * e-mail address.
+     * <p>
+     * This constructor creates a validator which doesn't accept an empty string
+     * as a valid e-mail address. Use {@link #EmailValidator(String, boolean)}
+     * constructor with {@code true} as a value for the second argument to
+     * create a validator which accepts an empty string.
+     *
+     * @param errorMessage
+     *            the message to display in case the value does not validate.
+     * @see #EmailValidator(String, boolean)
+     */
+    public EmailValidator(String errorMessage) {
+        this(errorMessage, false);
+    }
+
     /**
      * Creates a validator for checking that a string is a syntactically valid
      * e-mail address.
      *
      * @param errorMessage
      *            the message to display in case the value does not validate.
+     * @param allowEmpty
+     *            if {@code true} then an empty string passes the validation,
+     *            otherwise the validation fails
      */
-    public EmailValidator(String errorMessage) {
+    public EmailValidator(String errorMessage, boolean allowEmpty) {
         super(errorMessage, PATTERN, true);
+        allowEmptyValue = allowEmpty;
+    }
+
+    @Override
+    protected boolean isValid(String value) {
+        if (allowEmptyValue && value != null && value.isEmpty()) {
+            return true;
+        }
+        return super.isValid(value);
     }
 }

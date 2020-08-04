@@ -2,9 +2,6 @@ package com.vaadin.flow.data.validator;
 
 import org.junit.Test;
 
-import com.vaadin.flow.data.validator.EmailValidator;
-import com.vaadin.flow.data.validator.RegexpValidator;
-
 public class EmailValidatorTest extends ValidatorTestBase {
 
     @Test
@@ -89,6 +86,18 @@ public class EmailValidatorTest extends ValidatorTestBase {
     @Test
     public void testEmailWithDigitsPasses() {
         assertPasses("johannes84@v44d1n.com", shouldNotFail());
+    }
+
+    @Test
+    public void emptyString_validatorAcceptsEmptyValue_passesValidation() {
+        assertPasses("", new EmailValidator("this should not fail", true));
+    }
+
+    @Test
+    public void emptyString_validatorDoesNotAcceptsEmptyValue_validationFails() {
+        assertFails("", new EmailValidator(
+                "explcitily disallowed empty value should not be accepted",
+                false));
     }
 
     private EmailValidator validator(String errorMessage) {
