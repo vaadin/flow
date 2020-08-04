@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.io.Writer;
 
+import com.vaadin.flow.shared.ApplicationConstants;
+
 /**
  * A {@link RequestHandler} that presents an informative page if the browser in
  * use is unsupported.
@@ -103,6 +105,9 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
             VaadinResponse response) throws IOException {
         Writer page = response.getWriter();
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
+
+        response.setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         // @formatter:off
         page.write(

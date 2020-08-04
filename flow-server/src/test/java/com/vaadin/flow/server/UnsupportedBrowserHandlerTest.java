@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class UnsupportedBrowserHandlerTest {
@@ -72,6 +73,9 @@ public class UnsupportedBrowserHandlerTest {
         Assert.assertTrue("Unsupported browser page not used",
                 pageCapture.getValue().contains(
                         "I'm sorry, but your browser is not supported"));
+
+        Mockito.verify(response).setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
     }
 
     @Test
@@ -92,6 +96,15 @@ public class UnsupportedBrowserHandlerTest {
         Assert.assertFalse("Should not handle the request",
                 handler.synchronizedHandleRequest(session, request, response));
         Mockito.verify(writer, Mockito.never()).write(Mockito.anyString());
+    }
+
+    @Test
+    public void writeBrowserTooOldPage_setContentType() throws IOException {
+        initMocks(true, true);
+        handler.writeBrowserTooOldPage(request, response);
+
+        Mockito.verify(response).setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
     }
 
     @After
