@@ -277,7 +277,7 @@ public class LocationTest {
     }
 
     @Test
-    public void locationWithSpacesInPath_segmentIsDecoded() {
+    public void locaitonWithSpacesInPath_segmentIsDecoded() {
         Location location = new Location("space in path");
         List<String> segments = location.getSegments();
         Assert.assertEquals("space in path", segments.get(0));

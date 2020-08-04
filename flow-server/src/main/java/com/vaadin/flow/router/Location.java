@@ -21,9 +21,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.slf4j.LoggerFactory;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -280,20 +276,6 @@ public class Location implements Serializable {
             basePath = path.substring(0, endIndex);
         } else {
             basePath = path;
-        }
-
-        try {
-            basePath = URLDecoder.decode(basePath,
-                    StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException exception) {
-            // may not happen since UTF-8 is a standard encoding, but if it
-            // happens then everything is totally broken
-            throw new IllegalStateException("Cannot decode URL " + basePath,
-                    exception);
-        } catch (IllegalArgumentException exception) {
-            LoggerFactory.getLogger(Location.class).warn(
-                    "Couldn't decode path '{}', it will be used as is",
-                    basePath);
         }
 
         verifyRelativePath(basePath);
