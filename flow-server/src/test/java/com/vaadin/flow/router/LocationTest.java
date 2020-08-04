@@ -275,4 +275,11 @@ public class LocationTest {
         Assert.assertEquals("bar=a b ñ & ?",
                 location.getQueryParameters().getQueryString());
     }
+
+    @Test
+    public void locaitonWithSpacesInPath_segmentIsDecoded() {
+        Location location = new Location("space in path");
+        List<String> segments = location.getSegments();
+        Assert.assertEquals("space in path", segments.get(0));
+    }
 }

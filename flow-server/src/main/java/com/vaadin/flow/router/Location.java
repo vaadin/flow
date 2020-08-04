@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.router;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -270,12 +272,22 @@ public class Location implements Serializable {
     }
 
     private static List<String> parsePath(String path) {
-        final String basePath;
+        String basePath;
         int endIndex = path.indexOf(QUERY_SEPARATOR);
         if (endIndex >= 0) {
             basePath = path.substring(0, endIndex);
         } else {
             basePath = path;
+        }
+
+        try {
+            basePath = URLDecoder.decode(basePath,
+                    StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException exception) {
+            // may not happen since UTF-8 is a standard encoding, but if it
+            // happens then everything is totally broken
+            throw new IllegalStateException("Cannot decode URL " + basePath,
+                    exception);
         }
 
         verifyRelativePath(basePath);
