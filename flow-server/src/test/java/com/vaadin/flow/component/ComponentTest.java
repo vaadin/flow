@@ -790,6 +790,16 @@ public class ComponentTest {
         Assert.assertFalse(parent.isAttached());
         Assert.assertFalse(child.isAttached());
         Assert.assertFalse(grandChild.isAttached());
+
+        ui.add(parent);
+        Assert.assertTrue(parent.isAttached());
+        Assert.assertTrue(child.isAttached());
+        Assert.assertTrue(grandChild.isAttached());
+
+        ui.close();
+        Assert.assertTrue(parent.isAttached());
+        Assert.assertTrue(child.isAttached());
+        Assert.assertTrue(grandChild.isAttached());
     }
 
     @Test(expected = IllegalArgumentException.class)
