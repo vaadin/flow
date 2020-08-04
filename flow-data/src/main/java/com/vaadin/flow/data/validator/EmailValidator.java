@@ -36,9 +36,15 @@ public class EmailValidator extends RegexpValidator {
     /**
      * Creates a validator for checking that a string is a syntactically valid
      * e-mail address.
+     * <p>
+     * This constructor creates a validator which doesn't accept an empty string
+     * as a valid e-mail address. Use {@link #EmailValidator(String, boolean)}
+     * constructor with {@code true} as a value for the second argument to
+     * create a validator which accepts an empty string.
      *
      * @param errorMessage
      *            the message to display in case the value does not validate.
+     * @see #EmailValidator(String, boolean)
      */
     public EmailValidator(String errorMessage) {
         this(errorMessage, false);
