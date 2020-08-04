@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, EndpointError, EndpointValidationError, EndpointResponseError, login, logout, InvalidSessionMiddleWare, EndpointCallContinue } from "../../main/resources/META-INF/resources/frontend/Connect";
+import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleWare, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -283,7 +283,7 @@ describe('ConnectClient', () => {
     describe('middleware invocation', () => {
       it('should not invoke middleware before call', async() => {
         const spyMiddleware = sinon.spy(async(context: any, next?: any) => {
-          return await next(context);
+          return next(context);
         });
         client.middlewares = [spyMiddleware];
 
@@ -296,7 +296,7 @@ describe('ConnectClient', () => {
           expect(context.method).to.equal('fooMethod');
           expect(context.params).to.deep.equal({fooParam: 'foo'});
           expect(context.request).to.be.instanceOf(Request);
-          return await next(context);
+          return next(context);
         });
         client.middlewares = [spyMiddleware];
 
@@ -318,13 +318,12 @@ describe('ConnectClient', () => {
             myUrl,
             {
               method: 'POST',
-              headers: Object.assign({}, context.request.headers, {
-                'X-Foo': 'Bar'
-              }),
+              headers: {...context.request.headers, 
+                'X-Foo': 'Bar'},
               body: '{"baz": "qux"}'
             }
           );
-          return await next(context);
+          return next(context);
         };
 
         client.middlewares = [myMiddleware];
@@ -357,7 +356,7 @@ describe('ConnectClient', () => {
 
         const secondMiddleware = sinon.spy(async(context: any, next?: any) => {
           (expect(firstMiddleware).to.be as any).calledOnce;
-          return await next(context);
+          return next(context);
         });
 
         client.middlewares = [firstMiddleware, secondMiddleware];

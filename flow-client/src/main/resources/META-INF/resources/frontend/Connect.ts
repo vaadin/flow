@@ -377,7 +377,7 @@ export interface LoginResult {
   errorMessage: string;
 }
 
-export const login = async (username: string, password: string): Promise<LoginResult> => {
+export async function login(username: string, password: string): Promise<LoginResult> {
   let result;
   try {
     // this assumes the default Spring Security form login configuration (parameter names)
@@ -410,7 +410,11 @@ export const login = async (username: string, password: string): Promise<LoginRe
       }
     }
   } catch (e) {
-    // eat the exception
+    result = {
+      error: true,
+      errorTitle: e.name,
+      errorMessage: e.message
+    }
   }
 
   return result || {
