@@ -757,6 +757,41 @@ public class ComponentTest {
         Assert.assertFalse(initialAttach.get());
     }
 
+    /**
+     * Tests {@link Component#isAttached}.
+     */
+    @Test
+    public void testIsAttached() {
+        UI ui = new UI();
+        // ui is always attached
+        Assert.assertTrue(ui.isAttached());
+
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponentContainer child = new TestComponentContainer();
+        TestComponent grandChild = new TestComponent();
+        child.track();
+        grandChild.addAttachListener(
+                event -> Assert.assertTrue(grandChild.isAttached()));
+        grandChild.addDetachListener(
+                event -> grandChild.getDetachEvents().incrementAndGet());
+
+        parent.add(child);
+        child.add(grandChild);
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+
+        ui.add(parent);
+        Assert.assertTrue(parent.isAttached());
+        Assert.assertTrue(child.isAttached());
+        Assert.assertTrue(grandChild.isAttached());
+
+        ui.remove(parent);
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void wrapNullComponentType() {
         new Element("div").as(null);

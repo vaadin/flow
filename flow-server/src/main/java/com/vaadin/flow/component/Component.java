@@ -452,6 +452,17 @@ public abstract class Component
     }
 
     /**
+     * Checks whether this component is currently attached to a UI.
+     * <p>
+     * Returns true for attached components even if the UI itself is closed.
+     *
+     * @return true if the component is attached to an UI.
+     */
+    public boolean isAttached() {
+        return getElement().getNode().isAttached();
+    }
+
+    /**
      * Sets the value of the given component property.
      *
      * @see PropertyDescriptor
