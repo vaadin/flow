@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.io.Writer;
 
+import com.vaadin.flow.shared.ApplicationConstants;
+
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_TRANSPILE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_DEVMODE_TRANSPILE_DEFAULT;
 
@@ -34,6 +36,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 
     public static final String CLOSING_BRACKET = "    }";
 
+    // @formatter:off
     private static final String UNSUPPORTED_PAGE_HEAD_CONTENT = "<head>"
             + "  <style>"
             + "    html {"
@@ -73,6 +76,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
             + CLOSING_BRACKET
             + "  </style>"
             + "</head>";
+    // @formatter:on
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -123,6 +127,9 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
                                           VaadinResponse response) throws IOException {
         Writer page = response.getWriter();
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
+
+        response.setContentType(
+                ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         // @formatter:off
         page.write(
