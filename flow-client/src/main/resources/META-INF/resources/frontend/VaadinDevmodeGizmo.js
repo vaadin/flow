@@ -795,7 +795,7 @@ class VaadinDevmodeGizmo extends LitElement {
       };
       const load = function() {
           if (iframe.contentWindow.Vaadin) {
-              let contentIsPopulated = true;
+              var contentIsPopulated = true;
               if (document.body.querySelector('#outlet')) {
                   contentIsPopulated = iframe.contentDocument.body.querySelector('#outlet')
                       && iframe.contentDocument.body.querySelector('#outlet').children.length > 0;
