@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -32,13 +33,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import org.slf4j.LoggerFactory;
 
 /**
  * Registry for PWA data.
@@ -56,6 +57,8 @@ import org.slf4j.LoggerFactory;
  * @since 1.2
  */
 public class PwaRegistry implements Serializable {
+
+    private static final String META_INF_RESOURCES = "/META-INF/resources";
     private static final String HEADLESS_PROPERTY = "java.awt.headless";
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
@@ -84,18 +87,21 @@ public class PwaRegistry implements Serializable {
 
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
-            URL logo = servletContext
-                    .getResource(pwaConfiguration.relIconPath());
-            URL offlinePage = servletContext
-                    .getResource(pwaConfiguration.relOfflinePath());
+            URL logo = getResourceUrl(servletContext,
+                    pwaConfiguration.relIconPath());
+
+            URL offlinePage = getResourceUrl(servletContext,
+                    pwaConfiguration.relOfflinePath());
             // Load base logo from servlet context if available
             // fall back to local image if unavailable
             BufferedImage baseImage = getBaseImage(logo);
 
             if (baseImage == null) {
-                LoggerFactory.getLogger(PwaRegistry.class).error("Image is not found or can't be loaded: " + logo);
+                LoggerFactory.getLogger(PwaRegistry.class).error(
+                        "Image is not found or can't be loaded: " + logo);
             } else {
-                // Pick top-left pixel as fill color if needed for image resizing
+                // Pick top-left pixel as fill color if needed for image
+                // resizing
                 int bgColor = baseImage.getRGB(0, 0);
 
                 // initialize icons
@@ -116,6 +122,19 @@ public class PwaRegistry implements Serializable {
             // Initialize service worker install prompt html/js
             installPrompt = initializeInstallPrompt(pwaConfiguration);
         }
+    }
+
+    private URL getResourceUrl(ServletContext context, String path)
+            throws MalformedURLException {
+        URL resourceUrl = context.getResource(path);
+        if (resourceUrl == null) {
+            // this is a workaround specific for Spring default static resources
+            // location: see #8705
+            String cpPath = path.startsWith("/") ? META_INF_RESOURCES + path
+                    : META_INF_RESOURCES + "/" + path;
+            resourceUrl = PwaRegistry.class.getResource(cpPath);
+        }
+        return resourceUrl;
     }
 
     private List<PwaIcon> initializeIcons(BufferedImage baseImage,
