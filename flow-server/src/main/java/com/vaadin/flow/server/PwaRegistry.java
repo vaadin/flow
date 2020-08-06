@@ -99,9 +99,10 @@ public class PwaRegistry implements Serializable {
 
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
-            URL logo = getUrl(servletContext, pwaConfiguration.relIconPath());
+            URL logo = getResourceUrl(servletContext,
+                    pwaConfiguration.relIconPath());
 
-            URL offlinePage = getUrl(servletContext,
+            URL offlinePage = getResourceUrl(servletContext,
                     pwaConfiguration.relOfflinePath());
             // Load base logo from servlet context if available
             // fall back to local image if unavailable
@@ -132,7 +133,7 @@ public class PwaRegistry implements Serializable {
         }
     }
 
-    private URL getUrl(ServletContext context, String path)
+    private URL getResourceUrl(ServletContext context, String path)
             throws MalformedURLException {
         URL logo = context.getResource(path);
         if (logo == null) {
