@@ -28,11 +28,12 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
+        testBench().resizeViewPortTo(700, 800);
+        open();
+
         if (hasClientIssue("8236")) {
             return;
         }
-        testBench().resizeViewPortTo(700, 800);
-        open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
 
@@ -61,11 +62,12 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
 
     @Test
     public void numerousEqualAnchorsShouldRepresentOneHistoryEntry() {
+        testBench().resizeViewPortTo(700, 800);
+        open();
+
         if (hasClientIssue("8236")) {
             return;
         }
-        testBench().resizeViewPortTo(700, 800);
-        open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
         final String initialUrl = driver.getCurrentUrl();
