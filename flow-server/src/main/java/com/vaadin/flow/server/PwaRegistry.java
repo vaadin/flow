@@ -135,15 +135,15 @@ public class PwaRegistry implements Serializable {
 
     private URL getResourceUrl(ServletContext context, String path)
             throws MalformedURLException {
-        URL logo = context.getResource(path);
-        if (logo == null) {
+        URL resourceUrl = context.getResource(path);
+        if (resourceUrl == null) {
             // this is a workaround specific for Spring default static resources
             // location: see #8705
             String cpPath = path.startsWith("/") ? META_INF_RESOURCES + path
                     : META_INF_RESOURCES + "/" + path;
-            logo = PwaRegistry.class.getResource(cpPath);
+            resourceUrl = PwaRegistry.class.getResource(cpPath);
         }
-        return logo;
+        return resourceUrl;
     }
 
     private List<PwaIcon> initializeIcons(BufferedImage baseImage,
