@@ -210,11 +210,14 @@ export type MiddlewareNext = (context: MiddlewareContext) =>
 /**
  * An async callback function that can intercept the request and response
  * of a call.
- * @param context The information about the call and request
- * @param next Invokes the next in the call chain
  */
-export type Middleware = (context: MiddlewareContext, next: MiddlewareNext) =>
-  Promise<Response> | Response;
+export interface Middleware {
+  /**
+   * @param context The information about the call and request
+   * @param next Invokes the next in the call chain
+   */
+  call(this: Middleware, thisArg: Middleware, context: MiddlewareContext, next: MiddlewareNext): Promise<Response> | Response;
+}
 
 /**
  * Vaadin Connect client class is a low-level network calling utility. It stores
@@ -352,7 +355,7 @@ export class ConnectClient {
         // Compose and return the new chain step, that takes the context and
         // invokes the current middleware with the context and the further chain
         // as the next argument
-        return (context => middleware(context, next)) as MiddlewareNext;
+        return (context => middleware.call(middleware, context, next)) as MiddlewareNext;
       },
       // Initialize reduceRight the accumulator with `fetchNext`
       fetchNext
@@ -377,24 +380,42 @@ export interface LoginResult {
   errorMessage: string;
 }
 
-export async function login(username: string, password: string): Promise<LoginResult> {
+export interface LoginOptions{
+  loginProcessingUrl?: string;
+  failureUrl?: string;
+  defaultSuccessUrl?: string;
+}
+
+export interface LogoutOptions{
+  logoutUrl?: string;
+}
+
+/**
+ * A helper method for Spring Security based form login.
+ * @param username 
+ * @param password 
+ * @param options defines additional options, e.g, the loginProcessingUrl, failureUrl, defaultSuccessUrl etc.
+ */
+export async function login(username: string, password: string, options?: LoginOptions): Promise<LoginResult> {
   let result;
   try {
-    // this assumes the default Spring Security form login configuration (parameter names)
     const data = new FormData();
     data.append('username', username);
     data.append('password', password);
 
-    const response = await fetch('/login', {method: 'POST', body: data});
+    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login'; 
+    const response = await fetch(loginProcessingUrl, {method: 'POST', body: data});
 
+    const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error'; 
+    const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/'
     // this assumes the default Spring Security form login configuration (handler URL and responses)
-    if (response.ok && response.redirected && response.url.endsWith('/login?error')) {
+    if (response.ok && response.redirected && response.url.endsWith(failureUrl)) {
       result = {
         error: true,
         errorTitle: 'Incorrect username or password.',
         errorMessage: 'Check that you have entered the correct username and password and try again.'
       };
-    } else if (response.ok && response.redirected && response.url.endsWith('/')) {
+    } else if (response.ok && response.redirected && response.url.endsWith(defaultSuccessUrl)) {
       // TODO: find a more efficient way to get a new CSRF token
       // parsing the full response body just to get a token may be wasteful
       const token = getCsrfTokenFromResponseBody(await response.text());
@@ -419,14 +440,19 @@ export async function login(username: string, password: string): Promise<LoginRe
 
   return result || {
     error: true,
-    errorTitle: 'Communication error.',
-    errorMessage: 'Please check your network connection and try again.',
+    errorTitle: 'Error',
+    errorMessage: 'Something went wrong when trying to login.',
   };
 }
 
-export async function logout() {
+/**
+ * A helper method for Spring Security based form logout
+ * @param options defines additional options, e.g, the logoutUrl.
+ */
+export async function logout(options?: LogoutOptions) {
   // this assumes the default Spring Security logout configuration (handler URL)
-  const response = await fetch('/logout');
+  const logoutUrl = options && options.logoutUrl ? options.logoutUrl : '/logout';
+  const response = await fetch(logoutUrl);
 
   // TODO: find a more efficient way to get a new CSRF token
   // parsing the full response body just to get a token may be wasteful
@@ -439,27 +465,38 @@ const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
   return match ? match[1] : undefined;
 }
 
-export type EndpointCallContinue = (token: string) => void;
+type EndpointCallContinue = (token: string) => void;
+
+/**
+ * It defines what to do when it detects a session is invalid. E.g., 
+ * show a login view.
+ * It takes a <code>EndpointCallContinue</code> paramter, which can be 
+ * used to continune the endpoint call.  
+ */
 export type OnInvalidSessionCallback = (continueFunc: EndpointCallContinue) => void;
 
-export class InvalidSessionMiddleWare {
-  static create(onInvalidSessionCallback: OnInvalidSessionCallback){
-    const middleWare = async (context: MiddlewareContext, next: MiddlewareNext): Promise<Response> => {
-      const clonedContext = { ...context };
-      clonedContext.request = context.request.clone();
-      const response = await next(context);
-      if (response.status === 401) {
-        return new Promise(async resolve => {
-          const continueFunc = (token: string) => {
-            clonedContext.request.headers.set('X-CSRF-Token', token);
-            resolve(next(clonedContext));
-          }
-          onInvalidSessionCallback(continueFunc);
-        });
-      } else {
-        return response;
-      }
-    };
-    return middleWare;
+/**
+ * A helper class for handling invalid sessions during an endpoint call.
+ * E.g., you can use this to show user a login page when the session has expired.
+ * Use <code>InvalidSessionMiddleWare.create()</code> to create the middleware.
+ */
+export class InvalidSessionMiddleWare implements Middleware {
+  constructor(private onInvalidSessionCallback: OnInvalidSessionCallback) {}
+
+  async call(_: Middleware, context: MiddlewareContext, next: MiddlewareNext): Promise<Response> {
+    const clonedContext = { ...context };
+    clonedContext.request = context.request.clone();
+    const response = await next(context);
+    if (response.status === 401) {
+      return new Promise(async resolve => {
+        const continueFunc = (token: string) => {
+          clonedContext.request.headers.set('X-CSRF-Token', token);
+          resolve(next(clonedContext));
+        }
+        this.onInvalidSessionCallback(continueFunc);
+      });
+    } else {
+      return response;
+    }
   }
 }

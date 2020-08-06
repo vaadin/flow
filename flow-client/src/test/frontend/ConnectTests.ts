@@ -399,7 +399,7 @@ describe('ConnectClient', () => {
     describe('login', () => {
       afterEach(() => fetchMock.restore());
 
-      it('on invalid credential', async () => {
+      it('should return an error on invalid credentials', async () => {
         fetchMock.post('/login', { redirectUrl: '/login?error' });
         const result = await login('invalid-username', 'invalid-password');
         const expectedResult = {
@@ -412,7 +412,7 @@ describe('ConnectClient', () => {
         expect(result).to.deep.equal(expectedResult);
       })
 
-      it('on valid credential', async () => {
+      it('should return a CSRF token on valid credentials', async () => {
         fetchMock.post('/login', {
           body: 'window.Vaadin = {TypeScript: {"csrfToken":"6a60700e-852b-420f-a126-a1c61b73d1ba"}};',
           redirectUrl: '/'
@@ -429,7 +429,7 @@ describe('ConnectClient', () => {
         expect(result).to.deep.equal(expectedResult);
       })
 
-      it('on other erros', async () => {
+      it('should return an error on other unexpected responses', async () => {
         const body = 'Unexpected error';
         const errorResponse = new Response(
           body,
@@ -442,8 +442,8 @@ describe('ConnectClient', () => {
         const result = await login('valid-username', 'valid-password');
         const expectedResult = {
           error: true,
-          errorTitle: 'Communication error.',
-          errorMessage: 'Please check your network connection and try again.'
+          errorTitle: 'Error',
+          errorMessage: 'Something went wrong when trying to login.'
         };
 
         expect(fetchMock.calls()).to.have.lengthOf(1);
