@@ -795,7 +795,7 @@ class VaadinDevmodeGizmo extends LitElement {
       };
       const load = function() {
           if (iframe.contentWindow.Vaadin) {
-              let contentIsPopulated = true;
+              var contentIsPopulated = true;
               if (document.body.querySelector('#outlet')) {
                   contentIsPopulated = iframe.contentDocument.body.querySelector('#outlet')
                       && iframe.contentDocument.body.querySelector('#outlet').children.length > 0;
@@ -940,7 +940,7 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   dismissNotification(id) {
-    const index = this.notifications.findIndex(notification => notification.id === id);
+    const index = this.findNotificationIndex(id);
     if (index !== -1 && !this.notifications[index].deleted) {
       const notification = this.notifications[index];
 
@@ -958,15 +958,27 @@ class VaadinDevmodeGizmo extends LitElement {
       notification.deleted = true;
       this.showMessage(notification.type, notification.message, notification.details, notification.link);
 
+      const self = this;
       // give some time for the animation
       setTimeout(() => {
-        const index = this.notifications.findIndex(notification => notification.id === id);
+        const index = self.findNotificationIndex(id);
         if (index != -1) {
           this.notifications.splice(index, 1);
           this.requestUpdate();
         }
       }, this.__transitionDuration);
     }
+  }
+
+  findNotificationIndex(id) {
+      let index = -1;
+      this.notifications.some((notification, idx) => {
+          if (notification.id === id) {
+              index = idx;
+              return true;
+          }
+      });
+      return index;
   }
 
   toggleDontShowAgain(id) {
