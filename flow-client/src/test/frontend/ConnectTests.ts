@@ -476,7 +476,7 @@ describe('ConnectClient', () => {
         fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
         continueFunc("csrf-token");
       });
-      const middleware = InvalidSessionMiddleWare.create(invalidSessionCallback);
+      const middleware = new InvalidSessionMiddleWare(invalidSessionCallback);
       
       const client = new ConnectClient({middlewares:[middleware]});
         
@@ -494,7 +494,7 @@ describe('ConnectClient', () => {
       fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
       
       const invalidSessionCallback = sinon.spy();
-      const middleware = InvalidSessionMiddleWare.create(invalidSessionCallback);
+      const middleware = new InvalidSessionMiddleWare(invalidSessionCallback);
       
       const client = new ConnectClient({middlewares:[middleware]});
       await client.call('FooEndpoint', 'fooMethod');
