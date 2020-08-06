@@ -24,6 +24,7 @@ import jsinterop.annotations.JsFunction;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ElementUtil;
@@ -630,7 +631,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void updateVisibility(Element element, NodeMap visibilityData,
             Boolean visibility) {
         storeInitialHiddenAttribute(element, visibilityData);
-        WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE, visibility);
+        updateAttributeValue(
+                visibilityData.getNode().getTree().getRegistry()
+                        .getApplicationConfiguration(),
+                element, HIDDEN_ATTRIBUTE, visibility);
     }
 
     private void restoreInitialHiddenAttribute(Element element,
@@ -638,8 +642,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         MapProperty initialVisibility = storeInitialHiddenAttribute(element,
                 visibilityData);
         if (initialVisibility.hasValue()) {
-            WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
-                    initialVisibility.getValue());
+            updateAttributeValue(
+                    visibilityData.getNode().getTree().getRegistry()
+                            .getApplicationConfiguration(),
+                    element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
         }
     }
 
@@ -734,7 +740,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void updateAttribute(MapProperty mapProperty, Element element) {
         String name = mapProperty.getName();
-        WidgetUtil.updateAttribute(element, name, mapProperty.getValue());
+        updateAttributeValue(
+                mapProperty.getMap().getNode().getTree().getRegistry()
+                        .getApplicationConfiguration(),
+                element, name, mapProperty.getValue());
     }
 
     private EventRemover bindChildren(BindingContext context) {
@@ -1364,6 +1373,28 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 (Element) context.htmlNode, context.node);
+    }
+
+    private static void updateAttributeValue(
+            ApplicationConfiguration configuration, Element element,
+            String attribute, Object value) {
+        if (value == null || value instanceof String) {
+            WidgetUtil.updateAttribute(element, attribute, (String) value);
+        } else {
+            JsonObject object = WidgetUtil.crazyJsCast(value);
+            assert object.hasKey(
+                    NodeProperties.URI_ATTRIBUTE) : "Implementation error: JsonObject is recieved as an attribute value for '"
+                            + attribute + "' but it has no "
+                            + NodeProperties.URI_ATTRIBUTE + " key";
+            String uri = object.getString(NodeProperties.URI_ATTRIBUTE);
+            if (configuration.isWebComponentMode()) {
+                String baseUri = configuration.getServiceUrl();
+                baseUri = baseUri.endsWith("/") ? baseUri : baseUri + "/";
+                WidgetUtil.updateAttribute(element, attribute, baseUri + uri);
+            } else {
+                WidgetUtil.updateAttribute(element, attribute, uri);
+            }
+        }
     }
 
     private static EventExpression getOrCreateExpression(

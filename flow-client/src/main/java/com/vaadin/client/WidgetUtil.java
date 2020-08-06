@@ -136,11 +136,11 @@ public class WidgetUtil {
      *            the value to update
      */
     public static void updateAttribute(Element element, String attribute,
-            Object value) {
+            String value) {
         if (value == null) {
             DomApi.wrap(element).removeAttribute(attribute);
         } else {
-            DomApi.wrap(element).setAttribute(attribute, value.toString());
+            DomApi.wrap(element).setAttribute(attribute, value);
         }
     }
 
@@ -227,7 +227,7 @@ public class WidgetUtil {
     /**
      * Checks if the given value is explicitly undefined. <code>null</code>
      * values returns <code>false</code>.
-     * 
+     *
      * @param property
      *            the value to be verified
      * @return <code>true</code> is the value is explicitly undefined,
