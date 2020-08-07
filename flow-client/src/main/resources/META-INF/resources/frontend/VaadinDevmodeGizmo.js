@@ -795,7 +795,13 @@ class VaadinDevmodeGizmo extends LitElement {
       };
       const load = function() {
           if (iframe.contentWindow.Vaadin) {
-              const contentIsPopulated = contentIsPopulated = iframe.contentDocument.body.children.length >= document.body.children.length;
+              let contentIsPopulated = true;
+              if (document.body.querySelector('#outlet')) {
+                  contentIsPopulated = iframe.contentDocument.body.querySelector('#outlet')
+                      && iframe.contentDocument.body.querySelector('#outlet').children.length > 0;
+              } else {
+                  contentIsPopulated = iframe.contentDocument.body.children.length >= document.body.children.length;
+              }
               if (contentIsPopulated && !iframe.contentWindow.expired) {
                   setTimeout(transferIframe, 100);
               } else {
