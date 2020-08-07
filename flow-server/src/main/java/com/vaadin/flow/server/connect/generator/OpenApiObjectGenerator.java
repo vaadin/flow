@@ -33,11 +33,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.javaparser.ParseResult;
@@ -59,8 +61,10 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
+import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
@@ -69,6 +73,8 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.ClassLoaderType
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.github.javaparser.utils.SourceRoot;
+import com.github.javaparser.utils.SourceRoot.Callback;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -97,6 +103,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
@@ -118,6 +125,7 @@ public class OpenApiObjectGenerator {
     private Map<String, ResolvedReferenceType> usedTypes;
     private Map<ClassOrInterfaceDeclaration, String> endpointsJavadoc;
     private Map<String, TypeDeclaration<?>> nonEndpointMap;
+    private Map<String, ClassOrInterfaceDeclaration> endpointExposedMap;
     private Map<String, String> qualifiedNameToPath;
     private Map<String, PathItem> pathItems;
     private Set<String> generatedSchema;
@@ -189,6 +197,7 @@ public class OpenApiObjectGenerator {
         }
         openApiModel = createBasicModel();
         nonEndpointMap = new HashMap<>();
+        endpointExposedMap = new HashMap<>();
         qualifiedNameToPath = new HashMap<>();
         pathItems = new TreeMap<>();
         usedTypes = new HashMap<>();
@@ -197,10 +206,13 @@ public class OpenApiObjectGenerator {
         schemaResolver = new SchemaResolver();
         ParserConfiguration parserConfiguration = createParserConfiguration();
 
+        javaSourcePaths.stream()
+                .map(path -> new SourceRoot(path, parserConfiguration))
+                .forEach(soureRoot -> parseSourceRoot(soureRoot, this::findEndpointExposed));
 
         javaSourcePaths.stream()
                 .map(path -> new SourceRoot(path, parserConfiguration))
-                .forEach(this::parseSourceRoot);
+                .forEach(soureRoot -> parseSourceRoot(soureRoot, this::process));
 
         for (Map.Entry<String, ResolvedReferenceType> entry : usedTypes
                 .entrySet()) {
@@ -229,9 +241,9 @@ public class OpenApiObjectGenerator {
                 .setSymbolResolver(new JavaSymbolSolver(combinedTypeSolver));
     }
 
-    private void parseSourceRoot(SourceRoot sourceRoot) {
+    private void parseSourceRoot(SourceRoot sourceRoot, Callback callback) {
         try {
-            sourceRoot.parse("", this::process);
+            sourceRoot.parse("", callback);
         } catch (Exception e) {
             throw new IllegalStateException(String.format(
                     "Can't parse the java files in the source root '%s'",
@@ -290,11 +302,23 @@ public class OpenApiObjectGenerator {
                 .map(BodyDeclaration::asClassOrInterfaceDeclaration)
                 .filter(classOrInterfaceDeclaration -> !classOrInterfaceDeclaration
                         .isInterface())
+                .filter(declaration -> !GeneratorUtils.hasAnnotation(declaration, compilationUnit, EndpointExposed.class))
                 .map(this::appendNestedClasses).orElse(Collections.emptyList())
                 .forEach(classOrInterfaceDeclaration -> this.parseClass(
                         classOrInterfaceDeclaration, compilationUnit)));
         pathItems.forEach((pathName, pathItem) -> openApiModel.getPaths()
                 .addPathItem(pathName, pathItem));
+        return SourceRoot.Callback.Result.DONT_SAVE;
+    }
+
+    @SuppressWarnings("squid:S1172")
+    private SourceRoot.Callback.Result findEndpointExposed(Path localPath,
+            Path absolutePath, ParseResult<CompilationUnit> result) {
+        result.ifSuccessful(compilationUnit -> compilationUnit.getPrimaryType()
+                .filter(BodyDeclaration::isClassOrInterfaceDeclaration)
+                .map(BodyDeclaration::asClassOrInterfaceDeclaration)
+                .filter(declaration -> GeneratorUtils.hasAnnotation(declaration, compilationUnit, EndpointExposed.class))
+                .map(delcaration -> endpointExposedMap.put(delcaration.resolve().getQualifiedName(), delcaration)));
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 
@@ -569,8 +593,10 @@ public class OpenApiObjectGenerator {
     private Map<String, PathItem> createPathItems(String endpointName,
             ClassOrInterfaceDeclaration typeDeclaration) {
         Map<String, PathItem> newPathItems = new HashMap<>();
-        for (MethodDeclaration methodDeclaration : typeDeclaration
-                .getMethods()) {
+        Collection<MethodDeclaration> allMethods = new HashSet<>();
+        allMethods.addAll(typeDeclaration.getMethods());
+        allMethods.addAll(getInteriatedMethods(typeDeclaration));
+        for (MethodDeclaration methodDeclaration : allMethods) {
             if (isAccessForbidden(typeDeclaration, methodDeclaration)) {
                 continue;
             }
@@ -595,6 +621,19 @@ public class OpenApiObjectGenerator {
             newPathItems.put(pathName, pathItem);
         }
         return newPathItems;
+    }
+
+    private Collection<MethodDeclaration> getInteriatedMethods(ClassOrInterfaceDeclaration typeDeclaration) {
+        if(typeDeclaration!=null){
+            return Stream.concat(typeDeclaration.getExtendedTypes().stream(),
+                    typeDeclaration.getImplementedTypes().stream())
+            .map(type->type.resolve().getQualifiedName())
+            .map(qualifiedName -> endpointExposedMap.get(qualifiedName))
+            .filter(Objects::nonNull)
+            .map(parent -> parent.getMethods()).flatMap(List::stream)
+            .collect(Collectors.toSet());
+        }
+        return Collections.emptyList();
     }
 
     private boolean isAccessForbidden(
@@ -686,6 +725,7 @@ public class OpenApiObjectGenerator {
         Schema requestSchema = new ObjectSchema();
         requestSchema.setRequired(new ArrayList<>());
         requestBodyObject.schema(requestSchema);
+
         methodDeclaration.getParameters().forEach(parameter -> {
             Schema paramSchema = parseTypeToSchema(parameter.getType(), "");
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
