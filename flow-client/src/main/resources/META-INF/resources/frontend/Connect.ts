@@ -207,17 +207,28 @@ export interface MiddlewareContext {
 export type MiddlewareNext = (context: MiddlewareContext) =>
   Promise<Response> | Response;
 
-/**
- * An async callback function that can intercept the request and response
- * of a call.
- */
-export interface Middleware {
+
+
+interface MiddlewareClass {
   /**
    * @param context The information about the call and request
    * @param next Invokes the next in the call chain
    */
-  call(this: Middleware, thisArg: Middleware, context: MiddlewareContext, next: MiddlewareNext): Promise<Response> | Response;
+  invoke(context: MiddlewareContext, next: MiddlewareNext): Promise<Response> | Response;
 }
+
+/**
+ * An async callback function that can intercept the request and response
+ * of a call.
+ */
+type MiddlewareFunction = (context: MiddlewareContext, next: MiddlewareNext) =>
+  Promise<Response> | Response;
+
+/**
+ * An async callback that can intercept the request and response
+ * of a call, could be either a function or class.
+ */
+export type Middleware = MiddlewareClass | MiddlewareFunction;
 
 /**
  * Vaadin Connect client class is a low-level network calling utility. It stores
@@ -347,7 +358,7 @@ export class ConnectClient {
 
     // Assemble the final middlewares array from internal
     // and external middlewares
-    const middlewares = [responseHandlerMiddleware].concat(this.middlewares);
+    const middlewares = [responseHandlerMiddleware as Middleware].concat(this.middlewares);
 
     // Fold the final middlewares array into a single function
     const chain = middlewares.reduceRight(
@@ -355,7 +366,13 @@ export class ConnectClient {
         // Compose and return the new chain step, that takes the context and
         // invokes the current middleware with the context and the further chain
         // as the next argument
-        return (context => middleware.call(middleware, context, next)) as MiddlewareNext;
+        return (context => {
+          if(typeof middleware === 'function'){
+            return middleware(context, next);
+          }else {
+            return (middleware as MiddlewareClass).invoke(context, next);
+          }
+        }) as MiddlewareNext;
       },
       // Initialize reduceRight the accumulator with `fetchNext`
       fetchNext
@@ -470,8 +487,8 @@ type EndpointCallContinue = (token: string) => void;
 /**
  * It defines what to do when it detects a session is invalid. E.g., 
  * show a login view.
- * It takes a <code>EndpointCallContinue</code> paramter, which can be 
- * used to continune the endpoint call.  
+ * It takes an <code>EndpointCallContinue</code> parameter, which can be 
+ * used to continue the endpoint call.  
  */
 export type OnInvalidSessionCallback = (continueFunc: EndpointCallContinue) => void;
 
@@ -480,10 +497,10 @@ export type OnInvalidSessionCallback = (continueFunc: EndpointCallContinue) => v
  * E.g., you can use this to show user a login page when the session has expired.
  * Use <code>InvalidSessionMiddleWare.create()</code> to create the middleware.
  */
-export class InvalidSessionMiddleWare implements Middleware {
+export class InvalidSessionMiddleWare implements MiddlewareClass {
   constructor(private onInvalidSessionCallback: OnInvalidSessionCallback) {}
 
-  async call(_: Middleware, context: MiddlewareContext, next: MiddlewareNext): Promise<Response> {
+  async invoke(context: MiddlewareContext, next: MiddlewareNext): Promise<Response> {
     const clonedContext = { ...context };
     clonedContext.request = context.request.clone();
     const response = await next(context);
