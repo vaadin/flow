@@ -3,7 +3,7 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleWare, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
+import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -476,7 +476,7 @@ describe('ConnectClient', () => {
         fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
         continueFunc("csrf-token");
       });
-      const middleware = new InvalidSessionMiddleWare(invalidSessionCallback);
+      const middleware = new InvalidSessionMiddleware(invalidSessionCallback);
       
       const client = new ConnectClient({middlewares:[middleware]});
         
@@ -494,7 +494,7 @@ describe('ConnectClient', () => {
       fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
       
       const invalidSessionCallback = sinon.spy();
-      const middleware = new InvalidSessionMiddleWare(invalidSessionCallback);
+      const middleware = new InvalidSessionMiddleware(invalidSessionCallback);
       
       const client = new ConnectClient({middlewares:[middleware]});
       await client.call('FooEndpoint', 'fooMethod');
