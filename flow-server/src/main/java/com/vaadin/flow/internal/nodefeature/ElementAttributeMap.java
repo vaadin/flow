@@ -109,8 +109,12 @@ public class ElementAttributeMap extends NodeMap {
         if (value == null || value instanceof String) {
             return (String) value;
         } else {
+            // If the value is not a string then current impl only uses
+            // JsonObject
             assert value instanceof JsonObject;
             JsonObject object = (JsonObject) value;
+            // The only object which may be set by the current imlp contains
+            // "uri" attribute, only this situation is expected here.
             assert object.hasKey(NodeProperties.URI_ATTRIBUTE);
             return object.getString(NodeProperties.URI_ATTRIBUTE);
         }
@@ -239,7 +243,7 @@ public class ElementAttributeMap extends NodeMap {
                 }));
     }
 
-    public void doSet(String attribute, Serializable value) {
+    private void doSet(String attribute, Serializable value) {
         unregisterResource(attribute);
         put(attribute, value);
     }

@@ -126,7 +126,7 @@ public class WidgetUtil {
      * {@code value}.
      * <p>
      * If {@code value} is {@code null} then {@code attribute} is removed,
-     * otherwise {@code value.toString()} is set as its value.
+     * otherwise {@code value} is set as its value.
      *
      * @param element
      *            the DOM element owning attribute
