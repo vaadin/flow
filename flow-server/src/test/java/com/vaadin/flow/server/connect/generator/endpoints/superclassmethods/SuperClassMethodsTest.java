@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.connect.generator.endpoints.superclassmethods;
 
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGenerationTest;
+import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint.Person;
 
 import java.util.Arrays;
 
@@ -34,5 +35,11 @@ public class SuperClassMethodsTest extends AbstractEndpointGenerationTest {
   public void should_ExportSuperClassMethods() {
     OpenAPI actualOpenAPI = getOpenApiObject();
     Assert.assertEquals(3, actualOpenAPI.getPaths().size());
+    Assert.assertEquals(Person.class.getCanonicalName(), extractReturnTypeOfMethod(actualOpenAPI, "get"));
+    Assert.assertEquals(Person.class.getCanonicalName(), extractReturnTypeOfMethod(actualOpenAPI, "update"));
+  }
+
+  private String extractReturnTypeOfMethod(OpenAPI actualOpenAPI, String methodName) {
+    return actualOpenAPI.getPaths().get("/PersonEndpoint/"+methodName).getPost().getResponses().get("200").getContent().get("application/json").getSchema().getName();
   }
 }
