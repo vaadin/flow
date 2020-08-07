@@ -497,9 +497,8 @@ export type OnInvalidSessionCallback = (continueFunc: EndpointCallContinue) => v
 /**
  * A helper class for handling invalid sessions during an endpoint call.
  * E.g., you can use this to show user a login page when the session has expired.
- * Use <code>InvalidSessionMiddleWare.create()</code> to create the middleware.
  */
-export class InvalidSessionMiddleWare implements MiddlewareClass {
+export class InvalidSessionMiddleware implements MiddlewareClass {
   constructor(private onInvalidSessionCallback: OnInvalidSessionCallback) {}
 
   async invoke(context: MiddlewareContext, next: MiddlewareNext): Promise<Response> {
