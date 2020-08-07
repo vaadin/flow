@@ -1381,7 +1381,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (value == null || value instanceof String) {
             WidgetUtil.updateAttribute(element, attribute, (String) value);
         } else {
-            JsonObject object = WidgetUtil.crazyJsCast(value);
+            JsonObject object = WidgetUtil.crazyJsoCast(value);
             assert object.hasKey(
                     NodeProperties.URI_ATTRIBUTE) : "Implementation error: JsonObject is recieved as an attribute value for '"
                             + attribute + "' but it has no "
