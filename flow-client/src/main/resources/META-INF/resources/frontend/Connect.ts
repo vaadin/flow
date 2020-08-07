@@ -208,8 +208,10 @@ export type MiddlewareNext = (context: MiddlewareContext) =>
   Promise<Response> | Response;
 
 
-
-interface MiddlewareClass {
+/**
+ * An interface that allows defining a middleware as a class.
+ */
+export interface MiddlewareClass {
   /**
    * @param context The information about the call and request
    * @param next Invokes the next in the call chain
@@ -226,7 +228,7 @@ type MiddlewareFunction = (context: MiddlewareContext, next: MiddlewareNext) =>
 
 /**
  * An async callback that can intercept the request and response
- * of a call, could be either a function or class.
+ * of a call, could be either a function or a class.
  */
 export type Middleware = MiddlewareClass | MiddlewareFunction;
 
