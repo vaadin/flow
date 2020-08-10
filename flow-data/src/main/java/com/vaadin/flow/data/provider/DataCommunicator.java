@@ -716,7 +716,7 @@ public class DataCommunicator<T> implements Serializable {
              * Divisor minus one is placed on numerator part to ensure upwards
              * rounding.
              */
-            final int pages = (limit + pageSize - 1) / pageSize;
+            final int pages = (limit - 1) / pageSize + 1;
 
             if (limit > pageSize) {
                 /*

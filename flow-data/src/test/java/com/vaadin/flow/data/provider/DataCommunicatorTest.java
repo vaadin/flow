@@ -1112,6 +1112,12 @@ public class DataCommunicatorTest {
         Assert.assertEquals(10, query.getLimit());
         Assert.assertEquals(2, query.getPage());
         Assert.assertEquals(10, query.getPageSize());
+
+        Mockito.reset(dataProvider);
+        // Use a limit value so that it's multiple by page size
+        dataCommunicator.fetchFromProvider(0, 30);
+        Mockito.verify(dataProvider, Mockito.times(3))
+                .fetch(Mockito.any(Query.class));
     }
 
     @Test
@@ -1201,6 +1207,20 @@ public class DataCommunicatorTest {
         Assert.assertEquals(123, query.getLimit());
         Assert.assertEquals(0, query.getPage());
         Assert.assertEquals(123, query.getPageSize());
+    }
+
+    @Test
+    public void fetchFromProvider_maxLimitValue_pagesCalculatedProperly() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(42);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(2_000_000_000);
+        dataCommunicator.fetchFromProvider(0, Integer.MAX_VALUE);
+
+        Mockito.verify(dataProvider, Mockito.times(2))
+                .fetch(Mockito.any(Query.class));
     }
 
     @Tag("test-component")
