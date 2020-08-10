@@ -473,6 +473,15 @@ public class OpenApiObjectGenerator {
                 Schema propertySchema = parseTypeToSchema(
                         variableDeclarator.getType(),
                         fieldDescription.orElse(""));
+                if (GeneratorUtils.isNotBlank(propertySchema.get$ref())) {
+                    // Schema extensions, e. g., `x-annotations` we use, are
+                    // not supported for the Reference Object Schema.
+                    // Workaround: wrap in a composed object schema.
+                    ComposedSchema wrapperSchema = new ComposedSchema();
+                    wrapperSchema.name(propertySchema.getName());
+                    wrapperSchema.addAllOfItem(propertySchema);
+                    propertySchema = wrapperSchema;
+                }
                 if (field.isAnnotationPresent(Nullable.class)
                         || GeneratorUtils.isTrue(propertySchema.getNullable())) {
                     // Temporarily set nullable to indicate this property is
