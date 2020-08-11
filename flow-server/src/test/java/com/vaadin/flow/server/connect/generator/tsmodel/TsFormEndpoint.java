@@ -110,6 +110,11 @@ public class TsFormEndpoint {
         @Nullable MyEntity nullableEntity;
         @Nullable List<Optional<String>> nullableList;
         @Nullable Optional<String>[][] nullableMatrix;
+
+        // `@Nullable` makes the client-side form binder to not initialise the
+        // value of the field by default, while regular non-annotated fields
+        // are initialised to an empty value. `@NotNull` marks a validation,
+        // which only has effect later when the user is submitting the form.
         @Nullable @NotNull MyEntity nullableNotNullEntity;
     }
 }
