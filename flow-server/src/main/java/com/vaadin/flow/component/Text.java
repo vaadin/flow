@@ -68,6 +68,13 @@ public class Text extends Component implements HasText {
         return getElement().getText();
     }
 
+    /**
+     * The method is not supported for the {@link Text} class.
+     * <p>
+     * Always throws an {@link UnsupportedOperationException}.
+     *
+     * @throws UnsupportedOperationException
+     */
     @Override
     protected <T> void set(PropertyDescriptor<T, ?> descriptor, T value) {
         throw new UnsupportedOperationException("Cannot set '"
@@ -85,7 +92,10 @@ public class Text extends Component implements HasText {
      */
     @Override
     public void setId(String id) {
-        super.setId(id);
+        throw new UnsupportedOperationException("Cannot set id '"
+                + id + "' to the " + getClass().getSimpleName()
+                + " component because it doesn't "
+                + "represent an HTML Element but a text Node on the client side.");
     }
 
     /**
