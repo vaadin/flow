@@ -106,7 +106,7 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-
+        lines.addAll(getApplicationThemeLines());
         collectModules(lines);
 
         writeImportLines(lines);
@@ -159,6 +159,8 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     protected abstract Set<CssData> getCss();
 
+    protected abstract String getApplicationTheme();
+
     /**
      * Get exported modules.
      *
@@ -198,6 +200,18 @@ abstract class AbstractUpdateImports implements Runnable {
                         .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
+    }
+
+    protected Collection<String> getApplicationThemeLines() {
+        String applicationTheme = getApplicationTheme();
+        if (applicationTheme == null) {
+            return Collections.emptyList();
+        }
+        Collection<String> lines = new ArrayList<>();
+
+        lines.add("import 'Theme/" + applicationTheme + "/" + applicationTheme
+                + ".js';");
+        return lines;
     }
 
     protected Collection<String> getCssLines() {

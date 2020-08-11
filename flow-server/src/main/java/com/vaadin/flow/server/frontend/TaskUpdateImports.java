@@ -187,6 +187,11 @@ public class TaskUpdateImports extends NodeUpdater {
         }
 
         @Override
+        protected String getApplicationTheme() {
+            return frontDeps.getApplicationTheme();
+        }
+
+        @Override
         protected Logger getLogger() {
             return log();
         }
@@ -247,6 +252,11 @@ public class TaskUpdateImports extends NodeUpdater {
                     fallbackScanner.getScripts());
             set.removeAll(frontDeps.getScripts());
             return set;
+        }
+
+        @Override
+        protected String getApplicationTheme() {
+            return null;
         }
 
         @Override
