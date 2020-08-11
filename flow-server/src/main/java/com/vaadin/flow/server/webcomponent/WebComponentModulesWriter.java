@@ -66,6 +66,8 @@ public final class WebComponentModulesWriter implements Serializable {
      * @param compatibilityMode
      *            {@code true} to generated html modules, {@code false} to
      *            generate JavaScript modules
+     * @param themeName
+     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
      * @return generated files
      * @throws java.lang.NullPointerException
      *             if {@code exportedClasses} or {@code outputDirectory} is null
@@ -74,7 +76,7 @@ public final class WebComponentModulesWriter implements Serializable {
      */
     private static Set<File> writeWebComponentsToDirectory( // NOSONAR
             Set<Class<?>> exporterClasses, File outputDirectory,
-            boolean compatibilityMode) {
+            boolean compatibilityMode, String themeName) {
         // this method is used via reflection by DirectoryWriter
         Objects.requireNonNull(exporterClasses,
                 "Parameter 'exporterClasses' must not be null");
@@ -89,7 +91,7 @@ public final class WebComponentModulesWriter implements Serializable {
 
         return WebComponentExporterUtils.getFactories(exporterClasses).stream()
                 .map(factory -> writeWebComponentToDirectory(factory,
-                        outputDirectory, compatibilityMode))
+                        outputDirectory, compatibilityMode, themeName))
                 .collect(Collectors.toSet());
     }
 
@@ -101,11 +103,13 @@ public final class WebComponentModulesWriter implements Serializable {
      *            web component exporter factory
      * @param outputDirectory
      *            folder into which the generate file is written
+     * @param themeName
+     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
      * @return the generated module content
      */
     private static File writeWebComponentToDirectory(
             WebComponentExporterFactory<?> factory, File outputDirectory,
-            boolean compatibilityMode) {
+            boolean compatibilityMode, String themeName) {
         String tag = getTag(factory);
 
         String fileName = compatibilityMode ? tag + ".html" : tag + ".js";
@@ -114,7 +118,7 @@ public final class WebComponentModulesWriter implements Serializable {
             FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
                     Collections.singletonList(
-                            generateModule(factory, compatibilityMode)),
+                            generateModule(factory, compatibilityMode, themeName)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -126,9 +130,9 @@ public final class WebComponentModulesWriter implements Serializable {
 
     private static String generateModule(
             WebComponentExporterFactory<? extends Component> factory,
-            boolean compatibilityMode) {
+            boolean compatibilityMode, String themeName) {
         return WebComponentGenerator.generateModule(factory, "../",
-                compatibilityMode);
+                compatibilityMode, themeName);
     }
 
     private static String getTag(
@@ -149,7 +153,7 @@ public final class WebComponentModulesWriter implements Serializable {
 
         /**
          * Calls
-         * {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean)}
+         * {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean, java.lang.String)}
          * via reflection on the supplied {@code writer}. The {@code writer} and
          * {@code exporterClasses} must be loaded with the same class loader.
          *
@@ -179,16 +183,16 @@ public final class WebComponentModulesWriter implements Serializable {
          *             share a class loader
          * @throws java.lang.IllegalStateException
          *             if the received {@code writer} does not have method
-         *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean)}
+         *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean, java.lang.String)}
          * @throws java.lang.RuntimeException
          *             if reflective method invocation fails
          * @see #writeWebComponentsToDirectory(java.util.Set, java.io.File,
-         *      boolean)
+         *      boolean, java.lang.String)
          */
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
                 Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, boolean compatibilityMode) {
+                File outputDirectory, boolean compatibilityMode, String themeName) {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
@@ -235,7 +239,7 @@ public final class WebComponentModulesWriter implements Serializable {
                 final boolean accessible = writeMethod.isAccessible();
                 writeMethod.setAccessible(true);
                 Set<File> files = ((Set<File>) writeMethod.invoke(null,
-                        exporterClasses, outputDirectory, compatibilityMode));
+                        exporterClasses, outputDirectory, compatibilityMode, themeName));
                 writeMethod.setAccessible(accessible);
                 return files;
             } catch (IllegalAccessException | InvocationTargetException

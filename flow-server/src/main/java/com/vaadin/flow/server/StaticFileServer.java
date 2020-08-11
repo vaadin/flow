@@ -86,8 +86,7 @@ public class StaticFileServer implements StaticFileHandler {
             return false;
         }
 
-        if (requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+        if (requestFilename.startsWith("/VAADIN/")) {
             // The path is reserved for internal resources only
             // We rather serve 404 than let it fall through
             return true;
@@ -116,7 +115,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
+        if (isAllowedVAADINUrl(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
                     .getResource("META-INF" + filenameWithPath);
         }
@@ -212,9 +211,16 @@ public class StaticFileServer implements StaticFileHandler {
      *            requested filename containing path
      * @return true if we are ok to try serving the file
      */
-    private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
+    private boolean isAllowedVAADINUrl(String filenameWithPath) {
         // Check that we target VAADIN/build
-        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH);
+        if (filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
+            return true;
+        }
+        // FIXME Hack to enable serving fonts that css-loader/file-loader generates for e.g. Font Awesome
+        if (filenameWithPath.matches("^/VAADIN/([a-z0-9]+)\\.(svg|eot|woff|woff2|ttf)$")) {
+            return true;
+        }
+        return false;
     }
 
     /**

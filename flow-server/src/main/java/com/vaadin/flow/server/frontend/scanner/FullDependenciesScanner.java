@@ -39,6 +39,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.ApplicationTheme;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -63,6 +64,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private Set<String> scripts = new LinkedHashSet<>();
     private Set<CssData> cssData;
     private List<String> modules;
+    private String applicationTheme;
 
     private final Class<?> abstractTheme;
 
@@ -119,7 +121,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         cssData = discoverCss();
 
         discoverTheme();
-
+        this.applicationTheme = verifyApplicationTheme();
         modules = calculateModules(regularModules, themeModules);
         getLogger().info("Visited {} classes. Took {} ms.", getClasses().size(),
                 System.currentTimeMillis() - start);
@@ -336,8 +338,29 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             }
             return themes.isEmpty() ? null : themes.iterator().next();
         } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException(
-                    "Could not load theme annotation class", exception);
+            throw new IllegalStateException("Could not load theme annotation class", exception);
+        }
+    }
+
+    private String verifyApplicationTheme() {
+        try {
+            Class<? extends Annotation> loadedApplicationThemeAnnotation = getFinder()
+                    .loadClass(ApplicationTheme.class.getName());
+
+            Set<Class<?>> annotatedClasses = getFinder().getAnnotatedClasses(loadedApplicationThemeAnnotation);
+            Set<String> applicationThemes = annotatedClasses.stream()
+                    .flatMap(clazz -> annotationFinder.apply(clazz, loadedApplicationThemeAnnotation).stream())
+                    .map(ann -> (String) invokeAnnotationMethod(ann, VALUE)).collect(Collectors.toSet());
+
+            if (applicationThemes.isEmpty()) {
+                return null;
+            } else if (applicationThemes.size() != 1) {
+                throw new IllegalStateException(
+                        "Using multiple different ApplicationTheme configurations is not " + "supported.");
+            }
+            return applicationThemes.iterator().next();
+        } catch (ClassNotFoundException exception) {
+            throw new IllegalStateException("Could not load theme annotation class", exception);
         }
     }
 
@@ -409,6 +432,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(this.getClass());
+    }
+
+    @Override
+    public String getApplicationTheme() {
+        return applicationTheme;
     }
 
 }

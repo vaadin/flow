@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.ApplicationTheme;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -62,6 +63,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final Set<String> visited = new HashSet<>();
+    private String applicationTheme;
 
     /**
      * Default Constructor.
@@ -97,8 +99,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 computeExporterEndpoints(WebComponentExporter.class);
                 computeExporterEndpoints(WebComponentExporterFactory.class);
             }
-            computeApplicationTheme();
+            computeComponentTheme();
             computePackages();
+            computeApplicationTheme();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
         } catch (ClassNotFoundException | InstantiationException
@@ -255,7 +258,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * If no theme is found and the application has endpoints, it uses lumo if
      * found in the class-path
      */
-    private void computeApplicationTheme() throws ClassNotFoundException,
+    private void computeComponentTheme() throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, IOException {
 
         // Re-visit theme related classes, because they might be skipped
@@ -371,6 +374,28 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
     private Logger log() {
         return LoggerFactory.getLogger(this.getClass());
+    }
+
+    private void computeApplicationTheme()
+            throws ClassNotFoundException, IOException {
+        FrontendAnnotatedClassVisitor applicationThemeVisitor = new FrontendAnnotatedClassVisitor(
+                getFinder(), ApplicationTheme.class.getName());
+
+        for (Class<?> component : getFinder()
+                .getAnnotatedClasses(ApplicationTheme.class.getName())) {
+            applicationThemeVisitor.visitClass(component.getName());
+        }
+
+        Set<String> applicationThemes = applicationThemeVisitor
+                .getValues(VALUE);
+        if (applicationThemes.isEmpty()) {
+            this.applicationTheme = null;
+        } else if (applicationThemes.size() > 1) {
+            throw new IllegalArgumentException(
+                    "Can't have multiple design systems");
+        } else {
+            this.applicationTheme = applicationThemes.iterator().next();
+        }
     }
 
     /**
@@ -505,5 +530,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public String toString() {
         return endPoints.toString();
+    }
+
+    @Override
+    public String getApplicationTheme() {
+        return applicationTheme;
     }
 }

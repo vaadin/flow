@@ -52,7 +52,7 @@ public class WebComponentModulesWriterTest {
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class,
                         Collections.singleton(MyExporter.class),
-                        outputDirectory, false);
+                        outputDirectory, false, null);
 
         Assert.assertEquals("One file was created", 1, files.size());
         Assert.assertEquals("File is js module with correct name",
@@ -65,7 +65,7 @@ public class WebComponentModulesWriterTest {
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class,
                         Collections.singleton(ExporterFactory.class),
-                        outputDirectory, false);
+                        outputDirectory, false, null);
 
         Assert.assertEquals("One file was created", 1, files.size());
         Assert.assertEquals("File is js module with correct name", "foo-bar.js",
@@ -78,7 +78,7 @@ public class WebComponentModulesWriterTest {
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class,
                         Collections.singleton(MyExporter.class),
-                        outputDirectory, true);
+                        outputDirectory, true, null);
 
         Assert.assertEquals("One file was created", 1, files.size());
         Assert.assertEquals("File is js module with correct name",
@@ -91,7 +91,7 @@ public class WebComponentModulesWriterTest {
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class,
                         Collections.singleton(ExporterFactory.class),
-                        outputDirectory, true);
+                        outputDirectory, true, null);
 
         Assert.assertEquals("One file was created", 1, files.size());
         Assert.assertEquals("File is js module with correct name",
@@ -103,7 +103,7 @@ public class WebComponentModulesWriterTest {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class, new HashSet<>(),
-                        outputDirectory, false);
+                        outputDirectory, false, null);
 
         Assert.assertEquals("No files were created", 0, files.size());
     }
@@ -115,14 +115,14 @@ public class WebComponentModulesWriterTest {
                 "but it is '" + MyComponent.class.getName() + "'");
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(MyComponent.class,
-                        new HashSet<>(), outputDirectory, false);
+                        new HashSet<>(), outputDirectory, false, null);
     }
 
     @Test(expected = NullPointerException.class)
     public void directoryWriter_generateWebComponentsToDirectory_nullWriterThrows() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(null, new HashSet<>(),
-                        outputDirectory, false);
+                        outputDirectory, false, null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -130,7 +130,7 @@ public class WebComponentModulesWriterTest {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class, null, outputDirectory,
-                        false);
+                        false, null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -138,7 +138,7 @@ public class WebComponentModulesWriterTest {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
                         WebComponentModulesWriter.class, new HashSet<>(), null,
-                        false);
+                        false, null);
     }
 
     /*

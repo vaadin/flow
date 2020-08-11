@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.Constants;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,12 +64,17 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
+        File targetThemeFolder = new File(targetDirectory, "theme");
+        targetThemeFolder.mkdir();
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File location : resourceLocations) {
             if (location.isDirectory()) {
                 TaskCopyLocalFrontendFiles.copyLocalResources(
                         new File(location, RESOURCES_FRONTEND_DEFAULT),
                         targetDirectory);
+                TaskCopyLocalFrontendFiles.copyLocalResources(
+                        new File(location, Constants.RESOURCES_THEME),
+                        targetThemeFolder);
                 TaskCopyLocalFrontendFiles.copyLocalResources(
                         new File(location,
                                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
@@ -76,6 +83,9 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, RESOURCES_FRONTEND_DEFAULT, targetDirectory,
                         WILDCARD_INCLUSIONS);
+                jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
+                        location, Constants.RESOURCES_THEME, targetThemeFolder,
+                        "**");
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         targetDirectory, WILDCARD_INCLUSIONS);

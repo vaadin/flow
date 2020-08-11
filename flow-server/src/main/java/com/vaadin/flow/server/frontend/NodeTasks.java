@@ -504,15 +504,15 @@ public class NodeTasks implements FallibleCommand {
         FrontendDependenciesScanner frontendDependencies = null;
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
-            if (builder.generateEmbeddableWebComponents) {
-                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
-                        classFinder);
-                generator.generateWebComponents(builder.generatedFolder);
-            }
-
+            
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents);
+            if (builder.generateEmbeddableWebComponents) {
+                FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
+                        classFinder);
+                generator.generateWebComponents(builder.generatedFolder, frontendDependencies.getApplicationTheme());
+            }
         }
 
         if (builder.createMissingPackageJson) {
@@ -575,6 +575,7 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm));
+            commands.add(new TaskUpdateApplicationThemeImport(builder.npmFolder, builder.generatedFolder, frontendDependencies.getApplicationTheme()));
         }
     }
 

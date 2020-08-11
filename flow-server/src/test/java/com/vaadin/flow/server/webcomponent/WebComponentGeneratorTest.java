@@ -49,7 +49,7 @@ public class WebComponentGeneratorTest {
                 .getReplacementsMap("my-component",
                         new WebComponentExporter.WebComponentConfigurationFactory()
                                 .create(exporter).getPropertyDataSet(),
-                        "/foo", generateUi);
+                        "/foo", generateUi, null);
 
         Assert.assertTrue("Missing dashed tag name",
                 replacementsMap.containsKey("TagDash"));
@@ -137,7 +137,7 @@ public class WebComponentGeneratorTest {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
-                "", true);
+                "", true, null);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         Assert.assertThat(module, startsWith(
@@ -154,7 +154,7 @@ public class WebComponentGeneratorTest {
         String module = WebComponentGenerator.generateModule(
                 new DefaultWebComponentExporterFactory<MyComponent>(
                         MyComponentExporter.class),
-                "", false);
+                "", false, null);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
         Assert.assertThat(module,
