@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow;
 
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
@@ -91,6 +92,8 @@ public class GwtMultipleBindingTest extends ClientEngineTestBase {
             {
                 set(ConstantPool.class, new ConstantPool());
                 set(ExistingElementMap.class, new ExistingElementMap());
+                set(ApplicationConfiguration.class,
+                        new ApplicationConfiguration());
             }
         };
 

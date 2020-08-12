@@ -87,6 +87,14 @@ public final class NodeProperties {
      */
     public static final String VISIBILITY_HIDDEN_PROPERTY = "hidden";
 
+    /**
+     * The property in Json object which marks the object as special value
+     * transmitting URI (not just any string).
+     * <p>
+     * Used in the {@link ElementAttributeMap}.
+     */
+    public static final String URI_ATTRIBUTE = "uri";
+
     private NodeProperties() {
     }
 }

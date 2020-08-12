@@ -21,6 +21,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
@@ -66,6 +67,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         registry = new Registry() {
             {
                 set(ConstantPool.class, new ConstantPool());
+                set(ApplicationConfiguration.class,
+                        new ApplicationConfiguration());
             }
         };
 
@@ -138,7 +141,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         delayTestFinish(100);
     }
 
-    private static native void addThen(Object promise, Consumer<String> callback)
+    private static native void addThen(Object promise,
+            Consumer<String> callback)
     /*-{
         promise.then($entry(function(value) {
             callback.@Consumer::accept(*)(value);
