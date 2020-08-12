@@ -17,6 +17,8 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -135,4 +137,22 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
     }
 
+    /**
+     * The node.js version to be used when node.js is installed automatically by
+     * Vaadin, for example `"v12.16.0"`. Defaults to null which uses the
+     * Vaadin-default node version - see {@link FrontendTools} for details.
+     */
+    @Parameter(property = "node.version", defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
+    protected String nodeVersion;
+
+    /**
+     * Download node.js from this URL. Handy in heavily firewalled corporate
+     * environments where the node.js download can be provided from an intranet
+     * mirror. Defaults to null which will cause the downloader to use
+     * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+     * <p></p>
+     * Example: <code>"https://nodejs.org/dist/"</code>.
+     */
+    @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+    protected String nodeDownloadRoot;
 }

@@ -2,11 +2,41 @@ const { suite, test} = intern.getInterface("tdd");
 const { assert } = intern.getPlugin("chai");
 
 // API to test
-import { AssertFalse, AssertTrue, DecimalMax, DecimalMin, Digits, Email, Future, Max, Min, Negative, NegativeOrZero,
-  NotBlank, NotEmpty, NotNull, Null, Past, Pattern, Positive, PositiveOrZero, Required, Size }
-from "../../../main/resources/META-INF/resources/frontend/form";
+import {
+  AssertFalse,
+  AssertTrue,
+  DecimalMax,
+  DecimalMin,
+  Digits,
+  Email,
+  Future,
+  Max,
+  Min,
+  Negative,
+  NegativeOrZero,
+  NotBlank,
+  NotEmpty,
+  NotNull,
+  Null,
+  Past,
+  Pattern,
+  Positive,
+  PositiveOrZero,
+  Required,
+  Size
+}
+  from "../../../main/resources/META-INF/resources/frontend/form";
 
 suite("form/Validators", () => {
+
+  test("custom error message", () => {
+    assert.equal(new Size({min: 1, max: 2}).message,
+      'size must be between 1 and 2',
+      'when no custom error message is provided, the default error message should be used');
+    assert.equal(new Size({min: 1, max: 2, message: 'Please enter something with the size between 1 and 2'}).message,
+      'Please enter something with the size between 1 and 2',
+      'when a custom error message is provided, it should be used instead of the default one');
+  });
 
   test("Required", () => {
     const validator = new Required();
@@ -193,23 +223,33 @@ suite("form/Validators", () => {
   test("Past", () => {
     const validator = new Past();
     assert.isNotTrue(validator.impliesRequired);
-    assert.isTrue(validator.validate("2019-12-31"));
-    assert.isFalse(validator.validate(String(new Date())));
-    assert.isFalse(validator.validate("3000-01-01"));
+    assert.isTrue(validator.validate("2019-12-31"), 'past');
+    assert.isFalse(validator.validate(String(new Date())), 'present');
+    assert.isFalse(validator.validate("3000-01-01"), 'future');
   });
 
   // test("PastOrPresent", () => {
+  //   const validator = new PastOrPresent();
+  //   assert.isNotTrue(validator.impliesRequired);
+  //   assert.isTrue(validator.validate("2019-12-31"), 'past');
+  //   assert.isTrue(validator.validate(String(new Date())), 'present');
+  //   assert.isFalse(validator.validate("3000-01-01"), 'future');
   // });
 
   test("Future", () => {
     const validator = new Future();
     assert.isNotTrue(validator.impliesRequired);
-    assert.isFalse(validator.validate("2019-12-31"));
-    assert.isFalse(validator.validate(String(new Date())));
-    assert.isTrue(validator.validate("3000-01-01"));
+    assert.isFalse(validator.validate("2019-12-31"), 'past');
+    assert.isFalse(validator.validate(String(new Date())), 'present');
+    assert.isTrue(validator.validate("3000-01-01"), 'future');
   });
 
   // test("FutureOrPresent", () => {
+  //   const validator = new FutureOrPresent();
+  //   assert.isNotTrue(validator.impliesRequired);
+  //   assert.isFalse(validator.validate("2019-12-31"), 'past');
+  //   assert.isTrue(validator.validate(String(new Date())), 'present');
+  //   assert.isTrue(validator.validate("3000-01-01"), 'future');
   // });
 
   test("Pattern", () => {

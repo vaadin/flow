@@ -99,6 +99,12 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     // `Map<String, Map<String, com.example.mypackage.Bean>>`
     private static final Pattern FULLY_QUALIFIED_NAME_PATTERN = Pattern.compile(
             "(" + JAVA_NAME_PATTERN + "(\\." + JAVA_NAME_PATTERN + ")*)");
+    private static final Pattern ARRAY_TYPE_NAME_PATTERN = Pattern
+            .compile("Array<(.*)>");
+    private static final Pattern MAPPED_TYPE_NAME_PATTERN = Pattern.compile(
+            "\\{ \\[key: string\\]: (.*); \\}");
+    private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN =
+            Pattern.compile("^(string|number|boolean)");
     private static final String OPERATION = "operation";
     private static final String IMPORT = "import";
 
@@ -518,58 +524,90 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         return getSimpleNameFromQualifiedName(dataType);
     }
 
-    private String getModelType(CodegenProperty property,
+    private String getModelArguments(CodegenProperty property,
             List<Map<String, String>> imports) {
-        String simpleName = getSimpleNameFromImports(property.datatype,
-                imports);
-
-        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
-        if (matcher.find()
-                && !matcher.group(1).matches("any|boolean|number|string")) {
-            String itemModelType = fixNameForModel(matcher.group(1)) + MODEL;
-            return ": Array" + MODEL + "<ModelType<" + itemModelType + ">, "
-                    + itemModelType + ">";
-        }
-        return "";
-    }
-
-    private String getModelConstructor(CodegenProperty property,
-            List<Map<String, String>> imports) {
-        String name = property.name;
         String dataType = property.datatype;
+        boolean optional = !property.required;
         String simpleName = getSimpleNameFromImports(dataType, imports);
-        String validators = getConstrainsArguments(property);
-
-        Matcher matcher = Pattern.compile("Array<(.+)>").matcher(simpleName);
-        if (matcher.find()) {
-            simpleName = "Array" + MODEL + "(this, '" + name + "', "
-                    + fixNameForModel(matcher.group(1)) + MODEL + validators + ")";
-        } else {
-            simpleName = fixNameForModel(simpleName) + MODEL + "(this, '" + name
-                    + "'" + validators + ")";
-        }
-        return "new " + simpleName;
+        return getModelVariableArguments(simpleName, optional,
+                getConstrainsArguments(property));
     }
 
-    private String fixNameForModel(String name) {
-        if ("any".equals(name)) {
-            name = "Object";
-        } else if (name.matches("string|number|boolean")) {
-            name = GeneratorUtils.capitalize(name);
+    private String getModelFullType(String name) {
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            String variableName = matcher.group(1);
+            return "Array" + MODEL + "<" + getModelVariableType(variableName)
+                    + ", " + getModelFullType(variableName) + ">";
+        }
+        matcher = MAPPED_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            return "Object" + MODEL + "<{ [key: string]: "
+                    + getModelVariableType(matcher.group(1)) + "; }>";
+        }
+        return fixNameForModel(name);
+    }
+
+    private String getModelVariableType(String variableName) {
+        Matcher matcher = PRIMITIVE_TYPE_NAME_PATTERN.matcher(variableName);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return MODEL + "Type<" + getModelFullType(variableName) + ">";
+    }
+
+    private String getModelVariableArguments(String name, boolean optional,
+            List<String> constrainArguments) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(fixNameForModel(name));
+        stringBuilder.append(", [");
+        List<String> arguments = new ArrayList<>();
+        arguments.add(String.valueOf(optional));
+        Matcher matcher = ARRAY_TYPE_NAME_PATTERN.matcher(name);
+        if (matcher.find()) {
+            String arrayTypeName = matcher.group(1);
+            boolean arrayTypeOptional = arrayTypeName.endsWith(OPTIONAL_SUFFIX);
+            arrayTypeName = removeOptionalSuffix(arrayTypeName);
+            arguments.add(getModelVariableArguments(arrayTypeName, arrayTypeOptional, 
+                Collections.emptyList()));
+        }
+        if (!constrainArguments.isEmpty()) {
+            arguments.addAll(constrainArguments);
+        }
+        stringBuilder
+                .append(arguments.stream().collect(Collectors.joining(", ")));
+        stringBuilder.append("]");
+        return stringBuilder.toString();
+    }
+
+    private String removeOptionalSuffix(String name) {
+        if (name.endsWith(OPTIONAL_SUFFIX)) {
+            return name.substring(0, name.length() - OPTIONAL_SUFFIX.length());
         }
         return name;
     }
 
-    private String getConstrainsArguments(CodegenProperty property) {
-        StringBuilder ret = new StringBuilder();
+    private String fixNameForModel(String name) {
+        name = removeOptionalSuffix(name);
+        if (ARRAY_TYPE_NAME_PATTERN.matcher(name).find()) {
+            name = "Array";
+        } else if ("any".equals(name) || MAPPED_TYPE_NAME_PATTERN.matcher(name).find()) {
+            name = "Object";
+        } else if (PRIMITIVE_TYPE_NAME_PATTERN.matcher(name).find()) {
+            name = GeneratorUtils.capitalize(name);
+        }
+        return name + MODEL;
+    }
+
+    private List<String> getConstrainsArguments(CodegenProperty property) {
         List<String> annotations = (List) property.getVendorExtensions()
                 .get(CONSTRAINT_ANNOTATIONS);
         if (annotations != null) {
-            for (String annotation : annotations) {
-                ret.append(", new " + annotation);
-            }
+            return annotations.stream()
+                    .map(annotation -> String.format("new " + "%s", annotation))
+                    .collect(Collectors.toList());
         }
-        return ret.toString();
+        return Collections.emptyList();
     }
 
     private String getSimpleNameFromComplexType(String dataType,
@@ -986,9 +1024,10 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         handlebars.registerHelper("multiplelines", getMultipleLinesHelper());
         handlebars.registerHelper("getClassNameFromImports",
                 getClassNameFromImportsHelper());
-        handlebars.registerHelper("getModelType", getModelTypeHelper());
-        handlebars.registerHelper("getModelConstructor",
-                getModelConstructorHelper());
+        handlebars.registerHelper("getModelArguments",
+                getModelArgumentsHelper());
+        handlebars.registerHelper("getModelFullType",
+                getModelFullTypeHelper());
     }
 
     private Helper<String> getMultipleLinesHelper() {
@@ -1009,14 +1048,14 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 (List<Map<String, String>>) options.param(0));
     }
 
-    private Helper<CodegenProperty> getModelTypeHelper() {
-        return (prop, options) -> getModelType(prop,
+    private Helper<CodegenProperty> getModelArgumentsHelper() {
+        return (prop, options) -> getModelArguments(prop,
                 (List<Map<String, String>>) options.param(0));
     }
 
-    private Helper<CodegenProperty> getModelConstructorHelper() {
-        return (prop, options) -> getModelConstructor(prop,
-                (List<Map<String, String>>) options.param(0));
+    private Helper<CodegenProperty> getModelFullTypeHelper() {
+        return (prop, options) -> getModelFullType(getSimpleNameFromImports(
+                prop.datatype, (List<Map<String, String>>) options.param(0)));
     }
 
     /**

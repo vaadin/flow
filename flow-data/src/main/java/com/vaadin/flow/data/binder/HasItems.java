@@ -23,7 +23,12 @@ import java.util.stream.Stream;
 
 /**
  * Mixin interface for components that displays a collection of items.
- *
+ * <p>
+ * <em>Note:</em> this is gradually replaced by
+ * {@link com.vaadin.flow.data.provider.HasListDataView},
+ * {@link com.vaadin.flow.data.provider.HasLazyDataView} and
+ * {@link com.vaadin.flow.data.provider.HasDataView} in the components.
+ * 
  * @param <T>
  *            the type of the displayed item
  * @since 1.0

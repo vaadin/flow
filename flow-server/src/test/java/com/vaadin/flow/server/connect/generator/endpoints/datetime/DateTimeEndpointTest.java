@@ -21,15 +21,13 @@ import org.junit.Test;
 
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGenerationTest;
 
-//import com.vaadin.flow.server.connect.generator.AbstractEndpointGenerationTest;
-
 public class DateTimeEndpointTest extends AbstractEndpointGenerationTest {
     public DateTimeEndpointTest() {
         super(Collections.singletonList(DateTimeEndpoint.class));
     }
 
     @Test
-    public void should_GenerateStringType_When_ReferingToDateTimeTypes() {
+    public void should_GenerateStringType_When_ReferringToDateTimeTypes() {
         verifyOpenApiObjectAndGeneratedTs();
     }
 }

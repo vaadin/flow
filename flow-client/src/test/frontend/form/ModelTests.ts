@@ -5,19 +5,18 @@ const {expect} = intern.getPlugin("chai");
 
 // API to test
 import {
+  _key,
+  ArrayModel,
   Binder,
+  NotBlank,
   NotEmpty,
   NotNull,
-  Size,
-  NotBlank, keySymbol, prependItem, appendItem, removeItem
+  NumberModel,
+  Positive,
+  Size
 } from "../../../main/resources/META-INF/resources/frontend/form";
 
-import {
-  IdEntity,
-  IdEntityModel,
-  TestEntity,
-  TestModel
-} from "./TestModels";
+import {IdEntity, IdEntityModel, TestEntity, TestModel} from "./TestModels";
 
 suite("form/Model", () => {
   let binder: Binder<TestEntity, TestModel>;
@@ -84,65 +83,12 @@ suite("form/Model", () => {
           const iteratorResult = iterator.next();
           expect(iteratorResult.done).to.be.false;
           const binderNode = iteratorResult.value;
-          expect(binderNode.model[keySymbol]).to.equal(i);
+          expect(binderNode.model[_key]).to.equal(i);
           expect(binderNode.value).to.equal(values[i]);
         }
 
         expect(iterator.next().done).to.be.true;
       });
-    });
-
-    test('should support prependItem', async () => {
-      prependItem(binder.model.fieldArrayString);
-      prependItem(binder.model.fieldArrayString, 'new');
-
-      expect(binder.value.fieldArrayString)
-        .to.deep.equal(['new', '', 'foo', 'bar']);
-
-      prependItem(binder.model.fieldArrayModel);
-      prependItem(binder.model.fieldArrayModel, {idString: 'new'});
-
-      expect(binder.value.fieldArrayModel).to.deep.equal([
-        {idString: 'new'},
-        {idString: ''},
-        {idString: 'id0'},
-        {idString: 'id1'}
-      ]);
-    });
-
-    test('should support appendItem', async () => {
-      appendItem(binder.model.fieldArrayString);
-      appendItem(binder.model.fieldArrayString, 'new');
-
-      expect(binder.value.fieldArrayString)
-        .to.deep.equal(['foo', 'bar', '', 'new']);
-
-      appendItem(binder.model.fieldArrayModel);
-      appendItem(binder.model.fieldArrayModel, {idString: 'new'});
-
-      expect(binder.value.fieldArrayModel).to.deep.equal([
-        {idString: 'id0'},
-        {idString: 'id1'},
-        {idString: ''},
-        {idString: 'new'}
-      ]);
-    });
-
-    test('should support removeItem', async () => {
-      appendItem(binder.model.fieldArrayString);
-      const stringModels = [...binder.model.fieldArrayString];
-      removeItem(stringModels[1].model);
-
-      expect(binder.value.fieldArrayString).to.deep.equal(['foo', '']);
-
-      appendItem(binder.model.fieldArrayModel);
-      const entityModels = [...binder.model.fieldArrayModel];
-      removeItem(entityModels[1].model);
-
-      expect(binder.value.fieldArrayModel).to.deep.equal([
-        {idString: 'id0'},
-        {idString: ''}
-      ]);
     });
 
     test('should support prependItem on binder node', async () => {
@@ -181,17 +127,30 @@ suite("form/Model", () => {
       ]);
     });
 
-    test('should support removeItem on binder node', async () => {
+    /**
+     * default value is used for checking dirty state
+     * use case: adding a new order line, which contains a product 
+     * and a quantity field. The product model's dirty state is
+     * comparing the default value, which is getting from the parent
+     * order line model, which is an array item.
+    */
+    test('array item defaultValue should not be undefined', async () => {
+      binder.for(binder.model.fieldArrayModel).appendItem();
+      const entityModels = [...binder.model.fieldArrayModel];
+      expect(binder.for(entityModels[0].model).defaultValue).to.be.not.undefined;
+    });
+
+    test('should support removeSelf on binder node', async () => {
       binder.for(binder.model.fieldArrayString).appendItem();
       const stringModels = [...binder.model.fieldArrayString];
-      binder.for(stringModels[1].model).removeItem();
+      binder.for(stringModels[1].model).removeSelf();
 
       expect(binder.for(binder.model.fieldArrayString).value)
         .to.deep.equal(['foo', '']);
 
       binder.for(binder.model.fieldArrayModel).appendItem();
       const entityModels = [...binder.model.fieldArrayModel];
-      binder.for(entityModels[1].model).removeItem();
+      binder.for(entityModels[1].model).removeSelf();
 
       expect(binder.for(binder.model.fieldArrayModel).value).to.deep.equal([
         {idString: 'id0'},
@@ -227,28 +186,16 @@ suite("form/Model", () => {
       });
     });
 
-    test('should throw for removeItem on non-array item binder node', async () => {
+    test('should throw for removeSelf on non-array item binder node', async () => {
       expect(() => {
-        binder.removeItem();
+        binder.removeSelf();
       }).to.throw('array');
 
       Object.values(binder.model).forEach(model => {
         const binderNode = binder.for(model);
         expect(() => {
-          binderNode.removeItem();
+          binderNode.removeSelf();
         }).to.throw('array');
-      });
-    });
-
-    test('should throw for removeItem on non-array item model', async () => {
-      expect(() => {
-        removeItem(binder.model)
-      }).to.throw('');
-
-      Object.values(binder.model).forEach(model => {
-        expect(() => {
-          removeItem(model)
-        }).to.throw('');
       });
     });
 
@@ -290,20 +237,36 @@ suite("form/Model", () => {
       [0, 1].forEach(i => expect(nodes_1[i].value).to.be.equal(idEntities[i]));
 
       for (let i = 0; i < nodes_1.length; i++) {
-        expect(nodes_1[i].model[keySymbol]).to.be.equal(i)
+        expect(nodes_1[i].model[_key]).to.be.equal(i)
       }
 
       binder.for(nodes_1[0].model.idString).value = 'foo';
       expect(binder.model.fieldArrayModel.valueOf()[0].idString).to.be.equal('foo');
 
-      prependItem(binder.model.fieldArrayModel);
+      binder.for(binder.model.fieldArrayModel).prependItem();
       expect(binder.model.fieldArrayModel.valueOf()[1].idString).to.be.equal('foo');
 
       const nodes_2 = [...binder.model.fieldArrayModel].slice();
       expect(nodes_2.length).to.be.equal(3);
       for (let i = 0; i < nodes_2.length; i++) {
-        expect(nodes_2[i].model[keySymbol]).to.be.equal(i)
+        expect(nodes_2[i].model[_key]).to.be.equal(i)
       }
+    });
+
+    test("should pass variable arguments down", async () => {
+      const matrix = [[0, 1], [2, 3]];
+      binder.for(binder.model.fieldMatrixNumber).value = matrix;
+      let walkedCells = 0;
+      Array.from(binder.model.fieldMatrixNumber).forEach((rowBinder, i) => {
+        expect(rowBinder.model).to.be.instanceOf(ArrayModel);
+        Array.from(rowBinder.model).forEach((cellBinder, j) => {
+          expect(cellBinder.model).to.be.instanceOf(NumberModel);
+          expect(cellBinder.value).to.be.equal(matrix[i][j]);
+          expect(cellBinder.validators[0]).to.be.instanceOf(Positive);
+          walkedCells++;
+        });
+      });
+      expect(walkedCells).to.equal(4);
     });
   });
 });

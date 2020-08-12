@@ -180,6 +180,10 @@ public class JsonTestEndpoint {
     Optional<String> optionalField;
   }
 
+  public enum Permissions {
+    ADMIN, USER, GUEST;
+  }
+
   /**
    * Role bean
    */
@@ -188,6 +192,10 @@ public class JsonTestEndpoint {
      * Description for roleName.
      */
     private String roleName;
+    /**
+     * Description for permissions.
+     */
+    private Permissions permissions;
   }
 
   /**

@@ -33,6 +33,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -309,7 +310,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             schemaReferences.add(actualSchema.get$ref());
         } else {
             if (actualSchema instanceof StringSchema) {
-                assertTrue(String.class.isAssignableFrom(expectedSchemaClass));
+                assertTrue(String.class.isAssignableFrom(expectedSchemaClass)
+                        || Enum.class.isAssignableFrom(expectedSchemaClass));
             } else if (actualSchema instanceof BooleanSchema) {
                 assertTrue((boolean.class.isAssignableFrom(expectedSchemaClass)
                         || Boolean.class
@@ -331,7 +333,8 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             } else if (actualSchema instanceof DateTimeSchema) {
                 assertTrue(Instant.class.isAssignableFrom(expectedSchemaClass)
                         || LocalDateTime.class
-                                .isAssignableFrom(expectedSchemaClass));
+                                .isAssignableFrom(expectedSchemaClass)
+                        || LocalTime.class.isAssignableFrom(expectedSchemaClass));
             } else if (actualSchema instanceof DateSchema) {
                 assertTrue(Date.class.isAssignableFrom(expectedSchemaClass)
                         || LocalDate.class

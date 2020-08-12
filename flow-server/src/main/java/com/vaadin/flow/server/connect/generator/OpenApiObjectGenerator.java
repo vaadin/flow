@@ -46,6 +46,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
@@ -58,6 +59,7 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
+import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
@@ -80,6 +82,7 @@ import io.swagger.v3.oas.models.media.MapSchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -114,7 +117,7 @@ public class OpenApiObjectGenerator {
     private OpenApiConfiguration configuration;
     private Map<String, ResolvedReferenceType> usedTypes;
     private Map<ClassOrInterfaceDeclaration, String> endpointsJavadoc;
-    private Map<String, ClassOrInterfaceDeclaration> nonEndpointMap;
+    private Map<String, TypeDeclaration<?>> nonEndpointMap;
     private Map<String, String> qualifiedNameToPath;
     private Map<String, PathItem> pathItems;
     private Set<String> generatedSchema;
@@ -295,16 +298,33 @@ public class OpenApiObjectGenerator {
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 
-    private Collection<ClassOrInterfaceDeclaration> appendNestedClasses(
+    private Collection<TypeDeclaration<?>> appendNestedClasses(
             ClassOrInterfaceDeclaration topLevelClass) {
-        Set<ClassOrInterfaceDeclaration> nestedClasses = topLevelClass
+        Set<TypeDeclaration<?>> nestedClasses = topLevelClass
                 .getMembers().stream()
-                .filter(BodyDeclaration::isClassOrInterfaceDeclaration)
-                .map(BodyDeclaration::asClassOrInterfaceDeclaration)
+                .filter(bodyDeclaration -> bodyDeclaration.isClassOrInterfaceDeclaration()
+                        || bodyDeclaration.isEnumDeclaration())
+                .map(bodyDeclaration -> (TypeDeclaration<?>) bodyDeclaration.asTypeDeclaration())
                 .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator
                         .comparing(NodeWithSimpleName::getNameAsString))));
         nestedClasses.add(topLevelClass);
         return nestedClasses;
+    }
+
+    private void parseClass(TypeDeclaration<?> typeDeclaration,
+            CompilationUnit compilationUnit) {
+        if (typeDeclaration.isClassOrInterfaceDeclaration()) {
+            parseClass(typeDeclaration.asClassOrInterfaceDeclaration(), compilationUnit);
+        } else if (typeDeclaration.isEnumDeclaration()) {
+            EnumDeclaration enumDeclaration = typeDeclaration.asEnumDeclaration();
+            compilationUnit.getStorage().ifPresent(storage -> {
+                String className = enumDeclaration.getFullyQualifiedName()
+                        .orElse(enumDeclaration.getNameAsString());
+                qualifiedNameToPath.put(className, storage.getPath().toString());
+            });
+            nonEndpointMap.put(enumDeclaration.resolve().getQualifiedName(),
+                    enumDeclaration);
+        }
     }
 
     private void parseClass(ClassOrInterfaceDeclaration classDeclaration,
@@ -316,7 +336,7 @@ public class OpenApiObjectGenerator {
                     .orElse(classDeclaration.getNameAsString());
             qualifiedNameToPath.put(className, storage.getPath().toString());
         });
-        if (!endpointAnnotation.isPresent()) {
+        if (!GeneratorUtils.hasAnnotation(classDeclaration, compilationUnit, Endpoint.class)) {
             nonEndpointMap.put(classDeclaration.resolve().getQualifiedName(),
                     classDeclaration);
         } else {
@@ -328,7 +348,7 @@ public class OpenApiObjectGenerator {
                 endpointsJavadoc.put(classDeclaration, "");
             }
             pathItems.putAll(createPathItems(
-                    getEndpointName(classDeclaration, endpointAnnotation.get()),
+                    getEndpointName(classDeclaration, endpointAnnotation.orElse(null)),
                     classDeclaration));
         }
     }
@@ -370,9 +390,8 @@ public class OpenApiObjectGenerator {
 
     private List<Schema> parseNonEndpointClassAsSchema(
             String fullQualifiedName) {
-        ClassOrInterfaceDeclaration typeDeclaration = nonEndpointMap
-                .get(fullQualifiedName);
-        if (typeDeclaration == null) {
+        TypeDeclaration<?> typeDeclaration = nonEndpointMap.get(fullQualifiedName);
+        if (typeDeclaration == null || typeDeclaration.isEnumDeclaration()) {
             return Collections.emptyList();
         }
         List<Schema> result = new ArrayList<>();
@@ -380,9 +399,12 @@ public class OpenApiObjectGenerator {
         Schema schema = createSingleSchema(fullQualifiedName, typeDeclaration);
         generatedSchema.add(fullQualifiedName);
 
-        NodeList<ClassOrInterfaceType> extendedTypes = typeDeclaration
-                .getExtendedTypes();
-        if (extendedTypes.isEmpty()) {
+        NodeList<ClassOrInterfaceType> extendedTypes = null;
+        if (typeDeclaration.isClassOrInterfaceDeclaration()) {
+            extendedTypes = typeDeclaration.asClassOrInterfaceDeclaration()
+                    .getExtendedTypes();
+        }
+        if (extendedTypes == null || extendedTypes.isEmpty()) {
             result.add(schema);
             result.addAll(generatedRelatedSchemas(schema));
         } else {
@@ -407,7 +429,7 @@ public class OpenApiObjectGenerator {
     }
 
     private Schema createSingleSchema(String fullQualifiedName,
-            ClassOrInterfaceDeclaration typeDeclaration) {
+            TypeDeclaration<?> typeDeclaration) {
         Optional<String> description = typeDeclaration.getJavadoc()
                 .map(javadoc -> javadoc.getDescription().toText());
         Schema schema = new ObjectSchema();
@@ -438,7 +460,7 @@ public class OpenApiObjectGenerator {
     }
 
     private Map<String, Schema> getPropertiesFromClassDeclaration(
-            TypeDeclaration<ClassOrInterfaceDeclaration> typeDeclaration) {
+            TypeDeclaration<?> typeDeclaration) {
         Map<String, Schema> properties = new TreeMap<>();
         for (FieldDeclaration field : typeDeclaration.getFields()) {
             if (field.isTransient() || field.isStatic()
@@ -482,7 +504,7 @@ public class OpenApiObjectGenerator {
             str += str.contains("(") ? "" : "()";
 
             if (str.matches(
-                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|PastOrPresent|Future|FutureOrPresent|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
+                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|Future|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
                 annotations.add(str);
             }
         });
@@ -727,7 +749,7 @@ public class OpenApiObjectGenerator {
                                 .equals(parent.getQualifiedName()))
                 .collect(Collectors.toList());
 
-        if (directAncestors.isEmpty()) {
+        if (directAncestors.isEmpty() || resolvedType.getTypeDeclaration().isEnum()) {
             results.add(schema);
             results.addAll(generatedRelatedSchemas(schema));
         } else {
@@ -761,6 +783,16 @@ public class OpenApiObjectGenerator {
 
     private Schema createSingleSchemaFromResolvedType(
             ResolvedReferenceType resolvedType) {
+        if (resolvedType.getTypeDeclaration().isEnum()) {
+            List<String> entries = resolvedType
+                    .getTypeDeclaration().asEnum().getEnumConstants().stream()
+                    .map(ResolvedEnumConstantDeclaration::getName)
+                    .collect(Collectors.toList());
+            StringSchema schema = new StringSchema();
+            schema.name(resolvedType.getQualifiedName());
+            schema.setEnum(entries);
+            return schema;
+        }
         Schema schema = new ObjectSchema()
                 .name(resolvedType.getQualifiedName());
         Map<String, Boolean> fieldsOptionalMap = getFieldsAndOptionalMap(

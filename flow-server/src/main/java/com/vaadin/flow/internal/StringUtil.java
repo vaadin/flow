@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.UUID;
 
 /**
  * Utility class for special string handling.
@@ -39,7 +43,8 @@ public final class StringUtil {
     public final static String removeComments(String code) {
         State state = State.NORMAL;
         StringBuilder result = new StringBuilder();
-        Scanner scanner = new Scanner(code);
+        Map<String, Character> replacements = new HashMap<>();
+        Scanner scanner = new Scanner(normalize(code, replacements));
         scanner.useDelimiter("");
         while (scanner.hasNext()) {
             String character = scanner.next();
@@ -84,6 +89,36 @@ public final class StringUtil {
             }
         }
         scanner.close();
-        return result.toString();
+        String handled = result.toString();
+        for (Entry<String, Character> entry : replacements.entrySet()) {
+            handled = handled.replace(entry.getKey(),
+                    String.valueOf(entry.getValue()));
+        }
+        return handled;
+    }
+
+    private static String normalize(String str,
+            Map<String, Character> replacements) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if (!Character.isHighSurrogate(ch)
+                    && !Character.isLowSurrogate(ch)) {
+                builder.append(str.charAt(i));
+            } else {
+                String replacement = generateReplacement(str);
+                replacements.put(replacement, ch);
+                builder.append(replacement);
+            }
+        }
+        return builder.toString();
+    }
+
+    private static String generateReplacement(String str) {
+        String replacement = UUID.randomUUID().toString();
+        if (str.contains(replacement)) {
+            return generateReplacement(str);
+        }
+        return replacement;
     }
 }

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableSupplier;
+import org.mockito.Mockito;
 
 public class AbstractListDataViewTest {
 
@@ -51,12 +53,18 @@ public class AbstractListDataViewTest {
 
     private Component component;
 
+    private AbstractListDataView<Item> beanDataView;
+    private ListDataProvider<Item> itemListDataProvider;
+
     @Before
     public void init() {
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
         dataProvider = DataProvider.ofCollection(items);
         component = new TestComponent();
         dataView = new ListDataViewImpl(() -> dataProvider, component);
+
+        itemListDataProvider = DataProvider.ofCollection(getTestItems());
+        beanDataView = new ItemListDataView(() -> itemListDataProvider, component);
     }
 
     @Test
@@ -65,18 +73,30 @@ public class AbstractListDataViewTest {
                 .fromCallbacks(query -> Stream.of("one"), query -> 1);
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage(
-                "ListDataViewImpl only supports 'ListDataProvider' " +
-                        "or it's subclasses, but was given a " +
-                        "'AbstractBackEndDataProvider'");
+                "ListDataViewImpl only supports 'ListDataProvider' "
+                        + "or it's subclasses, but was given a "
+                        + "'AbstractBackEndDataProvider'");
         new ListDataViewImpl(() -> dataProvider, null);
+    }
+
+    @Test
+    public void getItemCount_noFiltersSet_dataSizeObtained() {
+        Assert.assertEquals("Unexpected item count", items.size(),
+                dataView.getItemCount());
+    }
+
+    @Test
+    public void getItemCount_filtersSet_filteredItemsObtained() {
+        dataProvider.setFilter(item -> item.equals("first"));
+        Assert.assertEquals("Unexpected item count",
+                1, dataView.getItemCount());
     }
 
     @Test
     public void getNextItem_nextItemAvailable_nextItemFound() {
         Optional<String> middle = dataView.getNextItem("middle");
         Assert.assertTrue(middle.isPresent());
-        Assert.assertEquals("Faulty next item", "last",
-                middle.get());
+        Assert.assertEquals("Faulty next item", "last", middle.get());
     }
 
     @Test
@@ -89,8 +109,8 @@ public class AbstractListDataViewTest {
     public void getPrevItem_prevItemAvailable_prevItemFound() {
         Optional<String> middle = dataView.getPreviousItem("middle");
         Assert.assertTrue(middle.isPresent());
-        Assert.assertEquals("Item in middle should have previous item",
-                "first", middle.get());
+        Assert.assertEquals("Item in middle should have previous item", "first",
+                middle.get());
     }
 
     @Test
@@ -101,10 +121,10 @@ public class AbstractListDataViewTest {
 
     @Test
     public void setFilter_filterIsSet_filteredItemsObtained() {
-        Assert.assertEquals(items.size(), dataView.getSize());
+        Assert.assertEquals(items.size(), dataView.getItemCount());
         dataView.setFilter(item -> item.equals("first"));
         Assert.assertEquals("Filter was not applied to data size", 1,
-                dataView.getSize());
+                dataView.getItemCount());
         Assert.assertEquals("Expected item is missing from filtered data",
                 "first", dataView.getItems().findFirst().get());
     }
@@ -114,7 +134,7 @@ public class AbstractListDataViewTest {
         dataProvider.setFilter(item -> item.equals("first"));
         dataView.setFilter(null);
         Assert.assertEquals("Filter reset was not applied to data size",
-                items.size(), dataView.getSize());
+                items.size(), dataView.getItemCount());
         Assert.assertArrayEquals("Filter reset was not applied to data set",
                 items.toArray(), dataView.getItems().toArray());
     }
@@ -139,13 +159,13 @@ public class AbstractListDataViewTest {
     public void addSortComparator_twoComparatorsAdded_itemsSortedByCompositeComparator() {
         dataProvider = DataProvider.ofItems("b3", "a2", "a1");
         dataView = new ListDataViewImpl(() -> dataProvider, component);
-        dataView.addSortComparator((s1, s2) ->
-                Chars.compare(s1.charAt(0), s2.charAt(0)));
+        dataView.addSortComparator(
+                (s1, s2) -> Chars.compare(s1.charAt(0), s2.charAt(0)));
         Assert.assertEquals("Unexpected data set order (comparator 1)",
                 "a2,a1,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
-        dataView.addSortComparator((s1, s2) ->
-                Chars.compare(s1.charAt(1), s2.charAt(1)));
+        dataView.addSortComparator(
+                (s1, s2) -> Chars.compare(s1.charAt(1), s2.charAt(1)));
         Assert.assertEquals("Unexpected data set order (comparator 2)",
                 "a1,a2,b3",
                 dataView.getItems().collect(Collectors.joining(",")));
@@ -153,7 +173,8 @@ public class AbstractListDataViewTest {
 
     @Test
     public void setSortOrder_sortOrderIsSet_sortedItemsObtained() {
-        dataView.setSortOrder(ValueProvider.identity(), SortDirection.ASCENDING);
+        dataView.setSortOrder(ValueProvider.identity(),
+                SortDirection.ASCENDING);
         Assert.assertEquals("Unexpected data set order", "first,last,middle",
                 dataView.getItems().collect(Collectors.joining(",")));
     }
@@ -162,19 +183,20 @@ public class AbstractListDataViewTest {
     public void addSortOrder_twoOrdersAdded_itemsSortedByCompositeOrders() {
         dataProvider = DataProvider.ofItems("b3", "a1", "a2");
         dataView = new ListDataViewImpl(() -> dataProvider, null);
-        dataView.addSortOrder((item) -> item.charAt(0), SortDirection.DESCENDING);
-        Assert.assertEquals("Unexpected data set order (order 1)",
-                "b3,a1,a2",
+        dataView.addSortOrder((item) -> item.charAt(0),
+                SortDirection.DESCENDING);
+        Assert.assertEquals("Unexpected data set order (order 1)", "b3,a1,a2",
                 dataView.getItems().collect(Collectors.joining(",")));
-        dataView.addSortOrder((item) -> item.charAt(1), SortDirection.DESCENDING);
-        Assert.assertEquals("Unexpected data set order (order 2)",
-                "b3,a2,a1",
+        dataView.addSortOrder((item) -> item.charAt(1),
+                SortDirection.DESCENDING);
+        Assert.assertEquals("Unexpected data set order (order 2)", "b3,a2,a1",
                 dataView.getItems().collect(Collectors.joining(",")));
     }
 
     @Test
     public void removeSorting_sortingSetAndThenRemoved_initialSortingObtained() {
-        dataView.setSortOrder(ValueProvider.identity(), SortDirection.ASCENDING);
+        dataView.setSortOrder(ValueProvider.identity(),
+                SortDirection.ASCENDING);
         Assert.assertEquals("Unexpected data set order", "first,last,middle",
                 dataView.getItems().collect(Collectors.joining(",")));
         dataView.removeSorting();
@@ -195,11 +217,89 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void setIdentifierProvider_defaultIdentity_equalsIsUsed() {
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "value1")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(4L, "value1")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderIdentity_getIdIsUsed() {
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "value1")));
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(4L, "value1")));
+    }
+
+    @Test
+    public void setIdentifierProvider_customIdentifierProvider_customIdentifierProviderIsUsed() {
+        beanDataView.setIdentifierProvider(Item::getValue);
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "value1")));
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertTrue(beanDataView.contains(
+                new Item(4L, "value1")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderHasChanged_newDataProviderIsUsed() {
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(1L, "non present")));
+
+        itemListDataProvider = DataProvider.ofItems(new Item(10L, "description10"));
+
+        Assert.assertFalse(beanDataView.contains(
+                new Item(1L, "non present")));
+        Assert.assertTrue(beanDataView.contains(new Item(10L, "description10")));
+    }
+
+    @Test
+    public void setIdentifierProvider_dataProviderHasChanged_identifierProviderRetained() {
+        Assert.assertFalse(beanDataView.contains(
+                new Item(4L, "non present", "descr1")));
+
+        beanDataView.setIdentifierProvider(Item::getDescription);
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(4L, "non present", "descr1")));
+
+        itemListDataProvider = new AbstractDataViewTest.CustomIdentityItemDataProvider(getTestItems());
+
+        Assert.assertTrue(beanDataView.contains(
+                new Item(4L, "non present", "descr1")));
+    }
+
+    @Test
+    public void contains_filterApplied_itemFilteredOut() {
+        Assert.assertTrue(beanDataView.contains(new Item(1L, "value1")));
+
+        beanDataView.setFilter(item -> item.getId() > 1L);
+
+        Assert.assertFalse(beanDataView.contains(new Item(1L, "value1")));
+
+        Assert.assertTrue(beanDataView.contains(new Item(3L, "value3")));
+    }
+
+    @Test
     public void addItem_itemInDataset() {
         final String newItem = "new Item";
         dataView.addItem(newItem);
 
-        Assert.assertEquals(4, dataView.getSize());
+        Assert.assertEquals(4, dataView.getItemCount());
         Assert.assertTrue(dataView.contains(newItem));
         Optional<String> optionalItem = dataView.getNextItem("last");
         Assert.assertTrue(optionalItem.isPresent());
@@ -211,7 +311,7 @@ public class AbstractListDataViewTest {
         final String newItem = "first";
         dataView.addItem(newItem);
 
-        Assert.assertEquals(3, dataView.getSize());
+        Assert.assertEquals(3, dataView.getItemCount());
         Assert.assertTrue(dataView.contains(newItem));
     }
 
@@ -219,7 +319,7 @@ public class AbstractListDataViewTest {
     public void removeItem_itemRemovedFromDataset() {
         dataView.removeItem("middle");
 
-        Assert.assertEquals(2, dataView.getSize());
+        Assert.assertEquals(2, dataView.getItemCount());
         Assert.assertFalse(dataView.contains("middle"));
         Optional<String> optionalItem = dataView.getNextItem("first");
         Assert.assertTrue(optionalItem.isPresent());
@@ -229,35 +329,7 @@ public class AbstractListDataViewTest {
     @Test
     public void removeItem_notInList_dataSetNotChanged() {
         dataView.removeItem("not present");
-        Assert.assertEquals(3, dataView.getSize());
-    }
-
-    @Test
-    public void dataViewWithItem_rowOutsideSetRequested_exceptionThrown() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index 7 is outside of the accepted range '0 - 2'");
-
-        dataView.validateItemIndex(7);
-    }
-
-    @Test
-    public void dataViewWithItem_negativeRowRequested_exceptionThrown() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage(
-                "Given index -7 is outside of the accepted range '0 - 2'");
-
-        dataView.validateItemIndex(-7);
-    }
-
-    @Test
-    public void dataViewWithoutItems_exceptionThrown() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage("Requested index 5 on empty data.");
-
-        dataProvider = DataProvider.ofCollection(Collections.emptyList());
-        dataView = new ListDataViewImpl(() -> dataProvider, component);
-        dataView.validateItemIndex(5);
+        Assert.assertEquals(3, dataView.getItemCount());
     }
 
     @Test
@@ -265,13 +337,13 @@ public class AbstractListDataViewTest {
         dataView.addItemBefore("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newItem", "middle", "last"},
+                new String[] { "first", "newItem", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemBefore("second", "first");
 
         Assert.assertArrayEquals(
-                new String[]{"second", "first", "newItem", "middle", "last"},
+                new String[] { "second", "first", "newItem", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -284,7 +356,7 @@ public class AbstractListDataViewTest {
         dataView.addItemBefore("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newItem", "middle", "last"},
+                new String[] { "first", "newItem", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -292,8 +364,7 @@ public class AbstractListDataViewTest {
     public void addItemBefore_itemAndTargetAreTheSame_itemIsNotAdded() {
         dataView.addItemBefore("newItem", "newItem");
 
-        Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last"},
+        Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -307,23 +378,33 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItemBefore_addItemInFilteredDataSet_itemAddedBeforeTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemBefore("newItem", "last");
+
+        Assert.assertArrayEquals(
+                new String[] { "middle", "newItem", "last"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
     public void addItemAfter_itemIsAddedAtExpectedPosition() {
         dataView.addItemAfter("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "newItem", "last"},
+                new String[] { "first", "middle", "newItem", "last" },
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemAfter("second", "last");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "newItem", "last", "second"},
+                new String[] { "first", "middle", "newItem", "last", "second" },
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemAfter("middle", "last");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newItem", "last", "middle", "second"},
+                new String[] { "first", "newItem", "last", "middle", "second" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -335,7 +416,7 @@ public class AbstractListDataViewTest {
         dataView.addItemAfter("newItem", "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "newItem", "last"},
+                new String[] { "first", "middle", "newItem", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -343,8 +424,7 @@ public class AbstractListDataViewTest {
     public void addItemAfter_itemAndTargetAreTheSame_itemIsNotAdded() {
         dataView.addItemAfter("newItem", "newItem");
 
-        Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last"},
+        Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -358,12 +438,22 @@ public class AbstractListDataViewTest {
     }
 
     @Test
+    public void addItemAfter_addItemInFilteredDataSet_itemAddedAfterTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemAfter("newItem", "last");
+
+        Assert.assertArrayEquals(
+                new String[] { "middle", "last", "newItem"},
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
     public void addItems_allItemsAreAdded() {
         dataView.addItems(Arrays.asList("newOne", "newTwo", "newThree"));
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last", "newOne", "newTwo",
-                        "newThree"},
+                new String[] { "first", "middle", "last", "newOne", "newTwo",
+                        "newThree" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -372,15 +462,14 @@ public class AbstractListDataViewTest {
         dataView.addItems(Arrays.asList("first", "newOne", "newTwo"));
 
         Assert.assertArrayEquals(
-                new String[]{"middle", "last", "first", "newOne", "newTwo"},
+                new String[] { "middle", "last", "first", "newOne", "newTwo" },
                 dataView.getItems().toArray(String[]::new));
     }
 
     @Test
     public void addItems_nullCollectionPassed_throwsException() {
         exceptionRule.expect(NullPointerException.class);
-        exceptionRule.expectMessage(
-                "Items collection cannot be null");
+        exceptionRule.expectMessage("Items collection cannot be null");
 
         dataView.addItems(null);
     }
@@ -388,8 +477,7 @@ public class AbstractListDataViewTest {
     @Test
     public void addItems_emptyCollectionPassed_dataNotChanged() {
         dataView.addItems(Collections.emptyList());
-        Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last"},
+        Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -399,8 +487,8 @@ public class AbstractListDataViewTest {
                 "first");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newOne", "newTwo", "newThree",
-                        "middle", "last"},
+                new String[] { "first", "newOne", "newTwo", "newThree",
+                        "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -410,28 +498,29 @@ public class AbstractListDataViewTest {
                 "first");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "newOne", "newTwo", "last"},
+                new String[] { "first", "middle", "newOne", "newTwo", "last" },
                 dataView.getItems().toArray(String[]::new));
 
-        dataView.addItemsAfter(Collections.singletonList("newThree"),
-                "last");
+        dataView.addItemsAfter(Collections.singletonList("newThree"), "last");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "newOne", "newTwo", "last", "newThree"},
+                new String[] { "first", "middle", "newOne", "newTwo", "last",
+                        "newThree" },
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemsAfter(Arrays.asList("newFour", "newThree"),
                 "newThree");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "newOne", "newTwo", "last", "newFour", "newThree"},
+                new String[] { "first", "middle", "newOne", "newTwo", "last",
+                        "newFour", "newThree" },
                 dataView.getItems().toArray(String[]::new));
 
-        dataView.addItemsAfter(Arrays.asList("newFive", "first"),
-                "first");
+        dataView.addItemsAfter(Arrays.asList("newFive", "first"), "first");
 
         Assert.assertArrayEquals(
-                new String[]{"newFive", "first", "middle", "newOne", "newTwo", "last", "newFour", "newThree"},
+                new String[] { "newFive", "first", "middle", "newOne", "newTwo",
+                        "last", "newFour", "newThree" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -448,8 +537,7 @@ public class AbstractListDataViewTest {
     @Test
     public void addItemsAfter_nullCollectionPassed_throwsException() {
         exceptionRule.expect(NullPointerException.class);
-        exceptionRule.expectMessage(
-                "Items collection cannot be null");
+        exceptionRule.expectMessage("Items collection cannot be null");
 
         dataView.addItemsAfter(null, "any");
     }
@@ -457,8 +545,19 @@ public class AbstractListDataViewTest {
     @Test
     public void addItemsAfter_emptyCollectionPassed_dataNotChanged() {
         dataView.addItemsAfter(Collections.emptyList(), "any");
+        Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
+                dataView.getItems().toArray(String[]::new));
+    }
+
+
+    @Test
+    public void addItemsAfter_addItemsInFilteredDataSet_itemsAddedAfterTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemsAfter(Arrays.asList("newItem1", "newItem2"),
+                "last");
+
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last"},
+                new String[] { "middle", "last", "newItem1", "newItem2"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -468,8 +567,8 @@ public class AbstractListDataViewTest {
                 "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newOne", "newTwo", "newThree",
-                        "middle", "last"},
+                new String[] { "first", "newOne", "newTwo", "newThree",
+                        "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -480,28 +579,29 @@ public class AbstractListDataViewTest {
                 "last");
 
         Assert.assertArrayEquals(
-                new String[]{"middle", "first", "newOne", "newTwo", "last"},
+                new String[] { "middle", "first", "newOne", "newTwo", "last" },
                 dataView.getItems().toArray(String[]::new));
 
-        dataView.addItemsBefore(Arrays.asList("newThree", "last"),
-                "last");
+        dataView.addItemsBefore(Arrays.asList("newThree", "last"), "last");
 
         Assert.assertArrayEquals(
-                new String[]{"middle", "first", "newOne", "newTwo", "newThree", "last"},
+                new String[] { "middle", "first", "newOne", "newTwo",
+                        "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
 
-        dataView.addItemsBefore(Arrays.asList("newFour", "middle"),
-                "middle");
+        dataView.addItemsBefore(Arrays.asList("newFour", "middle"), "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"newFour", "middle", "first", "newOne", "newTwo", "newThree", "last"},
+                new String[] { "newFour", "middle", "first", "newOne", "newTwo",
+                        "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
 
-        dataView.addItemsBefore(Collections.singletonList("newFive"), "newFour");
+        dataView.addItemsBefore(Collections.singletonList("newFive"),
+                "newFour");
 
         Assert.assertArrayEquals(
-                new String[]{"newFive", "newFour", "middle", "first", "newOne"
-                        , "newTwo", "newThree", "last"},
+                new String[] { "newFive", "newFour", "middle", "first",
+                        "newOne", "newTwo", "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -518,8 +618,7 @@ public class AbstractListDataViewTest {
     @Test
     public void addItemsBefore_nullCollectionPassed_throwsException() {
         exceptionRule.expect(NullPointerException.class);
-        exceptionRule.expectMessage(
-                "Items collection cannot be null");
+        exceptionRule.expectMessage("Items collection cannot be null");
 
         dataView.addItemsBefore(null, "any");
     }
@@ -527,8 +626,18 @@ public class AbstractListDataViewTest {
     @Test
     public void addItemsBefore_emptyCollectionPassed_dataNotChanged() {
         dataView.addItemsBefore(Collections.emptyList(), "any");
+        Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void addItemsBefore_addItemsInFilteredDataSet_itemsAddedBeforeTheTarget() {
+        dataView.addFilter(item -> !item.equalsIgnoreCase("first"));
+        dataView.addItemsBefore(Arrays.asList("newItem1", "newItem2"),
+                "last");
+
         Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last"},
+                new String[] { "middle", "newItem1", "newItem2", "last"},
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -536,15 +645,14 @@ public class AbstractListDataViewTest {
     public void removeItems_itemsOutOfOrder_allItemsAreRemoved() {
         dataView.removeItems(Arrays.asList("middle", "first"));
 
-        Assert.assertArrayEquals(new String[]{"last"},
+        Assert.assertArrayEquals(new String[] { "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
     @Test
     public void removeItems_nullCollectionPassed_throwsException() {
         exceptionRule.expect(NullPointerException.class);
-        exceptionRule.expectMessage(
-                "Items collection cannot be null");
+        exceptionRule.expectMessage("Items collection cannot be null");
 
         dataView.removeItems(null);
     }
@@ -552,8 +660,7 @@ public class AbstractListDataViewTest {
     @Test
     public void removeItems_emptyCollectionPassed_dataNotChanged() {
         dataView.removeItems(Collections.emptyList());
-        Assert.assertArrayEquals(
-                new String[]{"first", "middle", "last"},
+        Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
 
@@ -563,21 +670,20 @@ public class AbstractListDataViewTest {
                 "middle");
 
         Assert.assertArrayEquals(
-                new String[]{"first", "newOne", "newTwo", "newThree",
-                        "middle", "last"},
+                new String[] { "first", "newOne", "newTwo", "newThree",
+                        "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
 
         dataView.removeItems(Arrays.asList("middle", "first"));
 
         Assert.assertArrayEquals(
-                new String[]{"newOne", "newTwo", "newThree", "last"},
+                new String[] { "newOne", "newTwo", "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
 
         dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
 
-        Assert.assertArrayEquals(
-                new String[]{"newOne", "one", "two", "newTwo", "newThree",
-                        "last"},
+        Assert.assertArrayEquals(new String[] { "newOne", "one", "two",
+                "newTwo", "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -592,9 +698,10 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider =
-                new ListDataProvider<>(items);
-        dataView = new ListDataViewImpl(() -> stringListDataProvider, component);
+        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
+                items);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider,
+                component);
 
         dataView.addItemBefore("newItem", "item2");
     }
@@ -609,8 +716,8 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider =
-                new ListDataProvider<>(items);
+        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
+                items);
         dataView = new ListDataViewImpl(() -> stringListDataProvider, null);
 
         dataView.addItemAfter("newItem", "item1");
@@ -626,9 +733,10 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider =
-                new ListDataProvider<>(items);
-        dataView = new ListDataViewImpl(() -> stringListDataProvider, component);
+        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
+                items);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider,
+                component);
 
         dataView.addItemsAfter(Collections.singleton("newItem"), "item1");
     }
@@ -643,9 +751,10 @@ public class AbstractListDataViewTest {
         items.add("item1");
         items.add("item2");
 
-        final ListDataProvider<String> stringListDataProvider =
-                new ListDataProvider<>(items);
-        dataView = new ListDataViewImpl(() -> stringListDataProvider, component);
+        final ListDataProvider<String> stringListDataProvider = new ListDataProvider<>(
+                items);
+        dataView = new ListDataViewImpl(() -> stringListDataProvider,
+                component);
 
         dataView.addItemsBefore(Collections.singleton("newItem"), "item1");
     }
@@ -658,9 +767,8 @@ public class AbstractListDataViewTest {
 
         Assert.assertEquals(4, dataView.getItems().count());
 
-        dataView.addFilter(
-                item -> item.equals("item1") || item.equals("item2") || item
-                        .equals("item22"));
+        dataView.addFilter(item -> item.equals("item1") || item.equals("item2")
+                || item.equals("item22"));
 
         Assert.assertEquals(3, dataView.getItems().count());
 
@@ -692,95 +800,98 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void updateItem_equalsBasedIdentity_noUpdatesExpected() {
+    public void refreshItem_itemPresentInDataSet_refreshesItem() {
         Collection<Item> items = getTestItems();
 
-        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
+        ListDataProvider<Item> dataProvider = Mockito
+                .spy(DataProvider.ofCollection(items));
 
-        ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, component);
+        ItemListDataView dataView = new ItemListDataView(() -> dataProvider,
+                component);
 
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
+        Iterator<Item> iterator = items.iterator();
+        Item firstItem = iterator.next();
+        firstItem.setValue("updatedValue");
 
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
-
-        // No item is supposed to be updated since no items found matching
-        // equals() implementation
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("value1", firstItem.get().getValue());
-        Assert.assertEquals("descr1", firstItem.get().getDescription());
-    }
-
-    @Test
-    public void updateItem_equalsBasedIdentity_updatesExistingItem() {
-        Collection<Item> items = getTestItems();
-
-        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, component);
-
-        dataView.updateItem(
-                new Item(1L, "value1", "updatedDescr"));
-
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
-
-        // Item with id = 1 is supposed to be updated since description is
-        // not included in equals() method
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("value1", firstItem.get().getValue());
-        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
-    }
-
-    @Test
-    public void updateItem_idBasedIdentity_updatesExistingItem() {
-        Collection<Item> items = getTestItems();
-
-        ListDataProvider<Item> dataProvider = new
-                AbstractDataViewTest.CustomIdentityItemDataProvider(items);
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, component);
-
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
-
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
-
-        // Item with id = 1 supposed to be updated
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("updatedValue", firstItem.get().getValue());
-        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
-    }
-
-    @Test
-    public void updateItem_identifierProvider_updatesExistingItem() {
-        Collection<Item> items = getTestItems();
-
-        ListDataProvider<Item> dataProvider = DataProvider.ofCollection(items);
-
-        ItemListDataView dataView = new ItemListDataView(
-                () -> dataProvider, component);
+        dataView.refreshItem(firstItem);
+        Mockito.verify(dataProvider).refreshItem(firstItem);
 
         dataView.setIdentifierProvider(Item::getId);
-        dataView.updateItem(
-                new Item(1L, "updatedValue", "updatedDescr"));
+        Item secondItem = iterator.next();
+        secondItem.setValue("updatedValue");
 
-        Optional<Item> firstItem =
-                items.stream().filter(i -> i.getId() == 1L).findFirst();
+        Item secondItemDuplicate = new Item(2L);
+        dataView.refreshItem(secondItemDuplicate);
+        // Verify that the refresh is made on a new object, no on an old
+        // object.
+        Mockito.verify(dataProvider).refreshItem(secondItemDuplicate);
+        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(secondItem);
+    }
 
-        // Item with id = 1 supposed to be updated
-        Assert.assertTrue(firstItem.isPresent());
-        Assert.assertEquals(3, items.size());
-        Assert.assertEquals("updatedValue", firstItem.get().getValue());
-        Assert.assertEquals("updatedDescr", firstItem.get().getDescription());
+    @Test
+    public void refreshItem_itemNotPresent_itemNotRefreshed() {
+        Collection<Item> items = getTestItems();
+
+        ListDataProvider<Item> dataProvider = Mockito
+                .spy(DataProvider.ofCollection(items));
+
+        ItemListDataView dataView = new ItemListDataView(() -> dataProvider,
+                component);
+
+        Item updatedItem = new Item(42L, "updated", "descr1");
+        dataView.refreshItem(updatedItem);
+        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(updatedItem);
+
+        updatedItem = new Item(1L, "updated", "descr1");
+        dataView.refreshItem(updatedItem);
+        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(updatedItem);
+    }
+
+    @Test
+    public void getItem_correctIndex_itemFound() {
+        Assert.assertEquals("Wrong item returned for index", "first",
+                dataView.getItem(0));
+    }
+
+    @Test
+    public void getItem_negativeIndex_throwsException() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage(
+                "Given index -1 is outside of the accepted range '0 - 2'");
+        dataView.getItem(-1);
+    }
+
+    @Test
+    public void getItem_emptyDataSet_throwsException() {
+        dataProvider = DataProvider.ofItems();
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Requested index 0 on empty data.");
+        dataView.getItem(0);
+    }
+
+    @Test
+    public void getItem_filteringApplied_itemFound() {
+        Assert.assertEquals("Wrong item returned for index", "middle",
+                dataView.getItem(1));
+        dataProvider
+                .setFilter(item -> "first".equals(item) || "last".equals(item));
+        Assert.assertEquals("Wrong item returned for index", "last",
+                dataView.getItem(1));
+    }
+
+    @Test
+    public void getItem_sortingApplied_itemFound() {
+        Assert.assertEquals("Wrong item returned for index", "first",
+                dataView.getItem(0));
+        dataProvider.setSortOrder(item -> item, SortDirection.DESCENDING);
+        Assert.assertEquals("Wrong item returned for index", "middle",
+                dataView.getItem(0));
+    }
+
+    @Test
+    public void getItem_indexOutsideOfSize_throwsException() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        dataView.getItem(items.size());
     }
 
     private static class ListDataViewImpl extends AbstractListDataView<String> {
@@ -802,8 +913,7 @@ public class AbstractListDataViewTest {
     }
 
     private Collection<Item> getTestItems() {
-        return new ArrayList<>(Arrays.asList(
-                new Item(1L, "value1", "descr1"),
+        return new ArrayList<>(Arrays.asList(new Item(1L, "value1", "descr1"),
                 new Item(2L, "value2", "descr2"),
                 new Item(3L, "value3", "descr3")));
     }

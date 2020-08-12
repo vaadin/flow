@@ -26,12 +26,15 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * Abstract data view implementation which handles parts that apply for any type
- * of data source.
+ * of data.
  *
  * @param <T>
  *            data type
  */
 public abstract class AbstractDataView<T> implements DataView<T> {
+
+    protected static final String NULL_ITEM_ERROR_MESSAGE = "Item cannot be null";
+    protected static final String NULL_IDENTIFIER_ERROR_MESSAGE = "Identity provider should not return null";
 
     protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
     protected Component component;
@@ -57,10 +60,10 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public Registration addSizeChangeListener(
-            ComponentEventListener<SizeChangeEvent<?>> listener) {
-        Objects.requireNonNull(listener, "SizeChangeListener cannot be null");
-        return ComponentUtil.addListener(component, SizeChangeEvent.class,
+    public Registration addItemCountChangeListener(
+            ComponentEventListener<ItemCountChangeEvent<?>> listener) {
+        Objects.requireNonNull(listener, "ItemCountChangeListener cannot be null");
+        return ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 (ComponentEventListener) listener);
     }
 
@@ -81,10 +84,14 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      *             if data provider type is incompatible with data view type
      */
     protected final void verifyDataProviderType(Class<?> dataProviderType) {
+        // TODO https://github.com/vaadin/flow/issues/8583
         Class<?> supportedDataProviderType = getSupportedDataProviderType();
         if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {
             final String message = String.format(
-                    "%s only supports '%s' or it's subclasses, but was given a '%s'",
+                    "%s only supports '%s' or it's subclasses, but was given a '%s'."
+                            + "%nUse either 'getLazyDataView()', 'getListDataView()'"
+                            + " or 'getGenericDataView()' according to the "
+                            + "used data type.",
                     this.getClass().getSimpleName(),
                     supportedDataProviderType.getSimpleName(),
                     dataProviderType.getSuperclass().getSimpleName());
@@ -98,8 +105,14 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     }
 
     @Override
-    public int getSize() {
-        return dataProviderSupplier.get().size(new Query<>());
+    public void refreshItem(T item) {
+        Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
+        //@formatter:off
+        getItems()
+                .filter(i -> equals(item, i))
+                .findFirst()
+                .ifPresent(i -> dataProviderSupplier.get().refreshItem(item));
+        //@formatter:on
     }
 
     @Override
@@ -126,5 +139,13 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         } else {
             return identifierProviderObject;
         }
+    }
+
+    protected boolean equals(T item, T compareTo) {
+        return Objects.equals(
+                Objects.requireNonNull(getIdentifierProvider().apply(item),
+                        NULL_IDENTIFIER_ERROR_MESSAGE),
+                Objects.requireNonNull(getIdentifierProvider().apply(compareTo),
+                        NULL_IDENTIFIER_ERROR_MESSAGE));
     }
 }

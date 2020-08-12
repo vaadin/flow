@@ -15,16 +15,19 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
-import java.util.Collection;
-import java.util.Optional;
-
 /**
  * DataView for a in-memory list data that provides information on the data and
- * allows operations on it.
+ * allows operations on it. Mutation operations can be used only if the backing
+ * {@link List} is mutable.
  *
  * @param <T>
  *            data type
@@ -34,6 +37,35 @@ import java.util.Optional;
  */
 public interface ListDataView<T, V extends ListDataView<T, ?>>
         extends DataView<T> {
+
+    /**
+     * Check if item is present in the currently filtered data set.
+     * <p>
+     * By default, {@code equals} method implementation of the item is used for
+     * identity check. If a custom data provider is used, then the
+     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
+     * identity can be set up with a
+     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
+     *
+     * @param item
+     *            item to search for
+     * @return {@code true} if item is found in filtered data set
+     *
+     * @see #setIdentifierProvider(IdentifierProvider)
+     */
+    boolean contains(T item);
+
+    /**
+     * Get the full item count with filters if any set. As the item count
+     * might change at any point, it is recommended to add a listener with the
+     * {@link #addItemCountChangeListener(ComponentEventListener)} method
+     * instead to get notified when the item count has changed.
+     *
+     * @return filtered item count
+     * @see #addItemCountChangeListener(ComponentEventListener)
+     */
+    int getItemCount();
+
     /**
      * Gets the item after given item from the filtered and sorted data.
      * <p>
@@ -66,6 +98,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Adds an item to the data list if it is not already present.
+     * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
      *
      * @param item
      *            item to add
@@ -80,6 +115,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Adds an item after the given target item.
+     * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
      * <p>
      * If the item is already present in the data provider, then it is moved.
      * <p>
@@ -102,6 +140,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Adds an item before the given target item.
      * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
+     * <p>
      * If the item is already present in the data provider, then it is moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
@@ -121,30 +162,10 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V addItemBefore(T item, T before);
 
     /**
-     * Finds an item equal to {@code item} in the non-filtered data set and
-     * replaces it with {@code item}.
-     * <p>
-     * By default, {@code equals} method implementation of the item is used for
-     * identity check. If a custom data provider is used, then the
-     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
-     * identity can be set up with a
-     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
-     *
-     * @param item
-     *            item containing updated state
-     * @return this ListDataView instance
-     *
-     * @throws UnsupportedOperationException
-     *             if backing collection doesn't support modification
-     * @throws IllegalArgumentException
-     *             if collection is not a list
-     *
-     * @see #setIdentifierProvider(IdentifierProvider)
-     */
-    V updateItem(T item);
-
-    /**
      * Adds multiple items to the data list.
+     * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
      * <p>
      * Any items that already present in the data provider are moved to the end.
      *
@@ -163,6 +184,8 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Adds multiple items after the given target item. The full collection is
      * added in order after the target.
      * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
      * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
@@ -185,6 +208,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
      * Adds multiple items before the given target item. The full collection is
      * added in order before the target.
      * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
+     * <p>
      * Any items that already present in the data provider are moved.
      * <p>
      * Note! Item is added to the unfiltered and unsorted List.
@@ -205,6 +231,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Remove an item from the data list.
+     * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
      *
      * @param item
      *            item to remove
@@ -218,6 +247,9 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
 
     /**
      * Remove multiple items from the data list.
+     * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable data
+     * structure will throw an exception.
      *
      * @param items
      *            collection of items to remove

@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -26,15 +27,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
@@ -85,7 +90,8 @@ public class TaskRunNpmInstallTest {
 
     protected TaskRunNpmInstall createTask() {
         return new TaskRunNpmInstall(getClassFinder(), nodeUpdater, false,
-                false);
+                false, FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
     }
 
     @Test
@@ -98,6 +104,7 @@ public class TaskRunNpmInstallTest {
 
         Mockito.verify(logger).info(getRunningMsg());
     }
+
     @Test
     public void runNpmInstall_nodeModulesContainsStaging_npmInstallIsExecuted()
             throws ExecutionFailedException {
@@ -176,8 +183,14 @@ public class TaskRunNpmInstallTest {
         nodeUpdater.modified = false;
         task.execute();
 
-        Mockito.verify(logger)
-                .info("Skipping `" + getToolName() + " install`.");
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(logger).info(captor.capture(),
+                Mockito.matches(getToolName()),
+                Mockito.matches(nodeModules.getAbsolutePath()), Mockito.any(),
+                Mockito.matches(Constants.PACKAGE_JSON));
+        Assert.assertEquals(
+                "Skipping `{} install` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
+                captor.getValue());
     }
 
     @Test
@@ -230,7 +243,9 @@ public class TaskRunNpmInstallTest {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(new TaskRunNpmInstall(
-                getClassFinder(), nodeUpdater, false, true));
+                getClassFinder(), nodeUpdater, false, true,
+                FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
     }
 
     @Test
@@ -250,8 +265,8 @@ public class TaskRunNpmInstallTest {
         Assert.assertTrue("Local has file was not created after install.",
                 localHashFile.exists());
 
-        String fileContent = FileUtils
-                .readFileToString(localHashFile, UTF_8.name());
+        String fileContent = FileUtils.readFileToString(localHashFile,
+                UTF_8.name());
         JsonObject localHash = Json.parse(fileContent);
         Assert.assertNotEquals("We should have a non empty hash key", "",
                 localHash.getString(HASH_KEY));
@@ -275,15 +290,15 @@ public class TaskRunNpmInstallTest {
     }
 
     /**
-     * Update the vaadin package hash to match dependencies.
-     * The hash is calculated from dependencies and devDependencies
-     * but not from the vaadin object. We copy the vaadin object dependencies
-     * and calculate the hash, then we remove the dependencies and
-     * devDependencies to not have to install anything for the test to keep the
-     * running time in ~1.4s instead of ~50s
+     * Update the vaadin package hash to match dependencies. The hash is
+     * calculated from dependencies and devDependencies but not from the vaadin
+     * object. We copy the vaadin object dependencies and calculate the hash,
+     * then we remove the dependencies and devDependencies to not have to
+     * install anything for the test to keep the running time in ~1.4s instead
+     * of ~50s
      *
      * @param packageJson
-     *         package.json json object
+     *            package.json json object
      */
     public void updatePackageHash(JsonObject packageJson) {
         final JsonObject vaadinDep = packageJson.getObject(VAADIN_DEP_KEY)

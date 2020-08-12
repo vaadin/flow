@@ -23,7 +23,6 @@ import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Future;
-import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Negative;
@@ -33,7 +32,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import javax.validation.constraints.Past;
-import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -42,6 +40,8 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import com.vaadin.flow.server.connect.Endpoint;
 
@@ -93,10 +93,22 @@ public class TsFormEndpoint {
         @Size(min = 1) String size1;
         @Digits(integer=5, fraction = 2) String digits;
         @Past LocalDate past;
-        @PastOrPresent LocalTime pastOrPresent;
         @Future LocalDate future;
-        @FutureOrPresent LocalTime futureOrPresent;
+        LocalTime localTime;
         @Pattern(regexp = "\\d+\\..+") String pattern;
         List<MyEntity> children;
+        String[] stringArray;
+        Number[][] numberMatrix;
+        MyEntity[][] entityMatrix;
+        Map<String, String> stringMap;
+        Map<String, MyBaz> entityMap;
+        Optional<String> optionalString;
+        Optional<MyEntity> optionalEntity;
+        Optional<List<Optional<String>>> optionalList;
+        Optional<Optional<String>[][]> optionalMatrix;
+        @Nullable String nullableString;
+        @Nullable MyEntity nullableEntity;
+        @Nullable List<Optional<String>> nullableList;
+        @Nullable Optional<String>[][] nullableMatrix;
     }
 }

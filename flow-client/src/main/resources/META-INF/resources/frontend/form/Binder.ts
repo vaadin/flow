@@ -1,9 +1,8 @@
 import {BinderNode} from "./BinderNode";
 import {
+  _parent,
   AbstractModel,
-  HasValue,
-  ModelConstructor,
-  parentSymbol
+  ModelConstructor
 } from "./Models";
 import {
   runValidator,
@@ -13,122 +12,186 @@ import {
   ValueError
 } from "./Validation";
 
-import { FieldStrategy, getDefaultFieldStrategy } from "./Field";
+import {FieldStrategy, getDefaultFieldStrategy} from "./Field";
 
-const submittingSymbol = Symbol('submitting');
-const defaultValueSymbol = Symbol('defaultValue');
-const valueSymbol = Symbol('value');
-const emptyValueSymbol = Symbol('emptyValue');
-const onChangeSymbol = Symbol('onChange');
-const onSubmitSymbol = Symbol('onSubmit');
-const validationsSymbol = Symbol('validations');
-const validatingSymbol = Symbol('validating');
-const validationRequestSymbol = Symbol('validationRequest');
+const _submitting = Symbol('submitting');
+const _defaultValue = Symbol('defaultValue');
+const _value = Symbol('value');
+const _emptyValue = Symbol('emptyValue');
+const _onChange = Symbol('onChange');
+const _onSubmit = Symbol('onSubmit');
+const _validations = Symbol('validations');
+const _validating = Symbol('validating');
+const _validationRequestSymbol = Symbol('validationRequest');
 
+/**
+ * A Binder controls all aspects of a single form. 
+ * Typically it is used to get and set the form value, 
+ * access the form model, validate, reset, and submit the form.
+ * 
+ * @param <T> is the type of the value that binds to a form
+ * @param <M> is the type of the model that describes the structure of the value
+ */
 export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
-  private [defaultValueSymbol]: T;
-  private [valueSymbol]: T;
-  private [emptyValueSymbol]: T;
-  private [submittingSymbol]: boolean = false;
-  private [validatingSymbol]: boolean = false;
-  private [validationRequestSymbol]: Promise<void> | undefined = undefined;
-  private [onChangeSymbol]: (oldValue?: T) => void;
-  private [onSubmitSymbol]: (value: T) => Promise<T|void>;
+  private [_defaultValue]: T;
+  private [_value]: T;
+  private [_emptyValue]: T;
+  private [_submitting]: boolean = false;
+  private [_validating]: boolean = false;
+  private [_validationRequestSymbol]: Promise<void> | undefined = undefined;
+  private [_onChange]: (oldValue?: T) => void;
+  private [_onSubmit]: (value: T) => Promise<T|void>;
 
-  private [validationsSymbol]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> = new Map();
+  private [_validations]: Map<AbstractModel<any>, Map<Validator<any>, Promise<ReadonlyArray<ValueError<any>>>>> = new Map();
 
+  /**
+   * 
+   * @param context The form view component instance to update.
+   * @param Model The constructor (the class reference) of the form model. The Binder instantiates the top-level model
+   * @param config The options object, which can be used to config the onChange and onSubmit callbacks.
+   * 
+   * ```
+   * binder = new Binder(orderView, OrderModel);
+   * or
+   * binder = new Binder(orderView, OrderModel, {onSubmit: async (order) => {endpoint.save(order)}});
+   * ```
+   */
   constructor(
     public context: Element,
     Model: ModelConstructor<T, M>,
     config?: BinderConfiguration<T>
   ) {
-    super(new Model({value: Model.createEmptyValue()}, 'value'));
-    this[emptyValueSymbol] = (this.model[parentSymbol] as HasValue<T>).value;
+    super(new Model({value: undefined}, 'value', false));
+    this[_emptyValue] = (this.model[_parent] as {value: T}).value;
     // @ts-ignore
-    this.model[parentSymbol] = this;
+    this.model[_parent] = this;
 
     if (typeof (context as any).requestUpdate === 'function') {
-      this[onChangeSymbol] = () => (context as any).requestUpdate();
+      this[_onChange] = () => (context as any).requestUpdate();
     }
-    this[onChangeSymbol] = config?.onChange || this[onChangeSymbol];
-    this[onSubmitSymbol] = config?.onSubmit || this[onSubmitSymbol];
-    this.reset(this[emptyValueSymbol]);
+    this[_onChange] = config?.onChange || this[_onChange];
+    this[_onSubmit] = config?.onSubmit || this[_onSubmit];
+    this.read(this[_emptyValue]);
   }
 
+  /**
+   * The initial value of the form, before any fields are edited by the user.
+   */
   get defaultValue() {
-    return this[defaultValueSymbol];
+    return this[_defaultValue];
   }
 
   set defaultValue(newValue) {
-    this[defaultValueSymbol] = newValue;
+    this[_defaultValue] = newValue;
   }
 
+  /**
+   * The current value of the form.
+   */
   get value() {
-    return this[valueSymbol];
+    return this[_value];
   }
 
   set value(newValue) {
-    if (newValue === this[valueSymbol]) {
+    if (newValue === this[_value]) {
       return;
     }
 
-    const oldValue = this[valueSymbol];
-    this[valueSymbol] = newValue;
+    const oldValue = this[_value];
+    this[_value] = newValue;
     this.update(oldValue);
     this.updateValidation();
   }
 
-  reset(defaultValue?: T) {
-    if (defaultValue !== undefined) {
-      this.defaultValue = defaultValue;
+  /**
+   * Read the given value into the form and clear validation errors
+   *
+   * @param value Sets the argument as the new default
+   * value before resetting, otherwise the previous default is used.
+   */
+  read(value: T) {
+    this.defaultValue = value;
+    if (
+      // Skip when no value is set yet (e. g., invoked from constructor)
+      this.value
+      // Clear validation state, then proceed if update is needed
+      && this.clearValidation()
+      // When value is dirty, another update is coming from invoking the value
+      // setter below, so we skip this one to prevent duplicate updates
+      && this.value === value) {
+      this.update(this.value);
     }
+
     this.value = this.defaultValue;
   }
 
-  clear() {
-    this.value = this[emptyValueSymbol];
+  /**
+   * Reset the form to the previous value
+   */
+  reset(){
+    this.read(this[_defaultValue])
   }
 
+  /**
+   * Sets the form to empty value, as defined in the Model.
+   */
+  clear() {
+    this.read(this[_emptyValue]);
+  }
+
+  /**
+   * Submit the current form value to a predefined
+   * onSubmit callback.
+   * 
+   * It's a no-op if the onSubmit callback is undefined.
+   */
   async submit(): Promise<T|void>{
-    if(this[onSubmitSymbol]!==undefined){
-      this.submitTo(this[onSubmitSymbol]);
+    if(this[_onSubmit]!==undefined){
+      this.submitTo(this[_onSubmit]);
     }
   }
 
+  /**
+   * Submit the current form value to callback
+   * 
+   * @param endpointMethod the callback function
+   */
   async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
-    const errors =await this.validate();
+    const errors = await this.validate();
     if (errors.length) {
       throw new ValidationError(errors);
     }
 
-    this[submittingSymbol] = true;
+    this[_submitting] = true;
     this.update(this.value);
     try {
       return await endpointMethod.call(this.context, this.value);
     } catch (error) {
       if (error.validationErrorData && error.validationErrorData.length) {
-        const valueErrors:Array<ValueError<any>> = [];
+        const valueErrors: Array<ValueError<any>> = [];
         error.validationErrorData.forEach((data:any) => {
           const res = /Object of type '(.+)' has invalid property '(.+)' with value '(.+)', validation error: '(.+)'/.exec(data.message);
           const [property, value, message] = res ? res.splice(2) : [data.parameterName, undefined, data.message];
           valueErrors.push({ property, value, validator: new ServerValidator(message), message });
         });
+        this.setErrorsWithDescendants(valueErrors);
         error = new ValidationError(valueErrors);
       }
       throw (error);
     } finally {
-      this[submittingSymbol] = false;
-      this.reset(this.value);
+      this[_submitting] = false;
+      this.defaultValue = this.value;
+      this.update(this.value);
     }
   }
 
   async requestValidation<NT, NM extends AbstractModel<NT>>(model: NM, validator: Validator<NT>): Promise<ReadonlyArray<ValueError<NT>>> {
     let modelValidations: Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
-    if (this[validationsSymbol].has(model)) {
-      modelValidations = this[validationsSymbol].get(model) as Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
+    if (this[_validations].has(model)) {
+      modelValidations = this[_validations].get(model) as Map<Validator<NT>, Promise<ReadonlyArray<ValueError<NT>>>>;
     } else {
       modelValidations = new Map();
-      this[validationsSymbol].set(model, modelValidations);
+      this[_validations].set(model, modelValidations);
     }
 
     await this.performValidation();
@@ -143,44 +206,59 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
 
     modelValidations.delete(validator);
     if (modelValidations.size === 0) {
-      this[validationsSymbol].delete(model);
+      this[_validations].delete(model);
     }
-    if (this[validationsSymbol].size === 0) {
+    if (this[_validations].size === 0) {
       this.completeValidation();
     }
 
     return valueErrors;
   }
 
+  /**
+   * Determines and returns the field directive strategy for the bound element. 
+   * Override to customise the binding strategy for a component. 
+   * The Binder extends BinderNode, see the inherited properties and methods below.
+   * 
+   * @param elm the bound element 
+   */
   getFieldStrategy(elm: any): FieldStrategy {
     return getDefaultFieldStrategy(elm);
   }
 
+  /**
+   * Indicates the submitting status of the form.
+   * True if the form was submitted, but the submit promise is not resolved yet.
+   */
   get submitting() {
-    return this[submittingSymbol];
+    return this[_submitting];
   }
 
+  /**
+   * Indicates the validating status of the form.
+   * True when there is an ongoing validation.
+   */
   get validating() {
-    return this[validatingSymbol];
+    return this[_validating];
   }
 
   protected performValidation(): Promise<void> | void {
-    if (!this[validationRequestSymbol]) {
-      this[validatingSymbol] = true;
-      this[validationRequestSymbol] = Promise.resolve().then(() => {
-        this[validationRequestSymbol] = undefined;
+    if (!this[_validationRequestSymbol]) {
+      this[_validating] = true;
+      this[_validationRequestSymbol] = Promise.resolve().then(() => {
+        this[_validationRequestSymbol] = undefined;
       });
     }
-    return this[validationRequestSymbol];
+    return this[_validationRequestSymbol];
   }
 
   protected completeValidation() {
-    this[validatingSymbol] = false;
+    this[_validating] = false;
   }
 
   protected update(oldValue: T) {
-    if(this[onChangeSymbol]){
-      this[onChangeSymbol].call(this.context, oldValue);
+    if(this[_onChange]){
+      this[_onChange].call(this.context, oldValue);
     }
   }
 }

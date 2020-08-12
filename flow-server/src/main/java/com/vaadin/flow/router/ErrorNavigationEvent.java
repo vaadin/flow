@@ -68,7 +68,7 @@ public class ErrorNavigationEvent extends NavigationEvent {
      * @param state
      *            includes navigation state info including for example the
      *            scroll position and the complete href of the RouterLink
-s     */
+     */
     public ErrorNavigationEvent(Router router, Location location, UI ui,
             NavigationTrigger trigger, ErrorParameter<?> errorParameter,
             JsonValue state) {

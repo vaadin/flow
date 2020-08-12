@@ -34,16 +34,16 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class AbstractListDataViewListenerTest {
 
     @Test
-    public void addSizeChangeListener_sizeChanged_listenersAreNotified() {
+    public void addItemCountChangeListener_itemsCountChanged_listenersAreNotified() {
         String[] items = new String[] { "item1", "item2", "item3", "item4" };
         HasListDataView<String, ? extends AbstractListDataView<String>> component =
                 getVerifiedComponent();
         AbstractListDataView<String> dataView = component
-                .setDataSource(new ArrayList<>(Arrays.asList(items)));
+                .setItems(new ArrayList<>(Arrays.asList(items)));
 
         AtomicInteger invocationCounter = new AtomicInteger(0);
 
-        dataView.addSizeChangeListener(
+        dataView.addItemCountChangeListener(
                 event -> invocationCounter.incrementAndGet());
 
         UI ui = new MockUI();
@@ -59,65 +59,70 @@ public abstract class AbstractListDataViewListenerTest {
         fakeClientCall(ui);
 
         Assert.assertEquals(
-                "Unexpected count of size change listener invocations occurred",
-                1, invocationCounter.get());
+                "Unexpected number of item count change listener invocations " +
+                        "occurred", 1, invocationCounter.get());
     }
 
     @Test
-    public void addSizeChangeListener_sizeNotChanged_listenersAreNotNotified() {
+    public void addItemCountChangeListener_itemsCountNotChanged_listenersAreNotNotified() {
         String[] items = new String[] { "item1", "item2", "item3", "item4" };
         HasListDataView<String, ? extends AbstractListDataView<String>> component =
                 getVerifiedComponent();
         AbstractListDataView<String> dataView = component
-                .setDataSource(items);
+                .setItems(items);
 
         AtomicBoolean invocationChecker = new AtomicBoolean(false);
 
         UI ui = new MockUI();
         ui.add((Component) component);
 
-        // Make initial size change
+        // Make initial item count change
         fakeClientCall(ui);
 
-        dataView.addSizeChangeListener(
+        dataView.addItemCountChangeListener(
                 event -> invocationChecker.getAndSet(true));
 
         dataView.setSortComparator(String::compareTo);
 
-        // Make size change after sort. No event should be sent as size stays the same.
+        // Make item count change after sort. No event should be sent as item
+        // count stays the same.
         fakeClientCall(ui);
 
-        Assert.assertFalse("Unexpected size change listener invocation",
+        Assert.assertFalse("Unexpected item count listener invocation",
                 invocationChecker.get());
     }
 
     @Test
-    public void addSizeChangeListener_sizeChanged_newSizeSuppliedInEvent() {
+    public void addItemCountChangeListener_itemsCountChanged_newItemCountSuppliedInEvent() {
         String[] items = new String[] { "item1", "item2", "item3", "item4" };
         HasListDataView<String, ? extends AbstractListDataView<String>> component =
                 getVerifiedComponent();
         AbstractListDataView<String> dataView = component
-                .setDataSource(items);
+                .setItems(items);
 
         AtomicBoolean invocationChecker = new AtomicBoolean(false);
 
         UI ui = new MockUI();
         ui.add((Component) component);
 
-        // Make initial size event
+        // Make initial item count event
         fakeClientCall(ui);
 
-        dataView.addSizeChangeListener(event -> {
-            Assert.assertEquals("Unexpected data size", 1, event.getSize());
+        dataView.addItemCountChangeListener(event -> {
+            Assert.assertEquals("Unexpected item count", 1,
+                    event.getItemCount());
+            Assert.assertFalse(event.isItemCountEstimated());
             invocationChecker.set(true);
         });
 
         dataView.setFilter("item1"::equals);
 
-        // Size change should be sent as size has changed after filtering.
+        // Item count change should be sent as item count has changed after
+        // filtering.
         fakeClientCall(ui);
 
-        Assert.assertTrue("Size change never called", invocationChecker.get());
+        Assert.assertTrue("Item count change never called",
+                invocationChecker.get());
     }
 
     protected abstract HasListDataView<String, ? extends AbstractListDataView<String>> getComponent();

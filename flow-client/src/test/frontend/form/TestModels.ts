@@ -1,8 +1,10 @@
 /* tslint:disable:max-classes-per-file */
 // API to test
 import {
+  _getPropertyModel,
   ArrayModel,
   BooleanModel,
+  ModelConstructor,
   NumberModel,
   ObjectModel,
   Pattern,
@@ -17,7 +19,9 @@ export interface IdEntity {
 }
 export class IdEntityModel<T extends IdEntity = IdEntity> extends ObjectModel<T> {
   static createEmptyValue: () => IdEntity;
-  readonly idString = new StringModel(this, 'idString');
+  get idString(): StringModel {
+    return this[_getPropertyModel]('idString', StringModel, [false]);
+  }
 }
 
 export interface Product extends IdEntity {
@@ -27,9 +31,18 @@ export interface Product extends IdEntity {
 }
 export class ProductModel<T extends Product = Product> extends IdEntityModel<T> {
   static createEmptyValue: () => Product;
-  readonly description = new StringModel(this, 'description', new Required());
-  readonly price = new NumberModel(this, 'price', new Positive());
-  readonly isInStock = new BooleanModel(this, 'isInStock');
+
+  get description() {
+    return this[_getPropertyModel]('description', StringModel, [false, new Required()]);
+  }
+
+  get price() {
+    return this[_getPropertyModel]('price', NumberModel, [false, new Positive()]);
+  }
+
+  get isInStock() {
+    return this[_getPropertyModel]('isInStock', BooleanModel, [false]);
+  }
 }
 
 interface Customer extends IdEntity {
@@ -38,8 +51,14 @@ interface Customer extends IdEntity {
 }
 export class CustomerModel<T extends Customer = Customer> extends IdEntityModel<T> {
   static createEmptyValue: () => Customer;
-  readonly fullName = new StringModel(this, 'fullName', new Size({min: 4}), new Required());
-  readonly nickName = new StringModel(this, 'nickName', new Pattern("....*"));
+
+  get fullName() {
+    return this[_getPropertyModel]('fullName', StringModel, [false, new Size({min: 4}), new Required()]) as StringModel;
+  }
+
+  get nickName() {
+    return this[_getPropertyModel]('nickName', StringModel, [false, new Pattern("....*")]) as StringModel;
+  }
 }
 
 export interface Order extends IdEntity {
@@ -50,10 +69,22 @@ export interface Order extends IdEntity {
 }
 export class OrderModel<T extends Order = Order> extends IdEntityModel<T> {
   static createEmptyValue: () => Order;
-  readonly customer = new CustomerModel(this, 'customer', new Required());
-  readonly notes = new StringModel(this, 'notes', new Required());
-  readonly priority = new NumberModel(this, 'priority');
-  readonly products = new ArrayModel(this, 'products', ProductModel);
+
+  get customer(): CustomerModel {
+    return this[_getPropertyModel]('customer', CustomerModel, [false, new Required()]);
+  }
+
+  get notes(): StringModel {
+    return this[_getPropertyModel]('notes', StringModel, [false, new Required()]);
+  }
+
+  get priority(): NumberModel {
+    return this[_getPropertyModel]('priority', NumberModel, [false]);
+  }
+
+  get products(): ArrayModel<Product, ProductModel> {
+    return this[_getPropertyModel]('products', ArrayModel as ModelConstructor<ReadonlyArray<Product>, ArrayModel<Product, ProductModel>>, [false, ProductModel, [false]]);
+  }
 }
 
 export interface TestEntity {
@@ -63,13 +94,57 @@ export interface TestEntity {
   fieldObject: object;
   fieldArrayString: string[];
   fieldArrayModel: IdEntity[];
+  fieldMatrixNumber: number[][];
+  fieldAny: any;
 }
 export class TestModel<T extends TestEntity = TestEntity> extends ObjectModel<T> {
   static createEmptyValue: () => TestEntity;
-  fieldString = new StringModel(this, 'fieldString');
-  fieldNumber = new NumberModel(this, 'fieldNumber');
-  fieldBoolean = new BooleanModel(this, 'fieldBoolean');
-  fieldObject = new ObjectModel(this, 'fieldObject');
-  fieldArrayString = new ArrayModel(this, 'fieldArrayString', StringModel);
-  fieldArrayModel = new ArrayModel(this, 'fieldArrayModel', IdEntityModel);
+
+  get fieldString() {
+    return this[_getPropertyModel]('fieldString', StringModel, [false]) as StringModel;
+  }
+
+  get fieldNumber() {
+    return this[_getPropertyModel]('fieldNumber', NumberModel, [false]) as NumberModel;
+  }
+
+  get fieldBoolean() {
+    return this[_getPropertyModel]('fieldBoolean', BooleanModel, [false]) as BooleanModel;
+  }
+
+  get fieldObject() {
+    return this[_getPropertyModel]('fieldObject', ObjectModel, [false]) as ObjectModel<object>;
+  }
+
+  get fieldArrayString() {
+    return this[_getPropertyModel]('fieldArrayString', ArrayModel, [false, StringModel, [false]]) as ArrayModel<string, StringModel>;
+  }
+
+  get fieldArrayModel() {
+    return this[_getPropertyModel]('fieldArrayModel', ArrayModel, [false, IdEntityModel, [false]]) as ArrayModel<IdEntity, IdEntityModel>;
+  }
+
+  get fieldMatrixNumber() {
+    return this[_getPropertyModel]('fieldMatrixNumber', ArrayModel, [false, ArrayModel, [false, NumberModel, [false, new Positive()]]]) as ArrayModel<ReadonlyArray<number>, ArrayModel<number, NumberModel>>;
+  }
+
+  get fieldAny() {
+    return this[_getPropertyModel]('fieldAny', ObjectModel, [false]) as ObjectModel<any>;
+  }
+}
+
+export interface Employee extends IdEntity {
+  fullName: string;
+  supervisor?: Employee;
+}
+export class EmployeeModel<T extends Employee = Employee> extends IdEntityModel<T> {
+  static createEmptyValue: () => Employee;
+
+  get fullName() {
+    return this[_getPropertyModel]('fullName', StringModel, [false]) as StringModel;
+  }
+
+  get supervisor(): EmployeeModel {
+    return this[_getPropertyModel]('supervisor', EmployeeModel, [true]);
+  }
 }

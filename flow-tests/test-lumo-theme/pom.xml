@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-lumo-theme</artifactId>
     <name>Flow Lumo theme tests</name>

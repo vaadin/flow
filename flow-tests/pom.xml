@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>3.2-SNAPSHOT</version>
+        <version>4.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -295,6 +295,7 @@
                 <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
+                <module>test-jetty-reload</module>
 
                 <module>test-scalability</module>
                 <module>test-memory-leaks</module>

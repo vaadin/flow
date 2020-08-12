@@ -2,12 +2,10 @@
 
 import { directive, Part, PropertyPart } from "lit-html";
 import {
+  _fromString,
   AbstractModel,
-  fromStringSymbol,
   getBinderNode
 } from "./Models";
-
-export const fieldSymbol = Symbol('field');
 
 interface Field {
   required: boolean,
@@ -86,6 +84,16 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
   return elm.constructor.version ? new VaadinFieldStrategy(elm) : new GenericFieldStrategy(elm);
 }
 
+/**
+ * Binds a form field component into a model.
+ * 
+ * Exmaple usage:
+ * 
+ * ```
+ * <vaadin-text-field ...="${field(model.name)}">
+ * </vaadin-text-field>
+ * ```
+ */
 export const field = directive(<T>(
   model: AbstractModel<T>,
   effect?: (element: Element) => void
@@ -115,7 +123,7 @@ export const field = directive(<T>(
 
     const updateValueFromElement = () => {
       fieldState.value = fieldState.strategy.value;
-      const convert = typeof fieldState.value === 'string' && (model as any)[fromStringSymbol];
+      const convert = typeof fieldState.value === 'string' && (model as any)[_fromString];
       binderNode.value = convert ? convert(fieldState.value) : fieldState.value;
       if (effect !== undefined) {
         effect.call(element, element);
@@ -150,7 +158,7 @@ export const field = directive(<T>(
     fieldState.strategy.required = fieldState.required = required;
   }
 
-  const firstError = binderNode.ownErrors[0];
+  const firstError = binderNode.ownErrors ? binderNode.ownErrors[0] : undefined;
   const errorMessage = firstError && firstError.message || '';
   if (errorMessage !== fieldState.errorMessage) {
     fieldState.strategy.errorMessage = fieldState.errorMessage = errorMessage;

@@ -12,9 +12,7 @@ import { expect } from "chai";
 import {
   Binder,
   field,
-  getName,
   Required,
-  setValue,
   ValidationError,
   Validator,
   ValueError
@@ -27,6 +25,7 @@ import { css, customElement, html, LitElement, query} from 'lit-element';
 @customElement('order-view')
 class OrderView extends LitElement {
   binder = new Binder(this, OrderModel);
+  @query('#submitting') submitting!: HTMLInputElement;
   @query('#notes') notes!: HTMLInputElement;
   @query('#fullName') fullName!: HTMLInputElement;
   @query('#nickName') nickName!: HTMLInputElement;
@@ -48,6 +47,7 @@ class OrderView extends LitElement {
         <input id="description${index}" ...="${field(description)}" />
         <input id="price${index}" ...="${field(price)}">
       </div>`)}
+    <div id="submitting">${this.binder.submitting}</div>
     `;
   }
 }
@@ -101,6 +101,21 @@ suite("form/Validation", () => {
     });
   });
 
+  suite('clearing', () => {
+    ['reset', 'clear'].forEach(methodName => {
+      test(`should reset validation on ${methodName}`, async() => {
+        await binder.validate();
+        expect(binder.invalid).to.be.true;
+        expect(binder.for(binder.model.customer.fullName).invalid).to.be.true;
+
+        (binder as any)[methodName]();
+
+        expect(binder.invalid).to.be.false;
+        expect(binder.for(binder.model.customer.fullName).invalid).to.be.false;
+      });
+    });
+  });
+
   suite('submitTo', () => {
     test("should be able to call submit() if onSubmit is pre configured", async () => {
       const binder = new Binder(view, OrderModel, {
@@ -121,8 +136,8 @@ suite("form/Validation", () => {
     });
 
     test("should re-throw on server failure", async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value = 'foobar';
+      binder.for(binder.model.notes).value = 'whatever';
       try {
         await binder.submitTo(async() => {throw new Error('whatever')});
         expect.fail();
@@ -132,8 +147,8 @@ suite("form/Validation", () => {
     });
 
     test("should wrap server validation error", async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value = 'foobar';
+      binder.for(binder.model.notes).value = 'whatever';
       try {
         await binder.submitTo(async() => {throw {
           message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
@@ -151,8 +166,8 @@ suite("form/Validation", () => {
     });
 
     test("should wrap server validation error with any message", async () => {
-      setValue(binder.model.customer.fullName, 'foobar');
-      setValue(binder.model.notes, 'whatever');
+      binder.for(binder.model.customer.fullName).value = 'foobar';
+      binder.for(binder.model.notes).value = 'whatever';
       try {
         await binder.submitTo(async() => {throw {
           message: "Validation error in endpoint 'MyEndpoint' method 'saveMyBean'",
@@ -171,7 +186,7 @@ suite("form/Validation", () => {
 
     test("record level cross field validation", async () => {
       const byPropertyName = (value: string) => ((error: ValueError<any>) => {
-        const propertyName = typeof error.property === 'string' ? error.property : getName(error.property);
+        const propertyName = typeof error.property === 'string' ? error.property : binder.for(error.property).name;
         return propertyName === value;
       });
 
@@ -187,13 +202,13 @@ suite("form/Validation", () => {
       };
       binder.addValidator(recordValidator);
 
-      setValue(binder.model.customer.fullName, "foo");
+      binder.for(binder.model.customer.fullName).value = 'foo';
       await binder.validate().then(errors => {
         const crossFieldError = errors.find(error => error.validator === recordValidator);
         expect(crossFieldError, 'recordValidator should not cause an error').to.be.undefined;
       });
 
-      setValue(binder.model.customer.nickName, "foo");
+      binder.for(binder.model.customer.nickName).value = 'foo';
       return binder.validate().then(errors => {
         const crossFieldError = errors.find(byPropertyName('customer.nickName'));
         expect(crossFieldError).not.to.be.undefined;
@@ -253,7 +268,7 @@ suite("form/Validation", () => {
     });
 
     test("should fail after adding validators to properties if property is not required but it has a value", async () => {
-      setValue(binder.model.idString, 'bar');
+      binder.for(binder.model.idString).value = 'bar';
       binder.for(binder.model.idString).addValidator({message: 'foo', validate: () => false});
       const errors = await binder.validate();
       expect(errors[0].message).to.equal("foo");
@@ -339,7 +354,7 @@ suite("form/Validation", () => {
 
     beforeEach(async () => {
       orderView = document.createElement('order-view') as OrderView;
-      binder = new Binder(orderView, OrderModel);
+      binder = orderView.binder;
       document.body.appendChild(orderView);
       return sleep(10);
     });
@@ -477,6 +492,73 @@ suite("form/Validation", () => {
       expect(item.products[0].price).to.be.equal(10);
       expect(item.notes).to.be.equal('foo');
       expect(item.customer.fullName).to.be.equal('manuel');
+    });
+
+    test('should display server validation error', async () => {
+      binder.for(binder.model.customer.fullName).value='foobar';
+      binder.for(binder.model.notes).value='whatever';
+      const requestUpdateSpy = sinon.spy(orderView, 'requestUpdate');
+      try {
+        await binder.submitTo(async () => {
+          requestUpdateSpy.resetHistory();
+          throw {
+            message: 'Validation error in endpoint "MyEndpoint" method "saveMyBean"',
+            validationErrorData: [{
+              message: 'Invalid notes',
+              parameterName: 'notes',
+            }]
+          }
+        });
+        expect.fail();
+      } catch (error) {
+        sinon.assert.calledOnce(requestUpdateSpy);
+        await orderView.updateComplete;
+        expect(binder.for(binder.model.notes).invalid).to.be.true;
+        expect(binder.for(binder.model.notes).ownErrors[0].message)
+          .to.equal('Invalid notes');
+      }
+    });
+
+    test("should display submitting state during submittion", async () => {
+      binder.for(binder.model.customer.fullName).value = 'Jane Doe';
+      binder.for(binder.model.notes).value = 'foo';
+      await orderView.updateComplete;
+      expect(binder.submitting).to.be.false;
+      const requestUpdateSpy = sinon.spy(orderView, 'requestUpdate');
+
+      const endpoint = sinon.stub().callsFake(async() => {
+        sinon.assert.called(requestUpdateSpy);
+        expect(binder.submitting).to.be.true;
+        await orderView.updateComplete;
+        expect(orderView.submitting.textContent).to.equal('true');
+        requestUpdateSpy.resetHistory();
+      });
+      await binder.submitTo(endpoint);
+
+      sinon.assert.called(endpoint);
+      sinon.assert.called(requestUpdateSpy);
+      expect(binder.submitting).to.be.false;
+      await orderView.updateComplete;
+      expect(orderView.submitting.textContent).to.equal('false');
+    });
+
+    // https://github.com/vaadin/flow/issues/8688
+    test("should update binder properties after submit when a field changes value", async () => {
+      try {
+        await orderView.binder.submitTo(async (item) => item);
+        expect.fail();
+      } catch (error) {
+      }
+      const errorsOnSubmit = binder.errors.length;
+
+      orderView.notes.value = 'foo';
+      await fireEvent(orderView.notes, 'change');
+      
+      const numberOfValidatorsOnNotesField = binder.for(binder.model.notes).validators.length;
+
+      if(errorsOnSubmit>=1){
+        assert.equal(errorsOnSubmit-numberOfValidatorsOnNotesField, binder.errors.length);
+      }
     });
   });
 

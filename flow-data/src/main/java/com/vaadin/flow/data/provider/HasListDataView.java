@@ -19,12 +19,12 @@ import java.io.Serializable;
 import java.util.Collection;
 
 /**
- * An interface for components that accept setting in-memory data sources and
- * returns a {@link ListDataView} that provides information and allows
- * operations on the data.
+ * An interface for components that accept setting items in-memory and returns a
+ * {@link ListDataView} that provides information and allows operations on the
+ * items.
  *
  * @param <T>
- *            data type
+ *            item type
  * @param <V>
  *            DataView type
  * @since
@@ -34,44 +34,44 @@ public interface HasListDataView<T, V extends ListDataView<T, ?>>
     /**
      * Sets a ListDataProvider for the component to use and returns a
      * {@link ListDataView} that provides information and allows operations on
-     * the data.
+     * the items.
      *
      * @param dataProvider
-     *            ListDataProvider providing data to the component.
-     * @return ListDataView providing access to the data
+     *            ListDataProvider providing items to the component.
+     * @return ListDataView providing access to the items
      */
-    V setDataSource(ListDataProvider<T> dataProvider);
+    V setItems(ListDataProvider<T> dataProvider);
 
     /**
-     * Sets the data from the given Collection and returns a
+     * Sets the items from the given Collection and returns a
      * {@link ListDataView} that provides information and allows operations on
-     * the data.
+     * the items.
      *
      * @param items
-     *            the data items to display, not {@code null}
-     * @return ListDataView providing access to the data
+     *            the items to display, not {@code null}
+     * @return ListDataView providing access to the items
      */
-    default V setDataSource(Collection<T> items) {
-        return setDataSource(DataProvider.ofCollection(items));
+    default V setItems(Collection<T> items) {
+        return setItems(DataProvider.ofCollection(items));
     }
 
     /**
-     * Sets the data items of this listing.
+     * Sets the items of this component.
      *
      * @param items
-     *            the data items to display, not {@code null}
-     * @return ListDataView providing access to the data
+     *            the items to display, not {@code null}
+     * @return ListDataView providing access to the items
      */
-    default V setDataSource(T... items) {
-        return setDataSource(DataProvider.ofItems(items));
+    default V setItems(T... items) {
+        return setItems(DataProvider.ofItems(items));
     }
 
     /**
-     * Get the ListDataView for the component. Throws if the data is not
+     * Get the ListDataView for the component. Throws if the items are not
      * in-memory and should use another data view type like
      * {@code getLazyDataView()}.
      *
-     * @return ListDataView providing access to the data
+     * @return ListDataView providing access to the items
      * @throws IllegalStateException
      *             when list data view is not applicable and
      *             {@code getLazyDataView()} should be used instead

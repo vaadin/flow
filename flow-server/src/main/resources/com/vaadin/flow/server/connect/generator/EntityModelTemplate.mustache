@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 {{#each imports}}
 import {{className}}Model from '{{importPath}}Model';
 {{/each}}
@@ -5,11 +7,9 @@ import {{className}}Model from '{{importPath}}Model';
 import {{{getClassNameFromImports classname ../../imports}}} from './{{{getClassNameFromImports classname ../../imports}}}';
 {{/model}}{{/models}}
 
-// @ts-ignore
-import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType} from '@vaadin/form';
+import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,ModelType,_getPropertyModel} from '@vaadin/form';
 
-// @ts-ignore
-import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,PastOrPresent,Future,FutureOrPresent,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
+import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,Future,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
 
 {{#models}}
 {{#model}}
@@ -22,7 +22,10 @@ export default class {{{getClassNameFromImports classname ../../imports}}}Model<
   {{~^parentSchema}} extends ObjectModel<T> { {{~/parentSchema}}
   static createEmptyValue: () => {{{getClassNameFromImports classname ../../imports}}};
 {{#vars}}
-  public readonly {{name}}{{{getModelType this ../../imports}}} = {{{getModelConstructor this ../../imports}}};
+
+  get {{name}}(): {{{getModelFullType this ../../imports}}} {
+    return this[_getPropertyModel]('{{name}}', {{{getModelArguments this ../../imports}}});
+  }
 {{/vars}}
 }
 {{/model}}

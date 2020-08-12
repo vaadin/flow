@@ -18,6 +18,7 @@ package com.vaadin.flow.server.connect.generator;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
@@ -71,6 +73,8 @@ class SchemaResolver {
             return createOptionalSchema(resolvedType.asReferenceType());
         } else if (isUnhandledJavaType(resolvedType)) {
             return new ObjectSchema();
+        } else if (isTypeOf(resolvedType, Enum.class)) {
+            return createEnumTypeSchema(resolvedType);
         }
         return createUserBeanSchema(resolvedType);
     }
@@ -138,7 +142,7 @@ class SchemaResolver {
 
     private boolean isDateTimeType(ResolvedType resolvedType) {
         return resolvedType.isReferenceType()
-                && isTypeOf(resolvedType, LocalDateTime.class, Instant.class);
+                && isTypeOf(resolvedType, LocalDateTime.class, Instant.class, LocalTime.class);
     }
 
     private boolean isDateType(ResolvedType resolvedType) {
@@ -190,6 +194,21 @@ class SchemaResolver {
                 || type.asReferenceType().getAllAncestors().stream()
                         .map(ResolvedReferenceType::getQualifiedName)
                         .anyMatch(classes::contains);
+    }
+
+    private Schema createEnumTypeSchema(ResolvedType resolvedType) {
+        ResolvedReferenceType type = resolvedType.asReferenceType();
+        List<String> entries = type
+                .getTypeDeclaration().asEnum().getEnumConstants().stream()
+                .map(ResolvedEnumConstantDeclaration::getName)
+                .collect(Collectors.toList());
+        String qualifiedName = type.getQualifiedName();
+        foundTypes.put(qualifiedName, type);
+        StringSchema schema = new StringSchema();
+        schema.name(qualifiedName);
+        schema.setEnum(entries);
+        schema.$ref(getFullQualifiedNameRef(qualifiedName));
+        return schema;
     }
 
     private Schema createUserBeanSchema(ResolvedType resolvedType) {

@@ -57,7 +57,7 @@ import elemental.json.JsonObject;
  */
 public class FrontendTools {
 
-    private static final String DEFAULT_NODE_VERSION = "v12.16.0";
+    public static final String DEFAULT_NODE_VERSION = "v12.16.0";
 
     public static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
@@ -148,6 +148,9 @@ public class FrontendTools {
 
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
+    private final String nodeVersion;
+    private final URI nodeDownloadRoot;
+
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
      * directory to locate the tools and the directory returned by the
@@ -166,8 +169,42 @@ public class FrontendTools {
      */
     public FrontendTools(String baseDir,
             Supplier<String> alternativeDirGetter) {
+        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+    }
+
+    /**
+     * Creates an instance of the class using the {@code baseDir} as a base
+     * directory to locate the tools and the directory returned by the
+     * {@code alternativeDirGetter} as a directory to install tools if they are
+     * not found and use it as an alternative tools location.
+     * <p>
+     * If {@code alternativeDir} is {@code null} tools won't be installed.
+     *
+     *
+     * @param baseDir
+     *            the base directory to locate the tools, not {@code null}
+     * @param alternativeDirGetter
+     *            the getter for a directory where tools will be installed if
+     *            they are not found globally or in the {@code baseDir}, may be
+     *            {@code null}
+     * @param nodeVersion
+     *            The node.js version to be used when node.js is installed automatically
+     *            by Vaadin, for example <code>"v12.16.0"</code>. Use
+     *            {@value #DEFAULT_NODE_VERSION} by default.
+     * @param nodeDownloadRoot
+     *            Download node.js from this URL. Handy in heavily firewalled corporate
+     *            environments where the node.js download can be provided from an intranet
+     *            mirror. Use {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     */
+    public FrontendTools(String baseDir,
+                         Supplier<String> alternativeDirGetter,
+                         String nodeVersion,
+                         URI nodeDownloadRoot) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
+        this.nodeVersion = Objects.requireNonNull(nodeVersion);
+        this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
     }
 
     /**
@@ -210,8 +247,8 @@ public class FrontendTools {
             return file.getAbsolutePath();
         } else {
             getLogger().info("Node not found in {}. Installing node {}.", dir,
-                    DEFAULT_NODE_VERSION);
-            return installNode(DEFAULT_NODE_VERSION, null);
+                    nodeVersion);
+            return installNode(nodeVersion, nodeDownloadRoot);
         }
     }
 
@@ -368,9 +405,9 @@ public class FrontendTools {
 
         proxyList.addAll(readProxySettingsFromSystemProperties());
         proxyList.addAll(
-                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
-        proxyList.addAll(
                 readProxySettingsFromNpmrcFile("user .npmrc", userNpmrc));
+        proxyList.addAll(
+                readProxySettingsFromNpmrcFile("project .npmrc", projectNpmrc));
         proxyList.addAll(readProxySettingsFromEnvironmentVariables());
 
         return proxyList;
@@ -459,7 +496,7 @@ public class FrontendTools {
         if (file == null && installNode) {
             getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
                     cmd, getAlternativeDir());
-            return new File(installNode(DEFAULT_NODE_VERSION, null));
+            return new File(installNode(nodeVersion, nodeDownloadRoot));
         }
         if (file == null) {
             throw new IllegalStateException(String.format(NODE_NOT_FOUND));
@@ -750,5 +787,4 @@ public class FrontendTools {
     private String getAlternativeDir() {
         return alternativeDirGetter.get();
     }
-
 }

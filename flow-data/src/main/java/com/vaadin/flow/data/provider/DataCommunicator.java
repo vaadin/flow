@@ -30,8 +30,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
@@ -44,6 +42,7 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -61,6 +60,7 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class DataCommunicator<T> implements Serializable {
+    public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
@@ -105,6 +105,17 @@ public class DataCommunicator<T> implements Serializable {
 
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
+
+    private CallbackDataProvider.CountCallback<T, ?> countCallback;
+    private int itemCountEstimate = -1;
+    private int itemCountEstimateIncrease = -1;
+    private boolean definedSize = true;
+    private boolean skipCountIncreaseUntilReset;
+    private boolean sizeReset;
+    private int pageSize;
+
+    // Paged queries are enabled by default
+    private boolean pagingEnabled = true;
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
@@ -175,6 +186,8 @@ public class DataCommunicator<T> implements Serializable {
      * It effectively resends all available data.
      */
     public void reset() {
+        skipCountIncreaseUntilReset = false;
+        sizeReset = true;
         resendEntireRange = true;
         dataGenerator.destroyAllData();
         updatedData.clear();
@@ -225,6 +238,10 @@ public class DataCommunicator<T> implements Serializable {
      * The returned consumer can be used to set some other filter value that
      * should be included in queries sent to the data provider. It is only valid
      * until another data provider is set.
+     * <p>
+     * This method also sets the data communicator to defined size - meaning
+     * that the given data provider is queried for size and previous size
+     * estimates are discarded.
      *
      * @param dataProvider
      *            the data provider to set, not <code>null</code>
@@ -241,6 +258,9 @@ public class DataCommunicator<T> implements Serializable {
             DataProvider<T, F> dataProvider, F initialFilter) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
         filter = initialFilter;
+        countCallback = null;
+        definedSize = true;
+        sizeReset = true;
 
         handleDetach();
 
@@ -267,30 +287,272 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * This is the latest DataProvider size informed to the client or fetched
-     * from the DataProvider if client data has not been sent.
+     * This is the latest DataProvider item count informed to the client or
+     * fetched from the DataProvider if client data has not been sent.
      *
-     * @return size of available data
+     * @return count of available items
      */
-    public int getDataSize() {
-        if (resendEntireRange || assumeEmptyClient) {
+    public int getItemCount() {
+        if (isDefinedSize()
+                && (resendEntireRange || assumeEmptyClient || sizeReset)) {
+            // TODO it could be possible to cache the value returned here
+            // and use it next time instead of making another query, unless
+            // the conditions like filter (or another reset) have changed
             return getDataProviderSize();
         }
+        // do not report a stale size or size estimate
+        if (!isDefinedSize() && sizeReset) {
+            return 0;
+        }
         return assumedSize;
+    }
+
+    /**
+     * Returns whether the given item is part of the active items.
+     *
+     * @param item
+     *            the item to check, not {@code null}
+     * @return {@code true} if item is active, {@code false} if not
+     */
+    public boolean isItemActive(T item) {
+        return getKeyMapper().has(item);
+    }
+
+    /**
+     * Gets the item at the given index from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     * <p>
+     * Call to the backend is triggered if the item for a requested index is
+     * not present in the cached active items.
+     *
+     * @param index
+     *            the index of the item to get
+     * @return item on index
+     * @throws IndexOutOfBoundsException
+     *             requested index is outside of the filtered and sorted data
+     *             set
+     */
+    @SuppressWarnings("unchecked")
+    public T getItem(int index) {
+        if (index < 0) {
+            throw new IndexOutOfBoundsException("Index must be non-negative");
+        }
+        int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
+        /*
+         * Check if the item on a requested index is already in the cache of
+         * active items. No matter is this currently a defined or undefined
+         * mode
+         */
+        if (index >= activeStart && index <= activeDataEnd) {
+            return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
+        } else {
+            final int itemCount = getItemCount();
+            /*
+             * The exception is thrown if the exact size is used and the data
+             * is empty, or the index is outside of the item count range,
+             * because we definitely know the item count from a backend.
+             */
+            if (isDefinedSize()) {
+                if (itemCount == 0) {
+                    throw new IndexOutOfBoundsException(String
+                            .format("Requested index %d on empty data.", index));
+                } else if (index >= itemCount) {
+                    throw new IndexOutOfBoundsException(String.format(
+                            "Given index %d is outside of the accepted range '0 - %d'",
+                            index, itemCount - 1));
+                }
+            }
+            /*
+             * In case of undefined size we don't check the empty data or
+             * the item count, because item count = 0 may mean the
+             * flush (fetch) action hasn't been made yet. And even
+             * if the requested index is outside of the item count
+             * estimation, we can make the request, because the backend can
+             * have the item on that index (we simply not yet fetched
+             * this item during the scrolling).
+             */
+            return (T) getDataProvider().fetch(buildQuery(index, 1)).findFirst()
+                    .orElse(null);
+        }
     }
 
     /**
      * Generate a data query with component sorting and filtering.
      *
      * @param offset
-     *         first index to fetch
+     *            first index to fetch
      * @param limit
-     *         fetched item count
+     *            fetched item count
      * @return {@link Query} for component state
      */
     public Query buildQuery(int offset, int limit) {
         return new Query(offset, limit, getBackEndSorting(),
                 getInMemorySorting(), getFilter());
+    }
+
+    /**
+     * Sets the page size that is used to fetch items. The queries to data
+     * provider are a multiple of the page size.
+     *
+     * @param pageSize
+     *            the page size to set
+     */
+    public void setPageSize(int pageSize) {
+        if (pageSize < 1) {
+            throw new IllegalArgumentException(String.format(
+                    "Page size cannot be less than 1, got %d", pageSize));
+        }
+        this.pageSize = pageSize;
+    }
+
+    /**
+     * Returns the page size set to fetch items.
+     *
+     * @return the page size
+     */
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    /**
+     * Sets the size callback to be used and switches the component to exact row
+     * count. The new count will be used after this roundtrip.
+     *
+     * @param countCallback
+     *            the size callback to use
+     */
+    public void setCountCallback(
+            CallbackDataProvider.CountCallback<T, ?> countCallback) {
+        if (countCallback == null) {
+            throw new IllegalArgumentException(
+                    "Provided size callback cannot be null - for switching "
+                            + "between defined and undefined size use "
+                            + "setDefinedSize(boolean) method instead.");
+        }
+        this.countCallback = countCallback;
+        definedSize = true;
+        skipCountIncreaseUntilReset = false;
+        // there is no reset but we need to get the defined size
+        sizeReset = true;
+        requestFlush();
+    }
+
+    /**
+     * Sets the item count estimate to use and switches component to undefined
+     * size. Any previously set count callback is cleared. The new estimate is
+     * applied if the actual count has not been discovered and if the estimate
+     * is greater than the number of requested items. Otherwise it is not
+     * applied until there has been a reset.
+     * <p>
+     * <em>NOTE:</em> setting item count estimate that is less than two pages
+     * (set with {@link #setPageSize(int)}) can cause extra requests initially
+     * or after a reset.
+     *
+     * @param itemCountEstimate
+     *            the item count estimate to be used
+     */
+    public void setItemCountEstimate(int itemCountEstimate) {
+        if (itemCountEstimate < 1) {
+            throw new IllegalArgumentException(
+                    "Given item count estimate cannot be less than 1.");
+        }
+        this.itemCountEstimate = itemCountEstimate;
+        this.countCallback = null;
+        definedSize = false;
+        if (!skipCountIncreaseUntilReset
+                && requestedRange.getEnd() < itemCountEstimate) {
+            sizeReset = true;
+            requestFlush();
+        }
+    }
+
+    /**
+     * Gets the item count estimate used.
+     *
+     * @return the item count estimate used
+     */
+    public int getItemCountEstimate() {
+        if (itemCountEstimate < 1) {
+            return pageSize * DEFAULT_PAGE_INCREASE_COUNT;
+        }
+        return itemCountEstimate;
+    }
+
+    /**
+     * Sets the item count estimate increase to use and switches the component
+     * to undefined size if not yet used. Any previously set count callback is
+     * cleared. The step is used the next time that the count is adjusted.
+     * <em>NOTE:</em> the increase should be greater than the
+     * {@link #setPageSize(int)} or it may cause bad performance.
+     *
+     * @param itemCountEstimateIncrease
+     *            the item count estimate step to use
+     */
+    public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
+        if (itemCountEstimateIncrease < 1) {
+            throw new IllegalArgumentException(
+                    "itemCountEstimateIncrease cannot be less than 1");
+        }
+        this.itemCountEstimateIncrease = itemCountEstimateIncrease;
+        this.countCallback = null;
+        definedSize = false;
+    }
+
+    /**
+     * Gets the item count estimate increase used.
+     *
+     * @return the item count estimate increase
+     */
+    public int getItemCountEstimateIncrease() {
+        if (itemCountEstimateIncrease == -1) {
+            return pageSize * DEFAULT_PAGE_INCREASE_COUNT;
+        } else {
+            assert itemCountEstimate > 0 : "0 is not an increase";
+            // might be sensible to force this to be a multiple of page size,
+            // but being lenient for now
+            return itemCountEstimateIncrease;
+        }
+    }
+
+    /**
+     * Changes between defined and undefined size and clears any previously set
+     * count callback. Calling with value {@code true} will use the
+     * {@link DataProvider#size(Query)} for getting the size. Calling with
+     * {@code false} will use whatever has been set with
+     * {@link #setItemCountEstimate(int)} and increase the count when needed
+     * with {@link #setItemCountEstimateIncrease(int)}.
+     *
+     * @param definedSize
+     *            {@code true} for defined size, {@code false} for undefined
+     *            size
+     */
+    public void setDefinedSize(boolean definedSize) {
+        if (this.definedSize != definedSize) {
+            this.definedSize = definedSize;
+            countCallback = null;
+            skipCountIncreaseUntilReset = false;
+            if (definedSize) {
+                // Always fetch explicit count from data provider
+                requestFlush();
+            } else
+            /*
+             * Only do a new estimate if scrolled to end to increase the
+             * estimated size. If there was a previous defined size used, then
+             * that is kept until a reset occurs.
+             */
+            if (requestedRange.contains(assumedSize)) {
+                requestFlush();
+            }
+        }
+    }
+
+    /**
+     * Returns whether defined or undefined size is used.
+     *
+     * @return {@code true} for defined size, {@code false} for undefined size
+     */
+    public boolean isDefinedSize() {
+        return definedSize;
     }
 
     /**
@@ -308,7 +570,7 @@ public class DataCommunicator<T> implements Serializable {
      * Sets the {@link DataKeyMapper} used in this {@link DataCommunicator}. Key
      * mapper can be used to map keys sent to the client-side back to their
      * respective data objects.
-     * 
+     *
      * @param keyMapper
      *            the keyMapper
      */
@@ -358,14 +620,63 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Getter method for finding the size of DataProvider. Can be overridden by
-     * a subclass that uses a specific type of DataProvider and/or query.
+     * Returns whether paged queries are enabled or not.
+     * <p>
+     * When the paged queries are supported, the {@link Query#getPage()} and
+     * {@link Query#getPageSize()} can be used to fetch items from the paged
+     * repositories. Otherwise, one should use {@link Query#getOffset()} and
+     * {@link Query#getLimit()}. Paged queries are enabled by default.
+     *
+     * @return {@code true} for paged queries, {@code false} for offset/limit
+     *         queries
+     * 
+     * @see #setPagingEnabled(boolean)
+     */
+    public boolean isPagingEnabled() {
+        return pagingEnabled;
+    }
+
+    /**
+     * Sets whether paged queries or offset/limit queries will be used.
+     * 
+     * @param pagingEnabled
+     *            {@code true} for paged queries, {@code false} for offset/limit
+     *            queries
+     */
+    public void setPagingEnabled(boolean pagingEnabled) {
+        this.pagingEnabled = pagingEnabled;
+    }
+
+    /**
+     * Getter method for determining the item count of the data. Can be
+     * overridden by a subclass that uses a specific type of DataProvider and/or
+     * query.
      *
      * @return the size of data provider with current filter
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected int getDataProviderSize() {
-        return getDataProvider().size(new Query(getFilter()));
+        assert definedSize : "This method should never be called when using undefined size";
+        if (countCallback != null) {
+            return countCallback.count(new Query(getFilter()));
+        } else {
+            return getDataProvider().size(new Query(getFilter()));
+        }
+    }
+
+    private void updateUndefinedSize() {
+        assert !definedSize : "This method should never be called when using defined size";
+        if (resendEntireRange || sizeReset) {
+            // things have reset
+            assumedSize = getItemCountEstimate();
+        }
+
+        // increase size estimate if the last page is being fetched,
+        // or if the estimate is less than what is shown on client
+        while (requestedRange.getEnd() + pageSize > assumedSize) {
+            // by default adjust size by multiple of page size
+            assumedSize += getItemCountEstimateIncrease();
+        }
     }
 
     /**
@@ -379,19 +690,58 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Fetches a list of items from the DataProvider.
+     * <p>
+     * <em>NOTE:</em> the {@code limit} parameter shows how many items the
+     * client wants to fetch, but the actual number of results may be greater,
+     * and vary from {@code 0 to pages * pageSize}.
      *
      * @param offset
      *            the starting index of the range
      * @param limit
-     *            the max number of results
+     *            the desired number of results
      * @return the list of items in given range
      *
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
-        QueryTrace query = new QueryTrace(offset, limit, backEndSorting,
-                inMemorySorting, filter);
-        Stream<T> stream = getDataProvider().fetch(query);
+        Stream<T> stream = Stream.empty();
+        QueryTrace query = null;
+
+        if (pagingEnabled) {
+            /*
+             * Items limit value may not be necessarily multiply of page size,
+             * and thus the pages count is rounded to closest smallest integer
+             * in order to overlap the requested range. Integer division is used
+             * here for simplicity and to avoid double-int-double conversion.
+             * Divisor minus one is placed on numerator part to ensure upwards
+             * rounding.
+             */
+            final int pages = (limit + pageSize - 1) / pageSize;
+
+            if (limit > pageSize) {
+                /*
+                 * Requested range is split to several pages, and queried from
+                 * backend page by page
+                 */
+                for (int page = 0; page < pages; page++) {
+                    final int newOffset = offset + page * pageSize;
+                    query = new QueryTrace(newOffset, pageSize, backEndSorting,
+                            inMemorySorting, filter);
+                    stream = Stream.concat(stream,
+                            getDataProvider().fetch(query));
+                }
+            } else {
+                query = new QueryTrace(offset, pageSize, backEndSorting,
+                        inMemorySorting, filter);
+                stream = getDataProvider().fetch(query);
+            }
+            limit = pages * pageSize;
+        } else {
+            query = new QueryTrace(offset, limit, backEndSorting,
+                    inMemorySorting, filter);
+            stream = getDataProvider().fetch(query);
+        }
+
         if (stream.isParallel()) {
             LoggerFactory.getLogger(DataCommunicator.class)
                     .debug("Data provider {} has returned "
@@ -400,16 +750,23 @@ public class DataCommunicator<T> implements Serializable {
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
         }
+
         SizeVerifier verifier = new SizeVerifier<>(limit);
         stream = stream.peek(verifier);
 
+        assert query != null : "Fetch query cannot be null";
+
+        /*
+         * These restrictions are used to help users to see that they have done
+         * a mistake instead of just letting things work in an unintended way.
+         */
         if (!query.isLimitCalled()) {
             throw new IllegalStateException(
-                    getInvalidContractMessage("getLimit"));
+                    getInvalidContractMessage("getLimit or getPageSize"));
         }
         if (!query.isOffsetCalled()) {
             throw new IllegalStateException(
-                    getInvalidContractMessage("getOffset"));
+                    getInvalidContractMessage("getOffset or getPage"));
         }
         return stream;
     }
@@ -436,7 +793,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
-        refresh (event.getItem());
+        refresh(event.getItem());
     }
 
     private void handleDetach() {
@@ -448,7 +805,11 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush() {
-        if (flushRequest == null) {
+        requestFlush(false);
+    }
+
+    private void requestFlush(boolean forced) {
+        if (flushRequest == null || forced) {
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -481,8 +842,14 @@ public class DataCommunicator<T> implements Serializable {
                 activeKeyOrder.size());
 
         // Phase 1: Find all items that the client should have
-        if (resendEntireRange) {
+
+        // With defined size the backend is only queried when necessary
+        if (definedSize && (resendEntireRange || sizeReset)) {
             assumedSize = getDataProviderSize();
+        } else if (!definedSize
+                && (!skipCountIncreaseUntilReset || sizeReset)) {
+            // with undefined size, size estimate is checked when scrolling down
+            updateUndefinedSize();
         }
         effectiveRequested = requestedRange
                 .restrictTo(Range.withLength(0, assumedSize));
@@ -493,10 +860,29 @@ public class DataCommunicator<T> implements Serializable {
         Activation activation = collectKeysToFlush(previousActive,
                 effectiveRequested);
 
-        // If the returned stream from the DataProvider is smaller than it
-        // should, a new query for the actual size needs to be done
+        // In case received less items than what was expected, adjust size
         if (activation.isSizeRecheckNeeded()) {
-            assumedSize = getDataProviderSize();
+            if (definedSize) {
+                assumedSize = getDataProviderSize();
+            } else {
+                // the end has been reached
+                assumedSize = requestedRange.getStart()
+                        + activation.getActiveKeys().size();
+                skipCountIncreaseUntilReset = true;
+                /*
+                 * If the fetch query returned 0 items, it means that the user
+                 * has scrolled past the end of the exact item count. Instead of
+                 * returning 0 items to the client and letting it incrementally
+                 * request for the previous pages, we'll cancel this flush and
+                 * tweak the requested range and flush again.
+                 */
+                if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
+                    int delta = requestedRange.length();
+                    requestedRange = requestedRange.offsetBy(-delta);
+                    requestFlush(true); // to avoid recursiveness
+                    return;
+                }
+            }
             effectiveRequested = requestedRange
                     .restrictTo(Range.withLength(0, assumedSize));
         }
@@ -511,6 +897,7 @@ public class DataCommunicator<T> implements Serializable {
 
         resendEntireRange = false;
         assumeEmptyClient = false;
+        sizeReset = false;
 
         // Phase 3: passivate anything that isn't longer active
         passivateInactiveKeys(oldActive, update, updated);
@@ -518,25 +905,27 @@ public class DataCommunicator<T> implements Serializable {
         // Phase 4: unregister passivated and updated items
         unregisterPassivatedKeys();
 
-        fireSizeEvent(assumedSize);
+        fireItemCountEvent(assumedSize);
     }
 
     /**
-     * Fire a size change event if the last event was fired for a different size
-     * from the last sent one.
+     * Fire an item count change event if the last event was fired for a
+     * different count from the last sent one.
      *
-     * @param dataSize
-     *         data size to send
+     * @param itemCount
+     *            item count to send
      */
-    private void fireSizeEvent(int dataSize) {
-        if (lastSent != dataSize) {
+    private void fireItemCountEvent(int itemCount) {
+        if (lastSent != itemCount) {
             final Optional<Component> component = Element.get(stateNode)
                     .getComponent();
             if (component.isPresent()) {
                 ComponentUtil.fireEvent(component.get(),
-                        new SizeChangeEvent<>(component.get(), dataSize));
+                        new ItemCountChangeEvent<>(component.get(), itemCount,
+                                !(isDefinedSize()
+                                        || skipCountIncreaseUntilReset)));
             }
-            lastSent = dataSize;
+            lastSent = itemCount;
         }
     }
 

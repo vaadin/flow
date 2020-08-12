@@ -33,6 +33,19 @@ import com.vaadin.flow.shared.Registration;
 public interface DataView<T> extends Serializable {
 
     /**
+     * Gets the item at the given index from the data available to the
+     * component. Data is filtered and sorted the same way as in the component.
+     *
+     * @param index
+     *            item index number
+     * @return item on index
+     * @throws IndexOutOfBoundsException
+     *             requested index is outside of the filtered and sorted data
+     *             set
+     */
+    T getItem(int index);
+
+    /**
      * Get the full data available to the component. Data is filtered and sorted
      * the same way as in the component.
      *
@@ -41,45 +54,46 @@ public interface DataView<T> extends Serializable {
     Stream<T> getItems();
 
     /**
-     * Gets the size of the data source with filters applied if any are set.
-     *
-     * @return filtered data size
-     * @see #addSizeChangeListener(ComponentEventListener)
-     */
-    int getSize();
-
-    /**
-     * Check if item is in the current data. Item may be filtered out or for
-     * lazy data not in the currently loaded making it un-available.
+     * Notifies the component that the item has been updated and thus should be
+     * refreshed.
      * <p>
-     * By default, {@code equals} method implementation of the item is used for
-     * identity check. If a custom data provider is used, then the
-     * {@link DataProvider#getId(Object)} method is used instead. Item's custom
-     * identity can be set up with a
-     * {@link DataView#setIdentifierProvider(IdentifierProvider)}.
+     * For this to work properly, the item must either implement
+     * {@link Object#equals(Object)} and {@link Object#hashCode()} to consider
+     * both the old and the new item instances to be equal, or alternatively
+     * use the {@link #setIdentifierProvider(IdentifierProvider)} to set
+     * an appropriate item's identifier.
+     * <p>
+     * This method delegates the update to
+     * {@link DataProvider#refreshItem(Object)}.
      *
      * @param item
-     *            item to search for
-     * @return true if item is found in the available data
+     *            item containing updated state
      *
      * @see #setIdentifierProvider(IdentifierProvider)
      */
-    boolean contains(T item);
+    void refreshItem(T item);
 
     /**
-     * Add a size change listener that is fired when the data set size changes.
-     * This can happen for instance when filtering the data set.
+     * Add an item count change listener that is fired when the item count
+     * changes. This can happen for instance when filtering the items.
      * <p>
-     * Size change listener is bound to the component and will be retained even
-     * if the data changes by setting of a new items or {@link DataProvider} to
-     * component.
+     * Item count change listener is bound to the component and will be retained
+     * even if the data changes by setting of a new items or
+     * {@link DataProvider} to component.
+     * <p>
+     * <em>NOTE:</em> when the component supports lazy loading (implements
+     * {@link HasLazyDataView}) and a count callback has not been provided, an
+     * estimate of the item count is used and increased until the actual count
+     * has been reached. When the estimate is used, the event is fired with the
+     * {@link ItemCountChangeEvent#isItemCountEstimated()} returning
+     * {@code true}.
      *
      * @param listener
-     *            size change listener to register
+     *            item count change listener to register
      * @return registration for removing the listener
      */
-    Registration addSizeChangeListener(
-            ComponentEventListener<SizeChangeEvent<?>> listener);
+    Registration addItemCountChangeListener(
+            ComponentEventListener<ItemCountChangeEvent<?>> listener);
 
     /**
      * Sets an identifier provider, which returns an identifier for the given
