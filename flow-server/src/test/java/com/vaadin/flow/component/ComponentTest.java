@@ -55,6 +55,7 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
+import org.mockito.Mockito;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -763,7 +764,7 @@ public class ComponentTest {
     @Test
     public void testIsAttached() {
         UI ui = new UI();
-        // ui is always attached
+        // ui is initially attached
         Assert.assertTrue(ui.isAttached());
 
         TestComponentContainer parent = new TestComponentContainer();
@@ -804,6 +805,7 @@ public class ComponentTest {
         Assert.assertFalse(parent.isAttached());
         Assert.assertFalse(child.isAttached());
         Assert.assertFalse(grandChild.isAttached());
+        Assert.assertFalse(ui.isAttached());
     }
 
     @Test(expected = IllegalArgumentException.class)
