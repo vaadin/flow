@@ -716,7 +716,7 @@ public class DataCommunicator<T> implements Serializable {
              * Divisor minus one is placed on numerator part to ensure upwards
              * rounding.
              */
-            final int pages = (limit + pageSize - 1) / pageSize;
+            final int pages = (limit - 1) / pageSize + 1;
 
             if (limit > pageSize) {
                 /*
@@ -727,6 +727,13 @@ public class DataCommunicator<T> implements Serializable {
                     final int newOffset = offset + page * pageSize;
                     query = new QueryTrace(newOffset, pageSize, backEndSorting,
                             inMemorySorting, filter);
+                    /*
+                    * TODO: DataProvider is still queried for next pages
+                    * even when backend returns empty pages/partial page.
+                    * This should be improved so as to analyze the returned
+                    * page item count and stop if it's empty/partial.
+                    * See https://github.com/vaadin/flow/issues/8844
+                    */
                     stream = Stream.concat(stream,
                             getDataProvider().fetch(query));
                 }
