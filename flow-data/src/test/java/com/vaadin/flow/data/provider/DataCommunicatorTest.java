@@ -1112,6 +1112,12 @@ public class DataCommunicatorTest {
         Assert.assertEquals(10, query.getLimit());
         Assert.assertEquals(2, query.getPage());
         Assert.assertEquals(10, query.getPageSize());
+
+        Mockito.reset(dataProvider);
+        // Use a limit value so that it's multiple by page size
+        dataCommunicator.fetchFromProvider(0, 30);
+        Mockito.verify(dataProvider, Mockito.times(3))
+                .fetch(Mockito.any(Query.class));
     }
 
     @Test
@@ -1201,6 +1207,40 @@ public class DataCommunicatorTest {
         Assert.assertEquals(123, query.getLimit());
         Assert.assertEquals(0, query.getPage());
         Assert.assertEquals(123, query.getPageSize());
+    }
+
+    @Test
+    public void fetchFromProvider_maxLimitValue_pagesCalculatedProperly() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(42);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(2_000_000_000);
+        dataCommunicator.fetchFromProvider(0, Integer.MAX_VALUE);
+
+        Mockito.verify(dataProvider, Mockito.times(2))
+                .fetch(Mockito.any(Query.class));
+    }
+
+    @Test
+    public void fetchFromProvider_backendRunsOutOfItems_secondPageRequestSkipped() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(42);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.fetchFromProvider(0, 100);
+
+        /*
+        * TODO: DataProvider is still queried for next pages
+        * even when backend returns empty pages/partial page.
+        * An expected fetch call count here is 2, but should be 1, because
+        * the backed contains only 42 items, so pageSize=50 is suffice.
+        * See https://github.com/vaadin/flow/issues/8844
+        */
+        Mockito.verify(dataProvider, Mockito.times(2))
+                .fetch(Mockito.any(Query.class));
     }
 
     @Tag("test-component")
