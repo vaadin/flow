@@ -90,6 +90,11 @@ public class HasStyleTest {
         assertClasses(component);
         component.setClassName("");
         assertClasses(component);
+
+        component.setClassName("removeMe");
+        // setting null to classname should remove class name attribute
+        component.setClassName(null);
+        assertClasses(component);
     }
 
     @Test
