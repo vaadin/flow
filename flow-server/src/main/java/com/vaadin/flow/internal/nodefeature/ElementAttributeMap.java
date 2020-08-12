@@ -34,6 +34,9 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 /**
  * Map for element attribute values.
  *
@@ -65,8 +68,7 @@ public class ElementAttributeMap extends NodeMap {
      *            the value
      */
     public void set(String attribute, String value) {
-        unregisterResource(attribute);
-        put(attribute, value);
+        doSet(attribute, value);
     }
 
     /**
@@ -103,7 +105,19 @@ public class ElementAttributeMap extends NodeMap {
      */
     @Override
     public String get(String attribute) {
-        return (String) super.get(attribute);
+        Serializable value = super.get(attribute);
+        if (value == null || value instanceof String) {
+            return (String) value;
+        } else {
+            // If the value is not a string then current impl only uses
+            // JsonObject
+            assert value instanceof JsonObject;
+            JsonObject object = (JsonObject) value;
+            // The only object which may be set by the current imlp contains
+            // "uri" attribute, only this situation is expected here.
+            assert object.hasKey(NodeProperties.URI_ATTRIBUTE);
+            return object.getString(NodeProperties.URI_ATTRIBUTE);
+        }
     }
 
     /**
@@ -142,7 +156,11 @@ public class ElementAttributeMap extends NodeMap {
         } else {
             targetUri = StreamResourceRegistry.getURI(resource);
         }
-        set(attribute, targetUri.toASCIIString());
+        JsonObject object = Json.createObject();
+        object.put(NodeProperties.URI_ATTRIBUTE, targetUri.toASCIIString());
+        // don't use sring as a value, but wrap it into an object to let know
+        // the client side about specific nature of the value
+        doSet(attribute, object);
     }
 
     private void ensurePendingRegistrations() {
@@ -223,6 +241,11 @@ public class ElementAttributeMap extends NodeMap {
                         ElementAttributeMap.this.unsetResource(attribute);
                     }
                 }));
+    }
+
+    private void doSet(String attribute, Serializable value) {
+        unregisterResource(attribute);
+        put(attribute, value);
     }
 
     private void unsetResource(String attribute) {
