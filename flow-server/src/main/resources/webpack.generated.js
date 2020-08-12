@@ -135,7 +135,7 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ['raw-loader']
+        use: ['lit-css-loader', 'extract-loader', 'css-loader']
       }
     ]
   },
