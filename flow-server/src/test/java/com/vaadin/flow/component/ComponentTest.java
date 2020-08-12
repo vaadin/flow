@@ -796,10 +796,14 @@ public class ComponentTest {
         Assert.assertTrue(child.isAttached());
         Assert.assertTrue(grandChild.isAttached());
 
+        // Mock closing of UI after request handled
+        ui.getInternals().setSession(Mockito.mock(VaadinSession.class));
         ui.close();
-        Assert.assertTrue(parent.isAttached());
-        Assert.assertTrue(child.isAttached());
-        Assert.assertTrue(grandChild.isAttached());
+        ui.getInternals().setSession(null);
+
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
     }
 
     @Test(expected = IllegalArgumentException.class)
