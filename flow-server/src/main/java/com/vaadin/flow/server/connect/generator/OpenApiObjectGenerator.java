@@ -104,6 +104,8 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
  * Java parser class which scans for all {@link Endpoint} classes and
  * produces OpenApi json.
  */
+// TODO: refactor into smaller files and remove the suppression
+@SuppressWarnings("squid:S00104")
 public class OpenApiObjectGenerator {
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
     public static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
