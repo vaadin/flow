@@ -454,7 +454,9 @@ public abstract class Component
     /**
      * Checks whether this component is currently attached to a UI.
      * <p>
-     * Returns true for attached components even if the UI itself is closed.
+     * When {@link UI#close()} is called, the UI and the components are not detached immediately;
+     * the UI cleanup is performed at the end of the current request which also detaches the
+     * UI and its components.
      *
      * @return true if the component is attached to an UI.
      */
