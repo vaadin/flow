@@ -24,6 +24,7 @@ import jsinterop.annotations.JsFunction;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -292,9 +293,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private native void hookUpPolymerElement(StateNode node, Element element)
     /*-{
         var self = this;
-    
+
         var originalPropertiesChanged = element._propertiesChanged;
-    
+
         if (originalPropertiesChanged) {
             element._propertiesChanged = function (currentProps, changedProps, oldProps) {
                 $entry(function () {
@@ -303,16 +304,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 originalPropertiesChanged.apply(this, arguments);
             };
         }
-    
-    
+
+
         var tree = node.@com.vaadin.client.flow.StateNode::getTree()();
-    
+
         var originalReady = element.ready;
-    
+
         element.ready = function (){
             originalReady.apply(this, arguments);
             @com.vaadin.client.PolymerUtils::fireReadyEvent(*)(element);
-    
+
             // The  _propertiesChanged method which is replaced above for the element
             // doesn't do anything for items in dom-repeat.
             // Instead it's called with some meaningful info for the <code>dom-repeat</code> element.
@@ -321,7 +322,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // which changes this method for any dom-repeat instance.
             var replaceDomRepeatPropertyChange = function(){
                 var domRepeat = element.root.querySelector('dom-repeat');
-    
+
                 if ( domRepeat ){
                  // If the <code>dom-repeat</code> element is in the DOM then
                  // this method should not be executed anymore. The logic below will replace
@@ -335,12 +336,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 // if dom-repeat is found => replace _propertiesChanged method in the prototype and mark it as replaced.
                 if ( !domRepeat.constructor.prototype.$propChangedModified){
                     domRepeat.constructor.prototype.$propChangedModified = true;
-    
+
                     var changed = domRepeat.constructor.prototype._propertiesChanged;
-    
+
                     domRepeat.constructor.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){
                         changed.apply(this, arguments);
-    
+
                         var props = Object.getOwnPropertyNames(changedProps);
                         var items = "items.";
                         for(i=0; i<props.length; i++){
@@ -360,7 +361,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                     if( currentPropsItem && currentPropsItem.nodeId ){
                                         var nodeId = currentPropsItem.nodeId;
                                         var value = currentPropsItem[propertyName];
-    
+
                                         // this is an attempt to find the template element
                                         // which is not available as a context in the protype method
                                         var host = this.__dataHost;
@@ -371,7 +372,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                         while( !host.localName || host.__dataHost ){
                                             host = host.__dataHost;
                                         }
-    
+
                                         $entry(function () {
                                             @SimpleElementBindingStrategy::handleListItemPropertyChange(*)(nodeId, host, propertyName, value, tree);
                                         })();
@@ -382,7 +383,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     };
                 }
             };
-    
+
             // dom-repeat doesn't have to be in DOM even if template has it
             //  such situation happens if there is dom-if e.g. which evaluates to <code>false</code> initially.
             // in this case dom-repeat is not yet in the DOM tree until dom-if becomes <code>true</code>
@@ -397,7 +398,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 element.addEventListener('dom-change',replaceDomRepeatPropertyChange);
             }
         }
-    
+
     }-*/;
 
     private static void handleListItemPropertyChange(double nodeId,
@@ -631,7 +632,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void updateVisibility(Element element, NodeMap visibilityData,
             Boolean visibility) {
         storeInitialHiddenAttribute(element, visibilityData);
-        WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE, visibility);
+        updateAttributeValue(
+                visibilityData.getNode().getTree().getRegistry()
+                        .getApplicationConfiguration(),
+                element, HIDDEN_ATTRIBUTE, visibility);
     }
 
     private void restoreInitialHiddenAttribute(Element element,
@@ -639,8 +643,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         MapProperty initialVisibility = storeInitialHiddenAttribute(element,
                 visibilityData);
         if (initialVisibility.hasValue()) {
-            WidgetUtil.updateAttribute(element, HIDDEN_ATTRIBUTE,
-                    initialVisibility.getValue());
+            updateAttributeValue(
+                    visibilityData.getNode().getTree().getRegistry()
+                            .getApplicationConfiguration(),
+                    element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
         }
     }
 
@@ -735,7 +741,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void updateAttribute(MapProperty mapProperty, Element element) {
         String name = mapProperty.getName();
-        WidgetUtil.updateAttribute(element, name, mapProperty.getValue());
+        updateAttributeValue(
+                mapProperty.getMap().getNode().getTree().getRegistry()
+                        .getApplicationConfiguration(),
+                element, name, mapProperty.getValue());
     }
 
     private EventRemover bindSynchronizedPropertyEvents(
@@ -1409,6 +1418,35 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 (Element) context.htmlNode, context.node);
+    }
+
+    private static void updateAttributeValue(
+            ApplicationConfiguration configuration, Element element,
+            String attribute, Object value) {
+        if (value == null || value instanceof String) {
+            WidgetUtil.updateAttribute(element, attribute, (String) value);
+        } else {
+            JsonValue jsonValue = WidgetUtil.crazyJsoCast(value);
+            if (JsonType.OBJECT.equals(jsonValue.getType())) {
+                JsonObject object = (JsonObject) jsonValue;
+                assert object.hasKey(
+                        NodeProperties.URI_ATTRIBUTE) : "Implementation error: JsonObject is recieved as an attribute value for '"
+                                + attribute + "' but it has no "
+                                + NodeProperties.URI_ATTRIBUTE + " key";
+                String uri = object.getString(NodeProperties.URI_ATTRIBUTE);
+                if (configuration.isWebComponentMode()) {
+                    String baseUri = configuration.getServiceUrl();
+                    baseUri = baseUri.endsWith("/") ? baseUri : baseUri + "/";
+                    WidgetUtil.updateAttribute(element, attribute,
+                            baseUri + uri);
+                } else {
+                    WidgetUtil.updateAttribute(element, attribute, uri);
+                }
+            } else {
+                WidgetUtil.updateAttribute(element, attribute,
+                        value.toString());
+            }
+        }
     }
 
     private static EventExpression getOrCreateExpression(
