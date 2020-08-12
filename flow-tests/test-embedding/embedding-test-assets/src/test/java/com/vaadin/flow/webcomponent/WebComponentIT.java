@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.webcomponent;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -57,8 +58,25 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
                 select);
 
         Assert.assertFalse("Message should not be visible",
-                noMessage.$("span").first()
-                        .isDisplayed());
+                noMessage.$("span").first().isDisplayed());
+    }
+
+    @Test
+    public void downloadLinkHasCorrectBaseURL() {
+        open();
+
+        waitForElementVisible(By.id("show-message"));
+        TestBenchElement showMessage = byId("show-message");
+        TestBenchElement link = showMessage.$("a").id("link");
+        String href = link.getAttribute("href");
+        // self check
+        Assert.assertTrue(href.startsWith(getRootURL()));
+        // remove host and port
+        href = href.substring(getRootURL().length());
+        // now the URI should starts with "/vaadin" since this is the URI of
+        // embedded app
+        Assert.assertThat(href,
+                CoreMatchers.startsWith("/vaadin/VAADIN/dynamic/resource/"));
     }
 
     @Test
@@ -68,13 +86,13 @@ public class WebComponentIT extends ChromeBrowserTest implements HasById {
         waitForElementVisible(By.tagName("themed-web-component"));
 
         TestBenchElement webComponent = $("themed-web-component").first();
-        TestBenchElement themedComponent = webComponent.$("themed-component").first();
+        TestBenchElement themedComponent = webComponent.$("themed-component")
+                .first();
 
         TestBenchElement content = themedComponent.$("div").first();
         Assert.assertNotNull("The component which should use theme doesn't "
                 + "contain elements", content);
 
-        Assert.assertEquals("rgba(255, 0, 0, 1)",
-                content.getCssValue("color"));
+        Assert.assertEquals("rgba(255, 0, 0, 1)", content.getCssValue("color"));
     }
 }
