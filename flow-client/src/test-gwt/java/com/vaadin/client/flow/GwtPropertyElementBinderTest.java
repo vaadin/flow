@@ -18,6 +18,7 @@ package com.vaadin.client.flow;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.InitialPropertiesHandler;
@@ -58,6 +59,7 @@ public abstract class GwtPropertyElementBinderTest
                 ExistingElementMap existingElementMap) {
             this.constantPool = constantPool;
             this.existingElementMap = existingElementMap;
+            set(ApplicationConfiguration.class, new ApplicationConfiguration());
         }
 
         @Override

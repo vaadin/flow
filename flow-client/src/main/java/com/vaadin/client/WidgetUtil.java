@@ -126,7 +126,7 @@ public class WidgetUtil {
      * {@code value}.
      * <p>
      * If {@code value} is {@code null} then {@code attribute} is removed,
-     * otherwise {@code value.toString()} is set as its value.
+     * otherwise {@code value} is set as its value.
      *
      * @param element
      *            the DOM element owning attribute
@@ -136,11 +136,11 @@ public class WidgetUtil {
      *            the value to update
      */
     public static void updateAttribute(Element element, String attribute,
-            Object value) {
+            String value) {
         if (value == null) {
             DomApi.wrap(element).removeAttribute(attribute);
         } else {
-            DomApi.wrap(element).setAttribute(attribute, value.toString());
+            DomApi.wrap(element).setAttribute(attribute, value);
         }
     }
 
@@ -227,7 +227,7 @@ public class WidgetUtil {
     /**
      * Checks if the given value is explicitly undefined. <code>null</code>
      * values returns <code>false</code>.
-     * 
+     *
      * @param property
      *            the value to be verified
      * @return <code>true</code> is the value is explicitly undefined,
