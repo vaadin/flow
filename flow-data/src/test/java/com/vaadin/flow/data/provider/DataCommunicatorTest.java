@@ -1223,6 +1223,26 @@ public class DataCommunicatorTest {
                 .fetch(Mockito.any(Query.class));
     }
 
+    @Test
+    public void fetchFromProvider_backendRunsOutOfItems_secondPageRequestSkipped() {
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(42);
+        dataProvider = Mockito.spy(dataProvider);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.fetchFromProvider(0, 100);
+
+        /*
+        * TODO: DataProvider is still queried for next pages
+        * even when backend returns empty pages/partial page.
+        * An expected fetch call count here is 2, but should be 1, because
+        * the backed contains only 42 items, so pageSize=50 is suffice.
+        * See https://github.com/vaadin/flow/issues/8844
+        */
+        Mockito.verify(dataProvider, Mockito.times(2))
+                .fetch(Mockito.any(Query.class));
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
     }
