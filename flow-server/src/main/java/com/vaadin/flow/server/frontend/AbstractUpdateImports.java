@@ -209,7 +209,7 @@ abstract class AbstractUpdateImports implements Runnable {
         }
         Collection<String> lines = new ArrayList<>();
 
-        lines.add("import 'Theme/" + applicationTheme + "/" + applicationTheme
+        lines.add("import 'theme/" + applicationTheme + "/" + applicationTheme
                 + ".js';");
         return lines;
     }
