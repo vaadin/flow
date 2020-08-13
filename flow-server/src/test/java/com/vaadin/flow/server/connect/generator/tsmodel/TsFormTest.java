@@ -62,7 +62,7 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertEquals("NotNull()",
                 props.getObject("notEmpty").getArray(CONSTRAINT_ANNOTATIONS).getString(1));
         assertEquals("NotNull()",
-                props.getObject("nullableNotNullEntity").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
+                props.getObject("notNullEntity").getArray(CONSTRAINT_ANNOTATIONS).getString(0));
     }
 
     @Test

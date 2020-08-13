@@ -78,6 +78,7 @@ public class TsFormEndpoint {
         @Null String isNull;
         @NotNull String notNull;
         @NotNull @NotEmpty String notEmpty;
+        @NotNull MyEntity notNullEntity;
         @NotBlank String notBlank;
         @AssertTrue String assertTrue;
         @AssertFalse String assertFalse;
@@ -110,6 +111,5 @@ public class TsFormEndpoint {
         @Nullable MyEntity nullableEntity;
         @Nullable List<Optional<String>> nullableList;
         @Nullable Optional<String>[][] nullableMatrix;
-        @NotNull MyEntity nullableNotNullEntity;
     }
 }
