@@ -249,7 +249,8 @@ suite("form/Binder", () => {
 
     const expectedEmptyEmployee: Employee = {
       idString: '',
-      fullName: ''
+      fullName: '',
+      supervisor: undefined
     };
 
     beforeEach(() => {
@@ -272,32 +273,33 @@ suite("form/Binder", () => {
     test('should not initialize optional in binder value and default value', () => {
       assert.isUndefined(binder.defaultValue.supervisor);
       assert.deepEqual(binder.defaultValue, expectedEmptyEmployee);
+      // Ensure the key is present in the object
+      assert.isTrue('supervisor' in binder.defaultValue);
       assert.isUndefined(binder.value.supervisor);
       assert.deepEqual(binder.value, expectedEmptyEmployee);
+      assert.isTrue('supervisor' in binder.value);
     });
 
-    test('should initialize optional on binderNode access', () => {
+    test('should not initialize optional on binderNode access', () => {
       binder.for(binder.model.supervisor);
+
+      assert.isUndefined(binder.defaultValue.supervisor);
+      assert.deepEqual(binder.defaultValue, expectedEmptyEmployee);
+      assert.isTrue('supervisor' in binder.defaultValue);
+      assert.isUndefined(binder.value.supervisor);
+      assert.deepEqual(binder.value, expectedEmptyEmployee);
+      assert.isTrue('supervisor' in binder.value);
+    });
+
+    test('should initialize parent optional on child binderNode access', () => {
+      binder.for(binder.model.supervisor.supervisor);
 
       assert.isDefined(binder.defaultValue.supervisor);
       assert.deepEqual(binder.defaultValue.supervisor, expectedEmptyEmployee);
-      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue), expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue), getOnlyEmployeeData(expectedEmptyEmployee));
       assert.isDefined(binder.value.supervisor);
       assert.deepEqual(binder.value.supervisor, expectedEmptyEmployee);
-      assert.deepEqual(getOnlyEmployeeData(binder.value), expectedEmptyEmployee);
-    });
-
-    test('should initialize optional on deep binderNode access', () => {
-      binder.for(binder.model.supervisor.supervisor);
-
-      assert.isDefined(binder.defaultValue.supervisor!.supervisor);
-      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue), expectedEmptyEmployee);
-      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue.supervisor!), expectedEmptyEmployee);
-      assert.deepEqual(getOnlyEmployeeData(binder.defaultValue.supervisor!.supervisor!), expectedEmptyEmployee);
-      assert.isDefined(binder.value.supervisor!.supervisor);
-      assert.deepEqual(getOnlyEmployeeData(binder.value), expectedEmptyEmployee);
-      assert.deepEqual(getOnlyEmployeeData(binder.value.supervisor!), expectedEmptyEmployee);
-      assert.deepEqual(getOnlyEmployeeData(binder.value.supervisor!.supervisor!), expectedEmptyEmployee);
+      assert.deepEqual(getOnlyEmployeeData(binder.value), getOnlyEmployeeData(expectedEmptyEmployee));
     });
 
     test('should not become dirty on binderNode access', () => {

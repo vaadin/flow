@@ -61,7 +61,11 @@ export abstract class AbstractModel<T> {
     return String(this.valueOf());
   }
   valueOf(): T {
-    return getBinderNode(this).value;
+    const value = getBinderNode(this).value;
+    if (value === undefined) {
+      throw new TypeError('Value is undefined');
+    }
+    return value;
   }
 }
 
@@ -99,12 +103,11 @@ export class ObjectModel<T> extends AbstractModel<T> {
         // Initialise the properties in the value object with empty value
         .reduce((o, propertyName) => {
           const propertyModel = (modelInstance as any)[propertyName] as AbstractModel<any>;
-          // Skip initialising optional properties
-          if (!propertyModel[_optional]) {
-            (o as any)[propertyName] = (
+          (o as any)[propertyName] = propertyModel[_optional]
+            ? undefined
+            : (
               propertyModel.constructor as ModelConstructor<any, AbstractModel<any>>
             ).createEmptyValue();
-          }
           return o;
         }, obj)
     }
@@ -154,7 +157,7 @@ export class ArrayModel<T, M extends AbstractModel<T>> extends AbstractModel<Rea
    * Iterates the current array value and yields a binder node for every item.
    */
   *[Symbol.iterator](): IterableIterator<BinderNode<T, M>> {
-    const array = getBinderNode(this).value;
+    const array = this.valueOf();
     const ItemModel = this[_ItemModel];
     if (array.length !== this.itemModels.length) {
       this.itemModels.length = array.length;
