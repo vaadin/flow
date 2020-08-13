@@ -15,19 +15,18 @@
  */
 package com.vaadin.flow.spring;
 
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Configuration properties for Vaadin Spring Boot.
  *
  * @author Vaadin Ltd
  * @see <a href=
- * "http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html">http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html</a>
+ *      "http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html">http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html</a>
  */
 @ConfigurationProperties(prefix = "vaadin")
 public class VaadinConfigurationProperties {
@@ -43,9 +42,9 @@ public class VaadinConfigurationProperties {
     private boolean asyncSupported = true;
 
     /**
-     * Whetcher pnpm support is enabled
+     * Whether pnpm support is enabled
      **/
-    private boolean pnpmEnabled = false;
+    private Pnpm pnpm = new Pnpm();
 
     /**
      * Custom package blacklist that should be skipped in scanning.
@@ -56,6 +55,32 @@ public class VaadinConfigurationProperties {
      * Custom package whitelist that should be scanned.
      */
     private List<String> whitelistedPackages = new ArrayList<>();
+
+    public static class Pnpm {
+        private boolean enable;
+
+        /**
+         * Returns if pnpm support is enabled.
+         *
+         * @return if pnpm is enabled
+         */
+        public boolean isEnable() {
+            return enable;
+        }
+
+        /**
+         * Enables/disabled pnp support.
+         *
+         * @param enable
+         *            if {@code true} then pnpm support is enabled, otherwise
+         *            it's disabled
+         *
+         */
+        public void setEnable(boolean enable) {
+            this.enable = enable;
+        }
+
+    }
 
     /**
      * Gets the url mapping for the Vaadin servlet.
@@ -69,7 +94,8 @@ public class VaadinConfigurationProperties {
     /**
      * Sets {@code urlMapping} property value.
      *
-     * @param urlMapping the {@code urlMapping} property value
+     * @param urlMapping
+     *            the {@code urlMapping} property value
      */
     public void setUrlMapping(String urlMapping) {
         this.urlMapping = urlMapping;
@@ -87,7 +113,8 @@ public class VaadinConfigurationProperties {
     /**
      * Sets {@code asyncSupported} property value.
      *
-     * @param asyncSupported the {@code asyncSupported} property value
+     * @param asyncSupported
+     *            the {@code asyncSupported} property value
      */
     public void setAsyncSupported(boolean asyncSupported) {
         this.asyncSupported = asyncSupported;
@@ -99,16 +126,19 @@ public class VaadinConfigurationProperties {
      * @return if pnpm is enabled
      */
     public boolean isPnpmEnabled() {
-        return pnpmEnabled;
+        return pnpm.isEnable();
     }
 
     /**
-     * Sets {@code pnpmEnabled} property value.
+     * Enables/disabled pnpm support.
      *
-     * @param pnpmEnabled the {@code pnpmEnabled} property value
+     * @param enabled
+     *            if {@code true} then pnpm support is enabled, otherwise it's
+     *            disabled
+     *
      */
-    public void setPnpmEnabled(boolean pnpmEnabled) {
-        this.pnpmEnabled = pnpmEnabled;
+    public void setPnpmEnabled(boolean enabled) {
+        pnpm.setEnable(enabled);
     }
 
     /**
@@ -123,7 +153,8 @@ public class VaadinConfigurationProperties {
     /**
      * Set list of packages to ignore for class scanning.
      *
-     * @param blacklistedPackages list of packages to ignore
+     * @param blacklistedPackages
+     *            list of packages to ignore
      */
     public void setBlacklistedPackages(List<String> blacklistedPackages) {
         this.blacklistedPackages = new ArrayList<>(blacklistedPackages);
@@ -142,7 +173,8 @@ public class VaadinConfigurationProperties {
      * Set list of packages to be scanned. If <code>whitelistedPackages</code>
      * is set then <code>blacklistedPackages</code> is ignored.
      *
-     * @param whitelistedPackages list of packages to be scanned
+     * @param whitelistedPackages
+     *            list of packages to be scanned
      */
     public void setWhitelistedPackages(List<String> whitelistedPackages) {
         this.whitelistedPackages = new ArrayList<>(whitelistedPackages);

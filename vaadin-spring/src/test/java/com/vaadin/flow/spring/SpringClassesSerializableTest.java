@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -60,6 +59,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
     protected Stream<String> getExcludedPatterns() {
         return Stream.concat(Stream.of(
                 "com\\.vaadin\\.flow\\.spring\\.ForwardingRequestWrapper",
+                "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties\\$Pnpm",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinScanPackagesRegistrar\\$VaadinScanPackages",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinServletContextInitializer",
@@ -123,8 +123,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
     private TestBeanStore createStore() {
         final Properties initParameters = new Properties();
         VaadinService service = new VaadinServletService(new VaadinServlet(),
-                new DefaultDeploymentConfiguration(getClass(),
-                        initParameters));
+                new DefaultDeploymentConfiguration(getClass(), initParameters));
         VaadinSession session = new TestSession(service);
 
         TestBeanStore store = new TestBeanStore(session);
