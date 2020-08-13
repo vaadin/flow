@@ -17,10 +17,12 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -723,20 +725,24 @@ public class DataCommunicator<T> implements Serializable {
                  * Requested range is split to several pages, and queried from
                  * backend page by page
                  */
+                final Collection<T> fetchedPages = new LinkedList<>();
                 for (int page = 0; page < pages; page++) {
                     final int newOffset = offset + page * pageSize;
                     query = new QueryTrace(newOffset, pageSize, backEndSorting,
                             inMemorySorting, filter);
-                    /*
-                    * TODO: DataProvider is still queried for next pages
-                    * even when backend returns empty pages/partial page.
-                    * This should be improved so as to analyze the returned
-                    * page item count and stop if it's empty/partial.
-                    * See https://github.com/vaadin/flow/issues/8844
-                    */
-                    stream = Stream.concat(stream,
-                            getDataProvider().fetch(query));
+                    Stream<T> fetchedPageStream =
+                            getDataProvider().fetch(query);
+                    List<T> fetchedPage =
+                            fetchedPageStream.collect(Collectors.toList());
+                    fetchedPages.addAll(fetchedPage);
+
+                    // Stop fetching other pages if data set end has
+                    // been reached
+                    if (fetchedPage.size() < pageSize) {
+                        break;
+                    }
                 }
+                stream = fetchedPages.stream();
             } else {
                 query = new QueryTrace(offset, pageSize, backEndSorting,
                         inMemorySorting, filter);
