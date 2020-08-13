@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -36,13 +38,22 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
  */
 @HandlesTypes({ Endpoint.class })
 public class ConnectEndpointsValidator
-        implements ClassLoaderAwareServletContainerInitializer, Serializable {
+        implements ClassLoaderAwareServletContainerInitializer, VaadinContextInitializer, Serializable {
 
     private String classToCheck = "org.springframework.boot.autoconfigure.jackson.JacksonProperties";
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
+    @Deprecated
+    public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+        try {
+            process(set, new VaadinServletContext(ctx));
+        } catch (VaadinInitializerException vie) {
+            throw new ServletException(vie.getCause());
+        }
+    }
+
+    @Override
+    public void process(Set<Class<?>> classSet, VaadinContext vaadinContext) {
 
         if (classSet == null) {
             // This case happens when initializing in a CDI environment.
@@ -60,7 +71,7 @@ public class ConnectEndpointsValidator
             try {
                 finder.loadClass(classToCheck);
             } catch (ClassNotFoundException e) {
-                throw new ServletException(
+                throw new VaadinInitializerException(
                         "ERROR: Vaadin Connect Endpoints only work for Spring "
                                 + "enabled projects.\n"
                                 + "This is not a spring application but there are connect endpoints in these classes: "

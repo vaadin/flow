@@ -26,6 +26,8 @@ import java.util.Set;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Validation class that is run during servlet container initialization which
@@ -35,11 +37,16 @@ import com.vaadin.flow.component.page.Viewport;
  */
 @HandlesTypes({ Viewport.class, BodySize.class, Inline.class })
 public class AnnotationValidator extends AbstractAnnotationValidator
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer, VaadinContextInitializer {
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
+    @Deprecated
+    public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+        process(set, new VaadinServletContext(ctx));
+    }
+
+    @Override
+    public void process(Set<Class<?>> classSet, VaadinContext vaadinContext) {
         validateClasses(classSet);
     }
 

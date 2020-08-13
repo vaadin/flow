@@ -28,6 +28,8 @@ import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Checks that specific annotations are not configured wrong.
@@ -40,11 +42,16 @@ import com.vaadin.flow.component.page.Push;
 @HandlesTypes(Push.class)
 public class WebComponentExporterAwareValidator
         extends AbstractAnnotationValidator
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer, VaadinContextInitializer {
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
+    @Deprecated
+    public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+        process(set, new VaadinServletContext(ctx));
+    }
+
+    @Override
+    public void process(Set<Class<?>> classSet, VaadinContext vaadinContext) {
         validateClasses(classSet);
     }
 

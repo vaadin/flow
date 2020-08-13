@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
 /**
@@ -35,12 +36,17 @@ import com.vaadin.flow.server.VaadinServletContext;
  */
 @HandlesTypes(HasErrorParameter.class)
 public class ErrorNavigationTargetInitializer
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer, VaadinContextInitializer {
+
+    @Override
+    @Deprecated
+    public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+        process(set, new VaadinServletContext(ctx));
+    }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
+    public void process(Set<Class<?>> classSet, VaadinContext vaadinContext) {
         if (classSet == null) {
             classSet = new HashSet<>();
         }
@@ -51,7 +57,7 @@ public class ErrorNavigationTargetInitializer
                 .collect(Collectors.toSet());
 
         ApplicationRouteRegistry
-                .getInstance(new VaadinServletContext(servletContext))
+                .getInstance(vaadinContext)
                 .setErrorNavigationTargets(routes);
     }
 

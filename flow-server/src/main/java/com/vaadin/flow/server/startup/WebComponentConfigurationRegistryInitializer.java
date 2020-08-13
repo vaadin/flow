@@ -33,6 +33,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CustomElementNameValidator;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
@@ -48,14 +49,23 @@ import com.vaadin.flow.server.webcomponent.WebComponentExporterUtils;
  */
 @HandlesTypes({ WebComponentExporter.class, WebComponentExporterFactory.class })
 public class WebComponentConfigurationRegistryInitializer
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer, VaadinContextInitializer {
+
+    @Override
+    @Deprecated
+    public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+        try {
+            process(set, new VaadinServletContext(ctx));
+        } catch (VaadinInitializerException vie) {
+            throw new ServletException(vie.getCause());
+        }
+    }
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void process(Set<Class<?>> set, ServletContext servletContext)
-            throws ServletException {
+    public void process(Set<Class<?>> set, VaadinContext vaadinContext) {
         WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
-                .getInstance(new VaadinServletContext(servletContext));
+                .getInstance(vaadinContext);
 
         if (set == null || set.isEmpty()) {
             instance.setConfigurations(Collections.emptySet());
@@ -73,7 +83,7 @@ public class WebComponentConfigurationRegistryInitializer
 
             instance.setConfigurations(configurations);
         } catch (Exception e) {
-            throw new ServletException(
+            throw new VaadinInitializerException(
                     String.format("%s failed to collect %s implementations!",
                             WebComponentConfigurationRegistryInitializer.class
                                     .getSimpleName(),

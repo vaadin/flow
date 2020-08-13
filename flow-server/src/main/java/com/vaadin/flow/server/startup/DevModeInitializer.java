@@ -188,40 +188,46 @@ public class DevModeInitializer
                     + "/?$");
 
     // Attribute key for storing Dev Mode Handler startup flag.
-    // If presented in Servlet Context, shows the Dev Mode Handler already
+    // If presented in Vaadin Context, shows the Dev Mode Handler already
     // started / become starting.
     // This attribute helps to avoid Dev Mode running twice.
     //
     // Addresses the issue https://github.com/vaadin/spring/issues/502
-    private static final String DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE = "dev-mode-handler-already-started-attribute";
+    private static final Class<DevModeInitializer> DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE = DevModeInitializer.class;
 
     @Override
     public void process(Set<Class<?>> classes, ServletContext context)
             throws ServletException {
-        Collection<? extends ServletRegistration> registrations = context
-                .getServletRegistrations().values();
+        try {
+            Collection<? extends ServletRegistration> registrations = context
+                    .getServletRegistrations().values();
 
-        ServletRegistration vaadinServletRegistration = null;
-        for (ServletRegistration registration : registrations) {
-            if (registration.getClassName() != null
-                    && isVaadinServletSubClass(registration.getClassName())) {
-                vaadinServletRegistration = registration;
-                break;
+            ServletRegistration vaadinServletRegistration = null;
+            for (ServletRegistration registration : registrations) {
+                if (registration.getClassName() != null
+                        && isVaadinServletSubClass(registration.getClassName())) {
+                    vaadinServletRegistration = registration;
+                    break;
+                }
             }
+
+            DeploymentConfiguration config;
+            if (vaadinServletRegistration != null) {
+                config = StubServletConfig.createDeploymentConfiguration(context,
+                        vaadinServletRegistration, VaadinServlet.class);
+            } else {
+                config = StubServletConfig.createDeploymentConfiguration(context,
+                        VaadinServlet.class);
+            }
+
+            final VaadinServletContext vaadinServletContext = new VaadinServletContext(context);
+
+            initDevModeHandler(classes, vaadinServletContext, config);
+
+            setDevModeStarted(vaadinServletContext);
+        } catch (VaadinInitializerException vie) {
+            throw new ServletException(vie.getCause());
         }
-
-        DeploymentConfiguration config;
-        if (vaadinServletRegistration != null) {
-            config = StubServletConfig.createDeploymentConfiguration(context,
-                    vaadinServletRegistration, VaadinServlet.class);
-        } else {
-            config = StubServletConfig.createDeploymentConfiguration(context,
-                    VaadinServlet.class);
-        }
-
-        initDevModeHandler(classes, context, config);
-
-        setDevModeStarted(context);
     }
 
     private boolean isVaadinServletSubClass(String className) {
@@ -236,8 +242,8 @@ public class DevModeInitializer
         }
     }
 
-    private void setDevModeStarted(ServletContext context) {
-        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, true);
+    private void setDevModeStarted(VaadinContext context) {
+        context.setAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE, this);
     }
 
     /**
@@ -254,9 +260,34 @@ public class DevModeInitializer
      * @throws ServletException
      *             if dev mode can't be initialized
      */
+    @Deprecated
     public static void initDevModeHandler(Set<Class<?>> classes,
-            ServletContext context, DeploymentConfiguration config)
+                                          ServletContext context, DeploymentConfiguration config)
             throws ServletException {
+        try {
+            initDevModeHandler(classes, new VaadinServletContext(context), config);
+        } catch (VaadinInitializerException vie) {
+            throw new ServletException(vie.getCause());
+        }
+    }
+
+    /**
+     * Initialize the devmode server if not in production mode or compatibility
+     * mode.
+     *
+     * @param classes
+     *            classes to check for npm- and js modules
+     * @param vaadinContext
+     *            Vaadin context we are running in
+     * @param config
+     *            deployment configuration
+     *
+     * @throws VaadinInitializerException
+     *             if dev mode can't be initialized
+     */
+    public static void initDevModeHandler(Set<Class<?>> classes,
+                                          VaadinContext vaadinContext, DeploymentConfiguration config)
+    {
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
@@ -359,7 +390,6 @@ public class DevModeInitializer
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
-        VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
@@ -401,11 +431,24 @@ public class DevModeInitializer
      * @return <code>true</code> if {@link DevModeHandler} has already been
      *         started, <code>false</code> - otherwise
      */
+    @Deprecated
     public static boolean isDevModeAlreadyStarted(
             ServletContext servletContext) {
-        assert servletContext != null;
-        return servletContext.getAttribute(
-                DevModeInitializer.DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE) != null;
+        return isDevModeAlreadyStarted(new VaadinServletContext(servletContext));
+    }
+
+    /**
+     * Shows whether {@link DevModeHandler} has been already started or not.
+     *
+     * @param context
+     *            The Vaadin context, not <code>null</code>
+     * @return <code>true</code> if {@link DevModeHandler} has already been
+     *         started, <code>false</code> - otherwise
+     */
+    public static boolean isDevModeAlreadyStarted(
+            VaadinContext context) {
+        assert context != null;
+        return context.getAttribute(DEV_MODE_HANDLER_ALREADY_STARTED_ATTRIBUTE) != null;
     }
 
     private static Logger log() {
@@ -455,7 +498,7 @@ public class DevModeInitializer
      * will fail in Java 9+
      */
     static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader) throws ServletException {
+            ClassLoader classLoader) {
         Set<File> frontendFiles = new HashSet<>();
         frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
                 Constants.RESOURCES_FRONTEND_DEFAULT));
@@ -466,7 +509,7 @@ public class DevModeInitializer
 
     private static Set<File> getFrontendLocationsFromClassloader(
             ClassLoader classLoader, String resourcesFolder)
-            throws ServletException {
+             {
         Set<File> frontendFiles = new HashSet<>();
         try {
             Enumeration<URL> en = classLoader.getResources(resourcesFolder);
@@ -522,7 +565,7 @@ public class DevModeInitializer
     }
 
     private static File getPhysicalFileOfJBossVfsDirectory(URL url)
-            throws IOException, ServletException {
+            throws IOException {
         try {
             Object virtualFile = url.openConnection().getContent();
             Class virtualFileClass = virtualFile.getClass();
@@ -548,12 +591,12 @@ public class DevModeInitializer
             return rootDirectory;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
+            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 
     private static File getPhysicalFileOfJBossVfsJar(URL url)
-            throws IOException, ServletException {
+            throws IOException {
         try {
             Object jarVirtualFile = url.openConnection().getContent();
 
@@ -571,7 +614,7 @@ public class DevModeInitializer
             return tempJarFile;
         } catch (NoSuchMethodException | IllegalAccessException
                 | InvocationTargetException exc) {
-            throw new ServletException("Failed to invoke JBoss VFS API.", exc);
+            throw new VaadinInitializerException("Failed to invoke JBoss VFS API.", exc);
         }
     }
 

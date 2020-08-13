@@ -48,6 +48,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
@@ -88,7 +89,7 @@ public class VaadinAppShellInitializer
                 .createDeploymentConfiguration(context,
                         registrations.iterator().next(), VaadinServlet.class);
 
-        init(classes, context, config);
+        init(classes, new VaadinServletContext(context), config);
     }
 
     /**
@@ -102,8 +103,25 @@ public class VaadinAppShellInitializer
      * @param config
      *            the vaadin configuration for the application.
      */
-    @SuppressWarnings("unchecked")
+    @Deprecated
     public static void init(Set<Class<?>> classes, ServletContext context,
+                            DeploymentConfiguration config) {
+        init(classes, new VaadinServletContext(context), config);
+    }
+
+    /**
+     * Initializes the {@link AppShellRegistry} for the application.
+     *
+     * @param classes
+     *            a set of classes that matches the {@link HandlesTypes} set in
+     *            this class.
+     * @param vaadinContext
+     *            the Vaadin context.
+     * @param config
+     *            the vaadin configuration for the application.
+     */
+    @SuppressWarnings("unchecked")
+    public static void init(Set<Class<?>> classes, VaadinContext vaadinContext,
             DeploymentConfiguration config) {
 
         if (config.useV14Bootstrap()) {
@@ -114,7 +132,7 @@ public class VaadinAppShellInitializer
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false);
 
         AppShellRegistry registry = AppShellRegistry
-                .getInstance(new VaadinServletContext(context));
+                .getInstance(vaadinContext);
         registry.reset();
 
         if (classes == null || classes.isEmpty()) {
@@ -184,7 +202,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of annotations handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, VaadinContext, DeploymentConfiguration)}
      */
     @SuppressWarnings("unchecked")
     public static List<Class<? extends Annotation>> getValidAnnotations() {
@@ -200,7 +218,7 @@ public class VaadinAppShellInitializer
      * scanning.
      *
      * @return list of super classes handled by
-     *         {@link VaadinAppShellInitializer#init(Set, ServletContext, DeploymentConfiguration)}
+     *         {@link VaadinAppShellInitializer#init(Set, VaadinContext, DeploymentConfiguration)}
      */
     public static List<Class<?>> getValidSupers() {
         return Arrays.stream(getHandledTypes())

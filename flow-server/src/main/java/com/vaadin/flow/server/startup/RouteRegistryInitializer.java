@@ -29,6 +29,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 
 /**
@@ -38,12 +39,20 @@ import com.vaadin.flow.server.VaadinServletContext;
  */
 @HandlesTypes({ Route.class, RouteAlias.class })
 public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
-        implements ClassLoaderAwareServletContainerInitializer {
+        implements ClassLoaderAwareServletContainerInitializer, VaadinContextInitializer {
 
     @Override
-    public void process(Set<Class<?>> classSet, ServletContext servletContext)
-            throws ServletException {
-        VaadinServletContext context = new VaadinServletContext(servletContext);
+    @Deprecated
+    public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {
+        try {
+            process(set, new VaadinServletContext(ctx));
+        } catch (VaadinInitializerException vie) {
+            throw new ServletException(vie.getCause());
+        }
+    }
+
+    @Override
+    public void process(Set<Class<?>> classSet, VaadinContext context) {
         try {
             if (classSet == null) {
                 ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
@@ -65,7 +74,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
             routeRegistry.setPwaConfigurationClass(validatePwaClass(
                     routes.stream().map(clazz -> (Class<?>) clazz)));
         } catch (InvalidRouteConfigurationException irce) {
-            throw new ServletException(
+            throw new VaadinInitializerException(
                     "Exception while registering Routes on servlet startup",
                     irce);
         }
@@ -101,5 +110,4 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         }
         return false;
     }
-
 }
