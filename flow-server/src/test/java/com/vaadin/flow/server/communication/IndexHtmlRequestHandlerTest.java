@@ -37,6 +37,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -64,6 +65,7 @@ import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpList
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class IndexHtmlRequestHandlerTest {
     private MockServletServiceSessionSetup mocks;
@@ -77,6 +79,8 @@ public class IndexHtmlRequestHandlerTest {
 
     @Rule
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -108,29 +112,33 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException() {
+    public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException()
+            throws IOException {
         VaadinServletRequest vaadinServletRequest = createVaadinRequest("/");
-
         VaadinService vaadinService = vaadinServletRequest.getService();
         String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
                 + INDEX_HTML;
-
         URL url = vaadinService.getClassLoader().getResource(indexHtmlPathInProductionMode);
 
-        if(url != null) {
-            File indexHtmlFile = new File(url.getPath());
-            indexHtmlFile.delete();
-        }
-
+        assertNotNull(url);
+        File indexHtmlFile = new File(url.getPath());
+        File indexHtmlFileTmp = new File(url.getPath() + "_tmp");
         try {
-            indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                    vaadinServletRequest, response);
-            throw new IllegalStateException("Must not reach to this point since index.html is not found");
-        } catch (IOException iOException) {
+            // rename file to simulate the absence of index.html
+            indexHtmlFile.renameTo(indexHtmlFileTmp);
+
             String expectedError = "Failed to load content of './frontend/index.html'." +
                     "It is required to have './frontend/index.html' file " +
                     "when using client side bootstrapping.";
-            assertEquals(expectedError, iOException.getMessage());
+
+            exceptionRule.expect(IOException.class);
+            exceptionRule.expectMessage(expectedError);
+
+            indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                    vaadinServletRequest, response);
+        } finally {
+            //restore index.html
+            indexHtmlFileTmp.renameTo(indexHtmlFile);
         }
     }
 
