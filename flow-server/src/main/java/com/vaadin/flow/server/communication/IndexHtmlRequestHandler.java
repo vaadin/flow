@@ -174,7 +174,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
         String frontendDir = FrontendUtils.getProjectFrontendDir(
                 request.getService().getDeploymentConfiguration());
-        String indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
+        String indexHtmlFilePath;
+        if(frontendDir.endsWith(File.separator)) {
+            indexHtmlFilePath = frontendDir + "index.html";
+        } else {
+            indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
+        }
         String message = String
                 .format("Failed to load content of '%1$s'."
                         + "It is required to have '%1$s' file when "

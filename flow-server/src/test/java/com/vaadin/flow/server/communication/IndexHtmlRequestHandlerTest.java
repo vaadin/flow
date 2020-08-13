@@ -21,7 +21,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -46,6 +48,7 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -57,7 +60,9 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
 
@@ -101,6 +106,34 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertTrue(
                 "Response should have styles for the system-error dialogs",
                 indexHtml.contains(".v-system-error"));
+    }
+
+    @Test
+    public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException() {
+        VaadinServletRequest vaadinServletRequest = createVaadinRequest("/");
+
+        VaadinService vaadinService = vaadinServletRequest.getService();
+        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
+                + INDEX_HTML;
+
+        URL url = vaadinService.getClassLoader().getResource(indexHtmlPathInProductionMode);
+
+        try {
+            Objects.requireNonNull(url);
+            File indexHtmlFile = new File(url.getPath());
+            indexHtmlFile.delete();
+        } catch (Exception ignored) {}
+
+        try {
+            indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                    vaadinServletRequest, response);
+            throw new IllegalStateException("Must not reach to this point since index.html is not found");
+        } catch (IOException iOExeption) {
+            String expectedError = "Failed to load content of './frontend/index.html'." +
+                    "It is required to have './frontend/index.html' file " +
+                    "when using client side bootstrapping.";
+            assertEquals(expectedError, iOExeption.getMessage());
+        }
     }
 
     @Test
