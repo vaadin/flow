@@ -66,6 +66,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class IndexHtmlRequestHandlerTest {
     private MockServletServiceSessionSetup mocks;
@@ -116,6 +117,8 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         VaadinServletRequest vaadinServletRequest = createVaadinRequest("/");
         VaadinService vaadinService = vaadinServletRequest.getService();
+
+        // Finding index.html URL
         String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
                 + INDEX_HTML;
         URL url = vaadinService.getClassLoader().getResource(indexHtmlPathInProductionMode);
@@ -124,10 +127,11 @@ public class IndexHtmlRequestHandlerTest {
         File indexHtmlFile = new File(url.getPath());
         File indexHtmlFileTmp = new File(url.getPath() + "_tmp");
         try {
-            // rename file to simulate the absence of index.html
-            indexHtmlFile.renameTo(indexHtmlFileTmp);
+            // Renaming file to simulate the absence of index.html
+            boolean renamed = indexHtmlFile.renameTo(indexHtmlFileTmp);
+            assertTrue(renamed);
 
-            String expectedError = "Failed to load content of './frontend/index.html'." +
+            String expectedError = "Failed to load content of './frontend/index.html'. " +
                     "It is required to have './frontend/index.html' file " +
                     "when using client side bootstrapping.";
 
@@ -137,8 +141,9 @@ public class IndexHtmlRequestHandlerTest {
             indexHtmlRequestHandler.synchronizedHandleRequest(session,
                     vaadinServletRequest, response);
         } finally {
-            //restore index.html
-            indexHtmlFileTmp.renameTo(indexHtmlFile);
+            // Restoring index.html
+            boolean renamed = indexHtmlFileTmp.renameTo(indexHtmlFile);
+            assertTrue(renamed);
         }
     }
 
