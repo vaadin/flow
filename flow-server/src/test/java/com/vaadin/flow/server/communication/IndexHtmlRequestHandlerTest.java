@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -118,21 +117,20 @@ public class IndexHtmlRequestHandlerTest {
 
         URL url = vaadinService.getClassLoader().getResource(indexHtmlPathInProductionMode);
 
-        try {
-            Objects.requireNonNull(url);
+        if(url != null) {
             File indexHtmlFile = new File(url.getPath());
             indexHtmlFile.delete();
-        } catch (Exception ignored) {}
+        }
 
         try {
             indexHtmlRequestHandler.synchronizedHandleRequest(session,
                     vaadinServletRequest, response);
             throw new IllegalStateException("Must not reach to this point since index.html is not found");
-        } catch (IOException iOExeption) {
+        } catch (IOException iOException) {
             String expectedError = "Failed to load content of './frontend/index.html'." +
                     "It is required to have './frontend/index.html' file " +
                     "when using client side bootstrapping.";
-            assertEquals(expectedError, iOExeption.getMessage());
+            assertEquals(expectedError, iOException.getMessage());
         }
     }
 
