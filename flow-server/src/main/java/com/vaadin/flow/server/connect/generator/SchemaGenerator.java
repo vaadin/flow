@@ -174,7 +174,7 @@ class SchemaGenerator {
 
     private Map<String, Schema> getPropertiesFromClassDeclaration(
             TypeDeclaration<?> typeDeclaration) {
-        Map<String, Schema> properties = new TreeMap<String, Schema>();
+        Map<String, Schema> properties = new TreeMap<>();
         for (FieldDeclaration field : typeDeclaration.getFields()) {
             if (field.isTransient() || field.isStatic()
                     || field.isAnnotationPresent(JsonIgnore.class)) {
