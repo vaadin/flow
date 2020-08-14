@@ -458,7 +458,7 @@ public abstract class Component
      * the UI cleanup is performed at the end of the current request which also detaches the
      * UI and its components.
      *
-     * @return true if the component is attached to an UI.
+     * @return true if the component is attached to an active UI.
      */
     public boolean isAttached() {
         return getElement().getNode().isAttached();
