@@ -452,6 +452,19 @@ public abstract class Component
     }
 
     /**
+     * Checks whether this component is currently attached to a UI.
+     * <p>
+     * When {@link UI#close()} is called, the UI and the components are not detached immediately;
+     * the UI cleanup is performed at the end of the current request which also detaches the
+     * UI and its components.
+     *
+     * @return true if the component is attached to an active UI.
+     */
+    public boolean isAttached() {
+        return getElement().getNode().isAttached();
+    }
+
+    /**
      * Sets the value of the given component property.
      *
      * @see PropertyDescriptor

@@ -55,6 +55,7 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
+import org.mockito.Mockito;
 
 @NotThreadSafe
 public class ComponentTest {
@@ -755,6 +756,56 @@ public class ComponentTest {
         ui.remove(c);
         ui.add(c);
         Assert.assertFalse(initialAttach.get());
+    }
+
+    /**
+     * Tests {@link Component#isAttached}.
+     */
+    @Test
+    public void testIsAttached() {
+        UI ui = new UI();
+        // ui is initially attached
+        Assert.assertTrue(ui.isAttached());
+
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponentContainer child = new TestComponentContainer();
+        TestComponent grandChild = new TestComponent();
+        child.track();
+        grandChild.addAttachListener(
+                event -> Assert.assertTrue(grandChild.isAttached()));
+        grandChild.addDetachListener(
+                event -> grandChild.getDetachEvents().incrementAndGet());
+
+        parent.add(child);
+        child.add(grandChild);
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+
+        ui.add(parent);
+        Assert.assertTrue(parent.isAttached());
+        Assert.assertTrue(child.isAttached());
+        Assert.assertTrue(grandChild.isAttached());
+
+        ui.remove(parent);
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+
+        ui.add(parent);
+        Assert.assertTrue(parent.isAttached());
+        Assert.assertTrue(child.isAttached());
+        Assert.assertTrue(grandChild.isAttached());
+
+        // Mock closing of UI after request handled
+        ui.getInternals().setSession(Mockito.mock(VaadinSession.class));
+        ui.close();
+        ui.getInternals().setSession(null);
+
+        Assert.assertFalse(parent.isAttached());
+        Assert.assertFalse(child.isAttached());
+        Assert.assertFalse(grandChild.isAttached());
+        Assert.assertFalse(ui.isAttached());
     }
 
     @Test(expected = IllegalArgumentException.class)
