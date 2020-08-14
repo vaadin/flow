@@ -211,7 +211,7 @@ class SchemaGenerator {
 
     private void addFieldAnnotationsToSchema(FieldDeclaration field,
             Schema<?> schema) {
-        Set<String> annotations = new LinkedHashSet<String>();
+        Set<String> annotations = new LinkedHashSet<>();
         field.getAnnotations().stream().forEach(annotation -> {
             String str = annotation.toString()
                     // remove annotation character
