@@ -47,10 +47,10 @@ import org.slf4j.LoggerFactory;
  * Methods related with creating schema declarations, used by
  * OpenApiObjectGenerator.
  */
-public class SchemaGenerator {
+class SchemaGenerator {
     private final OpenApiObjectGenerator openApiObjectGenerator;
 
-    public SchemaGenerator(OpenApiObjectGenerator openApiObjectGenerator) {
+    SchemaGenerator(OpenApiObjectGenerator openApiObjectGenerator) {
         this.openApiObjectGenerator = openApiObjectGenerator;
     }
 
