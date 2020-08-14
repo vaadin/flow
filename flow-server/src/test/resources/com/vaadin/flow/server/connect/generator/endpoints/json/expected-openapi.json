@@ -9,13 +9,13 @@
     "description" : "Vaadin Connect backend"
   } ],
   "tags" : [ {
-    "name" : "JsonTestEndpoint",
-    "description" : "This class is used for OpenApi generator test",
-    "x-vaadin-file-path": "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
-  }, {
     "name" : "GeneratorAnonymousAllowedTestClass",
     "description" : "This nested class is also used in the OpenApi generator test",
-    "x-vaadin-file-path": "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
+    "x-vaadin-file-path" : "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
+  }, {
+    "name" : "JsonTestEndpoint",
+    "description" : "This class is used for OpenApi generator test",
+    "x-vaadin-file-path" : "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
   } ],
   "paths" : {
     "/JsonTestEndpoint/countUser" : {
@@ -518,28 +518,19 @@
   },
   "components" : {
     "schemas" : {
-      "com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.Status" : {
-        "required" : [ "createdAt", "text" ],
-        "type" : "object",
-        "properties" : {
-          "createdAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "text" : {
-            "type" : "string",
-            "description" : "Multiple line description should work.This is very very very very very\nvery very very long."
-          }
-        },
-        "description" : "Status bean. Used only in request parameters to verify that request\nparameter type descriptions are generated.",
-        "x-vaadin-file-path": "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
+      "com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.Permissions" : {
+        "type" : "string",
+        "enum" : [ "ADMIN", "USER", "GUEST" ],
+        "x-vaadin-file-path" : "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
       },
       "com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.Role" : {
         "required" : [ "permissions", "roleName" ],
         "type" : "object",
         "properties" : {
           "permissions" : {
-            "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.Permissions"
+            "allOf" : [ {
+              "$ref" : "#/components/schemas/com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.Permissions"
+            } ]
           },
           "roleName" : {
             "type" : "string",
@@ -547,7 +538,7 @@
           }
         },
         "description" : "Role bean",
-        "x-vaadin-file-path": "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
+        "x-vaadin-file-path" : "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
       },
       "com.fasterxml.jackson.core.Version" : {
         "required" : [ "_artifactId", "_groupId", "_majorVersion", "_minorVersion", "_patchLevel", "_snapshotInfo" ],
@@ -573,6 +564,22 @@
           }
         }
       },
+      "com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.Status" : {
+        "required" : [ "createdAt", "text" ],
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "text" : {
+            "type" : "string",
+            "description" : "Multiple line description should work.This is very very very very very\nvery very very long."
+          }
+        },
+        "description" : "Status bean. Used only in request parameters to verify that request\nparameter type descriptions are generated.",
+        "x-vaadin-file-path" : "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
+      },
       "com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.User" : {
         "required" : [ "name", "password", "roles" ],
         "type" : "object",
@@ -593,11 +600,6 @@
             }
           }
         },
-        "x-vaadin-file-path": "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
-      },
-      "com.vaadin.flow.server.connect.generator.endpoints.json.JsonTestEndpoint.Permissions" : {
-        "type" : "string",
-        "enum" : [ "ADMIN", "USER", "GUEST" ],
         "x-vaadin-file-path" : "com/vaadin/flow/server/connect/generator/endpoints/json/JsonTestEndpoint.java"
       }
     },

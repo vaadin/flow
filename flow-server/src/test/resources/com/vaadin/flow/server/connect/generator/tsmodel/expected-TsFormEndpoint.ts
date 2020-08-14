@@ -111,6 +111,10 @@ export default class MyEntityModel<T extends MyEntity = MyEntity> extends MyEnti
     return this[_getPropertyModel]('notNull', StringModel, [false, new NotNull()]);
   }
 
+  get notNullEntity(): MyEntityModel {
+    return this[_getPropertyModel]('notNullEntity', MyEntityModel, [false, new NotNull()]);
+  }
+
   get nullableEntity(): MyEntityModel {
     return this[_getPropertyModel]('nullableEntity', MyEntityModel, [true]);
   }
