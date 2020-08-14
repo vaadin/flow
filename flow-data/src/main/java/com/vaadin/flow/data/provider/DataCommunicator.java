@@ -706,7 +706,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
-        Stream<T> stream = Stream.empty();
+        Stream<T> stream;
         QueryTrace query = null;
 
         if (pagingEnabled) {
