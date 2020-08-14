@@ -19,18 +19,14 @@ import javax.annotation.Nullable;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-
-import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +35,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
@@ -47,7 +42,6 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -59,8 +53,6 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
-import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
@@ -82,7 +74,6 @@ import io.swagger.v3.oas.models.media.MapSchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -124,6 +115,7 @@ public class OpenApiObjectGenerator {
     private OpenAPI openApiModel;
     private final EndpointNameChecker endpointNameChecker = new EndpointNameChecker();
     private ClassLoader typeResolverClassLoader;
+    private SchemaGenerator schemaGenerator;
     private SchemaResolver schemaResolver;
 
     /**
@@ -182,6 +174,21 @@ public class OpenApiObjectGenerator {
         return openApiModel;
     }
 
+    Schema parseResolvedTypeToSchema(ResolvedType resolvedType) {
+        return schemaResolver.parseResolvedTypeToSchema(resolvedType);
+    }
+
+    Class<?> getClassFromReflection(ResolvedReferenceType resolvedType)
+            throws ClassNotFoundException {
+        String fullyQualifiedName = getFullyQualifiedName(resolvedType);
+        if (typeResolverClassLoader != null) {
+            return Class.forName(fullyQualifiedName, true,
+                    typeResolverClassLoader);
+        } else {
+            return Class.forName(fullyQualifiedName);
+        }
+    }
+
     private void init() {
         if (javaSourcePaths == null || configuration == null) {
             throw new IllegalStateException(
@@ -194,6 +201,7 @@ public class OpenApiObjectGenerator {
         usedTypes = new HashMap<>();
         generatedSchema = new HashSet<>();
         endpointsJavadoc = new HashMap<>();
+        schemaGenerator = new SchemaGenerator(this);
         schemaResolver = new SchemaResolver();
         ParserConfiguration parserConfiguration = createParserConfiguration();
 
@@ -396,7 +404,8 @@ public class OpenApiObjectGenerator {
         }
         List<Schema> result = new ArrayList<>();
 
-        Schema schema = createSingleSchema(fullQualifiedName, typeDeclaration);
+        Schema schema = schemaGenerator
+                .createSingleSchema(fullQualifiedName, typeDeclaration);
         generatedSchema.add(fullQualifiedName);
 
         NodeList<ClassOrInterfaceType> extendedTypes = null;
@@ -428,27 +437,6 @@ public class OpenApiObjectGenerator {
         return result;
     }
 
-    private Schema createSingleSchema(String fullQualifiedName,
-            TypeDeclaration<?> typeDeclaration) {
-        Optional<String> description = typeDeclaration.getJavadoc()
-                .map(javadoc -> javadoc.getDescription().toText());
-        Schema schema = new ObjectSchema();
-        schema.setName(fullQualifiedName);
-        description.ifPresent(schema::setDescription);
-        Map<String, Schema> properties = getPropertiesFromClassDeclaration(
-                typeDeclaration);
-        schema.properties(properties);
-        List<String> requiredList = properties.entrySet().stream()
-                .filter(stringSchemaEntry -> GeneratorUtils
-                        .isNotTrue(stringSchemaEntry.getValue().getNullable()))
-                .map(Map.Entry::getKey).collect(Collectors.toList());
-        // Nullable is represented in requiredList instead.
-        properties.values()
-                .forEach(propertySchema -> propertySchema.nullable(null));
-        schema.setRequired(requiredList);
-        return schema;
-    }
-
     private List<Schema> createSchemasFromQualifiedNameAndType(
             String qualifiedName, ResolvedReferenceType resolvedReferenceType) {
         List<Schema> list = parseNonEndpointClassAsSchema(qualifiedName);
@@ -457,69 +445,6 @@ public class OpenApiObjectGenerator {
         } else {
             return list;
         }
-    }
-
-    private Map<String, Schema> getPropertiesFromClassDeclaration(
-            TypeDeclaration<?> typeDeclaration) {
-        Map<String, Schema> properties = new TreeMap<>();
-        for (FieldDeclaration field : typeDeclaration.getFields()) {
-            if (field.isTransient() || field.isStatic()
-                    || field.isAnnotationPresent(JsonIgnore.class)) {
-                continue;
-            }
-            Optional<String> fieldDescription = field.getJavadoc()
-                    .map(javadoc -> javadoc.getDescription().toText());
-            field.getVariables().forEach(variableDeclarator -> {
-                Schema propertySchema = parseTypeToSchema(
-                        variableDeclarator.getType(),
-                        fieldDescription.orElse(""));
-                if (field.isAnnotationPresent(Nullable.class)
-                        || GeneratorUtils.isTrue(propertySchema.getNullable())) {
-                    // Temporarily set nullable to indicate this property is
-                    // not required
-                    propertySchema.setNullable(true);
-                }
-                addFieldAnnotationsToSchema(field, propertySchema);
-                properties.put(variableDeclarator.getNameAsString(),
-                        propertySchema);
-            });
-        }
-        return properties;
-    }
-
-    private void addFieldAnnotationsToSchema(FieldDeclaration field,
-            Schema<?> schema) {
-        Set<String> annotations = new LinkedHashSet<>();
-        field.getAnnotations().stream().forEach(annotation -> {
-            String str = annotation.toString()
-                    // remove annotation character
-                    .replaceFirst("@", "")
-                    // change to json syntax
-                    .replace(" = ", ":");
-            // wrap arguments with curly if there are json key:value arguments
-            if (str.contains(":")) {
-                str =  str.replaceFirst("\\(", "({").replaceFirst("\\)$", "})");
-            }
-            // append parenthesis if not already
-            str += str.contains("(") ? "" : "()";
-
-            if (str.matches(
-                    "(Email|Null|NotNull|NotEmpty|NotBlank|AssertTrue|AssertFalse|Negative|NegativeOrZero|Positive|PositiveOrZero|Size|Past|Future|Digits|Min|Max|Pattern|DecimalMin|DecimalMax)\\(.+")) {
-                annotations.add(str);
-            }
-        });
-        if (!annotations.isEmpty()) {
-            schema.addExtension(CONSTRAINT_ANNOTATIONS,
-                    annotations.stream()
-                            .sorted((a, b) -> isAnnotationIndicatingRequired(a) ? -1
-                                    : isAnnotationIndicatingRequired(b) ? 1 : a.compareTo(b))
-                            .collect(Collectors.toList()));
-        }
-    }
-
-    private boolean isAnnotationIndicatingRequired(String str){
-        return str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
-            || str.matches("Size\\(\\{.*min:[^0].+");
     }
 
     private Map<String, ResolvedReferenceType> collectUsedTypesFromSchema(
@@ -658,7 +583,7 @@ public class OpenApiObjectGenerator {
             MethodDeclaration methodDeclaration) {
         MediaType mediaItem = new MediaType();
         Type methodReturnType = methodDeclaration.getType();
-        Schema schema = parseTypeToSchema(methodReturnType, "");
+        Schema schema = schemaGenerator.parseTypeToSchema(methodReturnType, "");
         if (methodDeclaration.isAnnotationPresent(Nullable.class)) {
             schema = schemaResolver.createNullableWrapper(schema);
         }
@@ -687,7 +612,8 @@ public class OpenApiObjectGenerator {
         requestSchema.setRequired(new ArrayList<>());
         requestBodyObject.schema(requestSchema);
         methodDeclaration.getParameters().forEach(parameter -> {
-            Schema paramSchema = parseTypeToSchema(parameter.getType(), "");
+            Schema paramSchema = schemaGenerator
+                    .parseTypeToSchema(parameter.getType(), "");
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
             String name = (isReservedWord(parameter.getNameAsString()) ? "_"
                     : "").concat(parameter.getNameAsString());
@@ -710,27 +636,8 @@ public class OpenApiObjectGenerator {
         return requestBody;
     }
 
-    private Schema parseTypeToSchema(Type javaType, String description) {
-        try {
-            Schema schema = parseResolvedTypeToSchema(javaType.resolve());
-            if (GeneratorUtils.isNotBlank(description)) {
-                schema.setDescription(description);
-            }
-            return schema;
-        } catch (Exception e) {
-            getLogger().info(String.format(
-                    "Can't resolve type '%s' for creating custom OpenAPI Schema. Using the default ObjectSchema instead.",
-                    javaType.asString()), e);
-        }
-        return new ObjectSchema();
-    }
-
     private static Logger getLogger() {
         return LoggerFactory.getLogger(OpenApiObjectGenerator.class);
-    }
-
-    private Schema parseResolvedTypeToSchema(ResolvedType resolvedType) {
-        return schemaResolver.parseResolvedTypeToSchema(resolvedType);
     }
 
     @SuppressWarnings("squid:S1872")
@@ -738,7 +645,8 @@ public class OpenApiObjectGenerator {
             ResolvedReferenceType resolvedType) {
         List<Schema> results = new ArrayList<>();
 
-        Schema schema = createSingleSchemaFromResolvedType(resolvedType);
+        Schema schema = schemaGenerator
+                .createSingleSchemaFromResolvedType(resolvedType);
         String qualifiedName = resolvedType.getQualifiedName();
         generatedSchema.add(qualifiedName);
 
@@ -779,93 +687,6 @@ public class OpenApiObjectGenerator {
                         createSchemasFromQualifiedNameAndType(s.getKey(),
                                 s.getValue())));
         return result;
-    }
-
-    private Schema createSingleSchemaFromResolvedType(
-            ResolvedReferenceType resolvedType) {
-        if (resolvedType.getTypeDeclaration().isEnum()) {
-            List<String> entries = resolvedType
-                    .getTypeDeclaration().asEnum().getEnumConstants().stream()
-                    .map(ResolvedEnumConstantDeclaration::getName)
-                    .collect(Collectors.toList());
-            StringSchema schema = new StringSchema();
-            schema.name(resolvedType.getQualifiedName());
-            schema.setEnum(entries);
-            return schema;
-        }
-        Schema schema = new ObjectSchema()
-                .name(resolvedType.getQualifiedName());
-        Map<String, Boolean> fieldsOptionalMap = getFieldsAndOptionalMap(
-                resolvedType);
-        Set<ResolvedFieldDeclaration> serializableFields = resolvedType
-                .getDeclaredFields().stream()
-                .filter(resolvedFieldDeclaration -> fieldsOptionalMap
-                        .containsKey(resolvedFieldDeclaration.getName()))
-                .collect(Collectors.toSet());
-        // Make sure the order is consistent in properties map
-        schema.setProperties(new TreeMap<>());
-        for (ResolvedFieldDeclaration resolvedFieldDeclaration : serializableFields) {
-            String name = resolvedFieldDeclaration.getName();
-            Schema type = parseResolvedTypeToSchema(
-                    resolvedFieldDeclaration.getType());
-            if (!fieldsOptionalMap.get(name)) {
-                schema.addRequiredItem(name);
-            }
-            schema.addProperties(name, type);
-        }
-        return schema;
-    }
-
-    /**
-     * Because it's not possible to check the `transient` modifier and
-     * annotation of a field using JavaParser API. We need this method to
-     * reflect the type and get those information from the reflected object.
-     *
-     * @param resolvedType
-     *            type of the class to get fields information
-     * @return set of fields' name that we should generate.
-     */
-    private Map<String, Boolean> getFieldsAndOptionalMap(
-            ResolvedReferenceType resolvedType) {
-        if (!resolvedType.getTypeDeclaration().isClass()
-                || resolvedType.getTypeDeclaration().isAnonymousClass()) {
-            return Collections.emptyMap();
-        }
-        HashMap<String, Boolean> validFields = new HashMap<>();
-        try {
-            Class<?> aClass = getClassFromReflection(resolvedType);
-            Arrays.stream(aClass.getDeclaredFields()).filter(field -> {
-
-                int modifiers = field.getModifiers();
-                return !Modifier.isStatic(modifiers)
-                        && !Modifier.isTransient(modifiers)
-                        && !field.isAnnotationPresent(JsonIgnore.class);
-            }).forEach(field -> validFields.put(field.getName(),
-                    field.isAnnotationPresent(Nullable.class)
-                            || field.getType().equals(Optional.class)));
-        } catch (ClassNotFoundException e) {
-
-            String message = String.format(
-                    "Can't get list of fields from class '%s'."
-                            + "Please make sure that class '%s' is in your project's compile classpath. "
-                            + "As the result, the generated TypeScript file will be empty.",
-                    resolvedType.getQualifiedName(),
-                    resolvedType.getQualifiedName());
-            getLogger().info(message);
-            getLogger().debug(message, e);
-        }
-        return validFields;
-    }
-
-    private Class<?> getClassFromReflection(ResolvedReferenceType resolvedType)
-            throws ClassNotFoundException {
-        String fullyQualifiedName = getFullyQualifiedName(resolvedType);
-        if (typeResolverClassLoader != null) {
-            return Class.forName(fullyQualifiedName, true,
-                    typeResolverClassLoader);
-        } else {
-            return Class.forName(fullyQualifiedName);
-        }
     }
 
     /**
