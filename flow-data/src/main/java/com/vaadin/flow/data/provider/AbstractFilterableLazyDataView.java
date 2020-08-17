@@ -34,12 +34,12 @@ import com.vaadin.flow.function.SerializableSupplier;
 public abstract class AbstractFilterableLazyDataView<T, F> extends
         AbstractLazyDataView<T> implements FilterableLazyDataView<T, F> {
 
-    private SerializableConsumer<F> filterConsumer;
+    private SerializableConsumer<Object> filterConsumer;
 
     private SerializableSupplier<F> filterSupplier;
 
     // Merges a component's old filter and a new configured filter
-    private FilterCombiner<F> filterCombiner;
+    private FilterCombiner<F, ?> filterCombiner;
 
     /**
      * Creates a new instance, verifies the passed data provider is compatible
@@ -58,8 +58,9 @@ public abstract class AbstractFilterableLazyDataView<T, F> extends
      *            <code>null</code>
      */
     public AbstractFilterableLazyDataView(DataCommunicator<T> dataCommunicator,
-            Component component, SerializableConsumer<F> filterConsumer,
-            SerializableSupplier<F> filterSupplier) {
+            Component component, SerializableConsumer<Object> filterConsumer,
+            SerializableSupplier<F> filterSupplier,
+                                          FilterCombiner<F, ?> filterCombiner) {
         super(dataCommunicator, component);
         Objects.requireNonNull(filterConsumer,
                 "Filter consumer cannot be null");
@@ -67,21 +68,13 @@ public abstract class AbstractFilterableLazyDataView<T, F> extends
                 "Filter supplier cannot be null");
         this.filterConsumer = filterConsumer;
         this.filterSupplier = filterSupplier;
-        this.filterCombiner = FilterCombiner.identity();
-    }
-
-    @Override
-    public void setFilter(F filter) {
-        F combinedFilter = FilterUtils.combineFilters(filterCombiner, filter,
-                filterSupplier.get());
-        filterConsumer.accept(combinedFilter);
-    }
-
-    @Override
-    public void setFilterCombiner(FilterCombiner<F> filterCombiner) {
-        Objects.requireNonNull(filterCombiner,
-                "Filter combiner cannot be null");
         this.filterCombiner = filterCombiner;
+    }
+
+    @Override
+    public void setFilter(Object filter) {
+        Object combinedFilter = filterCombiner.apply(filterSupplier.get(), filter);
+        filterConsumer.accept(combinedFilter);
     }
 
     @Override

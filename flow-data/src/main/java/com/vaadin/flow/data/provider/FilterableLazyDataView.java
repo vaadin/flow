@@ -38,7 +38,7 @@ public interface FilterableLazyDataView<T, F> extends LazyDataView<T> {
      *
      * @see #removeFilter()
      */
-    void setFilter(F filter);
+    void setFilter(Object filter);
 
     /**
      * Removes a filter from component.
@@ -48,19 +48,6 @@ public interface FilterableLazyDataView<T, F> extends LazyDataView<T> {
     default void removeFilter() {
         setFilter(null);
     }
-
-    /**
-     * Sets the filter combiner function which will be used to merge the
-     * previous configured filter and a new filter set with
-     * {@link #setFilter(Object)}.
-     * 
-     * @param filterCombiner
-     *            function for combining a previous component's configured
-     *            filter and a new configured filter, not <code>null</code>
-     *
-     * @see #setFilter(Object)
-     */
-    void setFilterCombiner(FilterCombiner<F> filterCombiner);
 
     /**
      * Sets a callback that the component uses to get the exact item count in

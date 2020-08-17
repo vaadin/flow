@@ -26,7 +26,8 @@ import com.vaadin.flow.function.SerializableBiFunction;
  *            the filter type
  */
 @FunctionalInterface
-public interface FilterCombiner<F> extends SerializableBiFunction<F, F, F> {
+public interface FilterCombiner<F, Q> extends SerializableBiFunction<F, Object,
+        Q> {
 
     /**
      * Returns a filter combiner that always applies a new configured filter and
@@ -37,7 +38,7 @@ public interface FilterCombiner<F> extends SerializableBiFunction<F, F, F> {
      * 
      * @return a filter combiner that always return a new filter as a result.
      */
-    static <F> FilterCombiner<F> identity() {
-        return (newFilter, previousFilter) -> newFilter;
+    static <F> FilterCombiner<F, F> identity() {
+        return (componentFilter, customFilter) -> componentFilter;
     }
 }
