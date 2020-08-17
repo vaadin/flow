@@ -47,17 +47,6 @@ public class IdTestIT extends ChromeBrowserTest {
     public void testIds() {
         open();
 
-        String[] types = {BROWSER, CLIENT, DRIVER, PROFILER, SERVER};
-
-        Arrays.stream(types).forEach(type -> {
-            LogEntries logEntries = getDriver().manage().logs().get(type);
-            LoggerFactory.getLogger(IdTestIT.class)
-                    .error("==================" + type);
-            logEntries.forEach(entry ->
-                    LoggerFactory.getLogger(IdTestIT.class)
-                            .error(entry.toString()));
-        });
-
         checkLogsForErrors(
                 msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
 
