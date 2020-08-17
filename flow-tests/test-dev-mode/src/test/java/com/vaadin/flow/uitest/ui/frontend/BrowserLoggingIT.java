@@ -30,6 +30,7 @@ import static org.junit.Assert.assertThat;
  * @author Vaadin Ltd
  * @since 1.0.
  */
+@Ignore
 public class BrowserLoggingIT extends ChromeBrowserTest {
 
     @Test
