@@ -17,16 +17,15 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -631,7 +630,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return {@code true} for paged queries, {@code false} for offset/limit
      *         queries
-     * 
+     *
      * @see #setPagingEnabled(boolean)
      */
     public boolean isPagingEnabled() {
@@ -640,7 +639,7 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Sets whether paged queries or offset/limit queries will be used.
-     * 
+     *
      * @param pagingEnabled
      *            {@code true} for paged queries, {@code false} for offset/limit
      *            queries
@@ -707,7 +706,7 @@ public class DataCommunicator<T> implements Serializable {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
         Stream<T> stream;
-        QueryTrace query = null;
+        QueryTrace query;
 
         if (pagingEnabled) {
             /*
@@ -725,24 +724,10 @@ public class DataCommunicator<T> implements Serializable {
                  * Requested range is split to several pages, and queried from
                  * backend page by page
                  */
-                final Collection<T> fetchedPages = new LinkedList<>();
-                for (int page = 0; page < pages; page++) {
-                    final int newOffset = offset + page * pageSize;
-                    query = new QueryTrace(newOffset, pageSize, backEndSorting,
-                            inMemorySorting, filter);
-                    Stream<T> fetchedPageStream =
-                            getDataProvider().fetch(query);
-                    List<T> fetchedPage =
-                            fetchedPageStream.collect(Collectors.toList());
-                    fetchedPages.addAll(fetchedPage);
-
-                    // Stop fetching other pages if data set end has
-                    // been reached
-                    if (fetchedPage.size() < pageSize) {
-                        break;
-                    }
-                }
-                stream = fetchedPages.stream();
+                final PagesFetchResult<T> pagesFetchResult = fetchPages(pages,
+                        offset);
+                query = pagesFetchResult.getFetchQuery();
+                stream = pagesFetchResult.getFetchedStream();
             } else {
                 query = new QueryTrace(offset, pageSize, backEndSorting,
                         inMemorySorting, filter);
@@ -1116,6 +1101,29 @@ public class DataCommunicator<T> implements Serializable {
         return json;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private PagesFetchResult<T> fetchPages(int pages, int offset) {
+        QueryTrace query;
+        final Stream.Builder<T> streamBuilder = Stream.builder();
+
+        final AtomicInteger fetchedPerPage = new AtomicInteger(0);
+        Consumer<T> addItemAndCheckConsumer = item -> {
+            streamBuilder.add(item);
+            fetchedPerPage.getAndIncrement();
+        };
+        // Keep fetching the pages until we get empty/partial page,
+        // or run out of pages to request
+        int page = 0;
+        do {
+            final int newOffset = offset + (page++) * pageSize;
+            query = new QueryTrace(newOffset, pageSize, backEndSorting,
+                    inMemorySorting, filter);
+            getDataProvider().fetch(query).forEach(addItemAndCheckConsumer);
+        } while (page < pages && fetchedPerPage.getAndSet(0) == pageSize);
+
+        return new PagesFetchResult<>(streamBuilder.build(), query);
+    }
+
     private static class Activation implements Serializable {
         private final List<String> activeKeys;
         private final boolean sizeRecheckNeeded;
@@ -1137,4 +1145,24 @@ public class DataCommunicator<T> implements Serializable {
             return new Activation(Collections.emptyList(), false);
         }
     }
+
+    @SuppressWarnings("rawtypes")
+    private static class PagesFetchResult<T> {
+        private Stream<T> fetchedStream;
+        private QueryTrace fetchQuery;
+
+        public PagesFetchResult(Stream<T> fetchedStream, QueryTrace fetchQuery) {
+            this.fetchedStream = fetchedStream;
+            this.fetchQuery = fetchQuery;
+        }
+
+        public Stream<T> getFetchedStream() {
+            return fetchedStream;
+        }
+
+        public QueryTrace getFetchQuery() {
+            return fetchQuery;
+        }
+    }
+
 }
