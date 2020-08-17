@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -40,6 +41,7 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 
+@Ignore
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";

@@ -23,6 +23,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,6 +47,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+@Ignore
 @NotThreadSafe
 public class TaskRunNpmInstallTest {
 
