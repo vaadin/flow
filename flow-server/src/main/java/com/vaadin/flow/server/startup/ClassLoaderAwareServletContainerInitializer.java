@@ -87,7 +87,7 @@ public interface ClassLoaderAwareServletContainerInitializer
                     .filter(method -> !method.isDefault()
                             && !method.isSynthetic())
                     .findFirst().get().getName();
-            Method operation = Stream.of(initializer.getDeclaredMethods())
+            Method operation = Stream.of(initializer.getDeclaredMethod(processMethodName, Set.class, ServletContext.class))
                     .filter(method -> method.getName()
                             .equals(processMethodName))
                     .findFirst().get();
@@ -95,7 +95,7 @@ public interface ClassLoaderAwareServletContainerInitializer
                     new Object[] { set, ctx });
         } catch (ClassNotFoundException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException
-                | InstantiationException e) {
+                | InstantiationException | NoSuchMethodException e) {
             throw new ServletException(e);
         }
     }
