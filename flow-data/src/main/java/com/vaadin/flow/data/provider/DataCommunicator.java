@@ -1147,7 +1147,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     @SuppressWarnings("rawtypes")
-    private static class PagesFetchResult<T> {
+    private static class PagesFetchResult<T> implements Serializable {
         private Stream<T> fetchedStream;
         private QueryTrace fetchQuery;
 
