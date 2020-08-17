@@ -47,7 +47,7 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
         try {
             process(set, new VaadinServletContext(ctx));
         } catch (VaadinInitializerException vie) {
-            throw new ServletException(vie.getCause());
+            throw new ServletException(vie);
         }
     }
 

@@ -48,7 +48,7 @@ public class ConnectEndpointsValidator
         try {
             process(set, new VaadinServletContext(ctx));
         } catch (VaadinInitializerException vie) {
-            throw new ServletException(vie.getCause());
+            throw new ServletException(vie);
         }
     }
 

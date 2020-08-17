@@ -226,7 +226,7 @@ public class DevModeInitializer
 
             setDevModeStarted(vaadinServletContext);
         } catch (VaadinInitializerException vie) {
-            throw new ServletException(vie.getCause());
+            throw new ServletException(vie);
         }
     }
 
@@ -267,7 +267,7 @@ public class DevModeInitializer
         try {
             initDevModeHandler(classes, new VaadinServletContext(context), config);
         } catch (VaadinInitializerException vie) {
-            throw new ServletException(vie.getCause());
+            throw new ServletException(vie);
         }
     }
 
