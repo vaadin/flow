@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.google.common.collect.Maps;
+import com.vaadin.flow.server.VaadinServletContext;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -394,7 +395,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 .thenAnswer(answer ->
                         servletContextAttributes.get(answer.getArgumentAt(0, String.class)));
         process();
-        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(servletContext));
+        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(new VaadinServletContext(servletContext)));
     }
 
     @Test(expected = IllegalStateException.class)

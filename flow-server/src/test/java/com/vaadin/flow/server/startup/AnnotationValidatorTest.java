@@ -1,11 +1,12 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,12 +32,12 @@ public class AnnotationValidatorTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     private AnnotationValidator annotationValidator;
-    private ServletContext servletContext;
+    private VaadinContext vaadinContext;
 
     @Before
     public void init() {
         annotationValidator = new AnnotationValidator();
-        servletContext = Mockito.mock(ServletContext.class);
+        vaadinContext = new VaadinServletContext(Mockito.mock(ServletContext.class));
     }
 
     @Tag(Tag.DIV)
@@ -80,13 +81,13 @@ public class AnnotationValidatorTest {
 
     @Test
     public void onStartUp_all_failing_anotations_are_reported()
-            throws ServletException {
+            throws VaadinInitializerException {
         try {
             annotationValidator.process(Stream
                     .of(InlineViewportWithParent.class,
                             BodySizeViewportWithParent.class,
                             ViewPortViewportWithParent.class)
-                    .collect(Collectors.toSet()), servletContext);
+                    .collect(Collectors.toSet()), vaadinContext);
             Assert.fail("No exception was thrown for faulty setup.");
         } catch (InvalidApplicationConfigurationException iace) {
             String errorMessage = iace.getMessage();
@@ -109,7 +110,7 @@ public class AnnotationValidatorTest {
 
     @Test
     public void onStartUp_all_failing_annotations_are_marked_for_class()
-            throws ServletException {
+            throws VaadinInitializerException {
         expectedEx.expect(InvalidApplicationConfigurationException.class);
         expectedEx.expectMessage(ERROR_MESSAGE_BEGINNING + String.format(
                 NON_PARENT, FailingMultiAnnotation.class.getName(),
@@ -117,16 +118,16 @@ public class AnnotationValidatorTest {
                         + "@" + Inline.class.getSimpleName()));
 
         annotationValidator.process(Stream.of(FailingMultiAnnotation.class)
-                .collect(Collectors.toSet()), servletContext);
+                .collect(Collectors.toSet()), vaadinContext);
 
         Assert.fail("No exception was thrown for faulty setup.");
     }
 
     @Test
     public void onStartUp_no_exception_is_thrown_for_correctly_setup_classes()
-            throws ServletException {
+            throws VaadinInitializerException {
         annotationValidator
                 .process(Stream.of(MultiAnnotation.class, AbstractMain.class)
-                        .collect(Collectors.toSet()), servletContext);
+                        .collect(Collectors.toSet()), vaadinContext);
     }
 }

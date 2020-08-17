@@ -1,11 +1,12 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +25,7 @@ public class ConnectEndpointsValidatorTest {
     }
 
     private Set<Class<?>> classes;
-    private ServletContext servletContext;
+    private VaadinContext vaadinContext;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -32,23 +33,23 @@ public class ConnectEndpointsValidatorTest {
     @Before
     public void setup() {
         classes = new HashSet<Class<?>>();
-        servletContext = Mockito.mock(ServletContext.class);
+        vaadinContext = new VaadinServletContext(Mockito.mock(ServletContext.class));
     }
 
     @Test
     public void should_start_when_spring_in_classpath() throws Exception {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         classes.add(WithConnectEndpoint.class);
-        validator.process(classes, servletContext);
+        validator.process(classes, vaadinContext);
     }
 
     @Test
-    public void should_trow_when_spring_not_in_classpath() throws Exception {
-        exception.expect(ServletException.class);
+    public void should_throw_when_spring_not_in_classpath() throws Exception {
+        exception.expect(VaadinInitializerException.class);
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         validator.setClassToCheck("foo.bar.Baz");
         classes.add(WithConnectEndpoint.class);
-        validator.process(classes, servletContext);
+        validator.process(classes, vaadinContext);
 
     }
 
@@ -57,13 +58,13 @@ public class ConnectEndpointsValidatorTest {
             throws Exception {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         classes.add(WithoutConnectEndpoint.class);
-        validator.process(classes, servletContext);
+        validator.process(classes, vaadinContext);
     }
 
     @Test
     public void should_start_when_CDI_environment() throws Exception {
         ConnectEndpointsValidator validator = new ConnectEndpointsValidator();
         classes = null;
-        validator.process(classes, servletContext);
+        validator.process(classes, vaadinContext);
     }
 }
