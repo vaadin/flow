@@ -107,14 +107,14 @@ public interface ClassLoaderAwareServletContainerInitializer
      * @param set
      *            the Set of application classes that extend, implement, or have
      *            been annotated with the class types specified by the
-     *            {@link javax.servlet.annotation.HandlesTypes HandlesTypes}
-     *            annotation, or <tt>null</tt> if there are no matches, or this
+     *            {@link javax.servlet.annotation.HandlesTypes} annotation,
+     *            or <tt>null</tt> if there are no matches, or this
      *            <tt>ServletContainerInitializer</tt> has not been annotated
      *            with <tt>HandlesTypes</tt>
      *
      * @param ctx
-     *            the <tt>ServletContext</tt> of the web application that is
-     *            being started and in which the classes contained in <tt>c</tt>
+     *            the {@link ServletContext} of the web application that is
+     *            being started and in which the classes contained in <tt>set</tt>
      *            were found
      *
      * @throws ServletException

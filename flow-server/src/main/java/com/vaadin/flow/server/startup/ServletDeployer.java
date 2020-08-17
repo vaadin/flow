@@ -267,7 +267,7 @@ public class ServletDeployer implements ServletContextListener {
      * servlet automatically but don't use this class for that.
      *
      * @param servletContext
-     *            the deployed servlet context
+     *            the deployed {@link ServletContext}
      * @param servletAutomaticallyCreated
      *            whether the servlet was automatically created
      * @since

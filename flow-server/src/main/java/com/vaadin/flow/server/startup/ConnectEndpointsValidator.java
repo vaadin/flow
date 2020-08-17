@@ -42,6 +42,25 @@ public class ConnectEndpointsValidator
 
     private String classToCheck = "org.springframework.boot.autoconfigure.jackson.JacksonProperties";
 
+    /**
+     *
+     * @param set
+     *            the Set of application classes that extend, implement, or have
+     *            been annotated with the class types specified by the
+     *            {@link HandlesTypes} annotation, or <tt>null</tt> if
+     *            there are no matches, or this <tt>ServletContainerInitializer</tt>
+     *            has not been annotated with <tt>HandlesTypes</tt>
+     *
+     * @param ctx
+     *            the {@link ServletContext} of the web application that is
+     *            being started and in which the classes contained in <tt>set</tt>
+     *            were found
+     *
+     * @deprecated Use {@link #process(Set, VaadinContext)} instead
+     *             by wrapping {@link ServletContext} with {@link VaadinServletContext}.
+     *
+     * @throws ServletException
+     */
     @Override
     @Deprecated
     public void process(Set<Class<?>> set, ServletContext ctx) throws ServletException {

@@ -188,7 +188,7 @@ public class DevModeInitializer
                     + "/?$");
 
     // Attribute key for storing Dev Mode Handler startup flag.
-    // If presented in Vaadin Context, shows the Dev Mode Handler already
+    // If presented in VaadinContext, shows the Dev Mode Handler already
     // started / become starting.
     // This attribute helps to avoid Dev Mode running twice.
     //
@@ -253,9 +253,12 @@ public class DevModeInitializer
      * @param classes
      *            classes to check for npm- and js modules
      * @param context
-     *            servlet context we are running in
+     *            the {@link ServletContext} we are running in
      * @param config
-     *            deployment configuration
+     *            the {@link DeploymentConfiguration}
+     *
+     * @deprecated Use {@link #initDevModeHandler(Set, VaadinContext, DeploymentConfiguration)} instead
+     *             by wrapping {@link ServletContext} with {@link VaadinServletContext}.
      *
      * @throws ServletException
      *             if dev mode can't be initialized
@@ -278,16 +281,15 @@ public class DevModeInitializer
      * @param classes
      *            classes to check for npm- and js modules
      * @param vaadinContext
-     *            Vaadin context we are running in
+     *            the {@link VaadinContext} we are running in
      * @param config
-     *            deployment configuration
+     *            the {@link DeploymentConfiguration}
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
      */
     public static void initDevModeHandler(Set<Class<?>> classes,
-                                          VaadinContext vaadinContext, DeploymentConfiguration config)
-    {
+                                          VaadinContext vaadinContext, DeploymentConfiguration config) {
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return;
@@ -427,9 +429,14 @@ public class DevModeInitializer
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
      * @param servletContext
-     *            The servlet context, not <code>null</code>
+     *            The {@link ServletContext}, not <code>null</code>
+     *
+     * @deprecated Use {@link #isDevModeAlreadyStarted(VaadinContext)} instead
+     *             by wrapping {@link ServletContext} with {@link VaadinServletContext}.
+     *
      * @return <code>true</code> if {@link DevModeHandler} has already been
      *         started, <code>false</code> - otherwise
+     *
      */
     @Deprecated
     public static boolean isDevModeAlreadyStarted(
@@ -441,7 +448,7 @@ public class DevModeInitializer
      * Shows whether {@link DevModeHandler} has been already started or not.
      *
      * @param context
-     *            The Vaadin context, not <code>null</code>
+     *            The {@link VaadinContext}, not <code>null</code>
      * @return <code>true</code> if {@link DevModeHandler} has already been
      *         started, <code>false</code> - otherwise
      */
@@ -508,8 +515,7 @@ public class DevModeInitializer
     }
 
     private static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader, String resourcesFolder)
-             {
+            ClassLoader classLoader, String resourcesFolder) {
         Set<File> frontendFiles = new HashSet<>();
         try {
             Enumeration<URL> en = classLoader.getResources(resourcesFolder);

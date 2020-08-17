@@ -99,9 +99,12 @@ public class VaadinAppShellInitializer
      *            a set of classes that matches the {@link HandlesTypes} set in
      *            this class.
      * @param context
-     *            the servlet context.
+     *            the {@link ServletContext}.
      * @param config
-     *            the vaadin configuration for the application.
+     *            the Vaadin {@link DeploymentConfiguration} for the application.
+     *
+     * @deprecated Use {@link #init(Set, VaadinContext, DeploymentConfiguration)} instead
+     *             by wrapping {@link ServletContext} with {@link VaadinServletContext}.
      */
     @Deprecated
     public static void init(Set<Class<?>> classes, ServletContext context,
@@ -116,9 +119,9 @@ public class VaadinAppShellInitializer
      *            a set of classes that matches the {@link HandlesTypes} set in
      *            this class.
      * @param vaadinContext
-     *            the Vaadin context.
+     *            the {@link VaadinContext}.
      * @param config
-     *            the vaadin configuration for the application.
+     *            the Vaadin {@link DeploymentConfiguration} for the application.
      */
     @SuppressWarnings("unchecked")
     public static void init(Set<Class<?>> classes, VaadinContext vaadinContext,
