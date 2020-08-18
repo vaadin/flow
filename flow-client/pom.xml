@@ -169,6 +169,13 @@
                             <goal>generateAsync</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>gwt-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
                 </executions>
                 <configuration>
                     <!-- Assertions should be disabled once we introduce
