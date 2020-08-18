@@ -145,7 +145,8 @@ public abstract class AbstractComponentDataViewTest {
             if (this.comparator != null) {
                 filteredStream = filteredStream.sorted(this.comparator);
             }
-            return filteredStream;
+            return filteredStream.skip(query.getOffset())
+                    .limit(query.getLimit());
         }
 
         @Override
