@@ -245,30 +245,24 @@ public class JavaScriptBootstrapUI extends UI {
         if (!shouldHandleNavigation(location)) {
             return;
         }
-        try {
-            getInternals().setLastHandledNavigation(location);
-            Optional<NavigationState> navigationState = this.getRouter()
-                    .resolveNavigationTarget(location);
-            if (navigationState.isPresent()) {
-                // There is a valid route in flow.
-                handleNavigation(location, navigationState.get(), trigger);
-            } else {
-                // When route does not exist, try to navigate to current route
-                // in order to check if current view can be left before showing
-                // the error page
-                navigateToPlaceholder(location);
+        getInternals().setLastHandledNavigation(location);
+        Optional<NavigationState> navigationState = this.getRouter()
+                .resolveNavigationTarget(location);
+        if (navigationState.isPresent()) {
+            // There is a valid route in flow.
+            handleNavigation(location, navigationState.get(), trigger);
+        } else {
+            // When route does not exist, try to navigate to current route
+            // in order to check if current view can be left before showing
+            // the error page
+            navigateToPlaceholder(location);
 
-                if (!isPostponed()) {
-                    // Route does not exist, and current view does not prevent
-                    // navigation thus an error page is shown
-                    handleErrorNavigation(location);
-                }
-
+            if (!isPostponed()) {
+                // Route does not exist, and current view does not prevent
+                // navigation thus an error page is shown
+                handleErrorNavigation(location);
             }
-        } catch (Exception exception) {
-            handleExceptionNavigation(location, exception);
-        } finally {
-            getInternals().clearLastHandledNavigation();
+
         }
     }
 
@@ -284,19 +278,24 @@ public class JavaScriptBootstrapUI extends UI {
                         .trimPath(oldLocation.getPathWithQueryParameters()));
     }
 
-    private void handleNavigation(Location location,
-            NavigationState navigationState, NavigationTrigger trigger) {
-        NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
-                location, this, trigger);
+    private void handleNavigation(Location location, NavigationState navigationState, NavigationTrigger trigger) {
+        try {
+            NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
+                    location, this, trigger);
 
-        JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
-                navigationState);
+            JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
+                    navigationState);
 
-        clientNavigationStateRenderer.handle(navigationEvent);
+            clientNavigationStateRenderer.handle(navigationEvent);
 
-        forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
+            forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
 
-        adjustPageTitle();
+            adjustPageTitle();
+        } catch (Exception exception) {
+            handleExceptionNavigation(location, exception);
+        } finally {
+            getInternals().clearLastHandledNavigation();
+        }
     }
 
     private boolean handleExceptionNavigation(Location location,
