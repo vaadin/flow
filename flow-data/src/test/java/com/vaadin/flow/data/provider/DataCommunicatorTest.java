@@ -251,8 +251,8 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit or " +
-                        "getPageSize"));
+                "The data provider hasn't ever called getLimit() or " +
+                        "getPageSize()"));
         dataCommunicator.fetchFromProvider(0, 1);
     }
 
@@ -271,7 +271,7 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getOffset or getPage"));
+              "The data provider hasn't ever called getOffset() or getPage()"));
         dataCommunicator.fetchFromProvider(1, 1);
     }
 
