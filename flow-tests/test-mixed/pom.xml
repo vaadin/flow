@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>4.1-SNAPSHOT</version>
+        <version>5.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-pnpm-dev-mode</artifactId>
     <name>Flow tests in pnpm and development mode</name>
@@ -59,21 +59,21 @@
                 <configuration>
                     <systemProperties>
                         <systemProperty>
-                            <!-- this avoids an issue in chrome not loading 
+                            <!-- this avoids an issue in chrome not loading
                                 the components randomly when webpack dev server is not in debug mode -->
                             <name>vaadin.devmode.webpack.options</name>
                             <value>--debug</value>
                         </systemProperty>
                         <systemProperty>
-                            <!-- make sure we do not leave webpack-dev-server 
+                            <!-- make sure we do not leave webpack-dev-server
                                 running after IT -->
                             <name>vaadin.reuseDevServer</name>
                             <value>false</value>
                         </systemProperty>
                     </systemProperties>
                     <webApp>
-                        <!-- We deploy the app with a context in the servlet 
-                            container in order to test that bootstrap code resolves correctly the application 
+                        <!-- We deploy the app with a context in the servlet
+                            container in order to test that bootstrap code resolves correctly the application
                             context and do not render absolute references to the root path -->
                         <contextPath>/context-path</contextPath>
                     </webApp>

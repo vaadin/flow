@@ -7,7 +7,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>4.1-SNAPSHOT</version>
+    <version>5.0-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -105,7 +105,7 @@
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
         <node.version>v8.11.1</node.version>
         <npm.version>6.1.0</npm.version>
-        
+
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
@@ -128,7 +128,7 @@
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central 
+        <!-- The order of definitions matters. Explicitly defining central
             here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
@@ -154,7 +154,7 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central 
+        <!-- The order of definitions matters. Explicitly defining central
             here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
@@ -498,7 +498,7 @@
                         <threadCount>2</threadCount>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse 
+                <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
