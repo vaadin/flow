@@ -251,8 +251,8 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit or " +
-                        "getPageSize"));
+                "The data provider hasn't ever called getLimit() or " +
+                        "getPageSize()"));
         dataCommunicator.fetchFromProvider(0, 1);
     }
 
@@ -271,7 +271,7 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getOffset or getPage"));
+              "The data provider hasn't ever called getOffset() or getPage()"));
         dataCommunicator.fetchFromProvider(1, 1);
     }
 
@@ -569,9 +569,13 @@ public class DataCommunicatorTest {
 
         Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
-        // 1. initial call 0-50, 2. then: 900-950, 950-1000, 800-850, 850-900,
-        // ... 100-150, 150-200
-        Mockito.verify(dataProvider, Mockito.times(19)).fetch(Mockito.any());
+        // 1. initial call 0-50, 2. then: 900-950, 800-850, ... ,
+        // 200-250, 100-150, 150-200.
+        // Ranges 950-1000, 850-900, ... , 250-300 are not requested
+        // from backend because it's clear they would be empty (because
+        // 900-950, ... 200-250 are empty).
+        // So, it would be 11 calls in total:
+        Mockito.verify(dataProvider, Mockito.times(11)).fetch(Mockito.any());
     }
 
     @Test
@@ -1217,9 +1221,11 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setPageSize(2_000_000_000);
+        // We check the page number calculation does not lead to integer
+        // overflow, and not throw thus
         dataCommunicator.fetchFromProvider(0, Integer.MAX_VALUE);
 
-        Mockito.verify(dataProvider, Mockito.times(2))
+        Mockito.verify(dataProvider, Mockito.times(1))
                 .fetch(Mockito.any(Query.class));
     }
 
@@ -1232,14 +1238,8 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.fetchFromProvider(0, 100);
 
-        /*
-        * TODO: DataProvider is still queried for next pages
-        * even when backend returns empty pages/partial page.
-        * An expected fetch call count here is 2, but should be 1, because
-        * the backed contains only 42 items, so pageSize=50 is suffice.
-        * See https://github.com/vaadin/flow/issues/8844
-        */
-        Mockito.verify(dataProvider, Mockito.times(2))
+        // 42 < pageSize (50), so the second page shouldn't be requested
+        Mockito.verify(dataProvider, Mockito.times(1))
                 .fetch(Mockito.any(Query.class));
     }
 

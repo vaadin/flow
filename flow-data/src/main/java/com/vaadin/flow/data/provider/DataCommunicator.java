@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -629,7 +630,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return {@code true} for paged queries, {@code false} for offset/limit
      *         queries
-     * 
+     *
      * @see #setPagingEnabled(boolean)
      */
     public boolean isPagingEnabled() {
@@ -638,7 +639,7 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Sets whether paged queries or offset/limit queries will be used.
-     * 
+     *
      * @param pagingEnabled
      *            {@code true} for paged queries, {@code false} for offset/limit
      *            queries
@@ -704,8 +705,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
-        Stream<T> stream = Stream.empty();
-        QueryTrace query = null;
+        Stream<T> stream;
 
         if (pagingEnabled) {
             /*
@@ -723,30 +723,30 @@ public class DataCommunicator<T> implements Serializable {
                  * Requested range is split to several pages, and queried from
                  * backend page by page
                  */
-                for (int page = 0; page < pages; page++) {
+                final Stream.Builder<T> streamBuilder = Stream.builder();
+
+                final AtomicInteger fetchedPerPage = new AtomicInteger(0);
+                Consumer<T> addItemAndCheckConsumer = item -> {
+                    streamBuilder.add(item);
+                    fetchedPerPage.getAndIncrement();
+                };
+                // Keep fetching the pages until we get empty/partial page,
+                // or run out of pages to request
+                int page = 0;
+                do {
                     final int newOffset = offset + page * pageSize;
-                    query = new QueryTrace(newOffset, pageSize, backEndSorting,
-                            inMemorySorting, filter);
-                    /*
-                    * TODO: DataProvider is still queried for next pages
-                    * even when backend returns empty pages/partial page.
-                    * This should be improved so as to analyze the returned
-                    * page item count and stop if it's empty/partial.
-                    * See https://github.com/vaadin/flow/issues/8844
-                    */
-                    stream = Stream.concat(stream,
-                            getDataProvider().fetch(query));
-                }
+                    doFetchFromDataProvider(newOffset, pageSize)
+                            .forEach(addItemAndCheckConsumer);
+                    page++;
+                } while (page < pages && fetchedPerPage.getAndSet(0) == pageSize);
+
+                stream = streamBuilder.build();
             } else {
-                query = new QueryTrace(offset, pageSize, backEndSorting,
-                        inMemorySorting, filter);
-                stream = getDataProvider().fetch(query);
+                stream = doFetchFromDataProvider(offset, pageSize);
             }
             limit = pages * pageSize;
         } else {
-            query = new QueryTrace(offset, limit, backEndSorting,
-                    inMemorySorting, filter);
-            stream = getDataProvider().fetch(query);
+            stream = doFetchFromDataProvider(offset, limit);
         }
 
         if (stream.isParallel()) {
@@ -759,30 +759,39 @@ public class DataCommunicator<T> implements Serializable {
         }
 
         SizeVerifier verifier = new SizeVerifier<>(limit);
-        stream = stream.peek(verifier);
+        return stream.peek(verifier);
+    }
 
-        assert query != null : "Fetch query cannot be null";
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private Stream<T> doFetchFromDataProvider(int offset, int limitedTo) {
+        QueryTrace query = new QueryTrace(offset, limitedTo, backEndSorting,
+                inMemorySorting, filter);
+        Stream<T> stream = getDataProvider().fetch(query);
+        verifyQueryContract(query);
+        return stream;
+    }
 
+    @SuppressWarnings("rawtypes")
+    private void verifyQueryContract(QueryTrace query) {
         /*
          * These restrictions are used to help users to see that they have done
          * a mistake instead of just letting things work in an unintended way.
          */
         if (!query.isLimitCalled()) {
             throw new IllegalStateException(
-                    getInvalidContractMessage("getLimit or getPageSize"));
+                    getInvalidContractMessage("getLimit() or getPageSize()"));
         }
         if (!query.isOffsetCalled()) {
             throw new IllegalStateException(
-                    getInvalidContractMessage("getOffset or getPage"));
+                    getInvalidContractMessage("getOffset() or getPage()"));
         }
-        return stream;
     }
 
     private String getInvalidContractMessage(String method) {
-        return String.format("The data provider hasn't ever called %s() "
+        return String.format("The data provider hasn't ever called %s "
                 + "method on the provided query. "
                 + "It means that the the data provider breaks the contract "
-                + "and the returned stream contains unxpected data.", method);
+                + "and the returned stream contains unexpected data.", method);
     }
 
     private void handleAttach() {
@@ -1066,16 +1075,16 @@ public class DataCommunicator<T> implements Serializable {
                 .collect(Collectors.toList());
     }
 
-    private static final void withMissing(Range expected, Range actual,
-            Consumer<Range> action) {
+    private static void withMissing(Range expected, Range actual,
+                                    Consumer<Range> action) {
         Range[] partition = expected.partitionWith(actual);
 
         applyIfNotEmpty(partition[0], action);
         applyIfNotEmpty(partition[2], action);
     }
 
-    private static final void applyIfNotEmpty(Range range,
-            Consumer<Range> action) {
+    private static void applyIfNotEmpty(Range range,
+                                        Consumer<Range> action) {
         if (!range.isEmpty()) {
             action.accept(range);
         }
@@ -1131,4 +1140,5 @@ public class DataCommunicator<T> implements Serializable {
             return new Activation(Collections.emptyList(), false);
         }
     }
+
 }
