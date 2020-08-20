@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -108,6 +109,8 @@ public final class DevModeHandler implements RequestHandler {
     private volatile String failedOutput;
 
     private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
+
+    private BrowserLiveReload liveReload;
 
     /**
      * The local installation path of the webpack-dev-server node script.
@@ -199,6 +202,25 @@ public final class DevModeHandler implements RequestHandler {
      */
     public static DevModeHandler getDevModeHandler() {
         return atomicHandler.get();
+    }
+
+    /**
+     * Set the live reload service instance.
+     * 
+     * @param liveReload
+     *            the live reload instance
+     */
+    public void setLiveReload(BrowserLiveReload liveReload) {
+        this.liveReload = liveReload;
+    }
+
+    /**
+     * Get the live reload service instance.
+     * 
+     * @return the live reload instance
+     */
+    public BrowserLiveReload getLiveReload() {
+        return liveReload;
     }
 
     @Override

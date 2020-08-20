@@ -15,12 +15,16 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.BrowserLiveReload;
 
 /**
  * Opens a server socket which is supposed to be opened until dev mode is active
@@ -57,6 +61,17 @@ class DevServerWatchDog {
                 try {
                     Socket accept = server.accept();
                     accept.setSoTimeout(0);
+                    BufferedReader in = new BufferedReader(new InputStreamReader(accept.getInputStream()));
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        if ("reload".equals(line)) {
+                            BrowserLiveReload liveReload = DevModeHandler
+                                    .getDevModeHandler().getLiveReload();
+                            if (liveReload != null) {
+                                liveReload.reload();
+                            }
+                        }
+                    }
                 } catch (IOException e) {
                     getLogger().debug(
                             "Error occurred during accept a connection", e);

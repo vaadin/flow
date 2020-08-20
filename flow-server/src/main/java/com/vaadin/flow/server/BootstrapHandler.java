@@ -61,6 +61,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.ReflectTools;
@@ -868,7 +869,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
                     .attr(CONTENT_ATTRIBUTE, "IE=edge");
 
-            head.appendElement("base").attr("href", getServiceUrl(context));
+            head.appendElement("base").attr("href",
+                    BootstrapHandlerHelper.getServiceUrl(context.getRequest()));
 
             head.appendElement(META_TAG).attr("name", VIEWPORT).attr(
                     CONTENT_ATTRIBUTE,
@@ -1082,18 +1084,20 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 BrowserLiveReload liveReload = liveReloadAccess != null
                         ? liveReloadAccess.getLiveReload(service)
                         : null;
-                if (liveReload != null && liveReload.getBackend() != null) {
-                    appConfig.put("liveReloadBackend",
-                            liveReload.getBackend().toString());
-                    String pushURL = session.getConfiguration().getPushURL();
-                    if (pushURL != null && pushURL.startsWith("context:")) {
-                        appConfig.put("liveReloadPath", context
-                                .getUriResolver().resolveVaadinUri(pushURL));
-                    }
-                }
 
-                // make configurable when fixing #7847
-                appConfig.put("springBootDevToolsPort", 35729);
+                // With V15+ bootstrap, gizmo is added to generated index.html
+                if (liveReload != null
+                        && deploymentConfiguration.useV14Bootstrap()) {
+                    appConfig.put("liveReloadUrl",
+                            BootstrapHandlerHelper.getPushURL(session,
+                                    request));
+                    if (liveReload.getBackend() != null) {
+                        appConfig.put("liveReloadBackend",
+                                liveReload.getBackend().toString());
+                    }
+                    appConfig.put("springBootLiveReloadPort",
+                            BrowserLiveReload.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT);
+                }
             }
 
             // Use locale from session if set, else from the request
@@ -1152,27 +1156,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-    }
-
-    /**
-     * Gets the service URL as a URL relative to the request URI.
-     *
-     * @param context
-     *            the bootstrap context
-     * @return the relative service URL
-     */
-    protected static String getServiceUrl(BootstrapContext context) {
-        String pathInfo = context.getRequest().getPathInfo();
-        if (pathInfo == null) {
-            return ".";
-        } else {
-            /*
-             * Make a relative URL to the servlet by adding one ../ for each
-             * path segment in pathInfo (i.e. the part of the requested path
-             * that comes after the servlet mapping)
-             */
-            return HandlerHelper.getCancelingRelativePath(pathInfo);
-        }
     }
 
     /**

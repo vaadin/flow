@@ -100,7 +100,8 @@ public class NodeTasksTest {
                                 WEBPACK_CONFIG, WEBPACK_GENERATED)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
-                        .useV14Bootstrap(false);
+                        .useV14Bootstrap(false).withFlowResourcesFolder(
+                                new File(userDir, TARGET + "flow-frontend"));
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())

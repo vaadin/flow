@@ -105,7 +105,7 @@ class VaadinDevmodeGizmo extends LitElement {
           height: 1rem;
           border-radius: 50%;
           z-index: 20001;
-          background-color: var(--gizmo-green-color);
+          background-color: var(--gizmo-grey-color);
           transform: translate(-0.5rem, -0.5rem) scale(0.375);
           transition: var(--gizmo-transition-duration);
           transition-delay: var(--gizmo-transition-duration);
@@ -544,35 +544,16 @@ class VaadinDevmodeGizmo extends LitElement {
 
   static get properties() {
     return {
-      expanded: {type: Boolean},
-      messages: {type: Array},
-      splashMessage: {type: String},
-      notifications: {type: Array},
-      status: {type: String},
-      reloadConnectionBaseUri: {type: String},
-      liveReloadBackend: {type: String},
-      springBootDevToolsPort: {type: Number}
+      expanded: {type: Boolean, attribute: false},
+      messages: {type: Array, attribute: false},
+      splashMessage: {type: String, attribute: false},
+      notifications: {type: Array, attribute: false},
+      frontendStatus: {type: String, attribute: false},
+      javaStatus: {type: String, attribute: false},
+      url: {type: String},
+      backend: {type: String},
+      springBootLiveReloadPort: {type: Number},
     };
-  }
-
-  static get ACTIVE() {
-    return 'active';
-  }
-
-  static get INACTIVE() {
-    return 'inactive';
-  }
-
-  static get UNAVAILABLE() {
-    return 'unavailable';
-  }
-
-  static get ERROR() {
-    return 'error';
-  }
-
-  static get ENABLED_KEY_IN_LOCAL_STORAGE() {
-    return 'vaadin.live-reload.enabled';
   }
 
   static get DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE() {
@@ -589,10 +570,6 @@ class VaadinDevmodeGizmo extends LitElement {
 
   static get TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE() {
     return 'vaadin.live-reload.triggeredCount';
-  }
-
-  static get HEARTBEAT_INTERVAL() {
-    return 180000;
   }
 
   static get AUTO_DEMOTE_NOTIFICATION_DELAY() {
@@ -631,15 +608,6 @@ class VaadinDevmodeGizmo extends LitElement {
     return 'warning';
   }
 
-  static get WEBSOCKET_ERROR_MESSAGE() {
-    return 'Error in WebSocket connection to ';
-  }
-
-  static get isEnabled() {
-    const enabled = window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE);
-    return enabled === null || enabled !== 'false';
-  }
-
   static get isActive() {
     const active = window.sessionStorage.getItem(VaadinDevmodeGizmo.ACTIVE_KEY_IN_SESSION_STORAGE);
     return active === null || active !== 'false';
@@ -656,64 +624,91 @@ class VaadinDevmodeGizmo extends LitElement {
     this.splashMessage = null;
     this.notifications = [];
     this.expanded = false;
-    this.status = VaadinDevmodeGizmo.UNAVAILABLE;
-    this.connection = null;
+    this.javaConnection = null;
+    this.frontendConnection = null;
     this.nextMessageId = 1;
   }
 
   openWebSocketConnection() {
-    if (this.connection !== null) {
-      this.connection.close();
-      this.connection = null;
-    }
-    // try Spring Boot Devtools first, if port is set
-    if (this.liveReloadBackend === VaadinDevmodeGizmo.SPRING_BOOT_DEVTOOLS && this.springBootDevToolsPort) {
-      this.connection = new WebSocket(this.getSpringBootWebSocketUrl(window.location));
-    } else if (this.liveReloadBackend) {
-      this.openDedicatedWebSocketConnection();
+    self = this;
+
+    this.frontendStatus = Connection.UNAVAILABLE;
+    this.javaStatus = Connection.UNAVAILABLE;
+
+    const onConnectionError = msg => this.showMessage(VaadinDevmodeGizmo.ERROR, msg);
+    const onReload = () => {
+      self.showSplashMessage('Reloading…');
+      const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
+      const nextReload = lastReload ? (parseInt(lastReload) + 1) : 1;
+      window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
+      window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
+      window.location.reload();
+    };
+
+    this.frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
+    this.frontendConnection.onHandshake = () => {
+      self.showMessage(VaadinDevmodeGizmo.LOG, 'Vaadin development mode initialized');
+      if (!VaadinDevmodeGizmo.isActive) {
+        this.frontendConnection.setActive(false);
+      }
+    };
+    this.frontendConnection.onConnectionError = onConnectionError;
+    this.frontendConnection.onReload = onReload;
+    this.frontendConnection.onStatusChange = status => {
+      self.frontendStatus = status;
+    };
+
+    if (this.backend === VaadinDevmodeGizmo.SPRING_BOOT_DEVTOOLS && this.springBootLiveReloadPort) {
+      this.javaConnection = new Connection(this.getSpringBootWebSocketUrl(window.location));
+      this.javaConnection.onHandshake = () => {
+        if (!VaadinDevmodeGizmo.isActive) {
+          this.javaConnection.setActive(false);
+        }
+      };
+      this.javaConnection.onReload = onReload;
+      this.javaConnection.onConnectionError = onConnectionError;
+    } else if (this.backend) {
+      this.javaConnection = this.frontendConnection;
     } else {
+      this.javaConnection = new Connection(null);
+    }
+    const prevOnStatusChange = this.javaConnection.onStatusChange;
+    this.javaConnection.onStatusChange = status => {
+      prevOnStatusChange(status);
+      self.javaStatus = status;
+    };
+    const prevOnHandshake = this.javaConnection.onHandshake;
+    this.javaConnection.onHandshake = () => {
+      prevOnHandshake();
+      if (self.backend) {
+        self.showMessage(VaadinDevmodeGizmo.INFORMATION, 'Java live reload available: ' + VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[self.backend]);
+      }
+    };
+
+    if (!this.backend) {
       this.showNotification(VaadinDevmodeGizmo.WARNING,
-        'Live reload unavailable',
-        'Live reload is currently not set up. Find out how to make use of this functionality to boost your workflow.',
+        'Java live reload unavailable',
+        'Live reload for Java changes is currently not set up. Find out how to make use of this functionality to boost your workflow.',
         'https://vaadin.com/docs/live-reload',
         'liveReloadUnavailable');
-    }
-    if (this.connection) {
-      this.connection.onmessage = msg => this.handleMessage(msg);
-      this.connection.onerror = err => this.handleError(err);
-      const self = this;
-      this.connection.onclose = _ => {
-        if (self.status !== VaadinDevmodeGizmo.ERROR) {
-          self.status = VaadinDevmodeGizmo.UNAVAILABLE;
-        }
-        self.connection = null;
-      };
-    }
-  }
-
-  openDedicatedWebSocketConnection() {
-    const wsUrl = this.getDedicatedWebSocketUrl();
-    if (wsUrl) {
-      this.connection = new WebSocket(wsUrl);
-      const self = this;
-      setInterval(function() {
-        if (self.connection !== null) {
-          self.connection.send('');
-        }
-      }, VaadinDevmodeGizmo.HEARTBEAT_INTERVAL);
     }
   }
 
   getDedicatedWebSocketUrl() {
-    if (!this.reloadConnectionBaseUri) {
-      console.warn('This live reload backend requires a dedicated WS connection, but no base URL is given');
-      return null;
+    function getAbsoluteUrl(relative) {
+      // Use innerHTML to obtain an absolute URL
+      const div = document.createElement('div');
+      div.innerHTML = '<a href="' + relative + '"/>';
+      return div.firstChild.href;
     }
-    if (!this.reloadConnectionBaseUri.startsWith('http://') && !this.reloadConnectionBaseUri.startsWith('https://')) {
+
+    const connectionBaseUrl = getAbsoluteUrl(this.url);
+
+    if (!connectionBaseUrl.startsWith('http://') && !connectionBaseUrl.startsWith('https://')) {
       console.warn('The protocol of the url should be http or https for live reload to work.');
       return null;
     }
-    return this.reloadConnectionBaseUri.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
+    return connectionBaseUrl.replace(/^http/, 'ws') + '?v-r=push&refresh_connection';
   }
 
   getSpringBootWebSocketUrl(location) {
@@ -722,61 +717,9 @@ class VaadinDevmodeGizmo extends LitElement {
     if (hostname.endsWith('gitpod.io')) {
       // Gitpod uses `port-url` instead of `url:port`
       const hostnameWithoutPort = hostname.replace(/.*?-/, '');
-      return wsProtocol + '://' + this.springBootDevToolsPort + '-' + hostnameWithoutPort;
+      return wsProtocol + '://' + this.springBootLiveReloadPort + '-' + hostnameWithoutPort;
     } else {
-      return wsProtocol + '://' + hostname + ':' + this.springBootDevToolsPort;
-    }
-  }
-
-  handleMessage(msg) {
-    let json;
-    try {
-      json = JSON.parse(msg.data);
-    } catch (e) {
-      this.handleError(`[${e.name}: ${e.message}`);
-      return;
-    }
-    const command = json['command'];
-    switch (command) {
-      case 'hello': {
-        this.showMessage(VaadinDevmodeGizmo.LOG, 'Vaadin development mode initialized');
-        if (this.liveReloadBackend) {
-          if (VaadinDevmodeGizmo.isActive) {
-            this.status = VaadinDevmodeGizmo.ACTIVE;
-          } else {
-            this.status = VaadinDevmodeGizmo.INACTIVE;
-          }
-          const backend = VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.liveReloadBackend];
-          this.showMessage(VaadinDevmodeGizmo.INFORMATION, 'Live reload available: ' + backend);
-        } else {
-          this.status = VaadinDevmodeGizmo.INACTIVE;
-        }
-        break;
-      }
-
-      case 'reload':
-        if (this.status === VaadinDevmodeGizmo.ACTIVE) {
-          this.showSplashMessage('Reloading…');
-          const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
-          const nextReload = lastReload ? (parseInt(lastReload) + 1) : 1;
-          window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
-          window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
-          window.location.reload();
-        }
-        break;
-
-      default:
-        console.warn('Unknown command received from the live reload server:', command);
-    }
-  }
-
-  handleError(msg) {
-    console.error(msg);
-    this.status = VaadinDevmodeGizmo.ERROR;
-    if (msg instanceof Event) {
-      this.showMessage(VaadinDevmodeGizmo.ERROR, VaadinDevmodeGizmo.WEBSOCKET_ERROR_MESSAGE + this.connection.url);
-    } else {
-      this.showMessage(VaadinDevmodeGizmo.ERROR, msg);
+      return wsProtocol + '://' + hostname + ':' + this.springBootLiveReloadPort;
     }
   }
 
@@ -801,21 +744,14 @@ class VaadinDevmodeGizmo extends LitElement {
     }
 
     this.__transitionDuration = parseInt(window.getComputedStyle(this).getPropertyValue('--gizmo-transition-duration'));
+
+    window.Vaadin.Flow.devModeGizmo = this;
   }
 
   disconnectedCallback() {
     document.body.removeEventListener('focus', this.disableEventListener);
     document.body.removeEventListener('click', this.disableEventListener);
     super.disconnectedCallback();
-  }
-
-  disableLiveReload() {
-    if (this.connection !== null) {
-      this.connection.close();
-      this.connection = null;
-    }
-    window.localStorage.setItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE, 'false');
-    this.remove();
   }
 
   toggleExpanded() {
@@ -938,23 +874,23 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   setActive(yes) {
+    this.frontendConnection.setActive(yes);
+    this.javaConnection.setActive(yes);
     if (yes) {
       window.sessionStorage.setItem(VaadinDevmodeGizmo.ACTIVE_KEY_IN_SESSION_STORAGE, 'true');
-      this.status = VaadinDevmodeGizmo.ACTIVE;
     } else {
       window.sessionStorage.setItem(VaadinDevmodeGizmo.ACTIVE_KEY_IN_SESSION_STORAGE, 'false');
-      this.status = VaadinDevmodeGizmo.INACTIVE;
     }
   }
 
-  getStatusColor() {
-    if (this.status === VaadinDevmodeGizmo.ACTIVE) {
+  getStatusColor(status) {
+    if (status === Connection.ACTIVE) {
       return 'var(--gizmo-green-color)';
-    } else if (this.status === VaadinDevmodeGizmo.INACTIVE) {
+    } else if (status === Connection.INACTIVE) {
       return 'var(--gizmo-grey-color)';
-    } else if (this.status === VaadinDevmodeGizmo.UNAVAILABLE) {
+    } else if (status === Connection.UNAVAILABLE) {
       return 'var(--gizmo-yellow-color)';
-    } else if (this.status === VaadinDevmodeGizmo.ERROR) {
+    } else if (status === Connection.ERROR) {
       return 'var(--gizmo-red-color)';
     } else {
       return 'none';
@@ -984,8 +920,8 @@ class VaadinDevmodeGizmo extends LitElement {
           <span class="tab">Log</span>
           <label class="switch">
               <input id="toggle" type="checkbox"
-                  ?disabled=${this.status === VaadinDevmodeGizmo.UNAVAILABLE || this.status === VaadinDevmodeGizmo.ERROR}
-                  ?checked="${this.status === VaadinDevmodeGizmo.ACTIVE}"
+                  ?disabled=${this.frontendStatus === Connection.UNAVAILABLE || this.frontendStatus === Connection.ERROR}
+                  ?checked="${this.frontendStatus === Connection.ACTIVE}"
                   @change=${e => this.setActive(e.target.checked)}/>
               <span class="slider"></span>
               <span class="live-reload-text">Live reload</span>
@@ -1011,35 +947,130 @@ class VaadinDevmodeGizmo extends LitElement {
           <path d="M15.21 0.35c-0.436 0-0.79 0.354-0.79 0.79v0 0.46c0 0.5-0.32 0.85-1.070 0.85h-3.55c-1.61 0-1.73 1.19-1.8 1.83v0c-0.060-0.64-0.18-1.83-1.79-1.83h-3.57c-0.75 0-1.090-0.37-1.090-0.86v-0.45c0-0.006 0-0.013 0-0.020 0-0.425-0.345-0.77-0.77-0.77-0 0-0 0-0 0h0c-0 0-0 0-0 0-0.431 0-0.78 0.349-0.78 0.78 0 0.004 0 0.007 0 0.011v-0.001 1.32c0 1.54 0.7 2.31 2.34 2.31h3.66c1.090 0 1.19 0.46 1.19 0.9 0 0 0 0.090 0 0.13 0.048 0.428 0.408 0.758 0.845 0.758s0.797-0.33 0.845-0.754l0-0.004s0-0.080 0-0.13c0-0.44 0.1-0.9 1.19-0.9h3.61c1.61 0 2.32-0.77 2.32-2.31v-1.32c0-0.436-0.354-0.79-0.79-0.79v0z"></path>
           <path d="M11.21 7.38c-0.012-0-0.026-0.001-0.040-0.001-0.453 0-0.835 0.301-0.958 0.714l-0.002 0.007-2.21 4.21-2.3-4.2c-0.122-0.425-0.507-0.731-0.963-0.731-0.013 0-0.026 0-0.039 0.001l0.002-0c-0.012-0-0.025-0.001-0.039-0.001-0.58 0-1.050 0.47-1.050 1.050 0 0.212 0.063 0.41 0.171 0.575l-0.002-0.004 3.29 6.1c0.15 0.333 0.478 0.561 0.86 0.561s0.71-0.228 0.858-0.555l0.002-0.006 3.34-6.1c0.090-0.152 0.144-0.335 0.144-0.53 0-0.58-0.47-1.050-1.050-1.050-0.005 0-0.010 0-0.014 0h0.001z"></path>
         </svg>
-        <span class="status-blip" style="background-color: ${this.getStatusColor()}"></span>
+        <span class="status-blip" style="background: linear-gradient(to right, ${this.getStatusColor(this.frontendStatus)} 0.5rem, ${this.getStatusColor(this.javaStatus)} 0.5rem)"></span>
           ${this.splashMessage !== null
       ? html`<span class="status-description">${this.splashMessage}</span></div>`
-      : html`<span class="status-description">Live reload ${this.status} </span><span class="ahreflike">Details</span></div>`
+      : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`
     }
     </div>`;
   }
 }
 
-const init = function(reloadConnectionBaseUri, liveReloadBackend, springBootDevToolsPort) {
-  if ('false' !== window.localStorage.getItem(VaadinDevmodeGizmo.ENABLED_KEY_IN_LOCAL_STORAGE)) {
-    if (customElements.get('vaadin-devmode-gizmo') === undefined) {
-      customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
-    }
-    const devmodeGizmo = document.createElement('vaadin-devmode-gizmo');
-    if (reloadConnectionBaseUri) {
-      devmodeGizmo.setAttribute('reloadConnectionBaseUri', reloadConnectionBaseUri);
-    }
-    if (liveReloadBackend) {
-      devmodeGizmo.setAttribute('liveReloadBackend', liveReloadBackend);
-    }
-    if (springBootDevToolsPort) {
-      devmodeGizmo.setAttribute('springBootDevToolsPort', springBootDevToolsPort);
-    }
-    document.body.appendChild(devmodeGizmo);
-    return devmodeGizmo;
-  } else {
-    return undefined;
-  }
-};
+class Connection extends Object {
 
-export {init};
+  static get ACTIVE() {
+    return 'active';
+  }
+
+  static get INACTIVE() {
+    return 'inactive';
+  }
+
+  static get UNAVAILABLE() {
+    return 'unavailable';
+  }
+
+  static get ERROR() {
+    return 'error';
+  }
+
+  static get HEARTBEAT_INTERVAL() {
+    return 180000;
+  }
+
+  constructor(url) {
+    super();
+    this.status = Connection.UNAVAILABLE;
+
+    if (url) {
+      this.webSocket = new WebSocket(url);
+      this.webSocket.onmessage = msg => this.handleMessage(msg);
+      this.webSocket.onerror = err => this.handleError(err);
+      const self = this;
+      this.webSocket.onclose = _ => {
+        if (self.status !== Connection.ERROR) {
+          self.setStatus(Connection.UNAVAILABLE);
+        }
+        self.webSocket = null;
+      };
+    }
+
+    setInterval(function() {
+      if (self.webSocket && self.status !== Connection.ERROR && self.status !== Connection.UNAVAILABLE) {
+        self.webSocket.send('');
+      }
+    }, Connection.HEARTBEAT_INTERVAL);
+  }
+
+  onHandshake() {
+  }
+
+  onReload() {
+  }
+
+  onConnectionError(msg) {
+  }
+
+  onStatusChange(status) {
+  }
+
+  handleMessage(msg) {
+    let json;
+    try {
+      json = JSON.parse(msg.data);
+    } catch (e) {
+      this.handleError(`[${e.name}: ${e.message}`);
+      return;
+    }
+    const command = json['command'];
+    switch (command) {
+      case 'hello': {
+        this.setStatus(Connection.ACTIVE);
+        this.onHandshake(msg);
+        break;
+      }
+
+      case 'reload':
+        if (this.status === Connection.ACTIVE) {
+          this.onReload();
+        }
+        break;
+
+      default:
+        console.warn('Unknown command received from the live reload server:', command);
+    }
+  }
+
+  handleError(msg) {
+    console.error(msg);
+    this.setStatus(Connection.ERROR);
+    if (msg instanceof Event) {
+      this.onConnectionError('Error in WebSocket connection to ' + this.webSocket.url);
+    } else {
+      this.onConnectionError(msg);
+    }
+  }
+
+  setActive(yes) {
+    if (!yes && this.status === Connection.ACTIVE) {
+      this.setStatus(Connection.INACTIVE);
+    } else if (yes && this.status === Connection.INACTIVE) {
+      this.setStatus(Connection.ACTIVE);
+    }
+  }
+
+  setStatus(status) {
+    if (this.status !== status) {
+      this.status = status;
+      this.onStatusChange(status);
+    }
+  }
+}
+
+if (customElements.get('vaadin-devmode-gizmo') === undefined) {
+  customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
+}
+
+export {
+  VaadinDevmodeGizmo
+};
