@@ -177,30 +177,23 @@ public class JavaScriptBootstrapUI extends UI {
         if (!shouldHandleNavigation(location)) {
             return false;
         }
-        try {
-            getInternals().setLastHandledNavigation(location);
-            Optional<NavigationState> navigationState = this.getRouter()
-                    .resolveNavigationTarget(location);
-            if (navigationState.isPresent()) {
-                // There is a valid route in flow.
-                return handleNavigation(location, navigationState.get());
-            } else {
-                // When route does not exist, try to navigate to current route
-                // in order to check if current view can be left before showing
-                // the error page
-                if (navigateToPlaceholder(location)) {
-                    return true;
-                }
-
-                // Route does not exist, and current view does not prevent
-                // navigation
-                // thus an error page is shown
-                handleErrorNavigation(location);
+        getInternals().setLastHandledNavigation(location);
+        Optional<NavigationState> navigationState = this.getRouter().resolveNavigationTarget(location);
+        if (navigationState.isPresent()) {
+            // There is a valid route in flow.
+            return handleNavigation(location, navigationState.get());
+        } else {
+            // When route does not exist, try to navigate to current route
+            // in order to check if current view can be left before showing
+            // the error page
+            if (navigateToPlaceholder(location)) {
+                return true;
             }
-        } catch (Exception exception) {
-            return handleExceptionNavigation(location, exception);
-        } finally {
-            getInternals().clearLastHandledNavigation();
+
+            // Route does not exist, and current view does not prevent
+            // navigation
+            // thus an error page is shown
+            handleErrorNavigation(location);
         }
         return false;
     }
@@ -224,35 +217,39 @@ public class JavaScriptBootstrapUI extends UI {
         return route.replaceFirst("/+$", "");
     }
 
-    private boolean handleNavigation(Location location,
-                                     NavigationState navigationState) {
-        NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
-                location, this, NavigationTrigger.CLIENT_SIDE);
+    private boolean handleNavigation(Location location, NavigationState navigationState) {
+        try {
+            NavigationEvent navigationEvent = new NavigationEvent(getRouter(), location, this,
+                    NavigationTrigger.CLIENT_SIDE);
 
-        NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(
-                navigationState);
+            NavigationStateRenderer clientNavigationStateRenderer = new NavigationStateRenderer(navigationState);
 
-        clientNavigationStateRenderer.handle(navigationEvent);
+            clientNavigationStateRenderer.handle(navigationEvent);
 
-        isUnknownRoute = false;
-        hasForwardTo = false;
-        // true if has forwardTo in server-views
-        if (!getInternals().getActiveRouterTargetsChain().isEmpty()
-                && getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class) != null
-                && !getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class)
-                .value().contains(getInternals().getActiveViewLocation().getPathWithQueryParameters())) {
-            // true if the forwardTo target is client-view
-            isUnknownRoute = !this.getRouter()
-                    .resolveNavigationTarget(new Location(removeFirstSlash(this.getInternals()
-                            .getActiveViewLocation().getPathWithQueryParameters()))).isPresent();
-            if (isUnknownRoute) {
-                forwardToUrl =  this.getInternals().getActiveViewLocation().getPathWithQueryParameters();
+            isUnknownRoute = false;
+            hasForwardTo = false;
+            // true if has forwardTo in server-views
+            if (!getInternals().getActiveRouterTargetsChain().isEmpty()
+                    && getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class) != null
+                    && !getInternals().getActiveRouterTargetsChain().get(0).getClass().getAnnotation(Route.class)
+                            .value().contains(getInternals().getActiveViewLocation().getPathWithQueryParameters())) {
+                // true if the forwardTo target is client-view
+                isUnknownRoute = !this.getRouter().resolveNavigationTarget(new Location(
+                        removeFirstSlash(this.getInternals().getActiveViewLocation().getPathWithQueryParameters())))
+                        .isPresent();
+                if (isUnknownRoute) {
+                    forwardToUrl = this.getInternals().getActiveViewLocation().getPathWithQueryParameters();
+                }
+                hasForwardTo = true;
             }
-            hasForwardTo = true;
-        }
-        adjustPageTitle();
+            adjustPageTitle();
 
-        return getInternals().getContinueNavigationAction() != null;
+            return getInternals().getContinueNavigationAction() != null;
+        } catch (Exception exception) {
+            return handleExceptionNavigation(location, exception);
+        } finally {
+            getInternals().clearLastHandledNavigation();
+        }
     }
 
     private boolean handleExceptionNavigation(Location location, Exception exception) {
