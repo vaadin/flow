@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation marks the class itself should not be treated as an  {@link Endpoint}. 
+ * Annotation marks the class itself should not be treated as an  {@link Endpoint}.
  * Instead the inheritable methods will be added to the decsendant Endpoints.
  */
 @Target(ElementType.TYPE)

@@ -55,20 +55,19 @@ import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.javadoc.Javadoc;
 import com.github.javaparser.javadoc.JavadocBlockTag;
-import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
+import com.github.javaparser.resolution.types.parametrization.ResolvedTypeParametersMap;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ClassLoaderTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import com.github.javaparser.utils.Pair;
 import com.github.javaparser.utils.SourceRoot;
 import com.github.javaparser.utils.SourceRoot.Callback;
-
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -312,7 +311,8 @@ public class OpenApiObjectGenerator {
                 .map(BodyDeclaration::asClassOrInterfaceDeclaration)
                 .filter(classOrInterfaceDeclaration -> !classOrInterfaceDeclaration
                         .isInterface())
-                .filter(declaration -> !GeneratorUtils.hasAnnotation(declaration, compilationUnit, EndpointExposed.class))
+                .filter(declaration -> !GeneratorUtils.hasAnnotation(
+                        declaration, compilationUnit, EndpointExposed.class))
                 .map(this::appendNestedClasses).orElse(Collections.emptyList())
                 .forEach(classOrInterfaceDeclaration -> this.parseClass(
                         classOrInterfaceDeclaration, compilationUnit)));
@@ -327,8 +327,11 @@ public class OpenApiObjectGenerator {
         result.ifSuccessful(compilationUnit -> compilationUnit.getPrimaryType()
                 .filter(BodyDeclaration::isClassOrInterfaceDeclaration)
                 .map(BodyDeclaration::asClassOrInterfaceDeclaration)
-                .filter(declaration -> GeneratorUtils.hasAnnotation(declaration, compilationUnit, EndpointExposed.class))
-                .map(delcaration -> endpointExposedMap.put(delcaration.resolve().getQualifiedName(), delcaration)));
+                .filter(declaration -> GeneratorUtils.hasAnnotation(declaration,
+                        compilationUnit, EndpointExposed.class))
+                .map(delcaration -> endpointExposedMap.put(
+                        delcaration.resolve().getQualifiedName(),
+                        delcaration)));
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 
@@ -382,8 +385,9 @@ public class OpenApiObjectGenerator {
                 endpointsJavadoc.put(classDeclaration, "");
             }
             pathItems.putAll(createPathItems(
-                    getEndpointName(classDeclaration, endpointAnnotation.orElse(null)),
-                    classDeclaration));
+                    getEndpointName(classDeclaration,
+                            endpointAnnotation.orElse(null)),
+                    classDeclaration, ResolvedTypeParametersMap.empty()));
         }
     }
 
@@ -517,13 +521,25 @@ public class OpenApiObjectGenerator {
                         .contains(word.toLowerCase());
     }
 
+    private Pair<ClassOrInterfaceDeclaration, ResolvedTypeParametersMap> getDeclarationAndResolvedTypeParametersMap(
+            ClassOrInterfaceType type) {
+        ResolvedReferenceType resolvedType = type.resolve();
+        String qualifiedName = resolvedType.getQualifiedName();
+        ClassOrInterfaceDeclaration declaration = endpointExposedMap
+                .get(qualifiedName);
+        if (declaration == null) {
+            return null;
+        }
+
+        return new Pair<>(declaration, resolvedType.typeParametersMap());
+    }
+
     private Map<String, PathItem> createPathItems(String endpointName,
-            ClassOrInterfaceDeclaration typeDeclaration) {
+            ClassOrInterfaceDeclaration typeDeclaration,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
         Map<String, PathItem> newPathItems = new HashMap<>();
-        Collection<MethodDeclaration> allMethods = new HashSet<>();
-        allMethods.addAll(typeDeclaration.getMethods());
-        allMethods.addAll(getInteriatedMethods(typeDeclaration));
-        for (MethodDeclaration methodDeclaration : allMethods) {
+        Collection<MethodDeclaration> methods = typeDeclaration.getMethods();
+        for (MethodDeclaration methodDeclaration : methods) {
             if (isAccessForbidden(typeDeclaration, methodDeclaration)) {
                 continue;
             }
@@ -531,10 +547,12 @@ public class OpenApiObjectGenerator {
 
             Operation post = createPostOperation(methodDeclaration);
             if (methodDeclaration.getParameters().isNonEmpty()) {
-                post.setRequestBody(createRequestBody(methodDeclaration));
+                post.setRequestBody(createRequestBody(methodDeclaration,
+                        resolvedTypeParametersMap));
             }
 
-            ApiResponses responses = createApiResponses(methodDeclaration);
+            ApiResponses responses = createApiResponses(methodDeclaration,
+                    resolvedTypeParametersMap);
             post.setResponses(responses);
             post.tags(Collections
                     .singletonList(typeDeclaration.getNameAsString()));
@@ -547,20 +565,13 @@ public class OpenApiObjectGenerator {
                                     methodName, httpMethod.name())));
             newPathItems.put(pathName, pathItem);
         }
-        return newPathItems;
-    }
 
-    private Collection<MethodDeclaration> getInteriatedMethods(ClassOrInterfaceDeclaration typeDeclaration) {
-        if(typeDeclaration!=null){
-            return Stream.concat(typeDeclaration.getExtendedTypes().stream(),
-                    typeDeclaration.getImplementedTypes().stream())
-            .map(type->type.resolve().getQualifiedName())
-            .map(qualifiedName -> endpointExposedMap.get(qualifiedName))
-            .filter(Objects::nonNull)
-            .map(parent -> parent.getMethods()).flatMap(List::stream)
-            .collect(Collectors.toSet());
-        }
-        return Collections.emptyList();
+        Stream.concat(typeDeclaration.getExtendedTypes().stream(),
+                typeDeclaration.getImplementedTypes().stream())
+                .map(this::getDeclarationAndResolvedTypeParametersMap)
+                .filter(Objects::nonNull).forEach(pair -> newPathItems
+                        .putAll(createPathItems(endpointName, pair.a, pair.b)));
+        return newPathItems;
     }
 
     private boolean isAccessForbidden(
@@ -590,17 +601,18 @@ public class OpenApiObjectGenerator {
         return post;
     }
 
-    private ApiResponses createApiResponses(
-            MethodDeclaration methodDeclaration) {
+    private ApiResponses createApiResponses(MethodDeclaration methodDeclaration,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
         ApiResponse successfulResponse = createApiSuccessfulResponse(
-                methodDeclaration);
+                methodDeclaration, resolvedTypeParametersMap);
         ApiResponses responses = new ApiResponses();
         responses.addApiResponse("200", successfulResponse);
         return responses;
     }
 
     private ApiResponse createApiSuccessfulResponse(
-            MethodDeclaration methodDeclaration) {
+            MethodDeclaration methodDeclaration,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
         Content successfulContent = new Content();
         // "description" is a REQUIRED property of Response
         ApiResponse successfulResponse = new ApiResponse().description("");
@@ -613,18 +625,21 @@ public class OpenApiObjectGenerator {
             }
         });
         if (!methodDeclaration.getType().isVoidType()) {
-            MediaType mediaItem = createReturnMediaType(methodDeclaration);
+            MediaType mediaItem = createReturnMediaType(methodDeclaration,
+                    resolvedTypeParametersMap);
             successfulContent.addMediaType("application/json", mediaItem);
             successfulResponse.content(successfulContent);
         }
         return successfulResponse;
     }
 
-    private MediaType createReturnMediaType(
-            MethodDeclaration methodDeclaration) {
+    private MediaType createReturnMediaType(MethodDeclaration methodDeclaration,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
         MediaType mediaItem = new MediaType();
-        Type methodReturnType = methodDeclaration.getType();
-        Schema schema = schemaGenerator.parseTypeToSchema(methodReturnType, "");
+        ResolvedType resolvedType = resolvedTypeParametersMap
+                .replaceAll(methodDeclaration.resolve().getReturnType());
+        Schema schema = parseResolvedTypeToSchema(resolvedType);
+        schema.setDescription("");
         if (methodDeclaration.isAnnotationPresent(Nullable.class)) {
             schema = schemaResolver.createNullableWrapper(schema);
         }
@@ -633,7 +648,8 @@ public class OpenApiObjectGenerator {
         return mediaItem;
     }
 
-    private RequestBody createRequestBody(MethodDeclaration methodDeclaration) {
+    private RequestBody createRequestBody(MethodDeclaration methodDeclaration,
+            ResolvedTypeParametersMap resolvedTypeParametersMap) {
         Map<String, String> paramsDescription = new HashMap<>();
         methodDeclaration.getJavadoc().ifPresent(javadoc -> {
             for (JavadocBlockTag blockTag : javadoc.getBlockTags()) {
@@ -654,8 +670,10 @@ public class OpenApiObjectGenerator {
         requestBodyObject.schema(requestSchema);
 
         methodDeclaration.getParameters().forEach(parameter -> {
-            Schema paramSchema = schemaGenerator
-                    .parseTypeToSchema(parameter.getType(), "");
+            ResolvedType resolvedType = resolvedTypeParametersMap
+                    .replaceAll(parameter.resolve().getType());
+            Schema paramSchema = parseResolvedTypeToSchema(resolvedType);
+            paramSchema.setDescription("");
             usedTypes.putAll(collectUsedTypesFromSchema(paramSchema));
             String name = (isReservedWord(parameter.getNameAsString()) ? "_"
                     : "").concat(parameter.getNameAsString());
