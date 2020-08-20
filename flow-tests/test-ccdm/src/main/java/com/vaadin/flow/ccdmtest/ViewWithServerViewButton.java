@@ -27,6 +27,12 @@ public class ViewWithServerViewButton extends Div {
         NativeButton serverViewButton = new NativeButton("Server view",
                 e -> UI.getCurrent().navigate("serverview"));
         serverViewButton.setId("serverViewButton");
-        add(serverViewButton);
+
+        NativeButton serverViewThrowsExcpetionButton = 
+            new NativeButton("Go to a server view that thorws exception", 
+                e -> UI.getCurrent().navigate(ViewThrowsException.class));
+        serverViewThrowsExcpetionButton.setId("serverViewThrowsExcpetionButton");
+        
+        add(serverViewButton, serverViewThrowsExcpetionButton);
     }
 }
