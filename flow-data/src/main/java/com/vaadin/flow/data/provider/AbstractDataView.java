@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 
@@ -37,6 +38,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     protected static final String NULL_IDENTIFIER_ERROR_MESSAGE = "Identity provider should not return null";
 
     protected SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier;
+    protected SerializableBiFunction<Integer, Integer, Query<T, ?>> querySupplier;
     protected Component component;
 
     /**
@@ -51,10 +53,14 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      */
     public AbstractDataView(
             SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
+            SerializableBiFunction<Integer, Integer, Query<T, ?>> querySupplier,
             Component component) {
         Objects.requireNonNull(dataProviderSupplier,
                 "DataProvider supplier cannot be null");
+        Objects.requireNonNull(querySupplier,
+                "Query Supplier cannot be null");
         this.dataProviderSupplier = dataProviderSupplier;
+        this.querySupplier = querySupplier;
         this.component = component;
         verifyDataProviderType(dataProviderSupplier.get().getClass());
     }
@@ -99,9 +105,24 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Stream<T> getItems() {
-        return dataProviderSupplier.get().fetch(new Query<>());
+        return dataProviderSupplier.get().fetch(buildQuery(0, Integer.MAX_VALUE));
+    }
+
+    /**
+     * Creates a query populated with component's specific filter and sorting.
+     *
+     * @param offset
+     *            first index to fetch
+     * @param limit
+     *            fetched item count
+     *
+     * @return query with component's filter and sorting state
+     */
+    protected Query buildQuery(int offset, int limit) {
+        return querySupplier.apply(offset, limit);
     }
 
     @Override

@@ -44,7 +44,8 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      */
     public AbstractLazyDataView(DataCommunicator<T> dataCommunicator,
             Component component) {
-        super(dataCommunicator::getDataProvider, component);
+        super(dataCommunicator::getDataProvider, dataCommunicator::buildQuery,
+                component);
         this.dataCommunicator = dataCommunicator;
     }
 
@@ -87,11 +88,10 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
         if (verifiedDataCommunicator.isDefinedSize()) {
             return verifiedDataCommunicator.getDataProvider()
-                    .fetch(this.dataCommunicator.buildQuery(0,
-                            this.dataCommunicator.getItemCount()));
+                    .fetch(buildQuery(0, this.dataCommunicator.getItemCount()));
         } else {
             return verifiedDataCommunicator.getDataProvider().fetch(
-                    this.dataCommunicator.buildQuery(0, Integer.MAX_VALUE));
+                    buildQuery(0, Integer.MAX_VALUE));
         }
     }
 
@@ -102,7 +102,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
 
     @Override
     public void setItemCountCallback(
-            CallbackDataProvider.CountCallback<T, Void> callback) {
+            CallbackDataProvider.CountCallback<T, ?> callback) {
         getDataCommunicator().setCountCallback(callback);
     }
 

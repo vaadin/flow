@@ -899,7 +899,8 @@ public class AbstractListDataViewTest {
         public ListDataViewImpl(
                 SerializableSupplier<DataProvider<String, ?>> dataProviderSupplier,
                 Component component) {
-            super(dataProviderSupplier, component);
+            super(dataProviderSupplier, (offset, limit) -> new Query<>(),
+                    component);
         }
     }
 
@@ -908,7 +909,8 @@ public class AbstractListDataViewTest {
         public ItemListDataView(
                 SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier,
                 Component component) {
-            super(dataProviderSupplier, component);
+            super(dataProviderSupplier, (offset, limit) -> new Query<>(),
+                    component);
         }
     }
 

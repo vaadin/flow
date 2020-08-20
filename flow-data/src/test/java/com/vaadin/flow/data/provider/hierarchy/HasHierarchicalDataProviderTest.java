@@ -53,10 +53,10 @@ public class HasHierarchicalDataProviderTest {
     // This is just to verify that the hierarchy is possible for tree grid
     public static class TestHierarchicalComponent implements TestLazyDataView,
             TestListDataView, HasHierarchicalDataProvider<String>,
-            HasDataView<String, TestDataView> {
+            HasDataView<String, Void, TestDataView> {
         @Override
         public void setItemCountCallback(
-                CallbackDataProvider.CountCallback<String, Void> callback) {
+                CallbackDataProvider.CountCallback<String, ?> callback) {
 
         }
 
@@ -243,7 +243,7 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
-        public TestDataView setItems(DataProvider<String, ?> dataProvider) {
+        public TestDataView setItems(DataProvider<String, Void> dataProvider) {
             return null;
         }
 

@@ -60,9 +60,10 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
      *            the component that the dataView is bound to
      */
     public AbstractListDataView(
-            SerializableSupplier<DataProvider<T, ?>> dataProviderSupplier,
+            SerializableSupplier<? extends DataProvider<T, ?>> dataProviderSupplier,
+            SerializableBiFunction<Integer, Integer, Query<T, ?>> querySupplier,
             Component component) {
-        super(dataProviderSupplier, component);
+        super(dataProviderSupplier, querySupplier, component);
     }
 
     @Override

@@ -13,7 +13,8 @@ public class HasLazyDataViewTest {
 
     @Tag("test-component")
     private static class TestComponent extends Component
-            implements HasLazyDataView<String, AbstractLazyDataView<String>> {
+            implements HasLazyDataView<String,
+            Void, AbstractLazyDataView<String>> {
 
         private DataCommunicator<String> dataCommunicator;
 
@@ -46,7 +47,7 @@ public class HasLazyDataViewTest {
     public void setItemsCountCallback_switchesToDefinedSize_throwsOnSizeQuery() {
         TestComponent testComponent = new TestComponent();
         // uses a NOOP count callback that will throw when called
-        testComponent.setItems(query -> Stream.of("foo","bar","baz"));
+        testComponent.setItems(query -> Stream.of("foo", "bar", "baz"));
 
         Assert.assertFalse(testComponent.getLazyDataView().getDataCommunicator().isDefinedSize());
 
