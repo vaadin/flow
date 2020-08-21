@@ -683,7 +683,7 @@ public class AbstractListDataViewTest {
         dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
 
         Assert.assertArrayEquals(new String[] { "newOne", "one", "two",
-                "newTwo", "newThree", "last" },
+                        "newTwo", "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
 
     }
@@ -899,8 +899,7 @@ public class AbstractListDataViewTest {
         public ListDataViewImpl(
                 SerializableSupplier<DataProvider<String, ?>> dataProviderSupplier,
                 Component component) {
-            super(dataProviderSupplier, (offset, limit) -> new Query<>(),
-                    component);
+            super(dataProviderSupplier, component);
         }
     }
 
@@ -909,8 +908,7 @@ public class AbstractListDataViewTest {
         public ItemListDataView(
                 SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier,
                 Component component) {
-            super(dataProviderSupplier, (offset, limit) -> new Query<>(),
-                    component);
+            super(dataProviderSupplier, component);
         }
     }
 

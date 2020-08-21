@@ -19,7 +19,6 @@ package com.vaadin.flow.data.provider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -89,45 +88,13 @@ public class AbstractDataViewTest {
         Assert.assertEquals(10, fired.get());
     }
 
-    @Test
-    public void setInMemoryDataProvider_provides() {
-        TestComponent testComponent = new TestComponent();
-
-        List<Item> items = new ArrayList<>();
-        items.add(new Item(0L, "Item1"));
-        items.add(new Item(1L, "Item2"));
-        items.add(new Item(2L, "Item3"));
-
-        InMemoryDataProvider<Item> inMemoryProvider =
-                new CustomInMemoryDataProvider<>(items);
-        AbstractDataView<Item> dataView =
-                testComponent.setItems(inMemoryProvider);
-        Assert.assertEquals(3, dataView.getItems().count());
-        inMemoryProvider.setFilter(item -> item.getId() > 0);
-        Assert.assertEquals(2, dataView.getItems().count());
-    }
-
     /**
      * setIdentifierProvider is tested in AbstractListDataView since it
      * has the container(T item) method.
      */
 
     @Tag("test-component")
-    private static class TestComponent extends Component
-            implements HasDataView<Item, String, AbstractDataView<Item>> {
-
-        private DataProvider<Item, String> dataProvider;
-
-        @Override
-        public AbstractDataView<Item> setItems(DataProvider<Item, String> dataProvider) {
-            this.dataProvider = dataProvider;
-            return getGenericDataView();
-        }
-
-        @Override
-        public AbstractDataView<Item> getGenericDataView() {
-            return new DataViewImpl(() -> dataProvider, this);
-        }
+    private static class TestComponent extends Component {
     }
 
     private static class DataViewImpl extends AbstractDataView<Item> {
@@ -135,8 +102,7 @@ public class AbstractDataViewTest {
         public DataViewImpl(
                 SerializableSupplier<DataProvider<Item, ?>> dataProviderSupplier,
                 Component component) {
-            super(dataProviderSupplier, (offset, limit) -> new Query(),
-                    component);
+            super(dataProviderSupplier, component);
         }
 
         @Override

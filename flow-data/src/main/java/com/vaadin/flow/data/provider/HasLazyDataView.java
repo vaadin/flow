@@ -36,10 +36,12 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
     /**
      * Supply items lazily with a callback from a backend. The component will
      * automatically fetch more items and adjust its size until the backend runs
-     * out of items. Usage example:
+     * out of items. Usage example without component provided filter:
      * <p>
-     * {@code component.setItems(query -> orderService.getOrders(
-     *                  query.getFilter, query.getOffset(), query.getLimit());}
+     * {@code component.setItems(query -> orderService.getOrders(query.getOffset(), query.getLimit());}
+     * <p>
+     * If the component supports filtering, it can be fetched with
+     * query.getFilter().
      * <p>
      * The returned data view object can be used for further configuration, or
      * later on fetched with {@link #getLazyDataView()}. For using in-memory
@@ -48,7 +50,8 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
      *
      * @param fetchCallback
      *            function that returns a stream of items from the backend based
-     *            on the filter, offset and limit provided by the query object
+     *            on the offset, limit and an optional filter provided by the
+     *            query object
      * @return LazyDataView instance for further configuration
      */
     default V setItems(CallbackDataProvider.FetchCallback<T, F> fetchCallback) {
@@ -70,15 +73,17 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
 
     /**
      * Supply items lazily with callbacks: the first one fetches the items based
-     * on filter, offset and limit, the second provides the exact count of items
-     * in the backend. Use this in case getting the count is cheap and the user
-     * benefits from the component showing immediately the exact size. Usage
-     * example:
+     * on offset, limit and an optional filter, the second provides the exact
+     * count of items in the backend. Use this in case getting the count is
+     * cheap and the user benefits from the component showing immediately the
+     * exact size. Usage example without component provided filter:
      * <p>
      * {@code component.setItems(
-     *                    query -> orderService.getOrders(query.getFilter,
-     *                              query.getOffset, query.getLimit()),
-     *                    query -> orderService.getSize(query.getFilter));}
+     *                    query -> orderService.getOrders(query.getOffset, query.getLimit()),
+     *                    query -> orderService.getSize());}
+     * <p>
+     * If the component supports filtering, it can be fetched with
+     * query.getFilter().
      * <p>
      * The returned data view object can be used for further configuration, or
      * later on fetched with {@link #getLazyDataView()}. For using in-memory

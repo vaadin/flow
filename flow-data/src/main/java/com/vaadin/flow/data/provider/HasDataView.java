@@ -17,11 +17,6 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
-import java.util.Objects;
-import java.util.Optional;
-
-import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.function.SerializablePredicate;
 
 /**
  * An interface for components that get items from the generic data provider
@@ -31,6 +26,8 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @param <T>
  *            data type
+ * @param <F>
+ *            filter type
  * @param <V>
  *            DataView type
  * @since
@@ -51,49 +48,7 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
     V setItems(DataProvider<T, F> dataProvider);
 
     /**
-     * Sets an in-memory data provider for the component to use, taking into
-     * account both in-memory filtering from data provider and component
-     * specific internal filter.
-     * <p>
-     * Component's filter is transformed into a predicate through the given
-     * filter combiner. Example of filter combiner which produces the
-     * Person's name predicate:
-     * {@code (String nameFilter) -> person -> person.getName().equalsIgnoreCase
-     * (nameFilter);}
-     * <p>
-     * Note! Using a {@link ListDataProvider} instead of a
-     * {@link InMemoryDataProvider} is recommended to get access to
-     * {@link ListDataView} API by using
-     * {@link HasListDataView#setItems(ListDataProvider)}.
-     *
-     * @param dataProvider
-     *            InMemoryDataProvider to use, not <code>null</code>
-     * @param filterConverter a function which converts a component's
-     *                        internal filter into a predicate to be
-     *                        applied to the all items of data provider
-     * @return DataView providing information on the data
-     *
-     * @see #setItems(InMemoryDataProvider)
-     */
-    default V setItems(InMemoryDataProvider<T> dataProvider,
-            SerializableFunction<F, SerializablePredicate<T>> filterConverter) {
-        Objects.requireNonNull(filterConverter,
-                "FilterConverter cannot be null");
-        DataProvider<T, F> convertedDataProvider = dataProvider
-                .withConvertedFilter(filter -> Optional
-                        .ofNullable(dataProvider.getFilter())
-                        .orElse(item -> true)
-                        .and(item -> filterConverter.apply(filter).test(item)));
-        return setItems(convertedDataProvider);
-    }
-
-    /**
-     * Sets an in-memory data provider for the component to use, taking into
-     * account only in-memory filtering from data provider.
-     * <p>
-     * This methods ignores the component specific filter, even if it's included
-     * into the query object. If you want to take it into account, please use
-     * {@link #setItems(InMemoryDataProvider, SerializableFunction)}.
+     * Sets an in-memory data provider for the component to use
      * <p>
      * Note! Using a {@link ListDataProvider} instead of a
      * {@link InMemoryDataProvider} is recommended to get access to
@@ -103,22 +58,8 @@ public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
      * @param dataProvider
      *            InMemoryDataProvider to use, not <code>null</code>
      * @return DataView providing information on the data
-     *
-     * @see #setItems(InMemoryDataProvider, SerializableFunction)
      */
-    // TODO: probably we should just remove this methods, because it has a
-    //  significant drawback: it ignores the component's filter quietly, even
-    //  though it described in javadoc, so the developer can easily make a
-    //  mistake here.
-    //
-    // After the filter type has been added to this mixin, it's now
-    // impossible to pass the custom in-memory data provider to
-    // setItems(DataProvider<T, F> dataProvider), unless the
-    // F=SerializablePredicate. So, anyway we have to ask the developer how
-    // does he want to resolve the filter conversion.
-    default V setItems(InMemoryDataProvider<T> dataProvider) {
-        return setItems(dataProvider, ignore -> item -> true);
-    }
+    V setItems(InMemoryDataProvider<T> dataProvider);
 
     /**
      * Get the DataView for the component.
