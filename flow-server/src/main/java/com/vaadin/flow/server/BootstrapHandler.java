@@ -1096,7 +1096,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                 liveReload.getBackend().toString());
                     }
                     appConfig.put("springBootLiveReloadPort",
-                            BrowserLiveReload.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT);
+                            Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT);
                 }
             }
 

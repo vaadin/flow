@@ -34,12 +34,6 @@ public interface BrowserLiveReload {
     }
 
     /**
-     * Default live reload port as defined in Spring Boot Dev Tools.
-     */
-    // Non-default port currently not supported (#7970)
-    int SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT = 35729;
-
-    /**
      * Detects and return enabling live reload backend technology.
      * 
      * @return enabling technology, or <code>null</code> if none

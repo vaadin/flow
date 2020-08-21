@@ -32,6 +32,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -138,7 +139,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 devmodeGizmo.attr("backend", liveReload.getBackend().toString());
             }
             devmodeGizmo.attr("springbootlivereloadport", Integer.toString(
-                    BrowserLiveReload.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
+                    Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
             indexDocument.body().appendChild(devmodeGizmo);
         }
     }
