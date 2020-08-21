@@ -35,7 +35,7 @@ describe('VaadinDevmodeGizmo', () => {
     gizmo.javaConnection.handleError('TEST');
     assert.equal(gizmo.javaStatus, 'error');
     assert.equal(gizmo.messages.length, 1);
-    assert.equal(gizmo.messages[0].type, VaadinDevmodeGizmo.ERROR);
+    assert.equal(gizmo.messages[0].type, 'error');
     assert.equal(gizmo.messages[0].message, 'TEST');
 
   });
