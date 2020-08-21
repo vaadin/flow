@@ -61,17 +61,7 @@ class DevServerWatchDog {
                 try {
                     Socket accept = server.accept();
                     accept.setSoTimeout(0);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(accept.getInputStream()));
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        if ("reload".equals(line)) {
-                            BrowserLiveReload liveReload = DevModeHandler
-                                    .getDevModeHandler().getLiveReload();
-                            if (liveReload != null) {
-                                liveReload.reload();
-                            }
-                        }
-                    }
+                    enterReloadMessageReadLoop(accept);
                 } catch (IOException e) {
                     getLogger().debug(
                             "Error occurred during accept a connection", e);
@@ -94,6 +84,19 @@ class DevServerWatchDog {
             return LoggerFactory.getLogger(WatchDogServer.class);
         }
 
+        private void enterReloadMessageReadLoop(Socket accept) throws IOException{
+            BufferedReader in = new BufferedReader(new InputStreamReader(accept.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                if ("reload".equals(line)) {
+                    BrowserLiveReload liveReload = DevModeHandler
+                            .getDevModeHandler().getLiveReload();
+                    if (liveReload != null) {
+                        liveReload.reload();
+                    }
+                }
+            }
+        }
     }
 
     private final WatchDogServer watchDogServer;

@@ -110,7 +110,7 @@ public final class DevModeHandler implements RequestHandler {
 
     private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
 
-    private BrowserLiveReload liveReload;
+    private transient BrowserLiveReload liveReload;
 
     /**
      * The local installation path of the webpack-dev-server node script.
