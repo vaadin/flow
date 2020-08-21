@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-theme-integrations</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>5.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>vaadin-lumo-theme</artifactId>
@@ -14,7 +14,7 @@
     <description>Package with Lumo dependencies and setting for use with Flow
     </description>
     <packaging>jar</packaging>
-    
+
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -23,7 +23,7 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    
+
     <build>
         <plugins>
             <plugin>

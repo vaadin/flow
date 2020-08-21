@@ -60,6 +60,16 @@ export class CheckedFieldStrategy extends GenericFieldStrategy {
   }
 }
 
+export class ComboBoxFieldStrategy extends VaadinFieldStrategy {
+  get value() {
+    const selectedItem = (this.element as any).selectedItem;
+    return selectedItem === null ? undefined : selectedItem;
+  }
+  set value(val: any) {
+    (this.element as any).selectedItem = val === undefined ? null : val;
+  }
+}
+
 export class SelectedFieldStrategy extends GenericFieldStrategy {
   set value(val: any) {
     (this.element as any).selected = val;
@@ -73,6 +83,8 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
   switch(elm.localName) {
     case 'vaadin-checkbox': case 'vaadin-radio-button':
       return new CheckedFieldStrategy(elm);
+    case 'vaadin-combo-box':
+      return new ComboBoxFieldStrategy(elm);
     case 'vaadin-list-box':
       return new SelectedFieldStrategy(elm);
     case 'vaadin-rich-text-editor':
@@ -86,9 +98,9 @@ export function getDefaultFieldStrategy(elm: any): FieldStrategy {
 
 /**
  * Binds a form field component into a model.
- * 
+ *
  * Exmaple usage:
- * 
+ *
  * ```
  * <vaadin-text-field ...="${field(model.name)}">
  * </vaadin-text-field>

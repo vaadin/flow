@@ -46,10 +46,10 @@ export class ServerValidator implements Validator<any> {
 export async function runValidator<T>(model: AbstractModel<T>, validator: Validator<T>): Promise<ReadonlyArray<ValueError<T>>> {
   const value = getBinderNode(model).value;
   // if model is not required and value empty, do not run any validator
-  if (!getBinderNode(model).required && !new Required().validate(value)) {
+  if (!getBinderNode(model).required && !new Required().validate(value!)) {
     return [];
   }
-  return (async () => validator.validate(value, getBinderNode(model).binder))()
+  return (async () => validator.validate(value!, getBinderNode(model).binder))()
     .then(result => {
       if (result === false) {
         return [{ property: getBinderNode(model).name, value, validator, message: validator.message }];

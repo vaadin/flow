@@ -39,11 +39,11 @@ function getErrorPropertyName(valueError: ValueError<any>): string {
 }
 
 /**
- * The BinderNode<T, M> class provides the form binding related APIs 
+ * The BinderNode<T, M> class provides the form binding related APIs
  * with respect to a particular model instance.
- * 
- * Structurally, model instances form a tree, in which the object 
- * and array models have child nodes of field and array item model 
+ *
+ * Structurally, model instances form a tree, in which the object
+ * and array models have child nodes of field and array item model
  * instances.
  */
 export class BinderNode<T, M extends AbstractModel<T>> {
@@ -91,11 +91,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   /**
    * The current value related to the model
    */
-  get value(): T {
+  get value(): T | undefined {
     return this.parent!.value[this.model[_key]];
   }
 
-  set value(value: T) {
+  set value(value: T | undefined) {
     this.setValueState(value);
   }
 
@@ -132,7 +132,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
 
   /**
    * Returns a binder node for the nested model instance.
-   * 
+   *
    * @param model The nested model instance
    */
   for<NM extends AbstractModel<any>>(model: NM) {
@@ -145,8 +145,8 @@ export class BinderNode<T, M extends AbstractModel<T>> {
   }
 
   /**
-   * Runs all validation callbacks potentially affecting this 
-   * or any nested model. Returns the combined array of all 
+   * Runs all validation callbacks potentially affecting this
+   * or any nested model. Returns the combined array of all
    * errors as in the errors property.
    */
   async validate(): Promise<ReadonlyArray<ValueError<any>>> {
@@ -164,7 +164,7 @@ export class BinderNode<T, M extends AbstractModel<T>> {
 
   /**
    * A helper method to add a validator
-   * 
+   *
    * @param validator a validator
    */
   addValidator(validator: Validator<T>) {
@@ -359,10 +359,10 @@ export class BinderNode<T, M extends AbstractModel<T>> {
     ];
   }
 
-  private initializeValue() {
+  private initializeValue(requiredByChildNode: boolean = false) {
     // First, make sure parents have value initialized
     if (this.parent && ((this.parent.value === undefined) || (this.parent.defaultValue === undefined))) {
-      this.parent.initializeValue();
+      this.parent.initializeValue(true);
     }
 
     let value = this.parent
@@ -370,35 +370,50 @@ export class BinderNode<T, M extends AbstractModel<T>> {
       : undefined;
 
     if (value === undefined) {
-      // Initialize value if necessary
-      value = value !== undefined
-        ? value
-        : (this.model.constructor as ModelConstructor<T, M>).createEmptyValue()
-      this.setValueState(value, this.defaultValue === undefined);
+      // Initialize value if a child node is accessed or for the root-level node
+      if (requiredByChildNode || !this.parent) {
+        value = value !== undefined
+          ? value
+          : (this.model.constructor as ModelConstructor<T, M>).createEmptyValue();
+        this.setValueState(value, this.defaultValue === undefined);
+      } else if (
+        this.parent
+        && (this.parent.model instanceof ObjectModel)
+        && !(this.model[_key] in this.parent.value)
+      ) {
+        this.setValueState(undefined, this.defaultValue === undefined);
+      }
     }
   }
 
-  private setValueState(value: T, keepPristine: boolean = false) {
+  private setValueState(value: T | undefined, keepPristine: boolean = false) {
     const modelParent = this.model[_parent];
-    if (modelParent instanceof ArrayModel) {
-      // Value contained in array - replace array in parent
-      const array = (this.parent!.value as ReadonlyArray<T>).slice();
-      array[this.model[_key] as number] = value;
-      this.parent!.setValueState(array, keepPristine);
-    } else if (modelParent instanceof ObjectModel) {
+    if (modelParent instanceof ObjectModel) {
       // Value contained in object - replace object in parent
       const object = {
         ...this.parent!.value,
         [this.model[_key]]: value
       };
       this.parent!.setValueState(object, keepPristine);
+      return;
+    }
+
+    if (value === undefined) {
+      throw new TypeError('Unexpected undefined value');
+    }
+
+    if (modelParent instanceof ArrayModel) {
+      // Value contained in array - replace array in parent
+      const array = (this.parent!.value as ReadonlyArray<T>).slice();
+      array[this.model[_key] as number] = value;
+      this.parent!.setValueState(array, keepPristine);
     } else {
       // Value contained elsewhere, probably binder - use value property setter
       const binder = modelParent as Binder<T, M>;
       if (keepPristine && !binder.dirty) {
         binder.defaultValue = value;
       }
-      binder.value = value;
+      binder.value = value!;
     }
   }
 }

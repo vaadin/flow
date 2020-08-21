@@ -9,5 +9,5 @@ $wnd.Vaadin = $wnd.Vaadin || {};
 $wnd.Vaadin.registrations = $wnd.Vaadin.registrations || [];
 $wnd.Vaadin.registrations.push({
   is: '@vaadin/form',
-  version: /* updated-by-script */ '4.1-SNAPSHOT'
+  version: /* updated-by-script */ '5.0-SNAPSHOT'
 });
