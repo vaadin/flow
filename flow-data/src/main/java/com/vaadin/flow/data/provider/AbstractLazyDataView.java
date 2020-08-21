@@ -101,12 +101,6 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
     }
 
     @Override
-    public void setItemCountCallback(
-            CallbackDataProvider.CountCallback<T, ?> callback) {
-        getDataCommunicator().setCountCallback(callback);
-    }
-
-    @Override
     public void setItemCountEstimate(int itemCountEstimate) {
         getDataCommunicator().setItemCountEstimate(itemCountEstimate);
     }

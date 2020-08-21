@@ -55,11 +55,6 @@ public class HasHierarchicalDataProviderTest {
     public static class TestHierarchicalComponent implements TestLazyDataView,
             TestListDataView, HasHierarchicalDataProvider<String>,
             HasDataView<String, Void, TestDataView> {
-        @Override
-        public void setItemCountCallback(
-                CallbackDataProvider.CountCallback<String, ?> callback) {
-
-        }
 
         @Override
         public void setItemCountFromDataProvider() {

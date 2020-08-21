@@ -25,44 +25,10 @@ package com.vaadin.flow.data.provider;
 public interface LazyDataView<T> extends DataView<T> {
 
     /**
-     * Sets a callback that the component uses to get the exact item count in
-     * the backend. Use this when it is cheap to get the exact item count and it
-     * is desired that the user sees the "full scrollbar size".
-     * <p>
-     * The given callback will be queried for the count instead of the data
-     * provider {@link DataProvider#size(Query)} method when the component has a
-     * distinct data provider set with
-     * {@link HasLazyDataView#setItems(BackEndDataProvider)}.
-     * <p>
-     * <em>Note:</em> the filter type of this method is intentionally set up
-     * unknown (wildcard) in order not to over-complicate this interface with a
-     * generic type in class declaration. Component's specific filter type
-     * should be visible through component's API: overloaded {@code setItems()}
-     * methods with a callback(s) as a parameter(s). If you want to use a filter
-     * in count callback, you need to cast it to component's internal filter
-     * type as follows:
-     * <p>
-     * {@code dataView.setItemCountCallback(query -> orderService.getSize(
-     *                                (String) query.getFilter().orElse("") ));}
-     * <p>
-     *
-     * @param callback
-     *            the callback to use for determining item count in the backend,
-     *            not {@code null}
-     * @see #setItemCountFromDataProvider()
-     * @see #setItemCountUnknown()
-     */
-    void setItemCountCallback(
-            CallbackDataProvider.CountCallback<T, ?> callback);
-
-    /**
      * Switches the component to get the exact item count from the data
      * provider's {@link DataProvider#size(Query)}. Use this when it is cheap to
      * get the exact item count and it is desired that the user sees the "full
      * scrollbar size".
-     * <p>
-     * Calling this method will clear any previously set count callback with the
-     * {@link #setItemCountCallback(CallbackDataProvider.CountCallback)} method.
      */
     void setItemCountFromDataProvider();
 
@@ -77,9 +43,6 @@ public interface LazyDataView<T> extends DataView<T> {
      * range or if the actual number of items has been determined. The estimate
      * shouldn't be less than two pages (see {@code setPageSize(int)} in the
      * component) or it causes unnecessary backend requests.
-     * <p>
-     * Calling this method will clear any previously set count callback
-     * {@link #setItemCountCallback(CallbackDataProvider.CountCallback)}.
      *
      * @param itemCountEstimate
      *            estimated item count of the backend
@@ -137,9 +100,6 @@ public interface LazyDataView<T> extends DataView<T> {
      * {@link #setItemCountEstimate(int)} and
      * {@link #setItemCountEstimateIncrease(int)} when the backend has a lot of
      * items and faster scrolling down is desired.
-     * <p>
-     * Calling this method will clear any previously set count callback
-     * {@link #setItemCountCallback(CallbackDataProvider.CountCallback)}.
      */
     void setItemCountUnknown();
 }
