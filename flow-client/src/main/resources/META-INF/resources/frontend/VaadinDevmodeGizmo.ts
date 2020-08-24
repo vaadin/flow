@@ -918,8 +918,9 @@ export class VaadinDevmodeGizmo extends LitElement {
           <span class="tab">Log</span>
           <label class="switch">
               <input id="toggle" type="checkbox"
-                  ?disabled=${this.frontendStatus === ConnectionStatus.UNAVAILABLE || this.frontendStatus === ConnectionStatus.ERROR}
-                  ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE}"
+                  ?disabled=${(this.frontendStatus === ConnectionStatus.UNAVAILABLE || this.frontendStatus === ConnectionStatus.ERROR)
+                    && (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR)}
+                  ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE || this.javaStatus === ConnectionStatus.ACTIVE}"
                   @change=${(e:any) => this.setActive(e.target.checked)}/>
               <span class="slider"></span>
               <span class="live-reload-text">Live reload</span>
