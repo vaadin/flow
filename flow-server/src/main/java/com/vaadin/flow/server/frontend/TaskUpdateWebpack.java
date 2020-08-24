@@ -52,6 +52,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path webpackConfigPath;
     private final Path frontendDirectory;
     private final boolean useV14Bootstrapping;
+    private final Path flowResourcesFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -72,11 +73,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
      *            whether the application running with deprecated V14 bootstrapping
+     * @param flowResourcesFolder
+     *            relative path to `flow-frontend` package
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
             String webpackGeneratedTemplate, File generatedFlowImports,
-            boolean useV14Bootstrapping) {
+            boolean useV14Bootstrapping, File flowResourcesFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -84,6 +87,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.useV14Bootstrapping = useV14Bootstrapping;
+        this.flowResourcesFolder = flowResourcesFolder.toPath();
     }
 
     @Override
@@ -145,6 +149,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
         String isClientSideBootstrapModeLine = "const useClientSideIndexFileForBootstrapping = "
                 + !useV14Bootstrapping + ";";
+        String devModeGizmoJSLine = "const devmodeGizmoJS = require('path').resolve(__dirname, '"
+                + getEscapedRelativeWebpackPath(
+                        flowResourcesFolder.resolve("VaadinDevmodeGizmo.js"))
+                + "');";
         for (int i = 0; i < lines.size(); i++) {
             if (lines.get(i).startsWith(
                     "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
@@ -166,6 +174,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
             if (lines.get(i).startsWith("const clientSideIndexEntryPoint")) {
                 lines.set(i, getClientEntryPoint());
+            }
+
+            if (lines.get(i).startsWith("const devmodeGizmoJS")) {
+                lines.set(i, devModeGizmoJSLine);
             }
         }
         return lines;

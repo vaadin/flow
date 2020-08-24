@@ -26,6 +26,7 @@ import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
 
 import elemental.client.Browser;
@@ -97,6 +98,25 @@ public class ApplicationConnection {
                     servletVersion);
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
+
+            if (applicationConfiguration.isDevmodeGizmoEnabled()
+                    && applicationConfiguration.getLiveReloadUrl() != null) {
+                Element devmodeGizmo = Browser.getDocument()
+                        .createElement("vaadin-devmode-gizmo");
+                DomApi.wrap(devmodeGizmo).setAttribute("url",
+                        applicationConfiguration.getLiveReloadUrl());
+                if (applicationConfiguration.getLiveReloadBackend() != null) {
+                    DomApi.wrap(devmodeGizmo).setAttribute("backend",
+                            applicationConfiguration.getLiveReloadBackend());
+                }
+                if (applicationConfiguration
+                        .getSpringBootLiveReloadPort() != null) {
+                    DomApi.wrap(devmodeGizmo).setAttribute(
+                            "springbootlivereloadport", applicationConfiguration
+                                    .getSpringBootLiveReloadPort());
+                }
+                DomApi.wrap(body).appendChild(devmodeGizmo);
+            }
         }
 
         registry.getLoadingIndicator().show();
