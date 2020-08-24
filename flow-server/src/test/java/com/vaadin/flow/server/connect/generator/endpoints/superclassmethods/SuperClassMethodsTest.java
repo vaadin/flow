@@ -37,9 +37,9 @@ public class SuperClassMethodsTest extends AbstractEndpointGenerationTest {
         OpenAPI actualOpenAPI = getOpenApiObject();
         Assert.assertEquals(3, actualOpenAPI.getPaths().size());
         Assert.assertEquals(Person.class.getCanonicalName(),
-                extractReturnTypeOfMethod(actualOpenAPI, "get"));
-        Assert.assertEquals(Person.class.getCanonicalName(),
                 extractReturnTypeOfMethod(actualOpenAPI, "update"));
+        Assert.assertEquals(Person.class.getCanonicalName(),
+                extractReturnTypeOfMethod(actualOpenAPI, "get"));
     }
 
     private String unwrapComposedAndExtractName(Schema schema) {

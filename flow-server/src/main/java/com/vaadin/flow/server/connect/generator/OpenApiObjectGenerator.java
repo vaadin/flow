@@ -519,8 +519,10 @@ public class OpenApiObjectGenerator {
     }
 
     private Pair<ClassOrInterfaceDeclaration, ResolvedTypeParametersMap> getDeclarationAndResolvedTypeParametersMap(
-            ClassOrInterfaceType type) {
-        ResolvedReferenceType resolvedType = type.resolve();
+            ClassOrInterfaceType type,
+            ResolvedTypeParametersMap parentResolvedTypeParametersMap) {
+        ResolvedReferenceType resolvedType = parentResolvedTypeParametersMap
+                .replaceAll(type.resolve()).asReferenceType();
         String qualifiedName = resolvedType.getQualifiedName();
         ClassOrInterfaceDeclaration declaration = endpointExposedMap
                 .get(qualifiedName);
@@ -565,7 +567,8 @@ public class OpenApiObjectGenerator {
 
         Stream.concat(typeDeclaration.getExtendedTypes().stream(),
                 typeDeclaration.getImplementedTypes().stream())
-                .map(this::getDeclarationAndResolvedTypeParametersMap)
+                .map(resolvedType -> getDeclarationAndResolvedTypeParametersMap(
+                        resolvedType, resolvedTypeParametersMap))
                 .filter(Objects::nonNull).forEach(pair -> newPathItems
                         .putAll(createPathItems(endpointName, pair.a, pair.b)));
         return newPathItems;
