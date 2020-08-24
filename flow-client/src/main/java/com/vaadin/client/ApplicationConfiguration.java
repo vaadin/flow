@@ -380,7 +380,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the URL for the live reload websocket connection
+     * Gets the URL for the live reload websocket connection.
      *
      * @return URL for the live reload websocket connection
      */
@@ -389,7 +389,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Sets the URL for the live reload websocket connection
+     * Sets the URL for the live reload websocket connection.
      * 
      * @param liveReloadUrl
      *            URL for the live reload websocket connection
