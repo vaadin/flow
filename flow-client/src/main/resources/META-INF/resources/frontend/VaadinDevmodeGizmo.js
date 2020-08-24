@@ -376,14 +376,14 @@ class VaadinDevmodeGizmo extends LitElement {
   }
 
   findNotificationIndex(id) {
-      let index = -1;
-      this.notifications.some((notification, idx) => {
-          if (notification.id === id) {
-              index = idx;
-              return true;
-          }
-      });
-      return index;
+    let index = -1;
+    this.notifications.some((notification, idx) => {
+      if (notification.id === id) {
+        index = idx;
+        return true;
+      }
+    });
+    return index;
   }
 
   toggleDontShowAgain(id) {
