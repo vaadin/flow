@@ -683,7 +683,7 @@ public class AbstractListDataViewTest {
         dataView.addItemsAfter(Arrays.asList("one", "two"), "newOne");
 
         Assert.assertArrayEquals(new String[] { "newOne", "one", "two",
-                "newTwo", "newThree", "last" },
+                        "newTwo", "newThree", "last" },
                 dataView.getItems().toArray(String[]::new));
 
     }
