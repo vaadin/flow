@@ -27,11 +27,16 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -101,6 +106,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
+        if (config.isDevModeLiveReloadEnabled()) {
+            addDevmodeGizmo(indexDocument, session, request);
+        }
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -109,6 +117,29 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
+            VaadinRequest request) {
+        VaadinService service = session.getService();
+        BrowserLiveReloadAccess liveReloadAccess = service
+                .getInstantiator()
+                .getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReload liveReload = liveReloadAccess != null
+                ? liveReloadAccess.getLiveReload(service)
+                : null;
+
+        if (liveReload != null) {
+            Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
+            devmodeGizmo.attr("url",
+                    BootstrapHandlerHelper.getPushURL(session, request));
+            if (liveReload.getBackend() != null) {
+                devmodeGizmo.attr("backend", liveReload.getBackend().toString());
+            }
+            devmodeGizmo.attr("springbootlivereloadport", Integer.toString(
+                    Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
+            indexDocument.body().appendChild(devmodeGizmo);
+        }
     }
 
     private void addInitialFlow(JsonObject initialJson, Document indexDocument,

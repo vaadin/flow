@@ -27,6 +27,7 @@ import java.util.function.Function;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.server.BootstrapHandler;
@@ -172,17 +173,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
      * @return the relative service URL
      */
     protected static String getServiceUrl(VaadinRequest vaadinRequest) {
-        String pathInfo = vaadinRequest.getPathInfo();
-        if (pathInfo == null) {
-            return ".";
-        } else {
-            /*
-             * Make a relative URL to the servlet by adding one ../ for each
-             * path segment in pathInfo (i.e. the part of the requested path
-             * that comes after the servlet mapping)
-             */
-            return HandlerHelper.getCancelingRelativePath(pathInfo);
-        }
+        return BootstrapHandlerHelper.getServiceUrl(vaadinRequest);
     }
 
     private JsonObject getStats() {

@@ -9,12 +9,6 @@ interface AppConfig {
   appId: string;
   uidl: object;
   clientRouting: boolean;
-  devmodeGizmoEnabled: boolean;
-  serviceUrl: string;
-  contextRootUrl: string;
-  springBootDevToolsPort: number;
-  liveReloadBackend: string;
-  liveReloadPath: string;
 }
 
 interface AppInitResponse {
@@ -233,15 +227,6 @@ export class Flow {
         document.body.appendChild(this.container);
       }
 
-      // Load devmode gizmo, which handles live-reload connection to the server
-      // (server ensures this parameter is true only in dev mode)
-      if (appConfig.devmodeGizmoEnabled) {
-        const devmodeGizmoMod = await import('./VaadinDevmodeGizmo');
-        const devmodeGizmo = await devmodeGizmoMod.init(this.getLiveReloadConnectionBaseUri(appConfig),
-            appConfig.liveReloadBackend, appConfig.springBootDevToolsPort);
-        $wnd.Vaadin.Flow.devModeGizmo = devmodeGizmo;
-      }
-
       // hide flow progress indicator
       this.hideLoading();
     }
@@ -411,24 +396,5 @@ export class Flow {
         loading.setAttribute('style', 'none');
       }
     };
-  }
-
-  private getLiveReloadConnectionBaseUri(appConfig: AppConfig) {
-    function getAbsoluteUrl(relative: string) {
-      // Use innerHTML to obtain an absolute URL
-      const div = document.createElement("div");
-      div.innerHTML = '<a href="' + relative + '"/>';
-      return (div.firstChild as HTMLLinkElement).href;
-    }
-    let serviceUrl: string;
-    let contextRoot: string;
-    if (appConfig.serviceUrl) {
-      serviceUrl = appConfig.serviceUrl;
-      contextRoot = getAbsoluteUrl(serviceUrl + appConfig.contextRootUrl);
-    } else {
-      serviceUrl = getAbsoluteUrl(".");
-      contextRoot = getAbsoluteUrl(appConfig.contextRootUrl);
-    }
-    return appConfig.liveReloadPath ? (contextRoot + appConfig.liveReloadPath) : serviceUrl;
   }
 }

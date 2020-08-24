@@ -564,7 +564,8 @@ public class NodeTasks implements FallibleCommand {
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.webpackTemplate, builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
-                    builder.useDeprecatedV14Bootstrapping));
+                    builder.useDeprecatedV14Bootstrapping,
+                    builder.flowResourcesFolder));
         }
 
         if (builder.enableImportsUpdate) {

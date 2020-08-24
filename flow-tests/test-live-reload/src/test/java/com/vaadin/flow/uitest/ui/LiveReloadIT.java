@@ -57,9 +57,9 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
     @Test
     public void splashMessageShownOnAutoReloadAndClosedOnBodyClick() {
         open();
-        waitForElementPresent(By.id("live-reload-trigger-button"));
+        waitForElementPresent(By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         WebElement liveReloadTrigger = findElement(
-                By.id("live-reload-trigger-button"));
+                By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
 
         WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
@@ -99,7 +99,7 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
 
         // when: live reload is triggered
         WebElement liveReloadTrigger = findElement(
-                By.id("live-reload-trigger-button"));
+                By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
 
         // then: page is not reloaded
@@ -112,4 +112,23 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 
+    @Test
+    public void liveReloadOnTouchedFrontendFile() {
+        open();
+
+        final String initialViewId = findElement(
+                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
+
+        waitForElementPresent(By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON));
+        WebElement liveReloadTrigger = findElement(
+                By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON));
+        liveReloadTrigger.click();
+
+        waitForElementPresent(By.id(LiveReloadView.PAGE_RELOADING));
+        waitForElementNotPresent(By.id(LiveReloadView.PAGE_RELOADING));
+
+        final String newViewId = findElement(
+                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
+        Assert.assertNotEquals(initialViewId, newViewId);
+    }
 }
