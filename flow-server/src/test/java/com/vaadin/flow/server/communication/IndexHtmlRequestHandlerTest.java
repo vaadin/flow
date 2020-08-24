@@ -399,9 +399,9 @@ public class IndexHtmlRequestHandlerTest {
         join.invoke(handler);
         // Ask to the DevModeHandler for the computed random port
         Method runningPort = DevModeHandler.class
-                .getDeclaredMethod("getRunningDevServerPort");
+                .getDeclaredMethod("getRunningDevServerPort", File.class);
         runningPort.setAccessible(true);
-        int port = (Integer) runningPort.invoke(handler);
+        int port = (Integer) runningPort.invoke(handler, npmFolder);
 
         // Configure webpack-dev-server tcp listener to return the `index.html`
         // content

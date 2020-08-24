@@ -574,10 +574,26 @@ suite("Flow", () => {
     const flow = new Flow();
 
     const route = flow.serverSideRoutes[0];
-    await route.action({pathname: "Foo/Bar.baz"});
+    await route.action({pathname: "Foo/Bar.baz", search:""});
 
     assert.isDefined($wnd.vaadinPush);
     assert.isTrue($wnd.vaadinPush.isStub);
+  });
+
+  test("should not throw error when response header content type has charset", async () => {
+    stubServerRemoteFunction('foobar-1111112');
+    mockInitResponse('foobar-1111113', undefined, stubVaadinPushSrc, true);
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    await route.action({pathname: "Foo/Bar.baz", search:""});
+  });
+
+  test("should not throw error when response header content type has no charset", async () => {
+    stubServerRemoteFunction('foobar-1111113');
+    mockInitResponse('foobar-1111113', undefined, stubVaadinPushSrc);
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    await route.action({pathname: "Foo/Bar.baz", search:""});
   });
 });
 
@@ -624,13 +640,13 @@ function stubServerRemoteFunction(id: string, cancel: boolean = false, routeRege
   };
 }
 
-function mockInitResponse(appId: string, changes = '[]', pushScript?: string) {
+function mockInitResponse(appId: string, changes = '[]', pushScript?: string, withCharset?: boolean) {
   // Configure a valid server initialization response
   mock.get(/^.*\?v-r=init.*/, (req, res) => {
     assert.equal('GET', req.method());
     return res
       .status(200)
-      .header("content-type","application/json")
+      .header("content-type", "application/json" + (withCharset ? ";charset=ISO-8859-1" : ""))
       .body(createInitResponse(appId, changes, pushScript));
   });
 }

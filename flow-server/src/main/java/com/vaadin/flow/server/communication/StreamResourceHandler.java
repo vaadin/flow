@@ -77,11 +77,21 @@ public class StreamResourceHandler implements Serializable {
         } finally {
             session.unlock();
         }
-        try (OutputStream outputStream = response.getOutputStream()) {
+        // don't use here "try resource" syntax sugar because in case there is
+        // an exception the {@code outputStream} will be closed before "catch"
+        // block which sets the status code and this code will not have any
+        // effect being called after closing the stream (see #8740).
+        OutputStream outputStream = null;
+        try {
+            outputStream = response.getOutputStream();
             writer.accept(outputStream, session);
         } catch (Exception exception) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             throw exception;
+        } finally {
+            if (outputStream != null) {
+                outputStream.close();
+            }
         }
     }
 

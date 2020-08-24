@@ -17,6 +17,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 
 import com.vaadin.client.communication.LoadingIndicatorConfigurator;
@@ -25,6 +26,7 @@ import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.util.NativeFunction;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -159,6 +161,9 @@ public class ApplicationConnection {
         client.getByNodeId = $entry(function(nodeId) {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
+        client.addDomBindingListener = $entry(function(nodeId, callback) {
+            ap.@ApplicationConnection::addDomSetListener(*)(nodeId, callback);
+        });
         client.productionMode = productionMode;
         client.poll = $entry(function() {
                 var poller = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getPoller()();
@@ -191,12 +196,12 @@ public class ApplicationConnection {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-
+    
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
-
+    
         client.initializing = false;
         client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
@@ -205,6 +210,18 @@ public class ApplicationConnection {
     private Node getDomElementByNodeId(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null : node.getDomNode();
+    }
+
+    private void addDomSetListener(int nodeId, JavaScriptObject callback) {
+        registry.getStateTree().getNode(nodeId).addDomNodeSetListener(node -> {
+            if (nodeId == node.getId()) {
+                NativeFunction function = NativeFunction.create("callback",
+                        "callback();");
+                function.call(null, callback);
+                return true;
+            }
+            return false;
+        });
     }
 
     /**
@@ -228,7 +245,7 @@ public class ApplicationConnection {
             var registry = ap.@ApplicationConnection::registry;
             return registry.@com.vaadin.client.Registry::getStateTree()().@com.vaadin.client.flow.StateTree::getRootNode()().@com.vaadin.client.flow.StateNode::getDebugJson()();
         });
-
+    
     }-*/;
 
     /**

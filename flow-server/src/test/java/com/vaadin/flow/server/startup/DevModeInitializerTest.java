@@ -29,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -397,6 +398,68 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                         servletContextAttributes.get(answer.getArgumentAt(0, String.class)));
         process();
         assertTrue(DevModeInitializer.isDevModeAlreadyStarted(servletContext));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void onStartup_fallbackBaseDirIsNotProjectDirectory_throws()
+            throws Exception {
+        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        TemporaryFolder tmp = new TemporaryFolder();
+        tmp.create();
+        baseDir = tmp.getRoot().getPath();
+
+        String originalUserDirValue = null;
+        try {
+            originalUserDirValue = System.getProperty("user.dir");
+            System.setProperty("user.dir", baseDir);
+            devModeInitializer.onStartup(classes, servletContext);
+        } finally {
+            if (originalUserDirValue != null) {
+                System.setProperty("user.dir", originalUserDirValue);
+            }
+        }
+    }
+
+    @Test
+    public void onStartup_fallbackBaseDirIsMavenProjectDirectory_isAccepted()
+            throws Exception {
+        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        TemporaryFolder tmp = new TemporaryFolder();
+        tmp.create();
+        tmp.newFile("pom.xml");
+        baseDir = tmp.getRoot().getPath();
+
+        String originalUserDirValue = null;
+        try {
+            originalUserDirValue = System.getProperty("user.dir");
+            System.setProperty("user.dir", baseDir);
+            devModeInitializer.onStartup(classes, servletContext);
+        } finally {
+            if (originalUserDirValue != null) {
+                System.setProperty("user.dir", originalUserDirValue);
+            }
+        }
+    }
+
+    @Test
+    public void onStartup_fallbackBaseDirIsGradleProjectDirectory_isAccepted()
+            throws Exception {
+        initParams.remove(FrontendUtils.PROJECT_BASEDIR);
+        TemporaryFolder tmp = new TemporaryFolder();
+        tmp.create();
+        tmp.newFile("build.gradle");
+        baseDir = tmp.getRoot().getPath();
+
+        String originalUserDirValue = null;
+        try {
+            originalUserDirValue = System.getProperty("user.dir");
+            System.setProperty("user.dir", baseDir);
+            devModeInitializer.onStartup(classes, servletContext);
+        } finally {
+            if (originalUserDirValue != null) {
+                System.setProperty("user.dir", originalUserDirValue);
+            }
+        }
     }
 
     private void loadingJars_allFilesExist(String resourcesFolder)

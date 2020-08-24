@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -109,10 +110,18 @@ public final class DevModeHandler implements RequestHandler {
      */
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
+    /**
+     * UUID system property for identifying JVM restart.
+     */
+    private static final String WEBPACK_PORTFILE_UUID_PROPERTY = "vaadin.frontend.webpack.portfile.uuid";
+
+
     private volatile int port;
     private final AtomicReference<Process> webpackProcess = new AtomicReference<>();
     private final boolean reuseDevServer;
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
+    private final File devServerPortFile;
+
 
     private StringBuilder cumulativeOutput = new StringBuilder();
 
@@ -123,6 +132,7 @@ public final class DevModeHandler implements RequestHandler {
 
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
+        devServerPortFile = getDevServerPortFile(npmFolder);
 
         devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
             // this will throw an exception if an exception has been thrown by
@@ -220,7 +230,7 @@ public final class DevModeHandler implements RequestHandler {
             CompletableFuture<Void> waitFor) {
 
         if (runningPort == 0) {
-            runningPort = getRunningDevServerPort();
+            runningPort = getRunningDevServerPort(npmFolder);
         }
 
         return new DevModeHandler(configuration, runningPort, npmFolder,
@@ -451,7 +461,7 @@ public final class DevModeHandler implements RequestHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     public void removeRunningDevServerPort() {
-        FileUtils.deleteQuietly(LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE);
+        FileUtils.deleteQuietly(devServerPortFile);
     }
 
     private void runOnFutureComplete(DeploymentConfiguration config,
@@ -465,9 +475,8 @@ public final class DevModeHandler implements RequestHandler {
     }
 
     private void saveRunningDevServerPort() {
-        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
         try {
-            FileUtils.writeStringToFile(portFile, String.valueOf(port),
+            FileUtils.writeStringToFile(devServerPortFile, String.valueOf(port),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -632,9 +641,9 @@ public final class DevModeHandler implements RequestHandler {
         return new Pair<>(webpack, webpackConfig);
     }
 
-    private static int getRunningDevServerPort() {
+    private static int getRunningDevServerPort(File npmFolder) {
         int port = 0;
-        File portFile = LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE;
+        File portFile = getDevServerPortFile(npmFolder);
         if (portFile.canRead()) {
             try {
                 String portString = FileUtils
@@ -729,18 +738,22 @@ public final class DevModeHandler implements RequestHandler {
         devServerStartFuture.join();
     }
 
-    private static final class LazyDevServerPortFileInit {
 
-        private static final File DEV_SERVER_PORT_FILE = createDevServerPortFile();
-
-        private static File createDevServerPortFile() {
-            try {
-                return File.createTempFile("flow-dev-server", "port");
-            } catch (IOException exception) {
-                throw new UncheckedIOException(exception);
-            }
+    private static File getDevServerPortFile(File npmFolder) {
+        // UUID changes between JVM restarts
+        String jvmUuid = System.getProperty(WEBPACK_PORTFILE_UUID_PROPERTY);
+        if (jvmUuid == null) {
+            jvmUuid = UUID.randomUUID().toString();
+            System.setProperty(WEBPACK_PORTFILE_UUID_PROPERTY, jvmUuid);
         }
 
-    }
+        // Frontend path ensures uniqueness for multiple devmode apps running
+        // simultaneously
+        String frontendBuildPath = npmFolder.getAbsolutePath();
 
+        String uniqueUid = UUID.nameUUIDFromBytes(
+                (jvmUuid + frontendBuildPath).getBytes(StandardCharsets.UTF_8))
+                .toString();
+        return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
+    }
 }

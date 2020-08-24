@@ -63,7 +63,7 @@ public class TaskGenerateConnect extends AbstractTaskConnectGenerator {
     @Override
     public void execute() throws ExecutionFailedException {
         File customConnectClient = new File(frontendDirectory, CUSTOM_CONNECT_CLIENT_NAME);
-        String customName = customConnectClient.exists() ? customConnectClient.getPath() : null;
+        String customName = customConnectClient.exists() ? ("../" + CUSTOM_CONNECT_CLIENT_NAME) : null;
         if (VaadinConnectTsGenerator.launch(openApi, outputFolder, customName)) {
             new VaadinConnectClientGenerator(readApplicationProperties())
                     .generateVaadinConnectClientFile(connectClientFile.toPath());

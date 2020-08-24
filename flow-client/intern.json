@@ -16,7 +16,7 @@
   "tunnelOptions": {
     "version": "3.141.59",
     "drivers": [
-      {"name": "chrome", "version": "80.0.3987.106"}
+      {"name": "chrome", "version": "84.0.4147.30"}
     ]
   },
   "plugins": {

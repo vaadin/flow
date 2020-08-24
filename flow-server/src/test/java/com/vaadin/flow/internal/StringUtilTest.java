@@ -18,8 +18,6 @@ package com.vaadin.flow.internal;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.polymertemplate.BundleParser;
-
 public class StringUtilTest {
 
     @Test
@@ -29,21 +27,40 @@ public class StringUtilTest {
 
         Assert.assertEquals("return html'';", singleLineBlock);
 
-        String blockComment = StringUtil.removeComments("return html'/* block with new lines\n"
-                + "* still in my/their block */';");
+        String blockComment = StringUtil
+                .removeComments("return html'/* block with new lines\n"
+                        + "* still in my/their block */';");
         Assert.assertEquals("return html'';", blockComment);
 
-        String newLineSingleBlock = StringUtil.removeComments("return html'/* not here \n*/';");
+        String newLineSingleBlock = StringUtil
+                .removeComments("return html'/* not here \n*/';");
         Assert.assertEquals("return html'';", newLineSingleBlock);
 
         String noComments = "<vaadin-text-field label=\"Nats Url(s)\" placeholder=\"nats://server:port\" id=\"natsUrlTxt\" style=\"width:100%\"></vaadin-text-field>`";
         Assert.assertEquals(noComments, StringUtil.removeComments(noComments));
 
-        String lineComment = StringUtil.removeComments("return html'// this line comment\n';");
+        String lineComment = StringUtil
+                .removeComments("return html'// this line comment\n';");
         Assert.assertEquals("return html'\n';", lineComment);
 
-        String mixedComments = StringUtil.removeComments("return html'/* not here \n*/\nCode;// neither this\n"
-                + "/* this should // be fine\n* to remove / */';");
+        String mixedComments = StringUtil.removeComments(
+                "return html'/* not here \n*/\nCode;// neither this\n"
+                        + "/* this should // be fine\n* to remove / */';");
         Assert.assertEquals("return html'\nCode;\n';", mixedComments);
     }
+
+    @Test
+    public void commentRemoval_emojiInString_removalDoesnotThrowResultIsTheSame() {
+        String initialTemplate = "import { html } from '@polymer/polymer/lib/utils/html-tag.js';\n"
+                + "class EmployeeForm extends PolymerElement {\n"
+                + "  static get template() {\n" + "    return html`\n"
+                + "   <div style=\"width: 100%; height: 100%;\" class=\"scroll-div\"> \n"
+                + "    <iron-pages selected=\"[[page]]\"> \n" + "     <page>\n"
+                + "🚧 Training: Coming soon 🚧\n" + "</page> \n"
+                + "    </iron-pages> \n" + "   </div> \n" + "`;\n" + "  }\n"
+                + "\n";
+        String template = StringUtil.removeComments(initialTemplate);
+        Assert.assertEquals(initialTemplate, template);
+    }
+
 }

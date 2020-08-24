@@ -27,9 +27,6 @@ public class PreserveOnRefreshReAddIT extends ChromeBrowserTest {
     @Test
     public void replaceComponentAfterRefresh_componentIsReplaced() {
         open();
-        if (hasClientIssue("7587")) {
-            return;
-        }
 
         findElement(By.id("set-text")).click();
         findElement(By.id("set-another-text")).click();
