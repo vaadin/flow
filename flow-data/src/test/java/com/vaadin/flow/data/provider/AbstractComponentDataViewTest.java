@@ -44,12 +44,12 @@ public abstract class AbstractComponentDataViewTest {
     protected List<String> items;
     protected InMemoryDataProvider<String> dataProvider;
     protected DataView<String> dataView;
-    protected HasDataView<String, ? extends DataView<String>> component;
+    protected HasDataView<String, Void, ? extends DataView<String>> component;
 
     @Before
     public void init() {
         items = new ArrayList<>(Arrays.asList("first", "middle", "last"));
-        dataProvider = new InMemoryProvider(items);
+        dataProvider = new CustomInMemoryDataProvider<>(items);
         component = getVerifiedComponent();
         dataView = component.setItems(dataProvider);
     }
@@ -89,82 +89,17 @@ public abstract class AbstractComponentDataViewTest {
         Assert.assertEquals(10, fired.get());
     }
 
-    protected abstract HasDataView<String, ? extends DataView<String>> getComponent();
+    protected abstract HasDataView<String, Void, ? extends DataView<String>> getComponent();
 
-    private HasDataView<String, ? extends DataView<String>> getVerifiedComponent() {
-        HasDataView<String, ? extends DataView<String>> component = getComponent();
+    private HasDataView<String, Void, ? extends DataView<String>> getVerifiedComponent() {
+        HasDataView<String, Void, ? extends DataView<String>> component =
+                getComponent();
         if (component instanceof Component) {
             return component;
         }
         throw new IllegalArgumentException(String.format(
                 "Component subclass is expected, but was given a '%s'",
                 component.getClass().getSimpleName()));
-    }
-
-    private static class InMemoryProvider
-            implements InMemoryDataProvider<String> {
-
-        private List<String> items;
-        private SerializablePredicate<String> filter = in -> true;
-        private SerializableComparator<String> comparator;
-
-        public InMemoryProvider(List<String> items) {
-            this.items = items;
-        }
-
-        @Override
-        public SerializablePredicate<String> getFilter() {
-            return filter;
-        }
-
-        @Override
-        public void setFilter(SerializablePredicate<String> filter) {
-            this.filter = filter;
-        }
-
-        @Override
-        public SerializableComparator<String> getSortComparator() {
-            return comparator;
-        }
-
-        @Override
-        public void setSortComparator(
-                SerializableComparator<String> comparator) {
-            this.comparator = comparator;
-        }
-
-        @Override
-        public int size(Query<String, SerializablePredicate<String>> query) {
-            return (int) items.stream().filter(filter).count();
-        }
-
-        @Override
-        public Stream<String> fetch(
-                Query<String, SerializablePredicate<String>> query) {
-            Stream<String> filteredStream = items.stream().filter(filter);
-            if (this.comparator != null) {
-                filteredStream = filteredStream.sorted(this.comparator);
-            }
-            return filteredStream.skip(query.getOffset())
-                    .limit(query.getLimit());
-        }
-
-        @Override
-        public void refreshItem(String item) {
-
-        }
-
-        @Override
-        public void refreshAll() {
-
-        }
-
-        @Override
-        public Registration addDataProviderListener(
-                DataProviderListener<String> listener) {
-            return () -> {
-            };
-        }
     }
 
     protected static class Item {

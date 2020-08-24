@@ -87,23 +87,17 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
         if (verifiedDataCommunicator.isDefinedSize()) {
             return verifiedDataCommunicator.getDataProvider()
-                    .fetch(this.dataCommunicator.buildQuery(0,
-                            this.dataCommunicator.getItemCount()));
+                    .fetch(verifiedDataCommunicator.buildQuery(0,
+                            verifiedDataCommunicator.getItemCount()));
         } else {
             return verifiedDataCommunicator.getDataProvider().fetch(
-                    this.dataCommunicator.buildQuery(0, Integer.MAX_VALUE));
+                    verifiedDataCommunicator.buildQuery(0, Integer.MAX_VALUE));
         }
     }
 
     @Override
     protected Class<?> getSupportedDataProviderType() {
         return BackEndDataProvider.class;
-    }
-
-    @Override
-    public void setItemCountCallback(
-            CallbackDataProvider.CountCallback<T, Void> callback) {
-        getDataCommunicator().setCountCallback(callback);
     }
 
     @Override

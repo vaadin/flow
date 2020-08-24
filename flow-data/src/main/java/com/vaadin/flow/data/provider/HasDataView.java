@@ -26,27 +26,29 @@ import java.io.Serializable;
  *
  * @param <T>
  *            data type
+ * @param <F>
+ *            filter type
  * @param <V>
  *            DataView type
  * @since
  */
-public interface HasDataView<T, V extends DataView<T>> extends Serializable {
+public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
 
     /**
      * Set a generic data provider for the component to use and returns the base
      * {@link DataView} that provides API to get information on the items.
      * <p>
-     * This method should be used only when the data provider type
-     * is not either {@link ListDataProvider} or {@link BackEndDataProvider}.
+     * This method should be used only when the data provider type is not either
+     * {@link ListDataProvider} or {@link BackEndDataProvider}.
      *
      * @param dataProvider
-     *            DataProvider instance to use
+     *            DataProvider instance to use, not <code>null</code>
      * @return DataView providing information on the data
      */
-    V setItems(DataProvider<T, ?> dataProvider);
+    V setItems(DataProvider<T, F> dataProvider);
 
     /**
-     * Sets an in-memory data provider for the component to use.
+     * Sets an in-memory data provider for the component to use
      * <p>
      * Note! Using a {@link ListDataProvider} instead of a
      * {@link InMemoryDataProvider} is recommended to get access to
@@ -54,12 +56,10 @@ public interface HasDataView<T, V extends DataView<T>> extends Serializable {
      * {@link HasListDataView#setItems(ListDataProvider)}.
      *
      * @param dataProvider
-     *            InMemoryDataProvider to use
+     *            InMemoryDataProvider to use, not <code>null</code>
      * @return DataView providing information on the data
      */
-    default V setItems(InMemoryDataProvider<T> dataProvider) {
-        return setItems((DataProvider<T, ?>) dataProvider);
-    }
+    V setItems(InMemoryDataProvider<T> dataProvider);
 
     /**
      * Get the DataView for the component.

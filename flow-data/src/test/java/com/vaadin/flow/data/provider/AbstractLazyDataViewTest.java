@@ -112,7 +112,7 @@ public class AbstractLazyDataViewTest {
         dataView.setItemCountUnknown();
         Assert.assertFalse(dataView.getDataCommunicator().isDefinedSize());
 
-        dataView.setItemCountCallback(query -> 5);
+        dataView.setItemCountFromDataProvider();
         Assert.assertTrue(dataView.getDataCommunicator().isDefinedSize());
 
         dataView.setItemCountEstimate(500);
@@ -155,12 +155,6 @@ public class AbstractLazyDataViewTest {
         fakeClientCommunication();
 
         Assert.assertEquals("Invalid item count reported", 3, itemCount.get());
-
-        dataView.setItemCountCallback(query -> 2);
-
-        fakeClientCommunication();
-
-        Assert.assertEquals("Invalid item count reported", 2, itemCount.get());
     }
 
     @Test
