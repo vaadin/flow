@@ -27,6 +27,8 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.DevModeHandler;
+
 /**
  * {@link BrowserLiveReload} implementation class.
  *
@@ -59,6 +61,11 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     BrowserLiveReloadImpl(ClassLoader classLoader) {
         this.classLoader = classLoader;
+
+        DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
+        if (devModeHandler != null) {
+            devModeHandler.setLiveReload(this);
+        }
     }
 
     @Override

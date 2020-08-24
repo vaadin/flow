@@ -5,7 +5,6 @@
  * This file will be overwritten on every run. Any custom changes should be made to webpack.config.js
  */
 const fs = require('fs');
-const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
@@ -22,6 +21,7 @@ const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
 const useClientSideIndexFileForBootstrapping = '[to-be-generated-by-flow]';
 const clientSideIndexHTML = '[to-be-generated-by-flow]';
 const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
+const devmodeGizmoJS = '[to-be-generated-by-flow]';
 // public path for resources, must match Flow VAADIN_BUILD
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
@@ -46,10 +46,11 @@ let stats;
 // webpack-dev-mode when it exits or crashes.
 const watchDogPrefix = '--watchDogPort=';
 let watchDogPort = devMode && process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
+let client;
 if (watchDogPort) {
   watchDogPort = watchDogPort.substr(watchDogPrefix.length);
   const runWatchDog = () => {
-    var client = new require('net').Socket();
+    client = new require('net').Socket();
 
     client.on('error', function () {
       console.log("Watchdog connection error. Terminating webpack process...");
@@ -78,6 +79,10 @@ if (useClientSideIndexFileForBootstrapping) {
   }
 } else {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
+}
+
+if (devMode) {
+  webPackEntries.devmodeGizmo = devmodeGizmoJS;
 }
 
 exports = {
@@ -148,11 +153,6 @@ module.exports = {
     !devMode && new CompressionPlugin(),
     // Give some feedback when heavy builds
     devMode && new ProgressPlugin(true),
-    // Exclude DevmodeGizmo from webpack bundle when not devMode
-    !devMode && new webpack.IgnorePlugin({
-      resourceRegExp: /^\.\/VaadinDevmodeGizmo/,
-      contextRegExp: /flow-frontend$/
-    }),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
@@ -187,13 +187,21 @@ module.exports = {
           done();
         }
       });
+
+      compiler.hooks.done.tapAsync('FlowIdPlugin', (compilation, done) => {
+        // trigger live reload via server
+        if (client) {
+          client.write('reload\n');
+        }
+        done();
+      });
     },
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping && new HtmlWebpackPlugin({
       template: clientSideIndexHTML,
       inject: 'head',
-      chunks: ['bundle']
+      chunks: ['bundle', ...(devMode ? ['devmodeGizmo'] : [])]
     }),
     useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
       defaultAttribute: 'defer'

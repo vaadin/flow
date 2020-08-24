@@ -16,38 +16,92 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Random;
 
 import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.LiveReloadView", layout = ViewTestLayout.class)
+@CssImport("./styles.css")
 public class LiveReloadView extends Div {
 
-    Integer instanceIdentifier = new Random().nextInt();
+    public static final String INSTANCE_IDENTIFIER = "instance-identifier";
+    public static final String PAGE_RELOADING = "page-reloading";
+
+    public static final String JAVA_LIVE_RELOAD_TRIGGER_BUTTON = "java-live-reload-trigger-button";
+    public static final String WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON = "webpack-live-reload-trigger-button";
+
+    private static final Random random = new Random();
+    Integer instanceIdentifier = random.nextInt();
+
 
     public LiveReloadView() {
-        Label label = new Label(Integer.toString(instanceIdentifier));
-        label.setId("elementId");
-        NativeButton reloadButton = new NativeButton("Trigger live reload");
-        reloadButton.addClickListener(this::handleClickLiveReload);
-        reloadButton.setId("live-reload-trigger-button");
+        Span label = new Span(Integer.toString(instanceIdentifier));
+        label.setId(INSTANCE_IDENTIFIER);
         add(label);
-        add(reloadButton);
+
+        NativeButton javaReloadButton = new NativeButton("Trigger Java live reload");
+        javaReloadButton.addClickListener(this::handleClickJavaLiveReload);
+        javaReloadButton.setId(JAVA_LIVE_RELOAD_TRIGGER_BUTTON);
+        add(javaReloadButton);
+
+        NativeButton webpackReloadButton = new NativeButton("Trigger Webpack live reload");
+        webpackReloadButton.addClickListener(this::handleClickWebpackLiveReload);
+        webpackReloadButton.setId(WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON);
+        add(webpackReloadButton);
     }
 
-    private void handleClickLiveReload(ClickEvent event) {
+    // Java triggered live reload is faked as we do not have Trava JDK in test
+    private void handleClickJavaLiveReload(ClickEvent event) {
+        addPageReloadingSpan();
         BrowserLiveReloadAccess liveReloadAccess = VaadinService.getCurrent()
                 .getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
         BrowserLiveReload browserLiveReload = liveReloadAccess
                 .getLiveReload(VaadinService.getCurrent());
         browserLiveReload.reload();
+    }
+
+    // Touch a frontend file to trigger webpack reload
+    private void handleClickWebpackLiveReload(ClickEvent event) {
+        addPageReloadingSpan();
+        final String projectFrontendDir = FrontendUtils.getProjectFrontendDir(
+                VaadinService.getCurrent().getDeploymentConfiguration());
+        File styleFile = new File(projectFrontendDir,"styles.css");
+        try {
+            BufferedWriter out = null;
+            try {
+                FileWriter fstream = new FileWriter(styleFile, true);
+                out = new BufferedWriter(fstream);
+                out.write(String.format("\nbody { background-color: rgb(%d,%d,%d); }",
+                        random.nextInt(256), random.nextInt(256), random.nextInt(256)));
+            } finally {
+                if (out != null) {
+                    out.close();
+                }
+            }
+        }
+        catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private void addPageReloadingSpan() {
+        Span reloading = new Span("Reload triggered...");
+        reloading.setId(PAGE_RELOADING);
+        add(reloading);
     }
 }
