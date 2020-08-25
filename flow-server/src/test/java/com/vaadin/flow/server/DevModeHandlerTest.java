@@ -215,12 +215,12 @@ public class DevModeHandlerTest {
 
     @Test
     public void webpackIsNotExecutable_throws() {
-        exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         // The set executable doesn't work in Windows and will always return
         // false
         boolean systemImplementsExecutable = new File(baseDir, WEBPACK_SERVER)
                 .setExecutable(false);
         if (systemImplementsExecutable) {
+            exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
             DevModeHandler.start(configuration, npmFolder,
                     CompletableFuture.completedFuture(null)).join();
         }

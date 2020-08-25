@@ -35,6 +35,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
@@ -105,6 +106,8 @@ public final class DevModeHandler implements RequestHandler {
     private boolean notified = false;
 
     private volatile String failedOutput;
+
+    private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
 
     /**
      * The local installation path of the webpack-dev-server node script.
@@ -194,6 +197,7 @@ public final class DevModeHandler implements RequestHandler {
             try {
                 devServerStartFuture.getNow(null);
             } catch (CompletionException exception) {
+                isDevServerFailedToStart.set(true);
                 throw getCause(exception);
             }
             return false;
@@ -257,6 +261,10 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
+        // Do not serve requests if dev server starting or failed to start.
+        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
+            return false;
+        }
         // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
