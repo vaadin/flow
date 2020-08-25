@@ -181,13 +181,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 initParameters.put(FALLBACK_CHUNK, fallbackChunk);
             }
         }
-
-        try {
-            verifyMode(json != null, hasWebpackConfig(initParameters));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
     }
 
     private static void setInitParametersUsingTokenData(
@@ -429,42 +422,6 @@ public final class DeploymentConfigurationFactory implements Serializable {
             String message = String.format(DEV_FOLDER_MISSING_MESSAGE, folder);
             throw new IllegalStateException(message);
         }
-    }
-
-    private static void verifyMode(boolean hasTokenFile,
-            boolean hasWebpackConfig) {
-
-        if (!hasTokenFile && !hasWebpackConfig) {
-            // If no flow-build-info.json file exists, and no appropriate
-            // webpack.config.js is found in the current working directory, then
-            // show an error message that suggest either triggering creation of
-            // flow-build-info.json or ensuring webpack.config.js is present in
-            // the working directory.
-            throw new IllegalStateException(ERROR_DEV_MODE_NO_FILES);
-        }
-
-        // If flow-build-info.json doesn't exist, but an appropriate
-        // webpack.config.js is found in the working directory, then launch a
-        // dev server with configuration based on the project/working directory
-        // location
-        if (!hasTokenFile && hasWebpackConfig) {
-            // the current working directory will be used automatically by the
-            // dev server unless it's specified explicitly
-            logger.warn(
-                    "Found 'webpack.config.js' in the project/working directory. "
-                            + "Will use it for webpack dev server.");
-        }
-    }
-
-    private static boolean hasWebpackConfig(Properties initParameters)
-            throws IOException {
-        String baseDir = initParameters
-                .getProperty(FrontendUtils.PROJECT_BASEDIR);
-        File projectBaseDir = baseDir == null ? new File(".")
-                : new File(baseDir);
-        File webPackConfig = new File(projectBaseDir,
-                FrontendUtils.WEBPACK_CONFIG);
-        return FrontendUtils.isWebpackConfigFile(webPackConfig);
     }
 
     private static void readUiFromEnclosingClass(
