@@ -572,6 +572,17 @@ export class VaadinDevmodeGizmo extends LitElement {
     return shown !== null && shown.includes(persistentId);
   }
 
+  static reload() {
+    const lastReload = window.sessionStorage.getItem(
+        VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
+    const nextReload = lastReload ? (parseInt(lastReload, 10) + 1) : 1;
+    window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE,
+        nextReload.toString());
+    window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE,
+        'true');
+    window.location.reload();
+  }
+
   @property({type: String})
   url?: string;
 
@@ -619,14 +630,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     const onConnectionError = (msg: string) => this.showMessage(MessageType.ERROR, msg);
     const onReload = () => {
       this.showSplashMessage('Reloading…');
-      const lastReload = window.sessionStorage.getItem(
-          VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
-      const nextReload = lastReload ? (parseInt(lastReload, 10) + 1) : 1;
-      window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE,
-          nextReload.toString());
-      window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE,
-          'true');
-      window.location.reload();
+      VaadinDevmodeGizmo.reload();
     };
 
     const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
@@ -653,7 +657,19 @@ export class VaadinDevmodeGizmo extends LitElement {
           javaConnection.setActive(false);
         }
       };
-      javaConnection.onReload = onReload;
+      javaConnection.onReload = () => {
+        this.showSplashMessage('Waiting for server before reloading…');
+        // defer reload until a frontend web socket connection can be established again
+        if (frontendConnection.status === ConnectionStatus.UNAVAILABLE) {
+          const tempConnection = new Connection(this.getDedicatedWebSocketUrl());
+          tempConnection.onHandshake = () => {
+            VaadinDevmodeGizmo.reload();
+            tempConnection.webSocket!.close();
+          };
+        } else {
+          console.warn('Frontend websocket in unexpected state, reloading immediately');
+        }
+      };
       javaConnection.onConnectionError = onConnectionError;
     } else if (this.backend === VaadinDevmodeGizmo.JREBEL
         || this.backend === VaadinDevmodeGizmo.HOTSWAP_AGENT) {
