@@ -104,12 +104,19 @@ const swInclude = (manifest, globPattern) => {
       cwd: location,
       nodir: true,
     });
-    files.forEach((file) => {
+    files
+      .filter(v => v.match(/^META-INF\/(VAADIN|resources)\//))
+      .map(v => v.replace(/^META-INF\/VAADIN\//, 'VAADIN/')
+          .replace(/^META-INF\/resources\//, ''))
+      .forEach((file) => {
       // Add each file with the contents hash as the revision. Without a revision, the file can never be updated.
-      manifest.push({
-        url: file,
-        revision: swFileHash(path.resolve(__dirname, file)),
-      });
+      const fileAddedAlready = manifest.find(o => o.url === file) !== undefined;
+      if (!fileAddedAlready) {
+        manifest.push({
+          url: file,
+          revision: swFileHash(path.resolve(__dirname, file)),
+        });
+      }
     });
   });
 };
@@ -121,16 +128,26 @@ const swManifestTransform = (manifestEntries) => {
     swInclude(manifest, offlineResource);
   });
 
+  // `index.html` is a special case: in contrast with the JS bundles produced by webpack
+  // it's not served as-is directly from the webpack output at `/VAADIN/index.html`.
+  // It goes through IndexHtmlRequestHandler and is served at `/`.
+  //
+  // TODO: calculate the revision based on the IndexHtmlRequestHandler-processed content
+  // of the index.html file
+  const indexEntryIdx = manifest.findIndex(entry => entry.url === 'VAADIN/index.html');
+  manifest[indexEntryIdx].url = 'index.html';
+
   return { manifest, warnings };
 };
 
 const serviceWorkerPlugin = new GenerateSW({
   swDest: swResourceOutput + "sw.js",
+  clientsClaim: true,
+  skipWaiting: true,
   manifestTransforms: [swManifestTransform],
   maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
-  exclude: [/^index.html$/],
-  skipWaiting: true,
-  clientsClaim: true,
+  navigateFallback: "index.html",
+  inlineWorkboxRuntime: true,
   runtimeCaching: [
     {
       urlPattern: /.*/,
