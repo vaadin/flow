@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -298,7 +297,8 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        if (isDevServerFailedToStart.get()) {
+        // Do not serve requests if dev server starting or failed to start.
+        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
             return false;
         }
         // Since we have 'publicPath=/VAADIN/' in webpack config,
