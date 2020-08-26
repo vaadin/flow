@@ -128,8 +128,17 @@ public class FrontendUtils {
     /**
      * Default folder for copying front-end resources present in the classpath
      * jars.
+     * @see #DEFAULT_FLOW_RESOURCES_FOLDER
      */
+    @Deprecated
     public static final String DEAULT_FLOW_RESOURCES_FOLDER = TARGET
+            + "flow-frontend";
+
+    /**
+     * Default folder for copying front-end resources present in the classpath
+     * jars.
+     */
+    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = TARGET
             + "flow-frontend";
 
     /**

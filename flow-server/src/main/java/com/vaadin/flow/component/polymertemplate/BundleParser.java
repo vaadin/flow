@@ -33,7 +33,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
@@ -257,7 +257,7 @@ public final class BundleParser {
             // "node_modules/@vaadin/flow-frontend/" instead of "./"
             // "target/flow-frontend/" instead of "./"
             if (name.contains(FLOW_NPM_PACKAGE_NAME) ||
-                    name.contains(DEAULT_FLOW_RESOURCES_FOLDER)) {
+                    name.contains(DEFAULT_FLOW_RESOURCES_FOLDER)) {
                 alternativeFileName = alternativeFileName.replaceFirst("\\./",
                         "");
             }
