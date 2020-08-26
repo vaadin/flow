@@ -84,7 +84,7 @@ public class PwaRegistry implements Serializable {
 
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = new PwaConfiguration(pwa);
+        pwaConfiguration = pwa == null? new PwaConfiguration() : new PwaConfiguration(pwa);
 
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
