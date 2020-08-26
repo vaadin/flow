@@ -16,14 +16,18 @@
 
 package com.vaadin.flow.server.connect.generator.endpoints.superclassmethods;
 
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 
 import com.vaadin.flow.server.connect.EndpointExposed;
 
 @EndpointExposed
-public class ReadOnlyEndpoint<T, ID> extends NonEndpointImpl
-        implements NonEndpoint {
-    public Optional<T> get(ID id) {
-        return Optional.ofNullable(null);
+public interface PagedData<T> {
+    default int size() {
+        return 0;
+    }
+
+    default List<T> getPage(int pageSize, int pageNumber) {
+        return Collections.emptyList();
     }
 }

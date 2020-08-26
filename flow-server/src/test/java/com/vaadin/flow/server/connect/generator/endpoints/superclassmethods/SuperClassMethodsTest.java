@@ -20,26 +20,26 @@ import java.util.Arrays;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGenerationTest;
-import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint.Person;
 
 public class SuperClassMethodsTest extends AbstractEndpointGenerationTest {
 
     public SuperClassMethodsTest() {
-        super(Arrays.asList(PersonEndpoint.class));
+        super(Arrays.asList(PersonEndpoint.class, CrudEndpoint.class,
+                ReadOnlyEndpoint.class, PagedData.class));
     }
 
     @Test
     public void should_ExportSuperClassMethods() {
-        OpenAPI actualOpenAPI = getOpenApiObject();
-        Assert.assertEquals(3, actualOpenAPI.getPaths().size());
-        Assert.assertEquals(Person.class.getCanonicalName(),
-                extractReturnTypeOfMethod(actualOpenAPI, "update"));
-        Assert.assertEquals(Person.class.getCanonicalName(),
-                extractReturnTypeOfMethod(actualOpenAPI, "get"));
+//        OpenAPI actualOpenAPI = getOpenApiObject();
+        verifyOpenApiObjectAndGeneratedTs();
+//        Assert.assertEquals(5, actualOpenAPI.getPaths().size());
+//        Assert.assertEquals(Person.class.getCanonicalName(),
+//                extractReturnTypeOfMethod(actualOpenAPI, "update"));
+//        Assert.assertEquals(Person.class.getCanonicalName(),
+//                extractReturnTypeOfMethod(actualOpenAPI, "get"));
     }
 
     private String unwrapComposedAndExtractName(Schema schema) {
@@ -51,10 +51,16 @@ public class SuperClassMethodsTest extends AbstractEndpointGenerationTest {
         return schema.getName();
     }
 
+    private Schema extractReturnTypeSchema(OpenAPI actualOpenApi,
+            String methodName) {
+        return actualOpenApi.getPaths()
+                .get("/PersonEndpoint/" + methodName).getPost().getResponses()
+                .get("200").getContent().get("application/json").getSchema();
+    }
+
     private String extractReturnTypeOfMethod(OpenAPI actualOpenAPI,
             String methodName) {
-        return unwrapComposedAndExtractName(actualOpenAPI.getPaths()
-                .get("/PersonEndpoint/" + methodName).getPost().getResponses()
-                .get("200").getContent().get("application/json").getSchema());
+        return unwrapComposedAndExtractName(
+                extractReturnTypeSchema(actualOpenAPI, methodName));
     }
 }

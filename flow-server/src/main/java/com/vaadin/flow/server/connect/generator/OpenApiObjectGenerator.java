@@ -553,8 +553,7 @@ public class OpenApiObjectGenerator {
             ApiResponses responses = createApiResponses(methodDeclaration,
                     resolvedTypeParametersMap);
             post.setResponses(responses);
-            post.tags(Collections
-                    .singletonList(typeDeclaration.getNameAsString()));
+            post.tags(Collections.singletonList(endpointName));
             PathItem pathItem = new PathItem().post(post);
 
             String pathName = "/" + endpointName + "/" + methodName;
@@ -577,7 +576,8 @@ public class OpenApiObjectGenerator {
     private boolean isAccessForbidden(
             ClassOrInterfaceDeclaration typeDeclaration,
             MethodDeclaration methodDeclaration) {
-        return !methodDeclaration.isPublic()
+        return (typeDeclaration.isInterface() ? !methodDeclaration.isDefault()
+                : !methodDeclaration.isPublic())
                 || (hasSecurityAnnotation(methodDeclaration)
                         ? methodDeclaration.isAnnotationPresent(DenyAll.class)
                         : typeDeclaration.isAnnotationPresent(DenyAll.class));
