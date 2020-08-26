@@ -25,9 +25,6 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializablePredicate;
-import com.vaadin.flow.shared.Registration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +41,7 @@ public abstract class AbstractComponentDataViewTest {
     protected List<String> items;
     protected InMemoryDataProvider<String> dataProvider;
     protected DataView<String> dataView;
-    protected HasDataView<String, Void, ? extends DataView<String>> component;
+    protected HasDataView<String, ?, ? extends DataView<String>> component;
 
     @Before
     public void init() {
@@ -89,10 +86,10 @@ public abstract class AbstractComponentDataViewTest {
         Assert.assertEquals(10, fired.get());
     }
 
-    protected abstract HasDataView<String, Void, ? extends DataView<String>> getComponent();
+    protected abstract HasDataView<String, ?, ? extends DataView<String>> getComponent();
 
-    private HasDataView<String, Void, ? extends DataView<String>> getVerifiedComponent() {
-        HasDataView<String, Void, ? extends DataView<String>> component =
+    private HasDataView<String, ?, ? extends DataView<String>> getVerifiedComponent() {
+        HasDataView<String, ?, ? extends DataView<String>> component =
                 getComponent();
         if (component instanceof Component) {
             return component;
