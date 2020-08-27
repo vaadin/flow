@@ -34,7 +34,6 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.PageTitle;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
@@ -244,7 +243,7 @@ public class AppShellRegistry implements Serializable {
     public void modifyIndexHtml(Document document, VaadinRequest request) {
         AppShellSettings settings = createSettings();
         if (appShellClass != null) {
-            ReflectTools.createInstance(appShellClass).configurePage(settings);
+            VaadinService.getCurrent().getInstantiator().getOrCreate(appShellClass).configurePage(settings);
         }
 
         settings.getHeadElements(Position.PREPEND).forEach(
