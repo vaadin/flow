@@ -187,6 +187,12 @@ public class AppViewIT extends ChromeBrowserTest {
         verifyCheckUser("admin");
     }
 
+    @Test
+    public void should_updateTitleInDOMWithInjectedService(){
+        Assert.assertEquals("titleRetrievedFromAService",
+                driver.findElement(By.tagName("title")).getAttribute("textContent"));
+    }
+
     private void login(String user) {
         // Use form in the test component
         testComponent.$(TestBenchElement.class).id("username").sendKeys(user);
