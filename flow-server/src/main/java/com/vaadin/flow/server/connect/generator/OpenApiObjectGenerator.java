@@ -384,7 +384,8 @@ public class OpenApiObjectGenerator {
             pathItems.putAll(createPathItems(
                     getEndpointName(classDeclaration,
                             endpointAnnotation.orElse(null)),
-                    classDeclaration, ResolvedTypeParametersMap.empty()));
+                    classDeclaration.getNameAsString(), classDeclaration,
+                    ResolvedTypeParametersMap.empty()));
         }
     }
 
@@ -534,7 +535,7 @@ public class OpenApiObjectGenerator {
     }
 
     private Map<String, PathItem> createPathItems(String endpointName,
-            ClassOrInterfaceDeclaration typeDeclaration,
+            String tagName, ClassOrInterfaceDeclaration typeDeclaration,
             ResolvedTypeParametersMap resolvedTypeParametersMap) {
         Map<String, PathItem> newPathItems = new HashMap<>();
         Collection<MethodDeclaration> methods = typeDeclaration.getMethods();
@@ -553,7 +554,7 @@ public class OpenApiObjectGenerator {
             ApiResponses responses = createApiResponses(methodDeclaration,
                     resolvedTypeParametersMap);
             post.setResponses(responses);
-            post.tags(Collections.singletonList(endpointName));
+            post.tags(Collections.singletonList(tagName));
             PathItem pathItem = new PathItem().post(post);
 
             String pathName = "/" + endpointName + "/" + methodName;
@@ -569,7 +570,8 @@ public class OpenApiObjectGenerator {
                 .map(resolvedType -> getDeclarationAndResolvedTypeParametersMap(
                         resolvedType, resolvedTypeParametersMap))
                 .filter(Objects::nonNull).forEach(pair -> newPathItems
-                        .putAll(createPathItems(endpointName, pair.a, pair.b)));
+                        .putAll(createPathItems(endpointName, tagName, pair.a,
+                                pair.b)));
         return newPathItems;
     }
 
