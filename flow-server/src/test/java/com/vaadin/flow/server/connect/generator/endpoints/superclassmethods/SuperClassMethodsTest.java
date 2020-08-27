@@ -17,9 +17,6 @@ package com.vaadin.flow.server.connect.generator.endpoints.superclassmethods;
 
 import java.util.Arrays;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.media.ComposedSchema;
-import io.swagger.v3.oas.models.media.Schema;
 import org.junit.Test;
 
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGenerationTest;
@@ -33,34 +30,6 @@ public class SuperClassMethodsTest extends AbstractEndpointGenerationTest {
 
     @Test
     public void should_ExportSuperClassMethods() {
-//        OpenAPI actualOpenAPI = getOpenApiObject();
         verifyOpenApiObjectAndGeneratedTs();
-//        Assert.assertEquals(5, actualOpenAPI.getPaths().size());
-//        Assert.assertEquals(Person.class.getCanonicalName(),
-//                extractReturnTypeOfMethod(actualOpenAPI, "update"));
-//        Assert.assertEquals(Person.class.getCanonicalName(),
-//                extractReturnTypeOfMethod(actualOpenAPI, "get"));
-    }
-
-    private String unwrapComposedAndExtractName(Schema schema) {
-        if (schema instanceof ComposedSchema) {
-            return unwrapComposedAndExtractName(
-                    ((ComposedSchema) schema).getAllOf().get(0));
-        }
-
-        return schema.getName();
-    }
-
-    private Schema extractReturnTypeSchema(OpenAPI actualOpenApi,
-            String methodName) {
-        return actualOpenApi.getPaths()
-                .get("/PersonEndpoint/" + methodName).getPost().getResponses()
-                .get("200").getContent().get("application/json").getSchema();
-    }
-
-    private String extractReturnTypeOfMethod(OpenAPI actualOpenAPI,
-            String methodName) {
-        return unwrapComposedAndExtractName(
-                extractReturnTypeSchema(actualOpenAPI, methodName));
     }
 }

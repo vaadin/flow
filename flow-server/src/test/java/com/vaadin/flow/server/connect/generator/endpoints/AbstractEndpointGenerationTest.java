@@ -169,25 +169,6 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
         for (Class<?> testEndpointClass : testEndpointClasses) {
             pathCount += assertClassPathsRecursive(actualPaths,
                     testEndpointClass, testEndpointClass, new HashMap<>());
-            //            for (Method expectedEndpointMethod : testEndpointClass
-            //            .getDeclaredMethods()) {
-//                if (!Modifier.isPublic(expectedEndpointMethod.getModifiers())
-//                        || accessChecker
-//                                .getSecurityTarget(expectedEndpointMethod)
-//                                .isAnnotationPresent(DenyAll.class)) {
-//                    continue;
-//                }
-//                pathCount++;
-//                String expectedEndpointUrl = String.format("/%s/%s",
-//                        getEndpointName(testEndpointClass),
-//                        expectedEndpointMethod.getName());
-//                PathItem actualPath = actualPaths.get(expectedEndpointUrl);
-//                assertNotNull(String.format(
-//                        "Expected to find a path '%s' for the endpoint method '%s' in the class '%s'",
-//                        expectedEndpointUrl, expectedEndpointMethod,
-//                        testEndpointClass), actualPath);
-//                assertPath(testEndpointClass, expectedEndpointMethod, actualPath);
-//            }
         }
         assertEquals("Unexpected number of OpenAPI paths found", pathCount,
                 actualPaths.size());
