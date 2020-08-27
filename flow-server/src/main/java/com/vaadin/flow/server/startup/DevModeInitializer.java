@@ -43,6 +43,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -247,7 +249,8 @@ public class DevModeInitializer
             return;
         }
 
-        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
+        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null);
         if (baseDir == null) {
             baseDir = getBaseDirectoryFallback();
         }
@@ -318,10 +321,9 @@ public class DevModeInitializer
                     .populateTokenFileData(tokenFileData)
                     .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                     .withHomeNodeExecRequired(useHomeNodeExec)
-                    .withAdditionalFrontendModules(
-                            Collections.singletonList(FrontendUtils.DEVMODE_GIZMO_MODULE))
-                    .build()
-                    .execute();
+                    .withAdditionalFrontendModules(Collections
+                            .singletonList(FrontendUtils.DEVMODE_GIZMO_MODULE))
+                    .build().execute();
 
             FallbackChunk chunk = FrontendUtils
                     .readFallbackChunk(tokenFileData);
@@ -335,13 +337,35 @@ public class DevModeInitializer
             throw new ServletException(exception);
         }
 
-        try {
-            DevModeHandler.start(config, builder.npmFolder);
-        } catch (IllegalStateException exception) {
-            // wrap an ISE which can be caused by inability to find tools like
-            // node, npm into a servlet exception
-            throw new ServletException(exception);
-        }
+        NodeTasks tasks = builder.enablePackagesUpdate(true)
+                .useByteCodeScanner(useByteCodeScanner)
+                .copyResources(frontendLocations)
+                .copyLocalResources(new File(baseDir,
+                        Constants.LOCAL_FRONTEND_RESOURCES_PATH))
+                .enableImportsUpdate(true).runNpmInstall(true)
+                .populateTokenFileData(tokenFileData)
+                .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
+                .withHomeNodeExecRequired(useHomeNodeExec).build();
+
+        CompletableFuture<Void> runNodeTasks = CompletableFuture
+                .runAsync(() -> {
+                    try {
+                        tasks.execute();
+
+                        FallbackChunk chunk = FrontendUtils
+                                .readFallbackChunk(tokenFileData);
+                        if (chunk != null) {
+                            vaadinContext.setAttribute(chunk);
+                        }
+                    } catch (ExecutionFailedException exception) {
+                        log().debug(
+                                "Could not initialize dev mode handler. One of the node tasks failed",
+                                exception);
+                        throw new CompletionException(exception);
+                    }
+                });
+
+        DevModeHandler.start(config, builder.npmFolder, runNodeTasks);
     }
 
     private static Logger log() {
@@ -379,12 +403,12 @@ public class DevModeInitializer
                             + "Directory '%s' does not look like a Maven or "
                             + "Gradle project. Ensure that you have run the "
                             + "prepare-frontend Maven goal, which generates "
-                            +"'flow-build-info.json', prior to deploying your "
+                            + "'flow-build-info.json', prior to deploying your "
                             + "application",
                     path.toString()));
         }
     }
-    
+
     /*
      * This method returns all folders of jar files having files in the
      * META-INF/resources/frontend folder. We don't use URLClassLoader because

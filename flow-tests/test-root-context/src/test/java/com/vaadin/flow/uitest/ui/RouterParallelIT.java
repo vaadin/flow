@@ -28,6 +28,7 @@ public class RouterParallelIT extends AbstractParallelTestBenchTest {
     @Before
     public void openAndFindElement() {
         getDriver().get(getRootURL() + "/new-router-session/ElementQueryView");
+        waitForDevServer();
     }
 
     @Test

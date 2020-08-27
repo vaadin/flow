@@ -25,18 +25,29 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
-public class StartupPerformanceIT {
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class StartupPerformanceIT extends ChromeBrowserTest {
     @Test
-    public void devModeInitializerToWebpackUpIsBelow5500ms() {
+    public void devModeInitializerToWebpackUpIsBelowThreshold() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+
+        long timeoutTime = System.currentTimeMillis() + 20000;
+        while (System.currentTimeMillis() < timeoutTime
+                && !isElementPresent(By.id("performance-component"))) {
+            getDriver().navigate().refresh();
+        }
+
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
                 "- (Started|Reusing) webpack-dev-server", true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "- Running `pnpm install`",
-                "- Frontend dependencies resolved successfully",
-                false);
+                "- Frontend dependencies resolved successfully", false);
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 

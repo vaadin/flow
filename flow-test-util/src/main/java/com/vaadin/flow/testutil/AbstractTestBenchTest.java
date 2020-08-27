@@ -114,6 +114,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         String url = getTestURL(parameters);
 
         getDriver().get(url);
+        waitForDevServer();
     }
 
     protected void openProduction(String... parameters) {
@@ -143,6 +144,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         }
         url = url.replace("/view/", builder.toString());
         getDriver().get(url);
+        waitForDevServer();
     }
 
     /**

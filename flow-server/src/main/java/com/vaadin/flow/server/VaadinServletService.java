@@ -95,6 +95,12 @@ public class VaadinServletService extends VaadinService {
                         e);
             }
         }
+        if (getDeploymentConfiguration().enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            if (handler != null) {
+                handlers.add(0, handler);
+            }
+        }
         return handlers;
     }
 

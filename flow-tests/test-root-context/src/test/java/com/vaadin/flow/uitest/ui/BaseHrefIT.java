@@ -33,6 +33,7 @@ public class BaseHrefIT extends ChromeBrowserTest {
         String expectedUrl = baseUri.resolve("./link").toString();
 
         getDriver().get(uiUrl);
+        waitForDevServer();
         Assert.assertEquals(expectedUrl, getLinkHref());
 
         getDriver().get(uiUrl + "/foo/bar/baz");
