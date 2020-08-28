@@ -292,25 +292,24 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("html-webpack-plugin", "3.2.0");
+        defaults.put("html-webpack-plugin", "4.3.0");
         defaults.put("script-ext-html-webpack-plugin", "2.1.4");
         defaults.put("typescript", "3.8.3");
         defaults.put("awesome-typescript-loader", "5.2.1");
 
-        defaults.put("webpack", "4.42.0");
-        defaults.put("webpack-cli", "3.3.11");
-        defaults.put("webpack-dev-server", "3.10.3");
-        defaults.put("copy-webpack-plugin", "5.1.1");
-        defaults.put("compression-webpack-plugin", "3.1.0");
-        defaults.put("progress-webpack-plugin", "0.0.24");
-        defaults.put("webpack-merge", "4.2.2");
-        defaults.put("css-loader", "4.2.1");
+        defaults.put("webpack", "5.0.0-beta.28");
+        defaults.put("webpack-cli", "3.3.12");
+        defaults.put("webpack-dev-server", "3.11.0");
+        defaults.put("copy-webpack-plugin", "6.0.3");
+        defaults.put("compression-webpack-plugin", "5.0.1");
+        defaults.put("webpack-merge", "5.1.2");
+        defaults.put("css-loader", "4.2.2");
         defaults.put("extract-loader", "5.1.0");
         defaults.put("lit-css-loader", "0.0.3");
         defaults.put("lit-element", "2.3.1");
-        defaults.put("lit-html", "1.2.1");
-        defaults.put("@types/validator", "10.11.3");
-        defaults.put("validator", "12.0.0");
+        defaults.put("lit-html", "1.3.0");
+        defaults.put("@types/validator", "13.1.0");
+        defaults.put("validator", "13.1.1");
 
 
         // Forcing chokidar version for now until new babel version is available

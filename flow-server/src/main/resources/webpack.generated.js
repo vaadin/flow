@@ -8,7 +8,7 @@ const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const ProgressPlugin = require('progress-webpack-plugin');
+// progress plugin not compatible
 
 const path = require('path');
 
@@ -151,13 +151,13 @@ module.exports = {
   plugins: [
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
-    // Give some feedback when heavy builds
-    devMode && new ProgressPlugin(true),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
       compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
-        let statsJson = compilation.getStats().toJson();
+        // need to mark source: true to get sources to stats file.
+        // https://github.com/webpack/webpack/issues/10534#issuecomment-648460082
+        let statsJson = compilation.getStats().toJson({ source: true });
         // Get bundles as accepted keys
         let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0)
           .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
