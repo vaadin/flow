@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.generator.OpenApiConfiguration;
 import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
 import com.vaadin.flow.server.connect.generator.OpenApiSpecGenerator;
@@ -34,12 +35,14 @@ public abstract class AbstractEndpointGeneratorBaseTest {
     public TemporaryFolder outputDirectory = new TemporaryFolder();
     protected Path openApiJsonOutput;
     protected final List<Class<?>> endpointClasses = new ArrayList<>();
+    protected final List<Class<?>> endpointExposedClasses = new ArrayList<>();
     protected final List<Class<?>> nonEndpointClasses = new ArrayList<>();
     protected final Package testPackage;
 
     public AbstractEndpointGeneratorBaseTest(List<Class<?>> testClasses) {
         testPackage = getClass().getPackage();
-        collectEndpointClasses(endpointClasses, nonEndpointClasses, testClasses);
+        collectEndpointClasses(endpointClasses, endpointExposedClasses,
+                nonEndpointClasses, testClasses);
     }
 
     @Before
@@ -49,14 +52,19 @@ public abstract class AbstractEndpointGeneratorBaseTest {
     }
 
     private void collectEndpointClasses(List<Class<?>> endpointClasses,
+            List<Class<?>> endpointExposedClasses,
             List<Class<?>> nonEndpointClasses, List<Class<?>> inputClasses) {
         for (Class<?> testEndpointClass : inputClasses) {
             if (testEndpointClass.isAnnotationPresent(Endpoint.class)) {
                 endpointClasses.add(testEndpointClass);
+            } else if (testEndpointClass
+                    .isAnnotationPresent(EndpointExposed.class)) {
+                endpointExposedClasses.add(testEndpointClass);
             } else {
                 nonEndpointClasses.add(testEndpointClass);
             }
-            collectEndpointClasses(endpointClasses, nonEndpointClasses,
+            collectEndpointClasses(endpointClasses, endpointExposedClasses,
+                    nonEndpointClasses,
                     Arrays.asList(testEndpointClass.getDeclaredClasses()));
         }
     }
