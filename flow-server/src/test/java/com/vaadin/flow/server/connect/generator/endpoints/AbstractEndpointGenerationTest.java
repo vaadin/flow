@@ -18,17 +18,18 @@ package com.vaadin.flow.server.connect.generator.endpoints;
 
 import javax.annotation.Nullable;
 import javax.annotation.security.DenyAll;
-
 import java.io.File;
-import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -72,15 +73,12 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.Before;
 
 import com.vaadin.flow.server.connect.Endpoint;
-import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
+import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
-import com.vaadin.flow.server.connect.generator.OpenApiConfiguration;
 import com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator;
 import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.endpoints.complexhierarchymodel.GrandParentModel;
@@ -169,28 +167,93 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
             List<Class<?>> testEndpointClasses) {
         int pathCount = 0;
         for (Class<?> testEndpointClass : testEndpointClasses) {
-            for (Method expectedEndpointMethod : testEndpointClass
-                    .getDeclaredMethods()) {
-                if (!Modifier.isPublic(expectedEndpointMethod.getModifiers())
-                        || accessChecker
-                                .getSecurityTarget(expectedEndpointMethod)
-                                .isAnnotationPresent(DenyAll.class)) {
-                    continue;
-                }
-                pathCount++;
-                String expectedEndpointUrl = String.format("/%s/%s",
-                        getEndpointName(testEndpointClass),
-                        expectedEndpointMethod.getName());
-                PathItem actualPath = actualPaths.get(expectedEndpointUrl);
-                assertNotNull(String.format(
-                        "Expected to find a path '%s' for the endpoint method '%s' in the class '%s'",
-                        expectedEndpointUrl, expectedEndpointMethod,
-                        testEndpointClass), actualPath);
-                assertPath(testEndpointClass, expectedEndpointMethod, actualPath);
-            }
+            pathCount += assertClassPathsRecursive(actualPaths,
+                    testEndpointClass, testEndpointClass, new HashMap<>());
         }
         assertEquals("Unexpected number of OpenAPI paths found", pathCount,
                 actualPaths.size());
+    }
+
+    private Class<?> applyTypeArguments(Type type, HashMap<String,
+            Class<?>> typeArguments) {
+        if (type instanceof Class) {
+            return (Class) type;
+        } else if (type instanceof ParameterizedType) {
+            return applyTypeArguments(((ParameterizedType) type).getRawType(),
+                    typeArguments);
+        } else if (type instanceof GenericArrayType) {
+            return Array.newInstance(applyTypeArguments(
+                    ((GenericArrayType) type).getGenericComponentType(),
+                    typeArguments)).getClass();
+        } else if (type instanceof TypeVariable) {
+            return typeArguments.get(((TypeVariable) type).getName());
+        }
+
+        return Object.class;
+    }
+
+    private HashMap<String, Class<?>> extractTypeArguments(Type type,
+            HashMap<String, Class<?>> parentTypeArguments) {
+        HashMap<String, Class<?>> typeArguments = new HashMap<>();
+        if (!(type instanceof ParameterizedType)) {
+            return typeArguments;
+        }
+
+        ParameterizedType parameterizedType = ((ParameterizedType) type);
+
+        TypeVariable[] typeVariables = ((Class<?>) parameterizedType
+                .getRawType()).getTypeParameters();
+        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        for (int i = 0; i < typeVariables.length; i++) {
+            typeArguments.put(typeVariables[i].getName(), applyTypeArguments(
+                    actualTypeArguments[i], parentTypeArguments));
+        }
+
+        return typeArguments;
+    }
+
+    private int assertClassPathsRecursive(Paths actualPaths,
+            Class<?> testEndpointClass, Class<?> testMethodsClass,
+            HashMap<String, Class<?>> typeArguments) {
+        if (!testMethodsClass.equals(testEndpointClass) && !testMethodsClass
+                .isAnnotationPresent(EndpointExposed.class)) {
+            return 0;
+        }
+
+        int pathCount = 0;
+        for (Method expectedEndpointMethod : testMethodsClass.getDeclaredMethods()) {
+            if (!Modifier.isPublic(expectedEndpointMethod.getModifiers())
+                    || accessChecker.getSecurityTarget(expectedEndpointMethod)
+                            .isAnnotationPresent(DenyAll.class)) {
+                continue;
+            }
+            pathCount++;
+            String expectedEndpointUrl = String.format("/%s/%s",
+                    getEndpointName(testEndpointClass),
+                    expectedEndpointMethod.getName());
+            PathItem actualPath = actualPaths.get(expectedEndpointUrl);
+            assertNotNull(String.format(
+                    "Expected to find a path '%s' for the endpoint method '%s' in the class '%s'",
+                    expectedEndpointUrl, expectedEndpointMethod,
+                    testEndpointClass), actualPath);
+            assertPath(testEndpointClass, expectedEndpointMethod, actualPath,
+                    typeArguments);
+        }
+
+        Type genericSuperClass = testMethodsClass.getGenericSuperclass();
+        pathCount += assertClassPathsRecursive(actualPaths, testEndpointClass,
+                applyTypeArguments(genericSuperClass, typeArguments),
+                extractTypeArguments(genericSuperClass, typeArguments));
+
+        for (Type genericInterface : testMethodsClass
+                .getGenericInterfaces()) {
+            pathCount += assertClassPathsRecursive(actualPaths,
+                    testEndpointClass,
+                    applyTypeArguments(genericInterface, typeArguments),
+                    extractTypeArguments(genericInterface, typeArguments));
+        }
+
+        return pathCount;
     }
 
     private String getEndpointName(Class<?> testEndpointClass) {
@@ -201,11 +264,12 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
     }
 
     private void assertPath(Class<?> testEndpointClass,
-            Method expectedEndpointMethod, PathItem actualPath) {
+            Method expectedEndpointMethod, PathItem actualPath,
+            HashMap<String, Class<?>> typeArguments) {
         Operation actualOperation = actualPath.getPost();
         assertEquals("Unexpected tag in the OpenAPI spec",
-                actualOperation.getTags(),
-                Collections.singletonList(testEndpointClass.getSimpleName()));
+                Collections.singletonList(testEndpointClass.getSimpleName()),
+                actualOperation.getTags());
         assertTrue(String.format(
                 "Unexpected OpenAPI operation id: does not contain the endpoint name of the class '%s'",
                 testEndpointClass.getSimpleName()),
@@ -220,8 +284,15 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
         if (expectedEndpointMethod.getParameterCount() > 0) {
             Schema requestSchema = extractSchema(
                     actualOperation.getRequestBody().getContent());
-            assertRequestSchema(requestSchema,
-                    expectedEndpointMethod.getParameterTypes(),
+            Type[] genericParameterTypes =
+                    expectedEndpointMethod.getGenericParameterTypes();
+            Class<?>[] parameterTypes =
+                    new Class<?>[genericParameterTypes.length];
+            for (int i = 0; i < genericParameterTypes.length; i++) {
+                parameterTypes[i] = applyTypeArguments(genericParameterTypes[i],
+                        typeArguments);
+            }
+            assertRequestSchema(requestSchema, parameterTypes,
                     expectedEndpointMethod.getParameters());
         } else {
             assertNull(String.format(
@@ -238,9 +309,10 @@ public abstract class AbstractEndpointGenerationTest extends AbstractEndpointGen
                 "Every operation is expected to have a single '200' response",
                 apiResponse);
 
-        if (expectedEndpointMethod.getReturnType() != void.class) {
-            assertSchema(extractSchema(apiResponse.getContent()),
-                    expectedEndpointMethod.getReturnType());
+        Class<?> returnType = applyTypeArguments(
+                expectedEndpointMethod.getGenericReturnType(), typeArguments);
+        if (returnType != void.class) {
+            assertSchema(extractSchema(apiResponse.getContent()), returnType);
         } else {
             assertNull(String.format(
                     "No response is expected to be present for void method '%s'",
