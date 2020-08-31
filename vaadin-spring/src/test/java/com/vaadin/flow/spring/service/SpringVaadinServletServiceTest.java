@@ -15,30 +15,27 @@
  */
 package com.vaadin.flow.spring.service;
 
+import javax.servlet.ServletException;
+
 import java.util.Properties;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
 @RunWith(SpringRunner.class)
-@Import(SpringVaadinServletServiceTest.TestServletConfiguration.class)
+@Import(TestServletConfiguration.class)
 public class SpringVaadinServletServiceTest {
 
     private static final String FOO = "foo";
@@ -49,12 +46,6 @@ public class SpringVaadinServletServiceTest {
 
     @Autowired
     private ApplicationContext context;
-
-    @Configuration
-    @ComponentScan
-    public static class TestServletConfiguration {
-
-    }
 
     @Component
     public static class TestInstantiator implements Instantiator {
