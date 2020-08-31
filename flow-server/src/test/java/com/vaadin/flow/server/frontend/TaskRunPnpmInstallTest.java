@@ -362,9 +362,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         getNodeUpdater().modified = true;
         createTask().execute();
 
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        FileUtils.forceMkdir(nodeModules);
+
         // create a fake file in the node modules dir to check that it's removed
-        File fakeFile = new File(getNodeUpdater().nodeModulesFolder,
-                ".fake.file");
+        File fakeFile = new File(nodeModules, ".fake.file");
         fakeFile.createNewFile();
 
         getNodeUpdater().modified = true;
