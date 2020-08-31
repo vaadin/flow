@@ -159,9 +159,11 @@ public class DevModeInitializerTestBase {
         webpackFile.delete();
         mainPackageFile.delete();
         temporaryFolder.delete();
-        if (DevModeHandler.getDevModeHandler() != null) {
-            DevModeHandler.getDevModeHandler().stop();
-            DevModeHandler.getDevModeHandler().removeRunningDevServerPort();
+
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
+        if (handler != null) {
+            handler.removeRunningDevServerPort();
+            handler.stop();
         }
         DevModeHandlerTest.removeDevModeHandlerInstance();
     }

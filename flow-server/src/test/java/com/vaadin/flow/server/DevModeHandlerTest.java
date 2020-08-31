@@ -221,7 +221,8 @@ public class DevModeHandlerTest {
         boolean systemImplementsExecutable = new File(baseDir, WEBPACK_SERVER)
                 .setExecutable(false);
         if (systemImplementsExecutable) {
-            exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
+            exception.expectCause(
+                    CoreMatchers.isA(ExecutionFailedException.class));
             DevModeHandler.start(configuration, npmFolder,
                     CompletableFuture.completedFuture(null)).join();
         }
@@ -247,30 +248,6 @@ public class DevModeHandlerTest {
     @Test
     public void should_HandleJavaScriptRequests() {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertTrue(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void shouldNot_HandleNonVaadinRequests() {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertFalse(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void shouldNot_HandleOtherRequests() {
-        HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
-        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
-                CompletableFuture.completedFuture(null));
-        assertFalse(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void should_HandleAnyAssetInVaadin() {
-        HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
         DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
                 CompletableFuture.completedFuture(null));
         assertTrue(handler.isDevModeRequest(request));
