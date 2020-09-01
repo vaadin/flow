@@ -176,8 +176,13 @@ public final class DevModeHandler implements RequestHandler {
                 || !configuration.enableDevServer()) {
             return null;
         }
-        atomicHandler.compareAndSet(null,
-                createInstance(runningPort, configuration, npmFolder, waitFor));
+        DevModeHandler handler = atomicHandler.get();
+        if (handler == null) {
+            handler = createInstance(runningPort, configuration, npmFolder,
+                    waitFor);
+            atomicHandler.compareAndSet(null, handler);
+        }
+
         return getDevModeHandler();
     }
 
