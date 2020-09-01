@@ -25,6 +25,7 @@ import com.vaadin.flow.dom.Element;
  * slots for inserting components.
  *
  * @author Vaadin Ltd
+ * @since 2.4
  */
 public interface HasHelper extends HasElement {
   /**
@@ -38,7 +39,9 @@ public interface HasHelper extends HasElement {
 
   /**
    * <p>
-   * String used for the helper text.
+   * String used for the helper text. It shows a text adjacent to the field that
+   * can be used, e.g., to inform to the users which values it expects. Example:
+   * a text "The password must contain numbers" for the PasswordField.
    * </p>
    * 
    * <p>
@@ -67,8 +70,8 @@ public interface HasHelper extends HasElement {
   default void setHelperComponent(Component component) {
     getElement().getChildren()
       .filter(child -> "helper".equals(child.getAttribute("slot")))
-      .collect(Collectors.toList())
-      .forEach(getElement()::removeChild);
+      .findAny()
+      .ifPresent(getElement()::removeChild);
 
     if (component != null) {
         component.getElement().setAttribute("slot", "helper");
@@ -84,12 +87,11 @@ public interface HasHelper extends HasElement {
    * @see #setHelperComponent(Component)
    */
   default Component getHelperComponent() {
-    Optional<Element> element = getElement().getChildren()
+    Optional<Component> component = getElement().getChildren()
       .filter(child -> "helper".equals(child.getAttribute("slot")))
-      .findFirst();
-    if (element.isPresent()) {
-      return element.get().getComponent().orElse(null);
-    }
-    return null;
+      .map(Element::getComponent)
+      .findFirst().orElse(Optional.empty());
+
+    return component.orElse(null);
   }
 }
