@@ -4,6 +4,12 @@ import {css, html, LitElement, property} from 'lit-element';
 
 export class VaadinDevmodeGizmo extends LitElement {
 
+  static BLUE_HSL = css`206, 100%, 70%`;
+  static GREEN_HSL = css`145, 80%, 42%`;
+  static GREY_HSL = css`0, 0%, 50%`;
+  static YELLOW_HSL = css`38, 98%, 64%`;
+  static RED_HSL = css`355, 100%, 68%`;
+
   static get styles() {
     return css`
        :host {
@@ -22,15 +28,15 @@ export class VaadinDevmodeGizmo extends LitElement {
           --gizmo-border-radius: 0.5rem;
           --gizmo-box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 
-          --gizmo-blue-hsl: 206, 100%, 70%;
+          --gizmo-blue-hsl: ${this.BLUE_HSL};
           --gizmo-blue-color: hsl(var(--gizmo-blue-hsl));
-          --gizmo-green-hsl: 145, 80%, 42%;
+          --gizmo-green-hsl: ${this.GREEN_HSL};
           --gizmo-green-color: hsl(var(--gizmo-green-hsl));
-          --gizmo-grey-hsl: 0, 0%, 50%;
+          --gizmo-grey-hsl: ${this.GREY_HSL};
           --gizmo-grey-color: hsl(var(--gizmo-grey-hsl));
-          --gizmo-yellow-hsl: 38, 98%, 64%;
+          --gizmo-yellow-hsl: ${this.YELLOW_HSL};
           --gizmo-yellow-color: hsl(var(--gizmo-yellow-hsl));
-          --gizmo-red-hsl: 355, 100%, 68%;
+          --gizmo-red-hsl: ${this.RED_HSL};
           --gizmo-red-color: hsl(var(--gizmo-red-hsl));
 
           /* Needs to be in ms, used in JavaScript as well */
@@ -862,7 +868,15 @@ export class VaadinDevmodeGizmo extends LitElement {
   }
 
   findNotificationIndex(id: number): number {
-    return this.notifications.findIndex((notification, _) => notification.id === id);
+    let index = -1;
+    // @ts-ignore
+    this.notifications.some((notification, idx) => {
+      if (notification.id === id) {
+        index = idx;
+        return true;
+      }
+    });
+    return index;
   }
 
   toggleDontShowAgain(id: number) {
@@ -883,15 +897,15 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
-      return 'var(--gizmo-green-color)';
+      return css`hsl(${VaadinDevmodeGizmo.GREEN_HSL})`
     } else if (status === ConnectionStatus.INACTIVE) {
-      return 'var(--gizmo-grey-color)';
+      return css`hsl(${VaadinDevmodeGizmo.GREY_HSL})`
     } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return 'var(--gizmo-yellow-color)';
+      return css`hsl(${VaadinDevmodeGizmo.YELLOW_HSL})`
     } else if (status === ConnectionStatus.ERROR) {
-      return 'var(--gizmo-red-color)';
+      return css`hsl(${VaadinDevmodeGizmo.RED_HSL})`
     } else {
-      return 'none';
+      return css`none`;
     }
   }
 
