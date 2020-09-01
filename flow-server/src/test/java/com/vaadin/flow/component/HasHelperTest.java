@@ -25,6 +25,18 @@ public class HasHelperTest {
     }
 
     @Test
+    public void getHelperText() {
+        final HasHelperComponent c = new HasHelperComponent();
+        Assert.assertNull(c.getHelperText());
+    }
+
+    @Test
+    public void getHelperComponent() {
+        final HasHelperComponent c = new HasHelperComponent();
+        Assert.assertNull(c.getHelperComponent());
+    }
+
+    @Test
     public void setHelperText() {
         final HasHelperComponent c = new HasHelperComponent();
         c.setHelperText("helper");
