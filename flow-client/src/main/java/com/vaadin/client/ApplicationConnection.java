@@ -26,6 +26,7 @@ import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.flow.RouterLinkHandler;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.util.NativeFunction;
 
 import elemental.client.Browser;
@@ -96,37 +97,28 @@ public class ApplicationConnection {
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
 
-            String reloadConnectionBaseUri;
-            if (applicationConfiguration.getLiveReloadPath() != null) {
-                reloadConnectionBaseUri = applicationConfiguration
-                        .getContextRootUrl()
-                        + applicationConfiguration.getLiveReloadPath();
-            } else {
-                reloadConnectionBaseUri = applicationConfiguration.getServiceUrl();
-            }
-            if (applicationConfiguration.isDevmodeGizmoEnabled()) {
-                createDevModeGizmo(reloadConnectionBaseUri,
-                        applicationConfiguration.getLiveReloadBackend(),
-                        applicationConfiguration.getSpringBootDevToolsPort());
+            if (applicationConfiguration.isDevmodeGizmoEnabled()
+                    && applicationConfiguration.getLiveReloadUrl() != null) {
+                Element devmodeGizmo = Browser.getDocument()
+                        .createElement("vaadin-devmode-gizmo");
+                DomApi.wrap(devmodeGizmo).setAttribute("url",
+                        applicationConfiguration.getLiveReloadUrl());
+                if (applicationConfiguration.getLiveReloadBackend() != null) {
+                    DomApi.wrap(devmodeGizmo).setAttribute("backend",
+                            applicationConfiguration.getLiveReloadBackend());
+                }
+                if (applicationConfiguration
+                        .getSpringBootLiveReloadPort() != null) {
+                    DomApi.wrap(devmodeGizmo).setAttribute(
+                            "springbootlivereloadport", applicationConfiguration
+                                    .getSpringBootLiveReloadPort());
+                }
+                DomApi.wrap(body).appendChild(devmodeGizmo);
             }
         }
 
         registry.getLoadingIndicator().show();
     }
-
-    private native void createDevModeGizmo(String reloadConnectionBaseUri,
-            String liveReloadBackend, String springBootDevToolsPort)
-    /*-{
-      if ($wnd.Vaadin.Flow.initDevModeGizmo !== undefined) {
-        $wnd.Vaadin.Flow.devModeGizmo = $wnd.Vaadin.Flow.initDevModeGizmo(
-          reloadConnectionBaseUri, liveReloadBackend, springBootDevToolsPort);
-      } else {
-        // This should normally not happen, as conditions during which
-        // live-reload is disabled (configuration, production and/or
-        // compatibility mode) are detected on the server side.
-        console.warn('Live reload UI not available');
-      }
-    }-*/;
 
     /**
      * Starts this application.

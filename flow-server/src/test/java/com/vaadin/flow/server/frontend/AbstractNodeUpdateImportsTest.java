@@ -97,8 +97,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false,
-                Collections.singletonList(FrontendUtils.DEVMODE_GIZMO_MODULE)) {
+                null, false, Collections.emptyList()) {
             @Override
             Logger log() {
                 if (useMockLog) {
@@ -265,13 +264,6 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "Frontend/foo.js");
         assertImportOrder("@vaadin/vaadin-lumo-styles/color.js",
                 "styles/styles.js");
-    }
-
-    @Test
-    public void additionalJsModuleSpecified_importIsAdded()
-            throws Exception {
-        updater.execute();
-        assertContainsImports(true, FrontendUtils.DEVMODE_GIZMO_MODULE);
     }
 
     private void assertContainsImports(boolean contains, String... imports)
