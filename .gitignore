@@ -36,7 +36,7 @@ node
 node_modules
 /frontend
 */flow-*/frontend
-package.json
-package-lock.json
+flow-tests/**/package.json
+flow-tests/**/package-lock.json
 webpack.config.js
 **/webpack.generated.js

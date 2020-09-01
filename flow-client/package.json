@@ -1,0 +1,31 @@
+{
+  "name": "@vaadin/flow-deps",
+  "description": "Flow client package",
+  "version": "0.0.1",
+  "main": "src/main/resources/META-INF/frontend/VaadinDevmodeGizmo",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "compile": "npm run build"
+  },
+  "homepage": "https://vaadin.com",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vaadin/flow.git"
+  },
+  "files": [
+    "src/main/resources/META-INF/resources/frontend"
+  ],
+  "devDependencies": {
+    "intern": "^4.4.3",
+    "lit-element": "^2.3.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "lit-html": "^1.2.1"
+  }
+}
