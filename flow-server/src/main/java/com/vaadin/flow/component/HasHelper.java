@@ -16,7 +16,6 @@
 package com.vaadin.flow.component;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.Element;
 
