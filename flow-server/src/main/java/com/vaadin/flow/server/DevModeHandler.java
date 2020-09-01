@@ -533,7 +533,6 @@ public final class DevModeHandler implements RequestHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
-        System.out.println("ttttttttttt " + npmFolder.getAbsolutePath());
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         tools.validateNodeAndNpmVersion();
@@ -547,7 +546,6 @@ public final class DevModeHandler implements RequestHandler {
         } else {
             nodeExec = tools.getNodeExecutable();
         }
-        System.out.println("iiiiiiiiiiiiiii " + nodeExec);
 
         List<String> command = makeCommands(config, webPackFiles.getFirst(),
                 webPackFiles.getSecond(), nodeExec);

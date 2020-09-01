@@ -100,7 +100,6 @@ public class FrontendToolsLocator implements Serializable {
      *         code, {@code false} otherwise
      */
     public boolean verifyTool(File toolPath) {
-        System.out.println("yyyyyyyyyyyyy " + toolPath);
         return Optional.ofNullable(toolPath).filter(File::isFile)
                 .map(File::getAbsolutePath)
                 .flatMap(path -> executeCommand(true, path, "-v"))
