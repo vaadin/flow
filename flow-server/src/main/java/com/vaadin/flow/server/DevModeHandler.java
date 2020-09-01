@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -121,8 +122,11 @@ public final class DevModeHandler implements RequestHandler {
 
     private final CompletableFuture<Void> devServerStartFuture;
 
+    private final File npmFolder;
+
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, CompletableFuture<Void> waitFor) {
+        this.npmFolder = Objects.requireNonNull(npmFolder);
 
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
@@ -131,7 +135,7 @@ public final class DevModeHandler implements RequestHandler {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
-            runOnFutureComplete(config, npmFolder);
+            runOnFutureComplete(config);
         });
     }
 
@@ -181,6 +185,16 @@ public final class DevModeHandler implements RequestHandler {
             handler = createInstance(runningPort, configuration, npmFolder,
                     waitFor);
             atomicHandler.compareAndSet(null, handler);
+        } else if (!handler.npmFolder.equals(npmFolder)) {
+            // this code is for tests to correct an existing logic which is
+            // technically wrong: handler is a singleton which is created using
+            // parameters. Nothing can be singleton if the instance is created
+            // based on parameter values: different instances will be
+            // constructed differently. In the production code the parameter
+            // values are the same but not in the tests
+            handler.stop();
+            atomicHandler.set(createInstance(runningPort, configuration,
+                    npmFolder, waitFor));
         }
 
         return getDevModeHandler();
@@ -482,10 +496,9 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(LazyDevServerPortFileInit.DEV_SERVER_PORT_FILE);
     }
 
-    private void runOnFutureComplete(DeploymentConfiguration config,
-            File npmFolder) {
+    private void runOnFutureComplete(DeploymentConfiguration config) {
         try {
-            doStartDevModeServer(config, npmFolder);
+            doStartDevModeServer(config);
         } catch (ExecutionFailedException exception) {
             getLogger().error(null, exception);
             throw new CompletionException(exception);
@@ -502,8 +515,8 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private void doStartDevModeServer(DeploymentConfiguration config,
-            File npmFolder) throws ExecutionFailedException {
+    private void doStartDevModeServer(DeploymentConfiguration config)
+            throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
         if (port > 0) {
             if (checkWebpackConnection()) {

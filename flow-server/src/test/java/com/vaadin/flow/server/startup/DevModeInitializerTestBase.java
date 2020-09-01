@@ -58,8 +58,6 @@ public class DevModeInitializerTestBase {
     File webpackFile;
     String baseDir;
 
-    private DevModeHandler handler;
-
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     public static class VaadinServletSubClass extends VaadinServlet {
@@ -69,7 +67,6 @@ public class DevModeInitializerTestBase {
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
-        handler = null;
         temporaryFolder.create();
         baseDir = temporaryFolder.getRoot().getPath();
         Boolean enablePnpm = Boolean.TRUE;
@@ -164,13 +161,9 @@ public class DevModeInitializerTestBase {
         temporaryFolder.delete();
 
         DevModeHandler handlerInstance = DevModeHandler.getDevModeHandler();
-        if (handlerInstance == null) {
-            handlerInstance = handler;
-        }
         if (handlerInstance != null) {
             handlerInstance.stop();
         }
-        handler = null;
         DevModeHandlerTest.removeDevModeHandlerInstance();
     }
 
@@ -186,7 +179,7 @@ public class DevModeInitializerTestBase {
 
     protected void waitForDevModeServer() throws NoSuchMethodException,
             IllegalAccessException, InvocationTargetException {
-        handler = DevModeHandler.getDevModeHandler();
+        DevModeHandler handler = DevModeHandler.getDevModeHandler();
         Assert.assertNotNull(handler);
         Method join = DevModeHandler.class.getDeclaredMethod("join");
         join.setAccessible(true);
