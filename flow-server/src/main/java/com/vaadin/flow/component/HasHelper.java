@@ -59,7 +59,9 @@ public interface HasHelper extends HasElement {
   }
   /**
    * Adds the given component into helper slot of component, replacing any
-   * existing helper component.
+   * existing helper component. It adds the component adjacent to the field that
+   * can be used, e.g., to inform to the users which values it expects. Example:
+   * a component that shows the password strength for the PasswordField.
    * 
    * @param component
    *            the component to set, can be {@code null} to remove existing
