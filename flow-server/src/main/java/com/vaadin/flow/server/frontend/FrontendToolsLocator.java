@@ -100,6 +100,7 @@ public class FrontendToolsLocator implements Serializable {
      *         code, {@code false} otherwise
      */
     public boolean verifyTool(File toolPath) {
+        System.out.println("yyyyyyyyyyyyy " + toolPath);
         return Optional.ofNullable(toolPath).filter(File::isFile)
                 .map(File::getAbsolutePath)
                 .flatMap(path -> executeCommand(true, path, "-v"))
@@ -154,10 +155,11 @@ public class FrontendToolsLocator implements Serializable {
         }
         List<String> stdout = new ArrayList<>();
         try {
-        String stream = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
-        if(!stream.isEmpty()) {
-            Stream.of(stream.split("\\R")).forEach(stdout::add);
-        }
+            String stream = IOUtils.toString(process.getInputStream(),
+                    StandardCharsets.UTF_8);
+            if (!stream.isEmpty()) {
+                Stream.of(stream.split("\\R")).forEach(stdout::add);
+            }
         } catch (IOException e) {
             log().error("Failed to read the command '{}' stdout", commandString,
                     e);
@@ -166,8 +168,9 @@ public class FrontendToolsLocator implements Serializable {
 
         List<String> stderr = new ArrayList<>();
         try {
-            String stream = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
-            if(!stream.isEmpty()) {
+            String stream = IOUtils.toString(process.getErrorStream(),
+                    StandardCharsets.UTF_8);
+            if (!stream.isEmpty()) {
                 Stream.of(stream.split("\\R")).forEach(stderr::add);
             }
         } catch (IOException e) {

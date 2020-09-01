@@ -251,6 +251,9 @@ public class DevModeInitializer
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
+        System.out.println("wwwwwwwwwwwwwww " + baseDir);
+        System.out.println(
+                "xxxxxxxxxxx " + new File(baseDir, "node/node").exists());
         if (baseDir == null) {
             baseDir = getBaseDirectoryFallback();
         }
