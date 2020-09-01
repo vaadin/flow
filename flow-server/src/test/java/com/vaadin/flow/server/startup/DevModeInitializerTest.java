@@ -35,6 +35,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
+import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -177,6 +178,13 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters() throws Exception {
+        // the test is not stabe for some unknown reason : let's just repeat the
+        // cleanup from the tearDown method
+        DevModeHandler handlerInstance = DevModeHandler.getDevModeHandler();
+        if (handlerInstance != null) {
+            handlerInstance.stop();
+        }
+        DevModeHandlerTest.removeDevModeHandlerInstance();
         // no any exception means that updaters are executed and dev mode server
         // started
         process();
