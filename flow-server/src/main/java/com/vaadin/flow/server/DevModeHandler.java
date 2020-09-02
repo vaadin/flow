@@ -185,16 +185,6 @@ public final class DevModeHandler implements RequestHandler {
             handler = createInstance(runningPort, configuration, npmFolder,
                     waitFor);
             atomicHandler.compareAndSet(null, handler);
-        } else if (!handler.npmFolder.equals(npmFolder)) {
-            // this code is for tests to correct an existing logic which is
-            // technically wrong: handler is a singleton which is created using
-            // parameters. Nothing can be singleton if the instance is created
-            // based on parameter values: different instances will be
-            // constructed differently. In the production code the parameter
-            // values are the same but not in the tests
-            handler.stop();
-            atomicHandler.set(createInstance(runningPort, configuration,
-                    npmFolder, waitFor));
         }
 
         return getDevModeHandler();
@@ -611,12 +601,10 @@ public final class DevModeHandler implements RequestHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
-
+            saveRunningDevServerPort();
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
-
-        saveRunningDevServerPort();
     }
 
     private List<String> makeCommands(DeploymentConfiguration config,
