@@ -8,7 +8,6 @@ const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const ProgressPlugin = require('progress-webpack-plugin');
 
 const path = require('path');
 
@@ -151,8 +150,6 @@ module.exports = {
   plugins: [
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
-    // Give some feedback when heavy builds
-    devMode && new ProgressPlugin(true),
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
