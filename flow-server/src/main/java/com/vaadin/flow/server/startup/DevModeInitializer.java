@@ -63,6 +63,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -70,6 +71,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -448,7 +450,7 @@ public class DevModeInitializer
                     path.toString()));
         }
     }
-    
+
     /*
      * This method returns all folders of jar files having files in the
      * META-INF/resources/frontend folder. We don't use URLClassLoader because

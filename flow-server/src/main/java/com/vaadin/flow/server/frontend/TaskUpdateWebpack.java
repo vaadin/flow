@@ -28,6 +28,11 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.PwaConfiguration;
+
+import elemental.json.Json;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -53,6 +58,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path frontendDirectory;
     private final boolean useV14Bootstrapping;
     private final Path flowResourcesFolder;
+    private final PwaConfiguration pwaConfiguration;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -79,7 +85,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, String webpackTemplate,
             String webpackGeneratedTemplate, File generatedFlowImports,
-            boolean useV14Bootstrapping, File flowResourcesFolder) {
+            boolean useV14Bootstrapping, File flowResourcesFolder,
+            PwaConfiguration pwaConfiguration) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -88,6 +95,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.useV14Bootstrapping = useV14Bootstrapping;
         this.flowResourcesFolder = flowResourcesFolder.toPath();
+        this.pwaConfiguration = pwaConfiguration;
     }
 
     @Override
@@ -153,6 +161,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 + getEscapedRelativeWebpackPath(
                         flowResourcesFolder.resolve("VaadinDevmodeGizmo.js"))
                 + "');";
+        String offlineResourcesLine = "const offlineResources = "
+                + getOfflineResourcesJsArray() + ";";
+
         for (int i = 0; i < lines.size(); i++) {
             if (lines.get(i).startsWith(
                     "const fileNameOfTheFlowGeneratedMainEntryPoint")) {
@@ -178,6 +189,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
             if (lines.get(i).startsWith("const devmodeGizmoJS")) {
                 lines.set(i, devModeGizmoJSLine);
+            }
+
+            if (lines.get(i).startsWith("const offlineResources")) {
+                lines.set(i, offlineResourcesLine);
             }
         }
         return lines;
@@ -224,6 +239,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
         } else {
             return FrontendUtils.getUnixPath(path);
         }
+    }
+
+    private String getOfflineResourcesJsArray() {
+        return pwaConfiguration.getOfflineResources().stream().map(Json::create)
+                .collect(JsonUtils.asArray()).toJson();
     }
 
     private Logger log() {

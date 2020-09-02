@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -75,6 +74,7 @@ public class PwaRegistry implements Serializable {
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
+    private final ServletContext servletContext;
 
     /**
      * Creates a new PwaRegistry instance.
@@ -88,6 +88,8 @@ public class PwaRegistry implements Serializable {
      */
     public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
+        this.servletContext = servletContext;
+
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
@@ -95,7 +97,8 @@ public class PwaRegistry implements Serializable {
 
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = new PwaConfiguration(pwa, servletContext);
+        pwaConfiguration = pwa == null ? new PwaConfiguration()
+                : new PwaConfiguration(pwa);
 
         // Build pwa elements only if they are enabled
         if (pwaConfiguration.isEnabled()) {
@@ -212,7 +215,6 @@ public class PwaRegistry implements Serializable {
                 pwaConfiguration.getBackgroundColor());
         manifestData.put("theme_color", pwaConfiguration.getThemeColor());
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
-        manifestData.put("scope", pwaConfiguration.getRootUrl());
 
         // Add icons
         JsonArray iconList = Json.createArray();
@@ -362,8 +364,7 @@ public class PwaRegistry implements Serializable {
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
                         largest != null
-                                ? pwaConfiguration.getRootUrl()
-                                        + largest.getHref()
+                                ? largest.getHref()
                                 : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 

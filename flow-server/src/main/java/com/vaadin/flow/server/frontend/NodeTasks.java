@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -565,7 +566,8 @@ public class NodeTasks implements FallibleCommand {
                     builder.webpackTemplate, builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
-                    builder.flowResourcesFolder));
+                    builder.flowResourcesFolder,
+                    new PwaConfiguration()));
         }
 
         if (builder.enableImportsUpdate) {
