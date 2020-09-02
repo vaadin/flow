@@ -151,6 +151,8 @@ public class DevModeHandlerTest {
                 if (propertyName
                         .equals(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
                     try {
+                        // remove npmFolder on the property read which happens
+                        // after folder validation has happened
                         FileUtils.deleteDirectory(npmFolder);
                     } catch (IOException e) {
                         e.printStackTrace();
