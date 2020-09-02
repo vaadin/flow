@@ -22,6 +22,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -137,6 +139,58 @@ public class DevModeHandlerTest {
         assertNull(DevModeHandler.getDevModeHandler().getFailedOutput());
         assertTrue(0 < DevModeHandler.getDevModeHandler().getPort());
         Thread.sleep(150); // NOSONAR
+    }
+
+    @Test
+    public void avoidStoringPortOfFailingWebPackDevServer_failWebpackStart_startWebPackSucessfullyAfter()
+            throws Exception {
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration() {
+            @Override
+            public boolean getBooleanProperty(String propertyName,
+                    boolean defaultValue) throws IllegalArgumentException {
+                if (propertyName
+                        .equals(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
+                    try {
+                        FileUtils.deleteDirectory(npmFolder);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return super.getBooleanProperty(propertyName, defaultValue);
+            }
+        };
+
+        DevModeHandler handler = DevModeHandler.start(config, npmFolder,
+                CompletableFuture.completedFuture(null));
+
+        handler.join();
+        removeDevModeHandlerInstance();
+        // dev mode handler should fail because of non-existent npm folder: it
+        // means the port number should not have been written
+
+        // use non-existent folder for as npmFolder, it should fail the
+        // validation (which means server instance won't be reused)
+        DevModeHandler newhHandler = DevModeHandler.start(configuration,
+                new File(npmFolder, UUID.randomUUID().toString()),
+                CompletableFuture.completedFuture(null));
+
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(new ByteArrayOutputStream());
+        boolean proceed = true;
+        Throwable cause = null;
+        while (proceed) {
+            try {
+                proceed = newhHandler.handleRequest(
+                        Mockito.mock(VaadinSession.class),
+                        Mockito.mock(VaadinRequest.class), response);
+            } catch (IllegalStateException ise) {
+                proceed = false;
+                cause = ise.getCause();
+            }
+        }
+        Assert.assertNotNull(cause);
+        Assert.assertTrue(cause instanceof ExecutionFailedException);
     }
 
     @Test
