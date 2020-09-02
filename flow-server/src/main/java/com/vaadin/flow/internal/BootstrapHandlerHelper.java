@@ -23,7 +23,6 @@ import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.VaadinUriResolver;
 
 /**
  * Helper methods for use in bootstrapping.

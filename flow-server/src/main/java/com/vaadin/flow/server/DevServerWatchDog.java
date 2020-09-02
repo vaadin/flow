@@ -24,8 +24,6 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.BrowserLiveReload;
-
 /**
  * Opens a server socket which is supposed to be opened until dev mode is active
  * inside JVM.
