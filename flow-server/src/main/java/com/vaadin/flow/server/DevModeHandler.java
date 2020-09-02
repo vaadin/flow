@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,13 +122,11 @@ public final class DevModeHandler implements RequestHandler {
      */
     private static final String WEBPACK_PORTFILE_UUID_PROPERTY = "vaadin.frontend.webpack.portfile.uuid";
 
-
     private volatile int port;
     private final AtomicReference<Process> webpackProcess = new AtomicReference<>();
     private final boolean reuseDevServer;
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
     private final File devServerPortFile;
-
 
     private StringBuilder cumulativeOutput = new StringBuilder();
 
@@ -205,7 +204,7 @@ public final class DevModeHandler implements RequestHandler {
 
     /**
      * Set the live reload service instance.
-     * 
+     *
      * @param liveReload
      *            the live reload instance
      */
@@ -215,7 +214,7 @@ public final class DevModeHandler implements RequestHandler {
 
     /**
      * Get the live reload service instance.
-     * 
+     *
      * @return the live reload instance
      */
     public BrowserLiveReload getLiveReload() {
@@ -614,12 +613,10 @@ public final class DevModeHandler implements RequestHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
-
+            saveRunningDevServerPort();
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
-
-        saveRunningDevServerPort();
     }
 
     private List<String> makeCommands(DeploymentConfiguration config,
@@ -772,7 +769,6 @@ public final class DevModeHandler implements RequestHandler {
     void join() {
         devServerStartFuture.join();
     }
-
 
     private static File getDevServerPortFile(File npmFolder) {
         // UUID changes between JVM restarts
