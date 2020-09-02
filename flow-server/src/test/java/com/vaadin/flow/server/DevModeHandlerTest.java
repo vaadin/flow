@@ -22,6 +22,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -32,7 +33,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.sun.net.httpserver.HttpServer;
@@ -51,6 +54,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.NodeUpdateTestUtil;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
@@ -140,6 +144,55 @@ public class DevModeHandlerTest {
     }
 
     @Test
+    public void avoidStoringPortOfFailingWebPackDevServer_failWebpackStart_startWebPackSucessfullyAfter()
+            throws Exception {
+        File nodeDir = new File(baseDir, "node");
+        nodeDir.mkdir();
+        NodeUpdateTestUtil.createStubNode(true, false, false, baseDir);
+
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+
+        try {
+            handler.join();
+        } catch (CompletionException e) {
+            handler.stop();
+            // this is expected exception: the node exec can't be used to start
+            // webpack.
+            // now remove fake node
+            FileUtils.deleteDirectory(nodeDir);
+
+            // dev mode handler should start now without any issue: the port
+            // number should not have been written
+
+            // use non-existent folder for as npmFolder, it should fail the
+            // validation (which means server instance won't be reused)
+            DevModeHandler newhHandler = DevModeHandler.start(configuration,
+                    new File(npmFolder, UUID.randomUUID().toString()),
+                    CompletableFuture.completedFuture(null));
+
+            VaadinResponse response = Mockito.mock(VaadinResponse.class);
+            Mockito.when(response.getOutputStream())
+                    .thenReturn(new ByteArrayOutputStream());
+            boolean proceed = true;
+            Throwable cause = null;
+            while (proceed) {
+                try {
+                    proceed = newhHandler.handleRequest(
+                            Mockito.mock(VaadinSession.class),
+                            Mockito.mock(VaadinRequest.class), response);
+                } catch (IllegalStateException ise) {
+                    proceed = false;
+                    cause = ise.getCause();
+                }
+            }
+            Assert.assertNotNull(cause);
+            Assert.assertTrue(cause instanceof ExecutionFailedException);
+        }
+
+    }
+
+    @Test
     @Ignore("Ignored due to failing rate on CI")
     public void should_Fail_When_WebpackPrematurelyExit() throws Exception {
         exception.expect(IllegalStateException.class);
@@ -213,7 +266,8 @@ public class DevModeHandlerTest {
         boolean systemImplementsExecutable = new File(baseDir, WEBPACK_SERVER)
                 .setExecutable(false);
         if (systemImplementsExecutable) {
-            exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
+            exception.expectCause(
+                    CoreMatchers.isA(ExecutionFailedException.class));
             DevModeHandler.start(configuration, npmFolder,
                     CompletableFuture.completedFuture(null)).join();
         }
