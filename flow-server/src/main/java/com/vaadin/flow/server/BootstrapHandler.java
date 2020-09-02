@@ -1457,6 +1457,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
+     * Gets the service URL as a URL relative to the request URI.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the relative service URL
+     */
+    protected static String getServiceUrl(BootstrapContext context) {
+        return BootstrapHandlerHelper.getServiceUrl(context.getRequest());
+    }
+
+    /**
      * Resolves the initial page title for the given bootstrap context and
      * cancels any pending JS execution for it.
      *
