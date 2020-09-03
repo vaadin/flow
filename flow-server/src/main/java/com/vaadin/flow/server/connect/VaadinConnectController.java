@@ -403,14 +403,8 @@ public class VaadinConnectController {
                 .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
     }
 
-    Type[] getJavaParameters(Method methodToInvoke, Type type) {
-        if (methodToInvoke.getGenericParameterTypes().length > 0) {
-            return Stream.of(GenericTypeReflector.getExactParameterTypes(methodToInvoke, type))
-                        .toArray(Type[]::new);
-        } else {
-            return Stream.of(methodToInvoke.getParameters()).map(Parameter::getParameterizedType)
-                        .toArray(Type[]::new);
-        }
+    Type[] getJavaParameters(Method methodToInvoke, Type classType) {
+        return Stream.of(GenericTypeReflector.getExactParameterTypes(methodToInvoke, classType)).toArray(Type[]::new);
     }
 
     private ResponseEntity<String> handleMethodExecutionError(
