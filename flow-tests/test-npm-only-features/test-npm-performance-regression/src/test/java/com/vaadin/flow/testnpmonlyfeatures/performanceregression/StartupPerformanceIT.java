@@ -54,7 +54,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         // https://github.com/vaadin/flow/issues/7596
         final int thresholdMs = Boolean.getBoolean(
                 System.getProperty("vaadin.useDeprecatedV14Bootstrapping"))
-                        ? 3000
+                        ? 5500
                         : 1000;
 
         Assert.assertTrue(
