@@ -525,7 +525,6 @@ public final class DevModeHandler implements RequestHandler {
         // here the port == 0
         Pair<File, File> webPackFiles = validateFiles(npmFolder);
 
-        long start = System.nanoTime();
         getLogger().info("Starting webpack-dev-server");
 
         watchDog.set(new DevServerWatchDog());
@@ -559,6 +558,7 @@ public final class DevModeHandler implements RequestHandler {
                     commandToString(npmFolder.getAbsolutePath(), command));
         }
 
+        long start = System.nanoTime();
         processBuilder.command(command);
         try {
             webpackProcess.set(
