@@ -321,8 +321,6 @@ public class DevModeInitializer
                     .populateTokenFileData(tokenFileData)
                     .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                     .withHomeNodeExecRequired(useHomeNodeExec)
-                    .withAdditionalFrontendModules(Collections
-                            .singletonList(FrontendUtils.DEVMODE_GIZMO_MODULE))
                     .build().execute();
 
             FallbackChunk chunk = FrontendUtils

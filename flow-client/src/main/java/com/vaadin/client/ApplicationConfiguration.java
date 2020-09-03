@@ -46,9 +46,9 @@ public class ApplicationConfiguration {
     private String[] exportedWebComponents;
 
     private boolean devmodeGizmoEnabled;
-    private String liveReloadPath;
+    private String liveReloadUrl;
     private String liveReloadBackend;
-    private String springBootDevToolsPort;
+    private String springBootLiveReloadPort;
 
     /**
      * Gets the id generated for the application.
@@ -361,35 +361,80 @@ public class ApplicationConfiguration {
         return exportedWebComponents;
     }
 
+    /**
+     * Gets if development mode gizmo should be added to the page.
+     *
+     * @return whether development mode gizmo should be added
+     */
     public boolean isDevmodeGizmoEnabled() {
         return devmodeGizmoEnabled;
     }
 
+    /**
+     *
+     * Sets if development mode gizmo should be added to the page.
+     *
+     * @param devmodeGizmoEnabled
+     *            whether development mode gizmo should be added
+     */
     public void setDevmodeGizmoEnabled(boolean devmodeGizmoEnabled) {
         this.devmodeGizmoEnabled = devmodeGizmoEnabled;
     }
 
-    public String getLiveReloadPath() {
-        return liveReloadPath;
+    /**
+     * Gets the URL for the live reload websocket connection.
+     *
+     * @return URL for the live reload websocket connection
+     */
+    public String getLiveReloadUrl() {
+        return liveReloadUrl;
     }
 
-    public void setLiveReloadPath(String liveReloadPath) {
-        this.liveReloadPath = liveReloadPath;
+    /**
+     * Sets the URL for the live reload websocket connection.
+     * 
+     * @param liveReloadUrl
+     *            URL for the live reload websocket connection
+     */
+    public void setLiveReloadUrl(String liveReloadUrl) {
+        this.liveReloadUrl = liveReloadUrl;
     }
 
+    /**
+     * Gets the the live reload backend technology identifier.
+     * 
+     * @return the live reload backend technology identifier
+     */
     public String getLiveReloadBackend() {
         return liveReloadBackend;
     }
 
+    /**
+     * Sets the live reload backend technology identifier.
+     * 
+     * @param liveReloadBackend
+     *            the live reload backend technology identifier
+     */
     public void setLiveReloadBackend(String liveReloadBackend) {
         this.liveReloadBackend = liveReloadBackend;
     }
 
-    public String getSpringBootDevToolsPort() {
-        return springBootDevToolsPort;
+    /**
+     * Gets the Spring boot live reload port.
+     * 
+     * @return the Spring boot live reload port
+     */
+    public String getSpringBootLiveReloadPort() {
+        return springBootLiveReloadPort;
     }
 
-    public void setSpringBootDevToolsPort(String springBootDevToolsPort) {
-        this.springBootDevToolsPort = springBootDevToolsPort;
+    /**
+     * Sets the Spring boot live reload port.
+     * 
+     * @param springBootLiveReloadPort
+     *            the Spring boot live reload port
+     */
+    public void setSpringBootLiveReloadPort(String springBootLiveReloadPort) {
+        this.springBootLiveReloadPort = springBootLiveReloadPort;
     }
 }

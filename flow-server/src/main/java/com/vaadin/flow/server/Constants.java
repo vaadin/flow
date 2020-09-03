@@ -496,6 +496,12 @@ public final class Constants implements Serializable {
     @Deprecated
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 
+    /**
+     * Default live reload port as defined in Spring Boot Dev Tools.
+     */
+    // Non-default port currently not supported (#7970)
+    public static final int SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT = 35729;
+
     private Constants() {
         // prevent instantiation constants class only
     }

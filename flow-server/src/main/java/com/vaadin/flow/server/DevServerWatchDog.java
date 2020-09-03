@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +60,7 @@ class DevServerWatchDog {
                 try {
                     Socket accept = server.accept();
                     accept.setSoTimeout(0);
+                    enterReloadMessageReadLoop(accept);
                 } catch (IOException e) {
                     getLogger().debug(
                             "Error occurred during accept a connection", e);
@@ -79,6 +83,19 @@ class DevServerWatchDog {
             return LoggerFactory.getLogger(WatchDogServer.class);
         }
 
+        private void enterReloadMessageReadLoop(Socket accept) throws IOException{
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    accept.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            while ((line = in.readLine()) != null) {
+                DevModeHandler devModeHandler = DevModeHandler
+                        .getDevModeHandler();
+                if ("reload".equals(line) && devModeHandler != null
+                        && devModeHandler.getLiveReload() != null) {
+                    devModeHandler.getLiveReload().reload();
+                }
+            }
+        }
     }
 
     private final WatchDogServer watchDogServer;

@@ -44,6 +44,13 @@
                 <configuration>
                     <productionMode>false</productionMode>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>

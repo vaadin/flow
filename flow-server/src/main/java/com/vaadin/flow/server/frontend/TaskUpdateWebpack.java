@@ -127,6 +127,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         String mainLine = "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
                 + getEscapedRelativeWebpackPath(flowImportsFilePath) + "');";
 
+        String devmodeGizmoJSLine = "const devmodeGizmoJS = '" + FrontendUtils.DEVMODE_GIZMO_MODULE + "'";
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i).trim();
             if (lines.get(i).startsWith(
@@ -141,6 +142,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
             }
             if (lines.get(i).startsWith("const frontendFolder")) {
                 lines.set(i, frontendLine);
+            }
+
+            if (lines.get(i).startsWith("const devmodeGizmoJS")) {
+                lines.set(i, devmodeGizmoJSLine);
             }
         }
 
