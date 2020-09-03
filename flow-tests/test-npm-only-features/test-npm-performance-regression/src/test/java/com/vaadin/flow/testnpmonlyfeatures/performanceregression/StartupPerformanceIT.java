@@ -35,6 +35,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         getDriver().get(getRootURL());
         waitForDevServer();
 
+        // wait until dev server is ready and the component is rendered
         long timeoutTime = System.currentTimeMillis() + 20000;
         while (System.currentTimeMillis() < timeoutTime
                 && !isElementPresent(By.id("performance-component"))) {
@@ -51,7 +52,10 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 
-        final int thresholdMs = 5500;
+        // https://github.com/vaadin/flow/issues/7596
+        final int thresholdMs = Boolean.getBoolean(
+                "vaadin.useDeprecatedV14Bootstrapping") ? 5500 : 15000;
+
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",
                         thresholdMs, startupTimeWithoutNpmInstallTime),
