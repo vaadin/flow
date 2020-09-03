@@ -302,14 +302,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("webpack-dev-server", "3.10.3");
         defaults.put("copy-webpack-plugin", "5.1.1");
         defaults.put("compression-webpack-plugin", "4.0.1");
-        defaults.put("progress-webpack-plugin", "0.0.24");
         defaults.put("webpack-merge", "4.2.2");
         defaults.put("raw-loader", "4.0.0");
         defaults.put("lit-element", "2.3.1");
         defaults.put("lit-html", "1.2.1");
         defaults.put("@types/validator", "10.11.3");
         defaults.put("validator", "12.0.0");
-
 
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
