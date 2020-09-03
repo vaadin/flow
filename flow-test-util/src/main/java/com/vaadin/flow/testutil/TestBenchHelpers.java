@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -401,6 +400,9 @@ public class TestBenchHelpers extends ParallelTest {
     /**
      * If dev server start in progress wait until it's started. Otherwise return
      * immidiately.
+     * <p>
+     * This is a workaround for an issue in TB:
+     * https://github.com/vaadin/testbench/issues/1244
      */
     protected void waitForDevServer() {
         Object result;
@@ -431,7 +433,8 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     private static class LazyDndSimulationLoad {
-        private static final String DND_SCRIPT = loadDndScript("/dnd-simulation.js");
+        private static final String DND_SCRIPT = loadDndScript(
+                "/dnd-simulation.js");
 
         private static String loadDndScript(String scriptLocation) {
             InputStream stream = TestBenchHelpers.class
