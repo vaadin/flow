@@ -243,8 +243,17 @@ public abstract class BeforeEvent extends EventObject {
     public void forwardTo(Class<? extends Component> forwardTargetComponent) {
         Objects.requireNonNull(forwardTargetComponent,
                 "forwardTargetComponent cannot be null");
-        forwardTo(new NavigationStateBuilder(ui.getRouter())
-                .withTarget(forwardTargetComponent).build());
+        if (HasUrlParameter.class.isAssignableFrom(forwardTargetComponent)
+                && ParameterDeserializer
+                .verifyParameters(forwardTargetComponent,
+                        Collections.emptyList())) {
+            forwardTo(new NavigationStateBuilder(ui.getRouter())
+                    .withTarget(forwardTargetComponent, Collections.emptyList())
+                    .build());
+        } else {
+            forwardTo(new NavigationStateBuilder(ui.getRouter())
+                    .withTarget(forwardTargetComponent).build());
+        }
     }
 
     /**
@@ -326,8 +335,16 @@ public abstract class BeforeEvent extends EventObject {
     public void rerouteTo(Class<? extends Component> routeTargetType) {
         Objects.requireNonNull(routeTargetType,
                 "routeTargetType cannot be null");
-        rerouteTo(new NavigationStateBuilder(ui.getRouter())
-                .withTarget(routeTargetType).build());
+        if (HasUrlParameter.class.isAssignableFrom(routeTargetType)
+                && ParameterDeserializer
+                .verifyParameters(routeTargetType,
+                        Collections.emptyList())) {
+            rerouteTo(new NavigationStateBuilder(ui.getRouter())
+                    .withTarget(routeTargetType, Collections.emptyList()).build());
+        } else {
+            rerouteTo(new NavigationStateBuilder(ui.getRouter())
+                    .withTarget(routeTargetType).build());
+        }
     }
 
     /**
