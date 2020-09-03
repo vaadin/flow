@@ -46,6 +46,8 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
+import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint;
+import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint.Person;
 import com.vaadin.flow.server.connect.testendpoint.BridgeMethodTestEndpoint;
 
 import static org.junit.Assert.assertEquals;
@@ -1057,6 +1059,15 @@ public class VaadinConnectControllerTest {
         assertTrue(message.contains(testNullMethodName));
         assertTrue(message.contains(errorMessage));
     }
+
+    @Test
+    public void should_GetRealTypeForGenericTypedMethodParameter() throws NoSuchMethodException, SecurityException {
+        Method[] methods = PersonEndpoint.class.getMethods();
+        Method udpateMethod = Stream.of(methods).filter(method->method.getName().equals("update")).findFirst().orElse(null);
+        VaadinConnectController controller = createVaadinController(TEST_ENDPOINT);
+
+        assertEquals(Person.class, controller.getJavaParameters(udpateMethod, PersonEndpoint.class)[0]);
+    } 
 
     private void assertEndpointInfoPresent(String responseBody) {
         assertTrue(String.format(
