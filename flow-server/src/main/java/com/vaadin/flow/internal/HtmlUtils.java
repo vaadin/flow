@@ -38,6 +38,6 @@ public final class HtmlUtils {
      * @return escaped string
      */
     public static String escape(String maybeHtml) {
-        return new TextNode(maybeHtml, null).outerHtml();
+        return new TextNode(maybeHtml).outerHtml();
     }
 }
