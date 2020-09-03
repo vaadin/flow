@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,8 @@ class DevServerWatchDog {
         }
 
         private void enterReloadMessageReadLoop(Socket accept) throws IOException{
-            BufferedReader in = new BufferedReader(new InputStreamReader(accept.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    accept.getInputStream(), StandardCharsets.UTF_8));
             String line;
             while ((line = in.readLine()) != null) {
                 if ("reload".equals(line)) {
