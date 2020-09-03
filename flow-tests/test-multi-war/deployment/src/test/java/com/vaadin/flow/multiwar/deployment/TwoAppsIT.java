@@ -26,6 +26,7 @@ public class TwoAppsIT extends ChromeBrowserTest {
     private void testWarWorks(String warId) {
         getDriver().get(
                 getTestURL(getRootURL(), "/test-" + warId, new String[] {}));
+        waitForDevServer();
         WebElement helloText = findElement(By.id("hello"));
         Assert.assertEquals(
                 "Hello from com.vaadin.flow.multiwar." + warId + ".MainView",

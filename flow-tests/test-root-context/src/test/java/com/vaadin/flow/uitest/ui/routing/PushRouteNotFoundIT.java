@@ -42,6 +42,7 @@ public class PushRouteNotFoundIT extends ChromeBrowserTest {
                 doGetTestPath(PushLayout.FORWARD_PATH), new String[0]);
 
         getDriver().get(url);
+        waitForDevServer();
 
         waitUntil(driver -> driver.getCurrentUrl()
                 .endsWith(ForwardPage.class.getName()));

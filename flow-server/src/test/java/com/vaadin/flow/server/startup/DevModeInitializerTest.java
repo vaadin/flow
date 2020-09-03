@@ -1,6 +1,7 @@
 package com.vaadin.flow.server.startup;
 
 import javax.servlet.ServletException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,18 +34,13 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.DevModeHandler;
-
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_PNPM;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -181,20 +177,23 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters() throws Exception {
+        // no any exception means that updaters are executed and dev mode server
+        // started
         process();
-        assertNotNull(DevModeHandler.getDevModeHandler());
     }
 
     @Test
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
         webpackFile.delete();
         mainPackageFile.delete();
+        // no any exception means that updaters are executed and dev mode server
+        // started
         process();
-        assertNotNull(getDevModeHandler());
     }
 
     @Test
     public void should_Not_Run_Updaters_when_NoMainPackageFile() {
+        assertNull(DevModeHandler.getDevModeHandler());
         mainPackageFile.delete();
         assertNull(getDevModeHandler());
     }
@@ -213,6 +212,23 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
+    public void should_Run_Updaters_doesNotThrow() throws Exception {
+        // no any exception means that updaters are executed and dev mode server
+        // started
+        runOnStartup();
+    }
+
+    @Test
+    public void should_Run_Updaters_when_NoNodeConfFiles_doesNotThrow()
+            throws Exception {
+        webpackFile.delete();
+        mainPackageFile.delete();
+        // no any exception means that updaters are executed and dev mode server
+        // started
+        runOnStartup();
+    }
+
+    @Test
     public void should_Not_Run_Updaters_inBowerMode() throws Exception {
         System.setProperty("vaadin." + SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 "true");
@@ -223,7 +239,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Not_Run_Updaters_inProductionMode() throws Exception {
-        System.setProperty("vaadin." + SERVLET_PARAMETER_PRODUCTION_MODE,
+        System.setProperty(
+                "vaadin." + InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
@@ -242,7 +259,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void listener_should_stopDevModeHandler_onDestroy()
             throws Exception {
-        initParams.put(SERVLET_PARAMETER_REUSE_DEV_SERVER, "false");
+        initParams.put(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER,
+                "false");
 
         process();
 
@@ -262,6 +280,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
+        waitForDevModeServer();
         ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
                 .forClass(FallbackChunk.class);
         Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
@@ -291,16 +310,17 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         Mockito.when(servletContext.getServletRegistrations())
                 .thenReturn(Collections.emptyMap());
-        Mockito.when(servletContext.getInitParameterNames()).thenReturn(
-                Collections.enumeration(new HashSet<>(
-                        Arrays.asList(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                                FrontendUtils.PROJECT_BASEDIR))));
+        Mockito.when(servletContext.getInitParameterNames())
+                .thenReturn(Collections.enumeration(new HashSet<>(Arrays.asList(
+                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                        FrontendUtils.PROJECT_BASEDIR))));
         Mockito.when(
                 servletContext.getInitParameter(FrontendUtils.PROJECT_BASEDIR))
                 .thenReturn(initParams.get(FrontendUtils.PROJECT_BASEDIR));
-        Mockito.when(
-                servletContext.getInitParameter(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
-                .thenReturn(initParams.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+        Mockito.when(servletContext
+                .getInitParameter(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM))
+                .thenReturn(initParams
+                        .get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         devModeInitializer.onStartup(classes, servletContext);
         assertNotNull(DevModeHandler.getDevModeHandler());
     }

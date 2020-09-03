@@ -82,6 +82,12 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
+        if (getDeploymentConfiguration().enableDevServer()) {
+            DevModeHandler handler = DevModeHandler.getDevModeHandler();
+            if (handler != null) {
+                handlers.add(handler);
+            }
+        }
         handlers.add(0, new BootstrapHandler());
         if (isAtmosphereAvailable()) {
             try {
