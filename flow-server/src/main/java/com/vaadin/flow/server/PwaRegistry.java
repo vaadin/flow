@@ -68,7 +68,6 @@ public class PwaRegistry implements Serializable {
 
     private String offlineHtml = "";
     private String manifestJson = "";
-    private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
@@ -120,7 +119,6 @@ public class PwaRegistry implements Serializable {
             // Load offline page as string, from servlet context if
             // available, fall back to default page
             offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
-            offlineHash = offlineHtml.hashCode();
 
             // Initialize manifest.webmanifest
             manifestJson = initializeManifest().toJson();

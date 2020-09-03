@@ -16,18 +16,11 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.RequestHandler;
@@ -115,12 +108,10 @@ public class PwaHandler implements RequestHandler {
             VaadinResponse response) throws IOException {
         String requestUri = request.getPathInfo();
 
-        if (pwaRegistry.getPwaConfiguration().isEnabled()) {
-            if (requestHandlerMap.containsKey(requestUri)) {
-                return requestHandlerMap.get(requestUri).handleRequest(session,
-                        request, response);
-            }
-
+        if (pwaRegistry.getPwaConfiguration().isEnabled()
+                && requestHandlerMap.containsKey(requestUri)) {
+            return requestHandlerMap.get(requestUri).handleRequest(session,
+                    request, response);
         }
         return false;
     }
