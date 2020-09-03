@@ -28,8 +28,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
@@ -1114,6 +1114,28 @@ public class RouterTest extends RoutingTestBase {
         public void setParameter(BeforeEvent event, String parameter) {
             // NOTE! Expects RootParameter.class to be registered!
             event.rerouteTo("", parameter);
+        }
+    }
+
+    @Route("reroute")
+    @Tag(Tag.DIV)
+    public static class RerouteToHasURL extends Component implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            // Rerouting to an optional param with no segments should still fire setParameter
+            event.rerouteTo(OptionalRootParameter.class);
+        }
+    }
+
+    @Route("forward")
+    @Tag(Tag.DIV)
+    public static class ForwardToHasURL extends Component implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            // Rerouting to an optional param with no segments should still fire setParameter
+            event.forwardTo(OptionalRootParameter.class);
         }
     }
 
@@ -3637,6 +3659,32 @@ public class RouterTest extends RoutingTestBase {
                         "needleChild"),
                 ProcessEventsBase.beforeEnter);
 
+    }
+
+    @Test // #8867
+    public void redirectTo_optional_url_param_works_without_given_parameter() {
+        OptionalRootParameter.events.clear();
+
+        setNavigationTargets(RerouteToHasURL.class, OptionalRootParameter.class);
+
+        router.navigate(ui, new Location("reroute"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Redrecting without parameters did not fire setParameters", 1,
+                OptionalRootParameter.events.size());
+    }
+
+    @Test // #8867
+    public void forwardTo_optional_url_param_works_without_given_parameter() {
+        OptionalRootParameter.events.clear();
+
+        setNavigationTargets(ForwardToHasURL.class, OptionalRootParameter.class);
+
+        router.navigate(ui, new Location("forward"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals("Forwarding without parameters did not fire setParameters", 1,
+                OptionalRootParameter.events.size());
     }
 
     private List<String> getProcessEventsTrunkChainNames(String... leaf) {
