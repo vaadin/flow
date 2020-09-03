@@ -8,6 +8,7 @@ const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+const { GenerateSW } = require('workbox-webpack-plugin');
 
 const path = require('path');
 
@@ -80,6 +81,26 @@ if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
 
+// const swOfflineResources = [];
+// const swResourceLocations = [];
+const swResourceOutput = "../resources/";
+
+const serviceWorkerPlugin = new GenerateSW({
+  swDest: swResourceOutput + "sw.js",
+  // clientsClaim: true,
+  // skipWaiting: true,
+  // manifestTransforms: [swManifestTransform],
+  // maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
+  // navigateFallback: "index.html",
+  // inlineWorkboxRuntime: true,
+  // runtimeCaching: [
+  //   {
+  //     urlPattern: /.*/,
+  //     handler: "NetworkFirst",
+  //   },
+  // ],
+});
+
 if (devMode) {
   webPackEntries.devmodeGizmo = devmodeGizmoJS;
 }
@@ -150,6 +171,8 @@ module.exports = {
   plugins: [
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
+    // Service worker for offline
+    serviceWorkerPlugin,
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
