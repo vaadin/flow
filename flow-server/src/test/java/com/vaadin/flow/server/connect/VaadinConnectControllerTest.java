@@ -1061,13 +1061,15 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_GetRealTypeForGenericTypedMethodParameter() throws NoSuchMethodException, SecurityException {
-        Method[] methods = PersonEndpoint.class.getMethods();
-        Method udpateMethod = Stream.of(methods).filter(method->method.getName().equals("update")).findFirst().orElse(null);
-        VaadinConnectController controller = createVaadinController(TEST_ENDPOINT);
+    public void should_ReturnResult_When_CallingSuperClassMethodWithGenericTypedParameter() {
+        ResponseEntity<?> response = createVaadinController(new PersonEndpoint())
+                .serveEndpoint(PersonEndpoint.class.getSimpleName(), "update",
+                        createRequestParameters(
+                        "{\"entity\":{\"name\":\"aa\"}}"), requestMock);
 
-        assertEquals(Person.class, controller.getJavaParameters(udpateMethod, PersonEndpoint.class)[0]);
-    } 
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("{\"name\":\"aa\"}", response.getBody());
+    }
 
     private void assertEndpointInfoPresent(String responseBody) {
         assertTrue(String.format(

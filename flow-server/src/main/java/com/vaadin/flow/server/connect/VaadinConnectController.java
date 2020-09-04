@@ -402,7 +402,7 @@ public class VaadinConnectController {
                 .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
     }
 
-    Type[] getJavaParameters(Method methodToInvoke, Type classType) {
+    private Type[] getJavaParameters(Method methodToInvoke, Type classType) {
         return Stream.of(GenericTypeReflector.getExactParameterTypes(methodToInvoke, classType)).toArray(Type[]::new);
     }
 
