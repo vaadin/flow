@@ -179,7 +179,7 @@ public final class DevModeHandler {
                     commandToString(npmFolder.getAbsolutePath(), command));
         }
 
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
         processBuilder.command(command);
         try {
             webpackProcess = processBuilder
