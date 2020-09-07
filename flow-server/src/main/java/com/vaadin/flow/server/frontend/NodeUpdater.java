@@ -315,11 +315,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.4.0");
 
-        // macOS: fsevents 1.2.13 install script requirement
-        // https://github.com/vaadin/flow/issues/8741
-        // Remove after upgrading to webpack 5
-        defaults.put("node-gyp", "7.1.0");
-
         return defaults;
     }
 
