@@ -74,7 +74,6 @@ public class PwaRegistry implements Serializable {
     private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
-    private final ServletContext servletContext;
 
     /**
      * Creates a new PwaRegistry instance.
@@ -88,8 +87,6 @@ public class PwaRegistry implements Serializable {
      */
     public PwaRegistry(PWA pwa, ServletContext servletContext)
             throws IOException {
-        this.servletContext = servletContext;
-
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());

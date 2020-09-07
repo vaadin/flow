@@ -53,12 +53,20 @@ public class PwaConfiguration implements Serializable {
     private final boolean enabled;
     private final List<String> offlineResources;
 
+    /**
+     * Default constructor, uses default values.
+     */
     public PwaConfiguration() {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
                 DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, "", new String[] {});
     }
 
+    /**
+     * Constructs the configuration using the {@link PWA} annotation.
+     *
+     * @param pwa the annotation to use for configuration
+     */
     public PwaConfiguration(PWA pwa) {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
                 pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
@@ -66,6 +74,23 @@ public class PwaConfiguration implements Serializable {
                 pwa.startPath(), pwa.offlineResources());
     }
 
+    /**
+     * Constructs a configuration from individual values.
+     *
+     * @param enabled is PWA enabled
+     * @param name the application name
+     * @param shortName the application short name
+     * @param description the description of the application
+     * @param backgroundColor the background color
+     * @param themeColor the theme color
+     * @param iconPath the icon file path
+     * @param manifestPath the `manifest.webmanifest` file path
+     * @param offlinePath the static offline HTML file path
+     * @param display the display mode
+     * @param startPath the start path
+     * @param offlineResources the list of files to add for pre-caching
+     */
+    @SuppressWarnings("squid:S00107")
     public PwaConfiguration(boolean enabled, String name, String shortName,
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
@@ -83,16 +108,6 @@ public class PwaConfiguration implements Serializable {
         this.startPath = startPath;
         this.enabled = enabled;
         this.offlineResources = Arrays.asList(offlineResources);
-    }
-
-    private static boolean hasContextPath(ServletContext servletContext) {
-        return !(servletContext == null
-                || servletContext.getContextPath() == null
-                || servletContext.getContextPath().isEmpty());
-    }
-
-    private static String checkPath(String path) {
-        return path.replaceAll("^[./]+", "");
     }
 
     /**
