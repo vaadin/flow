@@ -43,6 +43,8 @@ import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.startup.ServletDeployer;
 import org.slf4j.Logger;
@@ -300,7 +302,15 @@ public class VaadinServletContextInitializer
                             .filter(clazz -> clazz != RouteNotFoundError.class)
                             .map(clazz -> (Class<? extends Component>) clazz)
                     .collect(Collectors.toSet());
-            if (errorComponents.stream().noneMatch(RouteNotFoundError.class::isAssignableFrom)) {
+
+            // If there is no custom HasErrorParameter<? super NotFoundException>
+            // add SpringRouteNotFoundError, with Spring Boot specific hints
+            if (errorComponents.stream().noneMatch(clazz -> {
+                Class<?> exceptionType = ReflectTools.getGenericInterfaceType(
+                        clazz, HasErrorParameter.class);
+                return exceptionType != null && exceptionType
+                        .isAssignableFrom(NotFoundException.class);
+            })) {
                 errorComponents.add(SpringRouteNotFoundError.class);
             }
             registry.setErrorNavigationTargets(errorComponents);
