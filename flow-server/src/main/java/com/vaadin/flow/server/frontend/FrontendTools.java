@@ -57,7 +57,7 @@ import elemental.json.JsonObject;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v12.16.0";
+    public static final String DEFAULT_NODE_VERSION = "v12.18.3";
 
     public static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
@@ -650,6 +650,7 @@ public class FrontendTools {
         }
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
+        returnCommand.add("--scripts-prepend-node-path=true");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.

@@ -194,12 +194,14 @@ public class FrontendToolsTest {
         assertThat(tools.getNodeExecutable(),
                 not(containsString(NPM_CLI_STRING)));
 
-        assertEquals(3, tools.getNpmExecutable().size());
+        assertEquals(4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(1),
                 containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(2),
                 containsString("--no-audit"));
+        assertThat(tools.getNpmExecutable().get(2),
+                containsString("--scripts-prepend-node-path=true"));
     }
 
     @Test
