@@ -56,10 +56,6 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -122,6 +118,22 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
+    /**
+     * Copy the `webapp.config.js` from the specified URL if missing. Default is
+     * the template provided by this plugin. Set it to empty string to disable
+     * the feature.
+     */
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
+    private String webpackTemplate;
+
+    /**
+     * Copy the `webapp.generated.js` from the specified URL. Default is the
+     * template provided by this plugin. Set it to empty string to disable the
+     * feature.
+     */
+    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
+    private String webpackGeneratedTemplate;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         updateBuildFile();
@@ -165,6 +177,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         new NodeTasks.Builder(getClassFinder(project),
                 npmFolder, generatedFolder, frontendDirectory)
                         .runNpmInstall(runNpmInstall)
+                        .withWebpack(webpackOutputDirectory,
+                                webpackTemplate, webpackGeneratedTemplate)
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
