@@ -37,8 +37,6 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTR
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 public class PrepareFrontendMojoTest {
     @Rule
@@ -49,7 +47,6 @@ public class PrepareFrontendMojoTest {
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
     private File flowResourcesFolder;
-    private String webpackConfig;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
@@ -70,7 +67,6 @@ public class PrepareFrontendMojoTest {
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         flowResourcesFolder = new File(projectBase, DEAULT_FLOW_RESOURCES_FOLDER);
-        webpackConfig = new File(projectBase, WEBPACK_CONFIG).getAbsolutePath();
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
@@ -79,10 +75,6 @@ public class PrepareFrontendMojoTest {
 
         ReflectionUtils.setVariableValueInObject(mojo, Constants.NPM_TOKEN,
                 projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
-                WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "webpackGeneratedTemplate", WEBPACK_GENERATED);
         ReflectionUtils.setVariableValueInObject(mojo,
                 Constants.GENERATED_TOKEN, projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
@@ -185,14 +177,6 @@ public class PrepareFrontendMojoTest {
         Assert.assertFalse(FileUtils.fileExists(packageJson));
         mojo.execute();
         assertPackageJsonContent();
-        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
-    }
-
-    @Test
-    public void mavenGoal_when_packageWebpackConfigMissing() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
-        mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
     }
 
     @Test
