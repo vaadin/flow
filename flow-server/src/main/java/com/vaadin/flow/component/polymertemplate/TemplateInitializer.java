@@ -170,7 +170,7 @@ public class TemplateInitializer {
         if (name.endsWith("$")) {
             // this is an attribute binding, ignore it since we don't support
             // bindings: the value is not an expression
-            getLogger().info(
+            getLogger().debug(
                     "Template {} contains an attribute {} in element {} which "
                             + "ends with $ and ignored by initialization since this is an attribute binding",
                     templateClass.getSimpleName(), name, element.getTag());
@@ -178,7 +178,7 @@ public class TemplateInitializer {
         }
         if (value.contains("{{") && value.contains("}}")) {
             // this is a binding, skip it
-            getLogger().info(
+            getLogger().debug(
                     "Template {} contains an attribute {} in element {} whose value"
                             + " contains two-way binding and it's ignored by initilization",
                     templateClass.getSimpleName(), name, element.getTag());
@@ -186,7 +186,7 @@ public class TemplateInitializer {
         }
         if (value.contains("[[") && value.contains("]]")) {
             // this is another binding, skip it
-            getLogger().info(
+            getLogger().debug(
                     "Template {} contains an attribute {} in element {} whose value"
                             + " contains binding and it's ignored by initilization",
                     templateClass.getSimpleName(), name, element.getTag());
