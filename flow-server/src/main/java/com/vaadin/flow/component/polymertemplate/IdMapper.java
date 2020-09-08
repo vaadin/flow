@@ -67,13 +67,13 @@ public class IdMapper implements Serializable {
      * @param tag
      *            the tag of the injected element or <code>null</code> if not
      *            known
-     * @param beforeComponentInject
+     * @param beforeInject
      *            a callback invoked before assigning the element/component to
      *            the field
      */
     public void mapComponentOrElement(Field field, String id, String tag,
-            Consumer<Element> beforeComponentInject) {
-        injectClientSideElement(tag, id, field, beforeComponentInject);
+            Consumer<Element> beforeInject) {
+        injectClientSideElement(tag, id, field, beforeInject);
     }
 
     private Class<? extends Component> getContainerClass() {
@@ -81,11 +81,12 @@ public class IdMapper implements Serializable {
     }
 
     private void injectClientSideElement(String tagName, String id, Field field,
-            Consumer<Element> beforeComponentInject) {
+            Consumer<Element> beforeInject) {
         Class<?> fieldType = field.getType();
 
         Tag tag = fieldType.getAnnotation(Tag.class);
-        if (tag != null && tagName != null && !tagName.equalsIgnoreCase(tag.value())) {
+        if (tag != null && tagName != null
+                && !tagName.equalsIgnoreCase(tag.value())) {
             String msg = String.format(
                     "Class '%s' has field '%s' whose type '%s' is annotated with "
                             + "tag '%s' but the element defined in the HTML "
@@ -96,11 +97,12 @@ public class IdMapper implements Serializable {
         }
         if (tag != null) {
             // tag can be null if injecting Element
-            // tagName is the tag parsed from the template and it is null for Lit templates,
+            // tagName is the tag parsed from the template and it is null for
+            // Lit templates,
             // which are not parsed
             tagName = tag.value();
         }
-        attachExistingElementById(tagName, id, field, beforeComponentInject);
+        attachExistingElementById(tagName, id, field, beforeInject);
     }
 
     /**
@@ -129,10 +131,12 @@ public class IdMapper implements Serializable {
      *            id of element to attach to
      * @param field
      *            field to attach {@code Element} or {@code Component} to
-     * @param beforeComponentInject
+     * @param beforeInject
+     *            a callback invoked before assigning the element/component to
+     *            the field
      */
     private void attachExistingElementById(String tagName, String id,
-            Field field, Consumer<Element> beforeComponentInject) {
+            Field field, Consumer<Element> beforeInject) {
         if (tagName == null) {
             throw new IllegalArgumentException(
                     "Tag name parameter cannot be null");
@@ -146,15 +150,15 @@ public class IdMapper implements Serializable {
             list.append(element.getNode(), NodeProperties.INJECT_BY_ID, id);
             registeredElementIdToInjected.put(id, element);
         }
-        injectTemplateElement(element, field, beforeComponentInject);
+        injectTemplateElement(element, field, beforeInject);
     }
 
     @SuppressWarnings("unchecked")
     private void injectTemplateElement(Element element, Field field,
-            Consumer<Element> beforeComponentInject) {
+            Consumer<Element> beforeInject) {
         Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {
-            beforeComponentInject.accept(element);
+            beforeInject.accept(element);
             Component component;
 
             Optional<Component> wrappedComponent = element.getComponent();
@@ -167,6 +171,7 @@ public class IdMapper implements Serializable {
 
             ReflectTools.setJavaFieldValue(template, field, component);
         } else if (Element.class.isAssignableFrom(fieldType)) {
+            beforeInject.accept(element);
             ReflectTools.setJavaFieldValue(template, field, element);
         } else {
             String msg = String.format(
