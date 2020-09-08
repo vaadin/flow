@@ -190,7 +190,7 @@ public class FrontendTools {
      *            {@code null}
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed automatically
-     *            by Vaadin, for example <code>"v12.16.0"</code>. Use
+     *            by Vaadin, for example <code>"v12.18.3"</code>. Use
      *            {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled corporate
