@@ -23,6 +23,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.Uses;
@@ -167,14 +170,26 @@ public class TemplateInitializer {
         if (name.endsWith("$")) {
             // this is an attribute binding, ignore it since we don't support
             // bindings: the value is not an expression
+            getLogger().info(
+                    "Template {} contains an attribute {} in element {} which "
+                            + "ends with $ and ignored by initialization since this is an attribute binding",
+                    templateClass.getSimpleName(), name, element.getTag());
             return;
         }
         if (value.contains("{{") && value.contains("}}")) {
             // this is a binding, skip it
+            getLogger().info(
+                    "Template {} contains an attribute {} in element {} whose value"
+                            + " contains two-way binding and it's ignored by initilization",
+                    templateClass.getSimpleName(), name, element.getTag());
             return;
         }
         if (value.contains("[[") && value.contains("]]")) {
             // this is another binding, skip it
+            getLogger().info(
+                    "Template {} contains an attribute {} in element {} whose value"
+                            + " contains binding and it's ignored by initilization",
+                    templateClass.getSimpleName(), name, element.getTag());
             return;
         }
         // anything else is considered as an attribute value
@@ -212,5 +227,9 @@ public class TemplateInitializer {
                         .ifPresent(tag -> add.accept(tag, usedType)));
 
         return map;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(TemplateInitializer.class);
     }
 }

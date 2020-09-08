@@ -132,6 +132,8 @@ public class IdMapper implements Serializable {
      * @param field
      *            field to attach {@code Element} or {@code Component} to
      * @param beforeInject
+     *            a callback invoked before assigning the element/component to
+     *            the field
      */
     private void attachExistingElementById(String tagName, String id,
             Field field, Consumer<Element> beforeInject) {

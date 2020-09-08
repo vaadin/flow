@@ -313,7 +313,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         public IdElementTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId' someattrtibute property-binding='[[foo]]' "
+                            + "'><label id='labelId' someattribute property-binding='[[foo]]' "
                             + "attribute-binding$='bar' another-binding='{{foo}}'"
                             + "another-attribute='baz'></dom-module>")));
         }
@@ -770,10 +770,10 @@ public class PolymerTemplateTest extends HasCurrentService {
     public void attachExistingElementWithAttributeValue_elementHasAttribute() {
         IdElementTemplate template = new IdElementTemplate();
 
-        Assert.assertTrue(template.label.hasAttribute("someattrtibute"));
-        Assert.assertNotNull(template.label.getAttribute("someattrtibute"));
+        Assert.assertTrue(template.label.hasAttribute("someattribute"));
+        Assert.assertNotNull(template.label.getAttribute("someattribute"));
         Assert.assertTrue(
-                template.label.getAttribute("someattrtibute").isEmpty());
+                template.label.getAttribute("someattribute").isEmpty());
 
         Assert.assertFalse(template.label.hasAttribute("property-binding"));
         Assert.assertFalse(template.label.hasAttribute("propertyBinding"));
