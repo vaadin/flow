@@ -69,6 +69,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
@@ -83,9 +84,12 @@ public class BuildFrontendMojoTest {
     private File generatedFolder;
     private File nodeModulesPath;
     private File flowResourcesFolder;
+    private File projectBase;
     private File projectFrontendResourcesDirectory;
     private String packageJson;
     private String webpackConfig;
+    private String webpackGenerated;
+    private File webpackOutputDirectory;
     private File defaultJavaSource;
     private String openApiJsonFile;
     private File generatedTsFolder;
@@ -100,6 +104,8 @@ public class BuildFrontendMojoTest {
         Mockito.when(project.getRuntimeClasspathElements())
                 .thenReturn(getClassPath());
 
+        projectBase = temporaryFolder.getRoot();
+
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
@@ -112,6 +118,10 @@ public class BuildFrontendMojoTest {
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
         webpackConfig = new File(npmFolder, WEBPACK_CONFIG).getAbsolutePath();
+        webpackGenerated =
+                new File(npmFolder, WEBPACK_GENERATED).getAbsolutePath();
+        webpackOutputDirectory = new File(projectBase,
+                VAADIN_SERVLET_RESOURCES);
 
         projectFrontendResourcesDirectory = new File(npmFolder,
                 "flow_resources");
@@ -132,6 +142,12 @@ public class BuildFrontendMojoTest {
                 projectFrontendResourcesDirectory);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
+                WEBPACK_CONFIG);
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "webpackGeneratedTemplate", WEBPACK_GENERATED);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+                webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
                 generatedFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
@@ -177,6 +193,9 @@ public class BuildFrontendMojoTest {
         if (FileUtils.fileExists(webpackConfig)) {
             FileUtils.fileDelete(webpackConfig);
         }
+        if (FileUtils.fileExists(webpackGenerated)) {
+            FileUtils.fileDelete(webpackGenerated);
+        }
     }
 
     static void setProject(AbstractMojo mojo, File baseFolder)
@@ -188,6 +207,20 @@ public class BuildFrontendMojoTest {
         when(project.getBuild()).thenReturn(buildMock);
         when(project.getRuntimeClasspathElements()).thenReturn(getClassPath());
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+    }
+
+    @Test
+    public void should_generateWebpackConfig() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
+    }
+
+    @Test
+    public void should_generateWebpackGeneratedConfig() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackGenerated));
+        mojo.execute();
+        Assert.assertTrue(FileUtils.fileExists(webpackGenerated));
     }
 
     @Test

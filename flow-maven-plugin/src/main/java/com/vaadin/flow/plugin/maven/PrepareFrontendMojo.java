@@ -74,22 +74,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
 
-    /**
-     * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
-    private String webpackTemplate;
-
-    /**
-     * Copy the `webapp.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
-    private String webpackGeneratedTemplate;
-
     @Component
     private BuildContext buildContext; // m2eclipse integration
 
@@ -125,8 +109,6 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
             NodeTasks.Builder builder = new NodeTasks.Builder(
                     getClassFinder(project), npmFolder, generatedFolder,
                     frontendDirectory)
-                            .withWebpack(webpackOutputDirectory,
-                                    webpackTemplate, webpackGeneratedTemplate)
                             .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                             .withFlowResourcesFolder(flowResourcesFolder)
                             .createMissingPackageJson(true)

@@ -33,14 +33,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.PwaConfiguration;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
+
+    @PWA(name = "foo", shortName = "bar")
+    class AppShell {
+    }
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -50,6 +57,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private File webpackGenerated;
     private File baseDir;
     private File frontendFolder;
+    private PwaConfiguration pwaConfiguration;
 
     @Before
     public void setup() throws Exception {
@@ -59,11 +67,15 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         NodeUpdateTestUtil.createStubNode(true, true, false,
                 baseDir.getAbsolutePath());
 
+        pwaConfiguration = new PwaConfiguration(
+                AppShell.class.getAnnotation(PWA.class));
+
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                pwaConfiguration);
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
         webpackGenerated = new File(baseDir, WEBPACK_GENERATED);
@@ -106,7 +118,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                pwaConfiguration);
 
         webpackUpdater.execute();
 
@@ -151,7 +164,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED, new File(baseDir, "bar"), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                pwaConfiguration);
         newUpdater.execute();
 
         assertWebpackGeneratedConfigContent("bar", "foo");
@@ -186,7 +200,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"),
                 WEBPACK_CONFIG, WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                pwaConfiguration);
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
