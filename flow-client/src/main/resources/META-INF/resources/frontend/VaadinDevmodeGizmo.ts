@@ -4,6 +4,12 @@ import {css, html, LitElement, property} from 'lit-element';
 
 export class VaadinDevmodeGizmo extends LitElement {
 
+  static BLUE_HSL = css`206, 100%, 70%`;
+  static GREEN_HSL = css`145, 80%, 42%`;
+  static GREY_HSL = css`0, 0%, 50%`;
+  static YELLOW_HSL = css`38, 98%, 64%`;
+  static RED_HSL = css`355, 100%, 68%`;
+
   static get styles() {
     return css`
        :host {
@@ -22,15 +28,15 @@ export class VaadinDevmodeGizmo extends LitElement {
           --gizmo-border-radius: 0.5rem;
           --gizmo-box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 
-          --gizmo-blue-hsl: 206, 100%, 70%;
+          --gizmo-blue-hsl: ${this.BLUE_HSL};
           --gizmo-blue-color: hsl(var(--gizmo-blue-hsl));
-          --gizmo-green-hsl: 145, 80%, 42%;
+          --gizmo-green-hsl: ${this.GREEN_HSL};
           --gizmo-green-color: hsl(var(--gizmo-green-hsl));
-          --gizmo-grey-hsl: 0, 0%, 50%;
+          --gizmo-grey-hsl: ${this.GREY_HSL};
           --gizmo-grey-color: hsl(var(--gizmo-grey-hsl));
-          --gizmo-yellow-hsl: 38, 98%, 64%;
+          --gizmo-yellow-hsl: ${this.YELLOW_HSL};
           --gizmo-yellow-color: hsl(var(--gizmo-yellow-hsl));
-          --gizmo-red-hsl: 355, 100%, 68%;
+          --gizmo-red-hsl: ${this.RED_HSL};
           --gizmo-red-color: hsl(var(--gizmo-red-hsl));
 
           /* Needs to be in ms, used in JavaScript as well */
@@ -555,9 +561,9 @@ export class VaadinDevmodeGizmo extends LitElement {
   static JREBEL = 'JREBEL';
   static SPRING_BOOT_DEVTOOLS = 'SPRING_BOOT_DEVTOOLS';
   static BACKEND_DISPLAY_NAME: Record<string,string> = {
-      HOTSWAP_AGENT: 'HotswapAgent',
-      JREBEL: 'JRebel',
-      SPRING_BOOT_DEVTOOLS: 'Spring Boot Devtools'
+    HOTSWAP_AGENT: 'HotswapAgent',
+    JREBEL: 'JRebel',
+    SPRING_BOOT_DEVTOOLS: 'Spring Boot Devtools'
   };
 
   static get isActive() {
@@ -679,10 +685,10 @@ export class VaadinDevmodeGizmo extends LitElement {
 
     if (!this.backend) {
       this.showNotification(MessageType.WARNING,
-        'Java live reload unavailable',
-        'Live reload for Java changes is currently not set up. Find out how to make use of this functionality to boost your workflow.',
-        'https://vaadin.com/docs/live-reload',
-        'liveReloadUnavailable');
+          'Java live reload unavailable',
+          'Live reload for Java changes is currently not set up. Find out how to make use of this functionality to boost your workflow.',
+          'https://vaadin.com/docs/live-reload',
+          'liveReloadUnavailable');
     }
   }
 
@@ -736,8 +742,8 @@ export class VaadinDevmodeGizmo extends LitElement {
           VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const now = new Date();
       const reloaded = ('0' + now.getHours()).slice(-2) + ':'
-        + ('0' + now.getMinutes()).slice(-2) + ':'
-        + ('0' + now.getSeconds()).slice(-2);
+          + ('0' + now.getMinutes()).slice(-2) + ':'
+          + ('0' + now.getSeconds()).slice(-2);
       this.showSplashMessage('Automatic reload #' + count + ' finished at ' + reloaded);
       window.sessionStorage.removeItem(
           VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
@@ -862,7 +868,15 @@ export class VaadinDevmodeGizmo extends LitElement {
   }
 
   findNotificationIndex(id: number): number {
-    return this.notifications.findIndex((notification, _) => notification.id === id);
+    let index = -1;
+    // @ts-ignore
+    this.notifications.some((notification, idx) => {
+      if (notification.id === id) {
+        index = idx;
+        return true;
+      }
+    });
+    return index;
   }
 
   toggleDontShowAgain(id: number) {
@@ -883,15 +897,15 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
-      return 'var(--gizmo-green-color)';
+      return css`hsl(${VaadinDevmodeGizmo.GREEN_HSL})`
     } else if (status === ConnectionStatus.INACTIVE) {
-      return 'var(--gizmo-grey-color)';
+      return css`hsl(${VaadinDevmodeGizmo.GREY_HSL})`
     } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return 'var(--gizmo-yellow-color)';
+      return css`hsl(${VaadinDevmodeGizmo.YELLOW_HSL})`
     } else if (status === ConnectionStatus.ERROR) {
-      return 'var(--gizmo-red-color)';
+      return css`hsl(${VaadinDevmodeGizmo.RED_HSL})`
     } else {
-      return 'none';
+      return css`none`;
     }
   }
 
@@ -919,7 +933,7 @@ export class VaadinDevmodeGizmo extends LitElement {
           <label class="switch">
               <input id="toggle" type="checkbox"
                   ?disabled=${(this.frontendStatus === ConnectionStatus.UNAVAILABLE || this.frontendStatus === ConnectionStatus.ERROR)
-                    && (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR)}
+    && (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR)}
                   ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE || this.javaStatus === ConnectionStatus.ACTIVE}"
                   @change=${(e:any) => this.setActive(e.target.checked)}/>
               <span class="slider"></span>
@@ -947,9 +961,9 @@ export class VaadinDevmodeGizmo extends LitElement {
           <path d="M11.21 7.38c-0.012-0-0.026-0.001-0.040-0.001-0.453 0-0.835 0.301-0.958 0.714l-0.002 0.007-2.21 4.21-2.3-4.2c-0.122-0.425-0.507-0.731-0.963-0.731-0.013 0-0.026 0-0.039 0.001l0.002-0c-0.012-0-0.025-0.001-0.039-0.001-0.58 0-1.050 0.47-1.050 1.050 0 0.212 0.063 0.41 0.171 0.575l-0.002-0.004 3.29 6.1c0.15 0.333 0.478 0.561 0.86 0.561s0.71-0.228 0.858-0.555l0.002-0.006 3.34-6.1c0.090-0.152 0.144-0.335 0.144-0.53 0-0.58-0.47-1.050-1.050-1.050-0.005 0-0.010 0-0.014 0h0.001z"></path>
         </svg>
         <span class="status-blip" style="background: linear-gradient(to right, ${this.getStatusColor(this.frontendStatus)} 0.5rem, ${this.getStatusColor(this.javaStatus)} 0.5rem)"></span>
-          ${this.splashMessage 
-      ? html`<span class="status-description">${this.splashMessage}</span></div>`
-      : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`
+          ${this.splashMessage
+        ? html`<span class="status-description">${this.splashMessage}</span></div>`
+        : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`
     }
     </div>`;
   }

@@ -50,7 +50,7 @@ if (watchDogPort) {
   watchDogPort = watchDogPort.substr(watchDogPrefix.length);
   const runWatchDog = () => {
     client = new require('net').Socket();
-
+    client.setEncoding('utf8');
     client.on('error', function () {
       console.log("Watchdog connection error. Terminating webpack process...");
       client.destroy();
