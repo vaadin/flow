@@ -21,9 +21,10 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
-import com.vaadin.flow.shared.Registration;
 
-public class CustomInMemoryDataProvider<T> implements InMemoryDataProvider<T> {
+public class CustomInMemoryDataProvider<T>
+        extends AbstractDataProvider<T, SerializablePredicate<T>>
+        implements InMemoryDataProvider<T> {
 
     private List<T> items;
     private SerializablePredicate<T> filter = in -> true;
@@ -41,6 +42,7 @@ public class CustomInMemoryDataProvider<T> implements InMemoryDataProvider<T> {
     @Override
     public void setFilter(SerializablePredicate<T> filter) {
         this.filter = filter;
+        refreshAll();
     }
 
     @Override
@@ -65,22 +67,5 @@ public class CustomInMemoryDataProvider<T> implements InMemoryDataProvider<T> {
             filteredStream = filteredStream.sorted(this.comparator);
         }
         return filteredStream.skip(query.getOffset()).limit(query.getLimit());
-    }
-
-    @Override
-    public void refreshItem(T item) {
-
-    }
-
-    @Override
-    public void refreshAll() {
-
-    }
-
-    @Override
-    public Registration addDataProviderListener(
-            DataProviderListener<T> listener) {
-        return () -> {
-        };
     }
 }
