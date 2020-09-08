@@ -33,10 +33,11 @@ class LitTemplateDataAnalyzer implements Serializable {
     private final Class<? extends LitTemplate> templateClass;
 
     /**
-     * Create an instance of the analyzer using the {@code templateClass} and the
-     * template {@code parser}.
+     * Create an instance of the analyzer using the {@code templateClass} and
+     * the template {@code parser}.
      *
-     * @param templateClass a template type
+     * @param templateClass
+     *            a template type
      */
     LitTemplateDataAnalyzer(Class<? extends LitTemplate> templateClass) {
         this.templateClass = templateClass;
@@ -50,8 +51,9 @@ class LitTemplateDataAnalyzer implements Serializable {
     ParserData parseTemplate() {
         IdCollector idExtractor = new IdCollector(templateClass, null, null);
         idExtractor.collectInjectedIds(Collections.emptySet());
-        return new ParserData(idExtractor.getIdByField(), idExtractor.getTagById(), Collections.emptySet(),
-                Collections.emptyList());
+        return new ParserData(idExtractor.getIdByField(),
+                idExtractor.getTagById(), Collections.emptyMap(),
+                Collections.emptySet(), Collections.emptyList());
     }
 
 }
