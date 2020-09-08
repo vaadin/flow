@@ -204,10 +204,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
             Path path = Paths.get(
                     getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
                     INDEX_HTML);
-            String relativePath = String.format(
-                    "require('path').resolve(__dirname, '%s')",
+            return String.format("require('path').resolve(__dirname, '%s')",
                     getEscapedRelativeWebpackPath(path));
-            return relativePath;
         } else {
             return "'./" + INDEX_HTML +"'";
         }
