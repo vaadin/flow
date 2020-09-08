@@ -95,9 +95,9 @@ public class FrontendTools {
                     new FrontendVersion("6.11.1"),
                     new FrontendVersion("6.11.2"));
 
-    private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
+    static final String PNPM_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
 
-    private static final String PNMP_INSTALLED_BY_NPM = PNMP_INSTALLED_BY_NPM_FOLDER
+    static final String PNPM_INSTALLED_BY_NPM = PNPM_INSTALLED_BY_NPM_FOLDER
             + "bin/pnpm.js";
 
     private static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
@@ -676,7 +676,7 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private List<String> getSuitablePnpm(String dir) {
+    List<String> getSuitablePnpm(String dir) {
         final List<String> pnpmCommand = getPnpmExecutable(dir, false);
         if (!pnpmCommand.isEmpty()) {
             // check whether globally or locally installed pnpm is new enough
@@ -690,12 +690,20 @@ public class FrontendTools {
                         && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION)) {
                     return pnpmCommand;
                 } else {
-                    getLogger().warn(String.format(
-                            "installed pnpm ('%s', version %s) is not in the compatible versions range (>=%s, <%s), installing supported version locally",
+                    getLogger().warn(
+                            "installed pnpm ('{}', version {}) is not in the compatible versions range (>={}, <{})",
                             String.join(" ", pnpmCommand),
                             pnpmVersion.getFullVersion(),
                             SUPPORTED_PNPM_VERSION.getFullVersion(),
-                            BREAKING_PNPM_VERSION.getFullVersion()));
+                            BREAKING_PNPM_VERSION.getFullVersion());
+                    if (FrontendUtils.skippingVersionCheck()) {
+                        getLogger().info("using '{}' anyway",
+                                String.join(" ", pnpmCommand));
+                        return pnpmCommand;
+                    } else {
+                        getLogger().info("installing pnpm version {} locally",
+                                SUPPORTED_PNPM_VERSION.getFullVersion());
+                    }
                 }
             } catch (UnknownVersionException e) {
                 getLogger().warn(
@@ -753,7 +761,7 @@ public class FrontendTools {
     }
 
     private Optional<File> getLocalPnpmScript(String dir) {
-        File npmInstalled = new File(dir, PNMP_INSTALLED_BY_NPM);
+        File npmInstalled = new File(dir, PNPM_INSTALLED_BY_NPM);
         if (npmInstalled.canRead()) {
             return Optional.of(npmInstalled);
         }
