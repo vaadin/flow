@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-import com.vaadin.flow.di.Instantiator;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,6 +48,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
@@ -100,7 +100,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     private static class SimpleTemplateParser extends TestTemplateParser {
 
         SimpleTemplateParser() {
-            super(tag -> "<dom-module id='" + tag + "' someattrtibute></dom-module>");
+            super(tag -> "<dom-module id='" + tag
+                    + "' someattrtibute></dom-module>");
         }
 
     }
@@ -312,7 +313,9 @@ public class PolymerTemplateTest extends HasCurrentService {
         public IdElementTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId' someattrtibute></dom-module>")));
+                            + "'><label id='labelId' someattribute property-binding='[[foo]]' "
+                            + "attribute-binding$='bar' another-binding='{{foo}}'"
+                            + "another-attribute='baz'></dom-module>")));
         }
 
         IdElementTemplate(TemplateParser parser) {
@@ -422,8 +425,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @SuppressWarnings("serial")
     @Before
-    public void setUp() throws SecurityException,
-            IllegalArgumentException {
+    public void setUp() throws SecurityException, IllegalArgumentException {
         executionOrder.clear();
         executionParams.clear();
 
@@ -474,8 +476,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getTemplateParser())
                 .thenReturn(NpmTemplateParser.getInstance());
-        Mockito.when(service.getInstantiator())
-                .thenReturn(instantiator);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         return service;
     }
 
@@ -766,6 +767,31 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
+    public void attachExistingElementWithAttributeValue_elementHasAttribute() {
+        IdElementTemplate template = new IdElementTemplate();
+
+        Assert.assertTrue(template.label.hasAttribute("someattribute"));
+        Assert.assertNotNull(template.label.getAttribute("someattribute"));
+        Assert.assertTrue(
+                template.label.getAttribute("someattribute").isEmpty());
+
+        Assert.assertFalse(template.label.hasAttribute("property-binding"));
+        Assert.assertFalse(template.label.hasAttribute("propertyBinding"));
+
+        Assert.assertFalse(template.label.hasAttribute("another-binding"));
+        Assert.assertFalse(template.label.hasAttribute("anotherBinding"));
+
+        Assert.assertFalse(template.label.hasAttribute("attribute-binding"));
+        Assert.assertFalse(template.label.hasAttribute("attributeBinding"));
+        Assert.assertFalse(template.label.hasAttribute("attribute-binding$"));
+        Assert.assertFalse(template.label.hasAttribute("attributeBinding$"));
+
+        Assert.assertTrue(template.label.hasAttribute("another-attribute"));
+        Assert.assertEquals("baz",
+                template.label.getAttribute("another-attribute"));
+    }
+
+    @Test
     public void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreated() {
         TemplateInjectTemplate template = new TemplateInjectTemplate();
 
@@ -796,7 +822,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     private void attachComponentAndVerifyChild(PolymerTemplate<?> template,
-                                               CustomComponent templateChild) {
+            CustomComponent templateChild) {
         VirtualChildrenList feature = template.getStateNode()
                 .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();

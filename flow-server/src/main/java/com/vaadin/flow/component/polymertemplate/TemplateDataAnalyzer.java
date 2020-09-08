@@ -102,6 +102,8 @@ public class TemplateDataAnalyzer {
         private final Map<String, String> tagById;
         private final Map<Field, String> idByField;
 
+        private final Map<String, Map<String, String>> attributesById;
+
         private final Set<String> twoWayBindingPaths;
 
         private final Collection<SubTemplateData> subTemplates;
@@ -113,16 +115,20 @@ public class TemplateDataAnalyzer {
          *            a map of fields to their ids
          * @param tags
          *            a map of ids to their tags
+         * @param attributes
+         *            a map of attributes values to the element id
          * @param twoWayBindings
          *            the properties which support two way binding
          * @param subTemplates
          *            data for sub templates
          */
         public ParserData(Map<Field, String> fields, Map<String, String> tags,
+                Map<String, Map<String, String>> attributes,
                 Set<String> twoWayBindings,
                 Collection<SubTemplateData> subTemplates) {
             tagById = Collections.unmodifiableMap(tags);
             idByField = Collections.unmodifiableMap(fields);
+            attributesById = attributes;
             twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
             this.subTemplates = Collections
                     .unmodifiableCollection(subTemplates);
@@ -145,6 +151,14 @@ public class TemplateDataAnalyzer {
 
         void forEachSubTemplate(Consumer<SubTemplateData> dataConsumer) {
             subTemplates.forEach(dataConsumer);
+        }
+
+        Map<String, String> getAttributes(String id) {
+            Map<String, String> attrs = attributesById.get(id);
+            if (attrs == null) {
+                return Collections.emptyMap();
+            }
+            return attrs;
         }
     }
 
@@ -254,7 +268,8 @@ public class TemplateDataAnalyzer {
 
     private ParserData readData(IdCollector idExtractor) {
         return new ParserData(idExtractor.getIdByField(),
-                idExtractor.getTagById(), twoWayBindingPaths, subTemplates);
+                idExtractor.getTagById(), idExtractor.getAttributes(),
+                twoWayBindingPaths, subTemplates);
     }
 
     private String getTag(Class<? extends PolymerTemplate<?>> clazz) {

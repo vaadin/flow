@@ -16,12 +16,14 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.Component;
@@ -35,6 +37,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 public class IdCollector {
     private final Map<String, String> tagById = new HashMap<>();
     private final Map<Field, String> idByField = new HashMap<>();
+    private final Map<String, Map<String, String>> attributesById = new HashMap<>();
     private Element templateRoot;
     private Class<?> templateClass;
     private String templateFile;
@@ -103,7 +106,7 @@ public class IdCollector {
                             : "(\"" + id + "\")"));
         }
 
-        if (!addTagName(id, field)) {
+        if (!collectElementData(id, field)) {
             throw new IllegalStateException(String.format(
                     "There is no element with "
                             + "id='%s' in the template file '%s'. Cannot map it using @%s",
@@ -121,19 +124,21 @@ public class IdCollector {
      * @return <code>false</code> if the mapping did not pass validation,
      *         <code>true</code> otherwise
      */
-    private boolean addTagName(String id, Field field) {
+    private boolean collectElementData(String id, Field field) {
         idByField.put(field, id);
         if (templateRoot != null) {
             // The template is available for parsing so check up front if the id
             // exists
-            Optional<String> tagName = Optional
-                    .ofNullable(templateRoot.getElementById(id))
+            Optional<Element> element = Optional
+                    .ofNullable(templateRoot.getElementById(id));
+            Optional<String> tagName = element
                     .map(org.jsoup.nodes.Element::tagName);
-            if (tagName.isPresent()) {
+            if (element.isPresent()) {
                 tagById.put(id, tagName.get());
+                fetchAttributes(id, element.get().attributes());
             }
 
-            return tagName.isPresent();
+            return element.isPresent();
         }
 
         return true;
@@ -157,4 +162,21 @@ public class IdCollector {
         return tagById;
     }
 
+    /**
+     * Gets a map from field ids to their parsed attributes values.
+     *
+     * @return a map from field ids to their parsed attributes values
+     */
+    public Map<String, Map<String, String>> getAttributes() {
+        return Collections.unmodifiableMap(attributesById);
+    }
+
+    private void fetchAttributes(String id, Attributes attributes) {
+        if (attributes.size() == 0) {
+            return;
+        }
+        HashMap<String, String> attrs = new HashMap<>();
+        attributes.forEach(attr -> attrs.put(attr.getKey(), attr.getValue()));
+        attributesById.put(id, attrs);
+    }
 }

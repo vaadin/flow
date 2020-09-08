@@ -52,7 +52,12 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
 
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 
-        final int thresholdMs = 5500;
+        // https://github.com/vaadin/flow/issues/7596
+        final int thresholdMs = Boolean.getBoolean(
+                System.getProperty("vaadin.useDeprecatedV14Bootstrapping"))
+                        ? 5500
+                        : 10500;
+
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",
                         thresholdMs, startupTimeWithoutNpmInstallTime),
