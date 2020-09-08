@@ -138,7 +138,7 @@ public class IdCollector {
                 fetchAttributes(id, element.get().attributes());
             }
 
-            return tagName.isPresent();
+            return element.isPresent();
         }
 
         return true;
