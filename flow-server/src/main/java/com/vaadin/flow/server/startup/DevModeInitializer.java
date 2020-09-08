@@ -301,12 +301,9 @@ public class DevModeInitializer
         File generatedPackages = new File(builder.generatedFolder,
                 PACKAGE_JSON);
 
-        // If we are missing the generated webpack configuration then generate
-        // webpack configurations
-        if (!new File(builder.npmFolder, WEBPACK_GENERATED).exists()) {
-            builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
-                    FrontendUtils.WEBPACK_GENERATED);
-        }
+        // Regenerate webpack configuration, as it may be necessary to update it
+        builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
+                FrontendUtils.WEBPACK_GENERATED);
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 
