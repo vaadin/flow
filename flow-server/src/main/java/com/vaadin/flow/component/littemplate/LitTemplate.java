@@ -21,6 +21,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
@@ -63,7 +64,12 @@ public abstract class LitTemplate extends Component {
      * Creates the component mapped to a LitElement.
      */
     protected LitTemplate() {
-        LitTemplateInitializer templateInitializer = new LitTemplateInitializer(this, VaadinService.getCurrent());
+        this(getParser(VaadinService.getCurrent()), VaadinService.getCurrent());
+    }
+
+    protected LitTemplate(LitTemplateParser parser, VaadinService service) {
+        LitTemplateInitializer templateInitializer = new LitTemplateInitializer(
+                this, VaadinService.getCurrent());
         templateInitializer.initChildElements();
     }
 
@@ -78,6 +84,12 @@ public abstract class LitTemplate extends Component {
     @Override
     public Stream<Component> getChildren() {
         return super.getChildren();
+    }
+
+    private static LitTemplateParser getParser(VaadinService service) {
+        LitTemplateParserFactory factory = service.getInstantiator()
+                .getOrCreate(LitTemplateParserFactory.class);
+        return factory.create();
     }
 
 }
