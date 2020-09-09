@@ -18,8 +18,10 @@ package com.vaadin.flow.component.littemplate;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
 import com.vaadin.flow.component.polymertemplate.IdMapper;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.VaadinService;
@@ -28,6 +30,7 @@ import com.vaadin.flow.server.VaadinService;
  * Template initialization related logic.
  *
  * @author Vaadin Ltd
+ * @since
  *
  */
 public class LitTemplateInitializer {
@@ -39,14 +42,24 @@ public class LitTemplateInitializer {
 
     /**
      * Creates a new initializer instance.
+     * <p>
+     * The call is delegated to the
+     * {@link #LitTemplateInitializer(LitTemplate, LitTemplateParser, VaadinService)}
+     * with parser created via {@link LitTemplateParserFactory} retrieved from
+     * {@link Instantiator}.
      *
      * @param template
      *            a template to initialize
      * @param service
      *            the related service
+     * 
+     * @see VaadinService
+     * @see LitTemplateParserFactory
+     * @see Instantiator
+     * @see Instantiator#getOrCreate(Class)
      */
     public LitTemplateInitializer(LitTemplate template, VaadinService service) {
-        this(template, LitTemplateParserImpl.getInstance(), service);
+        this(template, LitTemplate.getParser(service), service);
     }
 
     /**

@@ -24,6 +24,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
@@ -62,11 +63,31 @@ public abstract class LitTemplate extends Component {
 
     /**
      * Creates the component mapped to a LitElement.
+     * <p>
+     * The call is delegated to
+     * {@link #LitTemplate(LitTemplateParser, VaadinService)} via
+     * {@code VaadinService.getCurrent()} as a service and parser created via
+     * {@link LitTemplateParserFactory} retrieved from {@link Instantiator}.
+     * 
+     * @see #LitTemplate(LitTemplateParser, VaadinService)
+     * @see VaadinService
+     * @see LitTemplateParserFactory
+     * @see Instantiator
+     * @see Instantiator#getOrCreate(Class)
      */
     protected LitTemplate() {
         this(getParser(VaadinService.getCurrent()), VaadinService.getCurrent());
     }
 
+    /**
+     * Creates the component component mapped to a LitElement using the provided
+     * {@code parser} and {@code service}.
+     *
+     * @param parser
+     *            a template parser
+     * @param service
+     *            the related service instance
+     */
     protected LitTemplate(LitTemplateParser parser, VaadinService service) {
         LitTemplateInitializer templateInitializer = new LitTemplateInitializer(
                 this, VaadinService.getCurrent());
@@ -86,10 +107,10 @@ public abstract class LitTemplate extends Component {
         return super.getChildren();
     }
 
-    private static LitTemplateParser getParser(VaadinService service) {
+    static LitTemplateParser getParser(VaadinService service) {
         LitTemplateParserFactory factory = service.getInstantiator()
                 .getOrCreate(LitTemplateParserFactory.class);
-        return factory.create();
+        return factory.createParser();
     }
 
 }

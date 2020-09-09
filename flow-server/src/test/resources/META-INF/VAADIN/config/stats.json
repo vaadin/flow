@@ -10,6 +10,10 @@
         "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
         },
         {
+        "name": "../node_modules/@vaadin/flow-frontend/src/hello-world-lit.js",
+        "source": "// Import an element\nimport { LitElement, html } from 'lit-element';\n\n// Define an element class\n export class HelloWorld extends LitElement {\n\n  // Define the element's template\n  render() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n   <div>Tag name doesn't match the JS module name<div>inner</div></div>   <div id='test'  class='response'>Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('hello-world-lit', HelloWorld);"
+        },
+        {
           "name": "../target/flow-frontend/src/hello-world2.js",
           "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\nimport '@polymer/paper-input/paper-input.js';\n\nclass HelloWorld extends PolymerElement {\n  static get template() {\n    return html`\n            <div>\n                <paper-input id=\"inputId\" value=\"{{userInput}}\"></paper-input>\n                <button id=\"helloButton\" on-click=\"sayHello\">Say hello</button>\n                <div id=\"greeting\">[[greeting]]</div>\n            </div>`;\n  }\n\n  static get is() {\n    return 'hello-world';\n  }\n\n}\n\ncustomElements.define(HelloWorld.is, HelloWorld);"
         },
@@ -20,6 +24,14 @@
         {
             "name": "./frontend/LikeableElementFaultyMethods.js",
             "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return `\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n      <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);"
+        },
+        {
+            "name": "./frontend/MyElementFaultyMethods.js",
+            "source": "// Import an element\nimport { LitElement, html } from 'lit-element';\n\n// Define an element class\nexport class MyLitElement extends LitElement {\n\n  // Define public API properties\n  // Define the element's template\n  render() {\n    return `\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n        <div id=\"test\"  class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('my-element', MyLitElement);"
+        },
+        {
+            "name": "./frontend/MySuperLitElement.js",
+            "source": "// Import an element\nimport { LitElement, html } from 'lit-element'; \nimport { SimpleLitTemplateShadowRoot } from './MyLitElement.js';\n export class MySuperLitElement extends MyLitElement { createRenderRoot() { return this; }} customElements.define('my-super-lit-element', MySuperLitElement);"
         }
       ]
       ,
@@ -30,6 +42,10 @@
               {
                 "name": "./frontend/LikeableElement.js",
                 "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n   <div>Tag name doesn't match the JS module name</div>   <paper-checkbox checked='{{liked}}'>I like web components!</paper-checkbox>\n\n      <div id='test' hidden$='[[!liked]]' class='response'>Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);"
+              },
+              {
+                "name": "./frontend/MyLitElement.js",
+                "source": "// Import an element\nimport { LitElement, html } from 'lit-element';\n\n// Define an element class\n export class MyLitElement extends LitElement {\n\n  // Define the element's template\n  render() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n   <div>Tag name doesn't match the JS module name<div>inner</div></div>   <div id='test'  class='response'>Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('my-element', MyLitElement);"
               }
             ]
         }

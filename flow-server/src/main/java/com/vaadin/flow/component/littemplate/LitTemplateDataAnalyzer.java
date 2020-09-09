@@ -35,6 +35,7 @@ import com.vaadin.flow.server.VaadinService;
  * initializer using provided template class and a parser.
  *
  * @author Vaadin Ltd
+ * @since
  *
  */
 class LitTemplateDataAnalyzer implements Serializable {
@@ -50,6 +51,10 @@ class LitTemplateDataAnalyzer implements Serializable {
      *
      * @param templateClass
      *            a template type
+     * @param parser
+     *            a template parser
+     * @param service
+     *            the related service instance
      */
     LitTemplateDataAnalyzer(Class<? extends LitTemplate> templateClass,
             LitTemplateParser parser, VaadinService service) {
