@@ -808,17 +808,8 @@ public class FrontendUtils {
         return new CssImportData(value, id, include, themeFor);
     }
 
-    static boolean skippingVersionCheck() {
-        return "true".equalsIgnoreCase(
-                System.getProperty(PARAM_IGNORE_VERSION_CHECKS));
-    }
-
     static void validateToolVersion(String tool, FrontendVersion toolVersion,
             FrontendVersion supported, FrontendVersion shouldWork) {
-        if (skippingVersionCheck()) {
-            return;
-        }
-
         if (isVersionAtLeast(toolVersion, supported)) {
             return;
         }
