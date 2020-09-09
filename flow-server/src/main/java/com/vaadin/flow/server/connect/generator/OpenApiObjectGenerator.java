@@ -125,6 +125,7 @@ public class OpenApiObjectGenerator {
     private ClassLoader typeResolverClassLoader;
     private SchemaGenerator schemaGenerator;
     private SchemaResolver schemaResolver;
+    private boolean needsDeferrableImport = false;
 
     /**
      * Adds the source path to the generator to process.
@@ -212,6 +213,7 @@ public class OpenApiObjectGenerator {
         endpointsJavadoc = new HashMap<>();
         schemaGenerator = new SchemaGenerator(this);
         schemaResolver = new SchemaResolver();
+        needsDeferrableImport = false;
         ParserConfiguration parserConfiguration = createParserConfiguration();
 
         javaSourcePaths.stream()
@@ -317,6 +319,9 @@ public class OpenApiObjectGenerator {
                         classOrInterfaceDeclaration, compilationUnit)));
         pathItems.forEach((pathName, pathItem) -> openApiModel.getPaths()
                 .addPathItem(pathName, pathItem));
+        if (needsDeferrableImport) {
+            openApiModel.addExtension(EXTENSION_VAADIN_CONNECT_DEFERRABLE, true);
+        }
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 
@@ -566,9 +571,13 @@ public class OpenApiObjectGenerator {
                         operation
                             .setOperationId(String.join("_", endpointName,
                                     methodName, httpMethod.name()));
-                        operation
-                            .addExtension(EXTENSION_VAADIN_CONNECT_DEFERRABLE, 
-                                    isDefferable(methodDeclaration, typeDeclaration, compilationUnit));
+                        boolean isDefferable = isDefferable(methodDeclaration, typeDeclaration, compilationUnit);
+                        if (isDefferable) {
+                            operation.addExtension(EXTENSION_VAADIN_CONNECT_DEFERRABLE, true);
+                            if (!needsDeferrableImport) {
+                                needsDeferrableImport = true;
+                            }
+                        }
                     });
             newPathItems.put(pathName, pathItem);
         }
