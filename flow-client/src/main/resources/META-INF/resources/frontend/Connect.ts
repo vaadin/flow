@@ -518,3 +518,7 @@ export class InvalidSessionMiddleware implements MiddlewareClass {
     }
   }
 }
+
+export class DeferrableResult<T> {
+  result?: T
+}
