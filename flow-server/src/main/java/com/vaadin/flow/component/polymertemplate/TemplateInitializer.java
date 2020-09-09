@@ -23,13 +23,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
+import com.vaadin.flow.component.template.internal.InjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -158,42 +156,11 @@ public class TemplateInitializer {
     private void mapComponents() {
         parserData.forEachInjectedField((field, id, tag) -> idMapper
                 .mapComponentOrElement(field, id, tag, element -> {
-                    Map<String, String> attributes = parserData
-                            .getAttributes(id);
-                    attributes.forEach((name, value) -> setAttribute(element,
-                            name, value));
+                    InjectableElementInitializer initializer = new InjectableElementInitializer(
+                            element, templateClass);
+                    initializer.accept(parserData.getAttributes(id));
                     attachComponentIfUses(element);
                 }));
-    }
-
-    private void setAttribute(Element element, String name, String value) {
-        if (name.endsWith("$")) {
-            // this is an attribute binding, ignore it since we don't support
-            // bindings: the value is not an expression
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} which "
-                            + "ends with $ and ignored by initialization since this is an attribute binding",
-                    templateClass.getSimpleName(), name, element.getTag());
-            return;
-        }
-        if (value.contains("{{") && value.contains("}}")) {
-            // this is a binding, skip it
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} whose value"
-                            + " contains two-way binding and it's ignored by initilization",
-                    templateClass.getSimpleName(), name, element.getTag());
-            return;
-        }
-        if (value.contains("[[") && value.contains("]]")) {
-            // this is another binding, skip it
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} whose value"
-                            + " contains binding and it's ignored by initilization",
-                    templateClass.getSimpleName(), name, element.getTag());
-            return;
-        }
-        // anything else is considered as an attribute value
-        element.setAttribute(name, value);
     }
 
     private Element getElement() {
@@ -227,9 +194,5 @@ public class TemplateInitializer {
                         .ifPresent(tag -> add.accept(tag, usedType)));
 
         return map;
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(TemplateInitializer.class);
     }
 }
