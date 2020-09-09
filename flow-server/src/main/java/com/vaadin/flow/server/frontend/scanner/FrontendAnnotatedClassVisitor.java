@@ -22,13 +22,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.bytebuddy.jar.asm.AnnotationVisitor;
 import net.bytebuddy.jar.asm.ClassReader;
 import net.bytebuddy.jar.asm.ClassVisitor;
+import net.bytebuddy.jar.asm.MethodVisitor;
 import net.bytebuddy.jar.asm.Opcodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class visitor for annotated classes. It's used to visit multiple classes
@@ -41,6 +45,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private final String annotationName;
     private final List<HashMap<String, Object>> data = new ArrayList<>();
     private final ClassFinder finder;
+    private static Map<String, Map<String, Object>> annotationDefaults = new HashMap<>();
 
     /**
      * Create a new {@link ClassVisitor} that will be used for visiting a
@@ -48,7 +53,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *
      * @param finder
      *            The class finder to use
-     * 
+     *
      * @param annotationName
      *            The annotation class name to visit
      */
@@ -56,6 +61,10 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         super(Opcodes.ASM7);
         this.finder = finder;
         this.annotationName = annotationName;
+        if (!annotationDefaults.containsKey(annotationName)) {
+            annotationDefaults.put(annotationName,
+                    readAnnotationDefaultValues(annotationName));
+        }
     }
 
     /**
@@ -67,6 +76,20 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *             when the class name is not found
      */
     public void visitClass(String name) {
+        visitClass(name, this);
+    }
+
+    /**
+     * Visit recursively a class to find annotations.
+     *
+     * @param name
+     *            the class name
+     * @param visitor
+     *            the visitor to use
+     * @throws IOException
+     *             when the class name is not found
+     */
+    public void visitClass(String name, ClassVisitor visitor) {
         if (name == null) {
             return;
         }
@@ -74,7 +97,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
             URL url = finder.getResource(name.replace(".", "/") + ".class");
             try (InputStream is = url.openStream()) {
                 ClassReader cr = new ClassReader(is);
-                cr.accept(this, 0);
+                cr.accept(visitor, 0);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -83,9 +106,9 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     // Executed for the class definition info.
     @Override
-    public void visit(int version, int access, String name, String signature, String superName,
-            String[] interfaces) {
-        visitClass(superName);
+    public void visit(int version, int access, String name, String signature,
+            String superName, String[] interfaces) {
+        visitClass(superName, this);
     }
 
     @Override
@@ -95,6 +118,20 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
             return new RepeatedAnnotationVisitor() {
                 // initialize for non repeated annotations
                 HashMap<String, Object> info = new HashMap<>();
+
+                @Override
+                public AnnotationVisitor visitArray(String name) {
+                    return new AnnotationVisitor(api, this) {
+                        @Override
+                        public void visit(String dummy, Object value) {
+                            if (data.indexOf(info) < 0) {
+                                data.add(info);
+                            }
+                            ((List) info.computeIfAbsent(name,
+                                    key -> new ArrayList<>())).add(value);
+                        }
+                    };
+                }
 
                 // Visited on each annotation attribute
                 @Override
@@ -172,5 +209,80 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
                 .filter(h -> h.containsKey(key) && h.get(key).equals(value))
                 .map(h -> h.get(property))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Return the values of a an annotation parameter.
+     *
+     * @throws IllegalArgumentException
+     *             if there is not one single annotation
+     * @param parameter
+     *            the annotation parameter used for getting values
+     * @return the value from the annotation
+     */
+    public <T> T getValue(String parameter) {
+        if (data.size() != 1) {
+            throw new IllegalArgumentException(
+                    "getValue can only be used when there is one annotation. There are "
+                            + data.size() + " instances of " + annotationName);
+        }
+        Set<T> values = getValues(parameter);
+        if (values.isEmpty()) {
+            getLogger().debug("No value for " + parameter + " using default: "
+                    + getDefault(parameter));
+            return (T) getDefault(parameter);
+        }
+        return values.iterator().next();
+    }
+
+    private <T> T getDefault(String parameter) {
+        return (T) annotationDefaults.get(annotationName).get(parameter);
+    }
+
+    private Map<String, Object> readAnnotationDefaultValues(
+            String annotationName) {
+        getLogger().debug("Reading default values for " + annotationName);
+        Map<String, Object> defaults = new HashMap<>();
+
+        visitClass(annotationName, new ClassVisitor(api) {
+            @Override
+            public MethodVisitor visitMethod(int access, String methodName,
+                    String descriptor, String signature, String[] exceptions) {
+                return new MethodVisitor(api) {
+                    @Override
+                    public AnnotationVisitor visitAnnotationDefault() {
+                        return new AnnotationVisitor(api) {
+                            @Override
+                            public void visit(String name, Object value) {
+                                defaults.put(methodName, value);
+                            }
+
+                            @Override
+                            public AnnotationVisitor visitArray(
+                                    String arrayName) {
+                                return new AnnotationVisitor(api, this) {
+                                    @Override
+                                    public void visit(String name,
+                                            Object value) {
+                                        ((List) defaults.computeIfAbsent(
+                                                methodName,
+                                                methodName -> new ArrayList<>()))
+                                                .add(value);
+                                    }
+                                };
+                            }
+                        };
+                    }
+                };
+            }
+        });
+        getLogger().debug(
+                "Default values for " + annotationName + ": " + defaults);
+
+        return defaults;
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(this.getClass());
     }
 }
