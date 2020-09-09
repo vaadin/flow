@@ -58,7 +58,7 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -121,7 +121,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         }
         try {
             File flowResourcesFolder = new File(npmFolder,
-                    DEAULT_FLOW_RESOURCES_FOLDER);
+                    DEFAULT_FLOW_RESOURCES_FOLDER);
             NodeTasks.Builder builder = new NodeTasks.Builder(
                     getClassFinder(project), npmFolder, generatedFolder,
                     frontendDirectory)

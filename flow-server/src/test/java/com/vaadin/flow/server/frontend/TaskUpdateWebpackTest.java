@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -63,7 +63,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER));
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
         webpackGenerated = new File(baseDir, WEBPACK_GENERATED);
@@ -106,7 +106,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER));
 
         webpackUpdater.execute();
 
@@ -151,7 +151,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED, new File(baseDir, "bar"), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER));
         newUpdater.execute();
 
         assertWebpackGeneratedConfigContent("bar", "foo");
@@ -186,7 +186,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"),
                 WEBPACK_CONFIG, WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER));
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER));
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));

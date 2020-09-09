@@ -43,7 +43,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_DEPS;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEP_NAME_FLOW_JARS;
@@ -83,7 +83,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         baseDir = temporaryFolder.getRoot();
 
         generatedDir = new File(baseDir, DEFAULT_GENERATED_DIR);
-        resourcesDir = new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER);
+        resourcesDir = new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER);
 
         NodeUpdateTestUtil.createStubNode(true, true, false,
                 baseDir.getAbsolutePath());

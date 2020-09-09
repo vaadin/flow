@@ -30,7 +30,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -96,7 +96,7 @@ public class StatsContentTest {
                 .filter(in -> in.startsWith("import"))
                 .map(in -> in.replace("import '", "")
                         .replace(FLOW_NPM_PACKAGE_NAME, String.format("../%s/",
-                                DEAULT_FLOW_RESOURCES_FOLDER))
+                                DEFAULT_FLOW_RESOURCES_FOLDER))
                         .replace("//", "/").replace("Frontend/", "./")
                         .replace("';", "")).collect(Collectors.toList());
     }
