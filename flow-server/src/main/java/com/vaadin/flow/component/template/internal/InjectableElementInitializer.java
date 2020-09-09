@@ -48,8 +48,8 @@ public class InjectableElementInitializer
      * 
      * @param element
      *            element to initialize
-     * @param the
-     *            class of the template component
+     * @param templateClass
+     *            the class of the template component
      */
     public InjectableElementInitializer(Element element,
             Class<? extends Component> templateClass) {
