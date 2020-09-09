@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.template.internal;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -37,6 +38,10 @@ public class InjectableElementInitializer
     private final Element element;
 
     private final Class<? extends Component> templateClass;
+
+    private static final Map<String, ElementInitializationStrategy> INIT_STRATEGIES = createStategies();
+
+    private static final ElementInitializationStrategy DEFAULT_STRATEGY = new PropertyInitializationStrategy();
 
     /**
      * Creates an initializer for the {@code element}.
@@ -84,8 +89,27 @@ public class InjectableElementInitializer
                     templateClass.getSimpleName(), name, element.getTag());
             return;
         }
-        // anything else is considered as an attribute value
-        element.setAttribute(name, value);
+        // anything else is considered as a template attribute value
+        getStrategy(name).initialize(element, name, value);
+    }
+
+    private ElementInitializationStrategy getStrategy(String attributeName) {
+        ElementInitializationStrategy strategy = INIT_STRATEGIES
+                .get(attributeName);
+        if (strategy == null) {
+            return DEFAULT_STRATEGY;
+        }
+        return strategy;
+    }
+
+    private static Map<String, ElementInitializationStrategy> createStategies() {
+        Map<String, ElementInitializationStrategy> result = new HashMap<>();
+        AttributeInitializationStrategy attributeStrategy = new AttributeInitializationStrategy();
+        result.put("id", attributeStrategy);
+        result.put("class", attributeStrategy);
+        result.put("style", attributeStrategy);
+        result.put("theme", attributeStrategy);
+        return result;
     }
 
     private static Logger getLogger() {
