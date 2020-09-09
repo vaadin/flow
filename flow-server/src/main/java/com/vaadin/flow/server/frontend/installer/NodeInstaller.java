@@ -118,7 +118,7 @@ public class NodeInstaller {
     }
 
     /**
-     * Set the node version to install. (given as "v12.16.0")
+     * Set the node version to install. (given as "v12.18.3")
      *
      * @param nodeVersion
      *         version string
@@ -135,11 +135,11 @@ public class NodeInstaller {
      * This should be a url or directory under which we can find a directory
      * {@link #nodeVersion} and there should then exist the archived node
      * packages.
-     * For instance for v12.16.0 we should have under nodeDownloadRoot:
-     * ./v12.6.0/node-v12.16.0-linux-x64.tar.xz
-     * ./v12.6.0/node-v12.16.0-darwin-x64.tar.gz
-     * ./v12.6.0/node-v12.16.0-win-x64.zip
-     * ./v12.6.0/node-v12.16.0-win-x86.zip
+     * For instance for v12.18.3 we should have under nodeDownloadRoot:
+     * ./v12.18.3/node-v12.18.3-linux-x64.tar.xz
+     * ./v12.18.3/node-v12.18.3-darwin-x64.tar.gz
+     * ./v12.18.3/node-v12.18.3-win-x64.zip
+     * ./v12.18.3/node-v12.18.3-win-x86.zip
      *
      * @param nodeDownloadRoot
      *         custom download root
