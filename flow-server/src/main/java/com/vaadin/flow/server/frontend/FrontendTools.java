@@ -58,11 +58,11 @@ import elemental.json.JsonObject;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v12.16.0";
+    public static final String DEFAULT_NODE_VERSION = "v12.18.3";
 
     public static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm -DnodeVersion=\"v12.18.3\" ";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -191,7 +191,7 @@ public class FrontendTools {
      *            {@code null}
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed automatically
-     *            by Vaadin, for example <code>"v12.16.0"</code>. Use
+     *            by Vaadin, for example <code>"v12.18.3"</code>. Use
      *            {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled corporate
@@ -672,6 +672,7 @@ public class FrontendTools {
         }
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
+        returnCommand.add("--scripts-prepend-node-path=true");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.

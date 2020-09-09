@@ -35,14 +35,14 @@ public class NodeInstallerTest {
             throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        String prefix = "node-v12.16.0-" + platform.getNodeClassifier();
+        String prefix = "node-v12.18.3-" + platform.getNodeClassifier();
 
         File targetDir = new File(baseDir + "/installation");
 
         Assert.assertFalse(
                 "Clean test should not contain a installation folder",
                 targetDir.exists());
-        File downloadDir = tmpDir.newFolder("v12.16.0");
+        File downloadDir = tmpDir.newFolder("v12.18.3");
         File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
         archiveFile.createNewFile();
@@ -86,7 +86,7 @@ public class NodeInstallerTest {
         }
 
         NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
-                Collections.emptyList()).setNodeVersion("v12.16.0")
+                Collections.emptyList()).setNodeVersion("v12.18.3")
                 .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
 
         try {
