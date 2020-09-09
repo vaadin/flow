@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -25,6 +26,11 @@ import org.openqa.selenium.WebElement;
 
 @NotThreadSafe
 public class LiveReloadIT extends AbstractLiveReloadIT {
+
+    @After
+    public void resetFrontend() {
+        executeScript("fetch('/context/view/reset_frontend')");
+    }
 
     @Test
     public void overlayShouldRender() {
@@ -126,6 +132,32 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
 
         waitForElementPresent(By.id(LiveReloadView.PAGE_RELOADING));
         waitForElementNotPresent(By.id(LiveReloadView.PAGE_RELOADING));
+
+        final String newViewId = findElement(
+                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
+        Assert.assertNotEquals(initialViewId, newViewId);
+    }
+
+    @Test
+    public void webpackErrorIsShownAfterReloadAndHiddenAfterFix() {
+        open();
+
+        final String initialViewId = findElement(
+                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
+
+        // when: a weback error occurs during frontend file edit
+        WebElement insertWebpackError = findElement(
+                By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_BREAK_BUTTON));
+        insertWebpackError.click();
+
+        // then: an error box is shown
+        waitForElementPresent(By.className("v-system-error"));
+
+        // when: the error is corrected
+        resetFrontend();
+
+        // then the error box is not shown and the view is reloaded
+        waitForElementNotPresent(By.className("v-system-error"));
 
         final String newViewId = findElement(
                 By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
