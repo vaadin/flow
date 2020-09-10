@@ -14,6 +14,6 @@ public class TemplateAttributeIT extends ChromeBrowserTest {
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         TestBenchElement info = template.$(TestBenchElement.class).id("info");
-        Assert.assertEquals("foo", info.getText());
+        Assert.assertEquals("foo bar", info.getText());
     }
 }

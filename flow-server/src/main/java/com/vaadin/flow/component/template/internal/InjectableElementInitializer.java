@@ -16,8 +16,11 @@
 package com.vaadin.flow.component.template.internal;
 
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,7 @@ public class InjectableElementInitializer
     private final Class<? extends Component> templateClass;
 
     private static final Map<String, ElementInitializationStrategy> INIT_STRATEGIES = createStategies();
+    private static final IdentityHashMap<Pattern, ElementInitializationStrategy> PATTERN_STRATEGIES = createPatternStategies();
 
     private static final ElementInitializationStrategy DEFAULT_STRATEGY = new PropertyInitializationStrategy();
 
@@ -97,18 +101,47 @@ public class InjectableElementInitializer
         ElementInitializationStrategy strategy = INIT_STRATEGIES
                 .get(attributeName);
         if (strategy == null) {
-            return DEFAULT_STRATEGY;
+            for (Entry<Pattern, ElementInitializationStrategy> entry : PATTERN_STRATEGIES
+                    .entrySet()) {
+                if (entry.getKey().matcher(attributeName).matches()) {
+                    strategy = entry.getValue();
+                    break;
+                }
+            }
+        }
+        if (strategy == null) {
+            strategy = DEFAULT_STRATEGY;
         }
         return strategy;
+    }
+
+    private static IdentityHashMap<Pattern, ElementInitializationStrategy> createPatternStategies() {
+        ElementInitializationStrategy attributeStrategy = new AttributeInitializationStrategy();
+        IdentityHashMap<Pattern, ElementInitializationStrategy> map = new IdentityHashMap<>(
+                1);
+        map.put(Pattern.compile("data-.*"), attributeStrategy);
+        return map;
     }
 
     private static Map<String, ElementInitializationStrategy> createStategies() {
         Map<String, ElementInitializationStrategy> result = new HashMap<>();
         AttributeInitializationStrategy attributeStrategy = new AttributeInitializationStrategy();
+        // this is the list of global attributes:
+        // https://www.w3schools.com/tags/ref_standardattributes.asp
         result.put("id", attributeStrategy);
         result.put("class", attributeStrategy);
         result.put("style", attributeStrategy);
         result.put("theme", attributeStrategy);
+        result.put("title", attributeStrategy);
+        result.put("hidden", attributeStrategy);
+        result.put("accesskey", attributeStrategy);
+        result.put("contenteditable", attributeStrategy);
+        result.put("dir", attributeStrategy);
+        result.put("draggable", attributeStrategy);
+        result.put("lang", attributeStrategy);
+        result.put("spellcheck", attributeStrategy);
+        result.put("tabindex", attributeStrategy);
+        result.put("translate", attributeStrategy);
         return result;
     }
 

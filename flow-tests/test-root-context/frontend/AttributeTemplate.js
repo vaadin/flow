@@ -6,7 +6,7 @@ class AttributeTemplate extends PolymerElement {
   static get template() {
     return html`
        <div style="padding: 10px; border: 1px solid black">
-       <div id="div" title="foo"></div>
+       <div id="div" title="foo" foo="bar"></div>
        </div>
        <slot>
     `;

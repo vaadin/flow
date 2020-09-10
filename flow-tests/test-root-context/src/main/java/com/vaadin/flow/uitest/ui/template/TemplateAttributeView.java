@@ -24,7 +24,8 @@ public class TemplateAttributeView extends PolymerTemplate<TemplateModel>
     protected void onAttach(AttachEvent attachEvent) {
         setId("template");
         Div div = new Div();
-        div.setText(injectedDiv.getTitle().get());
+        div.setText(injectedDiv.getTitle().get() + " "
+                + injectedDiv.getElement().getProperty("foo"));
         div.setId("info");
         add(div);
     }
