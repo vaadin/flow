@@ -702,11 +702,6 @@ public class FrontendUtils {
 
     static void validateToolVersion(String tool, FrontendVersion toolVersion,
             FrontendVersion supported, FrontendVersion shouldWork) {
-        if ("true".equalsIgnoreCase(
-                System.getProperty(PARAM_IGNORE_VERSION_CHECKS))) {
-            return;
-        }
-
         if (isVersionAtLeast(toolVersion, supported)) {
             return;
         }
