@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -17,8 +19,11 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
+import com.vaadin.flow.server.frontend.scanner.samples.pwa.AppShellWithPwa;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -30,10 +35,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static org.junit.Assert.assertTrue;
 
 public class NodeTasksTest {
-
-    @Endpoint
-    public static class ConnectEndpointsForTesting {
-    }
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -48,23 +49,26 @@ public class NodeTasksTest {
     }
 
     @Test
-    public void should_UseDefaultFolders()throws Exception {
+    public void should_UseDefaultFolders() throws Exception {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
 
-
-        Assert.assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME)
+                        .exists());
     }
 
     @Test
@@ -74,19 +78,24 @@ public class NodeTasksTest {
 
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
 
-        Assert.assertEquals(new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, "my/custom/generated/folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my/custom/generated/folder")
+                        .getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME)
+                        .exists());
     }
 
     @Test
@@ -114,15 +123,14 @@ public class NodeTasksTest {
 
     @Test
     public void should_Generate_Connect_Files() throws Exception {
-        File src = new File(getClass().getClassLoader().getResource("java").getFile());
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
         File dir = new File(userDir);
         File json = new File(dir, "api-file.json");
 
-        Builder builder = new Builder(
-                new DefaultClassFinder(
-                    Collections.singleton(ConnectEndpointsForTesting.class)), dir)
-                        .enablePackagesUpdate(false)
-                        .enableImportsUpdate(false)
+        Builder builder = new Builder(new DefaultClassFinder(
+                Collections.singleton(ConnectEndpointsForTesting.class)), dir)
+                        .enablePackagesUpdate(false).enableImportsUpdate(false)
                         .withEmbeddableWebComponents(false)
                         .withConnectJavaSourceFolder(src)
                         .withConnectGeneratedOpenApiJson(json)
@@ -132,19 +140,46 @@ public class NodeTasksTest {
 
         Arrays.asList(
                 // enableClientSide
-                "target/index.html",
-                "target/index.ts",
-                // withConnectJavaSourceFolder and withConnectGeneratedOpenApiJson
+                "target/index.html", "target/index.ts",
+                // withConnectJavaSourceFolder and
+                // withConnectGeneratedOpenApiJson
                 "api-file.json",
                 // withConnectClientTsApiFolder
-                "api/connect-client.default.ts",
-                "api/MyEndpoint.ts")
-                .forEach(name -> assertTrue(name + " not created.", new File(dir, name).exists()));
+                "api/connect-client.default.ts", "api/MyEndpoint.ts")
+                .forEach(name -> assertTrue(name + " not created.",
+                        new File(dir, name).exists()));
+    }
+
+    @Test
+    public void should_Set_PWA_Offline_Resources() throws Exception {
+        ClassFinder classFinder = new DefaultClassFinder(new HashSet<>(
+                new ArrayList<>(Arrays.asList(AppShellWithPwa.class))));
+
+        Builder builder = new Builder(classFinder, new File(userDir))
+                .withFlowResourcesFolder(
+                        new File(userDir, DEAULT_FLOW_RESOURCES_FOLDER))
+                .withWebpack(new File(userDir, TARGET + "classes"),
+                        WEBPACK_CONFIG, WEBPACK_GENERATED)
+                .enablePackagesUpdate(false).enableImportsUpdate(false)
+                .withEmbeddableWebComponents(false);
+
+        builder.build().execute();
+
+        String webpackGeneratedContent = Files
+                .lines(new File(userDir, WEBPACK_GENERATED).toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("should contain pwa.js pwa.css offlineResources",
+                webpackGeneratedContent.contains("const offlineResources = "
+                        + "[\"pwa.js\",\"pwa.css\"];"));
     }
 
     private Object getFieldValue(Object obj, String name) throws Exception {
         Field field = obj.getClass().getDeclaredField(name);
         field.setAccessible(true);
         return field.get(obj);
+    }
+
+    @Endpoint
+    public static class ConnectEndpointsForTesting {
     }
 }
