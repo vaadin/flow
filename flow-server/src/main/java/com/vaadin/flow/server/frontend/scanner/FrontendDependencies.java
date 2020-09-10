@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
@@ -389,23 +391,29 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * read it into a {@link com.vaadin.flow.server.PwaConfiguration} object.
      *
      * @throws ClassNotFoundException
-     * @throws IOException
+     * @throws IllegalStateException
      */
     private void computePwaConfiguration()
-            throws ClassNotFoundException, IOException {
+            throws ClassNotFoundException, IllegalStateException {
 
         FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), PWA.class.getName());
+        Class<?> AppShellConfigurator = getFinder().loadClass(
+                AppShellConfigurator.class.getName());
 
         for (Class<?> hopefullyAppShellClass :
-
                 getFinder().getAnnotatedClasses(PWA.class.getName())) {
-            pwaVisitor.visitClass(hopefullyAppShellClass.getName());
+                    if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
+                            .contains(AppShellConfigurator)) {
+                        throw new IllegalStateException(
+                                ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+                    }
+                    pwaVisitor.visitClass(hopefullyAppShellClass.getName());
         }
 
         Set<String> dependencies = pwaVisitor.getValues("name");
         if (dependencies.size() > 1) {
-            throw new IOException(ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+            throw new IllegalStateException(ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
         }
         if (dependencies.isEmpty()) {
             this.pwaConfiguration = new PwaConfiguration();
@@ -418,8 +426,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         String backgroundColor = pwaVisitor.getValue("backgroundColor");
         String themeColor = pwaVisitor.getValue("themeColor");
         String iconPath = pwaVisitor.getValue("iconPath");
-        log().error(
-                "iconPath in " + getClass().getSimpleName() + ": " + iconPath);
+        log().error("iconPath in {}: {}", getClass().getSimpleName(), iconPath);
         String manifestPath = pwaVisitor.getValue("manifestPath");
         String offlinePath = pwaVisitor.getValue("offlinePath");
         String display = pwaVisitor.getValue("display");

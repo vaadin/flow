@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.PWA;
@@ -438,10 +440,17 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
             }
 
+            Class<?> hopefullyAppShellClass =
+                    annotatedClasses.iterator().next();
+            if (!Arrays.asList(hopefullyAppShellClass.getInterfaces()).stream()
+                    .map(Class::getName).collect(Collectors.toList())
+                    .contains(AppShellConfigurator.class.getName())) {
+                throw new IllegalStateException(
+                        ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+            }
+
             Annotation pwa = annotationFinder
-                    .apply(annotatedClasses.iterator().next(),
-                            loadedPWAAnnotation)
-                    .get(0);
+                    .apply(hopefullyAppShellClass, loadedPWAAnnotation).get(0);
 
             String name = getAnnotationValueAsString(pwa, "name");
             String shortName = getAnnotationValueAsString(pwa, "shortName");
