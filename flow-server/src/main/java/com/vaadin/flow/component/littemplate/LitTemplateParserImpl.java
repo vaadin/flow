@@ -63,7 +63,7 @@ class LitTemplateParserImpl implements LitTemplateParser {
     private static final LitTemplateParser INSTANCE = new LitTemplateParserImpl();
 
     private final HashMap<String, String> cache = new HashMap<>();
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock templateSourceslock = new ReentrantLock();
     private JsonObject jsonStats;
 
     /**
@@ -187,22 +187,22 @@ class LitTemplateParserImpl implements LitTemplateParser {
 
     private String getSourcesFromStats(VaadinService service, String url)
             throws IOException {
+        templateSourceslock.lock();
         try {
-            lock.lock();
             if (isStatsFileReadNeeded(service)) {
                 String content = FrontendUtils.getStatsContent(service);
                 if (content != null) {
                     resetCache(content);
                 }
             }
+            if (!cache.containsKey(url) && jsonStats != null) {
+                cache.put(url,
+                        BundleParser.getSourceFromStatistics(url, jsonStats));
+            }
+            return cache.get(url);
         } finally {
-            lock.unlock();
+            templateSourceslock.unlock();
         }
-        if (!cache.containsKey(url) && jsonStats != null) {
-            cache.put(url,
-                    BundleParser.getSourceFromStatistics(url, jsonStats));
-        }
-        return cache.get(url);
     }
 
     /**
@@ -217,8 +217,9 @@ class LitTemplateParserImpl implements LitTemplateParser {
      * @return {@code true} if we need to re-load and parse stats.json, else
      *         {@code false}
      */
-    protected boolean isStatsFileReadNeeded(VaadinService service)
+    private boolean isStatsFileReadNeeded(VaadinService service)
             throws IOException {
+        assert templateSourceslock.isHeldByCurrentThread();
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (jsonStats == null) {
             return true;
@@ -242,6 +243,7 @@ class LitTemplateParserImpl implements LitTemplateParser {
     }
 
     private void resetCache(String fileContents) {
+        assert templateSourceslock.isHeldByCurrentThread();
         cache.clear();
         jsonStats = BundleParser.parseJsonStatistics(fileContents);
     }

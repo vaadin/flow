@@ -98,7 +98,7 @@ class LitTemplateDataAnalyzer implements Serializable {
         return tagNameAnnotation.get();
     }
 
-    private Logger getLogger() {
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(LitTemplateDataAnalyzer.class.getName());
     }
 
