@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static elemental.json.JsonType.ARRAY;
-import static elemental.json.JsonType.OBJECT;
-import static elemental.json.JsonType.STRING;
-
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,15 +33,12 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 
-<<<<<<< Upstream, based on master
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
 import static elemental.json.JsonType.STRING;
 
-=======
->>>>>>> 790c048 Add lit template parser
 /**
  * Parse statistics data provided by webpack.
  *
@@ -67,7 +58,7 @@ public final class BundleParser {
     private static final String MODULES = "modules";
 
     /**
-     * Polymer template pattern matches the template getter
+     * Template pattern matches the template getter
      *
      * <pre>
      *     static get template() {
@@ -92,37 +83,8 @@ public final class BundleParser {
      * <code>([\s\S]*)\1;[\s]*\}</code> captures all text until we encounter the
      * end character with <code>;}</code> e.g. <code>';}</code>
      */
-    private static final Pattern POLYMER_TEMPLATE_PATTERN = Pattern.compile(
+    private static final Pattern TEMPLATE_PATTERN = Pattern.compile(
             "get[\\s]*template\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
-
-    /**
-     * Lit template pattern matches the template getter
-     *
-     * <pre>
-     *     render() {
-     *       return html`
-     *         &lt;style&gt;
-     *           .response { margin-top: 10px`; }
-     *         &lt;/style&gt;
-     *         &lt;paper-checkbox checked=&quot;{{liked}}&quot;&gt;I like web components.&lt;/paper-checkbox&gt;
-     *
-     *         &lt;div id=&quot;test&quot; hidden$=&quot;[[!liked]]&quot; class=&quot;response&quot;&gt;Web components like you, too.&lt;/div&gt;
-     *       `;
-     *     }
-     * </pre>
-     *
-     * <p>
-     * <code>render\(\)[\s]*\{</code> finds the template getter method
-     * <p>
-     * <code>[\s]*return[\s]*html([\`|\'|\"])</code> finds the return statement
-     * and captures the used string character
-     * <p>
-     * </p>
-     * <code>([\s\S]*)\1;[\s]*\}</code> captures all text until we encounter the
-     * end character with <code>;}</code> e.g. <code>';}</code>
-     */
-    private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile(
-            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
 
     private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
             "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
@@ -188,7 +150,7 @@ public final class BundleParser {
     }
 
     /**
-     * Get the Polymer template element for the given polymer template source.
+     * Get the template element for the given polymer template source.
      *
      * @param fileName
      *            name of the handled file
@@ -199,7 +161,7 @@ public final class BundleParser {
     public static Element parseTemplateElement(String fileName, String source) {
         Document templateDocument = null;
         String content = StringUtil.removeComments(source);
-        Matcher templateMatcher = POLYMER_TEMPLATE_PATTERN.matcher(content);
+        Matcher templateMatcher = TEMPLATE_PATTERN.matcher(content);
         Matcher noTemplateMatcher = NO_TEMPLATE_PATTERN.matcher(content);
 
         // GroupCount should be 2 as the first group contains `|'|" depending
@@ -221,8 +183,7 @@ public final class BundleParser {
             }
         }
         if (templateDocument == null) {
-            LOGGER.warn("No polymer template data found in {} sources.",
-                    fileName);
+            LOGGER.warn("No template data found in {} sources.", fileName);
 
             templateDocument = new Document("");
             templateDocument
@@ -236,44 +197,6 @@ public final class BundleParser {
                 .forEach(template::appendChild);
 
         return template;
-    }
-
-    /**
-     * Get the Lit template element for the given polymer template source.
-     *
-     * @param fileName
-     *            name of the handled file
-     * @param source
-     *            source js to get template element from
-     * @return template element or {code null} if not found
-     */
-    public static Element parseLitTemplateElement(String fileName,
-            String source) {
-        Document templateDocument = null;
-        String content = StringUtil.removeComments(source);
-        Matcher templateMatcher = LIT_TEMPLATE_PATTERN.matcher(content);
-
-        // GroupCount should be 2 as the first group contains `|'|" depending
-        // on what was in template return html' and the second is the
-        // template contents.
-        if (templateMatcher.find() && templateMatcher.groupCount() == 2) {
-            String group = templateMatcher.group(2);
-            LOGGER.trace("Found regular Lit template content was {}", group);
-
-            templateDocument = Jsoup.parse(group);
-            LOGGER.trace("The parsed template document was {}",
-                    templateDocument);
-            Element template = templateDocument
-                    .createElement(TEMPLATE_TAG_NAME);
-            Element body = templateDocument.body();
-            templateDocument.body().children().stream()
-                    .filter(node -> !node.equals(body))
-                    .forEach(template::appendChild);
-
-            return template;
-        }
-        LOGGER.warn("No lit template data found in {} sources.", fileName);
-        return null;
     }
 
     private static Element tryParsePolymer2(Document templateDocument,
@@ -333,13 +256,8 @@ public final class BundleParser {
             // using ./ as the actual path contains
             // "node_modules/@vaadin/flow-frontend/" instead of "./"
             // "target/flow-frontend/" instead of "./"
-<<<<<<< Upstream, based on master
             if (name.contains(FLOW_NPM_PACKAGE_NAME) ||
                     name.contains(DEFAULT_FLOW_RESOURCES_FOLDER)) {
-=======
-            if (name.contains(FLOW_NPM_PACKAGE_NAME)
-                    || name.contains(DEAULT_FLOW_RESOURCES_FOLDER)) {
->>>>>>> 790c048 Add lit template parser
                 alternativeFileName = alternativeFileName.replaceFirst("\\./",
                         "");
             }
