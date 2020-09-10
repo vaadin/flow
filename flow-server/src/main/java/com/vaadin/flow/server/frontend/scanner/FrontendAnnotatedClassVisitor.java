@@ -121,14 +121,16 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
                 @Override
                 public AnnotationVisitor visitArray(String name) {
+                    List values = new ArrayList<>();
+                    info.put(name, values);
+
                     return new AnnotationVisitor(api, this) {
                         @Override
                         public void visit(String dummy, Object value) {
                             if (data.indexOf(info) < 0) {
                                 data.add(info);
                             }
-                            ((List) info.computeIfAbsent(name,
-                                    key -> new ArrayList<>())).add(value);
+                            values.add(value);
                         }
                     };
                 }
@@ -260,14 +262,14 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
                             @Override
                             public AnnotationVisitor visitArray(
                                     String arrayName) {
+                                List values = new ArrayList<>();
+                                defaults.put(methodName, values);
+
                                 return new AnnotationVisitor(api, this) {
                                     @Override
                                     public void visit(String name,
                                             Object value) {
-                                        ((List) defaults.computeIfAbsent(
-                                                methodName,
-                                                methodName -> new ArrayList<>()))
-                                                .add(value);
+                                        values.add(value);
                                     }
                                 };
                             }
