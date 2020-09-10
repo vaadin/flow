@@ -82,7 +82,7 @@ public class LitTemplateParserImplTest {
                 templateContent.getTemplateElement().childNodeSize());
 
         Assert.assertEquals(
-                "Template element should have contained a div element with the id 'test'",
+                "Template element should have contained a div element with the id 'label'",
                 "div", templateContent.getTemplateElement()
                         .getElementById("label").tag().toString());
     }
