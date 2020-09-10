@@ -432,7 +432,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedPWAAnnotation);
             if (annotatedClasses.isEmpty()) {
-                return null;
+                return new PwaConfiguration();
             } else if (annotatedClasses.size() != 1) {
                 throw new IllegalStateException(
                         ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
