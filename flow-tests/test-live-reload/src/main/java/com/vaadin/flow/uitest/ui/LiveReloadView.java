@@ -16,7 +16,13 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
+
+import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -27,6 +33,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.LiveReloadView", layout = ViewTestLayout.class)
@@ -80,7 +87,7 @@ public class LiveReloadView extends Div {
 
     private void handleClickBreakWebpack(
             ClickEvent<NativeButton> nativeButtonClickEvent) {
-        FrontendTestUtil.writeToFrontendFile(VaadinService.getCurrent(), "{");
+        writeToFrontendCSSFile(VaadinService.getCurrent(), "{");
     }
 
     // Touch a frontend file to trigger webpack reload
@@ -89,7 +96,7 @@ public class LiveReloadView extends Div {
         String css = String.format(
                 "\nbody { background-color: rgb(%d,%d,%d); }",
                 random.nextInt(256), random.nextInt(256), random.nextInt(256));
-        FrontendTestUtil.writeToFrontendFile(VaadinService.getCurrent(), css);
+        writeToFrontendCSSFile(VaadinService.getCurrent(), css);
     }
 
     private void addPageReloadingSpan() {
@@ -98,4 +105,15 @@ public class LiveReloadView extends Div {
         add(reloading);
     }
 
+    public static void writeToFrontendCSSFile(VaadinService vaadinService,
+                                              String text) {
+        final String projectFrontendDir = FrontendUtils.getProjectFrontendDir(
+                vaadinService.getDeploymentConfiguration());
+        File styleFile = new File(projectFrontendDir, "styles.css");
+        try {
+            FileUtils.write(styleFile, text, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 }
