@@ -22,6 +22,9 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
+        <!-- This property is needed to allow some Win-specific IT tests -->
+        <!-- to be disabled via system property in CI until they got fixed-->
+        <exclude.windows.failed.it.tests></exclude.windows.failed.it.tests>
     </properties>
 
     <dependencies>
@@ -80,6 +83,7 @@
                     <excludes>
                         <exclude>**/*$*</exclude>
                         <exclude>${exclude.it.tests}</exclude>
+                        <exclude>${exclude.windows.failed.it.tests}</exclude>
                     </excludes>
                 </configuration>
             </plugin>
