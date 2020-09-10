@@ -11,7 +11,7 @@ import { DeferrableResult } from '@vaadin/flow-frontend/Connect';
 function _hello(
   userName: string
 ): Promise<DeferrableResult<string>> {
-  return new DeferrableResult('SingleMethodDeferrableEndpoint', 'hello', {userName})._request();
+  return client.deferrableCall('SingleMethodDeferrableEndpoint', 'hello', {userName});
 }
 export {_hello as hello};
 

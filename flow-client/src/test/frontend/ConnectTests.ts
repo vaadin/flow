@@ -1,9 +1,12 @@
+/* tslint:disable: no-unused-expression */
 const {describe, it, beforeEach, afterEach, after} = intern.getPlugin('interface.bdd');
 const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
 import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
+
+import { clear, get, Store } from 'idb-keyval';
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -500,6 +503,112 @@ describe('ConnectClient', () => {
       await client.call('FooEndpoint', 'fooMethod');
       
       expect(invalidSessionCallback.called).to.be.false;
+    })
+  });
+
+  describe("Defer Request", () => {
+    let client: ConnectClient;
+    const offlineRequestQueue = new Store('cached-vaadin-endpoint-requests');
+
+    beforeEach(() => {
+      client = new ConnectClient();
+    });
+
+    afterEach(() => {
+      fetchMock.restore();
+      clear(offlineRequestQueue);
+    });
+
+    it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => false);
+
+      const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(result.isDeferred).to.be.true;
+      expect(result.endpointRequest?.endpoint).to.equal('FooEndpoint');
+      expect(result.endpointRequest?.method).to.equal('fooMethod');
+      expect(result.endpointRequest?.params?.fooData).to.equal('foo');
+    })
+
+    it("Should cache the endpoint request when invoking deferRequest offline", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => false);
+
+      const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      const endpointRequetsStore = new Store('cached-vaadin-endpoint-requests');
+      const cachedRequest = await get(result.endpointRequest?.id as string, endpointRequetsStore);
+
+      expect((cachedRequest as any).endpoint).to.equal('FooEndpoint');
+      expect((cachedRequest as any).method).to.equal('fooMethod');
+      expect((cachedRequest as any).params?.fooData).to.equal('foo');
+    })
+
+    it("Should not invoke the client.call method when invoking deferRequest offline", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => false);
+      const callMethod = sinon.stub(client, "call");
+
+      await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(callMethod.called).to.be.false;
+    })
+
+    it("should return true when checking the isDefered prooperty of the return value of invoking deferRequest method offline", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => false);
+      sinon.stub(client, "call");
+      sinon.stub(client, "cacheEndpointRequest");
+
+      const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(result.isDeferred).to.be.true;
+    })
+
+    it("should return undefined when checking the result prooperty of the return value of invoking deferRequest method offline", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => false);
+      sinon.stub(client, "call");
+      sinon.stub(client, "cacheEndpointRequest");
+
+      const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(returnValue.result).to.be.undefined;
+    })
+
+    it("Should invoke the client.call method when invoking deferRequest online", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => true);
+      const callMethod = sinon.stub(client, "call");
+
+      await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(callMethod.called).to.be.true;
+    })
+
+    it("Should not invoke the client.cacheEndpointRequest method when invoking deferRequest online", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => true);
+      sinon.stub(client, "call");
+      const cacheEndpointRequest = sinon.stub(client, "cacheEndpointRequest");
+
+      await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(cacheEndpointRequest.called).to.be.false;
+    })
+
+    it("should return false when checking the isDefered prooperty of the return value of invoking deferRequest method online", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => true);
+      sinon.stub(client, "call");
+      sinon.stub(client, "cacheEndpointRequest");
+
+      const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(result.isDeferred).to.be.false;
+    })
+
+    it("should return undefined when checking the endpointRequest prooperty of the return value of invoking deferRequest method offline", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => true);
+      sinon.stub(client, "call");
+      sinon.stub(client, "cacheEndpointRequest");
+
+      const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+
+      expect(returnValue.endpointRequest).to.be.undefined;
     })
   });
 });

@@ -11,13 +11,13 @@ import { DeferrableResult } from '@vaadin/flow-frontend/Connect';
 function _hello(
   userName: string
 ): Promise<DeferrableResult<string>> {
-  return new DeferrableResult('WholeClassDeferrableEndpoint', 'hello', {userName})._request();
+  return client.deferrableCall('WholeClassDeferrableEndpoint', 'hello', {userName});
 }
 export {_hello as hello};
 
 function _hi(
   userName: string
 ): Promise<DeferrableResult<string>> {
-  return new DeferrableResult('WholeClassDeferrableEndpoint', 'hi', {userName})._request();
+  return client.deferrableCall('WholeClassDeferrableEndpoint', 'hi', {userName});
 }
 export {_hi as hi};
