@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -63,7 +64,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        Document indexDocument = getIndexHtmlDocument(request);
+        DeploymentConfiguration config = session.getConfiguration();
+
+        Document indexDocument = config.isProductionMode()
+                ? getCachedIndexHtmlDocument(request.getService())
+                : getIndexHtmlDocument(request.getService());
 
         prependBaseHref(request, indexDocument);
 
@@ -93,7 +98,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         VaadinContext context = session.getService().getContext();
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
-        DeploymentConfiguration config = session.getConfiguration();
         if (!config.isProductionMode()) {
             UsageStatisticsExporter.exportUsageStatisticsToDocument(indexDocument);
         }
@@ -197,14 +201,20 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private static Document getIndexHtmlDocument(VaadinRequest request)
+    private static Document getCachedIndexHtmlDocument(VaadinService service) {
+        return service.getContext()
+                .getAttribute(IndexHtmlHolder.class, () -> new IndexHtmlHolder(service))
+                .getDocument();
+    }
+
+    private static Document getIndexHtmlDocument(VaadinService service)
             throws IOException {
-        String index = FrontendUtils.getIndexHtmlContent(request.getService());
+        String index = FrontendUtils.getIndexHtmlContent(service);
         if (index != null) {
             return Jsoup.parse(index);
         }
         String frontendDir = FrontendUtils.getProjectFrontendDir(
-                request.getService().getDeploymentConfiguration());
+                service.getDeploymentConfiguration());
         String indexHtmlFilePath;
         if(frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
@@ -216,6 +226,25 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         + "It is required to have '%1$s' file when "
                         + "using client side bootstrapping.", indexHtmlFilePath);
         throw new IOException(message);
+    }
+
+
+    // Holds parsed index.html to avoid re-parsing on every request in production mode
+    private static final class IndexHtmlHolder {
+        private final Document indexHtmlDocument;
+
+        private IndexHtmlHolder(VaadinService service) {
+            try {
+                indexHtmlDocument = getIndexHtmlDocument(service);
+                indexHtmlDocument.outputSettings().prettyPrint(false);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        private Document getDocument() {
+            return indexHtmlDocument.clone();
+        }
     }
 
     private static Logger getLogger() {
