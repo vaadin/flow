@@ -30,7 +30,7 @@ interface ElementInitializationStrategy {
 
     /**
      * Initializes the {@code element} with template attribute {@code name} and
-     * its {@code value}
+     * its {@code value}.
      * 
      * @param element
      *            the element to initialize
