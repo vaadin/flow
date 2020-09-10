@@ -91,6 +91,7 @@ import io.swagger.v3.oas.models.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.connect.Deferrable;
 import com.vaadin.flow.server.connect.Endpoint;
 import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
@@ -103,6 +104,7 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 public class OpenApiObjectGenerator {
     public static final String EXTENSION_VAADIN_CONNECT_PARAMETERS_DESCRIPTION = "x-vaadin-parameters-description";
     public static final String EXTENSION_VAADIN_FILE_PATH = "x-vaadin-file-path";
+    private static final String EXTENSION_VAADIN_CONNECT_DEFERRABLE = "x-vaadin-connect-deferrable";
 
     private static final String VAADIN_CONNECT_OAUTH2_SECURITY_SCHEME = "vaadin-connect-oauth2";
     private static final String VAADIN_CONNECT_OAUTH2_TOKEN_URL = "/oauth/token";
@@ -123,6 +125,7 @@ public class OpenApiObjectGenerator {
     private ClassLoader typeResolverClassLoader;
     private SchemaGenerator schemaGenerator;
     private SchemaResolver schemaResolver;
+    private boolean needsDeferrableImport = false;
 
     /**
      * Adds the source path to the generator to process.
@@ -210,6 +213,7 @@ public class OpenApiObjectGenerator {
         endpointsJavadoc = new HashMap<>();
         schemaGenerator = new SchemaGenerator(this);
         schemaResolver = new SchemaResolver();
+        needsDeferrableImport = false;
         ParserConfiguration parserConfiguration = createParserConfiguration();
 
         javaSourcePaths.stream()
@@ -315,6 +319,9 @@ public class OpenApiObjectGenerator {
                         classOrInterfaceDeclaration, compilationUnit)));
         pathItems.forEach((pathName, pathItem) -> openApiModel.getPaths()
                 .addPathItem(pathName, pathItem));
+        if (needsDeferrableImport) {
+            openApiModel.addExtension(EXTENSION_VAADIN_CONNECT_DEFERRABLE, true);
+        }
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 
@@ -385,7 +392,7 @@ public class OpenApiObjectGenerator {
                     getEndpointName(classDeclaration,
                             endpointAnnotation.orElse(null)),
                     classDeclaration.getNameAsString(), classDeclaration,
-                    ResolvedTypeParametersMap.empty()));
+                    ResolvedTypeParametersMap.empty(), compilationUnit));
         }
     }
 
@@ -536,7 +543,8 @@ public class OpenApiObjectGenerator {
 
     private Map<String, PathItem> createPathItems(String endpointName,
             String tagName, ClassOrInterfaceDeclaration typeDeclaration,
-            ResolvedTypeParametersMap resolvedTypeParametersMap) {
+            ResolvedTypeParametersMap resolvedTypeParametersMap,
+            CompilationUnit compilationUnit) {
         Map<String, PathItem> newPathItems = new HashMap<>();
         Collection<MethodDeclaration> methods = typeDeclaration.getMethods();
         for (MethodDeclaration methodDeclaration : methods) {
@@ -559,9 +567,18 @@ public class OpenApiObjectGenerator {
 
             String pathName = "/" + endpointName + "/" + methodName;
             pathItem.readOperationsMap()
-                    .forEach((httpMethod, operation) -> operation
+                    .forEach((httpMethod, operation) -> {
+                        operation
                             .setOperationId(String.join("_", endpointName,
-                                    methodName, httpMethod.name())));
+                                    methodName, httpMethod.name()));
+                        boolean isDefferable = isDefferable(methodDeclaration, typeDeclaration, compilationUnit);
+                        if (isDefferable) {
+                            operation.addExtension(EXTENSION_VAADIN_CONNECT_DEFERRABLE, true);
+                            if (!needsDeferrableImport) {
+                                needsDeferrableImport = true;
+                            }
+                        }
+                    });
             newPathItems.put(pathName, pathItem);
         }
 
@@ -571,8 +588,14 @@ public class OpenApiObjectGenerator {
                         resolvedType, resolvedTypeParametersMap))
                 .filter(Objects::nonNull).forEach(pair -> newPathItems
                         .putAll(createPathItems(endpointName, tagName, pair.a,
-                                pair.b)));
+                                pair.b, compilationUnit)));
         return newPathItems;
+    }
+
+    private boolean isDefferable(MethodDeclaration methodDeclaration, ClassOrInterfaceDeclaration typeDeclaration,
+            CompilationUnit compilationUnit) {
+        return GeneratorUtils.hasAnnotation(methodDeclaration, compilationUnit, Deferrable.class)
+                || GeneratorUtils.hasAnnotation(typeDeclaration, compilationUnit, Deferrable.class);
     }
 
     private boolean isAccessForbidden(
