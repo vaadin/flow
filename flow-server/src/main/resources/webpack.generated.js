@@ -45,12 +45,11 @@ let stats;
 // webpack-dev-mode when it exits or crashes.
 const watchDogPrefix = '--watchDogPort=';
 let watchDogPort = devMode && process.argv.find(v => v.indexOf(watchDogPrefix) >= 0);
-let client;
 if (watchDogPort) {
   watchDogPort = watchDogPort.substr(watchDogPrefix.length);
   const runWatchDog = () => {
-    client = new require('net').Socket();
-
+    const client = new require('net').Socket();
+    client.setEncoding('utf8');
     client.on('error', function () {
       console.log("Watchdog connection error. Terminating webpack process...");
       client.destroy();
@@ -183,14 +182,6 @@ module.exports = {
           stats = customStats;
           done();
         }
-      });
-
-      compiler.hooks.done.tapAsync('FlowIdPlugin', (compilation, done) => {
-        // trigger live reload via server
-        if (client) {
-          client.write('reload\n');
-        }
-        done();
       });
     },
 
