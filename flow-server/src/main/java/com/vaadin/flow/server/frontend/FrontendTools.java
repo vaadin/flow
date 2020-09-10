@@ -304,16 +304,17 @@ public class FrontendTools {
      * exception with a descriptive message if a version is too old.
      */
     public void validateNodeAndNpmVersion() {
+        if (ignoreVersionChecks) {
+            return;
+        }
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(getNodeExecutable());
             nodeVersionCommand.add("--version"); // NOSONAR
             FrontendVersion foundNodeVersion = FrontendUtils.getVersion("node",
                     nodeVersionCommand);
-            if (!ignoreVersionChecks) {
-                FrontendUtils.validateToolVersion("node", foundNodeVersion,
-                        SUPPORTED_NODE_VERSION, SHOULD_WORK_NODE_VERSION);
-            }
+            FrontendUtils.validateToolVersion("node", foundNodeVersion,
+                    SUPPORTED_NODE_VERSION, SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
         }
@@ -324,10 +325,8 @@ public class FrontendTools {
             npmVersionCommand.add("--version"); // NOSONAR
             FrontendVersion npmVersion = FrontendUtils.getVersion("npm",
                     npmVersionCommand);
-            if (!ignoreVersionChecks) {
-                FrontendUtils.validateToolVersion("npm", npmVersion,
-                        SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
-            }
+            FrontendUtils.validateToolVersion("npm", npmVersion,
+                    SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
             checkForFaultyNpmVersion(npmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
@@ -692,41 +691,39 @@ public class FrontendTools {
     }
 
     List<String> getSuitablePnpm(String dir) {
-        final List<String> pnpmCommand = getPnpmExecutable(dir, false);
-        if (pnpmCommand.isEmpty()) {
-            return Collections.emptyList();
-        }
-        final String pnpmCommandString = String.join(" ", pnpmCommand);
-        // check whether globally or locally installed pnpm is new enough
-        try {
-            List<String> versionCmd = new ArrayList<>(pnpmCommand);
-            versionCmd.add("--version"); // NOSONAR
-            FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
-                    versionCmd);
-            if (FrontendUtils.isVersionAtLeast(pnpmVersion,
-                    SUPPORTED_PNPM_VERSION)
-                    && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION)) {
-                return pnpmCommand;
-            } else {
-                getLogger().warn(
-                        "installed pnpm ('{}', version {}) is not in the compatible versions range (>={}, <{})",
-                        pnpmCommandString, pnpmVersion.getFullVersion(),
-                        SUPPORTED_PNPM_VERSION.getFullVersion(),
-                        BREAKING_PNPM_VERSION.getFullVersion());
+        List<String> pnpmCommand = getPnpmExecutable(dir, false);
+        String pnpmCommandString = String.join(" ", pnpmCommand);
+
+        if (!ignoreVersionChecks && !pnpmCommand.isEmpty()) {
+            // check whether globally or locally installed pnpm is new enough
+            try {
+                List<String> versionCmd = new ArrayList<>(pnpmCommand);
+                versionCmd.add("--version"); // NOSONAR
+                FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
+                        versionCmd);
+                if (!(FrontendUtils.isVersionAtLeast(pnpmVersion,
+                        SUPPORTED_PNPM_VERSION)
+                        && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION))) {
+                    getLogger().warn(
+                            "installed pnpm ('{}', version {}) is not in the compatible versions range (>={}, <{})",
+                            pnpmCommandString, pnpmVersion.getFullVersion(),
+                            SUPPORTED_PNPM_VERSION.getFullVersion(),
+                            BREAKING_PNPM_VERSION.getFullVersion());
+                    pnpmCommand = Collections.emptyList();
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().warn("error checking pnpm version", e);
             }
-        } catch (UnknownVersionException e) {
-            getLogger().warn("error checking pnpm version", e);
         }
-        if (ignoreVersionChecks) {
-            getLogger().info(
-                    "using '{}' despite potential version incompatibility",
+        if (!pnpmCommand.isEmpty()) {
+            getLogger().info("using '{}' for frontend package installation",
                     pnpmCommandString);
-            return pnpmCommand;
         } else {
             getLogger().info("installing pnpm version {} locally",
                     SUPPORTED_PNPM_VERSION.getFullVersion());
-            return Collections.emptyList();
+
         }
+        return pnpmCommand;
     }
 
     private void installPnpm(String dir, List<String> installCommand) {
