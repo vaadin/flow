@@ -17,9 +17,9 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -491,6 +491,39 @@ public class FrontendToolsTest {
         assertNpmCommand(() -> vaadinHomeDir);
     }
 
+    @Test
+    public void getSuitablePnpm_compatibleVersionInstalled_accepted() throws Exception {
+        Assume.assumeFalse(
+                tools.getNodeExecutable().isEmpty());
+        createFakePnpm("4.5.0");
+        List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
+        Assert.assertNotEquals("expected pnpm version 4.5.0 accepted", 0,
+                pnpmCommand.size());
+    }
+    @Test
+    public void getSuitablePnpm_tooNewVersionInstalled_rejected() throws Exception {
+        Assume.assumeFalse(
+                tools.getNodeExecutable().isEmpty());
+        createFakePnpm("5.5.0");
+        List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
+        Assert.assertEquals("expected pnpm version 5.5.0 rejected", 0,
+                pnpmCommand.size());
+    }
+
+    @Test
+    public void getSuitablePnpm_tooNewVersionInstalledAndSkipVersionCheck_accepted()
+            throws Exception {
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
+                "v12.10.0", new File(baseDir).toURI(), true);
+        Assume.assumeFalse(
+                tools.getNodeExecutable().isEmpty());
+
+        createFakePnpm("5.5.0");
+        List<String> pnpmCommand = tools.getSuitablePnpm(baseDir);
+        Assert.assertNotEquals("expected pnpm version 5.5.0 accepted", 0,
+                pnpmCommand.size());
+    }
+
     private void assertNpmCommand(Supplier<String> path) throws IOException {
         createStubNode(false, true, false, vaadinHomeDir);
 
@@ -529,4 +562,17 @@ public class FrontendToolsTest {
         }
     }
 
+    private void createFakePnpm(String version) throws Exception {
+        File pnpmJs = new File(baseDir, FrontendTools.PNPM_INSTALLED_BY_NPM);
+        FileUtils.forceMkdir(pnpmJs.getParentFile());
+
+        FileWriter fileWriter = new FileWriter(pnpmJs);
+        try {
+            fileWriter.write(
+                    "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
+                            + "    console.log('" + version + "');\n" + "}\n");
+        } finally {
+            fileWriter.close();
+        }
+    }
 }
