@@ -48,7 +48,8 @@ public class IdCollector {
      * @param templateClass
      *            the template class, containing the {@code @Id} fields
      * @param templateFile
-     *            The name of the file containing the template
+     *            The name of the file containing the template or
+     *            <code>null</code> if not available {@code null}
      * @param templateRoot
      *            The root element of the template or <code>null</code> if not
      *            available
