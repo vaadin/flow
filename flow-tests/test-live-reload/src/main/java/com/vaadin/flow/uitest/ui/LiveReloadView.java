@@ -25,7 +25,7 @@ import java.util.Random;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
@@ -37,7 +37,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.LiveReloadView", layout = ViewTestLayout.class)
-@CssImport("./styles.css")
+@JsModule("./code.js")
 public class LiveReloadView extends Div {
     public static final String INSTANCE_IDENTIFIER = "instance-identifier";
     public static final String PAGE_RELOADING = "page-reloading";
@@ -87,16 +87,14 @@ public class LiveReloadView extends Div {
 
     private void handleClickBreakWebpack(
             ClickEvent<NativeButton> nativeButtonClickEvent) {
-        writeToFrontendCSSFile(VaadinService.getCurrent(), "{");
+        writeToFrontendJSFile(VaadinService.getCurrent(), "{");
     }
 
     // Touch a frontend file to trigger webpack reload
     private void handleClickWebpackLiveReload(ClickEvent event) {
         addPageReloadingSpan();
-        String css = String.format(
-                "\nbody { background-color: rgb(%d,%d,%d); }",
-                random.nextInt(256), random.nextInt(256), random.nextInt(256));
-        writeToFrontendCSSFile(VaadinService.getCurrent(), css);
+        String js = String.format("%nconsole.log('Hello world');");
+        writeToFrontendJSFile(VaadinService.getCurrent(), js);
     }
 
     private void addPageReloadingSpan() {
@@ -105,11 +103,11 @@ public class LiveReloadView extends Div {
         add(reloading);
     }
 
-    public static void writeToFrontendCSSFile(VaadinService vaadinService,
-                                              String text) {
+    public static void writeToFrontendJSFile(VaadinService vaadinService,
+                                             String text) {
         final String projectFrontendDir = FrontendUtils.getProjectFrontendDir(
                 vaadinService.getDeploymentConfiguration());
-        File styleFile = new File(projectFrontendDir, "styles.css");
+        File styleFile = new File(projectFrontendDir, "code.js");
         try {
             FileUtils.write(styleFile, text, StandardCharsets.UTF_8);
         } catch (IOException e) {
