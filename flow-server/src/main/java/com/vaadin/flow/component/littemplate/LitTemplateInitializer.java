@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.component.littemplate;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
 import com.vaadin.flow.component.polymertemplate.IdMapper;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.VaadinService;
@@ -27,12 +30,11 @@ import com.vaadin.flow.server.VaadinService;
  * Template initialization related logic.
  *
  * @author Vaadin Ltd
+ * @since
  *
  */
 public class LitTemplateInitializer {
-    private static final ReflectionCache<LitTemplate, ParserData> CACHE = new ReflectionCache<>(
-            templateClass -> new LitTemplateDataAnalyzer(templateClass)
-                    .parseTemplate());
+    private static final ConcurrentHashMap<LitTemplateParser, ReflectionCache<LitTemplate, ParserData>> CACHE = new ConcurrentHashMap<>();
 
     private final LitTemplate template;
 
@@ -40,13 +42,38 @@ public class LitTemplateInitializer {
 
     /**
      * Creates a new initializer instance.
+     * <p>
+     * The call is delegated to the
+     * {@link #LitTemplateInitializer(LitTemplate, LitTemplateParser, VaadinService)}
+     * with parser created via {@link LitTemplateParserFactory} retrieved from
+     * {@link Instantiator}.
      *
      * @param template
-     *                     a template to initialize
+     *            a template to initialize
      * @param service
-     *                     the related service
+     *            the related service
+     * 
+     * @see VaadinService
+     * @see LitTemplateParserFactory
+     * @see Instantiator
+     * @see Instantiator#getOrCreate(Class)
      */
     public LitTemplateInitializer(LitTemplate template, VaadinService service) {
+        this(template, LitTemplate.getParser(service), service);
+    }
+
+    /**
+     * Creates a new initializer instance.
+     *
+     * @param template
+     *            a template to initialize
+     * @param parser
+     *            lit template parser
+     * @param service
+     *            the related service
+     */
+    LitTemplateInitializer(LitTemplate template, LitTemplateParser parser,
+            VaadinService service) {
         this.template = template;
 
         boolean productionMode = service.getDeploymentConfiguration()
@@ -56,10 +83,15 @@ public class LitTemplateInitializer {
 
         ParserData data = null;
         if (productionMode) {
-            data = CACHE.get(templateClass);
+            ReflectionCache<LitTemplate, ParserData> cache = CACHE
+                    .computeIfAbsent(parser, analyzer -> new ReflectionCache<>(
+                            clazz -> new LitTemplateDataAnalyzer(clazz,
+                                    analyzer, service).parseTemplate()));
+            data = cache.get(templateClass);
         }
         if (data == null) {
-            data = new LitTemplateDataAnalyzer(templateClass).parseTemplate();
+            data = new LitTemplateDataAnalyzer(templateClass, parser, service)
+                    .parseTemplate();
         }
         parserData = data;
     }
