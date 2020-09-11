@@ -255,7 +255,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     private Logger getLogger() {
-        return LoggerFactory.getLogger(this.getClass());
+        return LoggerFactory.getLogger(FrontendAnnotatedClassVisitor.class);
     }
 
     private class AnnotationClassVisitor extends ClassVisitor {
