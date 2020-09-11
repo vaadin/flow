@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -464,8 +465,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         FrontendClassVisitor visitor = new FrontendClassVisitor(className,
                 endPoint, themeScope);
-        ClassReader cr = new ClassReader(url.openStream());
-        cr.accept(visitor, ClassReader.EXPAND_FRAMES);
+        try (InputStream is = url.openStream()) {
+            ClassReader cr = new ClassReader(is);
+            cr.accept(visitor, ClassReader.EXPAND_FRAMES);
+        }
 
         // all classes visited by the scanner, used for performance (#5933)
         visited.add(className);
