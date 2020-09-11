@@ -113,7 +113,7 @@ public final class BundleParser {
      * end character with <code>;}</code> e.g. <code>';}</code>
      */
     private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile(
-            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html([\\`\\'\\\"])([\\s\\S]*)\\1;[\\s]*\\}");
+            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html`(([^`]|\\\\.)*)`;[\\s]*\\}");
 
     private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
             "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
@@ -248,9 +248,7 @@ public final class BundleParser {
         // on what was in template return html' and the second is the
         // template contents.
         if (templateMatcher.find() && templateMatcher.groupCount() == 2) {
-            String group = templateMatcher.group(2);
-            group = getNonGreadyTemplateContent(group,
-                    templateMatcher.group(1));
+            String group = templateMatcher.group(1);
             LOGGER.trace("Found regular Lit template content was {}", group);
 
             templateDocument = Jsoup.parse(group);
@@ -267,37 +265,6 @@ public final class BundleParser {
         }
         LOGGER.warn("No lit template data found in {} sources.", fileName);
         return null;
-    }
-
-    private static String getNonGreadyTemplateContent(String greedyContent,
-            String delimiter) {
-        String templateContent = greedyContent;
-        // in case greedy match let's truncate the second group (remove
-        // everything after delimiter)
-        int index = -1;
-        while (true) {
-            index = greedyContent.indexOf(delimiter, index + 1);
-            if (index < 0) {
-                break;
-            }
-            templateContent = greedyContent.substring(0, index);
-            if (!endsWithEscaped(templateContent)) {
-                break;
-            }
-        }
-        return templateContent;
-    }
-
-    private static boolean endsWithEscaped(String value) {
-        int slashCount = 0;
-        for (int i = value.length() - 1; i >= 0; i--) {
-            if (value.charAt(i) == '\\') {
-                slashCount++;
-            } else {
-                break;
-            }
-        }
-        return slashCount % 2 == 1;
     }
 
     private static Element tryParsePolymer2(Document templateDocument,
