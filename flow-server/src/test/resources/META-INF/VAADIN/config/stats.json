@@ -50,7 +50,7 @@
               ,
               {
                 "name": "./frontend/MyGreedyLitElement.js",
-                "source": "// Import an element\nimport { LitElement, html } from 'lit-element';\n\n// Define an element class\n export class MyGreedyLitElement extends LitElement {\n\n  // Define the element's template\n  render() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n   <div>\\`Tag name doesn't match the JS module name<div>inner</div></div>   <div id='test'  class='response'>greedy</div>\n    `;\n static get styles() { return css`:host { background-color: pink } <span>incorrect content</span>`; } }\n}\n\n// Register the element with the browser\ncustomElements.define('my-greedy-element', MyGreedyLitElement);"
+                "source": "// Import an element\nimport { LitElement, html } from 'lit-element';\n\n// Define an element class\n export class MyGreedyLitElement extends LitElement {\n\n  // Define the element's template\n  render() {\n    return html`\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n   <div>\\`Tag name doesn't match the JS module name<div>inner</div></div>   <div id='test'  class='response'>greedy</div>\n    `;}\n static get styles() { return css`:host { background-color: pink } <span>incorrect content</span>`;  }\n}\n\n// Register the element with the browser\ncustomElements.define('my-greedy-element', MyGreedyLitElement);"
               }
             ]
         }
