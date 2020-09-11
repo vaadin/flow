@@ -36,7 +36,7 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         event.addRequestHandler(
                 (RequestHandler) (session, request, response) -> {
                     if ("/reset_frontend".equals(request.getPathInfo())) {
-                        LiveReloadView.writeToFrontendCSSFile(
+                        LiveReloadView.writeToFrontendJSFile(
                                 session.getService(),
                                 "/* Update to trigger Webpack */\n");
                         return true;
