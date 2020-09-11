@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.testutil;
 
+import static java.lang.reflect.Modifier.isStatic;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -34,9 +37,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-
-import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.fail;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -73,6 +73,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.grid\\.ColumnGroupHelpers",
                 "com\\.vaadin\\.flow\\.component\\.textfield\\.SlotHelpers",
                 "com\\.vaadin\\.flow\\.component\\.orderedlayout\\.FlexConstants",
+                "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParserImpl",
+                "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.DefaultTemplateParser",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.NpmTemplateParser",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser",
