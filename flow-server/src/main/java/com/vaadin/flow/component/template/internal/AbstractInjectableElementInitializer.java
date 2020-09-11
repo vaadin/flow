@@ -22,25 +22,19 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Initializer the template element with data.
+ * Generic initializer logic.
  * 
  * @author Vaadin Ltd
  * @since
  *
  */
-public class InjectableElementInitializer
+public abstract class AbstractInjectableElementInitializer
         implements Consumer<Map<String, String>> {
 
     private final Element element;
-
-    private final Class<? extends Component> templateClass;
 
     private static final Map<String, ElementInitializationStrategy> INIT_STRATEGIES = createStategies();
     private static final IdentityHashMap<Pattern, ElementInitializationStrategy> PATTERN_STRATEGIES = createPatternStategies();
@@ -52,49 +46,42 @@ public class InjectableElementInitializer
      * 
      * @param element
      *            element to initialize
-     * @param templateClass
-     *            the class of the template component
      */
-    public InjectableElementInitializer(Element element,
-            Class<? extends Component> templateClass) {
+    protected AbstractInjectableElementInitializer(Element element) {
         this.element = element;
-        this.templateClass = templateClass;
     }
 
     @Override
     public void accept(Map<String, String> templateAttributes) {
-        templateAttributes
-                .forEach((name, value) -> initialize(element, name, value));
+        templateAttributes.forEach((name, value) -> initialize(name, value));
     }
 
-    private void initialize(Element element, String name, String value) {
-        if (name.endsWith("$")) {
-            // this is an attribute binding, ignore it since we don't support
-            // bindings: the value is not an expression
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} which "
-                            + "ends with $ and ignored by initialization since this is an attribute binding",
-                    templateClass.getSimpleName(), name, element.getTag());
-            return;
+    /**
+     * Checks whether the attribute declaration is an attribute with a static
+     * value ( so it can be set on the serve side).
+     * 
+     * @param name
+     *            the template attribute name
+     * @param value
+     *            the template attribute value
+     * @return whether the attribute declaration is an attribute with a static
+     *         value
+     */
+    protected abstract boolean isStaticAttribute(String name, String value);
+
+    /**
+     * Returns server side element to initialize.
+     * 
+     * @return the server side element to initialize
+     */
+    protected Element getElement() {
+        return element;
+    }
+
+    private void initialize(String name, String value) {
+        if (isStaticAttribute(name, value)) {
+            getStrategy(name).initialize(element, name, value);
         }
-        if (value.contains("{{") && value.contains("}}")) {
-            // this is a binding, skip it
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} whose value"
-                            + " contains two-way binding and it's ignored by initilization",
-                    templateClass.getSimpleName(), name, element.getTag());
-            return;
-        }
-        if (value.contains("[[") && value.contains("]]")) {
-            // this is another binding, skip it
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} whose value"
-                            + " contains binding and it's ignored by initilization",
-                    templateClass.getSimpleName(), name, element.getTag());
-            return;
-        }
-        // anything else is considered as a template attribute value
-        getStrategy(name).initialize(element, name, value);
     }
 
     private ElementInitializationStrategy getStrategy(String attributeName) {
@@ -143,9 +130,5 @@ public class InjectableElementInitializer
         result.put("tabindex", attributeStrategy);
         result.put("translate", attributeStrategy);
         return result;
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(InjectableElementInitializer.class);
     }
 }

@@ -1,4 +1,4 @@
-package com.vaadin.flow.component.template.internal;
+package com.vaadin.flow.component.littemplate;
 
 import java.util.Collections;
 
@@ -11,11 +11,11 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
-public class InjectableElementInitializerTest {
+public class InjectableLitElementInitializerTest {
 
     private Element element = ElementFactory.createDiv();
 
-    private InjectableElementInitializer initializer = new InjectableElementInitializer(
+    private InjectableLitElementInitializer initializer = new InjectableLitElementInitializer(
             element, Component.class);
 
     @Test
@@ -34,25 +34,25 @@ public class InjectableElementInitializerTest {
 
     @Test
     public void initializeElement_setAttributeBinding_attributeIsIgnored() {
-        initializer.accept(Collections.singletonMap("class$", "foo"));
+        initializer.accept(Collections.singletonMap("?class", "foo"));
 
         Assert.assertFalse(element.hasAttribute("class"));
-        Assert.assertFalse(element.hasAttribute("class$"));
+        Assert.assertFalse(element.hasAttribute("?class"));
         Assert.assertFalse(element.hasProperty("class"));
-        Assert.assertFalse(element.hasProperty("class$"));
+        Assert.assertFalse(element.hasProperty("?class"));
     }
 
     @Test
     public void initializeElement_setPropertyBinding_attributeIsIgnored() {
-        initializer.accept(Collections.singletonMap("foo", "[[bar]]"));
+        initializer.accept(Collections.singletonMap(".foo", "bar"));
 
         Assert.assertFalse(element.hasAttribute("foo"));
         Assert.assertFalse(element.hasProperty("foo"));
     }
 
     @Test
-    public void initializeElement_setPropertyTwoWayBinding_attributeIsIgnored() {
-        initializer.accept(Collections.singletonMap("foo", "{{bar}}"));
+    public void initializeElement_setDynamicValue_attributeIsIgnored() {
+        initializer.accept(Collections.singletonMap("foo", "${bar}"));
 
         Assert.assertFalse(element.hasAttribute("foo"));
         Assert.assertFalse(element.hasProperty("foo"));

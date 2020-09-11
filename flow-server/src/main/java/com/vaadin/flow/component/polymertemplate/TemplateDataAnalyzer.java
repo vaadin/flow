@@ -145,6 +145,21 @@ public class TemplateDataAnalyzer {
                     (field, id) -> consumer.apply(field, id, tagById.get(id)));
         }
 
+        /**
+         * Gets template element data (attribute values).
+         * 
+         * @param id
+         *            the id of the element
+         * @return template data
+         */
+        public Map<String, String> getAttributes(String id) {
+            Map<String, String> attrs = attributesById.get(id);
+            if (attrs == null) {
+                return Collections.emptyMap();
+            }
+            return attrs;
+        }
+
         Set<String> getTwoWayBindingPaths() {
             return twoWayBindingPaths;
         }
@@ -153,13 +168,6 @@ public class TemplateDataAnalyzer {
             subTemplates.forEach(dataConsumer);
         }
 
-        Map<String, String> getAttributes(String id) {
-            Map<String, String> attrs = attributesById.get(id);
-            if (attrs == null) {
-                return Collections.emptyMap();
-            }
-            return attrs;
-        }
     }
 
     static class SubTemplateData {

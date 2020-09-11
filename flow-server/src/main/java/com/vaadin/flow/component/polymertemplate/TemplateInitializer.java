@@ -27,7 +27,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
-import com.vaadin.flow.component.template.internal.InjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -156,7 +155,7 @@ public class TemplateInitializer {
     private void mapComponents() {
         parserData.forEachInjectedField((field, id, tag) -> idMapper
                 .mapComponentOrElement(field, id, tag, element -> {
-                    InjectableElementInitializer initializer = new InjectableElementInitializer(
+                    InjectablePolymerElementInitializer initializer = new InjectablePolymerElementInitializer(
                             element, templateClass);
                     initializer.accept(parserData.getAttributes(id));
                     attachComponentIfUses(element);

@@ -16,13 +16,11 @@
 package com.vaadin.flow.component.littemplate;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
 import com.vaadin.flow.component.polymertemplate.IdMapper;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.VaadinService;
 
@@ -39,6 +37,8 @@ public class LitTemplateInitializer {
     private final LitTemplate template;
 
     private final ParserData parserData;
+
+    private final Class<? extends LitTemplate> templateClass;
 
     /**
      * Creates a new initializer instance.
@@ -79,7 +79,7 @@ public class LitTemplateInitializer {
         boolean productionMode = service.getDeploymentConfiguration()
                 .isProductionMode();
 
-        Class<? extends LitTemplate> templateClass = template.getClass();
+        templateClass = template.getClass();
 
         ParserData data = null;
         if (productionMode) {
@@ -101,12 +101,13 @@ public class LitTemplateInitializer {
      */
     public void initChildElements() {
         IdMapper idMapper = new IdMapper(template);
-        Consumer<Element> noOp = element -> {
-            // Nothing to do for elements
-        };
 
-        parserData.forEachInjectedField((field, id, tag) -> idMapper
-                .mapComponentOrElement(field, id, tag, noOp));
+        parserData.forEachInjectedField(
+                (field, id, tag) -> idMapper.mapComponentOrElement(field, id,
+                        tag,
+                        element -> new InjectableLitElementInitializer(element,
+                                templateClass)
+                                        .accept(parserData.getAttributes(id))));
     }
 
 }
