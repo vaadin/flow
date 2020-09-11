@@ -1,4 +1,6 @@
 /* tslint:disable:max-classes-per-file */
+import { set, Store } from 'idb-keyval';
+import { v4 as uuidv4 } from 'uuid';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -265,6 +267,8 @@ export class ConnectClient {
    */
   middlewares: Middleware[] = [];
 
+  private endpointRequetsQueue: Store | undefined;
+
   /**
    * @param options Constructor options.
    */
@@ -382,6 +386,36 @@ export class ConnectClient {
 
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
+  }
+
+  async deferrableCall(
+    endpoint: string,
+    method: string,
+    params?: any,
+  ): Promise<DeferrableResult<any>> {
+    if (this.checkOnline()) {
+      const result = await this.call(endpoint, method, params);
+      return { isDeferred: false, result };
+    } else {
+      const endpointRequest = { id: uuidv4(), endpoint, method, params };
+      await this.cacheEndpointRequest(endpointRequest);
+      return { isDeferred: true, endpointRequest };
+    }
+  }
+
+  private checkOnline(): boolean {
+    return navigator.onLine;
+  }
+
+  private async cacheEndpointRequest(endpointRequest: EndpointRequest) {
+    await set(endpointRequest.id, endpointRequest, this.getOrCreateEndpointRequetsQueue());
+  }
+
+  private getOrCreateEndpointRequetsQueue(): Store {
+    if (!this.endpointRequetsQueue) {
+      this.endpointRequetsQueue = new Store('cached-vaadin-endpoint-requests');
+    }
+    return this.endpointRequetsQueue;
   }
 
   // Re-use flow loading indicator when fetching endpoints
@@ -519,6 +553,15 @@ export class InvalidSessionMiddleware implements MiddlewareClass {
   }
 }
 
-export class DeferrableResult<T> {
-  result?: T
+interface EndpointRequest{
+  id: string;
+  endpoint: string;
+  method: string;
+  params?: any;
+}
+
+export interface DeferrableResult<T> {
+  isDeferred: boolean;
+  endpointRequest?: EndpointRequest;
+  result?: T;
 }

@@ -64,7 +64,7 @@ function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
 }}{{#responses}}{{#dataType}}{{{getClassNameFromImports dataType ../../../imports}}}{{/dataType}}{{^dataType}}void{{/dataType}}{{/responses}}{{!
 }}>> {
 {{=<% %>=}}
- return new DeferrableResult(<%!
+ return client.deferrableCall(<%!
    %>'<%vendorExtensions.x-vaadin-connect-endpoint-name%>', <%!
    %>'<%vendorExtensions.x-vaadin-connect-method-name%>'<%!
    %><%^bodyParams%><%!
@@ -76,7 +76,7 @@ function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
    %><%/each%><%!
    %>}<%/bodyParams%><%!
    %><%^authMethods%>, {requireCredentials: false}<%/authMethods%><%!
- %>)._request();
+ %>);
 }
 <%={{ }}=%>
 {{/vendorExtensions.x-vaadin-connect-deferrable}}
