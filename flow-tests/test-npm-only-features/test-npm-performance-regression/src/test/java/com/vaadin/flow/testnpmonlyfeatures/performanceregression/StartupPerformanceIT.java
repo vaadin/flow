@@ -55,7 +55,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         final int thresholdMs = Boolean.getBoolean(
                 System.getProperty("vaadin.useDeprecatedV14Bootstrapping"))
                         ? 5500
-                        : 10000;
+                        : 10500;
 
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",
