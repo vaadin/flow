@@ -17,6 +17,7 @@ package com.vaadin.flow.misc.ui;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.misc.ui.MiscelaneousView.MyTheme;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
@@ -31,7 +32,7 @@ import com.vaadin.flow.theme.Theme;
 // `src/` in component above should be replaced by `theme/my-theme`
 @Theme(MyTheme.class)
 @PWA(name = "Project Base for Vaadin", shortName = "Project Base")
-public class MiscelaneousView extends Div {
+public class MiscelaneousView extends Div implements AppShellConfigurator {
 
     public static final String TEST_VIEW_ID = "MiscellaneousView";
 
