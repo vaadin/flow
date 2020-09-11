@@ -86,7 +86,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *            the class name
      * @param visitor
      *            the visitor to use
-     * @throws IOException
+     * @throws UncheckedIOException
      *             when the class name is not found
      */
     public void visitClass(String name, ClassVisitor visitor) {
