@@ -69,6 +69,26 @@ public class LitTemplateParserImplTest {
     }
 
     @Test
+    public void getTemplateContent_templateParsedGreedly_rootElementParsed() {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        LitTemplateParser instance = LitTemplateParserImpl.getInstance();
+        TemplateData templateContent = instance.getTemplateContent(
+                MyGreedyLitElement.class, "my-greedy-element", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "my-greedy-element",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'test'",
+                "div", templateContent.getTemplateElement()
+                        .getElementById("test").tag().toString());
+    }
+
+    @Test
     public void getTemplateContent_localFileTemplateExists_useLocalFileContent() {
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance.getTemplateContent(
@@ -193,6 +213,11 @@ public class LitTemplateParserImplTest {
     @Tag("my-element")
     @JsModule("./frontend/MyLitElement.js")
     public class MyLitElement extends LitTemplate {
+    }
+
+    @Tag("my-greedy-element")
+    @JsModule("./frontend/MyGreedyLitElement.js")
+    public class MyGreedyLitElement extends LitTemplate {
     }
 
     @Tag("my-lit-element-view")

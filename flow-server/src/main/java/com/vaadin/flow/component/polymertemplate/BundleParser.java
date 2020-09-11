@@ -249,6 +249,12 @@ public final class BundleParser {
         // template contents.
         if (templateMatcher.find() && templateMatcher.groupCount() == 2) {
             String group = templateMatcher.group(2);
+            // in case greedy match let's truncate the second group (remove
+            // everything after delimiter)
+            int index = group.indexOf(templateMatcher.group(1));
+            if (index >= 0) {
+                group = group.substring(0, index);
+            }
             LOGGER.trace("Found regular Lit template content was {}", group);
 
             templateDocument = Jsoup.parse(group);
