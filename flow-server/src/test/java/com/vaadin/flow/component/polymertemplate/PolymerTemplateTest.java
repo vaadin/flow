@@ -340,6 +340,28 @@ public class PolymerTemplateTest extends HasCurrentService {
         DisabledElementTemplate(TemplateParser parser) {
             super(parser);
         }
+    }
+
+    @Tag(TAG)
+    private static class ElementWithTextTemplate
+            extends PolymerTemplate<ModelClass> {
+
+        @Id("labelId")
+        private com.vaadin.flow.dom.Element label;
+
+        @Id("hasHierarchy")
+        private com.vaadin.flow.dom.Element div;
+
+        public ElementWithTextTemplate() {
+            this((clazz, tag, service) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag
+                            + "'><label id='labelId'>foo bar</label>"
+                            + "<div id='hasHierarchy'>baz <a>foo</a> bar</div></dom-module>")));
+        }
+
+        ElementWithTextTemplate(TemplateParser parser) {
+            super(parser);
+        }
 
     }
 
@@ -823,6 +845,19 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         Assert.assertTrue(template.label.hasAttribute("id"));
         Assert.assertFalse(template.label.isEnabled());
+    }
+
+    public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
+        ElementWithTextTemplate template = new ElementWithTextTemplate();
+
+        Assert.assertEquals("foo bar", template.label.getText());
+    }
+
+    @Test
+    public void attachExistingElementWithChidlrenWithText_elementHasNoText() {
+        ElementWithTextTemplate template = new ElementWithTextTemplate();
+
+        Assert.assertEquals("", template.div.getText());
     }
 
     @Test
