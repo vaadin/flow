@@ -22,6 +22,12 @@ public class LitTemplateAttributeView extends LitTemplate
     @Id("disabled")
     private Div disabledDiv;
 
+    @Id("hasText")
+    private Div hasText;
+
+    @Id("hasTextAndChild")
+    private Div hasTextAndChild;
+
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         setId("template");
@@ -35,6 +41,10 @@ public class LitTemplateAttributeView extends LitTemplate
         div = new Div();
         div.setId("disabledInfo");
         div.setText("Enabled: " + disabledDiv.isEnabled());
+        add(div);
+
+        div.setText(hasText.getText() + " " + hasTextAndChild.getText() + "|");
+        div.setId("text-info");
         add(div);
     }
 }
