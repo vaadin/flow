@@ -315,7 +315,7 @@ public class PolymerTemplateTest extends HasCurrentService {
                     Jsoup.parse("<dom-module id='" + tag
                             + "'><label id='labelId' someattribute property-binding='[[foo]]' "
                             + "attribute-binding$='bar' another-binding='{{foo}}'"
-                            + "another-attribute='baz'></dom-module>")));
+                            + "another-attribute='baz' hidden></dom-module>")));
         }
 
         IdElementTemplate(TemplateParser parser) {
@@ -767,28 +767,35 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
-    public void attachExistingElementWithAttributeValue_elementHasAttribute() {
+    public void attachExistingElementWithAttributeValue_elementHasPropertyAndAttribute() {
         IdElementTemplate template = new IdElementTemplate();
 
-        Assert.assertTrue(template.label.hasAttribute("someattribute"));
-        Assert.assertNotNull(template.label.getAttribute("someattribute"));
-        Assert.assertTrue(
-                template.label.getAttribute("someattribute").isEmpty());
+        Assert.assertTrue(template.label.hasAttribute("id"));
+        Assert.assertEquals("labelId", template.label.getAttribute("id"));
 
-        Assert.assertFalse(template.label.hasAttribute("property-binding"));
-        Assert.assertFalse(template.label.hasAttribute("propertyBinding"));
+        Assert.assertTrue(template.label.hasProperty("someattribute"));
+        Assert.assertNotNull(template.label.getProperty("someattribute"));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                template.label.getProperty("someattribute"));
 
-        Assert.assertFalse(template.label.hasAttribute("another-binding"));
-        Assert.assertFalse(template.label.hasAttribute("anotherBinding"));
+        Assert.assertFalse(template.label.hasProperty("property-binding"));
+        Assert.assertFalse(template.label.hasProperty("propertyBinding"));
 
-        Assert.assertFalse(template.label.hasAttribute("attribute-binding"));
-        Assert.assertFalse(template.label.hasAttribute("attributeBinding"));
-        Assert.assertFalse(template.label.hasAttribute("attribute-binding$"));
-        Assert.assertFalse(template.label.hasAttribute("attributeBinding$"));
+        Assert.assertFalse(template.label.hasProperty("another-binding"));
+        Assert.assertFalse(template.label.hasProperty("anotherBinding"));
 
-        Assert.assertTrue(template.label.hasAttribute("another-attribute"));
+        Assert.assertFalse(template.label.hasProperty("attribute-binding"));
+        Assert.assertFalse(template.label.hasProperty("attributeBinding"));
+        Assert.assertFalse(template.label.hasProperty("attribute-binding$"));
+        Assert.assertFalse(template.label.hasProperty("attributeBinding$"));
+
+        Assert.assertTrue(template.label.hasProperty("another-attribute"));
         Assert.assertEquals("baz",
-                template.label.getAttribute("another-attribute"));
+                template.label.getProperty("another-attribute"));
+
+        Assert.assertTrue(template.label.hasAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                template.label.getAttribute("hidden"));
     }
 
     @Test
