@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.Element;
 public class InjectablePolymerElementInitializer
         extends AbstractInjectableElementInitializer {
 
+    private static final String DYNAMIC_ATTRIBUTE_PREFIX = "Template {} contains an attribute {} in element {} whose value";
     private final Class<? extends Component> templateClass;
 
     /**
@@ -61,24 +62,22 @@ public class InjectablePolymerElementInitializer
         }
         if (value.contains("{{") && value.contains("}}")) {
             // this is a binding, skip it
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} whose value"
-                            + " contains two-way binding and it's ignored by initilization",
+            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
+                    + " contains two-way binding and it's ignored by initilization",
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (value.contains("[[") && value.contains("]]")) {
             // this is another binding, skip it
-            getLogger().debug(
-                    "Template {} contains an attribute {} in element {} whose value"
-                            + " contains binding and it's ignored by initilization",
+            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
+                    + " contains binding and it's ignored by initilization",
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (value.contains("${") && value.contains("}")) {
             // this is a dynamic value
             getLogger().debug(
-                    "Template {} contains an attribute {} in element {} whose value"
+                    DYNAMIC_ATTRIBUTE_PREFIX
                             + " is dynamic and it's ignored by initilization",
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;

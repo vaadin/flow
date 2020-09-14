@@ -53,7 +53,7 @@ public abstract class AbstractInjectableElementInitializer
 
     @Override
     public void accept(Map<String, String> templateAttributes) {
-        templateAttributes.forEach((name, value) -> initialize(name, value));
+        templateAttributes.forEach(this::initialize);
     }
 
     /**
