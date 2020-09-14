@@ -65,24 +65,25 @@ public class InjectablePolymerElementInitializer
         }
         if (value.contains("{{") && value.contains("}}")) {
             // this is a binding, skip it
-            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
-                    + " contains two-way binding and it's ignored by initilization",
-                    templateClass.getSimpleName(), name, getElement().getTag());
+            getLogger().debug(
+                    "{} contains two-way binding and it's ignored by initilization",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
+                    name, getElement().getTag());
             return false;
         }
         if (value.contains("[[") && value.contains("]]")) {
             // this is another binding, skip it
-            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
-                    + " contains binding and it's ignored by initilization",
-                    templateClass.getSimpleName(), name, getElement().getTag());
+            getLogger().debug(
+                    "{} contains binding and it's ignored by initilization",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
+                    name, getElement().getTag());
             return false;
         }
         if (value.contains("${") && value.contains("}")) {
             // this is a dynamic value
-            getLogger().debug(
-                    DYNAMIC_ATTRIBUTE_PREFIX
-                            + " is dynamic and it's ignored by initilization",
-                    templateClass.getSimpleName(), name, getElement().getTag());
+            getLogger().debug("{} is dynamic and it's ignored by initilization",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
+                    name, getElement().getTag());
             return false;
         }
         return true;

@@ -32,7 +32,7 @@ import com.vaadin.flow.dom.Element;
 public class InjectableLitElementInitializer
         extends AbstractInjectableElementInitializer {
 
-    private static final String DYNAMIC_ATTRIBUTE_PREFIX = "Template {} contains an attribute {} in element {} which ";
+    private static final String DYNAMIC_ATTRIBUTE_PREFIX = "Template {} contains an attribute {} in element {} which";
     private final Class<? extends Component> templateClass;
 
     /**
@@ -54,24 +54,27 @@ public class InjectableLitElementInitializer
         if (name.startsWith("?")) {
             // this is a boolean attribute binding, ignore it since we don't
             // support bindings: the value is not an expression
-            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
-                    + "starts with '?' and ignored by initialization since this is an attribute binding",
-                    templateClass.getSimpleName(), name, getElement().getTag());
+            getLogger().debug(
+                    "{} starts with '?' and ignored by initialization since this is an attribute binding",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
+                    name, getElement().getTag());
             return false;
         }
         if (name.startsWith(".")) {
             // this is a property binding, ignore it since we don't support
             // bindings: the value is not an expression
-            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
-                    + "starts with '.' and ignored by initialization since this is a property binding",
-                    templateClass.getSimpleName(), name, getElement().getTag());
+            getLogger().debug(
+                    "{} starts with '.' and ignored by initialization since this is a property binding",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
+                    name, getElement().getTag());
             return false;
         }
         if (name.startsWith("@")) {
             // this is an event listener
-            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
-                    + "starts with '@' and ignored by initialization since this is an event listener declration",
-                    templateClass.getSimpleName(), name, getElement().getTag());
+            getLogger().debug(
+                    "{} starts with '@' and ignored by initialization since this is an event listener declration",
+                    DYNAMIC_ATTRIBUTE_PREFIX, templateClass.getSimpleName(),
+                    name, getElement().getTag());
             return false;
         }
         if (value == null) {
