@@ -128,7 +128,7 @@ public class TemplateDataAnalyzer {
                 Collection<SubTemplateData> subTemplates) {
             tagById = Collections.unmodifiableMap(tags);
             idByField = Collections.unmodifiableMap(fields);
-            attributesById = attributes;
+            attributesById = Collections.unmodifiableMap(attributes);
             twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
             this.subTemplates = Collections
                     .unmodifiableCollection(subTemplates);
@@ -145,20 +145,27 @@ public class TemplateDataAnalyzer {
                     (field, id) -> consumer.apply(field, id, tagById.get(id)));
         }
 
+        /**
+         * Gets template element data (attribute values).
+         * 
+         * @param id
+         *            the id of the element
+         * @return template data
+         */
+        public Map<String, String> getAttributes(String id) {
+            Map<String, String> attrs = attributesById.get(id);
+            if (attrs == null) {
+                return Collections.emptyMap();
+            }
+            return attrs;
+        }
+
         Set<String> getTwoWayBindingPaths() {
             return twoWayBindingPaths;
         }
 
         void forEachSubTemplate(Consumer<SubTemplateData> dataConsumer) {
             subTemplates.forEach(dataConsumer);
-        }
-
-        Map<String, String> getAttributes(String id) {
-            Map<String, String> attrs = attributesById.get(id);
-            if (attrs == null) {
-                return Collections.emptyMap();
-            }
-            return attrs;
         }
     }
 

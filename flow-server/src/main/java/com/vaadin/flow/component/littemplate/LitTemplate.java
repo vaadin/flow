@@ -90,7 +90,7 @@ public abstract class LitTemplate extends Component {
      */
     protected LitTemplate(LitTemplateParser parser, VaadinService service) {
         LitTemplateInitializer templateInitializer = new LitTemplateInitializer(
-                this, VaadinService.getCurrent());
+                this, parser, service);
         templateInitializer.initChildElements();
     }
 
