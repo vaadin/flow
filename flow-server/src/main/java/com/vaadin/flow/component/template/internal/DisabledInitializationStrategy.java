@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.template.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -24,7 +26,8 @@ import com.vaadin.flow.dom.Element;
  * @since
  *
  */
-class DisabledInitializationStrategy implements ElementInitializationStrategy {
+class DisabledInitializationStrategy
+        implements ElementInitializationStrategy, Serializable {
 
     @Override
     public void initialize(Element element, String name, String value) {
