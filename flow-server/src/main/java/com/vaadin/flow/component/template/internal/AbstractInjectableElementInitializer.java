@@ -129,6 +129,8 @@ public abstract class AbstractInjectableElementInitializer
         result.put("spellcheck", attributeStrategy);
         result.put("tabindex", attributeStrategy);
         result.put("translate", attributeStrategy);
+
+        result.put("disabled", new DisabledInitializationStrategy());
         return result;
     }
 }
