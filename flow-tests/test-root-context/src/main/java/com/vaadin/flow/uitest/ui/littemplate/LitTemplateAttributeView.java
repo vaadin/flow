@@ -24,7 +24,8 @@ public class LitTemplateAttributeView extends LitTemplate
         setId("template");
         Div div = new Div();
         div.setText(injectedDiv.getTitle().get() + " "
-                + injectedDiv.getElement().getProperty("foo"));
+                + injectedDiv.getElement().getProperty("foo") + " "
+                + injectedDiv.getElement().getProperty("baz"));
         div.setId("info");
         add(div);
     }

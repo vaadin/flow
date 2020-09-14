@@ -775,8 +775,8 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         Assert.assertTrue(template.label.hasProperty("someattribute"));
         Assert.assertNotNull(template.label.getProperty("someattribute"));
-        Assert.assertTrue(
-                template.label.getProperty("someattribute").isEmpty());
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                template.label.getProperty("someattribute"));
 
         Assert.assertFalse(template.label.hasProperty("property-binding"));
         Assert.assertFalse(template.label.hasProperty("propertyBinding"));
@@ -794,7 +794,8 @@ public class PolymerTemplateTest extends HasCurrentService {
                 template.label.getProperty("another-attribute"));
 
         Assert.assertTrue(template.label.hasAttribute("hidden"));
-        Assert.assertEquals("", template.label.getAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                template.label.getAttribute("hidden"));
     }
 
     @Test

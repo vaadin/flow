@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
@@ -177,7 +178,20 @@ public class IdCollector {
             return;
         }
         HashMap<String, String> attrs = new HashMap<>();
-        attributes.forEach(attr -> attrs.put(attr.getKey(), attr.getValue()));
+        attributes.forEach(attr -> setAttributeData(attr, attrs));
         attributesById.put(id, attrs);
+    }
+
+    private void setAttributeData(Attribute attribute,
+            HashMap<String, String> data) {
+        if (isBooleanAttribute(attribute)) {
+            data.put(attribute.getKey(), Boolean.TRUE.toString());
+        } else {
+            data.put(attribute.getKey(), attribute.getValue());
+        }
+    }
+
+    private boolean isBooleanAttribute(Attribute attribute) {
+        return attribute.getKey().equals(attribute.toString());
     }
 }

@@ -128,7 +128,7 @@ public class TemplateDataAnalyzer {
                 Collection<SubTemplateData> subTemplates) {
             tagById = Collections.unmodifiableMap(tags);
             idByField = Collections.unmodifiableMap(fields);
-            attributesById = attributes;
+            attributesById = Collections.unmodifiableMap(attributes);
             twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
             this.subTemplates = Collections
                     .unmodifiableCollection(subTemplates);
