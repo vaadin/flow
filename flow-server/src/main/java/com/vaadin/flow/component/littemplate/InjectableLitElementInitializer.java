@@ -54,28 +54,28 @@ public class InjectableLitElementInitializer
         if (name.startsWith("?")) {
             // this is a boolean attribute binding, ignore it since we don't
             // support bindings: the value is not an expression
-            getLogger().debug(
-                    DYNAMIC_ATTRIBUTE_PREFIX
-                            + "starts with '?' and ignored by initialization since this is an attribute binding",
+            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
+                    + "starts with '?' and ignored by initialization since this is an attribute binding",
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (name.startsWith(".")) {
             // this is a property binding, ignore it since we don't support
             // bindings: the value is not an expression
-            getLogger().debug(
-                    DYNAMIC_ATTRIBUTE_PREFIX
-                            + "starts with '.' and ignored by initialization since this is a property binding",
+            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
+                    + "starts with '.' and ignored by initialization since this is a property binding",
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
         if (name.startsWith("@")) {
             // this is an event listener
-            getLogger().debug(
-                    DYNAMIC_ATTRIBUTE_PREFIX
-                            + "starts with '@' and ignored by initialization since this is an event listener declration",
+            getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
+                    + "starts with '@' and ignored by initialization since this is an event listener declration",
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;
+        }
+        if (value == null) {
+            return true;
         }
         if (value.contains("${") && value.contains("}")) {
             // this is a dynamic value

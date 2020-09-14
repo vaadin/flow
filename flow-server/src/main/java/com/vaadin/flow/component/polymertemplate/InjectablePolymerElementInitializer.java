@@ -60,6 +60,9 @@ public class InjectablePolymerElementInitializer
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }
+        if (value == null) {
+            return true;
+        }
         if (value.contains("{{") && value.contains("}}")) {
             // this is a binding, skip it
             getLogger().debug(DYNAMIC_ATTRIBUTE_PREFIX
