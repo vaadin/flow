@@ -324,6 +324,25 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     }
 
+    @Tag(TAG)
+    private static class DisabledElementTemplate
+            extends PolymerTemplate<ModelClass> {
+
+        @Id("labelId")
+        private com.vaadin.flow.dom.Element label;
+
+        public DisabledElementTemplate() {
+            this((clazz, tag, service) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag
+                            + "'><label id='labelId' disabled></dom-module>")));
+        }
+
+        DisabledElementTemplate(TemplateParser parser) {
+            super(parser);
+        }
+
+    }
+
     private static class IdWrongElementTemplate extends IdElementTemplate {
 
         public IdWrongElementTemplate() {
@@ -796,6 +815,14 @@ public class PolymerTemplateTest extends HasCurrentService {
         Assert.assertTrue(template.label.hasAttribute("hidden"));
         Assert.assertEquals(Boolean.TRUE.toString(),
                 template.label.getAttribute("hidden"));
+    }
+
+    @Test
+    public void attachExistingElementWithAttributeValue_elementIsDisabled() {
+        DisabledElementTemplate template = new DisabledElementTemplate();
+
+        Assert.assertTrue(template.label.hasAttribute("id"));
+        Assert.assertFalse(template.label.isEnabled());
     }
 
     @Test

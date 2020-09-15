@@ -51,6 +51,26 @@ public class LitTemplateTest {
 
     }
 
+    @Tag("foo-bar")
+    private static class DisabledElementTemplate extends LitTemplate {
+
+        @Id("labelId")
+        private com.vaadin.flow.dom.Element label;
+
+        public DisabledElementTemplate(VaadinService service) {
+            this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
+                    Jsoup.parse("<foo-bar id='" + tag
+                            + "'><label id='labelId' disabled></foo-bar>")),
+                    service);
+        }
+
+        DisabledElementTemplate(LitTemplateParser parser,
+                VaadinService service) {
+            super(parser, service);
+        }
+
+    }
+
     @Before
     public void setUp() {
         DeploymentConfiguration configuration = Mockito
@@ -89,6 +109,14 @@ public class LitTemplateTest {
         Assert.assertTrue(template.label.hasAttribute("hidden"));
         Assert.assertEquals(Boolean.TRUE.toString(),
                 template.label.getAttribute("hidden"));
+    }
+
+    @Test
+    public void attachExistingElementWithAttributeValue_elementIsDisabled() {
+        DisabledElementTemplate template = new DisabledElementTemplate(service);
+
+        Assert.assertTrue(template.label.hasAttribute("id"));
+        Assert.assertFalse(template.label.isEnabled());
     }
 
 }
