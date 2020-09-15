@@ -28,7 +28,11 @@ import com.vaadin.flow.shared.VaadinUriResolver;
  * Helper methods for use in bootstrapping.
  *
  */
-public class BootstrapHandlerHelper implements Serializable {
+public final class BootstrapHandlerHelper implements Serializable {
+
+    private BootstrapHandlerHelper() {
+        // Only utility methods
+    }
 
     /**
      * Gets the service URL as a URL relative to the request URI.

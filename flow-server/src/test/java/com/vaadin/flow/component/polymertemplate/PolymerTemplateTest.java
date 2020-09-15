@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-import com.vaadin.flow.di.Instantiator;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -49,6 +48,7 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.DefaultInstantiator;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
@@ -100,7 +100,8 @@ public class PolymerTemplateTest extends HasCurrentService {
     private static class SimpleTemplateParser extends TestTemplateParser {
 
         SimpleTemplateParser() {
-            super(tag -> "<dom-module id='" + tag + "' someattrtibute></dom-module>");
+            super(tag -> "<dom-module id='" + tag
+                    + "' someattrtibute></dom-module>");
         }
 
     }
@@ -312,10 +313,31 @@ public class PolymerTemplateTest extends HasCurrentService {
         public IdElementTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId' someattrtibute></dom-module>")));
+                            + "'><label id='labelId' someattribute property-binding='[[foo]]' "
+                            + "attribute-binding$='bar' another-binding='{{foo}}'"
+                            + "another-attribute='baz' hidden></dom-module>")));
         }
 
         IdElementTemplate(TemplateParser parser) {
+            super(parser);
+        }
+
+    }
+
+    @Tag(TAG)
+    private static class DisabledElementTemplate
+            extends PolymerTemplate<ModelClass> {
+
+        @Id("labelId")
+        private com.vaadin.flow.dom.Element label;
+
+        public DisabledElementTemplate() {
+            this((clazz, tag, service) -> new TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag
+                            + "'><label id='labelId' disabled></dom-module>")));
+        }
+
+        DisabledElementTemplate(TemplateParser parser) {
             super(parser);
         }
 
@@ -422,8 +444,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     @SuppressWarnings("serial")
     @Before
-    public void setUp() throws SecurityException,
-            IllegalArgumentException {
+    public void setUp() throws SecurityException, IllegalArgumentException {
         executionOrder.clear();
         executionParams.clear();
 
@@ -474,8 +495,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getTemplateParser())
                 .thenReturn(NpmTemplateParser.getInstance());
-        Mockito.when(service.getInstantiator())
-                .thenReturn(instantiator);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         return service;
     }
 
@@ -766,6 +786,46 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     @Test
+    public void attachExistingElementWithAttributeValue_elementHasPropertyAndAttribute() {
+        IdElementTemplate template = new IdElementTemplate();
+
+        Assert.assertTrue(template.label.hasAttribute("id"));
+        Assert.assertEquals("labelId", template.label.getAttribute("id"));
+
+        Assert.assertTrue(template.label.hasProperty("someattribute"));
+        Assert.assertNotNull(template.label.getProperty("someattribute"));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                template.label.getProperty("someattribute"));
+
+        Assert.assertFalse(template.label.hasProperty("property-binding"));
+        Assert.assertFalse(template.label.hasProperty("propertyBinding"));
+
+        Assert.assertFalse(template.label.hasProperty("another-binding"));
+        Assert.assertFalse(template.label.hasProperty("anotherBinding"));
+
+        Assert.assertFalse(template.label.hasProperty("attribute-binding"));
+        Assert.assertFalse(template.label.hasProperty("attributeBinding"));
+        Assert.assertFalse(template.label.hasProperty("attribute-binding$"));
+        Assert.assertFalse(template.label.hasProperty("attributeBinding$"));
+
+        Assert.assertTrue(template.label.hasProperty("another-attribute"));
+        Assert.assertEquals("baz",
+                template.label.getProperty("another-attribute"));
+
+        Assert.assertTrue(template.label.hasAttribute("hidden"));
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                template.label.getAttribute("hidden"));
+    }
+
+    @Test
+    public void attachExistingElementWithAttributeValue_elementIsDisabled() {
+        DisabledElementTemplate template = new DisabledElementTemplate();
+
+        Assert.assertTrue(template.label.hasAttribute("id"));
+        Assert.assertFalse(template.label.isEnabled());
+    }
+
+    @Test
     public void attachExistingElement_injectedByIDdChild_onlyOneElementIsCreated() {
         TemplateInjectTemplate template = new TemplateInjectTemplate();
 
@@ -796,7 +856,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     }
 
     private void attachComponentAndVerifyChild(PolymerTemplate<?> template,
-                                               CustomComponent templateChild) {
+            CustomComponent templateChild) {
         VirtualChildrenList feature = template.getStateNode()
                 .getFeature(VirtualChildrenList.class);
         List<StateNode> templateNodes = new ArrayList<>();

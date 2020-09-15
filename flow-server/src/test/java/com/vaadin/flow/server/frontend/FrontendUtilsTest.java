@@ -116,17 +116,6 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void validateLargerThan_ignoredWithProperty() {
-        try {
-            System.setProperty("vaadin.ignoreVersionChecks", "true");
-            FrontendUtils.validateToolVersion("test", new FrontendVersion(0, 0),
-                    new FrontendVersion(10, 2), new FrontendVersion(10, 2));
-        } finally {
-            System.clearProperty("vaadin.ignoreVersionChecks");
-        }
-    }
-
-    @Test
     public void parseValidToolVersions() throws IOException {
         Assert.assertEquals("10.11.12",
                 FrontendUtils.parseVersionString("v10.11.12"));

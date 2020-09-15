@@ -36,8 +36,8 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -74,7 +74,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
@@ -118,7 +118,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
 
         webpackUpdater.execute();
@@ -164,7 +164,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED, new File(baseDir, "bar"), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
         newUpdater.execute();
 
@@ -200,7 +200,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"),
                 WEBPACK_CONFIG, WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEAULT_FLOW_RESOURCES_FOLDER),
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())

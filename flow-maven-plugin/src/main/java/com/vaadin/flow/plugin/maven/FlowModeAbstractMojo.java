@@ -25,7 +25,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
@@ -139,7 +138,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
 
     /**
      * The node.js version to be used when node.js is installed automatically by
-     * Vaadin, for example `"v12.16.0"`. Defaults to null which uses the
+     * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
     @Parameter(property = "node.version", defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
