@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -39,7 +42,6 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
@@ -89,7 +91,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed
-     *            automatically by Vaadin, for example <code>"v12.16.0"</code>.
+     *            automatically by Vaadin, for example <code>"v12.18.3"</code>.
      *            Use {@value FrontendTools#DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled
@@ -360,9 +362,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         String toolName = enablePnpm ? "pnpm" : "npm";
 
+        String commandString = command.stream()
+                .collect(Collectors.joining(" "));
+
         Process process = null;
         try {
-            process = builder.inheritIO().start();
+            process = builder.start();
             Process finalProcess = process;
 
             // This will allow to destroy the process which does IO regardless
@@ -371,9 +376,25 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Runtime.getRuntime()
                     .addShutdownHook(new Thread(finalProcess::destroyForcibly));
 
+
+            packageUpdater.log().debug("Output of `{}`:", commandString);
+            StringBuilder toolOutput = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(),
+                            StandardCharsets.UTF_8))) {
+                String stdoutLine;
+                while ((stdoutLine = reader.readLine()) != null) {
+                    packageUpdater.log().debug(stdoutLine);
+                    toolOutput.append(stdoutLine);
+                }
+            }
+
             int errorCode = process.waitFor();
 
             if (errorCode != 0) {
+                // Echo the stdout from pnpm/npm to error level log
+                packageUpdater.log().error("Command `{}` failed:\n{}",
+                        commandString, toolOutput);
                 packageUpdater.log().error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",

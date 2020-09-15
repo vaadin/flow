@@ -57,11 +57,11 @@ import elemental.json.JsonObject;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v12.16.0";
+    public static final String DEFAULT_NODE_VERSION = "v12.18.3";
 
     public static final String DEFAULT_PNPM_VERSION = "4.5.0";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm -DnodeVersion=\"v12.18.3\" ";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -95,9 +95,9 @@ public class FrontendTools {
                     new FrontendVersion("6.11.1"),
                     new FrontendVersion("6.11.2"));
 
-    private static final String PNMP_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
+    static final String PNPM_INSTALLED_BY_NPM_FOLDER = "node_modules/pnpm/";
 
-    private static final String PNMP_INSTALLED_BY_NPM = PNMP_INSTALLED_BY_NPM_FOLDER
+    static final String PNPM_INSTALLED_BY_NPM = PNPM_INSTALLED_BY_NPM_FOLDER
             + "bin/pnpm.js";
 
     private static final int SUPPORTED_NODE_MAJOR_VERSION = 10;
@@ -150,6 +150,8 @@ public class FrontendTools {
 
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
+    
+    private final boolean ignoreVersionChecks;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -190,7 +192,7 @@ public class FrontendTools {
      *            {@code null}
      * @param nodeVersion
      *            The node.js version to be used when node.js is installed automatically
-     *            by Vaadin, for example <code>"v12.16.0"</code>. Use
+     *            by Vaadin, for example <code>"v12.18.3"</code>. Use
      *            {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
      *            Download node.js from this URL. Handy in heavily firewalled corporate
@@ -201,10 +203,19 @@ public class FrontendTools {
                          Supplier<String> alternativeDirGetter,
                          String nodeVersion,
                          URI nodeDownloadRoot) {
+        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
+                "true".equalsIgnoreCase(System.getProperty(
+                        FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)));
+    }
+
+    FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
+            String nodeVersion, URI nodeDownloadRoot,
+            boolean ignoreVersionChecks) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
+        this.ignoreVersionChecks = ignoreVersionChecks;
     }
 
     /**
@@ -293,13 +304,16 @@ public class FrontendTools {
      * exception with a descriptive message if a version is too old.
      */
     public void validateNodeAndNpmVersion() {
+        if (ignoreVersionChecks) {
+            return;
+        }
         try {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(getNodeExecutable());
             nodeVersionCommand.add("--version"); // NOSONAR
-            FrontendVersion nodeVersion = FrontendUtils.getVersion("node",
+            FrontendVersion foundNodeVersion = FrontendUtils.getVersion("node",
                     nodeVersionCommand);
-            FrontendUtils.validateToolVersion("node", nodeVersion,
+            FrontendUtils.validateToolVersion("node", foundNodeVersion,
                     SUPPORTED_NODE_VERSION, SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
@@ -650,6 +664,7 @@ public class FrontendTools {
         }
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
+        returnCommand.add("--scripts-prepend-node-path=true");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.
@@ -676,34 +691,40 @@ public class FrontendTools {
         return returnCommand;
     }
 
-    private List<String> getSuitablePnpm(String dir) {
-        final List<String> pnpmCommand = getPnpmExecutable(dir, false);
-        if (!pnpmCommand.isEmpty()) {
+    List<String> getSuitablePnpm(String dir) {
+        List<String> pnpmCommand = getPnpmExecutable(dir, false);
+        String pnpmCommandString = String.join(" ", pnpmCommand);
+
+        if (!ignoreVersionChecks && !pnpmCommand.isEmpty()) {
             // check whether globally or locally installed pnpm is new enough
             try {
                 List<String> versionCmd = new ArrayList<>(pnpmCommand);
                 versionCmd.add("--version"); // NOSONAR
                 FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
                         versionCmd);
-                if (FrontendUtils.isVersionAtLeast(pnpmVersion,
+                if (!(FrontendUtils.isVersionAtLeast(pnpmVersion,
                         SUPPORTED_PNPM_VERSION)
-                        && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION)) {
-                    return pnpmCommand;
-                } else {
-                    getLogger().warn(String.format(
-                            "installed pnpm ('%s', version %s) is not in the compatible versions range (>=%s, <%s), installing supported version locally",
-                            String.join(" ", pnpmCommand),
-                            pnpmVersion.getFullVersion(),
+                        && pnpmVersion.isOlderThan(BREAKING_PNPM_VERSION))) {
+                    getLogger().warn(
+                            "installed pnpm ('{}', version {}) is not in the compatible versions range (>={}, <{})",
+                            pnpmCommandString, pnpmVersion.getFullVersion(),
                             SUPPORTED_PNPM_VERSION.getFullVersion(),
-                            BREAKING_PNPM_VERSION.getFullVersion()));
+                            BREAKING_PNPM_VERSION.getFullVersion());
+                    pnpmCommand = Collections.emptyList();
                 }
             } catch (UnknownVersionException e) {
-                getLogger().warn(
-                        "Error checking pnpm version, installing pnpm locally",
-                        e);
+                getLogger().warn("error checking pnpm version", e);
             }
         }
-        return Collections.emptyList();
+        if (!pnpmCommand.isEmpty()) {
+            getLogger().info("using '{}' for frontend package installation",
+                    pnpmCommandString);
+        } else {
+            getLogger().info("installing pnpm version {} locally",
+                    SUPPORTED_PNPM_VERSION.getFullVersion());
+
+        }
+        return pnpmCommand;
     }
 
     private void installPnpm(String dir, List<String> installCommand) {
@@ -753,7 +774,7 @@ public class FrontendTools {
     }
 
     private Optional<File> getLocalPnpmScript(String dir) {
-        File npmInstalled = new File(dir, PNMP_INSTALLED_BY_NPM);
+        File npmInstalled = new File(dir, PNPM_INSTALLED_BY_NPM);
         if (npmInstalled.canRead()) {
             return Optional.of(npmInstalled);
         }

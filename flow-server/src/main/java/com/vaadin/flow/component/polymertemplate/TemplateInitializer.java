@@ -153,9 +153,13 @@ public class TemplateInitializer {
     /* Map declared fields marked @Id */
 
     private void mapComponents() {
-        parserData.forEachInjectedField(
-                (field, id, tag) -> idMapper.mapComponentOrElement(field, id,
-                        tag, this::attachComponentIfUses));
+        parserData.forEachInjectedField((field, id, tag) -> idMapper
+                .mapComponentOrElement(field, id, tag, element -> {
+                    InjectablePolymerElementInitializer initializer = new InjectablePolymerElementInitializer(
+                            element, templateClass);
+                    initializer.accept(parserData.getAttributes(id));
+                    attachComponentIfUses(element);
+                }));
     }
 
     private Element getElement() {

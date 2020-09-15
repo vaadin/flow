@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -70,10 +71,11 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
             return;
         }
         try {
-            ClassReader cr;
             URL url = finder.getResource(name.replace(".", "/") + ".class");
-            cr = new ClassReader(url.openStream());
-            cr.accept(this, 0);
+            try (InputStream is = url.openStream()) {
+                ClassReader cr = new ClassReader(is);
+                cr.accept(this, 0);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

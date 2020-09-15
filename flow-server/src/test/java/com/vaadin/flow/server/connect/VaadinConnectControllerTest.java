@@ -46,6 +46,8 @@ import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 import com.vaadin.flow.server.connect.auth.VaadinConnectAccessChecker;
 import com.vaadin.flow.server.connect.exception.EndpointException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException;
+import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint;
+import com.vaadin.flow.server.connect.generator.endpoints.superclassmethods.PersonEndpoint.Person;
 import com.vaadin.flow.server.connect.testendpoint.BridgeMethodTestEndpoint;
 
 import static org.junit.Assert.assertEquals;
@@ -1056,6 +1058,17 @@ public class VaadinConnectControllerTest {
         assertTrue(message.contains(NullCheckerTestClass.class.getSimpleName()));
         assertTrue(message.contains(testNullMethodName));
         assertTrue(message.contains(errorMessage));
+    }
+
+    @Test
+    public void should_ReturnResult_When_CallingSuperClassMethodWithGenericTypedParameter() {
+        ResponseEntity<?> response = createVaadinController(new PersonEndpoint())
+                .serveEndpoint(PersonEndpoint.class.getSimpleName(), "update",
+                        createRequestParameters(
+                        "{\"entity\":{\"name\":\"aa\"}}"), requestMock);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("{\"name\":\"aa\"}", response.getBody());
     }
 
     private void assertEndpointInfoPresent(String responseBody) {

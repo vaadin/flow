@@ -17,11 +17,13 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
+import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 
 public class TestingServiceInitListener implements VaadinServiceInitListener {
+
     @Override
     public void serviceInit(ServiceInitEvent event) {
         // just set a fake backend to trigger live-reload client-side
@@ -30,6 +32,18 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         BrowserLiveReload browserLiveReload = liveReloadAccess
                 .getLiveReload(VaadinService.getCurrent());
         browserLiveReload.setBackend(BrowserLiveReload.Backend.HOTSWAP_AGENT);
+
+        event.addRequestHandler(
+                (RequestHandler) (session, request, response) -> {
+                    if ("/reset_frontend".equals(request.getPathInfo())) {
+                        LiveReloadView.writeToFrontendJSFile(
+                                session.getService(),
+                                "/* Update to trigger Webpack */\n");
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
     }
 
 }
