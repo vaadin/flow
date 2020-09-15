@@ -6,6 +6,7 @@ export class AttributeLitTemplate extends LitElement {
     return html`
        <div style="padding: 10px; border: 1px solid black">
        <div id="div" title="foo" foo="bar" baz></div>
+       <div id="disabled" disabled></div>
        </div>
        <slot>
     `;

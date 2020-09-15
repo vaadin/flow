@@ -113,6 +113,14 @@ public class InjectablePolymerElementInitializerTest {
         Assert.assertEquals("50px", comp.getStyle().get("height"));
     }
 
+    @Test
+    public void initializeElement_disabled_elementIsDisabled() {
+        initializer.accept(
+                Collections.singletonMap("disabled", Boolean.TRUE.toString()));
+
+        Assert.assertFalse(element.isEnabled());
+    }
+
     @Tag(Tag.DIV)
     public static class TestComponent extends Component implements HasStyle {
 
