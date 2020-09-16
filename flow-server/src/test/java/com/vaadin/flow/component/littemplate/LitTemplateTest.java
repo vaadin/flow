@@ -70,6 +70,7 @@ public class LitTemplateTest {
         }
     }
 
+    @Tag("foo-bar")
     private static class ElementWithTextLitTemplate extends LitTemplate {
 
         @Id("labelId")
