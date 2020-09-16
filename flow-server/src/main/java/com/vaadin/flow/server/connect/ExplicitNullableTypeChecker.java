@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
-    private BeanValueTypeCheckHelper beanValueTypeCheckCache = new BeanValueTypeCheckHelper();
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinConnectController.class);
@@ -67,7 +66,8 @@ public class ExplicitNullableTypeChecker {
         }
         if (annotatedElement instanceof Method) {
             return checkValueForType(value,
-                    ((Method) annotatedElement).getGenericReturnType());
+                    ((Method) annotatedElement).getGenericReturnType(),
+                    new BeanValueTypeCheckHelper());
         }
         return null;
     }
@@ -80,10 +80,12 @@ public class ExplicitNullableTypeChecker {
      *            the value to validate
      * @param expectedType
      *            the declared type expected for the value
+     * @param beanValueTypeCheckHelper
+     *            a helper to keep track of visited beans to avoid circular checking
      * @return error message when the value is null while the expected type does
      *         not explicitly allow null, or null meaning the value is OK.
      */
-    String checkValueForType(Object value, Type expectedType) {
+    String checkValueForType(Object value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
         Class<?> clazz;
         if (expectedType instanceof TypeVariable){
             return null;
@@ -95,15 +97,15 @@ public class ExplicitNullableTypeChecker {
 
         if (value != null) {
             if (Iterable.class.isAssignableFrom(clazz)) {
-                return checkIterable((Iterable<?>) value, expectedType);
+                return checkIterable((Iterable<?>) value, expectedType, beanValueTypeCheckHelper);
             } else if (clazz.isArray() && value instanceof Object[]) {
                 return checkIterable(Arrays.asList((Object[]) value),
-                        expectedType);
+                        expectedType, beanValueTypeCheckHelper);
             } else if (Map.class.isAssignableFrom(clazz)) {
-                return checkMapValues((Map<?, ?>) value, expectedType);
+                return checkMapValues((Map<?, ?>) value, expectedType, beanValueTypeCheckHelper);
             } else if (expectedType instanceof Class<?>
                     && !clazz.getName().startsWith("java.")) {
-                return checkBeanFields(value, expectedType);
+                return checkBeanFields(value, expectedType, beanValueTypeCheckHelper);
             } else {
                 return null;
             }
@@ -131,7 +133,7 @@ public class ExplicitNullableTypeChecker {
                 expectedType.getTypeName());
     }
 
-    private String checkIterable(Iterable<?> value, Type expectedType) {
+    private String checkIterable(Iterable<?> value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
         Type itemType = Object.class;
         String iterableDescription = "iterable";
         if (expectedType instanceof ParameterizedType) {
@@ -144,7 +146,7 @@ public class ExplicitNullableTypeChecker {
         }
 
         for (Object item : value) {
-            String error = checkValueForType(item, itemType);
+            String error = checkValueForType(item, itemType, beanValueTypeCheckHelper);
             if (error != null) {
                 return String.format("Unexpected null item in %s type '%s'. %s",
                         iterableDescription, expectedType, error);
@@ -154,7 +156,7 @@ public class ExplicitNullableTypeChecker {
         return null;
     }
 
-    private String checkMapValues(Map<?, ?> value, Type expectedType) {
+    private String checkMapValues(Map<?, ?> value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
         Type valueType = Object.class;
 
         if (expectedType instanceof ParameterizedType) {
@@ -163,7 +165,7 @@ public class ExplicitNullableTypeChecker {
         }
 
         for (Map.Entry<?, ?> e : value.entrySet()) {
-            String error = checkValueForType(e.getValue(), valueType);
+            String error = checkValueForType(e.getValue(), valueType, beanValueTypeCheckHelper);
             if (error != null) {
                 return String.format(
                         "Unexpected null value for key '%s' of "
@@ -204,11 +206,11 @@ public class ExplicitNullableTypeChecker {
         }
     }
 
-    private String checkBeanFields(Object value, Type expectedType) {
-        if (beanValueTypeCheckCache.hasVisited(value, expectedType)) {
+    private String checkBeanFields(Object value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
+        if (beanValueTypeCheckHelper.hasVisited(value, expectedType)) {
             return null;
         }
-        beanValueTypeCheckCache.markAsVisited(value, expectedType);
+        beanValueTypeCheckHelper.markAsVisited(value, expectedType);
         Class<?> clazz = (Class<?>) expectedType;
         try {
             for (PropertyDescriptor propertyDescriptor : Introspector
@@ -221,7 +223,7 @@ public class ExplicitNullableTypeChecker {
                 Type propertyType = readMethod.getGenericReturnType();
                 Object propertyValue = readMethod.invoke(value);
 
-                String error = checkValueForType(propertyValue, propertyType);
+                String error = checkValueForType(propertyValue, propertyType, beanValueTypeCheckHelper);
                 if (error != null) {
                     return String.format(
                             "Unexpected null value in Java "
