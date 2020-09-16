@@ -365,6 +365,26 @@ public class NodeListAddRemoveTest
         Assert.assertEquals(ListAddChange.class, changes.get(0).getClass());
     }
 
+    @Test
+    public void clear_modifyList_collectChanges_clearChangeIsCollected() {
+        nodeList.clear();
+        nodeList.add("foo");
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        // attach the feature node to the tree
+        tree.getRootNode().getFeature(ElementChildrenList.class)
+                .add(nodeList.getNode());
+
+        List<NodeChange> changes = new ArrayList<>();
+        nodeList.getNode().collectChanges(changes::add);
+
+        Assert.assertEquals(3, changes.size());
+        Assert.assertEquals(NodeAttachChange.class, changes.get(0).getClass());
+        Assert.assertEquals(ListClearChange.class, changes.get(1).getClass());
+        Assert.assertEquals(ListAddChange.class, changes.get(2).getClass());
+    }
+
     private List<String> addOriginalItems(int numberOfOriginalItems) {
         List<String> items = new ArrayList<>();
         for (int i = 0; i < numberOfOriginalItems; i++) {
