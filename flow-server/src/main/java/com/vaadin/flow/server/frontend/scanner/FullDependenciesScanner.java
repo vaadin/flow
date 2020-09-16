@@ -442,7 +442,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
             Class<?> hopefullyAppShellClass =
                     annotatedClasses.iterator().next();
-            if (!Arrays.asList(hopefullyAppShellClass.getInterfaces()).stream()
+            if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
                     .map(Class::getName).collect(Collectors.toList())
                     .contains(AppShellConfigurator.class.getName())) {
                 throw new IllegalStateException(
@@ -472,6 +472,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             String startPath = getAnnotationValueAsString(pwa, "startPath");
             String[] offlineResources = (String[]) getAnnotationValue(pwa,
                     "offlineResources");
+
+            assert shortName != null; // required in @PWA annotation
 
             return new PwaConfiguration(true, name, shortName, description,
                     backgroundColor, themeColor, iconPath, manifestPath,
