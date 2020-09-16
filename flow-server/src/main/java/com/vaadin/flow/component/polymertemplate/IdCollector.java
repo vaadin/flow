@@ -198,12 +198,7 @@ public class IdCollector {
     }
 
     private Map<String, String> getAttributeData(String id) {
-        Map<String, String> map = attributesById.get(id);
-        if (map == null) {
-            map = new HashMap<>();
-            attributesById.put(id, map);
-        }
-        return map;
+        return attributesById.computeIfAbsent(id, key -> new HashMap<>());
     }
 
     private void setText(String id, Element domElement) {

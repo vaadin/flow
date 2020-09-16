@@ -41,7 +41,7 @@ public abstract class AbstractInjectableElementInitializer
      * The real attribute may not contain {@code "="} sign in the name so it's
      * safe to use this special key for text value in a map.
      */
-    public static String TEXT_DATA = "=text";
+    public static final String TEXT_DATA = "=text";
 
     private final Element element;
 
