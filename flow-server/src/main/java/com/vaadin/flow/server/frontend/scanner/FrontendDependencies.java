@@ -391,20 +391,17 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * read it into a {@link com.vaadin.flow.server.PwaConfiguration} object.
      *
      * @throws ClassNotFoundException
-     * @throws IllegalStateException
      */
-    private void computePwaConfiguration()
-            throws ClassNotFoundException, IllegalStateException {
-
+    private void computePwaConfiguration() throws ClassNotFoundException {
         FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), PWA.class.getName());
-        Class<?> AppShellConfigurator = getFinder().loadClass(
+        Class<?> appShellConfiguratorClass = getFinder().loadClass(
                 AppShellConfigurator.class.getName());
 
         for (Class<?> hopefullyAppShellClass :
                 getFinder().getAnnotatedClasses(PWA.class.getName())) {
                     if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
-                            .contains(AppShellConfigurator)) {
+                            .contains(appShellConfiguratorClass)) {
                         throw new IllegalStateException(
                                 ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
                     }
@@ -436,7 +433,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
                 description, backgroundColor, themeColor, iconPath,
                 manifestPath, offlinePath, display, startPath,
-                offlineResources.toArray(new String[offlineResources.size()]));
+                offlineResources.toArray(new String[] {}));
     }
 
     private Logger log() {

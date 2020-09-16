@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * @since 2.0
  */
 final class FrontendAnnotatedClassVisitor extends ClassVisitor {
-    private static Map<String, Map<String, Object>> annotationDefaults = new HashMap<>();
+    private final Map<String, Map<String, Object>> annotationDefaults = new HashMap<>();
     private final String annotationName;
     private final List<HashMap<String, Object>> data = new ArrayList<>();
     private final ClassFinder finder;
@@ -116,44 +116,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
             boolean visible) {
         String cname = descriptor.replace("/", ".");
         if (cname.contains(annotationName)) {
-            return new RepeatedAnnotationVisitor() {
-                // initialize for non repeated annotations
-                HashMap<String, Object> info = new HashMap<>();
-
-                @Override
-                public AnnotationVisitor visitArray(String name) {
-                    List values = new ArrayList<>();
-                    info.put(name, values);
-
-                    return new AnnotationVisitor(api, this) {
-                        @Override
-                        public void visit(String dummy, Object value) {
-                            if (data.indexOf(info) < 0) {
-                                data.add(info);
-                            }
-                            values.add(value);
-                        }
-                    };
-                }
-
-                // Visited on each annotation attribute
-                @Override
-                public void visit(String name, Object value) {
-                    if (data.indexOf(info) < 0) {
-                        data.add(info);
-                    }
-                    info.put(name, value);
-                }
-
-                // Only visited when annotation is repeated
-                @Override
-                public AnnotationVisitor visitAnnotation(String name,
-                        String descriptor) {
-                    // initialize in each repeated annotation occurrence
-                    info = new HashMap<>();
-                    return this;
-                }
-            };
+            return new DataAnnotationVisitor(data);
         }
         return null;
     }
@@ -246,7 +209,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         getLogger().debug("Reading default values for {}", annotationName);
         Map<String, Object> defaults = new HashMap<>();
 
-        visitClass(annotationName, new AnnotationClassVisitor(defaults));
+        visitClass(annotationName,
+                new DefaultsAnnotationClassVisitor(api, defaults));
 
         getLogger().debug("Default values for {}: {}", annotationName,
                 defaults);
@@ -258,54 +222,126 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         return LoggerFactory.getLogger(FrontendAnnotatedClassVisitor.class);
     }
 
-    private class AnnotationClassVisitor extends ClassVisitor {
+    /**
+     * Class visitor for collecting default annotation values
+     */
+    private static class DefaultsAnnotationClassVisitor extends ClassVisitor {
         private final Map<String, Object> defaults;
 
-        public AnnotationClassVisitor(Map<String, Object> defaults) {
-            super(FrontendAnnotatedClassVisitor.this.api);
+        public DefaultsAnnotationClassVisitor(int api, Map<String, Object> defaults) {
+            super(api);
             this.defaults = defaults;
         }
 
         @Override
         public MethodVisitor visitMethod(int access, String methodName,
                 String descriptor, String signature, String[] exceptions) {
-            return new AnnotationMethodVisitor(methodName, defaults);
+            return new DefaultsAnnotationMethodVisitor(api, methodName, defaults);
         }
-
     }
 
-    private class AnnotationMethodVisitor extends MethodVisitor {
+    /**
+     * Method visitor for collecting default annotation values
+     */
+    private static class DefaultsAnnotationMethodVisitor extends MethodVisitor {
         private final String methodName;
         private final Map<String, Object> defaults;
 
-        public AnnotationMethodVisitor(String methodName,
+        public DefaultsAnnotationMethodVisitor(int api, String methodName,
                 Map<String, Object> defaults) {
-            super(FrontendAnnotatedClassVisitor.this.api);
+            super(api);
             this.methodName = methodName;
             this.defaults = defaults;
         }
 
         @Override
         public AnnotationVisitor visitAnnotationDefault() {
-            return new AnnotationVisitor(api) {
-                @Override
-                public void visit(String name, Object value) {
-                    defaults.put(methodName, value);
-                }
+            return new DefaultsAnnotationVisitor(api, methodName, defaults);
+        }
 
-                @Override
-                public AnnotationVisitor visitArray(String arrayName) {
-                    List values = new ArrayList<>();
-                    defaults.put(methodName, values);
+    }
 
-                    return new AnnotationVisitor(api, this) {
-                        @Override
-                        public void visit(String name, Object value) {
-                            values.add(value);
-                        }
-                    };
-                }
-            };
+    /**
+     * Collects default annotation values
+     */
+    private static class DefaultsAnnotationVisitor extends AnnotationVisitor {
+        private final String methodName;
+        private final Map<String, Object> defaults;
+
+        public DefaultsAnnotationVisitor(int api, String methodName,
+                Map<String, Object> defaults) {
+            super(api);
+            this.methodName = methodName;
+            this.defaults = defaults;
+        }
+
+        @Override
+        public void visit(String name, Object value) {
+            defaults.put(methodName, value);
+        }
+
+        @Override
+        public AnnotationVisitor visitArray(String arrayName) {
+            List<?> values = new ArrayList<>();
+            defaults.put(methodName, values);
+
+            return new ArrayAnnotationVisitor(api, this, values);
+        }
+    }
+
+    /**
+     * Collects data from possibly repeated annotations
+     */
+    private static class DataAnnotationVisitor extends RepeatedAnnotationVisitor {
+        private final List<HashMap<String, Object>> data;
+        // initialize for non repeated annotations
+        private HashMap<String, Object> info = new HashMap<>();
+
+        DataAnnotationVisitor(List<HashMap<String, Object>> data) {
+            this.data = data;
+            data.add(info);
+        }
+
+        @Override
+        public AnnotationVisitor visitArray(String name) {
+            List values = new ArrayList<>();
+            info.put(name, values);
+
+            return new ArrayAnnotationVisitor(api, this, values);
+        }
+
+        // Visited on each annotation attribute
+        @Override
+        public void visit(String name, Object value) {
+            info.put(name, value);
+        }
+
+        // Only visited when annotation is repeated
+        @Override
+        public AnnotationVisitor visitAnnotation(String name,
+                String descriptor) {
+            // initialize in each repeated annotation occurrence
+            info = new HashMap<>();
+            data.add(info);
+            return this;
+        }
+    }
+
+    /**
+     * Collects a list of annotation array values
+     */
+    private static class ArrayAnnotationVisitor extends AnnotationVisitor {
+        private final List values;
+
+        public ArrayAnnotationVisitor(int api, AnnotationVisitor visitor,
+                List values) {
+            super(api, visitor);
+            this.values = values;
+        }
+
+        @Override
+        public void visit(String name, Object value) {
+            values.add(value);
         }
     }
 }
