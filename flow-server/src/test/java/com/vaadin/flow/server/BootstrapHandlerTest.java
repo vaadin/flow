@@ -376,7 +376,7 @@ public class BootstrapHandlerTest {
         this.request = request;
 
         ui.doInit(request, 0);
-        ui.getRouter().initializeUI(ui, request);
+        ui.getInternals().getRouter().initializeUI(ui, request);
         context = new BootstrapContext(request, null, session, ui,
                 this::contextRootRelativePath);
         ui.getInternals().setContextRoot(contextRootRelativePath(request));
@@ -396,7 +396,7 @@ public class BootstrapHandlerTest {
         this.request = request;
 
         ui.doInit(request, 0);
-        ui.getRouter().initializeUI(ui, request);
+        ui.getInternals().getRouter().initializeUI(ui, request);
         context = new BootstrapContext(request, null, session, ui,
                 this::contextRootRelativePath);
         ui.getInternals().setContextRoot(contextRootRelativePath(request));
@@ -428,7 +428,7 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
         anotherUI.getInternals()
                 .setContextRoot(contextRootRelativePath(request));
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
@@ -1141,7 +1141,7 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()
@@ -1224,7 +1224,7 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()
@@ -1420,7 +1420,7 @@ public class BootstrapHandlerTest {
         anotherUI.getInternals().setSession(session);
         VaadinServletRequest vaadinRequest = createVaadinRequest();
         anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getRouter().initializeUI(anotherUI, request);
+        anotherUI.getInternals().getRouter().initializeUI(anotherUI, request);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
                 null, session, anotherUI, this::contextRootRelativePath);
         anotherUI.getInternals()

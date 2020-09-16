@@ -785,6 +785,8 @@ public class UI extends Component
     /**
      * Gets the framework data object for this UI.
      *
+     * This method is for internal use only.
+     *
      * @return the framework data object
      */
     public UIInternals getInternals() {
@@ -883,7 +885,7 @@ public class UI extends Component
     public void navigate(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
+                .forRegistry(getInternals().getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
     }
     
@@ -929,7 +931,8 @@ public class UI extends Component
         Objects.requireNonNull(location, "Location must not be null");
         Objects.requireNonNull(queryParameters, "Query parameters must not be null");
 
-        getRouter().navigate(this, new Location(location, queryParameters),
+        getInternals().getRouter().navigate(this,
+                new Location(location, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
     }
 
@@ -937,8 +940,10 @@ public class UI extends Component
      * Gets the router used for navigating in this UI.
      *
      * @return a router
+     *
+     * @deprecated For internal use only. Will be removed in the future.
      */
-    public Router getRouter() {
+    private Router getRouter() {
         return internals.getRouter();
     }
 

@@ -260,11 +260,6 @@ public class WebComponentUI extends UI {
     }
 
     @Override
-    public Router getRouter() {
-        return null;
-    }
-
-    @Override
     public void navigate(String location) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
