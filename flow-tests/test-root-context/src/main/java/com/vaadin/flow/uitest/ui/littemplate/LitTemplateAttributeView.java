@@ -43,6 +43,7 @@ public class LitTemplateAttributeView extends LitTemplate
         div.setText("Enabled: " + disabledDiv.isEnabled());
         add(div);
 
+        div = new Div();
         div.setText(hasText.getText() + " " + hasTextAndChild.getText() + "|");
         div.setId("text-info");
         add(div);
