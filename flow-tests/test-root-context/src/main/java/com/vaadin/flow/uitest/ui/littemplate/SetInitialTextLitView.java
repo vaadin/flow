@@ -1,28 +1,25 @@
-package com.vaadin.flow.uitest.ui.template;
+package com.vaadin.flow.uitest.ui.littemplate;
 
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.polymertemplate.Id;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.template.SetInitialTextView", layout = ViewTestLayout.class)
-@Tag("set-initial-text")
-@JsModule("SetInitialText.js")
-@HtmlImport("frontend://com/vaadin/flow/uitest/ui/template/SetInitialText.html")
-public class SetInitialTextView extends PolymerTemplate<TemplateModel>
+@Route(value = "com.vaadin.flow.uitest.ui.littemplate.SetInitialTextLitView", layout = ViewTestLayout.class)
+@Tag("set-initial-text-lit")
+@JsModule("lit/SetInitialText.js")
+public class SetInitialTextLitView extends LitTemplate
         implements HasComponents {
 
     @Id("child")
     private Div child;
 
-    public SetInitialTextView() {
+    public SetInitialTextLitView() {
         // this is no-op since the text is an empty string by default but it
         // removes all children
         child.setText("");
