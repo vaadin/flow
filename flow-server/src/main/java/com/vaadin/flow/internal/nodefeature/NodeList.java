@@ -373,6 +373,12 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             assert !values.isEmpty();
             getChangeTracker().add(new ListAddChange<>(this, isNodeValues(), 0,
                     new ArrayList<>(values)));
+        } else if (isRemoveAllCalled) {
+            // if list has "clear" change and has no any other changes then
+            // this change should be stored in the tracker otherwise it will be
+            // incorrectly postponed
+            isRemoveAllCalled = false;
+            addChange(new ListClearChange<>(this));
         } else if (!isPopulated) {
             // make change tracker available so that an empty change can be
             // reported
