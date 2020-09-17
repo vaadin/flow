@@ -1064,10 +1064,12 @@ public class UIInternals implements Serializable {
      * when this UI was initialized.
      *
      * @return the router used for this UI, or <code>null</code> if there is no
-     *         router
+     *         router or the UI doesn't support navigation.
      */
     public Router getRouter() {
-        return getSession().getService().getRouter();
+        return ui.isNavigationSupported()
+                ? getSession().getService().getRouter()
+                : null;
     }
 
     /**

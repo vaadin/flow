@@ -394,7 +394,7 @@ public class UidlWriterTest {
         ui.getInternals().setSession(session);
 
         RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(ui.getRouter().getRegistry());
+                .forRegistry(ui.getInternals().getRouter().getRegistry());
         routeConfiguration.update(() -> {
             routeConfiguration.getHandledRegistry().clean();
             routeConfiguration.setAnnotatedRoute(BaseClass.class);
@@ -415,7 +415,7 @@ public class UidlWriterTest {
                 .thenReturn(servletRequestMock);
 
         ui.doInit(vaadinRequestMock, 1);
-        ui.getRouter().initializeUI(ui, vaadinRequestMock);
+        ui.getInternals().getRouter().initializeUI(ui, vaadinRequestMock);
 
         return ui;
     }

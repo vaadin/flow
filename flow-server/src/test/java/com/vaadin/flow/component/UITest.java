@@ -216,7 +216,7 @@ public class UITest {
             ui.getInternals().setSession(session);
 
             RouteConfiguration routeConfiguration = RouteConfiguration
-                    .forRegistry(ui.getRouter().getRegistry());
+                    .forRegistry(ui.getInternals().getRouter().getRegistry());
 
             routeConfiguration.update(() -> {
                 routeConfiguration.getHandledRegistry().clean();
@@ -227,7 +227,7 @@ public class UITest {
             });
 
             ui.doInit(request, 0);
-            ui.getRouter().initializeUI(ui, request);
+            ui.getInternals().getRouter().initializeUI(ui, request);
 
             session.unlock();
 
@@ -278,12 +278,8 @@ public class UITest {
     public void navigateWithParameters_delegateToRouter() {
         final String route = "params";
         Router router = Mockito.mock(Router.class);
-        UI ui = new MockUI() {
-            @Override
-            public com.vaadin.flow.router.Router getRouter() {
-                return router;
-            }
-        };
+        UI ui = new MockUI(router);
+
         QueryParameters params = QueryParameters
                 .simple(Collections.singletonMap("test", "indeed"));
 

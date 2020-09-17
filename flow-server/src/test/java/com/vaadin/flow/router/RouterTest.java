@@ -53,15 +53,11 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.tests.util.MockUI;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -582,27 +578,6 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
-    public static class RouterTestUI extends MockUI {
-        final Router router;
-
-        public RouterTestUI(Router router) {
-            super(createMockSession());
-            this.router = router;
-        }
-
-        private static VaadinSession createMockSession() {
-            MockVaadinServletService service = new MockVaadinServletService();
-            service.init();
-            return new MockVaadinSession(service);
-        }
-
-        @Override
-        public Router getRouter() {
-            return router;
-        }
-
-    }
-
     @Route("navigationEvents")
     @Tag(Tag.DIV)
     public static class NavigationEvents extends Component {
@@ -980,7 +955,7 @@ public class RouterTest extends RoutingTestBase {
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
             UI ui = UI.getCurrent();
-            ui.getRouter().navigate(ui, new Location("loop"),
+            ui.getInternals().getRouter().navigate(ui, new Location("loop"),
                     NavigationTrigger.PROGRAMMATIC);
         }
     }
@@ -1653,7 +1628,7 @@ public class RouterTest extends RoutingTestBase {
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         super.init();
-        ui = new RouterTestUI(router);
+        ui = new RouterTestMockUI(router);
         ui.getSession().lock();
         ui.getSession().setConfiguration(configuration);
 

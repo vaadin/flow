@@ -37,11 +37,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.tests.util.MockUI;
 
 @NotThreadSafe
 public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
@@ -54,7 +50,7 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     @Before
     public void init() throws NoSuchFieldException, IllegalAccessException {
         super.init();
-        ui = new RouterTestUI(router);
+        ui = new RouterTestMockUI(router);
         ui.getSession().lock();
         ui.getSession().setConfiguration(configuration);
 
@@ -677,27 +673,6 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
         public void setParameter(BeforeEvent event,
                                  @com.vaadin.flow.router.WildcardParameter String parameter) {
         }
-    }
-
-    public static class RouterTestUI extends MockUI {
-        final Router router;
-
-        public RouterTestUI(Router router) {
-            super(createMockSession());
-            this.router = router;
-        }
-
-        private static VaadinSession createMockSession() {
-            MockVaadinServletService service = new MockVaadinServletService();
-            service.init();
-            return new MockVaadinSession(service);
-        }
-
-        @Override
-        public Router getRouter() {
-            return router;
-        }
-
     }
 
 }

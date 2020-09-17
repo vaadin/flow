@@ -39,6 +39,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 import net.jcip.annotations.NotThreadSafe;
 import org.easymock.EasyMock;
 import org.junit.Assert;
@@ -77,10 +79,22 @@ public class VaadinSessionTest {
     private UI ui;
     private Lock httpSessionLock;
 
-    private static class TestUI extends UI {
+    private static class TestServlet extends VaadinServlet {
+
         @Override
-        public Router getRouter() {
-            return Mockito.mock(Router.class);
+        protected VaadinServletService createServletService(
+                DeploymentConfiguration deploymentConfiguration)
+                throws ServiceException {
+            VaadinServletService service = new VaadinServletService(this,
+                    deploymentConfiguration) {
+
+                @Override
+                public Router getRouter() {
+                    return Mockito.mock(Router.class);
+                }
+            };
+            service.init();
+            return service;
         }
     }
 
@@ -88,7 +102,7 @@ public class VaadinSessionTest {
     public void setup() throws Exception {
         httpSessionLock = new ReentrantLock();
         mockServletConfig = new MockServletConfig();
-        mockServlet = new VaadinServlet();
+        mockServlet = new TestServlet();
         mockServlet.init(mockServletConfig);
         mockService = mockServlet.getService();
 
@@ -138,7 +152,7 @@ public class VaadinSessionTest {
         session.setConfiguration(configuration);
         session.unlock();
 
-        ui = new TestUI();
+        ui = new UI();
         vaadinRequest = new VaadinServletRequest(
                 Mockito.mock(HttpServletRequest.class), mockService) {
             @Override
