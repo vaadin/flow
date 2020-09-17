@@ -88,6 +88,14 @@ public final class NodeProperties {
     public static final String VISIBILITY_HIDDEN_PROPERTY = "hidden";
 
     /**
+     * The property used on the client side only in addition to
+     * {@link #VISIBLE}. It stores the client side value of the CSS "display"
+     * property to be able to restore when making a hidden element visible
+     * again.
+     */
+    public static final String VISIBILITY_STYLE_DISPLAY_PROPERTY = "styleDisplay";
+
+    /**
      * The property in Json object which marks the object as special value
      * transmitting URI (not just any string).
      * <p>
