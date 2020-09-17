@@ -23,6 +23,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
@@ -119,6 +120,13 @@ public class InjectablePolymerElementInitializerTest {
                 Collections.singletonMap("disabled", Boolean.TRUE.toString()));
 
         Assert.assertFalse(element.isEnabled());
+    }
+
+    public void initializeElement_setText_textIsSet() {
+        initializer.accept(Collections.singletonMap(
+                AbstractInjectableElementInitializer.TEXT_DATA, "foo bar"));
+
+        Assert.assertEquals("foo bar", element.getText());
     }
 
     @Tag(Tag.DIV)

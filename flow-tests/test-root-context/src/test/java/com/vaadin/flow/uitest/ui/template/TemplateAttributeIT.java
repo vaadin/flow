@@ -19,5 +19,9 @@ public class TemplateAttributeIT extends ChromeBrowserTest {
         TestBenchElement isDisabled = template.$(TestBenchElement.class)
                 .id("disabledInfo");
         Assert.assertEquals("Enabled: false", isDisabled.getText());
+
+        TestBenchElement textInfo = template.$(TestBenchElement.class)
+                .id("text-info");
+        Assert.assertEquals("foo |", textInfo.getText());
     }
 }

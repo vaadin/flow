@@ -34,6 +34,15 @@ import com.vaadin.flow.dom.Element;
 public abstract class AbstractInjectableElementInitializer
         implements Consumer<Map<String, String>> {
 
+    /**
+     * Represents text key which should be set to an {@link Element} via
+     * {@link Element#setText(String)}.
+     * <p>
+     * The real attribute may not contain {@code "="} sign in the name so it's
+     * safe to use this special key for text value in a map.
+     */
+    public static final String TEXT_DATA = "=text";
+
     private final Element element;
 
     private static final Map<String, ElementInitializationStrategy> INIT_STRATEGIES = createStategies();
@@ -131,6 +140,8 @@ public abstract class AbstractInjectableElementInitializer
         result.put("translate", attributeStrategy);
 
         result.put("disabled", new DisabledInitializationStrategy());
+
+        result.put(TEXT_DATA, new TextInitializationStrategy());
         return result;
     }
 }
