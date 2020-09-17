@@ -34,8 +34,12 @@ import com.vaadin.flow.internal.StateNode;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated Polymer template support is deprecated - use LitTemplate instead.
+ *             This will be removed in an upcoming version.
  *
  */
+@Deprecated
 public class PolymerServerEventHandlers
         extends AbstractServerHandlers<PolymerTemplate<?>> {
     private static final String REPEAT_INDEX_VALUE = "event.model.index";
