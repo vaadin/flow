@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { set, Store } from 'idb-keyval';
+import { del, get, keys, set, Store } from 'idb-keyval';
 import { v4 as uuidv4 } from 'uuid';
 
 const $wnd = window as any;
@@ -280,6 +280,16 @@ export class ConnectClient {
     if (options.middlewares) {
       this.middlewares = options.middlewares;
     }
+
+    self.addEventListener('online', async () => {
+      const endpointRequetsQueue = this.getOrCreateEndpointRequetsQueue();
+      const cachedRequests = (await keys(endpointRequetsQueue)) as string[];
+      cachedRequests.forEach(async key => {
+          const request:any = await get(key, endpointRequetsQueue);
+          await this.call(request.endpoint, request.method, request.params);
+          del(request.id, endpointRequetsQueue);
+      });
+  });
   }
 
   /**
