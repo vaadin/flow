@@ -1,0 +1,24 @@
+<link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
+
+<dom-module id="set-initial-text">
+    <template>
+        <div id='child'></div>
+        <button id="addClientSideChild" on-click="_addClientSideChild">Add client side child</button>
+        <slot></slot>
+    </template>
+    <script>
+      class SetInitialText extends Polymer.Element {
+        _addClientSideChild() {
+          let element = document.createElement("div");
+          element.innerHTML = "Client child";
+          element.id='client-side';
+          this.$.child.appendChild(element);
+        }
+        static get is() {
+          return 'set-initial-text'
+        }
+
+      }
+      customElements.define(SetInitialText.is, SetInitialText);
+    </script>
+</dom-module>
