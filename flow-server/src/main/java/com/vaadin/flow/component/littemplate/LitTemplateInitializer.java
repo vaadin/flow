@@ -18,8 +18,8 @@ package com.vaadin.flow.component.littemplate;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
-import com.vaadin.flow.component.polymertemplate.IdMapper;
-import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.PolymerParserData;
+import com.vaadin.flow.component.template.internal.IdMapper;
+import com.vaadin.flow.component.template.internal.ParserData;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.VaadinService;
@@ -32,11 +32,11 @@ import com.vaadin.flow.server.VaadinService;
  *
  */
 public class LitTemplateInitializer {
-    private static final ConcurrentHashMap<LitTemplateParser, ReflectionCache<LitTemplate, PolymerParserData>> CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<LitTemplateParser, ReflectionCache<LitTemplate, ParserData>> CACHE = new ConcurrentHashMap<>();
 
     private final LitTemplate template;
 
-    private final PolymerParserData parserData;
+    private final ParserData parserData;
 
     private final Class<? extends LitTemplate> templateClass;
 
@@ -81,9 +81,9 @@ public class LitTemplateInitializer {
 
         templateClass = template.getClass();
 
-        PolymerParserData data = null;
+        ParserData data = null;
         if (productionMode) {
-            ReflectionCache<LitTemplate, PolymerParserData> cache = CACHE
+            ReflectionCache<LitTemplate, ParserData> cache = CACHE
                     .computeIfAbsent(parser, analyzer -> new ReflectionCache<>(
                             clazz -> new LitTemplateDataAnalyzer(clazz,
                                     analyzer, service).parseTemplate()));

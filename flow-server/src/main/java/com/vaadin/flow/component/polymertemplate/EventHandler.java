@@ -32,7 +32,12 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
  * @author Vaadin Ltd
  * @since 1.0
  *
+ * @deprecated Event handlers are not supported by Lit templates, the event
+ *             should be handled directly on the client side and the server side
+ *             may be called from this handler via
+ *             {@code this.$server._some_method}
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented

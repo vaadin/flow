@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.littemplate.BundleLitParser;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -203,7 +204,7 @@ public class NpmTemplateParser implements TemplateParser {
         }
         if (!cache.containsKey(url) && jsonStats != null) {
             cache.put(url,
-                    BundleParser.getSourceFromStatistics(url, jsonStats));
+                    BundleLitParser.getSourceFromStatistics(url, jsonStats));
         }
         return cache.get(url);
     }
@@ -246,7 +247,7 @@ public class NpmTemplateParser implements TemplateParser {
 
     private void resetCache(String fileContents) {
         cache.clear();
-        jsonStats = BundleParser.parseJsonStatistics(fileContents);
+        jsonStats = BundleLitParser.parseJsonStatistics(fileContents);
     }
 
     private Logger getLogger() {

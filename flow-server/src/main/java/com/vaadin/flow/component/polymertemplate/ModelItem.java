@@ -34,10 +34,16 @@ import java.lang.annotation.Target;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * @deprecated There is no any replacement in Lit template since template model
+ *             is not supported for lit template, but you may still use
+ *             {@code @EventData("some_data")} to receive data from the client
+ *             side or {@code @Id} mapping and the component API or the element
+ *             API with property synchronization instead.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })
 @Documented
+@Deprecated
 public @interface ModelItem {
 
     /**

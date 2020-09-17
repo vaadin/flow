@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.littemplate.InjectableLitElementInitializer;
 import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
 import com.vaadin.flow.dom.Element;
 
@@ -27,8 +28,10 @@ import com.vaadin.flow.dom.Element;
  * 
  * @author Vaadin Ltd
  * @since
- *
+ * @deprecated {@link InjectableLitElementInitializer} should be used for Lit
+ *             templates since polymer support is deprecated
  */
+@Deprecated
 public class InjectablePolymerElementInitializer
         extends AbstractInjectableElementInitializer {
 
