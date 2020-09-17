@@ -22,6 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
@@ -47,7 +48,9 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * @deprecated Use {@link LitTemplate} instead, polymer templates are deprecated
  */
+@Deprecated
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
 

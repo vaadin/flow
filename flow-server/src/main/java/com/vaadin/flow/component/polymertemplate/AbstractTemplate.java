@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.templatemodel.BeanModelType;
@@ -47,7 +48,9 @@ import elemental.json.JsonArray;
  *
  * @param <M>
  *            a model class that will be used for template data propagation
+ * @deprecated Use {@link LitTemplate} instead
  */
+@Deprecated
 public abstract class AbstractTemplate<M extends TemplateModel>
         extends Component {
     private final StateNode stateNode;

@@ -35,7 +35,10 @@ import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.component.template.internal.InjectableFieldConsumer;
+import com.vaadin.flow.component.template.internal.ParserData;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinService;
 
@@ -48,8 +51,11 @@ import elemental.json.JsonArray;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * @deprecated Use {@link LitTemplateDataAnalyzer} for {@link LitTemplate}
+ *             components, polymer templates are deprecated
  *
  */
+@Deprecated
 public class TemplateDataAnalyzer {
 
     // {{propertyName}} or {{propertyName::event}}
@@ -75,7 +81,7 @@ public class TemplateDataAnalyzer {
      *
      */
     @FunctionalInterface
-    public interface InjectableFieldCunsumer {
+    public interface InjectableFieldCunsumer extends InjectableFieldConsumer {
 
         /**
          * Performs this operation on the given arguments.
@@ -91,18 +97,17 @@ public class TemplateDataAnalyzer {
          * @param tag
          *            the element tag
          */
+        @Override
         void apply(Field field, String id, String tag);
     }
 
     /**
      * Immutable parser data which may be stored in cache.
+     * 
+     * Use {@link ParserData} instead.
      */
-    public static class ParserData {
-
-        private final Map<String, String> tagById;
-        private final Map<Field, String> idByField;
-
-        private final Map<String, Map<String, String>> attributesById;
+    @Deprecated
+    public static class PolymerParserData extends ParserData {
 
         private final Set<String> twoWayBindingPaths;
 
@@ -122,13 +127,12 @@ public class TemplateDataAnalyzer {
          * @param subTemplates
          *            data for sub templates
          */
-        public ParserData(Map<Field, String> fields, Map<String, String> tags,
+        public PolymerParserData(Map<Field, String> fields,
+                Map<String, String> tags,
                 Map<String, Map<String, String>> attributes,
                 Set<String> twoWayBindings,
                 Collection<SubTemplateData> subTemplates) {
-            tagById = Collections.unmodifiableMap(tags);
-            idByField = Collections.unmodifiableMap(fields);
-            attributesById = Collections.unmodifiableMap(attributes);
+            super(fields, tags, attributes);
             twoWayBindingPaths = Collections.unmodifiableSet(twoWayBindings);
             this.subTemplates = Collections
                     .unmodifiableCollection(subTemplates);
@@ -141,23 +145,9 @@ public class TemplateDataAnalyzer {
          *            the consumer to call for each mapped field
          */
         public void forEachInjectedField(InjectableFieldCunsumer consumer) {
-            idByField.forEach(
-                    (field, id) -> consumer.apply(field, id, tagById.get(id)));
-        }
-
-        /**
-         * Gets template element data (attribute values).
-         * 
-         * @param id
-         *            the id of the element
-         * @return template data
-         */
-        public Map<String, String> getAttributes(String id) {
-            Map<String, String> attrs = attributesById.get(id);
-            if (attrs == null) {
-                return Collections.emptyMap();
-            }
-            return attrs;
+            InjectableFieldConsumer delegate = (field, id, tag) -> consumer
+                    .apply(field, id, tag);
+            forEachInjectedField(delegate);
         }
 
         Set<String> getTwoWayBindingPaths() {
@@ -218,7 +208,7 @@ public class TemplateDataAnalyzer {
      *
      * @return the template data
      */
-    ParserData parseTemplate() {
+    PolymerParserData parseTemplate() {
         TemplateData templateData = parser.getTemplateContent(templateClass,
                 tag, service);
         Element templateRoot = templateData.getTemplateElement();
@@ -274,8 +264,8 @@ public class TemplateDataAnalyzer {
         });
     }
 
-    private ParserData readData(IdCollector idExtractor) {
-        return new ParserData(idExtractor.getIdByField(),
+    private PolymerParserData readData(IdCollector idExtractor) {
+        return new PolymerParserData(idExtractor.getIdByField(),
                 idExtractor.getTagById(), idExtractor.getAttributes(),
                 twoWayBindingPaths, subTemplates);
     }
