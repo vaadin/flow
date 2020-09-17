@@ -461,9 +461,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             String themeColor = getAnnotationValueAsString(pwa,
                     "themeColor");
             String iconPath = getAnnotationValueAsString(pwa, "iconPath");
-
-            getLogger().error("iconPath in " + getClass().getSimpleName() + ": "
-                    + iconPath);
             String manifestPath = getAnnotationValueAsString(pwa,
                     "manifestPath");
             String offlinePath = getAnnotationValueAsString(pwa,
