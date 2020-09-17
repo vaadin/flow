@@ -43,10 +43,6 @@ public class ParserData {
      *            a map of ids to their tags
      * @param attributes
      *            a map of attributes values to the element id
-     * @param twoWayBindings
-     *            the properties which support two way binding
-     * @param subTemplates
-     *            data for sub templates
      */
     public ParserData(Map<Field, String> fields, Map<String, String> tags,
             Map<String, Map<String, String>> attributes) {
