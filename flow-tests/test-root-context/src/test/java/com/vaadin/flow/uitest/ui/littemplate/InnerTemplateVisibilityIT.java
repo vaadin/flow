@@ -1,0 +1,58 @@
+package com.vaadin.flow.uitest.ui.littemplate;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
+
+    @Test
+    public void innerTemplateIsHidden() {
+        open();
+
+        // when hidden
+        NativeButtonElement toggleButton = $(NativeButtonElement.class)
+                .id(InnerTemplateVisibilityView.TOGGLE_VISIBILITY_BUTTON_ID);
+        toggleButton.click();
+
+        // then: element is not visible, attribute 'hidden' and 'display: none'
+        // set
+        WebElement outer = findElement(
+                By.id(InnerTemplateVisibilityView.OUTER_ID));
+        WebElement inner = findInShadowRoot(outer,
+                By.id(InnerTemplateVisibilityView.INNER_ID)).get(0);
+        Assert.assertFalse("expected inner to be hidden", inner.isDisplayed());
+        Assert.assertNotNull("expected attribute hidden on inner",
+                inner.getAttribute("hidden"));
+        Assert.assertEquals("expected 'display: none' on inner", "none",
+                inner.getCssValue("display"));
+    }
+
+    @Test
+    public void innerTemplateDisplayStyleRestored() {
+        open();
+
+        // when hidden and unhidden
+        NativeButtonElement toggleButton = $(NativeButtonElement.class)
+                .id(InnerTemplateVisibilityView.TOGGLE_VISIBILITY_BUTTON_ID);
+        toggleButton.click();
+        toggleButton.click();
+
+        // then: element is visible, attribute and 'display: none' are no longer
+        // present
+        WebElement outer = findElement(
+                By.id(InnerTemplateVisibilityView.OUTER_ID));
+        WebElement inner = findInShadowRoot(outer,
+                By.id(InnerTemplateVisibilityView.INNER_ID)).get(0);
+        Assert.assertTrue("expected inner to be visible", inner.isDisplayed());
+        Assert.assertNull("inner should not have attribute hidden",
+                inner.getAttribute("hidden"));
+        Assert.assertEquals("expected 'display: block' on inner", "block",
+                inner.getCssValue("display"));
+    }
+
+}
