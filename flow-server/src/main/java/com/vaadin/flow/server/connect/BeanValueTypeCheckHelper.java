@@ -23,20 +23,19 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A helper class representing the cache for storing already 
- * visited Bean values. 
+ * A helper class for tracking already visited Beans. 
  */
 class BeanValueTypeCheckHelper {
-    private Map<Type, Set<Object>> cache;
+    private Map<Type, Set<Object>> visitedBeans;
 
     /**
-     * Check if the value and type have been visisted.
+     * Check if the Bean value and type have been visisted.
      */
     boolean hasVisited(Object value, Type type) {
-        if (cache == null) {
+        if (visitedBeans == null) {
             return false;
         }
-        Set<Object> values = cache.get(type);
+        Set<Object> values = visitedBeans.get(type);
         if (values == null) {
             return false;
         }
@@ -47,10 +46,10 @@ class BeanValueTypeCheckHelper {
      * Mark the given value and type have been visited.
      */
     void markAsVisited(Object value, Type type) {
-        if (cache == null) {
-            cache = new HashMap<>();
+        if (visitedBeans == null) {
+            visitedBeans = new HashMap<>();
         }
-        cache.putIfAbsent(type, new HashSet<>());
-        cache.get(type).add(value);
+        visitedBeans.putIfAbsent(type, new HashSet<>());
+        visitedBeans.get(type).add(value);
     }
 }
