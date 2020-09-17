@@ -114,9 +114,12 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(String descriptor,
             boolean visible) {
-        String cname = descriptor.replace("/", ".");
-        if (cname.contains(annotationName)) {
-            return new DataAnnotationVisitor(data);
+        String cname = descriptor.replaceFirst("^L(.*);$", "$1").replace("/",
+                ".");
+        if (cname.equals(annotationName)) {
+            return new DataAnnotationVisitor(data, false);
+        } else if (cname.equals(annotationName + "$Container")) {
+            return new DataAnnotationVisitor(data, true);
         }
         return null;
     }
@@ -285,7 +288,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
             List<?> values = new ArrayList<>();
             defaults.put(methodName, values);
 
-            return new ArrayAnnotationVisitor(api, this, values);
+            return new ArrayAnnotationVisitor(api, values);
         }
     }
 
@@ -294,20 +297,29 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      */
     private static class DataAnnotationVisitor extends RepeatedAnnotationVisitor {
         private final List<HashMap<String, Object>> data;
+        private final boolean isRepeatableContainer;
         // initialize for non repeated annotations
         private HashMap<String, Object> info = new HashMap<>();
 
-        DataAnnotationVisitor(List<HashMap<String, Object>> data) {
+        DataAnnotationVisitor(List<HashMap<String, Object>> data,
+                boolean isRepeatableContainer) {
             this.data = data;
+            this.isRepeatableContainer = isRepeatableContainer;
             data.add(info);
         }
 
         @Override
         public AnnotationVisitor visitArray(String name) {
+            if (isRepeatableContainer) {
+                // For repeatable container annotations, skip array values
+                // but use this instance for visiting items
+                return this;
+            }
+
             List values = new ArrayList<>();
             info.put(name, values);
 
-            return new ArrayAnnotationVisitor(api, this, values);
+            return new ArrayAnnotationVisitor(api, values);
         }
 
         // Visited on each annotation attribute
@@ -333,9 +345,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     private static class ArrayAnnotationVisitor extends AnnotationVisitor {
         private final List values;
 
-        public ArrayAnnotationVisitor(int api, AnnotationVisitor visitor,
-                List values) {
-            super(api, visitor);
+        public ArrayAnnotationVisitor(int api, List values) {
+            super(api);
             this.values = values;
         }
 
