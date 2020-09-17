@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.polymertemplate;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.template.Id;
 
 /**
  * Creates or maps Element instances to fields mapped using {@link Id @Id}.

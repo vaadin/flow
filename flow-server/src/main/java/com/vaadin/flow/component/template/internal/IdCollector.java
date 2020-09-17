@@ -65,7 +65,7 @@ public class IdCollector {
 
     /**
      * Scans the given template class and finds fields mapped using
-     * {@link Id @Id}.
+     * {@link com.vaadin.flow.component.template.Id @Id}.
      *
      * @param notInjectableElementIds
      *            ids which cannot be injected
@@ -88,12 +88,10 @@ public class IdCollector {
 
     private void collectedInjectedId(Field field,
             Set<String> notInjectableElementIds) {
-        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
-                Id.class);
-        if (!idAnnotation.isPresent()) {
+        String id = getId(field).orElse(null);
+        if (id == null) {
             return;
         }
-        String id = idAnnotation.get().value();
         boolean emptyValue = id.isEmpty();
         if (emptyValue) {
             id = field.getName();
@@ -113,8 +111,22 @@ public class IdCollector {
             throw new IllegalStateException(String.format(
                     "There is no element with "
                             + "id='%s' in the template file '%s'. Cannot map it using @%s",
-                    id, templateFile, Id.class.getSimpleName()));
+                    id, templateFile,
+                    com.vaadin.flow.component.template.Id.class
+                            .getSimpleName()));
         }
+    }
+
+    private Optional<String> getId(Field field) {
+        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
+                Id.class);
+        if (idAnnotation.isPresent()) {
+            return idAnnotation.map(Id::value);
+        }
+        return AnnotationReader
+                .getAnnotationFor(field,
+                        com.vaadin.flow.component.template.Id.class)
+                .map(com.vaadin.flow.component.template.Id::value);
     }
 
     /**

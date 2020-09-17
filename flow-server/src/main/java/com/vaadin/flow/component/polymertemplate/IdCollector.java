@@ -17,6 +17,8 @@ package com.vaadin.flow.component.polymertemplate;
 
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.template.Id;
+
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
  *
