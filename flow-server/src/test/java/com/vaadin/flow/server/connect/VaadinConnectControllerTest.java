@@ -1006,7 +1006,7 @@ public class VaadinConnectControllerTest {
         when(explicitNullableTypeChecker.checkValueForType(
                 eq(NullCheckerTestClass.OK_RESPONSE), 
                 eq(String.class), 
-                any(BeanValueTypeCheckHelper.class)))
+                any(ExplicitNullabeTypeCheckerHelper.class)))
                         .thenReturn(null);
 
         String testOkMethod = "testOkMethod";
