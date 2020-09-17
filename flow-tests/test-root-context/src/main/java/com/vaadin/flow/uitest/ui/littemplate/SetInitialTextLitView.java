@@ -10,10 +10,11 @@ import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.template.SetInitialTextView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.littemplate.SetInitialTextLitView", layout = ViewTestLayout.class)
 @Tag("set-initial-text-lit")
 @JsModule("lit/SetInitialText.js")
-public class SetInitialTextLitView extends LitTemplate implements HasComponents {
+public class SetInitialTextLitView extends LitTemplate
+        implements HasComponents {
 
     @Id("child")
     private Div child;
