@@ -943,7 +943,7 @@ public class UI extends Component
      *
      * @deprecated For internal use only. Will be removed in the future.
      */
-    private Router getRouter() {
+    public Router getRouter() {
         return internals.getRouter();
     }
 

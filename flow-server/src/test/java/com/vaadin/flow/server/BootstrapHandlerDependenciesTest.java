@@ -218,7 +218,7 @@ public class BootstrapHandlerDependenciesTest {
         Mockito.when(router.getRegistry()).thenReturn(registry);
         return router;
     }
-    
+
     private TestVaadinServletService service;
     private MockServletServiceSessionSetup mocks;
 
