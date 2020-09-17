@@ -144,7 +144,7 @@ class BootstrapUtils {
             assert pathInfo.startsWith("/");
             pathInfo = pathInfo.substring(1);
         }
-        Router router = ui.getRouter();
+        Router router = ui.getInternals().getRouter();
         NavigationEvent navigationEvent = new NavigationEvent(router,
                 new Location(pathInfo,
                         QueryParameters.full(request.getParameterMap())),
@@ -275,13 +275,13 @@ class BootstrapUtils {
      *         defined, or an empty optional if no such class is available
      */
     public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
-                                                                    VaadinRequest request) {
+            VaadinRequest request) {
         assert ui != null;
         assert request != null;
-        if (ui.getRouter() == null) {
+        if (ui.getInternals().getRouter() == null) {
             return Optional.empty();
         }
-        Optional<Class<?>> navigationTarget = ui.getRouter()
+        Optional<Class<?>> navigationTarget = ui.getInternals().getRouter()
                 .resolveNavigationTarget(request.getPathInfo(),
                         request.getParameterMap())
                 .map(BootstrapUtils::resolveTopParentLayout);
@@ -290,8 +290,8 @@ class BootstrapUtils {
         }
         // If there is no route target available then let's ask for "route not
         // found" target
-        return ui.getRouter().resolveRouteNotFoundNavigationTarget()
-                .map(state -> {
+        return ui.getInternals().getRouter()
+                .resolveRouteNotFoundNavigationTarget().map(state -> {
                     /*
                      * {@code resolveTopParentLayout} is theoretically the
                      * correct way to get the parent layout. But in fact it does

@@ -143,7 +143,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             // to know that in future navigation calls
             ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
 
-            ui.getRouter().initializeUI(ui, location);
+            ui.getInternals().getRouter().initializeUI(ui, location);
         }
     }
 

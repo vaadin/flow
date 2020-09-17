@@ -15,11 +15,18 @@
  */
 package com.vaadin.flow.router;
 
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockUI;
 import org.junit.Before;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 public class RoutingTestBase {
 
@@ -64,17 +71,40 @@ public class RoutingTestBase {
         }
     }
 
+    public static class RouterTestMockUI extends MockUI {
+
+        public RouterTestMockUI(Router router) {
+            super(createMockSession(router));
+        }
+
+        private static VaadinSession createMockSession(Router router) {
+            MockVaadinServletService service = new MockVaadinServletService();
+            service.init();
+            service.setRouter(router);
+            return new MockVaadinSession(service);
+        }
+
+    }
+
     public static class RouterTestUI extends UI {
-        final Router router;
 
         public RouterTestUI(Router router) {
-            this.router = router;
+            super();
+
+            getInternals().setSession(createMockSession(router));
         }
 
-        @Override
-        public Router getRouter() {
-            return router;
+        private static VaadinSession createMockSession(Router router) {
+
+            VaadinSession session = Mockito.mock(VaadinSession.class);
+            VaadinService service = Mockito.mock(VaadinService.class);
+
+            Mockito.when(session.getService()).thenReturn(service);
+            Mockito.when(service.getRouter()).thenReturn(router);
+
+            return session;
         }
+
     }
 
     protected Router router;

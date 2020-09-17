@@ -549,6 +549,7 @@ public class NavigationStateRendererTest {
     public void handle_RouterLinkTriggerNullState_IllegalStateException() {
         // given a service with instantiator
         MockVaadinServletService service = createMockServiceWithInstantiator();
+        service.setRouter(router);
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -563,9 +564,8 @@ public class NavigationStateRendererTest {
         MockUI ui = new MockUI(session);
 
         expectedException.expect(IllegalStateException.class);
-        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
-                new Location("regular"), ui, NavigationTrigger.ROUTER_LINK,
-                null, false));
+        renderer.handle(new NavigationEvent(router, new Location("regular"), ui,
+                NavigationTrigger.ROUTER_LINK, null, false));
     }
 
     @Test

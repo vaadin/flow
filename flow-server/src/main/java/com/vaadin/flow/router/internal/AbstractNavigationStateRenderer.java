@@ -143,7 +143,7 @@ public abstract class AbstractNavigationStateRenderer
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
         routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
-                : getRouterLayoutTypes(routeTargetType, ui.getRouter());
+                : getRouterLayoutTypes(routeTargetType, ui.getInternals().getRouter());
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;

@@ -181,7 +181,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
         if (request.getService().getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
-            ui.getRouter().initializeUI(ui, request);
+            ui.getInternals().getRouter().initializeUI(ui, request);
         }
     }
 

@@ -22,8 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
@@ -37,7 +35,6 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
@@ -45,8 +42,8 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
-
 import elemental.json.JsonObject;
+import org.slf4j.LoggerFactory;
 
 /**
  * Custom UI for use with WebComponents served from the server.
@@ -260,8 +257,8 @@ public class WebComponentUI extends UI {
     }
 
     @Override
-    public Router getRouter() {
-        return null;
+    public boolean isNavigationSupported() {
+        return false;
     }
 
     @Override
