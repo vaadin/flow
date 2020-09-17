@@ -43,12 +43,13 @@ import org.slf4j.LoggerFactory;
  * A helper class for ExplicitNullableTypeChecker. 
  */
 class ExplicitNullabeTypeCheckerHelper {
+
+    // A map for tracking already visited Beans. 
+    private Map<Type, Set<Object>> visitedBeans;
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(VaadinConnectController.class);
     }
-    
-    // A map for tracking already visited Beans. 
-    private Map<Type, Set<Object>> visitedBeans;
 
     /**
      * Check if the Bean value and type have been visisted.
