@@ -937,6 +937,17 @@ public class UI extends Component
     }
 
     /**
+     * Returns true if this UI instance supports navigation.
+     *
+     * @return true if this UI instance supports navigation, otherwise false.
+     */
+    public boolean isNavigationSupported() {
+        // By default any UI supports navigation. Override this to return false
+        // if navigation is not supported.
+        return true;
+    }
+
+    /**
      * Gets the router used for navigating in this UI.
      *
      * @return a router
