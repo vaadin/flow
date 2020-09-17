@@ -165,29 +165,28 @@ public class ChildOrderIT extends ChromeBrowserTest {
         assertNodeOrder(container, "Client text");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Client text", "Server text 1");
+        assertNodeOrder(container, "Server text 1Client text");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Client text", "Server text 2",
-                "Server text 1");
+        assertNodeOrder(container, "Server text 2", "Server text 1Client text");
 
         clickAndWaitForContainerToChange(container,
                 "addClientSideChildToContainer2");
-        assertNodeOrder(container, "Client text", "Server text 2",
-                "Server text 1", "Client text");
+        assertNodeOrder(container, "Server text 2", "Server text 1Client text",
+                "Client text");
 
         clickAndWaitForContainerToChange(container, "prependChildToContainer2");
-        assertNodeOrder(container, "Client text", "Server text 3",
-                "Server text 2", "Server text 1", "Client text");
+        assertNodeOrder(container, "Server text 3", "Server text 2",
+                "Server text 1Client text", "Client text");
 
         clickAndWaitForContainerToChange(container,
                 "removeChildFromContainer2");
-        assertNodeOrder(container, "Client text", "Server text 3",
-                "Server text 2", "Client text");
+        assertNodeOrder(container, "Server text 3", "Server text 2",
+                "Server text 1", "Client text");
 
         clickAndWaitForContainerToChange(container,
                 "removeChildFromContainer2");
-        assertNodeOrder(container, "Client text", "Server text 3",
+        assertNodeOrder(container, "Server text 3", "Server text 2",
                 "Client text");
     }
 

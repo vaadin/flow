@@ -98,13 +98,13 @@ public class ChildOrderView extends PolymerTemplate<TemplateModel> {
 
         addChildToContainer2.addClickListener(event -> {
             Element text = Element.createText("\nServer text "
-                    + (containerWithText.getElement().getChildCount() + 1));
+                    + (containerWithText.getElement().getChildCount()));
             containerWithText.getElement().appendChild(text);
         });
 
         prependChildToContainer2.addClickListener(event -> {
             Element text = Element.createText("\nServer text "
-                    + (containerWithText.getElement().getChildCount() + 1));
+                    + (containerWithText.getElement().getChildCount()));
             containerWithText.getElement().insertChild(0, text);
         });
 

@@ -28,6 +28,7 @@ import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
 import com.vaadin.flow.internal.AnnotationReader;
 
 /**
@@ -136,8 +137,10 @@ public class IdCollector {
             Optional<String> tagName = element
                     .map(org.jsoup.nodes.Element::tagName);
             if (element.isPresent()) {
+                Element domElement = element.get();
                 tagById.put(id, tagName.get());
-                fetchAttributes(id, element.get().attributes());
+                fetchAttributes(id, domElement.attributes());
+                setText(id, domElement);
             }
 
             return element.isPresent();
@@ -177,13 +180,12 @@ public class IdCollector {
         if (attributes.size() == 0) {
             return;
         }
-        HashMap<String, String> attrs = new HashMap<>();
-        attributes.forEach(attr -> setAttributeData(attr, attrs));
-        attributesById.put(id, attrs);
+        Map<String, String> data = getAttributeData(id);
+        attributes.forEach(attr -> setAttributeData(attr, data));
     }
 
     private void setAttributeData(Attribute attribute,
-            HashMap<String, String> data) {
+            Map<String, String> data) {
         if (isBooleanAttribute(attribute)) {
             data.put(attribute.getKey(), Boolean.TRUE.toString());
         } else {
@@ -193,5 +195,19 @@ public class IdCollector {
 
     private boolean isBooleanAttribute(Attribute attribute) {
         return attribute.getKey().equals(attribute.toString());
+    }
+
+    private Map<String, String> getAttributeData(String id) {
+        return attributesById.computeIfAbsent(id, key -> new HashMap<>());
+    }
+
+    private void setText(String id, Element domElement) {
+        if (domElement.children().isEmpty()) {
+            // the text can be set only if element has no any child except a
+            // text node
+            getAttributeData(id).put(
+                    AbstractInjectableElementInitializer.TEXT_DATA,
+                    domElement.ownText());
+        }
     }
 }
