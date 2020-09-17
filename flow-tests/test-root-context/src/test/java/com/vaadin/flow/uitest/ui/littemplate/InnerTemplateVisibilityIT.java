@@ -11,12 +11,12 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
 
     @Test
-    public void innerTemplateIsHidden() {
+    public void innerTemplateIsHiddenWithDisplayNone() {
         open();
 
-        // when hidden
+        // when inner is hidden
         NativeButtonElement toggleButton = $(NativeButtonElement.class)
-                .id(InnerTemplateVisibilityView.TOGGLE_VISIBILITY_BUTTON_ID);
+                .id(InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
 
         // then: element is not visible, attribute 'hidden' and 'display: none'
@@ -36,9 +36,9 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
     public void innerTemplateDisplayStyleRestored() {
         open();
 
-        // when hidden and unhidden
+        // when inner is hidden and unhidden
         NativeButtonElement toggleButton = $(NativeButtonElement.class)
-                .id(InnerTemplateVisibilityView.TOGGLE_VISIBILITY_BUTTON_ID);
+                .id(InnerTemplateVisibilityView.TOGGLE_INNER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
         toggleButton.click();
 
@@ -55,4 +55,23 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
                 inner.getCssValue("display"));
     }
 
+    @Test
+    public void outerTemplateIsHiddenWithAttributeOnly() {
+        open();
+
+        // when hidden
+        NativeButtonElement toggleButton = $(NativeButtonElement.class)
+                .id(InnerTemplateVisibilityView.TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
+        toggleButton.click();
+
+        // then: element is not visible, attribute 'hidden' and 'display: none'
+        // set
+        WebElement outer = findElement(
+                By.id(InnerTemplateVisibilityView.OUTER_ID));
+        Assert.assertFalse("expected outer to be hidden", outer.isDisplayed());
+        Assert.assertNotNull("expected attribute hidden on outer",
+                outer.getAttribute("hidden"));
+        Assert.assertEquals("expected no style attribute", "",
+                outer.getAttribute("style"));
+    }
 }

@@ -12,7 +12,8 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.InnerTemplateVisibilityView", layout = ViewTestLayout.class)
 public class InnerTemplateVisibilityView extends AbstractDivView {
 
-    public static final String TOGGLE_VISIBILITY_BUTTON_ID = "toggleVisibility";
+    public static final String TOGGLE_INNER_VISIBILITY_BUTTON_ID = "toggleInnerVisibility";
+    public static final String TOGGLE_OUTER_VISIBILITY_BUTTON_ID = "toggleOuterVisibility";
     public static final String INNER_ID = "inner";
     public static final String OUTER_ID = "outer";
 
@@ -33,20 +34,21 @@ public class InnerTemplateVisibilityView extends AbstractDivView {
         }
     }
 
-    private boolean isVisible = true;
-
     public InnerTemplateVisibilityView() {
         Outer outer = new Outer();
         outer.setId(OUTER_ID);
         outer.inner.setId(INNER_ID);
 
-        NativeButton toggleVisibilityButton = new NativeButton(
-                "Toggle visibility of inner", e -> {
-                    isVisible = !isVisible;
-                    outer.inner.setVisible(isVisible);
-                });
-        toggleVisibilityButton.setId(TOGGLE_VISIBILITY_BUTTON_ID);
+        NativeButton toggleOuterVisibilityButton = new NativeButton(
+                "Toggle visibility of outer",
+                e -> outer.setVisible(!outer.isVisible()));
+        toggleOuterVisibilityButton.setId(TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
 
-        add(toggleVisibilityButton, outer);
+        NativeButton toggleInnerVisibility = new NativeButton(
+                "Toggle visibility of inner",
+                e -> outer.inner.setVisible(!outer.inner.isVisible()));
+        toggleInnerVisibility.setId(TOGGLE_INNER_VISIBILITY_BUTTON_ID);
+
+        add(toggleOuterVisibilityButton, toggleInnerVisibility, outer);
     }
 }

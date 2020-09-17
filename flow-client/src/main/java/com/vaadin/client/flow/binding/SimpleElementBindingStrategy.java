@@ -634,7 +634,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 visibilityData.getNode().getTree().getRegistry()
                         .getApplicationConfiguration(),
                 element, HIDDEN_ATTRIBUTE, Boolean.TRUE);
-        element.getStyle().setDisplay("none");
+        if (PolymerUtils.isInShadowRoot(element)) {
+            element.getStyle().setDisplay("none");
+        }
     }
 
     private void restoreInitialHiddenAttribute(Element element,
@@ -667,7 +669,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         MapProperty initialDisplay = visibilityData
                 .getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
-        if (!initialDisplay.hasValue()) {
+        if (PolymerUtils.isInShadowRoot(element) && !initialDisplay.hasValue()
+                && element.getStyle() != null) {
             initialDisplay.setValue(element.getStyle().getDisplay());
         }
     }
