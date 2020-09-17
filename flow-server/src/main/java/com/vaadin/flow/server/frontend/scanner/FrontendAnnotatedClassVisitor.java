@@ -226,7 +226,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Class visitor for collecting default annotation values
+     * Class visitor for collecting default annotation values.
      */
     private static class DefaultsAnnotationClassVisitor extends ClassVisitor {
         private final Map<String, Object> defaults;
@@ -244,7 +244,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Method visitor for collecting default annotation values
+     * Method visitor for collecting default annotation values.
      */
     private static class DefaultsAnnotationMethodVisitor extends MethodVisitor {
         private final String methodName;
@@ -265,7 +265,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Collects default annotation values
+     * Collects default annotation values.
      */
     private static class DefaultsAnnotationVisitor extends AnnotationVisitor {
         private final String methodName;
@@ -293,7 +293,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Collects data from possibly repeated annotations
+     * Collects data from possibly repeated annotations.
      */
     private static class DataAnnotationVisitor extends RepeatedAnnotationVisitor {
         private final List<HashMap<String, Object>> data;
@@ -340,7 +340,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Collects a list of annotation array values
+     * Collects a list of annotation array values.
      */
     private static class ArrayAnnotationVisitor extends AnnotationVisitor {
         private final List values;
