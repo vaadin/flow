@@ -21,4 +21,3 @@ class AttributeTemplate extends PolymerElement {
 }
   
 customElements.define(AttributeTemplate.is, AttributeTemplate);
-§
