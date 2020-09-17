@@ -72,13 +72,7 @@ public class RouterLinkTest extends HasCurrentService {
         });
         router = new Router(registry);
 
-        ui = new UI() {
-            @Override
-            public Router getRouter() {
-                return router;
-            }
-        };
-
+        ui = new RoutingTestBase.RouterTestUI(router);
         VaadinService service = VaadinService.getCurrent();
         Mockito.when(service.getRouter()).thenReturn(router);
     }

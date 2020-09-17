@@ -95,7 +95,7 @@ public class InvalidUrlTest {
             ui.getInternals().setSession(session);
 
             RouteConfiguration routeConfiguration = RouteConfiguration
-                    .forRegistry(ui.getRouter().getRegistry());
+                    .forRegistry(ui.getInternals().getRouter().getRegistry());
             routeConfiguration.update(() -> {
                 routeConfiguration.getHandledRegistry().clean();
                 Arrays.asList(UITest.RootNavigationTarget.class,
@@ -103,7 +103,7 @@ public class InvalidUrlTest {
             });
 
             ui.doInit(request, 0);
-            ui.getRouter().initializeUI(ui, request);
+            ui.getInternals().getRouter().initializeUI(ui, request);
 
             session.unlock();
 

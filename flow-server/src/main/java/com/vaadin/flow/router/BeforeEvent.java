@@ -517,7 +517,7 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationState getNavigationState(
             Class<? extends Component> target, RouteParameters parameters,
             String resolvedUrl) {
-        return new NavigationStateBuilder(ui.getRouter())
+        return new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(target, parameters).withPath(resolvedUrl).build();
     }
 
@@ -704,8 +704,10 @@ public abstract class BeforeEvent extends EventObject {
         if (maybeLookupResult.isPresent()) {
             ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
-            rerouteTargetState = new NavigationStateBuilder(ui.getRouter())
-                    .withTarget(lookupResult.getNavigationTarget()).build();
+            rerouteTargetState = new NavigationStateBuilder(
+                    ui.getInternals().getRouter())
+                            .withTarget(lookupResult.getNavigationTarget())
+                            .build();
             rerouteTarget = new ErrorStateRenderer(rerouteTargetState);
 
             errorParameter = new ErrorParameter<>(

@@ -17,6 +17,7 @@ package com.vaadin.tests.util;
 
 import java.util.List;
 
+import com.vaadin.flow.router.Router;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -35,6 +36,10 @@ public class MockUI extends UI {
     public MockUI(VaadinSession session) {
         getInternals().setSession(session);
         setCurrent(this);
+    }
+
+    public MockUI(Router router) {
+        this(createSession(router));
     }
 
     @Override
@@ -58,7 +63,17 @@ public class MockUI extends UI {
     }
 
     private static VaadinSession createSession() {
-        VaadinSession session = new AlwaysLockedVaadinSession(Mockito.mock(VaadinService.class));
+        return createSession(null);
+    }
+
+    private static VaadinSession createSession(Router router) {
+        VaadinService service = Mockito.mock(VaadinService.class);
+
+        if (router != null) {
+            Mockito.when(service.getRouter()).thenReturn(router);
+        }
+
+        VaadinSession session = new AlwaysLockedVaadinSession(service);
         VaadinSession.setCurrent(session);
         return session;
     }

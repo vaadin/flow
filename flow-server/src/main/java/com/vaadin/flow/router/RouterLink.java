@@ -326,7 +326,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
         Router router = null;
         if (getElement().getNode().isAttached()) {
             StateTree tree = (StateTree) getElement().getNode().getOwner();
-            router = tree.getUI().getRouter();
+            router = tree.getUI().getInternals().getRouter();
         }
         if (router == null) {
             router = VaadinService.getCurrent().getRouter();

@@ -194,7 +194,7 @@ class BootstrapUtils {
             assert pathInfo.startsWith("/");
             pathInfo = pathInfo.substring(1);
         }
-        Router router = ui.getRouter();
+        Router router = ui.getInternals().getRouter();
         NavigationEvent navigationEvent = new NavigationEvent(router,
                 new Location(pathInfo,
                         QueryParameters.full(request.getParameterMap())),
@@ -447,10 +447,10 @@ class BootstrapUtils {
             VaadinRequest request) {
         assert ui != null;
         assert request != null;
-        if (ui.getRouter() == null) {
+        if (ui.getInternals().getRouter() == null) {
             return Optional.empty();
         }
-        Optional<Class<?>> navigationTarget = ui.getRouter()
+        Optional<Class<?>> navigationTarget = ui.getInternals().getRouter()
                 .resolveNavigationTarget(request.getPathInfo(),
                         request.getParameterMap())
                 .map(BootstrapUtils::resolveTopParentLayout);

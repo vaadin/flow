@@ -61,25 +61,20 @@ public class LocationObserverTest {
     public static class RootComponent extends Component {
     }
 
-    public static class RouterTestUI extends MockUI {
-        final Router router;
+    public static class RouterTestMockUI extends MockUI {
 
-        public RouterTestUI(Router router) {
-            super(createMockSession());
-            this.router = router;
+        public RouterTestMockUI(Router router) {
+            super(createMockSession(router));
         }
 
-        private static VaadinSession createMockSession() {
+        private static VaadinSession createMockSession(Router router) {
             MockVaadinServletService service = new MockVaadinServletService();
             service.init();
+            service.setRouter(router);
+
             VaadinSession session = new AlwaysLockedVaadinSession(service);
             session.setConfiguration(service.getDeploymentConfiguration());
             return session;
-        }
-
-        @Override
-        public Router getRouter() {
-            return router;
         }
 
         @Override
@@ -100,7 +95,7 @@ public class LocationObserverTest {
     public void navigation_and_locale_change_should_fire_locale_change_observer()
             throws InvalidRouteConfigurationException {
         router = new Router(new TestRouteRegistry());
-        ui = new RouterTestUI(router);
+        ui = new RouterTestMockUI(router);
 
         RouteConfiguration.forRegistry(router.getRegistry()).setAnnotatedRoute(Translations.class);
 

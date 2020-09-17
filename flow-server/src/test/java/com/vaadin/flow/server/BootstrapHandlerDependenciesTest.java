@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.router.RoutingTestBase;
+import com.vaadin.tests.util.MockUI;
 import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -44,19 +46,6 @@ import static org.mockito.Mockito.mock;
 public class BootstrapHandlerDependenciesTest {
     private static final String BOOTSTRAP_SCRIPT_CONTENTS = "//<![CDATA[\n";
 
-    private static class TestUI extends UI {
-
-        @Override
-        public Router getRouter() {
-            Router router = Mockito.mock(Router.class);
-            RouteRegistry registry = Mockito.mock(RouteRegistry.class);
-            Mockito.when(router.resolveNavigationTarget(Mockito.any(),
-                    Mockito.any())).thenReturn(Optional.empty());
-            Mockito.when(router.getRegistry()).thenReturn(registry);
-            return router;
-        }
-    }
-
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "lazy.js", loadMode = LoadMode.LAZY)
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY)
@@ -68,10 +57,10 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet("context://eager-relative.css")
     @StyleSheet("eager.css")
     @HtmlImport("eager.html")
-    private static class UIAnnotated_LoadingOrderTest extends TestUI {
+    private static class UIAnnotated_LoadingOrderTest extends UI {
     }
 
-    private static class UIWithMethods_LoadingOrderTest extends TestUI {
+    private static class UIWithMethods_LoadingOrderTest extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("lazy.js", LoadMode.LAZY);
@@ -89,10 +78,10 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "new.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "new.js")
-    private static class UIAnnotated_BothLazyAndEagerTest extends TestUI {
+    private static class UIAnnotated_BothLazyAndEagerTest extends UI {
     }
 
-    private static class UIWithMethods_BothBothLazyAndEagerTest extends TestUI {
+    private static class UIWithMethods_BothBothLazyAndEagerTest extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.LAZY);
@@ -102,11 +91,11 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "new.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "new.js", loadMode = LoadMode.INLINE)
-    private static class UIAnnotated_BothLazyAndInlineTest extends TestUI {
+    private static class UIAnnotated_BothLazyAndInlineTest extends UI {
     }
 
     private static class UIWithMethods_BothBothLazyAndInlineTest
-            extends TestUI {
+            extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.LAZY);
@@ -116,11 +105,11 @@ public class BootstrapHandlerDependenciesTest {
 
     @JavaScript(value = "new.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "new.js")
-    private static class UIAnnotated_BothInlineAndEagerTest extends TestUI {
+    private static class UIAnnotated_BothInlineAndEagerTest extends UI {
     }
 
     private static class UIWithMethods_BothBothInlineAndEagerTest
-            extends TestUI {
+            extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("new.js", LoadMode.INLINE);
@@ -134,7 +123,7 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet("2.css")
     @HtmlImport("1.html")
     @HtmlImport("2.html")
-    private static class UIAnnotated_ImportOrderTest_Eager extends TestUI {
+    private static class UIAnnotated_ImportOrderTest_Eager extends UI {
     }
 
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
@@ -152,10 +141,10 @@ public class BootstrapHandlerDependenciesTest {
     @StyleSheet(value = "2.css", loadMode = LoadMode.INLINE)
     @HtmlImport(value = "1.html", loadMode = LoadMode.INLINE)
     @HtmlImport(value = "2.html", loadMode = LoadMode.INLINE)
-    private static class UIAnnotated_ImportOrderTest_Inline extends TestUI {
+    private static class UIAnnotated_ImportOrderTest_Inline extends UI {
     }
 
-    private static class UIWithMethods_ImportOrderTest_Eager extends TestUI {
+    private static class UIWithMethods_ImportOrderTest_Eager extends UI {
         @Override
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
@@ -167,7 +156,7 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    private static class UIWithMethods_ImportOrderTest_Lazy extends TestUI {
+    private static class UIWithMethods_ImportOrderTest_Lazy extends UI {
         @Override
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
@@ -179,7 +168,7 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
-    private static class UIWithMethods_ImportOrderTest_Inline extends TestUI {
+    private static class UIWithMethods_ImportOrderTest_Inline extends UI {
         @Override
         public void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.INLINE);
@@ -194,11 +183,11 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "2.js", loadMode = LoadMode.LAZY)
     @JavaScript(value = "1.js", loadMode = LoadMode.LAZY)
-    private static class UIAnnotated_DuplicateDependencies_Lazy extends TestUI {
+    private static class UIAnnotated_DuplicateDependencies_Lazy extends UI {
     }
 
     private static class UIWithMethods_DuplicateDependencies_Lazy
-            extends TestUI {
+            extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.LAZY);
@@ -211,11 +200,11 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript(value = "2.js", loadMode = LoadMode.INLINE)
     @JavaScript(value = "1.js", loadMode = LoadMode.INLINE)
     private static class UIAnnotated_DuplicateDependencies_Inline
-            extends TestUI {
+            extends UI {
     }
 
     private static class UIWithMethods_DuplicateDependencies_Inline
-            extends TestUI {
+            extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js", LoadMode.INLINE);
@@ -228,11 +217,11 @@ public class BootstrapHandlerDependenciesTest {
     @JavaScript("2.js")
     @JavaScript("1.js")
     private static class UIAnnotated_DuplicateDependencies_Eager
-            extends TestUI {
+            extends UI {
     }
 
     private static class UIWithMethods_DuplicateDependencies_Eager
-            extends TestUI {
+            extends UI {
         @Override
         protected void init(VaadinRequest request) {
             getPage().addJavaScript("1.js");
@@ -261,6 +250,7 @@ public class BootstrapHandlerDependenciesTest {
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
 
         service = mocks.getService();
+        service.setRouter(createRouter());
         TestVaadinServlet servlet = mocks.getServlet();
         for (String type : new String[] { "html", "js", "css" }) {
             servlet.addServletContextResource("/frontend/inline." + type,

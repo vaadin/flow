@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -1429,7 +1430,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             appConfig.put("heartbeatInterval",
                     deploymentConfiguration.getHeartbeatInterval());
-            
+
             appConfig.put("maxMessageSuspendTimeout",
                     deploymentConfiguration.getMaxMessageSuspendTimeout());
 
@@ -1522,11 +1523,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
-        if (ui.getRouter() != null) {
-            ui.getRouter().initializeUI(ui, request);
-        }
+        initializeUIWithRouter(request, ui);
 
         return context;
+    }
+
+    protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
+        if (ui.getInternals().getRouter() != null) {
+            ui.getInternals().getRouter().initializeUI(ui, request);
+        }
     }
 
     /**

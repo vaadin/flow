@@ -246,9 +246,9 @@ public class VaadinServiceTest {
                     VaadinService.getCurrent());
 
             Router router = event.getSource().getRouter();
-            Assert.assertNotEquals("Router should be initialized", router);
+            Assert.assertNotNull("Router should be initialized", router);
 
-            Assert.assertNotEquals("registry should be initialized",
+            Assert.assertNotNull("registry should be initialized",
                     router.getRegistry());
 
             RouteConfiguration.forApplicationScope().setRoute("test",
