@@ -954,6 +954,7 @@ public class UI extends Component
      *
      * @deprecated For internal use only. Will be removed in the future.
      */
+    @Deprecated
     public Router getRouter() {
         return internals.getRouter();
     }
