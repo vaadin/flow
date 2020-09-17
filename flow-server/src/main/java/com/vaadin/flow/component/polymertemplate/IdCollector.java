@@ -25,7 +25,7 @@ import com.vaadin.flow.component.template.Id;
  * @since 2.0
  * @deprecated Use
  *             {@link com.vaadin.flow.component.template.internal.IdCollector}
- *             instead
+ *             instead. This will be removed in an upcoming version.
  */
 @Deprecated
 public class IdCollector

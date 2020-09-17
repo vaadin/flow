@@ -31,7 +31,12 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. This will be removed in an
+ *             upcoming version.
  */
+@Deprecated
 public final class TemplateModelUtil {
 
     private TemplateModelUtil() {

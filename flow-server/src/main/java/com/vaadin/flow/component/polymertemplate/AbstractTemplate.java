@@ -48,7 +48,8 @@ import elemental.json.JsonArray;
  *
  * @param <M>
  *            a model class that will be used for template data propagation
- * @deprecated Use {@link LitTemplate} instead
+ * @deprecated Polymer template support is deprecated - use {@link LitTemplate}
+ *             instead. This will be removed in an upcoming version.
  */
 @Deprecated
 public abstract class AbstractTemplate<M extends TemplateModel>

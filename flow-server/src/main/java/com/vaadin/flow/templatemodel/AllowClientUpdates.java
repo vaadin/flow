@@ -33,6 +33,11 @@ import java.lang.annotation.Target;
  * define whether it's allowed for the client to update server-side model values
  *
  * @see ClientUpdateMode
+ * @deprecated This functionality is bound to template model which is not
+ *             supported for lit template. You can use {@code @Id} mapping and
+ *             the component API or the element API with property
+ *             synchronization instead. This will be removed in an upcoming
+ *             version.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -41,6 +46,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Repeatable(AllowClientUpdates.Container.class)
 @Documented
+@Deprecated
 public @interface AllowClientUpdates {
 
     /**

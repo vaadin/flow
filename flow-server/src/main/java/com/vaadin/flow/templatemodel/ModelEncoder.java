@@ -33,7 +33,14 @@ import com.googlecode.gentyref.GenericTypeReflector;
  *            the decoded type
  * @param <E>
  *            the encoded type
+ * 
+ * @deprecated This functionality is bound to template model which is not
+ *             supported for lit template. You can use {@code @Id} mapping and
+ *             the component API or the element API with property
+ *             synchronization instead. This will be removed in an upcoming
+ *             version.
  */
+@Deprecated
 public interface ModelEncoder<D, E extends Serializable> extends Serializable {
 
     /**

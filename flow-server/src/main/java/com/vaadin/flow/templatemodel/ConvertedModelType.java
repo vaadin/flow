@@ -34,7 +34,13 @@ import elemental.json.JsonValue;
  *            application type of the converter used by this class
  * @param <M>
  *            model type of the converter used by this class
+ * 
+ * @deprecated Template model and model types are not supported for lit
+ *             template, but you can use {@code @Id} mapping and the component
+ *             API or the element API with property synchronization instead.
+ *             This will be removed in an upcoming version.
  */
+@Deprecated
 public class ConvertedModelType<A, M extends Serializable>
         implements ModelType {
 

@@ -36,7 +36,7 @@ import com.vaadin.flow.component.EventData;
  * @since 1.0
  * @deprecated dom-repeat is not support by Lit templates but you may still use
  *             {@code @EventData("some_data")} directly to receive data from the
- *             client side
+ *             client side. This will be removed in an upcoming version.
  */
 @Deprecated
 @Retention(RetentionPolicy.RUNTIME)

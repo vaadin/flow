@@ -24,7 +24,13 @@ import com.vaadin.flow.internal.ReflectionCache;
  * @since 1.0
  * @param <T>
  *            the template model type used by this descriptor
+ * 
+ * @deprecated Template model and model types are not supported for lit
+ *             template, but you can use {@code @Id} mapping and the component
+ *             API or the element API with property synchronization instead.
+ *             This will be removed in an upcoming version.
  */
+@Deprecated
 public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {
     private static ReflectionCache<TemplateModel, ModelDescriptor<?>> classToDescriptor = new ReflectionCache<>(
             ModelDescriptor::new);

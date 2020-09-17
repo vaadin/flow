@@ -22,7 +22,12 @@ import java.util.function.Predicate;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. This will be removed in an
+ *             upcoming version.
  */
+@Deprecated
 public class PropertyFilter implements Predicate<String> {
     private final String prefix;
 
@@ -57,7 +62,7 @@ public class PropertyFilter implements Predicate<String> {
      *            a predicate matching property names in the inner scope
      */
     public PropertyFilter(PropertyFilter outerFilter, String scopeName,
-                          Predicate<String> predicate) {
+            Predicate<String> predicate) {
         this(composePrefix(outerFilter, scopeName),
                 predicate.and(composeFilter(outerFilter, scopeName)));
     }

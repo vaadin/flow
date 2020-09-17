@@ -37,8 +37,12 @@ import elemental.json.JsonValue;
  *            the (basic) Java type used by this model type
  * @author Vaadin Ltd
  * @since 1.0
- *
+ * @deprecated Template model and model types are not supported for lit
+ *             template, but you can use {@code @Id} mapping and the component
+ *             API or the element API with property synchronization instead.
+ *             This will be removed in an upcoming version.
  */
+@Deprecated
 public abstract class AbstractBasicModelType<T> implements ModelType {
 
     private final Class<T> type;

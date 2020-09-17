@@ -22,7 +22,13 @@ package com.vaadin.flow.templatemodel;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * @deprecated This functionality is bound to template model which is not
+ *             supported for lit template. You can use {@code @Id} mapping and
+ *             the component API or the element API with property
+ *             synchronization instead. This will be removed in an upcoming
+ *             version.
  */
+@Deprecated
 public enum ClientUpdateMode {
     /**
      * Always allow updating the property.

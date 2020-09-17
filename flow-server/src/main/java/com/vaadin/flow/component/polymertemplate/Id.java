@@ -75,7 +75,8 @@ import com.vaadin.flow.dom.Element;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use com.vaadin.flow.component.template.Id instead
+ * @deprecated Use com.vaadin.flow.component.template.Id instead. This will be
+ *             removed in an upcoming version.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

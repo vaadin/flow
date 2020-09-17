@@ -27,7 +27,11 @@ import java.util.Optional;
  * @since 1.0
  * @param <T>
  *            the item type
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. This will be removed in an
+ *             upcoming version.
  */
+@Deprecated
 public class PathLookup<T> {
     private final Map<String, T> items;
 

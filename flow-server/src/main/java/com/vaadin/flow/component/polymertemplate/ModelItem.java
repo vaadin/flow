@@ -38,7 +38,8 @@ import java.lang.annotation.Target;
  *             is not supported for lit template, but you may still use
  *             {@code @EventData("some_data")} to receive data from the client
  *             side or {@code @Id} mapping and the component API or the element
- *             API with property synchronization instead.
+ *             API with property synchronization instead. This will be removed
+ *             in an upcoming version.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })

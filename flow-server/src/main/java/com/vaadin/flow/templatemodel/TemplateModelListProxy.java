@@ -30,8 +30,14 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
  * @since 1.0
  * @param <T>
  *            the type of items in the list
+ * 
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. This will be removed in an
+ *             upcoming version.
  */
-public class TemplateModelListProxy<T> extends AbstractList<T> implements Serializable {
+@Deprecated
+public class TemplateModelListProxy<T> extends AbstractList<T>
+        implements Serializable {
     private final StateNode stateNode;
     private final ComplexModelType<T> itemType;
 

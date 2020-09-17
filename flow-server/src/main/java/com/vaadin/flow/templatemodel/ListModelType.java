@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -39,7 +38,13 @@ import elemental.json.JsonValue;
  * @since 1.0
  * @param <T>
  *            the proxy type used by the bean type of this type
+ * 
+ * @deprecated Template model and model types are not supported for lit
+ *             template, but you can use {@code @Id} mapping and the component
+ *             API or the element API with property synchronization instead.
+ *             This will be removed in an upcoming version.
  */
+@Deprecated
 public class ListModelType<T> implements ComplexModelType<T> {
 
     private ComplexModelType<T> itemType;

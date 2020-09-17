@@ -47,7 +47,8 @@ import elemental.json.JsonType;
  *
  * @see NpmTemplateParser
  * @deprecated Use {@link BundleLitParser} to parse Lit template since polymer
- *             template are not deprecated
+ *             template is deprecated. This will be removed in an upcoming
+ *             version.
  */
 @Deprecated
 public final class BundleParser {

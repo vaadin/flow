@@ -25,7 +25,13 @@ import java.util.Optional;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated Template model and model types are not supported for lit
+ *             template, but you can use {@code @Id} mapping and the component
+ *             API or the element API with property synchronization instead.
+ *             This will be removed in an upcoming version.
  */
+@Deprecated
 public class BasicModelType extends AbstractBasicModelType {
 
     static final Map<Class<?>, BasicModelType> TYPES = loadBasicTypes(

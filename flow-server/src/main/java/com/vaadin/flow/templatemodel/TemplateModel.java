@@ -38,7 +38,13 @@ import java.util.function.Predicate;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated Template model is not supported for lit template, but you can use
+ *             {@code @Id} mapping and the component API or the element API with
+ *             property synchronization instead. This will be removed in an
+ *             upcoming version.
  */
+@Deprecated
 public interface TemplateModel extends Serializable {
 
     /**

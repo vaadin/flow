@@ -45,7 +45,12 @@ import net.bytebuddy.implementation.bind.annotation.This;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. This will be removed in an
+ *             upcoming version.
  */
+@Deprecated
 public class TemplateModelProxyHandler implements Serializable {
 
     /**

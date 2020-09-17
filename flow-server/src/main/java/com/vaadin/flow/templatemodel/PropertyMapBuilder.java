@@ -36,7 +36,12 @@ import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
  *
  * @author Vaadin Ltd
  * @since 1.0.
+ * 
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. This will be removed in an
+ *             upcoming version.
  */
+@Deprecated
 class PropertyMapBuilder {
     private final Map<String, BeanModelTypeProperty> properties;
 

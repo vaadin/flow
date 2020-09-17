@@ -36,10 +36,15 @@ import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
  *
  * @param <T>
  *            the (basic) Java type used by this model type
+ * @deprecated Template model and model types are not supported for lit
+ *             template, but you can use {@code @Id} mapping and the component
+ *             API or the element API with property synchronization instead.
+ *             This will be removed in an upcoming version.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
+@Deprecated
 public class BasicComplexModelType<T> extends AbstractBasicModelType<T>
         implements ComplexModelType<T> {
     @SuppressWarnings("unchecked")

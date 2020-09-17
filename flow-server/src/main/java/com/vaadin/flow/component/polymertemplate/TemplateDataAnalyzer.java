@@ -52,7 +52,8 @@ import elemental.json.JsonArray;
  * @author Vaadin Ltd
  * @since 1.0
  * @deprecated Use {@link LitTemplateDataAnalyzer} for {@link LitTemplate}
- *             components, polymer templates are deprecated
+ *             components, polymer templates are deprecated. This will be
+ *             removed in an upcoming version.
  *
  */
 @Deprecated

@@ -60,7 +60,8 @@ import elemental.json.JsonObject;
  * @see BundleParser
  * 
  * @deprecated Use {@code LitTemplateParserImpl} class for {@link LitTemplate}
- *             components, polymer templates are deprecated
+ *             components, polymer templates are deprecated. This will be
+ *             removed in an upcoming version.
  */
 @Deprecated
 public class NpmTemplateParser implements TemplateParser {

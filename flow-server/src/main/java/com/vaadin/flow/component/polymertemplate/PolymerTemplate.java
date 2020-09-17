@@ -49,7 +49,9 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use {@link LitTemplate} instead, polymer templates are deprecated
+ * @deprecated Polymer template support is deprecated - use {@link LitTemplate}
+ *             instead, polymer templates are deprecated. This will be removed
+ *             in an upcoming version.
  */
 @Deprecated
 public abstract class PolymerTemplate<M extends TemplateModel>
