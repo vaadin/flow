@@ -58,6 +58,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
@@ -1003,7 +1004,9 @@ public class VaadinConnectControllerTest {
                 ExplicitNullableTypeChecker.class);
 
         when(explicitNullableTypeChecker.checkValueForType(
-                NullCheckerTestClass.OK_RESPONSE, String.class))
+                eq(NullCheckerTestClass.OK_RESPONSE), 
+                eq(String.class), 
+                any(BeanValueTypeCheckHelper.class)))
                         .thenReturn(null);
 
         String testOkMethod = "testOkMethod";
@@ -1133,7 +1136,7 @@ public class VaadinConnectControllerTest {
         if (explicitNullableTypeChecker == null) {
             explicitNullableTypeChecker = mock(
                     ExplicitNullableTypeChecker.class);
-            when(explicitNullableTypeChecker.checkValueForType(any(), any()))
+            when(explicitNullableTypeChecker.checkValueForType(any(), any(), any()))
                     .thenReturn(null);
         }
 
