@@ -1220,8 +1220,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     protected void initializeUIWithRouter(VaadinRequest request, UI ui) {
-        if (ui.getRouter() != null) {
-            ui.getRouter().initializeUI(ui, request);
+        if (ui.getInternals().getRouter() != null) {
+            ui.getInternals().getRouter().initializeUI(ui, request);
         }
     }
 

@@ -68,6 +68,29 @@ public class LitTemplateTest {
                 VaadinService service) {
             super(parser, service);
         }
+    }
+
+    @Tag("foo-bar")
+    private static class ElementWithTextLitTemplate extends LitTemplate {
+
+        @Id("labelId")
+        private com.vaadin.flow.dom.Element label;
+
+        @Id("hasHierarchy")
+        private com.vaadin.flow.dom.Element div;
+
+        public ElementWithTextLitTemplate(VaadinService service) {
+            this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
+                    Jsoup.parse("<dom-module id='" + tag
+                            + "'><label id='labelId'>foo bar</label>"
+                            + "<div id='hasHierarchy'>baz <a>foo</a> bar</div></dom-module>")),
+                    service);
+        }
+
+        ElementWithTextLitTemplate(LitTemplateParser parser,
+                VaadinService service) {
+            super(parser, service);
+        }
 
     }
 
@@ -117,6 +140,21 @@ public class LitTemplateTest {
 
         Assert.assertTrue(template.label.hasAttribute("id"));
         Assert.assertFalse(template.label.isEnabled());
+    }
+
+    public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
+        ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
+                service);
+
+        Assert.assertEquals("foo bar", template.label.getText());
+    }
+
+    @Test
+    public void attachExistingElementWithChidlrenWithText_elementHasNoText() {
+        ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
+                service);
+
+        Assert.assertEquals("", template.div.getText());
     }
 
 }

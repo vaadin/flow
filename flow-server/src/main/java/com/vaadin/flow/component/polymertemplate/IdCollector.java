@@ -18,6 +18,9 @@ package com.vaadin.flow.component.polymertemplate;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.template.Id;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
+import com.vaadin.flow.internal.AnnotationReader;
 
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
@@ -45,6 +48,7 @@ public class IdCollector
      */
     public IdCollector(Class<?> templateClass, String templateFile,
             Element templateRoot) {
-        super(templateClass, templateFile, templateRoot);
+      super(templateClass, templateFile, templateRoot);
     }
+
 }
