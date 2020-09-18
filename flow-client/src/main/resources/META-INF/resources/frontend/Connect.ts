@@ -1,6 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { del, get, keys, set, Store } from 'idb-keyval';
-import { v4 as uuidv4 } from 'uuid';
+import { DBSchema, IDBPDatabase, openDB } from 'idb';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -267,7 +266,7 @@ export class ConnectClient {
    */
   middlewares: Middleware[] = [];
 
-  private endpointRequetsQueue: Store | undefined;
+  private requestQueue: IDBPDatabase<RequestQueueDB> | undefined;
 
   /**
    * @param options Constructor options.
@@ -281,15 +280,9 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    self.addEventListener('online', async () => {
-      const endpointRequetsQueue = this.getOrCreateEndpointRequetsQueue();
-      const cachedRequests = (await keys(endpointRequetsQueue)) as string[];
-      cachedRequests.forEach(async key => {
-          const request:any = await get(key, endpointRequetsQueue);
-          await this.call(request.endpoint, request.method, request.params);
-          del(request.id, endpointRequetsQueue);
-      });
-  });
+    this.checkAndSubmitCachedRequests = this.checkAndSubmitCachedRequests.bind(this);
+
+    self.addEventListener('online', this.checkAndSubmitCachedRequests);
   }
 
   /**
@@ -407,7 +400,7 @@ export class ConnectClient {
       const result = await this.call(endpoint, method, params);
       return { isDeferred: false, result };
     } else {
-      const endpointRequest = { id: uuidv4(), endpoint, method, params };
+      const endpointRequest = { endpoint, method, params };
       await this.cacheEndpointRequest(endpointRequest);
       return { isDeferred: true, endpointRequest };
     }
@@ -418,14 +411,54 @@ export class ConnectClient {
   }
 
   private async cacheEndpointRequest(endpointRequest: EndpointRequest) {
-    await set(endpointRequest.id, endpointRequest, this.getOrCreateEndpointRequetsQueue());
+    const db = await this.getOrCreateDB();
+    db.put('requests', endpointRequest);
   }
 
-  private getOrCreateEndpointRequetsQueue(): Store {
-    if (!this.endpointRequetsQueue) {
-      this.endpointRequetsQueue = new Store('cached-vaadin-endpoint-requests');
+  private async getOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
+    if (!this.requestQueue) {
+      this.requestQueue = await openDB<RequestQueueDB>('request-queue', 1, {
+        upgrade(db) {
+          db.createObjectStore('requests', {
+            keyPath: 'id',
+            autoIncrement: true
+          });
+        },
+      }, );
     }
-    return this.endpointRequetsQueue;
+    return this.requestQueue;
+  }
+
+  private async checkAndSubmitCachedRequests(){
+    const db = await this.getOrCreateDB();
+    const tx = db.transaction('requests', 'readwrite');
+
+    let shouldSubmit = false;
+    
+    let cursor = await tx.store.openCursor();
+    while (cursor) {
+      const request = cursor.value;
+      if(!request.submitting){
+        shouldSubmit = true;
+        request.submitting = true;
+        cursor.update(request);
+      }
+      cursor = await cursor.continue();
+    }
+    await tx.done;
+
+    if(shouldSubmit){
+      const cachedRequests = await db.getAll('requests');
+      cachedRequests.filter(request => request.submitting).forEach(async request => {
+        try {
+          await this.call(request.endpoint, request.method, request.params);
+          await db.delete('requests', request.id!);
+        } catch (_) {
+          request.submitting = false;
+          db.put('requests', request);
+        }
+      });
+    }
   }
 
   // Re-use flow loading indicator when fetching endpoints
@@ -564,14 +597,22 @@ export class InvalidSessionMiddleware implements MiddlewareClass {
 }
 
 interface EndpointRequest{
-  id: string;
+  id?: number;
   endpoint: string;
   method: string;
   params?: any;
+  submitting?: boolean
 }
 
 export interface DeferrableResult<T> {
   isDeferred: boolean;
   endpointRequest?: EndpointRequest;
   result?: T;
+}
+
+interface RequestQueueDB extends DBSchema {
+  requests: {
+    value: EndpointRequest;
+    key: number;
+  };
 }
