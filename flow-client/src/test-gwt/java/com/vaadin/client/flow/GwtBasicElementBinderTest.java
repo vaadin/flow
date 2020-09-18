@@ -1477,6 +1477,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     public void testBindVisibleNode() {
@@ -1574,6 +1575,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     /**
@@ -1599,6 +1601,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         element.setAttribute("hidden", null);
 
@@ -1607,6 +1610,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     /**
@@ -1629,6 +1633,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         setVisible(true);
 
@@ -1696,12 +1701,14 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         setVisible(true);
 
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     public void testSimpleElementBindingStrategy_regularElement_needsBind() {
