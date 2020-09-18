@@ -6,7 +6,7 @@ const {sinon} = intern.getPlugin('sinon');
 
 import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
 
-import { openDB } from "idb";
+import { deleteDB, openDB } from "idb";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -513,10 +513,6 @@ describe('ConnectClient', () => {
       client = new ConnectClient();
     });
 
-    afterEach(async () => {
-      fetchMock.restore();
-    });
-
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
       sinon.stub(client, "cacheEndpointRequest").callsFake((request:any) => {
@@ -539,7 +535,7 @@ describe('ConnectClient', () => {
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
-      const db = await (client as any).getOrCreateDB();
+      const db = await openDB('request-queue');
       const cachedRequest = await db.get('requests', result.endpointRequest?.id as number);
 
       expect(cachedRequest.endpoint).to.equal('FooEndpoint');
@@ -624,18 +620,22 @@ describe('ConnectClient', () => {
   describe("submit cached request", async () => {
     let client: ConnectClient;
     let db: any;
+    let clientCallStub: any;
+    const fakeClientCallFails = () => clientCallStub.callsFake(() => { throw (new Error()); });
+    const insertARequest = async () => {
+      await db.put('requests', {endpoint: 'FooEndpoint', method:'fooMethod', params:{ fooData: 'foo' }});
+      expect(await db.count('requests')).to.equal(1);
+    }
 
     beforeEach(async () => {
       client = new ConnectClient();
-      db = await (client as any).getOrCreateDB();
+      clientCallStub = sinon.stub(client, 'call');
+      db = await (client as any).openOrCreateDB();
+      expect(await db.count('requests')).to.equal(0);
     });
 
     afterEach(async () => {
-      fetchMock.restore();
       await db.clear('requests');
-    });
-
-    after(()=>{
       db.close();
     });
 
@@ -648,11 +648,7 @@ describe('ConnectClient', () => {
     })
 
     it("should submit the cached request when reicing online event", async () => {
-      expect(await db.count('requests')).to.equal(0);
-      await db.put('requests', {endpoint: '11', method:'22'});
-      expect(await db.count('requests')).to.equal(1);
-
-      sinon.stub(client, 'call');
+      await insertARequest();
 
       await (client as any).checkAndSubmitCachedRequests();
 
@@ -660,15 +656,63 @@ describe('ConnectClient', () => {
     })
 
     it("should keep the requst if submission fails", async () => {
-      expect(await db.count('requests')).to.equal(0);
-      await db.put('requests', {endpoint: '11', method:'22'});
-      expect(await db.count('requests')).to.equal(1);
+      await insertARequest();
 
-      sinon.stub(client, "call").callsFake(() => {throw(new Error())});
+      fakeClientCallFails();
 
       await (client as any).checkAndSubmitCachedRequests();
       
       expect(await db.count('requests')).to.eq(1);
     })
+
+    it("should be able to resubmit cached request that was failed to submit", async () => {
+      await insertARequest();
+
+      fakeClientCallFails();
+
+      await (client as any).checkAndSubmitCachedRequests();
+      
+      expect(await db.count('requests')).to.eq(1);
+
+      clientCallStub.restore();
+      sinon.stub(client, "call");
+
+      await (client as any).checkAndSubmitCachedRequests();
+
+      expect(await db.count('requests')).to.eq(0);
+    })
+
+    it("should only submit once when receiving multiple online events", async () => {
+      await insertARequest();
+
+      await Promise.all([
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests()
+      ])
+
+      expect(clientCallStub.calledOnce).to.be.true;
+    })
+
+    it("should only submit once when receiving multiple online events after a failed submission", async () => {
+      await insertARequest();
+
+      fakeClientCallFails();
+
+      await (client as any).checkAndSubmitCachedRequests();
+      
+      expect(await db.count('requests')).to.eq(1);
+
+      clientCallStub.restore();
+      sinon.stub(client, "call");
+
+      await Promise.all([
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests()
+      ])
+
+      expect(clientCallStub.calledOnce).to.be.true;
+    });
   });
 });
