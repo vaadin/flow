@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -58,8 +59,10 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  * @since 1.0
  *
- * @deprecated Polymer template support is deprecated - use LitTemplate instead.
- *             This will be removed in an upcoming version.
+ * @deprecated Polymer template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Deprecated
 public class PublishedServerEventHandlerRpcHandler

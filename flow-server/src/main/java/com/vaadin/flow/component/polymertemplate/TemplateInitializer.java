@@ -45,8 +45,11 @@ import elemental.json.JsonArray;
  * @author Vaadin Ltd
  * @since 1.0
  * @deprecated Use {@link LitTemplateInitializer} for {@link LitTemplate}
- *             components, polymer templates are deprecated. This will be
- *             removed in an upcoming version.
+ *             components. Polymer template support is deprecated - we recommend
+ *             you to use {@link LitTemplate} instead. Read more details from
+ *             <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  *
  */
 @Deprecated

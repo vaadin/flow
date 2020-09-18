@@ -191,7 +191,7 @@ public final class BundleLitParser {
                     // Replace the flow frontend protocol
                     .replaceFirst("^frontend://", ".");
 
-            // For polymer templates inside add-ons we will not find the sources
+            // For templates inside add-ons we will not find the sources
             // using ./ as the actual path contains
             // "node_modules/@vaadin/flow-frontend/" instead of "./"
             // "target/flow-frontend/" instead of "./"

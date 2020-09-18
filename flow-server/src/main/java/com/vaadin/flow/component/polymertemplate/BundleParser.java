@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.littemplate.BundleLitParser;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.internal.StringUtil;
 
 import elemental.json.JsonArray;
@@ -47,8 +48,10 @@ import elemental.json.JsonType;
  *
  * @see NpmTemplateParser
  * @deprecated Use {@link BundleLitParser} to parse Lit template since polymer
- *             template is deprecated. This will be removed in an upcoming
- *             version.
+ *             template is deprecated, we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Deprecated
 public final class BundleParser {

@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+
 /**
  * Allows to receive Model class item from the client side instead of a index of
  * an element in dom-repeat Polymer template section, or string representation.
@@ -38,8 +40,11 @@ import java.lang.annotation.Target;
  *             is not supported for lit template, but you may still use
  *             {@code @EventData("some_data")} to receive data from the client
  *             side or {@code @Id} mapping and the component API or the element
- *             API with property synchronization instead. This will be removed
- *             in an upcoming version.
+ *             API with property synchronization instead. TPolymer template
+ *             support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })

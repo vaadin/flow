@@ -26,7 +26,7 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.dom.Element;
 
 /**
- * Defines the id of an element to map to inside a lit template.
+ * Defines the id of a component or an element to map to inside a lit template.
  * <p>
  * Use this annotation with an identifier of the element which you want to refer
  * to as a value for a field inside your {@link LitTemplate} class.
@@ -66,8 +66,8 @@ import com.vaadin.flow.dom.Element;
  * the element injected via <code>@Id</code> is not populated and not available
  * on the server side (it's not known). It means that <code>nestedDiv</code>
  * field value which is a <code>Div</code> component doesn't have any child on
- * the server side. Also attribute values declared on the client side are not
- * available on the server side.
+ * the server side. Attribute values declared on the client side are reflected
+ * to the server side as property values or attribute values.
  * <p>
  * You still may use {@link Component}'s or {@link Element}'s mutation methods
  * for the injected element from the server side though. E.g. you may add a

@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -65,8 +66,8 @@ import com.vaadin.flow.dom.Element;
  * the element injected via <code>@Id</code> is not populated and not available
  * on the server side (it's not known). It means that <code>nestedDiv</code>
  * field value which is a <code>Div</code> component doesn't have any child on
- * the server side. Also attribute values declared on the client side are not
- * available on the server side.
+ * the server side. Attribute values declared on the client side are reflected
+ * to the server side as property values or attribute values.
  * <p>
  * You still may use {@link Component}'s or {@link Element}'s mutation methods
  * for the injected element from the server side though. E.g. you may add a
@@ -75,8 +76,11 @@ import com.vaadin.flow.dom.Element;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use com.vaadin.flow.component.template.Id instead. This will be
- *             removed in an upcoming version.
+ * @deprecated Use com.vaadin.flow.component.template.Id instead. Polymer
+ *             template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

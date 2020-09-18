@@ -17,10 +17,8 @@ package com.vaadin.flow.component.polymertemplate;
 
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.template.Id;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.template.internal.AbstractInjectableElementInitializer;
-import com.vaadin.flow.internal.AnnotationReader;
 
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
@@ -28,7 +26,11 @@ import com.vaadin.flow.internal.AnnotationReader;
  * @since 2.0
  * @deprecated Use
  *             {@link com.vaadin.flow.component.template.internal.IdCollector}
- *             instead. This will be removed in an upcoming version.
+ *             instead. Polymer template support is deprecated - we recommend
+ *             you to use {@link LitTemplate} instead. Read more details from
+ *             <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Deprecated
 public class IdCollector
@@ -48,7 +50,7 @@ public class IdCollector
      */
     public IdCollector(Class<?> templateClass, String templateFile,
             Element templateRoot) {
-      super(templateClass, templateFile, templateRoot);
+        super(templateClass, templateFile, templateRoot);
     }
 
 }

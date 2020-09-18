@@ -48,8 +48,10 @@ import elemental.json.JsonArray;
  *
  * @param <M>
  *            a model class that will be used for template data propagation
- * @deprecated Polymer template support is deprecated - use {@link LitTemplate}
- *             instead. This will be removed in an upcoming version.
+ * @deprecated Polymer template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Deprecated
 public abstract class AbstractTemplate<M extends TemplateModel>

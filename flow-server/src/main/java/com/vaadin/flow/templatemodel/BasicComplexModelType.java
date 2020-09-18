@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
 
@@ -39,7 +40,10 @@ import com.vaadin.flow.internal.nodefeature.BasicTypeValue;
  * @deprecated Template model and model types are not supported for lit
  *             template, but you can use {@code @Id} mapping and the component
  *             API or the element API with property synchronization instead.
- *             This will be removed in an upcoming version.
+ *             Polymer template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  *
  * @author Vaadin Ltd
  * @since 1.0

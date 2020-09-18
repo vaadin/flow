@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+
 /**
  * A model type representing an immutable leaf value, e.g. strings, numbers or
  * booleans.
@@ -29,7 +31,10 @@ import java.util.Optional;
  * @deprecated Template model and model types are not supported for lit
  *             template, but you can use {@code @Id} mapping and the component
  *             API or the element API with property synchronization instead.
- *             This will be removed in an upcoming version.
+ *             Polymer template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Deprecated
 public class BasicModelType extends AbstractBasicModelType {

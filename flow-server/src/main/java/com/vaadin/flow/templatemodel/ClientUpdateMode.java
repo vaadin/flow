@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.templatemodel;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+
 /**
  * A mode for whether a model property may be updated from the client.
  *
@@ -22,11 +24,11 @@ package com.vaadin.flow.templatemodel;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated This functionality is bound to template model which is not
- *             supported for lit template. You can use {@code @Id} mapping and
- *             the component API or the element API with property
- *             synchronization instead. This will be removed in an upcoming
- *             version.
+ * @deprecated Template model and polymer template support is deprecated - we
+ *             recommend you to use {@link LitTemplate} instead. Read more
+ *             details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
 @Deprecated
 public enum ClientUpdateMode {

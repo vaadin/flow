@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+
 /**
  * Defines which properties to include when importing a bean into a template
  * model.
@@ -39,11 +41,13 @@ import java.lang.annotation.Target;
  *
  * @since 1.0
  * 
- * @deprecated This functionality is bound to template model which is not
- *             supported for lit template. You can use {@code @Id} mapping and
- *             the component API or the element API with property
- *             synchronization instead. This will be removed in an upcoming
- *             version.
+ * @deprecated Template model and polymer template support is deprecated - we
+ *             recommend you to use {@link LitTemplate} instead. Read more
+ *             details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a> For lit templates, you can use {@code @Id}
+ *             mapping and the component API or the element API with property
+ *             synchronization instead.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
