@@ -1005,8 +1005,7 @@ public class VaadinConnectControllerTest {
 
         when(explicitNullableTypeChecker.checkValueForType(
                 eq(NullCheckerTestClass.OK_RESPONSE), 
-                eq(String.class), 
-                any(BeanValueTypeCheckHelper.class)))
+                eq(String.class)))
                         .thenReturn(null);
 
         String testOkMethod = "testOkMethod";
@@ -1136,7 +1135,7 @@ public class VaadinConnectControllerTest {
         if (explicitNullableTypeChecker == null) {
             explicitNullableTypeChecker = mock(
                     ExplicitNullableTypeChecker.class);
-            when(explicitNullableTypeChecker.checkValueForType(any(), any(), any()))
+            when(explicitNullableTypeChecker.checkValueForType(any(), any()))
                     .thenReturn(null);
         }
 
