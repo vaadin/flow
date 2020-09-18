@@ -31,7 +31,7 @@ public class DefaultFileDownloaderTest {
         Assert.assertFalse(
                 "Clean test should not contain a installation folder",
                 targetDir.exists());
-        File downloadDir = tmpDir.newFolder("v12.16.0");
+        File downloadDir = tmpDir.newFolder("v12.18.3");
         String downloadFileName = "MyDownload.zip";
 
         File archiveFile = new File(downloadDir, downloadFileName);

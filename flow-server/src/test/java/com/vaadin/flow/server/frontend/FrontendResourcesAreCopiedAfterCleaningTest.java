@@ -31,7 +31,7 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 
 public class FrontendResourcesAreCopiedAfterCleaningTest {
 
@@ -66,7 +66,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
 
     private void assertCopiedFrontendFileAmount(int fileCount)
             throws IOException {
-        File dir = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
+        File dir = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         FileUtils.forceMkdir(dir);
         List<String> files = TestUtils.listFilesRecursively(dir);
 
@@ -80,7 +80,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
-        File resourcesFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
+        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enablePackagesUpdate(true)
@@ -95,7 +95,7 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
                         .getClassLoader());
         NodeTasks.Builder builder = new NodeTasks.Builder(classFinder,
                 npmFolder);
-        File resourcesFolder = new File(npmFolder, DEAULT_FLOW_RESOURCES_FOLDER);
+        File resourcesFolder = new File(npmFolder, DEFAULT_FLOW_RESOURCES_FOLDER);
         builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
                 .createMissingPackageJson(true).enableImportsUpdate(true)
                 .runNpmInstall(false).enableNpmFileCleaning(true)

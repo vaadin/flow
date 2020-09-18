@@ -466,6 +466,12 @@ public final class DevModeHandler implements RequestHandler {
 
             // Notify DevModeHandler to continue
             doNotify();
+
+            // trigger a live-reload since webpack has recompiled the bundle
+            // if failure, ensures the webpack error is shown in the browser
+            if (liveReload != null) {
+                liveReload.reload();
+            }
         }
     }
 

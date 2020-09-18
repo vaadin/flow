@@ -379,7 +379,7 @@ public class TestBenchHelpers extends ParallelTest {
             Predicate<String> acceptableMessagePredicate) {
         getLogEntries(Level.WARNING).forEach(logEntry -> {
             if ((Objects.equals(logEntry.getLevel(), Level.SEVERE)
-                    || logEntry.getMessage().contains("404"))
+                    || logEntry.getMessage().contains(" 404 "))
                     && !logEntry.getMessage()
                             .contains(WEB_SOCKET_CONNECTION_ERROR_PREFIX)
                     && !acceptableMessagePredicate

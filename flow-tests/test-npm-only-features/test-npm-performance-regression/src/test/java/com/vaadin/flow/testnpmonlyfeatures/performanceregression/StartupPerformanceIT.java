@@ -57,6 +57,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
                         ? 5500
                         : 12000;
 
+
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",
                         thresholdMs, startupTimeWithoutNpmInstallTime),

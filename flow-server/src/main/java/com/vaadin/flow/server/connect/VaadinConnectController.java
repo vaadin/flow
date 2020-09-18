@@ -25,7 +25,6 @@ import javax.validation.Validator;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +46,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.googlecode.gentyref.GenericTypeReflector;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -312,7 +313,7 @@ public class VaadinConnectController {
         }
 
         Map<String, JsonNode> requestParameters = getRequestParameters(body);
-        Parameter[] javaParameters = methodToInvoke.getParameters();
+        Type[] javaParameters = getJavaParameters(methodToInvoke, ClassUtils.getUserClass(vaadinEndpointData.vaadinEndpointObject));
         if (javaParameters.length != requestParameters.size()) {
             return ResponseEntity.badRequest()
                     .body(createResponseErrorObject(String.format(
@@ -401,6 +402,10 @@ public class VaadinConnectController {
                 .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
     }
 
+    private Type[] getJavaParameters(Method methodToInvoke, Type classType) {
+        return Stream.of(GenericTypeReflector.getExactParameterTypes(methodToInvoke, classType)).toArray(Type[]::new);
+    }
+
     private ResponseEntity<String> handleMethodExecutionError(
             String endpointName, String methodName, InvocationTargetException e)
             throws JsonProcessingException {
@@ -429,13 +434,13 @@ public class VaadinConnectController {
                 EndpointException.ERROR_MESSAGE_FIELD, errorMessage));
     }
 
-    private String listMethodParameterTypes(Parameter[] javaParameters) {
-        return Stream.of(javaParameters).map(Parameter::getType)
-                .map(Class::getName).collect(Collectors.joining(", "));
+    private String listMethodParameterTypes(Type[] javaParameters) {
+        return Stream.of(javaParameters)
+                .map(Type::getTypeName).collect(Collectors.joining(", "));
     }
 
     private Object[] getVaadinEndpointParameters(
-            Map<String, JsonNode> requestParameters, Parameter[] javaParameters,
+            Map<String, JsonNode> requestParameters, Type[] javaParameters,
             String methodName, String endpointName) {
         Object[] endpointParameters = new Object[javaParameters.length];
         String[] parameterNames = new String[requestParameters.size()];
@@ -444,7 +449,7 @@ public class VaadinConnectController {
         Set<ConstraintViolation<Object>> constraintViolations = new LinkedHashSet<>();
 
         for (int i = 0; i < javaParameters.length; i++) {
-            Type expectedType = javaParameters[i].getParameterizedType();
+            Type expectedType = javaParameters[i];
             try {
                 Object parameter = vaadinEndpointMapper
                         .readerFor(vaadinEndpointMapper.getTypeFactory()
