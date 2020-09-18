@@ -6,7 +6,7 @@ const {sinon} = intern.getPlugin('sinon');
 
 import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
 
-import { deleteDB, openDB } from "idb";
+import { openDB } from "idb";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
