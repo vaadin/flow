@@ -29,7 +29,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,9 +54,12 @@ import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ComponentTest {
+
+    private UI ui;
 
     @After
     public void checkThreadLocal() {
@@ -286,7 +288,7 @@ public class ComponentTest {
         mocks = new MockServletServiceSessionSetup();
 
         VaadinSession session = mocks.getSession();
-        UI ui = new UI() {
+        ui = new UI() {
             @Override
             public VaadinSession getSession() {
                 return session;
