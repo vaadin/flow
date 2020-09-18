@@ -647,7 +647,7 @@ public final class PolymerUtils {
      }-*/;
 
     /**
-     * Returns true iff the element has a shadow root ancestor.
+     * Returns true if and only if the element has a shadow root ancestor.
      * 
      * @param element
      *            the element to test
