@@ -51,6 +51,6 @@ public class ExplicitNullableTypeChecker {
     }
 
     String checkValueForType(Object value, Type expectedType) {
-        return new ExplicitNullabeTypeCheckerHelper().checkValueForType(value, expectedType);
+        return new ExplicitNullableTypeCheckerHelper().checkValueForType(value, expectedType);
     }
 }
