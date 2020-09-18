@@ -508,7 +508,6 @@ describe('ConnectClient', () => {
 
   describe("Defer Request", async () => {
     let client: ConnectClient;
-    const db = await openDB('request-queue');
 
     beforeEach(() => {
       client = new ConnectClient();
@@ -516,15 +515,16 @@ describe('ConnectClient', () => {
 
     afterEach(async () => {
       fetchMock.restore();
-      await db.clear('requests');
-    });
-
-    after(()=>{
-      db.close();
     });
 
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
+      sinon.stub(client, "cacheEndpointRequest").callsFake((request:any) => {
+        if(!request.id){
+          request.id = 100;
+        }
+        return request;
+      });
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -539,15 +539,21 @@ describe('ConnectClient', () => {
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
-      const cachedRequest = await db.get('requests', result.endpointRequest?.id as string);
+      const db = await (client as any).getOrCreateDB();
+      const cachedRequest = await db.get('requests', result.endpointRequest?.id as number);
 
-      expect((cachedRequest as any).endpoint).to.equal('FooEndpoint');
-      expect((cachedRequest as any).method).to.equal('fooMethod');
-      expect((cachedRequest as any).params?.fooData).to.equal('foo');
+      expect(cachedRequest.endpoint).to.equal('FooEndpoint');
+      expect(cachedRequest.method).to.equal('fooMethod');
+      expect(cachedRequest.params?.fooData).to.equal('foo');
+
+      await db.clear('requests');
+      db.close();
     })
 
     it("Should not invoke the client.call method when invoking deferRequest offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
+      sinon.stub(client, "cacheEndpointRequest");
+
       const callMethod = sinon.stub(client, "call");
 
       await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
@@ -612,6 +618,57 @@ describe('ConnectClient', () => {
       const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
       expect(returnValue.endpointRequest).to.be.undefined;
+    })
+  });
+
+  describe("submit cached request", async () => {
+    let client: ConnectClient;
+    let db: any;
+
+    beforeEach(async () => {
+      client = new ConnectClient();
+      db = await (client as any).getOrCreateDB();
+    });
+
+    afterEach(async () => {
+      fetchMock.restore();
+      await db.clear('requests');
+    });
+
+    after(()=>{
+      db.close();
+    });
+
+    it("should check and submit the cached requests when reicing online event", () => {
+      const submitMethod = sinon.stub(ConnectClient.prototype, "checkAndSubmitCachedRequests");
+      client = new ConnectClient();
+      self.dispatchEvent(new Event('online'));
+      expect(submitMethod.called).to.be.true;
+      submitMethod.restore();
+    })
+
+    it("should submit the cached request when reicing online event", async () => {
+      expect(await db.count('requests')).to.equal(0);
+      await db.put('requests', {endpoint: '11', method:'22'});
+      expect(await db.count('requests')).to.equal(1);
+
+      sinon.stub(client, 'call');
+
+      await (client as any).checkAndSubmitCachedRequests();
+
+      expect(await db.count('requests')).to.equal(0);
+    })
+
+    it("should keep the requst if submission fails", async () => {
+      expect(await db.count('requests')).to.equal(0);
+      await db.put('requests', {endpoint: '11', method:'22'});
+      expect(await db.count('requests')).to.equal(1);
+
+      sinon.stub(client, "call").callsFake(() => {throw(new Error())});
+
+      await (client as any).checkAndSubmitCachedRequests();
+      
+      expect(await db.count('requests')).to.eq(1);
     })
   });
 });

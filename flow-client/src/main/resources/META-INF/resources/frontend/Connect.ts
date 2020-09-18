@@ -400,8 +400,8 @@ export class ConnectClient {
       const result = await this.call(endpoint, method, params);
       return { isDeferred: false, result };
     } else {
-      const endpointRequest = { endpoint, method, params };
-      await this.cacheEndpointRequest(endpointRequest);
+      let endpointRequest:EndpointRequest = { endpoint, method, params };
+      endpointRequest = await this.cacheEndpointRequest(endpointRequest);
       return { isDeferred: true, endpointRequest };
     }
   }
@@ -410,9 +410,11 @@ export class ConnectClient {
     return navigator.onLine;
   }
 
-  private async cacheEndpointRequest(endpointRequest: EndpointRequest) {
+  private async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<EndpointRequest>{
     const db = await this.getOrCreateDB();
-    db.put('requests', endpointRequest);
+    const id = await db.put('requests', endpointRequest);
+    endpointRequest.id = id;
+    return endpointRequest;
   }
 
   private async getOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
