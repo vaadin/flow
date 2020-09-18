@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 
 public class ExplicitNullableTypeCheckerTest {
     private ExplicitNullableTypeChecker explicitNullableTypeChecker;
-    private ExplicitNullabeTypeCheckerHelper helper;
+    private ExplicitNullableTypeCheckerHelper helper;
     private Type stringListType;
     private Type stringToDateMapType;
     private Type stringArrayType;
@@ -47,7 +47,7 @@ public class ExplicitNullableTypeCheckerTest {
     @Before
     public void setup() throws NoSuchMethodException {
         explicitNullableTypeChecker = new ExplicitNullableTypeChecker();
-        helper = new ExplicitNullabeTypeCheckerHelper();
+        helper = new ExplicitNullableTypeCheckerHelper();
 
         stringListType = getClass()
                 .getMethod("parametrizedListMethod", String[].class)
@@ -220,7 +220,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_List_Items() {
-        ExplicitNullabeTypeCheckerHelper checker = spy(helper);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         List<String> list = parametrizedListMethod("foo", "bar");
 
@@ -251,7 +251,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_Map_Values() {
-        ExplicitNullabeTypeCheckerHelper checker = spy(helper);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         Date dateOne = new Date();
         Date dateTwo = new Date();
@@ -286,7 +286,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_GenericArray_Items() {
-        ExplicitNullabeTypeCheckerHelper checker = spy(helper);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         String[] array = arrayMethod("foo", "bar");
 
@@ -322,7 +322,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_BeanProperties() {
-        ExplicitNullabeTypeCheckerHelper checker = spy(helper);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         final Bean bean = new Bean();
         bean.setTitle("foo");
