@@ -40,6 +40,7 @@ import java.lang.annotation.Target;
  *             synchronization instead. This will be removed in an upcoming
  *             version.
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Repeatable(Encode.Container.class)
