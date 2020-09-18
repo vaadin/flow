@@ -8,6 +8,9 @@ $wnd.Vaadin.registrations.push({
   is: 'endpoint'
 });
 
+const REQUEST_QUEUE_DB_NAME = 'request-queue';
+const REQUEST_QUEUE_STORE_NAME = 'requests';
+
 interface ConnectExceptionData {
   message: string;
   type: string;
@@ -266,8 +269,6 @@ export class ConnectClient {
    */
   middlewares: Middleware[] = [];
 
-  private requestQueue: IDBPDatabase<RequestQueueDB> | undefined;
-
   /**
    * @param options Constructor options.
    */
@@ -411,56 +412,67 @@ export class ConnectClient {
   }
 
   private async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<EndpointRequest>{
-    const db = await this.getOrCreateDB();
-    const id = await db.put('requests', endpointRequest);
+    const db = await this.openOrCreateDB();
+    const id = await db.put(REQUEST_QUEUE_STORE_NAME, endpointRequest);
+    db.close();
     endpointRequest.id = id;
     return endpointRequest;
   }
 
-  private async getOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
-    if (!this.requestQueue) {
-      this.requestQueue = await openDB<RequestQueueDB>('request-queue', 1, {
-        upgrade(db) {
-          db.createObjectStore('requests', {
-            keyPath: 'id',
-            autoIncrement: true
-          });
-        },
-      }, );
-    }
-    return this.requestQueue;
+  private async openOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
+    return openDB<RequestQueueDB>(REQUEST_QUEUE_DB_NAME, 1, {
+      upgrade(db) {
+        db.createObjectStore(REQUEST_QUEUE_STORE_NAME, {
+          keyPath: 'id',
+          autoIncrement: true
+        });
+      },
+    });
   }
 
   private async checkAndSubmitCachedRequests(){
-    const db = await this.getOrCreateDB();
-    const tx = db.transaction('requests', 'readwrite');
+    const db = await openDB<RequestQueueDB>(REQUEST_QUEUE_DB_NAME);
 
-    let shouldSubmit = false;
-    
-    let cursor = await tx.store.openCursor();
-    while (cursor) {
-      const request = cursor.value;
-      if(!request.submitting){
-        shouldSubmit = true;
-        request.submitting = true;
-        cursor.update(request);
-      }
-      cursor = await cursor.continue();
-    }
-    await tx.done;
+    const shouldSubmit = await this.shouldSubmitCachedRequests(db);
 
     if(shouldSubmit){
-      const cachedRequests = await db.getAll('requests');
-      cachedRequests.filter(request => request.submitting).forEach(async request => {
-        try {
-          await this.call(request.endpoint, request.method, request.params);
-          await db.delete('requests', request.id!);
-        } catch (_) {
-          request.submitting = false;
-          db.put('requests', request);
-        }
-      });
+      await this.submitCachedRequests(db);
     }
+
+    db.close();
+  }
+
+  private async shouldSubmitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
+    let shouldSubmit = false;
+    if (db.objectStoreNames.contains(REQUEST_QUEUE_STORE_NAME) && await db.count(REQUEST_QUEUE_STORE_NAME) > 0) {
+      const tx = db.transaction(REQUEST_QUEUE_STORE_NAME, 'readwrite');
+
+      let cursor = await tx.store.openCursor();
+      while (cursor) {
+        const request = cursor.value;
+        if (!request.submitting) {
+          shouldSubmit = true;
+          request.submitting = true;
+          cursor.update(request);
+        }
+        cursor = await cursor.continue();
+      }
+      await tx.done;
+    }
+    return shouldSubmit;
+  }
+
+  private async submitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
+    const cachedRequests = await db.getAll(REQUEST_QUEUE_STORE_NAME);
+    cachedRequests.filter(request => request.submitting).forEach(async (request) => {
+      try {
+        await this.call(request.endpoint, request.method, request.params);
+        await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
+      } catch (_) {
+        request.submitting = false;
+        await db.put(REQUEST_QUEUE_STORE_NAME, request);
+      }
+    });
   }
 
   // Re-use flow loading indicator when fetching endpoints
