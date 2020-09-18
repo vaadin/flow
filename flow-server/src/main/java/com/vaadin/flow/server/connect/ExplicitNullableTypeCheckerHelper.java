@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A helper class for ExplicitNullableTypeChecker. 
  */
-class ExplicitNullabeTypeCheckerHelper {
+class ExplicitNullableTypeCheckerHelper {
 
     // A map for tracking already visited Beans. 
     private Map<Type, Set<Object>> visitedBeans;
