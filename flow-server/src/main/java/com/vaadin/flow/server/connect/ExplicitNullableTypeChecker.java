@@ -16,37 +16,17 @@
 
 package com.vaadin.flow.server.connect;
 
-import javax.annotation.Nullable;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.annotation.Nullable;
 
 /**
  * A checker for TypeScript null compatibility in Vaadin Connect endpoint methods
  * parameter and return types.
  */
 public class ExplicitNullableTypeChecker {
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(VaadinConnectController.class);
-    }
 
     /**
      * Validates the given value for the given expected method return value
@@ -65,180 +45,12 @@ public class ExplicitNullableTypeChecker {
             return null;
         }
         if (annotatedElement instanceof Method) {
-            return checkValueForType(value,
-                    ((Method) annotatedElement).getGenericReturnType(),
-                    new BeanValueTypeCheckHelper());
+            return checkValueForType(value, ((Method) annotatedElement).getGenericReturnType());
         }
         return null;
     }
 
-    /**
-     * Validates the given value for the given expected method parameter or
-     * return value type.
-     *
-     * @param value
-     *            the value to validate
-     * @param expectedType
-     *            the declared type expected for the value
-     * @param beanValueTypeCheckHelper
-     *            a helper to keep track of visited beans to avoid circular checking
-     * @return error message when the value is null while the expected type does
-     *         not explicitly allow null, or null meaning the value is OK.
-     */
-    String checkValueForType(Object value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
-        Class<?> clazz;
-        if (expectedType instanceof TypeVariable){
-            return null;
-        } else if (expectedType instanceof ParameterizedType) {
-            clazz = (Class<?>) ((ParameterizedType) expectedType).getRawType();
-        } else {
-            clazz = (Class<?>) expectedType;
-        }
-
-        if (value != null) {
-            if (Iterable.class.isAssignableFrom(clazz)) {
-                return checkIterable((Iterable<?>) value, expectedType, beanValueTypeCheckHelper);
-            } else if (clazz.isArray() && value instanceof Object[]) {
-                return checkIterable(Arrays.asList((Object[]) value),
-                        expectedType, beanValueTypeCheckHelper);
-            } else if (Map.class.isAssignableFrom(clazz)) {
-                return checkMapValues((Map<?, ?>) value, expectedType, beanValueTypeCheckHelper);
-            } else if (expectedType instanceof Class<?>
-                    && !clazz.getName().startsWith("java.")) {
-                return checkBeanFields(value, expectedType, beanValueTypeCheckHelper);
-            } else {
-                return null;
-            }
-        }
-
-        if (expectedType.equals(Void.TYPE)) {
-            // Corner case: void methods return null value by design
-            return null;
-        }
-
-        if (Void.class.isAssignableFrom(clazz)) {
-            // Corner case: explicit Void parameter
-            return null;
-        }
-
-        if (Optional.class.isAssignableFrom(clazz)) {
-            return String.format(
-                    "Got null value for type '%s', consider Optional.empty",
-                    expectedType.getTypeName());
-        }
-
-        return String.format(
-                "Got null value for type '%s', which is neither Optional"
-                        + " nor void",
-                expectedType.getTypeName());
-    }
-
-    private String checkIterable(Iterable<?> value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
-        Type itemType = Object.class;
-        String iterableDescription = "iterable";
-        if (expectedType instanceof ParameterizedType) {
-            itemType = ((ParameterizedType) expectedType)
-                    .getActualTypeArguments()[0];
-            iterableDescription = "collection";
-        } else if (expectedType instanceof Class<?>) {
-            itemType = ((Class<?>) expectedType).getComponentType();
-            iterableDescription = "array";
-        }
-
-        for (Object item : value) {
-            String error = checkValueForType(item, itemType, beanValueTypeCheckHelper);
-            if (error != null) {
-                return String.format("Unexpected null item in %s type '%s'. %s",
-                        iterableDescription, expectedType, error);
-            }
-        }
-
-        return null;
-    }
-
-    private String checkMapValues(Map<?, ?> value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
-        Type valueType = Object.class;
-
-        if (expectedType instanceof ParameterizedType) {
-            valueType = ((ParameterizedType) expectedType)
-                    .getActualTypeArguments()[1];
-        }
-
-        for (Map.Entry<?, ?> e : value.entrySet()) {
-            String error = checkValueForType(e.getValue(), valueType, beanValueTypeCheckHelper);
-            if (error != null) {
-                return String.format(
-                        "Unexpected null value for key '%s' of "
-                                + "map type '%s'. %s",
-                        e.getKey(), expectedType, error);
-            }
-        }
-
-        return null;
-    }
-
-    private boolean isPropertySubjectForChecking(
-            PropertyDescriptor propertyDescriptor) {
-        try {
-            String name = propertyDescriptor.getName();
-            Method readMethod = propertyDescriptor.getReadMethod();
-            if (readMethod == null) {
-                return false;
-            }
-
-            Class<?> declaringClass = readMethod.getDeclaringClass();
-            final Set<String> declaredFieldNames = Arrays
-                    .stream(declaringClass.getDeclaredFields())
-                    .map(Field::getName).collect(Collectors.toSet());
-            if (!declaredFieldNames.contains(name)) {
-                return false;
-            }
-
-            Field field = readMethod.getDeclaringClass().getDeclaredField(name);
-            return !Modifier.isStatic(field.getModifiers())
-                    && !Modifier.isTransient(field.getModifiers())
-                    && !field.isAnnotationPresent(JsonIgnore.class)
-                    && !field.isAnnotationPresent(Nullable.class);
-        } catch (NoSuchFieldException e) {
-            getLogger().error("Unexpected missing declared field in Java Bean",
-                    e);
-            return false;
-        }
-    }
-
-    private String checkBeanFields(Object value, Type expectedType, BeanValueTypeCheckHelper beanValueTypeCheckHelper) {
-        if (beanValueTypeCheckHelper.hasVisited(value, expectedType)) {
-            return null;
-        }
-        beanValueTypeCheckHelper.markAsVisited(value, expectedType);
-        Class<?> clazz = (Class<?>) expectedType;
-        try {
-            for (PropertyDescriptor propertyDescriptor : Introspector
-                    .getBeanInfo(clazz).getPropertyDescriptors()) {
-                if (!isPropertySubjectForChecking(propertyDescriptor)) {
-                    continue;
-                }
-
-                Method readMethod = propertyDescriptor.getReadMethod();
-                Type propertyType = readMethod.getGenericReturnType();
-                Object propertyValue = readMethod.invoke(value);
-
-                String error = checkValueForType(propertyValue, propertyType, beanValueTypeCheckHelper);
-                if (error != null) {
-                    return String.format(
-                            "Unexpected null value in Java "
-                                    + "Bean type '%s' property '%s'. %s",
-                            expectedType.getTypeName(),
-                            propertyDescriptor.getName(), error);
-                }
-            }
-        } catch (IntrospectionException | InvocationTargetException
-                | IllegalAccessException e) {
-            getLogger().error(
-                    "Cannot check for null property values in Java Bean", e);
-            return e.toString();
-        }
-
-        return null;
+    String checkValueForType(Object value, Type expectedType) {
+        return new ExplicitNullabeTypeCheckerHelper().checkValueForType(value, expectedType);
     }
 }
