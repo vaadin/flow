@@ -1001,7 +1001,7 @@ public class DataCommunicator<T> implements Serializable {
     private boolean collectChangesToSend(final Range previousActive,
             final Range effectiveRequested, Update update) {
         boolean updated = false;
-        if (assumeEmptyClient || resendEntireRange) {
+        if (assumeEmptyClient || resendEntireRange || sizeReset) {
             if (!assumeEmptyClient) {
                 /*
                  * TODO: Not necessary to clear something that would be set back
