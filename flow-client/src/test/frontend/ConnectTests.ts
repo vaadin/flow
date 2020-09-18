@@ -6,7 +6,7 @@ const {sinon} = intern.getPlugin('sinon');
 
 import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
 
-import { clear, get, Store } from 'idb-keyval';
+import { openDB } from "idb";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -506,17 +506,21 @@ describe('ConnectClient', () => {
     })
   });
 
-  describe("Defer Request", () => {
+  describe("Defer Request", async () => {
     let client: ConnectClient;
-    const offlineRequestQueue = new Store('cached-vaadin-endpoint-requests');
+    const db = await openDB('request-queue');
 
     beforeEach(() => {
       client = new ConnectClient();
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       fetchMock.restore();
-      clear(offlineRequestQueue);
+      await db.clear('requests');
+    });
+
+    after(()=>{
+      db.close();
     });
 
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
@@ -535,8 +539,7 @@ describe('ConnectClient', () => {
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
-      const endpointRequetsStore = new Store('cached-vaadin-endpoint-requests');
-      const cachedRequest = await get(result.endpointRequest?.id as string, endpointRequetsStore);
+      const cachedRequest = await db.get('requests', result.endpointRequest?.id as string);
 
       expect((cachedRequest as any).endpoint).to.equal('FooEndpoint');
       expect((cachedRequest as any).method).to.equal('fooMethod');

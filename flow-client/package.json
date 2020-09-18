@@ -28,13 +28,12 @@
   ],
   "devDependencies": {
     "@types/sinon": "^9.0.0",
-    "@types/uuid": "8.3.0",
     "abort-controller": "^2.0.0",
     "chai": "^4.2.0",
     "eslint": "^5.8.0",
     "eslint-config-vaadin": "^0.2.7",
     "fetch-mock": "^7.3.0",
-    "idb-keyval": "3.2.0",
+    "idb": "^5.0.6",
     "intern": "^4.4.3",
     "lit-element": "^2.3.1",
     "node-fetch": "^2.3.0",
@@ -45,14 +44,13 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.8.3",
-    "uuid": "8.0.0",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
     "xhr-mock": "^2.5.0"
   },
   "dependencies": {
-    "lit-html": "^1.2.1",
     "@types/validator": "10.11.3",
+    "lit-html": "^1.2.1",
     "validator": "12.0.0"
   }
 }
