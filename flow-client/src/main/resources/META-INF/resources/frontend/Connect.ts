@@ -431,7 +431,7 @@ export class ConnectClient {
   }
 
   private async checkAndSubmitCachedRequests(){
-    const db = await openDB<RequestQueueDB>(REQUEST_QUEUE_DB_NAME);
+    const db = await this.openOrCreateDB();
 
     const shouldSubmit = await this.shouldSubmitCachedRequests(db);
 
