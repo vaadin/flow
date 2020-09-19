@@ -22,9 +22,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 public class LitTemplateTest {
 
@@ -94,6 +97,34 @@ public class LitTemplateTest {
 
     }
 
+    @Tag("inject-component-which-set-property")
+    public static class InjectComponentWhichSetProperty extends LitTemplate {
+
+        @Id("child")
+        private ComponentSetProperty child;
+
+        public InjectComponentWhichSetProperty(VaadinService service) {
+            super((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
+                    Jsoup.parse("<inject-component-which-set-property id='"
+                            + tag
+                            + "'><template><component-set-property id='child' "
+                            + "foo='bar'></component-set-property></template>"
+                            + "</inject-component-which-set-property>")),
+                    service);
+        }
+    }
+
+    @Tag("component-set-property")
+    public static class ComponentSetProperty extends LitTemplate {
+        public ComponentSetProperty(VaadinService service) {
+            super((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
+                    Jsoup.parse("<component-set-property id='" + tag
+                            + "'></component-set-property>")),
+                    service);
+            getElement().setProperty("foo", "baz");
+        }
+    }
+
     @Before
     public void setUp() {
         DeploymentConfiguration configuration = Mockito
@@ -142,6 +173,7 @@ public class LitTemplateTest {
         Assert.assertFalse(template.label.isEnabled());
     }
 
+    @Test
     public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
         ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
                 service);
@@ -155,6 +187,29 @@ public class LitTemplateTest {
                 service);
 
         Assert.assertEquals("", template.div.getText());
+    }
+
+    @Test
+    public void attachExistingElementWithAttributeValue_componentSetsPropertyViaCTOR_elementHasPropertyFromTemplate() {
+        UI ui = new UI();
+        UI.setCurrent(ui);
+
+        VaadinSession session = Mockito.mock(VaadinSession.class);
+
+        ui.getInternals().setSession(session);
+        Mockito.when(session.getService()).thenReturn(service);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+
+        Mockito.when(instantiator.createComponent(ComponentSetProperty.class))
+                .thenAnswer(invocation -> new ComponentSetProperty(service));
+
+        InjectComponentWhichSetProperty parent = new InjectComponentWhichSetProperty(
+                service);
+
+        Assert.assertEquals("bar",
+                parent.child.getElement().getProperty("foo"));
     }
 
 }

@@ -464,6 +464,28 @@ public class PolymerTemplateTest extends HasCurrentService {
         }
     }
 
+    @Tag("inject-component-which-set-property")
+    public static class InjectComponentWhichSetProperty
+            extends PolymerTemplate<TestModel> {
+
+        @Id("child")
+        private ComponentSetProperty child;
+
+        public InjectComponentWhichSetProperty() {
+            super(new TestTemplateParser(tag -> "<dom-module id='" + tag
+                    + "'><template><component-set-property id='child' foo='bar'></component-set-property></template></dom-module>"));
+        }
+    }
+
+    @Tag("component-set-property")
+    public static class ComponentSetProperty
+            extends PolymerTemplate<ModelClass> {
+        public ComponentSetProperty() {
+            super(new SimpleTemplateParser());
+            getElement().setProperty("foo", "baz");
+        }
+    }
+
     @SuppressWarnings("serial")
     @Before
     public void setUp() throws SecurityException, IllegalArgumentException {
@@ -981,6 +1003,14 @@ public class PolymerTemplateTest extends HasCurrentService {
         // all model properties except 'list' which has no getter
         Assert.assertTrue(props.contains("message"));
         Assert.assertTrue(props.contains("title"));
+    }
+
+    @Test
+    public void attachExistingElementWithAttributeValue_componentSetsPropertyViaCTOR_elementHasPropertyFromTemplate() {
+        InjectComponentWhichSetProperty parent = new InjectComponentWhichSetProperty();
+
+        Assert.assertEquals("bar",
+                parent.child.getElement().getProperty("foo"));
     }
 
     private void doParseTemplate_hasIdChild_childIsRegisteredInFeature(

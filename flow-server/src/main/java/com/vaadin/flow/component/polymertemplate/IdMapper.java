@@ -158,7 +158,6 @@ public class IdMapper implements Serializable {
             Consumer<Element> beforeInject) {
         Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {
-            beforeInject.accept(element);
             Component component;
 
             Optional<Component> wrappedComponent = element.getComponent();
@@ -168,6 +167,8 @@ public class IdMapper implements Serializable {
                 Class<? extends Component> componentType = (Class<? extends Component>) fieldType;
                 component = Component.from(element, componentType);
             }
+            // invoke only when a Component is already available to avoid #9012
+            beforeInject.accept(element);
 
             ReflectTools.setJavaFieldValue(template, field, component);
         } else if (Element.class.isAssignableFrom(fieldType)) {
