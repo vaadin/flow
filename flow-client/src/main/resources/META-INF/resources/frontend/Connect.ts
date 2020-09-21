@@ -433,6 +433,11 @@ export class ConnectClient {
   private async checkAndSubmitCachedRequests(){
     const db = await this.openOrCreateDB();
 
+    /**
+     * Cannot wait for submitting the cached requests in the indexed db transaction, 
+     * as the transaction only wait for db operations. 
+     * See https://github.com/jakearchibald/idb#transaction-lifetime
+     */
     const shouldSubmit = await this.shouldSubmitCachedRequests(db);
 
     if(shouldSubmit){
