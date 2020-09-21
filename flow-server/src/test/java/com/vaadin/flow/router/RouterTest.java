@@ -1614,24 +1614,24 @@ public class RouterTest extends RoutingTestBase {
     @Tag(Tag.DIV)
     public static class ForwardSetParameterView extends Component implements HasUrlParameter<String>, AfterNavigationObserver {
 
-        private static boolean afterNavigationInvocked = false;
-        private static boolean backBeforeEnterInvoked = false;
+        static boolean afterNavigationInvoked = false;
+        static boolean backBeforeEnterInvoked = false;
 
         private static void clear() {
-            afterNavigationInvocked = false;
+            afterNavigationInvoked = false;
             backBeforeEnterInvoked = false;
         }
 
         @Override
         public void setParameter(BeforeEvent event, String parameter) {
-            afterNavigationInvocked = false;
+            afterNavigationInvoked = false;
 
             event.forwardTo(ForwardSetParameterBackView.class);
         }
 
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
-            afterNavigationInvocked = true;
+            afterNavigationInvoked = true;
         }
     }
 
@@ -3826,11 +3826,11 @@ public class RouterTest extends RoutingTestBase {
 
         navigate("forward/setParameter/test");
 
-        Assert.assertEquals(
+        Assert.assertFalse(
                 "afterNavigation must not be invoked after forwardTo in setParameter",
-                false, ForwardSetParameterView.afterNavigationInvocked);
-        Assert.assertEquals("forwardTo ForwardSetParameterBackView failed",
-                true, ForwardSetParameterView.backBeforeEnterInvoked);
+                ForwardSetParameterView.afterNavigationInvoked);
+        Assert.assertTrue("forwardTo ForwardSetParameterBackView failed",
+                ForwardSetParameterView.backBeforeEnterInvoked);
     }
 
     private void assertWrongRouteParametersRedirect() {
