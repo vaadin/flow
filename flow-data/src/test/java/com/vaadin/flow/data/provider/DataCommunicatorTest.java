@@ -118,7 +118,7 @@ public class DataCommunicatorTest {
         lastSet = null;
         lastUpdateId = -1;
 
-        update = new ArrayUpdater.Update() {
+        update = Mockito.spy(new ArrayUpdater.Update() {
 
             @Override
             public void clear(int start, int length) {
@@ -134,7 +134,7 @@ public class DataCommunicatorTest {
             public void commit(int updateId) {
                 lastUpdateId = updateId;
             }
-        };
+        });
 
         Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
                 .thenReturn(update);
@@ -369,7 +369,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void setSizeCallback_usedForDataSize() {
+    public void setCountCallback_usedForDataSize() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
         dataProvider = Mockito.spy(dataProvider);
 
@@ -408,7 +408,7 @@ public class DataCommunicatorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void setSizeCallback_null_throws() {
+    public void setCountCallback_null_throws() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setCountCallback(null);
     }
@@ -450,6 +450,27 @@ public class DataCommunicatorTest {
                 sizeCallbackCall.getAndSet(false));
         Assert.assertEquals("Size not used", exactSize,
                 dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void setCountCallback_changesCommitted() {
+        final CallbackDataProvider.CountCallback<Item, Object> countCallback =
+                query -> 100;
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+
+        // 'collectChangesToSend()' always returns true on the first call,
+        // so trigger 'flush()' in order to have false values for
+        // 'resendEntireRange' and 'assumeEmptyClient'. This simulates the
+        // case when 'setCountCallback' at some random moment of operation.
+        fakeClientCommunication();
+
+        Mockito.verify(update).commit(Mockito.anyInt());
+
+        Mockito.reset(update);
+        dataCommunicator.setCountCallback(countCallback);
+        fakeClientCommunication();
+
+        Mockito.verify(update).commit(Mockito.anyInt());
     }
 
     @Test
