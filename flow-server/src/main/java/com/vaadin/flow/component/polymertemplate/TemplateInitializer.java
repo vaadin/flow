@@ -146,8 +146,12 @@ public class TemplateInitializer {
     }
 
     private void attachComponentIfUses(Element element) {
-        getUsesClass(templateClass, element.getTag()).ifPresent(
-                componentClass -> Component.from(element, componentClass));
+        getUsesClass(templateClass, element.getTag())
+                .ifPresent(componentClass -> {
+                    if (!element.getComponent().isPresent()) {
+                        Component.from(element, componentClass);
+                    }
+                });
     }
 
     /* Map declared fields marked @Id */
