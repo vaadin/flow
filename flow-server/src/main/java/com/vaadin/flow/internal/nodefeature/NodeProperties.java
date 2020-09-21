@@ -92,7 +92,7 @@ public final class NodeProperties {
      * {@link #VISIBLE}. It stores the client side value of the CSS "display"
      * property to be able to restore when making a hidden element visible
      * again. Used only when the element is inside a shadow root, and the CSS
-     * "display: none" is set in addition the "hidden" attribute.s
+     * "display: none" is set in addition the "hidden" attribute.
      */
     public static final String VISIBILITY_STYLE_DISPLAY_PROPERTY = "styleDisplay";
 
