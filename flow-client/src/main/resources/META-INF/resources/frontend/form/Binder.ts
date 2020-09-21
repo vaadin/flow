@@ -156,7 +156,7 @@ export class Binder<T, M extends AbstractModel<T>> extends BinderNode<T, M> {
    * 
    * @param endpointMethod the callback function
    */
-  async submitTo(endpointMethod: (value: T) => Promise<T|void>): Promise<T|void> {
+  async submitTo(endpointMethod: (value: T) => Promise<any>): Promise<any> {
     const errors = await this.validate();
     if (errors.length) {
       throw new ValidationError(errors);

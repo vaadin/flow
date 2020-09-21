@@ -506,7 +506,7 @@ describe('ConnectClient', () => {
     })
   });
 
-  describe("Defer Request", async () => {
+  describe("Defer Request", () => {
     let client: ConnectClient;
 
     beforeEach(() => {
@@ -617,24 +617,32 @@ describe('ConnectClient', () => {
     })
   });
 
-  describe("submit cached request", async () => {
+  describe("submit cached request", () => {
     let client: ConnectClient;
-    let db: any;
     let clientCallStub: any;
     const fakeClientCallFails = () => clientCallStub.callsFake(() => { throw (new Error()); });
-    const insertARequest = async () => {
-      await db.put('requests', {endpoint: 'FooEndpoint', method:'fooMethod', params:{ fooData: 'foo' }});
-      expect(await db.count('requests')).to.equal(1);
+    const insertARequest = async (numberOfRequests=1) => {
+      const db = await (client as any).openOrCreateDB();
+      for(let i=0; i<numberOfRequests; i++){
+        await db.put('requests', {endpoint: 'FooEndpoint', method:'fooMethod', params:{ fooData: 'foo' }});
+      }
+      expect(await db.count('requests')).to.equal(numberOfRequests);
+      db.close();
+    }
+
+    const verifyNumberOfRequsetsInTheQueue = async (numberOfRequests=1) => {
+      const db = await (client as any).openOrCreateDB();
+      expect(await db.count('requests')).to.equal(numberOfRequests);
+      db.close();
     }
 
     beforeEach(async () => {
       client = new ConnectClient();
       clientCallStub = sinon.stub(client, 'call');
-      db = await (client as any).openOrCreateDB();
-      expect(await db.count('requests')).to.equal(0);
     });
 
     afterEach(async () => {
+      const db = await (client as any).openOrCreateDB();
       await db.clear('requests');
       db.close();
     });
@@ -652,7 +660,7 @@ describe('ConnectClient', () => {
 
       await (client as any).checkAndSubmitCachedRequests();
 
-      expect(await db.count('requests')).to.equal(0);
+      await verifyNumberOfRequsetsInTheQueue(0);
     })
 
     it("should keep the requst if submission fails", async () => {
@@ -662,7 +670,7 @@ describe('ConnectClient', () => {
 
       await (client as any).checkAndSubmitCachedRequests();
       
-      expect(await db.count('requests')).to.eq(1);
+      await verifyNumberOfRequsetsInTheQueue(1);
     })
 
     it("should be able to resubmit cached request that was failed to submit", async () => {
@@ -672,14 +680,14 @@ describe('ConnectClient', () => {
 
       await (client as any).checkAndSubmitCachedRequests();
       
-      expect(await db.count('requests')).to.eq(1);
+      await verifyNumberOfRequsetsInTheQueue(1);
 
       clientCallStub.restore();
       sinon.stub(client, "call");
 
       await (client as any).checkAndSubmitCachedRequests();
 
-      expect(await db.count('requests')).to.eq(0);
+      await verifyNumberOfRequsetsInTheQueue(0);
     })
 
     it("should only submit once when receiving multiple online events", async () => {
@@ -701,7 +709,7 @@ describe('ConnectClient', () => {
 
       await (client as any).checkAndSubmitCachedRequests();
       
-      expect(await db.count('requests')).to.eq(1);
+      await verifyNumberOfRequsetsInTheQueue(1);
 
       clientCallStub.restore();
       sinon.stub(client, "call");

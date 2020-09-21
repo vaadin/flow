@@ -413,7 +413,7 @@ export class ConnectClient {
 
   private async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<EndpointRequest>{
     const db = await this.openOrCreateDB();
-    const id = await db.put(REQUEST_QUEUE_STORE_NAME, endpointRequest);
+    const id = await db.add(REQUEST_QUEUE_STORE_NAME, endpointRequest);
     db.close();
     endpointRequest.id = id;
     return endpointRequest;
@@ -464,15 +464,17 @@ export class ConnectClient {
 
   private async submitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
     const cachedRequests = await db.getAll(REQUEST_QUEUE_STORE_NAME);
-    cachedRequests.filter(request => request.submitting).forEach(async (request) => {
-      try {
-        await this.call(request.endpoint, request.method, request.params);
-        await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
-      } catch (_) {
-        request.submitting = false;
-        await db.put(REQUEST_QUEUE_STORE_NAME, request);
+    for (const request of cachedRequests) {
+      if (request.submitting) {
+        try {
+          await this.call(request.endpoint, request.method, request.params);
+          await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
+        } catch (_) {
+          request.submitting = false;
+          await db.put(REQUEST_QUEUE_STORE_NAME, request);
+        }
       }
-    });
+    }
   }
 
   // Re-use flow loading indicator when fetching endpoints
