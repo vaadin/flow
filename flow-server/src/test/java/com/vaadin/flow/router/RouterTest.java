@@ -1574,7 +1574,42 @@ public class RouterTest extends RoutingTestBase {
     public static class RedirectWithRouteParametersView
             extends RouteParametersBase {
     }
-    
+
+    @Route("forward/setParameter/back")
+    @Tag(Tag.DIV)
+    public static class ForwardSetParameterBackView extends Component implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            ForwardSetParameterView.backBeforeEnterInvoked = true;
+        }
+    }
+
+    @Route("forward/setParameter")
+    @Tag(Tag.DIV)
+    public static class ForwardSetParameterView extends Component implements HasUrlParameter<String>, AfterNavigationObserver {
+
+        static boolean afterNavigationInvoked = false;
+        static boolean backBeforeEnterInvoked = false;
+
+        private static void clear() {
+            afterNavigationInvoked = false;
+            backBeforeEnterInvoked = false;
+        }
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            afterNavigationInvoked = false;
+
+            event.forwardTo(ForwardSetParameterBackView.class);
+        }
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            afterNavigationInvoked = true;
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -3755,6 +3790,22 @@ public class RouterTest extends RoutingTestBase {
                 RedirectWithRouteParametersView.class);
 
         assertWrongRouteParametersRedirect();
+    }
+
+    @Test // #5173
+    public void forward_fromSetParameters_withoutBeforeEnterObserver() {
+        ForwardSetParameterView.clear();
+
+        setNavigationTargets(ForwardSetParameterView.class,
+                ForwardSetParameterBackView.class);
+
+        navigate("forward/setParameter/test");
+
+        Assert.assertFalse(
+                "afterNavigation must not be invoked after forwardTo in setParameter",
+                ForwardSetParameterView.afterNavigationInvoked);
+        Assert.assertTrue("forwardTo ForwardSetParameterBackView failed",
+                ForwardSetParameterView.backBeforeEnterInvoked);
     }
 
     private void assertWrongRouteParametersRedirect() {
