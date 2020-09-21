@@ -403,14 +403,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
                             .contains(appShellConfiguratorClass)) {
                         throw new IllegalStateException(
-                                ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+                                ERROR_INVALID_PWA_ANNOTATION);
                     }
                     pwaVisitor.visitClass(hopefullyAppShellClass.getName());
         }
 
         Set<String> dependencies = pwaVisitor.getValues("name");
         if (dependencies.size() > 1) {
-            throw new IllegalStateException(ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
         }
         if (dependencies.isEmpty()) {
             this.pwaConfiguration = new PwaConfiguration();

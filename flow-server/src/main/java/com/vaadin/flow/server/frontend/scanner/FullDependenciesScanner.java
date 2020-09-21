@@ -437,7 +437,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 return new PwaConfiguration();
             } else if (annotatedClasses.size() != 1) {
                 throw new IllegalStateException(
-                        ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+                        ERROR_INVALID_PWA_ANNOTATION);
             }
 
             Class<?> hopefullyAppShellClass =
@@ -446,7 +446,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .map(Class::getName).collect(Collectors.toList())
                     .contains(AppShellConfigurator.class.getName())) {
                 throw new IllegalStateException(
-                        ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION);
+                        ERROR_INVALID_PWA_ANNOTATION);
             }
 
             Annotation pwa = annotationFinder

@@ -29,7 +29,7 @@ abstract class AbstractDependenciesScanner
 
     public static final String LUMO = "com.vaadin.flow.theme.lumo.Lumo";
 
-    protected static final String ERROR_CAN_ONLY_HAVE_ONE_PWA_ANNOTATION = "There can only be one @PWA annotation and it must be set on the "
+    protected static final String ERROR_INVALID_PWA_ANNOTATION = "There can only be one @PWA annotation and it must be set on the "
             + AppShellConfigurator.class.getSimpleName() + " implementor.";
 
     private final ClassFinder finder;
