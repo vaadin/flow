@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+
 /**
  * A map for items that are looked up by hierarchical keys made up of period
  * separated strings.
@@ -27,7 +29,14 @@ import java.util.Optional;
  * @since 1.0
  * @param <T>
  *            the item type
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. Polymer template support is
+ *             deprecated - we recommend you to use {@link LitTemplate} instead.
+ *             Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
+@Deprecated
 public class PathLookup<T> {
     private final Map<String, T> items;
 

@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.polymertemplate.BundleParser;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
@@ -56,7 +55,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  * @since
  *
- * @see BundleParser
+ * @see BundleLitParser
  */
 class LitTemplateParserImpl implements LitTemplateParser {
 
@@ -124,7 +123,7 @@ class LitTemplateParserImpl implements LitTemplateParser {
 
         Element templateElement = null;
         if (chosenDep != null) {
-            templateElement = BundleParser.parseLitTemplateElement(
+            templateElement = BundleLitParser.parseLitTemplateElement(
                     chosenDep.getFirst().getUrl(), chosenDep.getSecond());
         }
         if (templateElement != null) {
@@ -196,8 +195,8 @@ class LitTemplateParserImpl implements LitTemplateParser {
                 }
             }
             if (!cache.containsKey(url) && jsonStats != null) {
-                cache.put(url,
-                        BundleParser.getSourceFromStatistics(url, jsonStats));
+                cache.put(url, BundleLitParser.getSourceFromStatistics(url,
+                        jsonStats));
             }
             return cache.get(url);
         } finally {
@@ -245,7 +244,7 @@ class LitTemplateParserImpl implements LitTemplateParser {
     private void resetCache(String fileContents) {
         assert templateSourceslock.isHeldByCurrentThread();
         cache.clear();
-        jsonStats = BundleParser.parseJsonStatistics(fileContents);
+        jsonStats = BundleLitParser.parseJsonStatistics(fileContents);
     }
 
     private Logger getLogger() {

@@ -17,12 +17,22 @@ package com.vaadin.flow.templatemodel;
 
 import java.util.function.Predicate;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+
 /**
  * Property name filter that supports composition for resolving sub properties.
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. Polymer template support is
+ *             deprecated - we recommend you to use {@link LitTemplate} instead.
+ *             Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
+@Deprecated
 public class PropertyFilter implements Predicate<String> {
     private final String prefix;
 
@@ -57,7 +67,7 @@ public class PropertyFilter implements Predicate<String> {
      *            a predicate matching property names in the inner scope
      */
     public PropertyFilter(PropertyFilter outerFilter, String scopeName,
-                          Predicate<String> predicate) {
+            Predicate<String> predicate) {
         this(composePrefix(outerFilter, scopeName),
                 predicate.and(composeFilter(outerFilter, scopeName)));
     }

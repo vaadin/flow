@@ -26,7 +26,9 @@ import java.util.function.BiConsumer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
+import com.vaadin.flow.component.littemplate.LitTemplate;
+import com.vaadin.flow.component.littemplate.LitTemplateInitializer;
+import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.PolymerParserData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -42,17 +44,24 @@ import elemental.json.JsonArray;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * @deprecated Use {@link LitTemplateInitializer} for {@link LitTemplate}
+ *             components. Polymer template support is deprecated - we recommend
+ *             you to use {@link LitTemplate} instead. Read more details from
+ *             <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  *
  */
+@Deprecated
 public class TemplateInitializer {
-    private static final ConcurrentHashMap<TemplateParser, ReflectionCache<PolymerTemplate<?>, ParserData>> CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<TemplateParser, ReflectionCache<PolymerTemplate<?>, PolymerParserData>> CACHE = new ConcurrentHashMap<>();
     private static final ReflectionCache<PolymerTemplate<?>, Map<String, Class<? extends Component>>> USES_CACHE = new ReflectionCache<>(
             TemplateInitializer::extractUsesMap);
 
     private final PolymerTemplate<?> template;
     private final Class<? extends PolymerTemplate<?>> templateClass;
 
-    private final ParserData parserData;
+    private final PolymerParserData parserData;
 
     private IdMapper idMapper;
 
@@ -78,9 +87,9 @@ public class TemplateInitializer {
         templateClass = (Class<? extends PolymerTemplate<?>>) template
                 .getClass();
 
-        ParserData data = null;
+        PolymerParserData data = null;
         if (productionMode) {
-            ReflectionCache<PolymerTemplate<?>, ParserData> cache = CACHE
+            ReflectionCache<PolymerTemplate<?>, PolymerParserData> cache = CACHE
                     .computeIfAbsent(parser, analyzer -> new ReflectionCache<>(
                             clazz -> new TemplateDataAnalyzer(clazz, analyzer,
                                     service).parseTemplate()));

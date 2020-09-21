@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 
 /**
  * Allows to receive index of an element in dom-repeat Polymer template section.
@@ -34,7 +35,15 @@ import com.vaadin.flow.component.EventData;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * @deprecated dom-repeat is not support by Lit templates but you may still use
+ *             {@code @EventData("some_data")} directly to receive data from the
+ *             client side. Polymer template support is deprecated - we
+ *             recommend you to use {@link LitTemplate} instead. Read more
+ *             details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })
 @Documented

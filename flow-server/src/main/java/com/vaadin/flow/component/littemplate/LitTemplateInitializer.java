@@ -18,8 +18,8 @@ package com.vaadin.flow.component.littemplate;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
-import com.vaadin.flow.component.polymertemplate.IdMapper;
-import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
+import com.vaadin.flow.component.template.internal.IdMapper;
+import com.vaadin.flow.component.template.internal.ParserData;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.VaadinService;

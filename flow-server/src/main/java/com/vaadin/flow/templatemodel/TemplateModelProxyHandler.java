@@ -22,6 +22,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
@@ -45,7 +46,15 @@ import net.bytebuddy.implementation.bind.annotation.This;
  *
  * @author Vaadin Ltd
  * @since 1.0
+ * 
+ * @deprecated This functionality is internal and bound to template model which
+ *             is not supported for lit template. Polymer template support is
+ *             deprecated - we recommend you to use {@link LitTemplate} instead.
+ *             Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
+@Deprecated
 public class TemplateModelProxyHandler implements Serializable {
 
     /**

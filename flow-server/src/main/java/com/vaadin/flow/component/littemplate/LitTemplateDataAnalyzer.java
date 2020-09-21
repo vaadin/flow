@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.TemplateData;
-import com.vaadin.flow.component.polymertemplate.IdCollector;
-import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.ParserData;
+import com.vaadin.flow.component.template.internal.IdCollector;
+import com.vaadin.flow.component.template.internal.ParserData;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.VaadinService;
 
@@ -87,8 +87,7 @@ class LitTemplateDataAnalyzer implements Serializable {
                 templateRoot);
         idExtractor.collectInjectedIds(Collections.emptySet());
         return new ParserData(idExtractor.getIdByField(),
-                idExtractor.getTagById(), idExtractor.getAttributes(),
-                Collections.emptySet(), Collections.emptyList());
+                idExtractor.getTagById(), idExtractor.getAttributes());
     }
 
     private String getTag(Class<? extends LitTemplate> clazz) {

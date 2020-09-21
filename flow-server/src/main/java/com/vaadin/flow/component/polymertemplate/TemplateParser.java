@@ -17,6 +17,8 @@ package com.vaadin.flow.component.polymertemplate;
 
 import org.jsoup.nodes.Element;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -29,8 +31,13 @@ import com.vaadin.flow.server.VaadinService;
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
+ * @deprecated Use {@link LitTemplateParser} for {@link LitTemplate} components.
+ *             Polymer template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
+@Deprecated
 @FunctionalInterface
 public interface TemplateParser {
 
@@ -42,8 +49,9 @@ public interface TemplateParser {
      *
      * @author Vaadin Ltd
      * @since 1.0
-     *
+     * @deprecated Use {@link LitTemplateParser.TemplateData} instead
      */
+    @Deprecated
     class TemplateData {
 
         private final String modulePath;

@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
@@ -50,7 +51,15 @@ import elemental.json.JsonValue;
  * @since 1.0
  * @param <T>
  *            the proxy type used by this bean type
+ * @deprecated Template model and model types are not supported for lit
+ *             template, but you can use {@code @Id} mapping and the component
+ *             API or the element API with property synchronization instead.
+ *             Polymer template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  */
+@Deprecated
 public class BeanModelType<T> implements ComplexModelType<T> {
     static class BeanModelTypeProperty implements Serializable {
         private final ModelType propretyType;
