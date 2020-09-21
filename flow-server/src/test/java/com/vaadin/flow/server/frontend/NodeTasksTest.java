@@ -23,7 +23,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.samples.pwa.AppShellWithPwa;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -157,7 +157,7 @@ public class NodeTasksTest {
 
         Builder builder = new Builder(classFinder, new File(userDir))
                 .withFlowResourcesFolder(
-                        new File(userDir, DEAULT_FLOW_RESOURCES_FOLDER))
+                        new File(userDir, DEFAULT_FLOW_RESOURCES_FOLDER))
                 .withWebpack(new File(userDir, TARGET + "classes"),
                         WEBPACK_CONFIG, WEBPACK_GENERATED)
                 .enablePackagesUpdate(false).enableImportsUpdate(false)
