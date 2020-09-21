@@ -9,6 +9,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const { GenerateSW } = require('workbox-webpack-plugin');
+const ManifestPlugin = require('webpack-manifest-plugin');
 
 const path = require('path');
 
@@ -175,6 +176,8 @@ module.exports = {
   plugins: [
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
+    // Generate manifest.json file
+    new ManifestPlugin(),
     // Service worker for offline
     serviceWorkerPlugin,
 
