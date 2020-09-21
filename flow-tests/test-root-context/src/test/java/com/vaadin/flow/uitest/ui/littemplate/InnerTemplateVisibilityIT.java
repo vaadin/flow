@@ -64,8 +64,8 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
                 .id(InnerTemplateVisibilityView.TOGGLE_OUTER_VISIBILITY_BUTTON_ID);
         toggleButton.click();
 
-        // then: element is not visible, attribute 'hidden' and 'display: none'
-        // set
+        // then: element is not visible, attribute 'hidden' is set but
+        // 'display: none' is not set
         WebElement outer = findElement(
                 By.id(InnerTemplateVisibilityView.OUTER_ID));
         Assert.assertFalse("expected outer to be hidden", outer.isDisplayed());
