@@ -420,7 +420,7 @@ public class VaadinConnectControllerTest {
     }
 
     @Test
-    public void should_bePossibeToGetPrincipalInEndpoint() throws InterruptedException {
+    public void should_bePossibeToGetPrincipalInEndpoint() {
         VaadinService.setCurrent(service);
         when(principal.getName()).thenReturn("foo");
 
