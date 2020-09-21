@@ -638,7 +638,7 @@ describe('ConnectClient', () => {
 
     beforeEach(async () => {
       client = new ConnectClient();
-      clientCallStub = sinon.stub(client, 'call');
+      clientCallStub = sinon.stub(client, 'call').callsFake(async () => {await new Promise(resolve => setTimeout(resolve, 10))});
     });
 
     afterEach(async () => {
@@ -656,7 +656,7 @@ describe('ConnectClient', () => {
     })
 
     it("should submit the cached request when reicing online event", async () => {
-      await insertARequest();
+      await insertARequest(3);
 
       await (client as any).checkAndSubmitCachedRequests();
 
