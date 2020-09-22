@@ -1483,6 +1483,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     public void testBindVisibleNode() {
@@ -1580,6 +1581,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Binder.bind(node, element);
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     /**
@@ -1605,6 +1607,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         element.setAttribute("hidden", null);
 
@@ -1613,7 +1616,50 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
+
+
+    /**
+     * The element is in shadowroot and state node is hidden. The element gets
+     * attribute "hidden" and "display: none".
+     */
+    public void testBindHiddenElement_elementInShadowRoot_elementHasDisplayNone() {
+        addShadowRootElement(element);
+        setTag();
+        node.setDomNode(element);
+        Binder.bind(node, element);
+        setVisible(false);
+        Reactive.flush();
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("none", element.getStyle().getDisplay());
+    }
+
+    /**
+     * The element is in shadowroot and has a custom display property. When
+     * hidden gets attribute "hidden" and "display:none". When unhidden
+     * "display" property is restored.
+     */
+    public void testBindHiddenElement_elementInShadowRootAndHasInitialDisplayProperty_displayPropertyRestoredWhenUnhidden() {
+        addShadowRootElement(element);
+        setTag();
+        node.setDomNode(element);
+        element.getStyle().setDisplay("inline-block");
+
+        Binder.bind(node, element);
+        setVisible(false);
+        Reactive.flush();
+
+        assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("none", element.getStyle().getDisplay());
+
+        setVisible(true);
+        Reactive.flush();
+
+        assertNull(element.getAttribute("hidden"));
+        assertEquals("inline-block", element.getStyle().getDisplay());
+    }
+
 
     /**
      * The StateNode is visible (the visibility is true).
@@ -1635,12 +1681,14 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         setVisible(true);
 
         Reactive.flush();
 
         assertNull(element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     /**
@@ -1702,12 +1750,14 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         Reactive.flush();
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
 
         setVisible(true);
 
         Reactive.flush();
 
         assertEquals(Boolean.TRUE.toString(), element.getAttribute("hidden"));
+        assertEquals("", element.getStyle().getDisplay());
     }
 
     public void testSimpleElementBindingStrategy_regularElement_needsBind() {
@@ -1844,6 +1894,10 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         var shadowRoot = $doc.createElement("div");
         element.shadowRoot = shadowRoot;
         element.root = shadowRoot;
+        shadowRoot.toString = function() {
+            return '[object ShadowRoot]';
+        }
+        element.parentNode = shadowRoot;
         return shadowRoot;
     }-*/;
 
