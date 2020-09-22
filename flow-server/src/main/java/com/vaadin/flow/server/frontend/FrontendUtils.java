@@ -237,7 +237,7 @@ public class FrontendUtils {
     /**
      * File used to enable npm mode.
      */
-    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION
+    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION_FILES_PATH
             + "flow-build-info.json";
 
     /**
@@ -456,25 +456,21 @@ public class FrontendUtils {
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
-        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + INDEX_HTML;
-        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
-                + INDEX_HTML;
-        return getFileContent(service, indexHtmlPathInDevMode,
-                indexHtmlPathInProductionMode);
+        return getFileContent(service, INDEX_HTML);
     }
 
     private static String getFileContent(VaadinService service,
-            String pathInDevMode, String pathInProductionMode)
+            String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
         if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getFileFromWebpack(pathInDevMode);
+            content = getFileFromWebpack(path);
         }
 
         if (content == null) {
-            content = getFileFromClassPath(service, pathInProductionMode);
+            content = getFileFromClassPath(service, path);
         }
         return content != null ? streamToString(content) : null;
     }
@@ -482,7 +478,7 @@ public class FrontendUtils {
     private static InputStream getFileFromClassPath(VaadinService service,
             String filePath) {
         InputStream stream = service.getClassLoader()
-                .getResourceAsStream(filePath);
+                .getResourceAsStream(VAADIN_SERVLET_RESOURCES + filePath);
         if (stream == null) {
             getLogger().error("Cannot get the '{}' from the classpath",
                     filePath);
@@ -610,7 +606,7 @@ public class FrontendUtils {
     private static InputStream getFileFromWebpack(String filePath)
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection(filePath, "GET").getInputStream();
+        return handler.prepareConnection("/" + filePath, "GET").getInputStream();
     }
 
     /**

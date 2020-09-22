@@ -221,7 +221,7 @@ public final class Constants implements Serializable {
      * Default path for the WebPack profile statistics json file. It can be
      * modified by setting the system property "statistics.file.path".
      */
-    public static final String STATISTICS_JSON_DEFAULT = Constants.VAADIN_CONFIGURATION
+    public static final String STATISTICS_JSON_DEFAULT = Constants.VAADIN_CONFIGURATION_FILES_PATH
             + "stats.json";
 
     /**
@@ -317,13 +317,6 @@ public final class Constants implements Serializable {
     public static final String VAADIN_MAPPING = "VAADIN/";
 
     /**
-     * The path to meta-inf/VAADIN/ where static resources are put on the
-     * servlet.
-     */
-    public static final String VAADIN_SERVLET_RESOURCES = META_INF
-            + VAADIN_MAPPING;
-
-    /**
      * The static build resources folder.
      */
     public static final String VAADIN_BUILD = "build/";
@@ -334,10 +327,28 @@ public final class Constants implements Serializable {
     public static final String VAADIN_CONFIGURATION = "config/";
 
     /**
+     * The static resources root folder.
+     */
+    public static final String VAADIN_WEBAPP = "webapp/";
+
+    /**
+     * The path to meta-inf/VAADIN/webapp/ where static resources are put
+     * on the servlet.
+     */
+    public static final String VAADIN_SERVLET_RESOURCES = META_INF
+            + VAADIN_MAPPING + VAADIN_WEBAPP;
+
+    /**
      * The prefix used for all internal static files, relative to context root.
      */
     public static final String VAADIN_BUILD_FILES_PATH = VAADIN_MAPPING
             + VAADIN_BUILD;
+
+    /**
+     * The prefix for configuration files.
+     */
+    public static final String VAADIN_CONFIGURATION_FILES_PATH =
+            VAADIN_MAPPING + VAADIN_CONFIGURATION;
 
     /**
      * Default path for local frontend resources packaged for jar add-ons.

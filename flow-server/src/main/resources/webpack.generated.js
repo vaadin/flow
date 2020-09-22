@@ -30,14 +30,13 @@ const VAADIN = 'VAADIN';
 const build = 'build';
 // public path for resources, must match the request used in flow to get the /build/stats.json file
 const config = 'config';
-const outputFolder = path.resolve(mavenOutputFolderForFlowBundledFiles, META_INF);
-const indexHtmlPath = path.join(VAADIN, 'index.html');
+const outputFolder = mavenOutputFolderForFlowBundledFiles;
+const indexHtmlPath = 'index.html';
 // folder for outputting vaadin-bundle and other fragments
 const buildFolder = path.resolve(outputFolder, VAADIN, build);
 // folder for outputting stats.json
 const confFolder = path.resolve(outputFolder, VAADIN, config);
-const staticResourcesPath = 'resources';
-const serviceWorkerPath = path.join(staticResourcesPath, 'sw.js');
+const serviceWorkerPath = 'sw.js';
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = path.resolve(confFolder, 'stats.json');
 // make sure that build folder exists before outputting anything

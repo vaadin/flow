@@ -17,14 +17,13 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
-import static com.vaadin.flow.server.Constants.META_INF;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
@@ -78,7 +77,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * The folder where webpack should output index.js and other generated
      * files.
      */
-    @Parameter(defaultValue = "${project.build.outputDirectory}")
+    @Parameter(defaultValue = "${project.build.outputDirectory}/"
+            + VAADIN_SERVLET_RESOURCES)
     protected File webpackOutputDirectory;
 
     /**
