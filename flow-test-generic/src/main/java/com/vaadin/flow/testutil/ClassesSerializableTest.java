@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.testutil;
 
-import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -37,6 +34,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+
+import static java.lang.reflect.Modifier.isStatic;
+import static org.junit.Assert.fail;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -115,6 +115,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapPageResponse",
                 "com\\.vaadin\\.flow\\.server\\.InlineTargets",
+                "com\\.vaadin\\.flow\\.server\\.AppShellSettings",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.IndexHtmlResponse",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
