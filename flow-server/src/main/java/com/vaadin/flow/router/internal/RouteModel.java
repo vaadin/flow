@@ -91,6 +91,14 @@ class RouteModel implements Serializable {
     }
 
     /**
+     * Removes all registered routes from the model.
+     */
+    void clear() {
+        throwIfImmutable();
+        this.root = RouteSegment.createRoot();
+    }
+
+    /**
      * Remove a path by its template.
      *
      * @param template

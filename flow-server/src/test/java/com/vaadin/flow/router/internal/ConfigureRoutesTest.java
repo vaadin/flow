@@ -1,8 +1,5 @@
 package com.vaadin.flow.router.internal;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -10,6 +7,9 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import org.junit.Assert;
+import org.junit.Test;
 
 
 public class ConfigureRoutesTest {
@@ -60,6 +60,56 @@ public class ConfigureRoutesTest {
 
         Assert.assertEquals("Configuration should have registered base target.",
                 "", mutable.getTemplate(BaseTarget.class));
+    }
+
+    @Test
+    public void mutableConfiguration_clearRoutes() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
+        assertSetRoutes(mutable);
+
+        try {
+            mutable.setRoute("", BaseTarget.class);
+            Assert.fail("Route is already registered");
+        } catch (InvalidRouteConfigurationException e) {
+        }
+
+        try {
+            mutable.setRoute(":param", ParamTarget.class);
+            Assert.fail("Route is already registered");
+        } catch (InvalidRouteConfigurationException e) {
+        }
+
+        mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
+
+        mutable.clear();
+
+        Assert.assertEquals("ErrorRoute shouldn't be cleared.",
+                BaseError.class, mutable.getExceptionHandlerByClass(
+                        IndexOutOfBoundsException.class));
+
+        Assert.assertFalse(mutable.hasRouteTarget(BaseTarget.class));
+        Assert.assertFalse(mutable.hasRouteTarget(ParamTarget.class));
+
+        Assert.assertNull(
+                mutable.getNavigationRouteTarget("").getRouteTarget());
+        Assert.assertNull(
+                mutable.getNavigationRouteTarget("123").getRouteTarget());
+
+        assertSetRoutes(mutable);
+    }
+
+    private void assertSetRoutes(ConfigureRoutes mutable) {
+        mutable.setRoute("", BaseTarget.class);
+        mutable.setRoute(":param", ParamTarget.class);
+
+        Assert.assertTrue(mutable.hasRouteTarget(BaseTarget.class));
+        Assert.assertTrue(mutable.hasRouteTarget(ParamTarget.class));
+
+        Assert.assertEquals(BaseTarget.class, mutable
+                .getNavigationRouteTarget("").getRouteTarget().getTarget());
+        Assert.assertEquals(ParamTarget.class, mutable
+                .getNavigationRouteTarget("123").getRouteTarget().getTarget());
     }
 
     @Test
