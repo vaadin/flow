@@ -629,4 +629,20 @@ public final class PolymerUtils {
          element.set(path, value);
      }-*/;
 
+    /**
+     * Returns true if and only if the element has a shadow root ancestor.
+     * 
+     * @param element
+     *            the element to test
+     * @return whether the element is in a shadow root
+     */
+    public static native boolean isInShadowRoot(Element element)
+    /*-{
+        while (element.parentNode && (element = element.parentNode)) {
+            if (element.toString() === '[object ShadowRoot]') {
+                return true;
+            }
+        }
+        return false;
+     }-*/;
 }

@@ -1,0 +1,15 @@
+<link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
+
+<dom-module id="template-inner">
+    <template>
+        <div>Hello template inner</div>
+    </template>
+
+    <script>
+      class TemplateInner extends Polymer.Element {
+        static get is() { return 'template-inner' }
+      }
+
+      customElements.define(TemplateInner.is, TemplateInner);
+    </script>
+</dom-module>
