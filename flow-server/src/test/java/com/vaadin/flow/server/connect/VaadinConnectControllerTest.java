@@ -74,6 +74,11 @@ public class VaadinConnectControllerTest {
     private static final Method TEST_VALIDATION_METHOD;
     private HttpServletRequest requestMock;
     private Principal principal;
+    /**
+     * Make the server a field instance to prevent it from garbage collected,
+     * which could fail unit test randomly.
+     */
+    private MockVaadinServletService service = new MockVaadinServletService();
 
     static {
         TEST_METHOD = Stream.of(TEST_ENDPOINT.getClass().getDeclaredMethods())
@@ -416,7 +421,6 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_bePossibeToGetPrincipalInEndpoint() {
-        MockVaadinServletService service = new MockVaadinServletService();
         VaadinService.setCurrent(service);
         when(principal.getName()).thenReturn("foo");
 
