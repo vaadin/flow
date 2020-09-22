@@ -33,6 +33,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.Range;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -1070,6 +1071,30 @@ public class DataCommunicatorTest {
         Assert.assertEquals("Invalid count provided", 500,
                 event.getItemCount());
         Assert.assertFalse(event.isItemCountEstimated());
+    }
+
+    @Test
+    public void setDefinedSize_rangeEndEqualsAssumedSize_flushRequested() {
+        // trigger client communication in order to initialise it and avoid
+        // infinite loop inside 'requestFlush()'
+        fakeClientCommunication();
+
+        StateNode stateNode = Mockito.spy(element.getNode());
+        DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
+                dataGenerator, arrayUpdater, data -> {}, stateNode);
+        dataCommunicator.setPageSize(pageSize);
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        // Trigger flush() to set the assumedSize
+        fakeClientCommunication();
+
+        dataCommunicator.setRequestedRange(0, 100);
+        // clean flushRequest
+        fakeClientCommunication();
+
+        Mockito.reset(stateNode);
+        dataCommunicator.setDefinedSize(false);
+        // Verify that requestFlush has been invoked
+        Mockito.verify(stateNode).runWhenAttached(Mockito.anyObject());
     }
 
     @Test
