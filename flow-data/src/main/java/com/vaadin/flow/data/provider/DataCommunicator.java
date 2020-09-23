@@ -93,7 +93,7 @@ public class DataCommunicator<T> implements Serializable {
     // Update ids that have been confirmed since the last flush
     private final HashSet<Integer> confirmedUpdates = new HashSet<>();
 
-    private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
+    private DataProvider<T, ?> dataProvider = new EmptyDataProvider<>();
 
     // Serializability of filter is up to the application
     private Object filter;
@@ -646,6 +646,30 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void setPagingEnabled(boolean pagingEnabled) {
         this.pagingEnabled = pagingEnabled;
+    }
+
+    /**
+     * In-memory data provider with no items.
+     * <p>
+     * Data Communicator is initialised with this data provider by default
+     * until a new data provider is assigned with
+     * {@link #setDataProvider(DataProvider, Object)}.
+     * <p>
+     * This type of data provider signals to data view to skip the data
+     * provider verification on data view instantiation phase, so as to
+     * support generic API for lazy loading case (add item count listener,
+     * for instance), even if no backend data provider set by user.
+     *
+     * @param <T1> item type
+     */
+    static final class EmptyDataProvider<T1> extends ListDataProvider<T1> {
+        /**
+         * Create in-memory data provider instance with no items in the
+         * backed collection.
+         */
+        public EmptyDataProvider() {
+            super(new ArrayList<>(0));
+        }
     }
 
     /**
