@@ -158,7 +158,7 @@ public class WebComponentGenerator {
         Map<String, String> replacements = new HashMap<>();
 
         if (themeName != null) {
-            replacements.put("ThemeImport","import {applyTheme} from 'theme/"+themeName+"/"+themeName+".js';");
+            replacements.put("ThemeImport","import {applyTheme} from 'theme/applicationTheme.js';");
             replacements.put("ApplyTheme","applyTheme(shadow);");
         } else {
             replacements.put("ThemeImport","");

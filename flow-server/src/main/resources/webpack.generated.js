@@ -406,6 +406,9 @@ export const injectGlobalCss = (css, target) => {
 const handleThemes = (themesFolder) => {
   const dir = fs.opendirSync(themesFolder);
   while ((dirent = dir.readSync())) {
+    if (!dirent.isDirectory()) {
+      continue;
+    }
     const themeName = dirent.name;
     const themeFolder = path.resolve(themesFolder, themeName);
     const themeProperties = getThemeProperties(themeFolder, themeName);
