@@ -7,9 +7,11 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class ConfigureRoutesTest {
@@ -36,6 +38,9 @@ public class ConfigureRoutesTest {
             return 0;
         }
     }
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void mutableConfiguration_canSetRouteTarget() {
@@ -103,11 +108,12 @@ public class ConfigureRoutesTest {
         Assert.assertEquals(BaseTarget.class, mutable
                 .getNavigationRouteTarget("").getRouteTarget().getTarget());
 
-        try {
-            mutable.setRoute("", BaseTarget.class);
-            Assert.fail("Base route is already registered");
-        } catch (InvalidRouteConfigurationException e) {
-        }
+        exceptionRule.expect(AmbiguousRouteConfigurationException.class);
+        exceptionRule.reportMissingExceptionWithMessage(
+                "Duplicate routes shouldn't be accepted.");
+        exceptionRule.expectMessage(
+                "Navigation targets must have unique routes, found navigation targets 'com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget' and 'com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget' with the same route.");
+        mutable.setRoute("", BaseTarget.class);
     }
 
     @Test
@@ -119,11 +125,12 @@ public class ConfigureRoutesTest {
         Assert.assertEquals(ParamTarget.class, mutable
                 .getNavigationRouteTarget("123").getRouteTarget().getTarget());
 
-        try {
-            mutable.setRoute(":param", ParamTarget.class);
-            Assert.fail("Parameter route is already registered");
-        } catch (InvalidRouteConfigurationException e) {
-        }
+        exceptionRule.expect(AmbiguousRouteConfigurationException.class);
+        exceptionRule.reportMissingExceptionWithMessage(
+                "Duplicate parameter routes shouldn't be accepted.");
+        exceptionRule.expectMessage(
+                "Navigation targets must have unique routes, found navigation targets 'com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget' and 'com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget' with parameter have the same route.");
+        mutable.setRoute(":param", ParamTarget.class);
     }
 
     @Test
