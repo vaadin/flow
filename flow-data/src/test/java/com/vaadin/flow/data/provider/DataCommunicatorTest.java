@@ -1083,7 +1083,10 @@ public class DataCommunicatorTest {
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {}, stateNode);
         dataCommunicator.setPageSize(pageSize);
+
+        // the items size returned by this data provider will be 100
         dataCommunicator.setDataProvider(createDataProvider(), null);
+
         // Trigger flush() to set the assumedSize
         fakeClientCommunication();
 
@@ -1093,8 +1096,13 @@ public class DataCommunicatorTest {
 
         Mockito.reset(stateNode);
         dataCommunicator.setDefinedSize(false);
+        fakeClientCommunication();
+
         // Verify that requestFlush has been invoked
         Mockito.verify(stateNode).runWhenAttached(Mockito.anyObject());
+
+        // Verify the estimated count is now 100 + 4 * pageSize = 300
+        Assert.assertEquals(300, dataCommunicator.getItemCount());
     }
 
     @Test
