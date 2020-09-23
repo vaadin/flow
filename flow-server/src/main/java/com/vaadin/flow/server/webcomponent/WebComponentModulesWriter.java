@@ -153,7 +153,7 @@ public final class WebComponentModulesWriter implements Serializable {
 
         /**
          * Calls
-         * {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean)}
+         * {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean, java.lang.String)}
          * via reflection on the supplied {@code writer}. The {@code writer} and
          * {@code exporterClasses} must be loaded with the same class loader.
          *
@@ -183,11 +183,11 @@ public final class WebComponentModulesWriter implements Serializable {
          *             share a class loader
          * @throws java.lang.IllegalStateException
          *             if the received {@code writer} does not have method
-         *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean)}
+         *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean, java.lang.String)}
          * @throws java.lang.RuntimeException
          *             if reflective method invocation fails
          * @see #writeWebComponentsToDirectory(java.util.Set, java.io.File,
-         *      boolean)
+         *      boolean, java.lang.String)
          */
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
