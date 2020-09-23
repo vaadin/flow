@@ -318,7 +318,6 @@ function collectSubModules(module) {
 
 const getThemeProperties = (themeFolder, themeName) => {
   const themePropertyFile = path.resolve(themeFolder, "theme.json");
-  console.log("themePropertyFile", themePropertyFile);
   if (!fs.existsSync(themePropertyFile)) {
     return {};
   }
@@ -349,11 +348,6 @@ import { css, unsafeCSS, registerStyles } from "@vaadin/vaadin-themable-mixin/re
 export const injectGlobalCss = (css, target) => {
     // FIXME: not all browsers support constructable stylesheets
   const sheet = new CSSStyleSheet();
-
-  // The following row is a hack only for docs
-  css = css.replace("url('theme/","url('/theme/");
-  css = css.replace('url("theme/','url("/theme/');
-
   sheet.replaceSync(css);
   target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
 };
@@ -411,7 +405,6 @@ export const injectGlobalCss = (css, target) => {
 };
 const handleThemes = (themesFolder) => {
   const dir = fs.opendirSync(themesFolder);
-  console.log(dir);
   while ((dirent = dir.readSync())) {
     const themeName = dirent.name;
     const themeFolder = path.resolve(themesFolder, themeName);
