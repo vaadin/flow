@@ -62,38 +62,13 @@ public class ConfigureRoutesTest {
                 "", mutable.getTemplate(BaseTarget.class));
     }
 
-    @Test // #8433
-    public void mutableConfiguration_clearRoutes() {
+    @Test
+    public void mutableConfigurationClear_removesRegisteredRoutes() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         assertSetRoutes(mutable);
 
-        // Bug 8433 was caused by an InvalidRouteConfigurationException raised
-        // as a result of the RouteModel not being cleared on
-        // ConfigureRoutes.clear(), thus perceiving reloaded routes as duplicate.
-        //
-        // Here we make sure that for a duplicate route the exception is raised,
-        // while after invoking clear(), it shouldn't be raised again when
-        // adding the same routes.
-        try {
-            mutable.setRoute("", BaseTarget.class);
-            Assert.fail("Route is already registered");
-        } catch (InvalidRouteConfigurationException e) {
-        }
-
-        try {
-            mutable.setRoute(":param", ParamTarget.class);
-            Assert.fail("Route is already registered");
-        } catch (InvalidRouteConfigurationException e) {
-        }
-
-        mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
-
         mutable.clear();
-
-        Assert.assertEquals("ErrorRoute shouldn't be cleared.",
-                BaseError.class, mutable.getExceptionHandlerByClass(
-                        IndexOutOfBoundsException.class));
 
         Assert.assertFalse(mutable.hasRouteTarget(BaseTarget.class));
         Assert.assertFalse(mutable.hasRouteTarget(ParamTarget.class));
@@ -106,17 +81,49 @@ public class ConfigureRoutesTest {
         assertSetRoutes(mutable);
     }
 
-    private void assertSetRoutes(ConfigureRoutes mutable) {
+    @Test
+    public void mutableConfigurationClear_preservesErrorRoute() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
+        mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
+
+        mutable.clear();
+
+        Assert.assertEquals("ErrorRoute shouldn't be cleared.",
+                BaseError.class, mutable.getExceptionHandlerByClass(
+                        IndexOutOfBoundsException.class));
+    }
+
+    @Test
+    public void duplicateRootPathRegistration_throwsException() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
         mutable.setRoute("", BaseTarget.class);
-        mutable.setRoute(":param", ParamTarget.class);
-
         Assert.assertTrue(mutable.hasRouteTarget(BaseTarget.class));
-        Assert.assertTrue(mutable.hasRouteTarget(ParamTarget.class));
-
         Assert.assertEquals(BaseTarget.class, mutable
                 .getNavigationRouteTarget("").getRouteTarget().getTarget());
+
+        try {
+            mutable.setRoute("", BaseTarget.class);
+            Assert.fail("Base route is already registered");
+        } catch (InvalidRouteConfigurationException e) {
+        }
+    }
+
+    @Test
+    public void duplicateParameterPathRegistration_throwsException() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
+        mutable.setRoute(":param", ParamTarget.class);
+        Assert.assertTrue(mutable.hasRouteTarget(ParamTarget.class));
         Assert.assertEquals(ParamTarget.class, mutable
                 .getNavigationRouteTarget("123").getRouteTarget().getTarget());
+
+        try {
+            mutable.setRoute(":param", ParamTarget.class);
+            Assert.fail("Parameter route is already registered");
+        } catch (InvalidRouteConfigurationException e) {
+        }
     }
 
     @Test
@@ -174,6 +181,19 @@ public class ConfigureRoutesTest {
         Assert.assertFalse(
                 "After clear  exception targets should still be available.",
                 mutable.getExceptionHandlers().isEmpty());
+    }
+
+    private void assertSetRoutes(ConfigureRoutes mutable) {
+        mutable.setRoute("", BaseTarget.class);
+        mutable.setRoute(":param", ParamTarget.class);
+
+        Assert.assertTrue(mutable.hasRouteTarget(BaseTarget.class));
+        Assert.assertTrue(mutable.hasRouteTarget(ParamTarget.class));
+
+        Assert.assertEquals(BaseTarget.class, mutable
+                .getNavigationRouteTarget("").getRouteTarget().getTarget());
+        Assert.assertEquals(ParamTarget.class, mutable
+                .getNavigationRouteTarget("123").getRouteTarget().getTarget());
     }
 
 }
