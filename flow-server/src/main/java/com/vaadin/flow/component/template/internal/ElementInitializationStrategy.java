@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.template.internal;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -26,7 +28,7 @@ import com.vaadin.flow.dom.Element;
  *
  */
 @FunctionalInterface
-interface ElementInitializationStrategy {
+interface ElementInitializationStrategy extends Serializable {
 
     /**
      * Initializes the {@code element} with template attribute {@code name} and

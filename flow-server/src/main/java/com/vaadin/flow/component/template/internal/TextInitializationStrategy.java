@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.template.internal;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -27,7 +25,7 @@ import com.vaadin.flow.dom.Element;
  *
  */
 class TextInitializationStrategy
-        implements ElementInitializationStrategy, Serializable {
+        implements ElementInitializationStrategy {
 
     @Override
     public void initialize(Element element, String name, String value) {
