@@ -8,12 +8,12 @@ import com.vaadin.flow.server.ExecutionFailedException;
 
 import org.apache.commons.io.FileUtils;
 
-public class TaskUpdateThemeImport implements FallibleCommand {
+public class TaskUpdateApplicationThemeImport implements FallibleCommand {
 
     private File themeImportFile;
     private String applicationTheme;
 
-    protected TaskUpdateThemeImport(File npmFolder, File generatedDirectory, String applicationTheme) {
+    protected TaskUpdateApplicationThemeImport(File npmFolder, File generatedDirectory, String applicationTheme) {
         File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
         File flowFrontend = new File(nodeModules, FrontendUtils.FLOW_NPM_PACKAGE_NAME);
         this.themeImportFile = new File(new File(flowFrontend, "theme"), "applicationTheme.js");
@@ -25,7 +25,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         themeImportFile.getParentFile().mkdirs();
 
         try {
-            FileUtils.write(themeImportFile, "import './" + applicationTheme + "/" + applicationTheme + ".js';",
+            FileUtils.write(
+                    themeImportFile, "import {applyTheme as _applyTheme} from './" + applicationTheme + "/"
+                            + applicationTheme + ".js';\nexport const applyTheme = _applyTheme;\n",
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException("Unable to write theme import file", e);
