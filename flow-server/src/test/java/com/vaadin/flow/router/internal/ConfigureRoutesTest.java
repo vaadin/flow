@@ -62,12 +62,19 @@ public class ConfigureRoutesTest {
                 "", mutable.getTemplate(BaseTarget.class));
     }
 
-    @Test
+    @Test // #8433
     public void mutableConfiguration_clearRoutes() {
         ConfigureRoutes mutable = new ConfigureRoutes();
 
         assertSetRoutes(mutable);
 
+        // Bug 8433 was caused by an InvalidRouteConfigurationException raised
+        // as a result of the RouteModel not being cleared on
+        // ConfigureRoutes.clear(), thus perceiving reloaded routes as duplicate.
+        //
+        // Here we make sure that for a duplicate route the exception is raised,
+        // while after invoking clear(), it shouldn't be raised again when
+        // adding the same routes.
         try {
             mutable.setRoute("", BaseTarget.class);
             Assert.fail("Route is already registered");
