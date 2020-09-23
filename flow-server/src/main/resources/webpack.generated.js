@@ -10,6 +10,8 @@ const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
 const path = require('path');
+const glob = require('glob');
+const camelCase = require('camelCase');
 
 // the folder of app resources:
 //  - flow templates for classic Flow
@@ -31,6 +33,24 @@ const buildFolder = `${mavenOutputFolderForFlowBundledFiles}/${build}`;
 const confFolder = `${mavenOutputFolderForFlowBundledFiles}/${config}`;
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
+// Folders in the project which can contain static assets.
+// FIXME This is missing some entries
+const projectStaticAssetsFolders = [
+  path.resolve(__dirname, "src", "main", "resources", "META-INF", "resources"),
+  path.resolve(__dirname, "src", "main", "resources", "static"),
+];
+// Folders in the project which can contain application themes
+const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
+  path.resolve(folder, "theme")
+);
+// Special folder inside a theme for component themes that go inside the component shadow root
+const themeComponentsFolder = "components";
+// The contents of a global CSS file with this name in a theme is always added to the document. E.g. @font-face must be in this
+const themeFileAlwaysAddToDocument = "document.css";
+// FIXME "target" can be configured in Maven projects
+const flowFrontendFolder = path.resolve(__dirname, "target", "flow-frontend");
+const themeJarFolder = path.resolve(flowFrontendFolder, "theme");
+
 // make sure that build folder exists before outputting anything
 const mkdirp = require('mkdirp');
 
@@ -101,6 +121,12 @@ module.exports = {
   },
 
   resolve: {
+    // Search for import "x/y" inside these folders, used at least for importing an application theme
+    modules: [
+      "node_modules",
+      flowFrontendFolder,
+      ...projectStaticAssetsFolders,
+    ],
     extensions: ['.ts', '.js'],
     alias: {
       Frontend: frontendFolder
@@ -287,3 +313,131 @@ function collectSubModules(module) {
   });
   return modules;
 }
+
+// Generate theme file(s)
+
+const getThemeProperties = (themeFolder, themeName) => {
+  const themePropertyFile = path.resolve(themeFolder, "theme.json");
+  console.log("themePropertyFile", themePropertyFile);
+  if (!fs.existsSync(themePropertyFile)) {
+    return {};
+  }
+  return JSON.parse(fs.readFileSync(themePropertyFile));
+};
+
+const generateThemeFile = (themeFolder, themeName, themeProperties) => {
+  const globalFiles = glob.sync("*.css", {
+    cwd: themeFolder,
+    nodir: true,
+  });
+  const componentsFiles = glob.sync("*.css", {
+    cwd: path.resolve(themeFolder, themeComponentsFolder),
+    nodir: true,
+  });
+
+  let themeFile = `
+import { css, unsafeCSS, registerStyles } from "@vaadin/vaadin-themable-mixin/register-styles";
+`;
+
+  if (themeProperties.parent) {
+    themeFile += `import {applyTheme as applyBaseTheme} from 'theme/${themeProperties.parent}/${themeProperties.parent}.js';
+`;
+  }
+
+  themeFile += `
+// target: Document | ShadowRoot
+export const injectGlobalCss = (css, target) => {
+    // FIXME: not all browsers support constructable stylesheets
+  const sheet = new CSSStyleSheet();
+
+  // The following row is a hack only for docs
+  css = css.replace("url('theme/","url('/theme/");
+  css = css.replace('url("theme/','url("/theme/');
+
+  sheet.replaceSync(css);
+  target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
+};
+`;
+  const imports = [];
+  const globalCssCode = [];
+  const componentCssCode = [];
+  const parentTheme = themeProperties.parent ? "applyBaseTheme(target);\n" : "";
+  globalFiles.forEach((global) => {
+    const filename = path.basename(global);
+    const variable = camelCase(filename);
+    imports.push(`import ${variable} from "!!raw-loader!./${filename}";\n`);
+    if (filename == themeFileAlwaysAddToDocument) {
+      globalCssCode.push(`injectGlobalCss(${variable}, document);\n`);
+    } else {
+      globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
+    }
+  });
+
+  componentsFiles.forEach((componentCss) => {
+    const filename = path.basename(componentCss);
+    const tag = filename.replace(".css", "");
+    const variable = camelCase(filename);
+    imports.push(
+      `import ${variable} from "!!raw-loader!./${themeComponentsFolder}/${filename}";\n`
+    );
+    componentCssCode.push(`registerStyles(
+  "${tag}",
+  css\`
+    \${unsafeCSS(${variable})}
+  \`
+);
+`);
+  });
+
+  const themeIdentifier = "_vaadinds_" + themeName + "_";
+  const globalCssFlag = themeIdentifier + "globalCss";
+  const componentCssFlag = themeIdentifier + "componentCss";
+
+  themeFile += imports.join("");
+  themeFile += `export const applyTheme = (target) => {
+    ${parentTheme}
+    if (!target['${globalCssFlag}']) {
+      ${globalCssCode.join("")}
+      target['${globalCssFlag}'] = true;
+    }
+    if (!document['${componentCssFlag}']) {
+      ${componentCssCode.join("")}
+      document['${componentCssFlag}'] = true;
+     }
+}
+`;
+
+  return themeFile;
+};
+const handleThemes = (themesFolder) => {
+  const dir = fs.opendirSync(themesFolder);
+  console.log(dir);
+  while ((dirent = dir.readSync())) {
+    const themeName = dirent.name;
+    const themeFolder = path.resolve(themesFolder, themeName);
+    const themeProperties = getThemeProperties(themeFolder, themeName);
+    const themeFile = generateThemeFile(
+      themeFolder,
+      themeName,
+      themeProperties
+    );
+    fs.writeFileSync(path.resolve(themeFolder, themeName + ".js"), themeFile);
+  }
+};
+
+function generateThemeFiles() {
+  if (fs.existsSync(themeJarFolder)) {
+    handleThemes(themeJarFolder);
+  } else {
+    console.warn("Theme JAR folder not found", themeJarFolder);
+  }
+
+  themeProjectFolders.forEach((themeProjectFolder) => {
+    if (fs.existsSync(themeProjectFolder)) {
+      handleThemes(themeProjectFolder);
+    }
+  });
+}
+
+// FIXME Verify if this should be triggered here or at some other point in time
+generateThemeFiles();

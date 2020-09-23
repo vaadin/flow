@@ -1,3 +1,5 @@
+_ThemeImport_
+
 class _TagCamel_ extends HTMLElement {
   constructor() {
     super();
@@ -12,6 +14,7 @@ class _TagCamel_ extends HTMLElement {
         display: inline-block;
       }
     `;
+    _ApplyTheme_
     shadow.appendChild(style);
     shadow.appendChild(document.createElement("slot"));
 

@@ -68,11 +68,13 @@ public class FrontendWebComponentGenerator implements Serializable {
      *
      * @param outputDirectory
      *            target directory for the web component module files
+     * @param themeName
+     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
      * @return generated files
      * @throws java.lang.IllegalStateException
      *             if {@code finder} cannot locate required classes
      */
-    public Set<File> generateWebComponents(File outputDirectory) {
+    public Set<File> generateWebComponents(File outputDirectory, String themeName) {
         try {
             final Class<?> writerClass = finder
                     .loadClass(WebComponentModulesWriter.class.getName());
@@ -83,7 +85,7 @@ public class FrontendWebComponentGenerator implements Serializable {
                     .forEach(exporterRelatedClasses::add);
             return WebComponentModulesWriter.DirectoryWriter
                     .generateWebComponentsToDirectory(writerClass,
-                            exporterRelatedClasses, outputDirectory, false);
+                            exporterRelatedClasses, outputDirectory, false, themeName);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Unable to locate a required class using custom class "

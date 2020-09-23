@@ -90,18 +90,20 @@ public class WebComponentGenerator {
      * @param compatibilityMode
      *            {@code true} to generate Polymer2 template, {@code false} to
      *            generate Polymer3 template
+     * @param themeName
+     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
             WebComponentExporterFactory<? extends Component> factory,
-            String frontendURI, boolean compatibilityMode) {
+            String frontendURI, boolean compatibilityMode, String themeName) {
         Objects.requireNonNull(factory);
         Objects.requireNonNull(frontendURI);
 
         WebComponentConfiguration<? extends Component> config = new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(factory.create());
 
-        return generateModule(config, frontendURI, false, compatibilityMode);
+        return generateModule(config, frontendURI, false, compatibilityMode, themeName);
     }
 
     /**
@@ -114,22 +116,24 @@ public class WebComponentGenerator {
      * @param compatibilityMode
      *            {@code true} to generate Polymer2 template, {@code false} to
      *            generate Polymer3 template
+     * @param themeName
+     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
-            String frontendURI, boolean compatibilityMode) {
+            String frontendURI, boolean compatibilityMode, String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
         return generateModule(webComponentConfiguration, frontendURI, true,
-                compatibilityMode);
+                compatibilityMode, themeName);
     }
 
     private static String generateModule(
             WebComponentConfiguration<? extends Component> webComponentConfiguration,
             String frontendURI, boolean generateUiImport,
-            boolean compatibilityMode) {
+            boolean compatibilityMode, String themeName) {
         Objects.requireNonNull(webComponentConfiguration);
         Objects.requireNonNull(frontendURI);
 
@@ -138,7 +142,7 @@ public class WebComponentGenerator {
 
         Map<String, String> replacements = getReplacementsMap(
                 webComponentConfiguration.getTag(), propertyDataSet,
-                frontendURI, generateUiImport);
+                frontendURI, generateUiImport, themeName);
 
         String template = getTemplate(compatibilityMode);
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
@@ -150,13 +154,19 @@ public class WebComponentGenerator {
 
     static Map<String, String> getReplacementsMap(String tag,
             Set<PropertyData<? extends Serializable>> propertyDataSet,
-            String frontendURI, boolean generateUiImport) {
+            String frontendURI, boolean generateUiImport, String themeName) {
         Map<String, String> replacements = new HashMap<>();
 
+        if (themeName != null) {
+            replacements.put("ThemeImport","import {applyTheme} from 'theme/"+themeName+"/"+themeName+".js';");
+            replacements.put("ApplyTheme","applyTheme(shadow);");
+        } else {
+            replacements.put("ThemeImport","");
+            replacements.put("ApplyTheme","");
+        }
         replacements.put("TagDash", tag);
         replacements.put("TagCamel", SharedUtil
                 .capitalize(SharedUtil.dashSeparatedToCamelCase(tag)));
-
         replacements.put("AttributeChange", getAttributeChange(
                 getStringResource(CODE_ATTRIBUTE_CHANGE), propertyDataSet));
         replacements.put("PropertyMethods", getPropertyMethods(
