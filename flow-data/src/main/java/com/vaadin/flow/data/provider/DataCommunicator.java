@@ -541,7 +541,7 @@ public class DataCommunicator<T> implements Serializable {
              * estimated size. If there was a previous defined size used, then
              * that is kept until a reset occurs.
              */
-            if (requestedRange.contains(assumedSize)) {
+            if (requestedRange.contains(assumedSize - 1)) {
                 requestFlush();
             }
         }
