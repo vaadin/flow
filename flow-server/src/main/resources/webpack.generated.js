@@ -90,20 +90,42 @@ if (useClientSideIndexFileForBootstrapping) {
 // const swOfflineResources = [];
 // const swResourceLocations = [];
 
+const swManifestTransform = (manifestEntries) => {
+  const warnings = [];
+  const manifest = manifestEntries;
+  /*swOfflineResources.forEach((offlineResource) => {
+    swInclude(manifest, offlineResource);
+  });*/
+
+  // `index.html` is a special case: in contrast with the JS bundles produced by webpack
+  // it's not served as-is directly from the webpack output at `/index.html`.
+  // It goes through IndexHtmlRequestHandler and is served at `/`.
+  //
+  // TODO: calculate the revision based on the IndexHtmlRequestHandler-processed content
+  // of the index.html file
+  const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
+  if (indexEntryIdx !== -1) {
+    manifest[indexEntryIdx].url = '/';
+  }
+
+  return { manifest, warnings };
+};
+
 const serviceWorkerPlugin = new GenerateSW({
-  swDest: serviceWorkerPath
-  // clientsClaim: true,
-  // skipWaiting: true,
-  // manifestTransforms: [swManifestTransform],
-  // maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
-  // navigateFallback: "index.html",
-  // inlineWorkboxRuntime: true,
-  // runtimeCaching: [
-  //   {
-  //     urlPattern: /.*/,
-  //     handler: "NetworkFirst",
-  //   },
-  // ],
+  swDest: serviceWorkerPath,
+  clientsClaim: true,
+  skipWaiting: true,
+  manifestTransforms: [swManifestTransform],
+  maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
+  dontCacheBustURLsMatching: /.*-[a-z0-9]{20}\.cache\.js/,
+  navigateFallback: '/',
+  inlineWorkboxRuntime: true,
+  runtimeCaching: [
+    {
+      urlPattern: /.*/,
+      handler: "NetworkFirst",
+    },
+  ],
 });
 
 if (devMode) {
@@ -177,8 +199,6 @@ module.exports = {
     !devMode && new CompressionPlugin(),
     // Generate manifest.json file
     new ManifestPlugin(),
-    // Service worker for offline
-    serviceWorkerPlugin,
 
     // Generates the stats file for flow `@Id` binding.
     function (compiler) {
@@ -225,6 +245,8 @@ module.exports = {
     useClientSideIndexFileForBootstrapping && new ScriptExtHtmlWebpackPlugin({
       defaultAttribute: 'defer'
     }),
+    // Service worker for offline
+    serviceWorkerPlugin,
   ].filter(Boolean)
 };
 
