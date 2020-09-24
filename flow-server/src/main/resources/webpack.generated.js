@@ -39,6 +39,15 @@ const projectStaticAssetsFolders = [
   path.resolve(__dirname, "src", "main", "resources", "META-INF", "resources"),
   path.resolve(__dirname, "src", "main", "resources", "static"),
 ];
+// FIXME This is not always correct
+const projectStaticAssetsOutputFolder = path.resolve(
+  __dirname,
+  "target",
+  "classes",
+  "META-INF",
+  "resources"
+);
+
 // Folders in the project which can contain application themes
 const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
   path.resolve(folder, "theme")
@@ -165,7 +174,11 @@ module.exports = {
       {
         test: /\.css$/i,
         use: ['lit-css-loader', 'extract-loader', 'css-loader']
-      }
+      },
+      {
+        test: /\.(svg|eot|woff|woff2|ttf)$/,
+        use: ["file-loader"],
+      },      
     ]
   },
   performance: {
@@ -359,20 +372,36 @@ export const injectGlobalCss = (css, target) => {
   globalFiles.forEach((global) => {
     const filename = path.basename(global);
     const variable = camelCase(filename);
-    imports.push(`import ${variable} from "!!raw-loader!./${filename}";\n`);
+    imports.push(`import ${variable} from "!!css-loader!./${filename}";\n`);
     if (filename == themeFileAlwaysAddToDocument) {
       globalCssCode.push(`injectGlobalCss(${variable}, document);\n`);
-    } else {
-      globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
     }
+    globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
   });
+
+  let i = 0;
+  if (themeProperties.css) {
+    themeProperties.css.forEach((cssImport) => {
+      const variable = "module" + i++;
+      imports.push(`import ${variable} from "!!css-loader!${cssImport}";\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
+    });
+  }
+  if (themeProperties.documentCss) {
+    themeProperties.documentCss.forEach((cssImport) => {
+      const variable = "module" + i++;
+      imports.push(`import ${variable} from "!!css-loader!${cssImport}";\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}, document);\n`);
+    });
+  }
 
   componentsFiles.forEach((componentCss) => {
     const filename = path.basename(componentCss);
     const tag = filename.replace(".css", "");
     const variable = camelCase(filename);
     imports.push(
-      `import ${variable} from "!!raw-loader!./${themeComponentsFolder}/${filename}";\n`
+      `import ${variable} from "!!css-loader!./${themeComponentsFolder}/${filename}";\n`
     );
     componentCssCode.push(`registerStyles(
   "${tag}",
@@ -412,6 +441,7 @@ const handleThemes = (themesFolder) => {
     const themeName = dirent.name;
     const themeFolder = path.resolve(themesFolder, themeName);
     const themeProperties = getThemeProperties(themeFolder, themeName);
+    copyStaticAssets(themeProperties, projectStaticAssetsOutputFolder);
     const themeFile = generateThemeFile(
       themeFolder,
       themeName,
@@ -419,6 +449,31 @@ const handleThemes = (themesFolder) => {
     );
     fs.writeFileSync(path.resolve(themeFolder, themeName + ".js"), themeFile);
   }
+};
+const copyStaticAssets = (themeProperties, projectStaticAssetsOutputFolder) => {
+  fs.mkdirSync(projectStaticAssetsOutputFolder, { recursive: true });
+
+  const assets = themeProperties.assets;
+  if (!assets) {
+    return;
+  }
+  Object.keys(assets).forEach((module) => {
+    const rules = assets[module];
+    Object.keys(rules).forEach((srcSpec) => {
+      const files = glob.sync("node_modules/" + module + "/" + srcSpec, {
+        nodir: true,
+      });
+      const targetFolder = path.resolve(
+        projectStaticAssetsOutputFolder,
+        rules[srcSpec]
+      );
+      fs.mkdirSync(targetFolder, { recursive: true });
+      files.forEach((file) => {
+        // console.log(file, "=>", targetFolder);
+        fs.copyFileSync(file, path.resolve(targetFolder, path.basename(file)));
+      });
+    });
+  });
 };
 
 function generateThemeFiles() {
