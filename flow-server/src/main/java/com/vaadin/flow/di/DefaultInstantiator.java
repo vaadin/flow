@@ -148,4 +148,13 @@ public class DefaultInstantiator implements Instantiator {
     private <T> T create(Class<T> type) {
         return ReflectTools.createInstance(type);
     }
+
+    /**
+     * Returns the Vaadin service set via {@link #init(VaadinService)}.
+     * @return the Vaadin service or null if {@link #init(VaadinService)}
+     * has not yet been called.
+     */
+    protected VaadinService getService() {
+        return service;
+    }
 }
