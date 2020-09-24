@@ -133,7 +133,8 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
+        if (isAllowedVAADINBuildUrl(filenameWithPath)
+                || manifestPaths.contains(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
                     .getResource(VAADIN_SERVLET_RESOURCES
                             + filenameWithPath.replaceFirst("^/", ""));
