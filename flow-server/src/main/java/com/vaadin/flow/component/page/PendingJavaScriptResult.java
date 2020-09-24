@@ -77,7 +77,7 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
     boolean isSentToBrowser();
 
     /**
-     * Adds a typed handler that will be run for a successful exception and a
+     * Adds a typed handler that will be run for a successful execution and a
      * handler that will be run for a failed execution. One of the handlers will
      * be invoked asynchronously when the result of the execution is sent back
      * to the server.
@@ -112,7 +112,7 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
     }
 
     /**
-     * Adds a typed handler that will be run for a successful exception. The
+     * Adds a typed handler that will be run for a successful execution. The
      * handler will be invoked asynchronously if the execution was successful.
      * In case of a failure, no handler will be run.
      * <p>
@@ -180,7 +180,7 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
     }
 
     /**
-     * Adds an untyped handler that will be run for a successful exception and a
+     * Adds an untyped handler that will be run for a successful execution and a
      * handler that will be run for a failed execution. One of the handlers will
      * be invoked asynchronously when the result of the execution is sent back
      * to the server. It is not possible to synchronously wait for the result of
@@ -202,7 +202,7 @@ public interface PendingJavaScriptResult extends ExecutionCanceler {
             SerializableConsumer<String> errorHandler);
 
     /**
-     * Adds an untyped handler that will be run for a successful exception. The
+     * Adds an untyped handler that will be run for a successful execution. The
      * handler will be invoked asynchronously if the execution was successful.
      * In case of a failure, no handler will be run.
      * <p>
