@@ -6,7 +6,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModelTemplate;
@@ -14,7 +13,8 @@ import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModelTemplate;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class TemplateModelProxyHandlerTest extends HasCurrentService {
+public class TemplateModelProxyHandlerTest
+        extends com.vaadin.flow.component.HasCurrentService {
 
     public static class Model {
 

@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
@@ -23,7 +22,8 @@ import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyDivTemplate;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class TemplateModelWithEncodersTest extends HasCurrentService {
+public class TemplateModelWithEncodersTest
+        extends com.vaadin.flow.component.HasCurrentService {
 
     public static class TemplateWithEncoders extends
             EmptyDivTemplate<TemplateWithEncoders.TemplateModelWithEncoders> {

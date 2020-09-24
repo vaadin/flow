@@ -47,11 +47,11 @@ import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateParserFactory;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -67,7 +67,8 @@ import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class PolymerTemplateTest extends HasCurrentService {
+public class PolymerTemplateTest
+        extends com.vaadin.flow.component.HasCurrentService {
     private static final String TAG = "FFS";
 
     private DeploymentConfiguration configuration;
@@ -77,6 +78,25 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     // Field to prevent current instance from being garbage collected
     private UI ui;
+
+    private VaadinService service;
+
+    @Override
+    @Before
+    public void setUpCurrentService() {
+        clearCurrentService();
+        assertNull(VaadinService.getCurrent());
+
+        service = createService();
+        VaadinService.setCurrent(service);
+    }
+
+    @Override
+    @After
+    public void clearCurrentService() {
+        VaadinService.setCurrent(null);
+        service = null;
+    }
 
     private static class TestTemplateParser implements TemplateParser {
 
@@ -516,7 +536,11 @@ public class PolymerTemplateTest extends HasCurrentService {
                 .thenReturn(configuration);
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getTemplateParser())
+        TemplateParser.TemplateParserFactory factory = Mockito
+                .mock(TemplateParser.TemplateParserFactory.class);
+        Mockito.when(instantiator.getOrCreate(TemplateParserFactory.class))
+                .thenReturn(factory);
+        Mockito.when(factory.createParser())
                 .thenReturn(NpmTemplateParser.getInstance());
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         return service;

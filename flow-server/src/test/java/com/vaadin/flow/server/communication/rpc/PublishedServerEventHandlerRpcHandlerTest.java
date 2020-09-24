@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.jsoup.nodes.Element;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,19 +33,18 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -54,15 +52,10 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     private VaadinService service;
 
     @Tag("a")
-    public static class ComponentWithMethod
-            extends PolymerTemplate<TemplateModel> {
+    public static class ComponentWithMethod extends Component
+            implements DeprecatedPolymerTemplate {
 
         private boolean isInvoked;
-
-        public ComponentWithMethod() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    new Element("a")));
-        }
 
         protected void intMethod(int i) {
         }
@@ -81,17 +74,23 @@ public class PublishedServerEventHandlerRpcHandlerTest {
             }
         }
 
+        @Override
+        public boolean isSupportedClass(Class<?> type) {
+            return false;
+        }
+
+        @Override
+        public Object getModelType(Type type) {
+            return null;
+        }
+
     }
 
     @Tag(Tag.DIV)
-    public static class EnabledHandler extends PolymerTemplate<TemplateModel> {
+    public static class EnabledHandler extends Component
+            implements DeprecatedPolymerTemplate {
 
         private boolean isInvoked;
-
-        EnabledHandler() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    new Element("div")));
-        }
 
         @EventHandler(DisabledUpdateMode.ALWAYS)
         private void method() {
@@ -101,6 +100,16 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         @ClientCallable(DisabledUpdateMode.ALWAYS)
         private void operation() {
             isInvoked = true;
+        }
+
+        @Override
+        public boolean isSupportedClass(Class<?> type) {
+            return false;
+        }
+
+        @Override
+        public Object getModelType(Type type) {
+            return null;
         }
     }
 

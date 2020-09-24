@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.littemplate.LitTemplate;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.templatemodel.BeanModelType;
@@ -55,7 +56,7 @@ import elemental.json.JsonArray;
  */
 @Deprecated
 public abstract class AbstractTemplate<M extends TemplateModel>
-        extends Component {
+        extends Component implements DeprecatedPolymerTemplate {
     private final StateNode stateNode;
     private transient M model;
 
@@ -132,6 +133,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      *            Class to check support for
      * @return True if supported by this PolymerTemplate
      */
+    @Override
     public boolean isSupportedClass(Class<?> type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
                 .getPropertyNames().map(this::getModelType)

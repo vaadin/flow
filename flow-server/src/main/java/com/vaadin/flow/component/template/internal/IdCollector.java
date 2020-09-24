@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.template.internal;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,8 +29,9 @@ import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.polymertemplate.Id;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Collects information of {@link Id @Id} mapped fields in a template class.
@@ -37,6 +39,10 @@ import com.vaadin.flow.internal.AnnotationReader;
  * @since
  */
 public class IdCollector {
+    /**
+     * 
+     */
+    private static final String DEPRECATED_ID = "com.vaadin.flow.component.polymertemplate.Id";
     private final Map<String, String> tagById = new HashMap<>();
     private final Map<Field, String> idByField = new HashMap<>();
     private final Map<String, Map<String, String>> attributesById = new HashMap<>();
@@ -118,14 +124,14 @@ public class IdCollector {
     }
 
     private Optional<String> getId(Field field) {
-        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
-                Id.class);
-        if (idAnnotation.isPresent()) {
-            return idAnnotation.map(Id::value);
+        Optional<Annotation> deprecatedId = ReflectTools.getAnnotation(field,
+                DEPRECATED_ID);
+        if (deprecatedId.isPresent()) {
+            return ReflectTools
+                    .getAnnotationMethodValue(deprecatedId.get(), "value")
+                    .map(Object::toString);
         }
-        return AnnotationReader
-                .getAnnotationFor(field,
-                        com.vaadin.flow.component.template.Id.class)
+        return AnnotationReader.getAnnotationFor(field, Id.class)
                 .map(com.vaadin.flow.component.template.Id::value);
     }
 

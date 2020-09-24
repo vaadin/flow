@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -29,24 +30,22 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jsoup.Jsoup;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.RepeatIndex;
-import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -65,14 +64,23 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
     private Map<String, Method> correctlyAnnotatedHandlers;
     private Map<String, Method> wronglyAnnotatedHandlers;
 
-    @Tag("polymer")
-    private static class CorrectAnnotationUsage
-            extends PolymerTemplate<TemplateModel> {
+    private static class AbstractTemplate extends Component
+            implements DeprecatedPolymerTemplate {
 
-        CorrectAnnotationUsage() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='polymer'></dom-module>")));
+        @Override
+        public boolean isSupportedClass(Class<?> type) {
+            return false;
         }
+
+        @Override
+        public Object getModelType(Type type) {
+            return null;
+        }
+
+    }
+
+    @Tag("polymer")
+    private static class CorrectAnnotationUsage extends AbstractTemplate {
 
         @EventHandler
         public void noParams() {

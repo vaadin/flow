@@ -33,8 +33,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.littemplate.LitTemplate;
-import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -42,7 +41,6 @@ import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.templatemodel.ModelType;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -157,7 +155,8 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method.isAnnotationPresent(EventHandler.class)
+                .filter(method -> ReflectTools.hasAnnotation(method,
+                        "com.vaadin.flow.component.polymertemplate.EventHandler")
                         || method.isAnnotationPresent(ClientCallable.class))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
@@ -299,7 +298,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
 
             if (isTemplateModelValue(instance, argValue, convertedType)) {
-                return getTemplateItem((PolymerTemplate<?>) instance,
+                return getTemplateItem((DeprecatedPolymerTemplate) instance,
                         (JsonObject) argValue,
                         method.getGenericParameterTypes()[index]);
             }
@@ -329,21 +328,29 @@ public class PublishedServerEventHandlerRpcHandler
 
     private static boolean isTemplateModelValue(Component instance,
             JsonValue argValue, Class<?> convertedType) {
-        return instance instanceof PolymerTemplate
+        return instance instanceof DeprecatedPolymerTemplate
                 && argValue instanceof JsonObject
-                && ((PolymerTemplate<?>) instance)
+                && ((DeprecatedPolymerTemplate) instance)
                         .isSupportedClass(convertedType)
                 && ((JsonObject) argValue).hasKey("nodeId");
     }
 
-    private static Object getTemplateItem(PolymerTemplate<?> template,
+    private static Object getTemplateItem(DeprecatedPolymerTemplate template,
             JsonObject argValue, Type convertedType) {
-        StateNode node = template.getUI().get().getInternals().getStateTree()
-                .getNodeById((int) argValue.getNumber("nodeId"));
+        StateNode node = ((Component) template).getUI().get().getInternals()
+                .getStateTree().getNodeById((int) argValue.getNumber("nodeId"));
 
-        ModelType propertyType = template.getModelType(convertedType);
+        Object propertyType = template.getModelType(convertedType);
 
-        return propertyType.modelToApplication(node);
+        Method method = ReflectTools.findMethod(propertyType.getClass(),
+                "modelToApplication", Serializable.class);
+
+        try {
+            return method.invoke(propertyType, node);
+        } catch (IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     private static Object decodeArray(Method method, Class<?> type, int index,

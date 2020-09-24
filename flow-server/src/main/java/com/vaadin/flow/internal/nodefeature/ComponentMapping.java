@@ -20,7 +20,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -62,10 +62,10 @@ public class ComponentMapping extends ServerSideFeature {
             getNode().getFeature(ClientCallableHandlers.class)
                     .componentSet(component);
         }
-        if (component instanceof PolymerTemplate<?>
+        if (component instanceof DeprecatedPolymerTemplate
                 && getNode().hasFeature(PolymerServerEventHandlers.class)) {
             getNode().getFeature(PolymerServerEventHandlers.class)
-                    .componentSet((PolymerTemplate<?>) component);
+                    .componentSet((DeprecatedPolymerTemplate) component);
         }
     }
 

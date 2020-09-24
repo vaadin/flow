@@ -17,52 +17,28 @@ package com.vaadin.flow.component;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-public class DeprecatedIdTemplateComponentTest {
-
-    private UI ui;
+public class DeprecatedIdTemplateComponentTest extends AbstractTemplateTest {
 
     private static final String TEMPLATE = " <template>  <div id='name'>{{name}}</div> </template>";
-
-    private MockServletServiceSessionSetup mocks;
 
     @Tag("div")
     public static class EnabledDiv extends Component implements HasComponents {
     }
 
-    @Before
-    public void init() throws Exception {
-        mocks = new MockServletServiceSessionSetup();
-
-        ui = new UI();
-        ui.getInternals().setSession(mocks.getSession());
-
-        CurrentInstance.setCurrent(ui);
-    }
-
-    @After
-    public void tearDown() {
-        mocks.cleanup();
-    }
-
     @Test
     public void disableTemplateIdMappedComponentsOnTemplateDisabled() {
-
         Template template = new Template();
         template.setEnabled(false);
-        ui.add(template);
+        getUI().add(template);
 
         Assert.assertFalse("Template should be disabled", template.isEnabled());
         Assert.assertFalse("NameField should be disabled.",
@@ -88,7 +64,7 @@ public class DeprecatedIdTemplateComponentTest {
 
         Template template = new Template();
         template.getName().setEnabled(false);
-        ui.add(template);
+        getUI().add(template);
 
         Assert.assertTrue("Template should be enabled", template.isEnabled());
         Assert.assertNull("Attribute should not exist",
@@ -128,7 +104,7 @@ public class DeprecatedIdTemplateComponentTest {
         Template template = new Template();
         template.getName().add(child);
 
-        ui.add(template);
+        getUI().add(template);
 
         Assert.assertTrue("Template should be enabled", template.isEnabled());
         Assert.assertTrue("NameField should be enabled.",
