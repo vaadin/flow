@@ -60,12 +60,15 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         /*
          * Skip verification if the verified data provider has not been
          * initialized yet.
-         * This mainly refers to the following cases:
-         * 1. Component uses data communicator which initialises data provider
-         * lazily and meanwhile has a default empty one. Good example is a
-         * ComboBox.
-         * 2. Developer wants to set the ItemCountChangeListener before the data
-         * provider has been set.
+         *
+         * This mainly refers to the following cases: 1. Component uses data
+         * communicator which initialises data provider lazily and meanwhile has
+         * a default empty one. Good example is a ComboBox. 2. Developer wants
+         * to set the ItemCountChangeListener before the data provider has been
+         * set.
+         *
+         * NOTE: In-memory data view API is supported without explicitly setting
+         * the data provider.
          */
         if (isDataProviderInitialized(dataProviderType)) {
             verifyDataProviderType(dataProviderType);
