@@ -381,8 +381,7 @@ public abstract class VaadinService implements Serializable {
      */
     protected Instantiator createInstantiator() throws ServiceException {
         return loadInstantiators().orElseGet(() -> {
-            DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
-                    this);
+            DefaultInstantiator defaultInstantiator = new DefaultInstantiator();
             defaultInstantiator.init(this);
             return defaultInstantiator;
         });

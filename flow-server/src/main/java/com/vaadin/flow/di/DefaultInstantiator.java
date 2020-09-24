@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.di;
 
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -46,14 +47,25 @@ public class DefaultInstantiator implements Instantiator {
      *
      * @param service
      *            the service to use
+     * @deprecated the service is assigned in {@link #init(VaadinService)}. Use
+     * the zero-arg constructor.
      */
+    @Deprecated
     public DefaultInstantiator(VaadinService service) {
         this.service = service;
     }
 
+    /**
+     * Creates a new instantiator. The service is filled in later on via
+     * {@link #init(VaadinService)}.
+     */
+    public DefaultInstantiator() {
+    }
+
     @Override
     public boolean init(VaadinService service) {
-        return service == this.service;
+        this.service = Objects.requireNonNull(service);
+        return true;
     }
 
     @Override
