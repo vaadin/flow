@@ -37,6 +37,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     private final File frontendDirectory;
     private File generatedImports;
     private final File outputDirectory;
+    private boolean useSnowpack;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -51,10 +52,11 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
      *            the output directory of the generated file
      */
     TaskGenerateIndexTs(File frontendDirectory, File generatedImports,
-            File outputDirectory) {
+            File outputDirectory, boolean useSnowpack) {
         this.frontendDirectory = frontendDirectory;
         this.generatedImports = generatedImports;
         this.outputDirectory = outputDirectory;
+        this.useSnowpack = useSnowpack;
     }
 
     @Override
@@ -78,12 +80,14 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
                 FrontendUtils.getUnixRelativePath(outputDirectory.toPath(),
                         generatedImports.toPath()));
 
-        relativizedImport = relativizedImport
-                // replace `./frontend/` with `../target/frontend/`
-                // so as it can be copied to `frontend` without changes.
-                .replaceFirst("^./", "../" + outputDirectory.getName() + "/")
-                // remove extension
-                .replaceFirst("\\.(ts|js)$", "");
+        if (!useSnowpack) {
+            relativizedImport = relativizedImport
+                    // replace `./frontend/` with `../target/frontend/`
+                    // so as it can be copied to `frontend` without changes.
+                    .replaceFirst("^./", "../" + outputDirectory.getName() + "/")
+                    // remove extension
+                    .replaceFirst("\\.(ts|js)$", "");
+        }
 
         return indexTemplate.replace("[to-be-generated-by-flow]",
                 relativizedImport);

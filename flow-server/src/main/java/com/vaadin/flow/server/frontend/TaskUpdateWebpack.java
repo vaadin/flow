@@ -77,9 +77,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            relative path to `flow-frontend` package
      */
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
-            File webpackOutputDirectory, String webpackTemplate,
-            String webpackGeneratedTemplate, File generatedFlowImports,
-            boolean useV14Bootstrapping, File flowResourcesFolder) {
+                      File webpackOutputDirectory, String webpackTemplate,
+                      String webpackGeneratedTemplate, File generatedFlowImports,
+                      boolean useV14Bootstrapping, File flowResourcesFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -94,6 +94,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     public void execute() {
         try {
             createWebpackConfig();
+            createSnowpackConfig();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -224,6 +225,27 @@ public class TaskUpdateWebpack implements FallibleCommand {
         } else {
             return FrontendUtils.getUnixPath(path);
         }
+    }
+
+    private void createSnowpackConfig() throws IOException {
+        File configFile = new File(webpackConfigPath.toFile(), "snowpack.config.js");
+
+        if (!configFile.exists()) {
+            URL resource = this.getClass().getClassLoader()
+                    .getResource("snowpack.config.js");
+            FileUtils.copyURLToFile(resource, configFile);
+            log().info("Created Snowpack configuration file: '{}'", configFile);
+        }
+
+        File generatedFile = new File(webpackConfigPath.toFile(),
+                "snowpack.generated.js");
+        FileUtils.copyURLToFile(this.getClass().getClassLoader()
+                .getResource("snowpack.generated.js"), generatedFile);
+
+        File generatedPlugin = new File(webpackConfigPath.toFile(),
+                "snowpack-plugin-css-string.js");
+        FileUtils.copyURLToFile(this.getClass().getClassLoader()
+                .getResource("snowpack-plugin-css-string.js"), generatedPlugin);
     }
 
     private Logger log() {

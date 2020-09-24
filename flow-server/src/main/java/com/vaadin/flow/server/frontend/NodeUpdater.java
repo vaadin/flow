@@ -311,6 +311,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("@types/validator", "10.11.3");
         defaults.put("validator", "12.0.0");
 
+        defaults.put("snowpack", "2.11.0");
+
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.4.0");

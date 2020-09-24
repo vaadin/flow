@@ -370,7 +370,9 @@ public class DevModeInitializer
                 .enableImportsUpdate(true).runNpmInstall(true)
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                .withHomeNodeExecRequired(useHomeNodeExec).build();
+                .withHomeNodeExecRequired(useHomeNodeExec)
+                .useSnowpack(config.useSnowpack())
+                .build();
 
         CompletableFuture<Void> runNodeTasks = CompletableFuture
                 .runAsync(() -> {

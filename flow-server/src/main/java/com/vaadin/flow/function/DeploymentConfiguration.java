@@ -57,6 +57,10 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
     }
 
+    default boolean useSnowpack() {
+        return getBooleanProperty("useSnowpack", false);
+    }
+
     /**
      * Returns whether the server provides timing info to the client.
      *

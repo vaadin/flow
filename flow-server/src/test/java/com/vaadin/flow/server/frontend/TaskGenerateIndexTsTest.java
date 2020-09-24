@@ -51,7 +51,7 @@ public class TaskGenerateIndexTsTest {
         generatedImports = new File(generatedFolder, "flow-generated-imports.js");
         generatedImports.createNewFile();
         taskGenerateIndexTs = new TaskGenerateIndexTs(frontendFolder,
-                generatedImports, outputFolder);
+                generatedImports, outputFolder, false);
     }
 
     @Test

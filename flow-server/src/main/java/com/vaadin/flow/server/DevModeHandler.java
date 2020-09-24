@@ -132,6 +132,8 @@ public final class DevModeHandler implements RequestHandler {
 
     private final CompletableFuture<Void> devServerStartFuture;
 
+    private boolean useSnowpack = false;
+
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, CompletableFuture<Void> waitFor) {
 
@@ -469,9 +471,12 @@ public final class DevModeHandler implements RequestHandler {
 
             // trigger a live-reload since webpack has recompiled the bundle
             // if failure, ensures the webpack error is shown in the browser
-            if (liveReload != null) {
+            if (liveReload != null && !useSnowpack) {
                 liveReload.reload();
             }
+        }
+        if (useSnowpack && liveReload != null && line.contains("Frontend file has been changed")) {
+            liveReload.reload();
         }
     }
 
@@ -525,6 +530,8 @@ public final class DevModeHandler implements RequestHandler {
 
     private void doStartDevModeServer(DeploymentConfiguration config,
             File npmFolder) throws ExecutionFailedException {
+        useSnowpack = config.useSnowpack();
+
         // If port is defined, means that webpack is already running
         if (port > 0) {
             if (checkWebpackConnection()) {
@@ -541,10 +548,11 @@ public final class DevModeHandler implements RequestHandler {
                     START_FAILURE, port));
         }
         // here the port == 0
-        Pair<File, File> webPackFiles = validateFiles(npmFolder);
+        Pair<File, File> webPackFiles = validateFiles(config, npmFolder);
 
+        String displayName = useSnowpack ? "snowpack dev" : "webpack-dev-server";
         long start = System.nanoTime();
-        getLogger().info("Starting webpack-dev-server");
+        getLogger().info("Starting {}", displayName);
 
         watchDog.set(new DevServerWatchDog());
 
@@ -596,13 +604,17 @@ public final class DevModeHandler implements RequestHandler {
             // servlet context is destroyed.
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
-            Pattern succeed = Pattern.compile(config.getStringProperty(
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
-                    DEFAULT_OUTPUT_PATTERN));
+            Pattern succeed = // TODO: fixme
+                    config.useSnowpack() ? Pattern.compile("Server started")
+                            : Pattern.compile(config.getStringProperty(
+                            SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
+                            DEFAULT_OUTPUT_PATTERN));
 
-            Pattern failure = Pattern.compile(config.getStringProperty(
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
-                    DEFAULT_ERROR_PATTERN));
+            Pattern failure = // TODO: fixme
+                    config.useSnowpack() ? Pattern.compile("Error")
+                            : Pattern.compile(config.getStringProperty(
+                            SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
+                            DEFAULT_ERROR_PATTERN));
 
             logStream(webpackProcess.get().getInputStream(), succeed, failure);
 
@@ -614,40 +626,55 @@ public final class DevModeHandler implements RequestHandler {
             }
 
             if (!webpackProcess.get().isAlive()) {
-                throw new IllegalStateException("Webpack exited prematurely");
+                throw new IllegalStateException(displayName + " exited prematurely");
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
             saveRunningDevServerPort();
         } catch (IOException | InterruptedException e) {
-            getLogger().error("Failed to start the webpack process", e);
+            getLogger().error("Failed to start {}", displayName, e);
         }
     }
 
     private List<String> makeCommands(DeploymentConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
-        List<String> command = new ArrayList<>();
-        command.add(nodeExec);
-        command.add(webpack.getAbsolutePath());
-        command.add("--config");
-        command.add(webpackConfig.getAbsolutePath());
-        command.add("--port");
-        command.add(String.valueOf(port));
-        command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
-        command.addAll(Arrays.asList(config
-                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "-d --inline=false")
-                .split(" +")));
-        return command;
+        if (config.useSnowpack()) {
+            return Arrays.asList(
+                    nodeExec,
+                    webpack.getAbsolutePath(),
+                    "dev",
+                    "--config", webpackConfig.getAbsolutePath(),
+                    "--port", String.valueOf(port));
+        } else {
+            List<String> command = new ArrayList<>();
+            command.add(nodeExec);
+            command.add(webpack.getAbsolutePath());
+            command.add("--config");
+            command.add(webpackConfig.getAbsolutePath());
+            command.add("--port");
+            command.add(String.valueOf(port));
+            command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
+            command.addAll(Arrays.asList(config
+                    .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                            "-d --inline=false")
+                    .split(" +")));
+            return command;
+        }
     }
 
-    private Pair<File, File> validateFiles(File npmFolder)
+    private Pair<File, File> validateFiles(DeploymentConfiguration config, File npmFolder)
             throws ExecutionFailedException {
         assert port == 0;
         // Skip checks if we have a webpack-dev-server already running
-        File webpack = new File(npmFolder, WEBPACK_SERVER);
-        File webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
+        File webpack, webpackConfig;
+        if (config.useSnowpack()) {
+            webpack = new File(npmFolder, "node_modules/snowpack/dist-node/index.bin.js");
+            webpackConfig = new File(npmFolder, "snowpack.config.js");
+        } else {
+            webpack = new File(npmFolder, WEBPACK_SERVER);
+            webpackConfig = new File(npmFolder, FrontendUtils.WEBPACK_CONFIG);
+        }
         if (!npmFolder.exists()) {
             getLogger().warn("No project folder '{}' exists", npmFolder);
             throw new ExecutionFailedException(START_FAILURE

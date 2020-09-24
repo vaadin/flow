@@ -125,6 +125,8 @@ public class NodeTasks implements FallibleCommand {
          */
         private URI nodeDownloadRoot = URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
+        private boolean useSnowpack;
+
         /**
          * Create a builder instance given an specific npm folder.
          *
@@ -493,6 +495,11 @@ public class NodeTasks implements FallibleCommand {
             this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
             return this;
         }
+
+        public Builder useSnowpack(boolean useSnowpack) {
+            this.useSnowpack = useSnowpack;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -584,10 +591,11 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
                 builder.frontendDirectory, outputDirectory);
         commands.add(taskGenerateIndexHtml);
+
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 builder.frontendDirectory,
                 new File(builder.generatedFolder, IMPORTS_NAME),
-                outputDirectory);
+                outputDirectory, builder.useSnowpack);
         commands.add(taskGenerateIndexTs);
 
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(

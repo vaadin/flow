@@ -1,4 +1,15 @@
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vaadin/flow#?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+Snowpack Flow Test
+======
+This is an experimental branch to investigate using Flow with Snowpack (instead of Webpack) for no-bundle development mode.
+Webpack is used by default; enable Snowpack with system property `vaadin.useSnowpack`. For example with Maven + Jetty:
+
+<pre><code>mvn jetty:run -Dvaadin.useSnowpack</code></pre>
+
+Limitations:
+* Very experimental, only tested with minimal examples.
+* No production mode builds.
+* Live reload on frontend changes is currently very hacky (uses a chokidar watcher to notify `DevModeHandler` about changes in `frontend` folder).
+* Getting .css files served as a .js module with a single exported string seems to require a [separate plugin file](https://github.com/pikapkg/snowpack/issues/580#issuecomment-683323847). This plugin is also generated into the project directory.
 
 Vaadin Flow
 ======
