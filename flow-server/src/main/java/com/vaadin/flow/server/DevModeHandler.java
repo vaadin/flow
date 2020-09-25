@@ -577,7 +577,7 @@ public final class DevModeHandler implements RequestHandler {
         boolean success = false;
 
         try {
-            success = doStartWebPack(config, webPackFiles, start);
+            success = doStartWebpack(config, webPackFiles, start);
         } finally {
             if (!success) {
                 removeRunningDevServerPort();
@@ -585,7 +585,7 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private boolean doStartWebPack(DeploymentConfiguration config,
+    private boolean doStartWebpack(DeploymentConfiguration config,
             Pair<File, File> webPackFiles, long start) {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
