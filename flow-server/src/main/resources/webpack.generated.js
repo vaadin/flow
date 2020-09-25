@@ -9,6 +9,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const { GenerateSW } = require('workbox-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
 
 const path = require('path');
@@ -87,15 +88,9 @@ if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
 
-// const swOfflineResources = [];
-// const swResourceLocations = [];
-
 const swManifestTransform = (manifestEntries) => {
   const warnings = [];
   const manifest = manifestEntries;
-  /*swOfflineResources.forEach((offlineResource) => {
-    swInclude(manifest, offlineResource);
-  });*/
 
   // `index.html` is a special case: in contrast with the JS bundles produced by webpack
   // it's not served as-is directly from the webpack output at `/index.html`.
@@ -197,6 +192,11 @@ module.exports = {
   plugins: [
     // Generate compressed bundles when not devMode
     !devMode && new CompressionPlugin(),
+    // Copy offline resources to webpack output so they are included in workbox precache manifest
+    new CopyPlugin(offlineResources.map(resource => ({
+      from: path.resolve(__dirname, 'src/main/webapp', resource),
+      to: resource
+    }))),
     // Generate manifest.json file
     new ManifestPlugin(),
 
