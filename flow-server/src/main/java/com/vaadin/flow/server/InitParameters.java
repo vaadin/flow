@@ -158,4 +158,7 @@ public class InitParameters implements Serializable {
      * component UI imports them as dependencies.
      */
     public static final String COMPILED_WEB_COMPONENTS_PATH = "compiled.web.components.path";
+
+    public static final String USE_SNOWPACK = "useSnowpack";
+
 }

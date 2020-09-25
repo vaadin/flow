@@ -58,7 +58,7 @@ public interface DeploymentConfiguration extends Serializable {
     }
 
     default boolean useSnowpack() {
-        return getBooleanProperty("useSnowpack", false);
+        return getBooleanProperty(InitParameters.USE_SNOWPACK, false);
     }
 
     /**
