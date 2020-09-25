@@ -351,7 +351,7 @@ public abstract class BeforeEvent extends EventObject {
      * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param location
-     *            reroute target location string
+     *            forward target location string
      * @param locationParam
      *            location parameter
      * @param <T>
@@ -368,7 +368,7 @@ public abstract class BeforeEvent extends EventObject {
      * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param location
-     *            reroute target location string
+     *            forward target location string
      * @param locationParams
      *            location parameters
      * @param <T>
