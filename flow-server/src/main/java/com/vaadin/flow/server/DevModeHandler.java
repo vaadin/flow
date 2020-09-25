@@ -15,9 +15,17 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,6 +49,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -52,18 +64,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
-import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.YELLOW;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -253,10 +253,6 @@ public final class DevModeHandler implements RequestHandler {
     private static DevModeHandler createInstance(int runningPort,
             DeploymentConfiguration configuration, File npmFolder,
             CompletableFuture<Void> waitFor) {
-
-        if (runningPort == 0) {
-            runningPort = getRunningDevServerPort();
-        }
 
         return new DevModeHandler(configuration, runningPort, npmFolder,
                 waitFor);
@@ -531,18 +527,25 @@ public final class DevModeHandler implements RequestHandler {
             throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
         if (port > 0) {
-            if (checkWebpackConnection()) {
-                getLogger().info("Reusing webpack-dev-server running at {}:{}",
-                        WEBPACK_HOST, port);
-
-                // Save running port for next usage
-                saveRunningDevServerPort();
-                watchDog.set(null);
-                return;
+            if (!checkWebpackConnection()) {
+                throw new IllegalStateException(String.format(
+                        "%s webpack-dev-server port '%d' is defined but it's not working properly",
+                        START_FAILURE, port));
             }
-            throw new IllegalStateException(String.format(
-                    "%s webpack-dev-server port '%d' is defined but it's not working properly",
-                    START_FAILURE, port));
+            reuseExistingPort(port);
+            return;
+        }
+        port = getRunningDevServerPort();
+        if (port > 0) {
+            if (checkWebpackConnection()) {
+                reuseExistingPort(port);
+                return;
+            } else {
+                getLogger().warn(
+                        "webpack-dev-server port '%d' is defined but it's not working properly. Using a new free port...",
+                        port);
+                port = 0;
+            }
         }
         // here the port == 0
         Pair<File, File> webPackFiles = validateFiles(npmFolder);
@@ -553,7 +556,19 @@ public final class DevModeHandler implements RequestHandler {
 
         // Look for a free port
         port = getFreePort();
+        saveRunningDevServerPort();
+        boolean success = false;
+        try {
+            success = doStartWebpack(config, webPackFiles);
+        } finally {
+            if (!success) {
+                removeRunningDevServerPort();
+            }
+        }
+    }
 
+    private boolean doStartWebpack(DeploymentConfiguration config,
+            Pair<File, File> webPackFiles) {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
@@ -624,9 +639,20 @@ public final class DevModeHandler implements RequestHandler {
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
             saveRunningDevServerPort();
+            return true;
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
+        return false;
+    }
+
+    private void reuseExistingPort(int port) {
+        getLogger().info("Reusing webpack-dev-server running at {}:{}",
+                WEBPACK_HOST, port);
+
+        // Save running port for next usage
+        saveRunningDevServerPort();
+        watchDog.set(null);
     }
 
     private List<String> makeCommands(DeploymentConfiguration config,
