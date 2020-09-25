@@ -88,6 +88,8 @@ if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
 
+const rootUrl = String.fromCharCode(47); // equivalent of '/'
+
 const swManifestTransform = (manifestEntries) => {
   const warnings = [];
   const manifest = manifestEntries;
@@ -100,7 +102,7 @@ const swManifestTransform = (manifestEntries) => {
   // of the index.html file
   const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
   if (indexEntryIdx !== -1) {
-    manifest[indexEntryIdx].url = '/';
+    manifest[indexEntryIdx].url = rootUrl;
   }
 
   return { manifest, warnings };
@@ -113,7 +115,7 @@ const serviceWorkerPlugin = new GenerateSW({
   manifestTransforms: [swManifestTransform],
   maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
   dontCacheBustURLsMatching: /.*-[a-z0-9]{20}\.cache\.js/,
-  navigateFallback: '/',
+  navigateFallback: rootUrl,
   inlineWorkboxRuntime: true,
   runtimeCaching: [
     {
