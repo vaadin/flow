@@ -5,7 +5,7 @@ class SetInitialText extends PolymerElement {
   static get template() {
     return html`
        <div id='child'></div>
-       <button id="addClientSideChild" on-click="_addClientSideChild">Add client side child</button>
+       <button id='addClientSideChild' on-click="_addClientSideChild">Add client side child</button>
        <slot></slot>
     `;
    }

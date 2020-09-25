@@ -26,7 +26,7 @@ public class SetInitialTextView extends PolymerTemplate<TemplateModel>
         // this is no-op since the text is an empty string by default but it
         // removes all children
         child.setText("");
-        setId("set-initial-text");
+        setId("set-initial-text-template");
 
         NativeButton button = new NativeButton("Add a new child",
                 event -> addChild());
