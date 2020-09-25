@@ -15,44 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-
-import com.sun.net.httpserver.HttpServer;
-import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
-
 import static com.vaadin.flow.server.DevModeHandler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.WEBPACK_TEST_OUT_FILE;
@@ -67,6 +29,49 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.ConnectException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
+import com.sun.net.httpserver.HttpServer;
+import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
@@ -137,6 +142,61 @@ public class DevModeHandlerTest {
         assertNull(DevModeHandler.getDevModeHandler().getFailedOutput());
         assertTrue(0 < DevModeHandler.getDevModeHandler().getPort());
         Thread.sleep(150); // NOSONAR
+    }
+
+    @Test
+    public void avoidStoringPortOfFailingWebPackDevServer_failWebpackStart_startWebPackSucessfullyAfter()
+            throws Exception {
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration() {
+            @Override
+            public boolean getBooleanProperty(String propertyName,
+                    boolean defaultValue) throws IllegalArgumentException {
+                if (propertyName
+                        .equals(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
+                    try {
+                        // remove npmFolder on the property read which happens
+                        // after folder validation has happened
+                        FileUtils.deleteDirectory(npmFolder);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return super.getBooleanProperty(propertyName, defaultValue);
+            }
+        };
+
+        DevModeHandler handler = DevModeHandler.start(config, npmFolder,
+                CompletableFuture.completedFuture(null));
+
+        handler.join();
+
+        removeDevModeHandlerInstance();
+        // dev mode handler should fail because of non-existent npm folder: it
+        // means the port number should not have been written
+
+        // use non-existent folder for as npmFolder, it should fail the
+        // validation (which means server instance won't be reused)
+        DevModeHandler newhHandler = DevModeHandler.start(configuration,
+                new File(npmFolder, UUID.randomUUID().toString()),
+                CompletableFuture.completedFuture(null));
+
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(new ByteArrayOutputStream());
+        boolean proceed = true;
+        Throwable cause = null;
+        while (proceed) {
+            try {
+                proceed = newhHandler.handleRequest(
+                        Mockito.mock(VaadinSession.class),
+                        Mockito.mock(VaadinRequest.class), response);
+            } catch (IllegalStateException ise) {
+                proceed = false;
+                cause = ise.getCause();
+            }
+        }
+        Assert.assertNotNull(cause);
+        Assert.assertTrue(cause instanceof ExecutionFailedException);
     }
 
     @Test
@@ -213,7 +273,8 @@ public class DevModeHandlerTest {
         boolean systemImplementsExecutable = new File(baseDir, WEBPACK_SERVER)
                 .setExecutable(false);
         if (systemImplementsExecutable) {
-            exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
+            exception.expectCause(
+                    CoreMatchers.isA(ExecutionFailedException.class));
             DevModeHandler.start(configuration, npmFolder,
                     CompletableFuture.completedFuture(null)).join();
         }
@@ -418,6 +479,80 @@ public class DevModeHandlerTest {
         // serve requests via serveDevModeRequest. In the current impl it
         // doesn't throw and just return false
         Assert.assertFalse(handler.serveDevModeRequest(request, response));
+    }
+
+    @Test
+    public void start_twoTimes_onlyOneHandlerInstanceIsCreated() {
+        MockDeploymentConfiguration configuration = Mockito
+                .spy(MockDeploymentConfiguration.class);
+        DevModeHandler handler = DevModeHandler.start(0, configuration,
+                npmFolder, CompletableFuture.completedFuture(null));
+        handler.join();
+
+        // This is how new server handler instantiation checked:
+        Mockito.verify(configuration).reuseDevServer();
+
+        // "start" one more time: there should not be another instance of dev
+        // mode handler created
+        DevModeHandler anotherHandler = DevModeHandler.start(0, configuration,
+                npmFolder, CompletableFuture.completedFuture(null));
+        anotherHandler.join();
+
+        // The handler instances are the same but there should be no attempt to
+        // create another instance (which won't be stored anywhere), see below
+        Assert.assertSame(handler, anotherHandler);
+
+        // No more "reuseDevServer" calls are done: see above, it has been
+        // already called one time
+        Mockito.verify(configuration).reuseDevServer();
+    }
+
+    @Test
+    public void start_twoInstances_secondInstanceUsesAnotherPort()
+            throws Exception {
+
+        // start the first instance
+        DevModeHandler handler = DevModeHandler.start(0, configuration,
+                npmFolder, CompletableFuture.completedFuture(null));
+
+        // remove the "singleton" instance to be able to start another one
+        removeDevModeHandlerInstance();
+
+        // since the timeout is quite big the server port still should be
+        // available and the second instance should try to reuse it
+
+        DevModeHandler.start(0, configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+
+        // make checks only if webpack has not yet completed
+
+        DevModeHandler anotherHandler = DevModeHandler.start(0, configuration,
+                npmFolder, CompletableFuture.completedFuture(null));
+
+        while (handler.getPort() == 0) {
+            Thread.sleep(100);
+        }
+
+        int firstPort = handler.getPort();
+
+        anotherHandler.join();
+
+        int secondPort = anotherHandler.getPort();
+
+        // the second instance was able to start with another port value
+        // even though the first port number is not bound to webpack server
+        // instance
+        Assert.assertNotEquals(firstPort, secondPort);
+    }
+
+    @Test
+    public void start_serverPortDoesNotWork_throws() throws Exception {
+        exception.expect(CompletionException.class);
+        exception.expectCause(Matchers.instanceOf(IllegalStateException.class));
+        int port = DevModeHandler.getFreePort();
+        DevModeHandler handler = DevModeHandler.start(port, configuration,
+                npmFolder, CompletableFuture.completedFuture(null));
+        handler.join();
     }
 
     private VaadinServlet prepareServlet(int port)
