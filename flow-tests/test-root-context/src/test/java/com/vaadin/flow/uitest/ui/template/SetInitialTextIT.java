@@ -13,7 +13,7 @@ public class SetInitialTextIT extends ChromeBrowserTest {
         open();
 
         TestBenchElement template = $(TestBenchElement.class)
-                .id("set-initial-text");
+                .id("set-initial-text-template");
         // add a child via client side
         template.$(TestBenchElement.class).id("addClientSideChild").click();
 
