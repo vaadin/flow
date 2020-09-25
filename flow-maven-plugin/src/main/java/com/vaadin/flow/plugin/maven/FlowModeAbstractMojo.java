@@ -24,7 +24,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
@@ -78,7 +78,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * files.
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
-            + VAADIN_SERVLET_RESOURCES)
+            + VAADIN_WEBAPP_RESOURCES)
     protected File webpackOutputDirectory;
 
     /**

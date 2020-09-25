@@ -56,6 +56,7 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -313,6 +314,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     private File getTokenFile() {
-        return new File(webpackOutputDirectory, TOKEN_FILE);
+        return new File(project.getBuild().getOutputDirectory() + VAADIN_SERVLET_RESOURCES,
+                TOKEN_FILE);
     }
 }

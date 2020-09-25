@@ -51,10 +51,10 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static java.lang.String.format;
 
 /**
@@ -237,7 +237,7 @@ public class FrontendUtils {
     /**
      * File used to enable npm mode.
      */
-    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION_FILES_PATH
+    public static final String TOKEN_FILE = Constants.VAADIN_CONFIGURATION
             + "flow-build-info.json";
 
     /**
@@ -478,7 +478,7 @@ public class FrontendUtils {
     private static InputStream getFileFromClassPath(VaadinService service,
             String filePath) {
         InputStream stream = service.getClassLoader()
-                .getResourceAsStream(VAADIN_SERVLET_RESOURCES + filePath);
+                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + filePath);
         if (stream == null) {
             getLogger().error("Cannot get the '{}' from the classpath",
                     filePath);

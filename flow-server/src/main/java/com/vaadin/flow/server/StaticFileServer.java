@@ -42,7 +42,7 @@ import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
@@ -136,7 +136,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (isAllowedVAADINBuildUrl(filenameWithPath)
                 || manifestPaths.contains(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
-                    .getResource(VAADIN_SERVLET_RESOURCES
+                    .getResource(VAADIN_WEBAPP_RESOURCES
                             + filenameWithPath.replaceFirst("^/", ""));
         }
         if (resourceUrl == null) {
@@ -418,7 +418,7 @@ public class StaticFileServer implements StaticFileHandler {
     private List<String> getManifestPathsFromJson() {
         InputStream stream = servletService.getClassLoader()
                 .getResourceAsStream(
-                        VAADIN_SERVLET_RESOURCES + "manifest.json");
+                        VAADIN_WEBAPP_RESOURCES + "manifest.json");
         if (stream == null) {
             // manifest.json resource does not exist, probably dev mode
             return new ArrayList<>();
