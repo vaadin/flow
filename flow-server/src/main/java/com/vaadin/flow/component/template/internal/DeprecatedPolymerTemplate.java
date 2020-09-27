@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.template.internal;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 
 import com.vaadin.flow.component.littemplate.LitTemplate;
@@ -32,7 +33,7 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
  *
  */
 @Deprecated
-public interface DeprecatedPolymerTemplate {
+public interface DeprecatedPolymerTemplate extends Serializable {
 
     /**
      * Check if the given Class {@code type} is found in the Model.

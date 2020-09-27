@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.testutil;
 
+import static java.lang.reflect.Modifier.isStatic;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -34,9 +37,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-
-import static java.lang.reflect.Modifier.isStatic;
-import static org.junit.Assert.fail;
 
 /**
  * A superclass for serialization testing. The test scans all the classpath and
@@ -76,10 +76,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.BundleLitParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParserImpl",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateParser(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.DefaultTemplateParser",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.NpmTemplateParser",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.BundleParser\\$DependencyVisitor",
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
@@ -135,19 +131,15 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.DevServerWatchDog(\\$.*)?",
                 "com\\.vaadin\\.flow\\.router\\.RouteNotFoundError\\$LazyInit",
                 "com\\.vaadin\\.flow\\.router\\.internal\\.RouteSegment\\$RouteSegmentValue",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer\\$.*",
                 // De-facto abstract class
                 "com\\.vaadin\\.flow\\.component\\.HtmlComponent",
                 // De-facto abstract class
                 "com\\.vaadin\\.flow\\.component\\.HtmlContainer",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateInitializer(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateParser(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.LitTemplateInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.AttributeInitializationStrategy",
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.PropertyInitializationStrategy",
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ElementInitializationStrategy",
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.AbstractInjectableElementInitializer",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.InjectablePolymerElementInitializer",
                 "com\\.vaadin\\.flow\\.component\\.littemplate\\.InjectableLitElementInitializer",
                 "com\\.vaadin\\.flow\\.dom\\.impl\\.ThemeListImpl\\$ThemeListIterator",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PropertyMapBuilder(\\$.*)?",
@@ -156,8 +148,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.InjectableFieldConsumer",
                 "com\\.vaadin\\.flow\\.component\\.template\\.internal\\.ParserData",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer",
-                "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.IdCollector",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeList(\\$.*)?",
