@@ -17,7 +17,7 @@ watcher
 
 module.exports = {
   mount: {
-    frontend: '/VAADIN/frontend',
+    frontend: '/VAADIN',
     target: '/VAADIN'
   },
   plugins: [ './snowpack-plugin-css-string.js' ],
@@ -32,6 +32,6 @@ module.exports = {
     installTypes: isTS,
   },
   alias: {
-    "Frontend": "/VAADIN/frontend"
+    "Frontend": "/VAADIN"
   }
 };
