@@ -32,6 +32,7 @@ module.exports = {
     installTypes: isTS,
   },
   alias: {
-    "Frontend": "/VAADIN"
+    "Frontend": "/VAADIN",
+    "@vaadin/flow-frontend": "/VAADIN/flow-frontend"
   }
 };
