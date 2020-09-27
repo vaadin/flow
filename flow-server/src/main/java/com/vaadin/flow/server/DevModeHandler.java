@@ -487,6 +487,7 @@ public final class DevModeHandler implements RequestHandler {
         while ((bytes = inputStream.read(buffer)) >= 0) {
             outputStream.write(buffer, 0, bytes);
         }
+        outputStream.flush();
     }
 
     private static Logger getLogger() {
