@@ -1,0 +1,40 @@
+{
+  "chunks": {
+    "fallback": {
+      "jsModules": [
+        "@vaadin/vaadin-lumo-styles/color.js",
+        "@vaadin/vaadin-lumo-styles/typography.js",
+        "@vaadin/vaadin-lumo-styles/sizing.js",
+        "@vaadin/vaadin-lumo-styles/spacing.js",
+        "@vaadin/vaadin-lumo-styles/style.js",
+        "@vaadin/vaadin-lumo-styles/icons.js",
+        "jsmodule/g.js",
+        "@vaadin/vaadin-date-picker/src/vaadin-date-picker.js",
+        "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
+        "./common-js-file.js",
+        "./local-template.js",
+        "3rdparty/component.js",
+        "./foo-dir/vaadin-npm-component.js",
+        "./foo.js",
+        "@polymer/iron-icon/iron-icon.js",
+        "./local-p3-template.js",
+        "@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js",
+        "@vaadin/vaadin-mixed-component/src/vaadin-something-else.js",
+        "@vaadin/vaadin-mixed-component/src/vaadin-something-else",
+        "@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js",
+        "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
+        "vaadin-mixed-component/src/vaadin-mixed-component.js",
+        "frontend://frontend-p3-template.js",
+        "unresolved/component",
+        "@polymer/a.js",
+        "javascript/a.js",
+        "javascript/b.js",
+        "javascript/c.js",
+        "ExampleConnector.js",
+        "frontend://foo-dir/javascript-lib.js",
+        "./extra-javascript.js"
+      ],
+      "cssImports": null
+    }
+  }
+}
