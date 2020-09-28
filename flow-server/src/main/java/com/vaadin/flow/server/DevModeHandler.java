@@ -670,7 +670,7 @@ public final class DevModeHandler implements RequestHandler {
         // Skip checks if we have a webpack-dev-server already running
         File webpack, webpackConfig;
         if (config.useSnowpack()) {
-            webpack = new File(npmFolder, "node_modules/snowpack/dist-node/index.bin.js");
+            webpack = new File(npmFolder, "node_modules/snowpack/index.bin.js");
             webpackConfig = new File(npmFolder, "snowpack.config.js");
         } else {
             webpack = new File(npmFolder, WEBPACK_SERVER);
