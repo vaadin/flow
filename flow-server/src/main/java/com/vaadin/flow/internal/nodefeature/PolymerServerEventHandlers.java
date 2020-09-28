@@ -50,8 +50,8 @@ public class PolymerServerEventHandlers
 
     private static final String REPEAT_INDEX_VALUE = "event.model.index";
 
-    private static String MODEL_ITEM_FQN = "com.vaadin.flow.component.polymertemplate.ModelItem";
-    private static String REPEAT_INDEX_FQN = "com.vaadin.flow.component.polymertemplate.RepeatIndex";
+    private static final String MODEL_ITEM_FQN = "com.vaadin.flow.component.polymertemplate.ModelItem";
+    private static final String REPEAT_INDEX_FQN = "com.vaadin.flow.component.polymertemplate.RepeatIndex";
 
     /**
      * Creates a new meta information list for the given state node.
@@ -93,10 +93,9 @@ public class PolymerServerEventHandlers
         Optional<Annotation> annotation = ReflectTools.getAnnotation(method,
                 getHandlerAnnotationFqn());
         assert annotation.isPresent();
-        Optional<Object> value = ReflectTools
-                .getAnnotationMethodValue(annotation.get(), VALUE);
-        assert value.isPresent();
-        return DisabledUpdateMode.valueOf(value.get().toString());
+        Object value = ReflectTools.getAnnotationMethodValue(annotation.get(),
+                VALUE);
+        return DisabledUpdateMode.valueOf(value.toString());
     }
 
     private void checkParameterTypeAndAnnotation(Method method,
@@ -148,7 +147,7 @@ public class PolymerServerEventHandlers
                     .getAnnotation(parameter, MODEL_ITEM_FQN);
             if (annotation.isPresent()) {
                 result.add(ReflectTools
-                        .getAnnotationMethodValue(annotation.get(), VALUE).get()
+                        .getAnnotationMethodValue(annotation.get(), VALUE)
                         .toString());
             }
         }

@@ -39,9 +39,6 @@ import com.vaadin.flow.internal.ReflectTools;
  * @since
  */
 public class IdCollector {
-    /**
-     * 
-     */
     private static final String DEPRECATED_ID = "com.vaadin.flow.component.polymertemplate.Id";
     private final Map<String, String> tagById = new HashMap<>();
     private final Map<Field, String> idByField = new HashMap<>();
@@ -127,9 +124,9 @@ public class IdCollector {
         Optional<Annotation> deprecatedId = ReflectTools.getAnnotation(field,
                 DEPRECATED_ID);
         if (deprecatedId.isPresent()) {
-            return ReflectTools
+            return Optional.of(ReflectTools
                     .getAnnotationMethodValue(deprecatedId.get(), "value")
-                    .map(Object::toString);
+                    .toString());
         }
         return AnnotationReader.getAnnotationFor(field, Id.class)
                 .map(com.vaadin.flow.component.template.Id::value);

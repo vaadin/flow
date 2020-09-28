@@ -790,16 +790,18 @@ public class ReflectTools implements Serializable {
      * @return an optional value, or an empty optional if element has no
      *         annotation with required {@code annotationFqn}
      */
-    public static Optional<Object> getAnnotationMethodValue(
-            Annotation annotation, String methodName) {
+    public static Object getAnnotationMethodValue(Annotation annotation,
+            String methodName) {
         try {
             Method method = annotation.annotationType()
                     .getDeclaredMethod(methodName);
-            return Optional.ofNullable(method.invoke(annotation));
+            return method.invoke(annotation);
         } catch (NoSuchMethodException | SecurityException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
-            return Optional.empty();
+            throw new RuntimeException("Couldn't invoke the method "
+                    + methodName + " on the annotation "
+                    + annotation.annotationType(), e);
         }
     }
 
