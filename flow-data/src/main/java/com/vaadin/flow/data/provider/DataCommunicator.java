@@ -131,7 +131,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @see AbstractDataView#AbstractDataView(SerializableSupplier, Component)
      */
-    static final class EmptyDataProvider<T1> extends ListDataProvider<T1> {
+    public static final class EmptyDataProvider<T1> extends ListDataProvider<T1> {
         /**
          * Create in-memory data provider instance with no items in the
          * backed collection.
