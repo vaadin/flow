@@ -22,6 +22,7 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
+import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -42,7 +43,7 @@ import com.vaadin.flow.server.VaadinService;
  * given value to the annotation.
  * <p>
  * Note that injected components will have the same limitations as with
- * {@code PolymerTemplate}.
+ * {@link PolymerTemplate}.
  * <p>
  * For more information about the LitElement project, see
  * https://lit-element.polymer-project.org/
