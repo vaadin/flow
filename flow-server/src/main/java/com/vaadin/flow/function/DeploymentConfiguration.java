@@ -61,6 +61,11 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(InitParameters.USE_SNOWPACK, false);
     }
 
+    default boolean useSnowpackBuildWatch() {
+        return getBooleanProperty(InitParameters.USE_SNOWPACK_BUILD_WATCH, false);
+
+    }
+
     /**
      * Returns whether the server provides timing info to the client.
      *

@@ -610,7 +610,7 @@ public class FrontendUtils {
     private static InputStream getFileFromWebpack(String filePath)
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection(filePath, "GET").getInputStream();
+        return handler.getServedFile(filePath);
     }
 
     /**

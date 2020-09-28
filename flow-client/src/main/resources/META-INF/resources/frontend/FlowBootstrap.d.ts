@@ -1,1 +1,1 @@
-export const init: (appInitResponse: any) => void;
+export function init(appInitResponse: any): void;

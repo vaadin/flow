@@ -32,7 +32,12 @@ module.exports = {
     installTypes: isTS,
   },
   alias: {
-    "Frontend": "/VAADIN",
-    "@vaadin/flow-frontend": "/VAADIN/flow-frontend"
-  }
+    'Frontend': '/VAADIN',
+    '@vaadin/flow-frontend': '/VAADIN/flow-frontend'
+  },
+  exclude: [
+    '**/node_modules/**/*',
+    '**/__tests__/*',
+    '**/*.@(spec|test).@(js|mjs)',
+    '**/flow-frontend/@(Connect|Flow|VaadinDevmodeGizmo).ts' ] // use precompiled
 };

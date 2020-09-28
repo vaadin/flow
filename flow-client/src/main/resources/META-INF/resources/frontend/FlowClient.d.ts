@@ -1,1 +1,1 @@
-export const init: () => void;
+export function init(): void;

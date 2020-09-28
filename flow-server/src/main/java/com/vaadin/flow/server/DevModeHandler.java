@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -92,8 +94,8 @@ public final class DevModeHandler implements RequestHandler {
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
     private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
     private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
-    private static final String LOG_START = "Running webpack to compile frontend resources. This may take a moment, please stand by...";
-    private static final String LOG_END = "Started webpack-dev-server. Time: {}ms";
+    private static final String LOG_START = "Compiling frontend resources. This may take a moment, please stand by...";
+    private static final String LOG_END = "Started frontend dev-server. Time: {}ms";
 
     // If after this time in millisecs, the pattern was not found, we unlock the
     // process and continue. It might happen if webpack changes their output
@@ -133,6 +135,9 @@ public final class DevModeHandler implements RequestHandler {
     private final CompletableFuture<Void> devServerStartFuture;
 
     private boolean useSnowpack = false;
+    private boolean useSnowpackBuildWatch = false;
+    private final ResponseWriter responseWriter;
+    private final File snowpackBuildRoot;
 
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, CompletableFuture<Void> waitFor) {
@@ -140,7 +145,8 @@ public final class DevModeHandler implements RequestHandler {
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
-
+        responseWriter = new ResponseWriter(config);
+        snowpackBuildRoot = new File(npmFolder, "build");
         devServerStartFuture = waitFor.whenCompleteAsync((value, exception) -> {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
@@ -302,6 +308,18 @@ public final class DevModeHandler implements RequestHandler {
         if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
             return false;
         }
+        if (useSnowpack && useSnowpackBuildWatch) {
+            return serveDevModeRequestFromFileSystem(request, response);
+        } else {
+            return serveDevModeRequestFromDevServer(request, response);
+        }
+    }
+
+    /**
+     * for webpack-dev-server and 'snowpack dev' mode proxy from dev server
+     */
+    private boolean serveDevModeRequestFromDevServer(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
         // Since we have 'publicPath=/VAADIN/' in webpack config,
         // a valid request for webpack-dev-server should start with '/VAADIN/'
         String requestFilename = request.getPathInfo();
@@ -357,6 +375,45 @@ public final class DevModeHandler implements RequestHandler {
         return true;
     }
 
+    /**
+     * for 'snowpack build --watch' mode serve resources from build directory
+     */
+    private boolean serveDevModeRequestFromFileSystem(HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+       final String filenameWithPath;
+
+        if (request.getPathInfo() == null) {
+            filenameWithPath = request.getServletPath();
+        } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)) {
+            filenameWithPath = request.getPathInfo();
+        } else {
+            filenameWithPath = request.getServletPath() + request.getPathInfo();
+        }
+
+        File file = new File(snowpackBuildRoot, filenameWithPath);
+
+        if (!file.exists()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return true;
+        }
+
+        URL resourceUrl = file.toURI().toURL();
+        response.setHeader("Cache-Control", "no-cache");
+        response.setCharacterEncoding("utf-8");
+        responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
+                request, response);
+        return true;
+    }
+
+    private InputStream getFileFromFileSystem(String filePath) throws IOException {
+        File file = new File(snowpackBuildRoot, filePath);
+
+        if (!file.exists()) {
+            return null;
+        }
+        return new FileInputStream(file);
+    }
+
     private boolean checkWebpackConnection() {
         try {
             prepareConnection("/", "GET").getResponseCode();
@@ -387,6 +444,15 @@ public final class DevModeHandler implements RequestHandler {
         connection.setReadTimeout(DEFAULT_TIMEOUT);
         connection.setConnectTimeout(DEFAULT_TIMEOUT);
         return connection;
+    }
+
+    public InputStream getServedFile(String filePath) throws IOException {
+        if (!useSnowpack || !useSnowpackBuildWatch) {
+            return prepareConnection(filePath, "GET").getInputStream();
+        } else {
+            return getFileFromFileSystem(filePath);
+        }
+
     }
 
     private synchronized void doNotify() {
@@ -446,7 +512,7 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         // remove color escape codes for console
-        String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
+        String cleanLine = line; //line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
 
         // save output so as it can be used to alert user in browser.
         cumulativeOutput.append(cleanLine);
@@ -475,8 +541,11 @@ public final class DevModeHandler implements RequestHandler {
                 liveReload.reload();
             }
         }
-        if (useSnowpack && liveReload != null && line.contains("Frontend file has been changed")) {
-            liveReload.reload();
+        if (useSnowpack && liveReload != null) {
+            if ((useSnowpackBuildWatch && line.contains("File changed") ||
+                    (!useSnowpackBuildWatch && line.contains("Frontend file has been changed")))) {
+                liveReload.reload();
+            }
         }
     }
 
@@ -532,6 +601,7 @@ public final class DevModeHandler implements RequestHandler {
     private void doStartDevModeServer(DeploymentConfiguration config,
             File npmFolder) throws ExecutionFailedException {
         useSnowpack = config.useSnowpack();
+        useSnowpackBuildWatch = config.useSnowpackBuildWatch();
 
         // If port is defined, means that webpack is already running
         if (port > 0) {
@@ -558,7 +628,9 @@ public final class DevModeHandler implements RequestHandler {
         watchDog.set(new DevServerWatchDog());
 
         // Look for a free port
-        port = getFreePort();
+        if (!useSnowpack || !useSnowpackBuildWatch) {
+            port = getFreePort();
+        }
 
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
@@ -605,11 +677,19 @@ public final class DevModeHandler implements RequestHandler {
             // servlet context is destroyed.
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
-            Pattern succeed = // TODO: fixme
-                    config.useSnowpack() ? Pattern.compile("Server started")
-                            : Pattern.compile(config.getStringProperty(
-                            SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
-                            DEFAULT_OUTPUT_PATTERN));
+            final Pattern succeed ;
+            if (config.useSnowpack()) {
+                if (config.useSnowpackBuildWatch()) {
+                    succeed = Pattern.compile("Watching for changes");
+                } else {
+                    succeed = Pattern.compile("Server started");
+                }
+
+            } else {
+                succeed = Pattern.compile(config.getStringProperty(
+                        SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
+                        DEFAULT_OUTPUT_PATTERN));
+            }
 
             Pattern failure = // TODO: fixme
                     config.useSnowpack() ? Pattern.compile("Error")
@@ -640,13 +720,22 @@ public final class DevModeHandler implements RequestHandler {
 
     private List<String> makeCommands(DeploymentConfiguration config,
             File webpack, File webpackConfig, String nodeExec) {
-        if (config.useSnowpack()) {
-            return Arrays.asList(
-                    nodeExec,
-                    webpack.getAbsolutePath(),
-                    "dev",
-                    "--config", webpackConfig.getAbsolutePath(),
-                    "--port", String.valueOf(port));
+        if (useSnowpack) {
+            if (useSnowpackBuildWatch) {
+                return Arrays.asList(
+                        nodeExec,
+                        webpack.getAbsolutePath(),
+                        "build",
+                        "--config", webpackConfig.getAbsolutePath(),
+                        "--watch");
+            } else {
+                return Arrays.asList(
+                        nodeExec,
+                        webpack.getAbsolutePath(),
+                        "dev",
+                        "--config", webpackConfig.getAbsolutePath(),
+                        "--port", String.valueOf(port));
+            }
         } else {
             List<String> command = new ArrayList<>();
             command.add(nodeExec);
@@ -731,7 +820,7 @@ public final class DevModeHandler implements RequestHandler {
      * @return a port number which is not busy
      */
     static int getFreePort() {
-        try (ServerSocket s = new ServerSocket(0)) {
+        try (ServerSocket s = new ServerSocket(9000)) {
             s.setReuseAddress(true);
             return s.getLocalPort();
         } catch (IOException e) {

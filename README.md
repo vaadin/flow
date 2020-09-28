@@ -5,11 +5,19 @@ Webpack is used by default; enable Snowpack with system property `vaadin.useSnow
 
 <pre><code>mvn jetty:run -Dvaadin.useSnowpack</code></pre>
 
+The above will serve the frontend assets using Snowpack dev server. Alternatively, you can run 
+Snowpack in `build --watch` mode, in which the frontend assets will be created in the 
+`build` directory and served as static files. To do this, additionally set the property 
+`vaadin.useSnowpackBuildWatch`. For example with Maven + Jetty:
+
+In both cases files in the `frontend` folder are monitored for changes for live reload.
+
+<pre><code>mvn jetty:run -Dvaadin.useSnowpack -Dvaadin.useSnowpackBuildWatch</code></pre>
+
 Limitations:
 * Very experimental, only tested with minimal examples.
 * No production mode builds.
-* Live reload on frontend changes is currently very hacky (uses a chokidar watcher to notify `DevModeHandler` about changes in `frontend` folder).
-* Getting .css files served as a .js module with a single exported string seems to require a [separate plugin file](https://github.com/pikapkg/snowpack/issues/580#issuecomment-683323847). This plugin is also generated into the project directory.
+* Anything accessing to `stats.json` will not work.
 
 Vaadin Flow
 ======
