@@ -20,6 +20,7 @@ const path = require('path');
 const frontendFolder = '[to-be-generated-by-flow]';
 const fileNameOfTheFlowGeneratedMainEntryPoint = '[to-be-generated-by-flow]';
 const mavenOutputFolderForFlowBundledFiles = '[to-be-generated-by-flow]';
+const mavenOutputFolderForResourceFiles = '[to-be-generated-by-flow]';
 const useClientSideIndexFileForBootstrapping = '[to-be-generated-by-flow]';
 const clientSideIndexHTML = '[to-be-generated-by-flow]';
 const clientSideIndexEntryPoint = '[to-be-generated-by-flow]';
@@ -35,7 +36,7 @@ const indexHtmlPath = 'index.html';
 // folder for outputting vaadin-bundle and other fragments
 const buildFolder = path.resolve(outputFolder, VAADIN, build);
 // folder for outputting stats.json
-const confFolder = path.resolve(outputFolder, '..', config);
+const confFolder = path.resolve(mavenOutputFolderForResourceFiles, 'config');
 const serviceWorkerPath = 'sw.js';
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = path.resolve(confFolder, 'stats.json');

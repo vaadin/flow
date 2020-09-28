@@ -105,7 +105,8 @@ public class NodeTasksTest {
                 new DefaultClassFinder(this.getClass().getClassLoader()),
                 new File(userDir))
                         .enablePackagesUpdate(false)
-                        .withWebpack(new File(userDir, TARGET + "classes"),
+                        .withWebpack(new File(userDir, TARGET + "webapp"),
+                                new File(userDir, TARGET + "classes"),
                                 WEBPACK_CONFIG, WEBPACK_GENERATED)
                         .enableImportsUpdate(true).runNpmInstall(false)
                         .withEmbeddableWebComponents(false)
@@ -158,8 +159,9 @@ public class NodeTasksTest {
         Builder builder = new Builder(classFinder, new File(userDir))
                 .withFlowResourcesFolder(
                         new File(userDir, DEFAULT_FLOW_RESOURCES_FOLDER))
-                .withWebpack(new File(userDir, TARGET + "classes"),
-                        WEBPACK_CONFIG, WEBPACK_GENERATED)
+                .withWebpack(new File(userDir, TARGET + "webapp"),
+                        new File(userDir, TARGET + "classes"), WEBPACK_CONFIG,
+                        WEBPACK_GENERATED)
                 .enablePackagesUpdate(false).enableImportsUpdate(false)
                 .withEmbeddableWebComponents(false);
 

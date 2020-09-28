@@ -139,7 +139,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     private void propagateBuildInfo() {
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build
-        File token = new File(webpackOutputDirectory, TOKEN_FILE);
+        File token = new File(resourceOutputDirectory, TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, productionMode);
         buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,

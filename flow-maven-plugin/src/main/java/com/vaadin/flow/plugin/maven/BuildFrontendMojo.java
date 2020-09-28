@@ -179,6 +179,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 npmFolder, generatedFolder, frontendDirectory)
                         .runNpmInstall(runNpmInstall)
                         .withWebpack(webpackOutputDirectory,
+                                resourceOutputDirectory,
                                 webpackTemplate, webpackGeneratedTemplate)
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
@@ -314,7 +315,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     private File getTokenFile() {
-        return new File(project.getBuild().getOutputDirectory() + VAADIN_SERVLET_RESOURCES,
-                TOKEN_FILE);
+        return new File(resourceOutputDirectory, TOKEN_FILE);
     }
 }

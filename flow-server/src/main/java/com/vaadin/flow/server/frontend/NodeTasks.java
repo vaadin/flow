@@ -57,6 +57,8 @@ public class NodeTasks implements FallibleCommand {
 
         private File webpackOutputDirectory = null;
 
+        private File resourceOutputDirectory = null;
+
         private String webpackTemplate = null;
 
         private String webpackGeneratedTemplate = null;
@@ -203,8 +205,10 @@ public class NodeTasks implements FallibleCommand {
          * @return this builder
          */
         public Builder withWebpack(File webpackOutputDirectory,
-                String webpackTemplate, String webpackGeneratedTemplate) {
+                File resourceOutputDirectory, String webpackTemplate,
+                String webpackGeneratedTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
+            this.resourceOutputDirectory = resourceOutputDirectory;
             this.webpackTemplate = webpackTemplate;
             this.webpackGeneratedTemplate = webpackGeneratedTemplate;
             return this;
@@ -568,7 +572,8 @@ public class NodeTasks implements FallibleCommand {
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
-                    builder.webpackTemplate, builder.webpackGeneratedTemplate,
+                    builder.resourceOutputDirectory, builder.webpackTemplate,
+                    builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration));

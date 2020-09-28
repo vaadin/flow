@@ -55,6 +55,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final String webpackTemplate;
     private final String webpackGeneratedTemplate;
     private final Path webpackOutputPath;
+    private final Path resourceOutputPath;
     private final Path flowImportsFilePath;
     private final Path webpackConfigPath;
     private final Path frontendDirectory;
@@ -71,6 +72,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            folder with the `webpack.config.js` file.
      * @param webpackOutputDirectory
      *            the directory to set for webpack to output its build results.
+     * @param resourceOutputDirectory
+     *            the directory for generated non-served resources.
      * @param webpackTemplate
      *            name of the webpack resource to be used as template when
      *            creating the <code>webpack.config.js</code> file.
@@ -86,7 +89,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
      */
     @SuppressWarnings("squid:S00107")
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
-            File webpackOutputDirectory, String webpackTemplate,
+            File webpackOutputDirectory, File resourceOutputDirectory,
+            String webpackTemplate,
             String webpackGeneratedTemplate, File generatedFlowImports,
             boolean useV14Bootstrapping, File flowResourcesFolder,
             PwaConfiguration pwaConfiguration) {
@@ -94,6 +98,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.webpackTemplate = webpackTemplate;
         this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
+        this.resourceOutputPath = resourceOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.useV14Bootstrapping = useV14Bootstrapping;
@@ -176,6 +181,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         "require('path').resolve(__dirname, '"
                                 + getEscapedRelativeWebpackPath(
                                         webpackOutputPath)
+                                + "')"),
+                new Pair<>("const mavenOutputFolderForResourceFiles",
+                        "require('path').resolve(__dirname, '"
+                                + getEscapedRelativeWebpackPath(
+                                resourceOutputPath)
                                 + "')"),
                 new Pair<>("const fileNameOfTheFlowGeneratedMainEntryPoint",
                         "require('path').resolve(__dirname, '"
