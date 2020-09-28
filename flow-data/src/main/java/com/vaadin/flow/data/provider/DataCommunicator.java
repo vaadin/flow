@@ -120,6 +120,8 @@ public class DataCommunicator<T> implements Serializable {
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;
 
+    private boolean fetchDisabled;
+
     /**
      * In-memory data provider with no items.
      * <p>
@@ -179,10 +181,40 @@ public class DataCommunicator<T> implements Serializable {
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
+        this(dataGenerator, arrayUpdater, dataUpdater, stateNode, false);
+    }
+
+    /**
+     * Creates a new instance.
+     * <p>
+     * Allows to setup whether the data communicator will ignore fetch and size
+     * queries to data provider until further configuration. This mode is useful
+     * when the component needs to postpone the calls to data provider until
+     * some event, i.e. dropdown open event of the combo box, but needs to
+     * configure the data communicator preliminary.
+     *
+     * @param dataGenerator
+     *            the data generator function
+     * @param arrayUpdater
+     *            array updater strategy
+     * @param dataUpdater
+     *            data updater strategy
+     * @param stateNode
+     *            the state node used to communicate for
+     * @param fetchDisabled
+     *            if {@code fetchDisabled} is {@code true} then the data
+     *            provider won't be called to fetch the items and/or to get the
+     *            items count until it's set to {@code false}
+     */
+    public DataCommunicator(DataGenerator<T> dataGenerator,
+            ArrayUpdater arrayUpdater,
+            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
+            boolean fetchDisabled) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
         this.dataUpdater = dataUpdater;
         this.stateNode = stateNode;
+        this.fetchDisabled = fetchDisabled;
 
         stateNode.addAttachListener(this::handleAttach);
         stateNode.addDetachListener(this::handleDetach);
@@ -346,8 +378,8 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the item at the given index from the data available to the
      * component. Data is filtered and sorted the same way as in the component.
      * <p>
-     * Call to the backend is triggered if the item for a requested index is
-     * not present in the cached active items.
+     * Call to the backend is triggered if the item for a requested index is not
+     * present in the cached active items.
      *
      * @param index
      *            the index of the item to get
@@ -355,6 +387,8 @@ public class DataCommunicator<T> implements Serializable {
      * @throws IndexOutOfBoundsException
      *             requested index is outside of the filtered and sorted data
      *             set
+     * @throws IllegalStateException
+     *             if the calls to data provider are disabled.
      */
     @SuppressWarnings("unchecked")
     public T getItem(int index) {
@@ -364,36 +398,43 @@ public class DataCommunicator<T> implements Serializable {
         int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
         /*
          * Check if the item on a requested index is already in the cache of
-         * active items. No matter is this currently a defined or undefined
-         * mode
+         * active items. No matter is this currently a defined or undefined mode
          */
         if (index >= activeStart && index <= activeDataEnd) {
             return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
         } else {
             final int itemCount = getItemCount();
             /*
-             * The exception is thrown if the exact size is used and the data
-             * is empty, or the index is outside of the item count range,
-             * because we definitely know the item count from a backend.
+             * The exception is thrown if the exact size is used and the data is
+             * empty, or the index is outside of the item count range, because
+             * we definitely know the item count from a backend.
              */
             if (isDefinedSize()) {
                 if (itemCount == 0) {
-                    throw new IndexOutOfBoundsException(String
-                            .format("Requested index %d on empty data.", index));
+                    throw new IndexOutOfBoundsException(String.format(
+                            "Requested index %d on empty data.", index));
                 } else if (index >= itemCount) {
                     throw new IndexOutOfBoundsException(String.format(
                             "Given index %d is outside of the accepted range '0 - %d'",
                             index, itemCount - 1));
                 }
             }
+
+            if (fetchDisabled) {
+                throw new IllegalStateException(
+                        "Data Communicator cannot fetch the item from Data "
+                                + "Provider when the fetch is disabled. Please "
+                                + "enable it by calling "
+                                + "'dataCommunicator.setFetchDisabled(false)'");
+            }
+
             /*
-             * In case of undefined size we don't check the empty data or
-             * the item count, because item count = 0 may mean the
-             * flush (fetch) action hasn't been made yet. And even
-             * if the requested index is outside of the item count
-             * estimation, we can make the request, because the backend can
-             * have the item on that index (we simply not yet fetched
-             * this item during the scrolling).
+             * In case of undefined size we don't check the empty data or the
+             * item count, because item count = 0 may mean the flush (fetch)
+             * action hasn't been made yet. And even if the requested index is
+             * outside of the item count estimation, we can make the request,
+             * because the backend can have the item on that index (we simply
+             * not yet fetched this item during the scrolling).
              */
             return (T) getDataProvider().fetch(buildQuery(index, 1)).findFirst()
                     .orElse(null);
@@ -519,7 +560,7 @@ public class DataCommunicator<T> implements Serializable {
         }
         this.itemCountEstimateIncrease = itemCountEstimateIncrease;
         this.countCallback = null;
-        definedSize = false;
+        this.definedSize = false;
     }
 
     /**
@@ -553,8 +594,8 @@ public class DataCommunicator<T> implements Serializable {
     public void setDefinedSize(boolean definedSize) {
         if (this.definedSize != definedSize) {
             this.definedSize = definedSize;
-            countCallback = null;
-            skipCountIncreaseUntilReset = false;
+            this.countCallback = null;
+            this.skipCountIncreaseUntilReset = false;
             if (definedSize) {
                 // Always fetch explicit count from data provider
                 requestFlush();
@@ -672,14 +713,55 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
+     * Returns whether the data communicator will call Data Provider for
+     * fetching the items and/or getting the items count, or ignore such a
+     * calls.
+     *
+     * @return {@code true} if the calls to data provider are ignored,
+     *         {@code false} otherwise
+     */
+    public boolean isFetchDisabled() {
+        return fetchDisabled;
+    }
+
+    /**
+     * Sets whether the data communicator will call Data Provider for fetching
+     * the items and/or getting the items count, or ignore such a calls.
+     * <p>
+     * One may need to disable the data provider calls in order to configure the
+     * data communicator and to postpone these calls until some event, i.e.
+     * dropdown open event of the combo box.
+     * <p>
+     * This sets to {@code false} by default.
+     *
+     * @param fetchDisabled
+     *            if {@code true} then the calls to data provider are ignored,
+     *            otherwise the data provider is queried when needed.
+     */
+    public void setFetchDisabled(boolean fetchDisabled) {
+        this.fetchDisabled = fetchDisabled;
+    }
+
+    /**
      * Getter method for determining the item count of the data. Can be
      * overridden by a subclass that uses a specific type of DataProvider and/or
      * query.
+     *
+     * @throws IllegalStateException
+     *             if the calls to data provider are disabled.
      *
      * @return the size of data provider with current filter
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected int getDataProviderSize() {
+        if (fetchDisabled) {
+            throw new IllegalStateException(
+                    "Data Communicator cannot get the items count from Data "
+                            + "Provider when the fetch is disabled. Please "
+                            + "enable it by calling "
+                            + "'dataCommunicator.setFetchDisabled(false)'");
+        }
+
         assert definedSize : "This method should never be called when using undefined size";
         if (countCallback != null) {
             return countCallback.count(new Query(getFilter()));
@@ -761,7 +843,8 @@ public class DataCommunicator<T> implements Serializable {
                     doFetchFromDataProvider(newOffset, pageSize)
                             .forEach(addItemAndCheckConsumer);
                     page++;
-                } while (page < pages && fetchedPerPage.getAndSet(0) == pageSize);
+                } while (page < pages
+                        && fetchedPerPage.getAndSet(0) == pageSize);
 
                 stream = streamBuilder.build();
             } else {
@@ -848,7 +931,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if (flushRequest == null || forced) {
+        if ((flushRequest == null || forced) && !fetchDisabled) {
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -1099,15 +1182,14 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private static void withMissing(Range expected, Range actual,
-                                    Consumer<Range> action) {
+            Consumer<Range> action) {
         Range[] partition = expected.partitionWith(actual);
 
         applyIfNotEmpty(partition[0], action);
         applyIfNotEmpty(partition[2], action);
     }
 
-    private static void applyIfNotEmpty(Range range,
-                                        Consumer<Range> action) {
+    private static void applyIfNotEmpty(Range range, Consumer<Range> action) {
         if (!range.isEmpty()) {
             action.accept(range);
         }
