@@ -62,6 +62,8 @@ import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.core.models.AuthorizationValue;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import reactor.core.publisher.Flux;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -88,6 +90,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
     private static final String EXTENSION_VAADIN_CONNECT_SHOW_TSDOC = "x-vaadin-connect-show-tsdoc";
     private static final String EXTENSION_VAADIN_CONNECT_METHOD_NAME = "x-vaadin-connect-method-name";
     private static final String EXTENSION_VAADIN_CONNECT_SERVICE_NAME = "x-vaadin-connect-endpoint-name";
+    private static final String EXTENSION_VAADIN_CONNECT_SUBSCRIBE_FLAG = "x-vaadin-connect-subscribe";
+    private static final String EXTENSION_VAADIN_CONNECT_CALL_OR_SUBSCRIBE = "x-vaadin-connect-call-or-subscribe";
     private static final String VAADIN_CONNECT_CLASS_DESCRIPTION = "vaadinConnectClassDescription";
     private static final String VAADIN_FILE_PATH = "vaadinFilePath";
     private static final String CLIENT_PATH_TEMPLATE_PROPERTY = "vaadinConnectDefaultClientPath";
@@ -460,11 +464,11 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
 
     @Override
     public CodegenOperation fromOperation(String path, String httpMethod,
-            Operation operation, Map<String, Schema> schemas, OpenAPI openAPI) {
-        if (!"POST".equalsIgnoreCase(httpMethod)) {
-            throw getGeneratorException(
-                    "Code generator only supports POST requests.");
-        }
+        Operation operation, Map<String, Schema> schemas, OpenAPI openAPI) {
+        // if (!"POST".equalsIgnoreCase(httpMethod)) {
+        //     throw getGeneratorException(
+        //             "Code generator only supports POST requests.");
+        // }
         Matcher matcher = PATH_REGEX.matcher(path);
         if (!matcher.matches()) {
             throw getGeneratorException(
@@ -478,6 +482,15 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
                 .put(EXTENSION_VAADIN_CONNECT_METHOD_NAME, methodName);
         codegenOperation.getVendorExtensions()
                 .put(EXTENSION_VAADIN_CONNECT_SERVICE_NAME, endpointName);
+        if ("GET".equalsIgnoreCase(httpMethod)) {
+            codegenOperation.getVendorExtensions()
+                    .put(EXTENSION_VAADIN_CONNECT_SUBSCRIBE_FLAG, true);
+            codegenOperation.getVendorExtensions()
+                    .put(EXTENSION_VAADIN_CONNECT_CALL_OR_SUBSCRIBE, "subscribe");
+        } else {
+            codegenOperation.getVendorExtensions()
+                    .put(EXTENSION_VAADIN_CONNECT_CALL_OR_SUBSCRIBE, "call");
+        }
         validateOperationTags(path, httpMethod, operation);
         return codegenOperation;
     }
@@ -765,10 +778,13 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
         Set<String> usedNames = new HashSet<>();
         // Make sure the import list are always in the same orders in when
         // generating different times.
+        Object remove = null;
         imports.sort((o1, o2) -> GeneratorUtils.compare((String) o1.get(IMPORT),
                 (String) o2.get(IMPORT)));
         for (Map<String, Object> anImport : imports) {
             String importQualifiedName = (String) anImport.get(IMPORT);
+            if (Flux.class.getName().equals(importQualifiedName))
+                remove = anImport;
             String className = getSimpleNameFromQualifiedName(
                     importQualifiedName);
             if (usedNames.contains(className)) {
@@ -789,6 +805,8 @@ public class VaadinConnectTsGenerator extends AbstractTypeScriptClientCodegen {
             relativizedPath = relativePathToNodeImport(relativizedPath);
             anImport.put("importPath", relativizedPath);
         }
+        if (remove != null) 
+            imports.remove(remove);
     }
 
     private String relativePathToNodeImport(String relativePath) {

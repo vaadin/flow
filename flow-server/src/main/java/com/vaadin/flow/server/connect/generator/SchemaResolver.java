@@ -45,6 +45,7 @@ import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import reactor.core.publisher.Flux;
 
 class SchemaResolver {
 
@@ -75,8 +76,25 @@ class SchemaResolver {
             return new ObjectSchema();
         } else if (isTypeOf(resolvedType, Enum.class)) {
             return createEnumTypeSchema(resolvedType);
+        } else if (isFlux(resolvedType)) {
+            return createFluxSchema(resolvedType.asReferenceType());
         }
         return createUserBeanSchema(resolvedType);
+    }
+
+    private boolean isFlux(ResolvedType resolvedType) {
+        return Flux.class.getName().equals(resolvedType.asReferenceType().getQualifiedName());
+    }
+
+    private Schema createFluxSchema(ResolvedReferenceType type) {
+        ResolvedType fluxType = type.getTypeParametersMap().get(0).b;
+        Schema nestedTypeSchema = parseResolvedTypeToSchema(fluxType);
+
+        ComposedSchema fluxSchema = new ComposedSchema();
+        fluxSchema.setName("Flux");
+        fluxSchema.setAllOf(Collections.singletonList(nestedTypeSchema));
+        return fluxSchema;
+
     }
 
     private Schema createArraySchema(ResolvedType type) {

@@ -56,10 +56,19 @@ function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
   }}{{#each bodyParam.vendorExtensions.x-vaadin-connect-parameters}}
   {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports type ../../imports}}}{{#if @last}}{{! Append new line if it's the last param.}}
 {{else}},{{! Used the `~` after if to remove extra empty line by the each loop}}{{/if~}}
-{{/each}}): Promise<{{!
+{{/each}}{{#vendorExtensions.x-vaadin-connect-subscribe}}{{#bodyParam.vendorExtensions.x-vaadin-connect-parameters}},{{/bodyParam.vendorExtensions.x-vaadin-connect-parameters}}dataCallback: (data: {{#responses}}{{#dataType}}{{{getClassNameFromImports dataType ../../../imports}}}{{/dataType}}{{^dataType}}void{{/dataType}}{{/responses}}) => void{{/vendorExtensions.x-vaadin-connect-subscribe}}): {{#vendorExtensions.x-vaadin-connect-subscribe}}void{{/vendorExtensions.x-vaadin-connect-subscribe}}{{^vendorExtensions.x-vaadin-connect-subscribe}}Promise<{{!
 }}{{#responses}}{{#dataType}}{{{getClassNameFromImports dataType ../../../imports}}}{{/dataType}}{{^dataType}}void{{/dataType}}{{/responses}}{{!
-}}> {
+}}>{{/vendorExtensions.x-vaadin-connect-subscribe}} {
 {{=<% %>=}}
+<%#vendorExtensions.x-vaadin-connect-subscribe%>
+  const eventSource = client.subscribe('<%vendorExtensions.x-vaadin-connect-endpoint-name%>', '<%vendorExtensions.x-vaadin-connect-method-name%>',<%#each bodyParam.vendorExtensions.x-vaadin-connect-parameters%><%!
+      %><%name%><%#if @last%><%else%>, <%/if%><%!
+    %><%/each%>);
+  eventSource.addEventListener("message", (e) => {
+    dataCallback(e.data);
+  });
+<%/vendorExtensions.x-vaadin-connect-subscribe%>
+<%^vendorExtensions.x-vaadin-connect-subscribe%>
   return client.call(<%!
     %>'<%vendorExtensions.x-vaadin-connect-endpoint-name%>', <%!
     %>'<%vendorExtensions.x-vaadin-connect-method-name%>'<%!
@@ -73,6 +82,7 @@ function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
     %>}<%/bodyParams%><%!
     %><%^authMethods%>, {requireCredentials: false}<%/authMethods%><%!
   %>);
+<%/vendorExtensions.x-vaadin-connect-subscribe%>
 }
 export {_<%vendorExtensions.x-vaadin-connect-method-name%> as <%vendorExtensions.x-vaadin-connect-method-name%>};
 <%={{ }}=%>

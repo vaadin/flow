@@ -544,7 +544,7 @@ public class OpenApiObjectGenerator {
                 continue;
             }
             String methodName = methodDeclaration.getNameAsString();
-
+            String returnType = methodDeclaration.getTypeAsString();
             Operation post = createPostOperation(methodDeclaration);
             if (methodDeclaration.getParameters().isNonEmpty()) {
                 post.setRequestBody(createRequestBody(methodDeclaration,
@@ -555,7 +555,13 @@ public class OpenApiObjectGenerator {
                     resolvedTypeParametersMap);
             post.setResponses(responses);
             post.tags(Collections.singletonList(tagName));
-            PathItem pathItem = new PathItem().post(post);
+
+            PathItem pathItem = new PathItem();
+            if (returnType.startsWith("Flux")) {
+                pathItem.get(post);
+            } else {
+                pathItem.post(post);
+            }
 
             String pathName = "/" + endpointName + "/" + methodName;
             pathItem.readOperationsMap()

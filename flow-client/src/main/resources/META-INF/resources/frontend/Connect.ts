@@ -361,6 +361,15 @@ export class ConnectClient {
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
   }
+  subscribe(endpoint: string, method: string, _params?: any): EventSource {
+    if (arguments.length < 2) {
+      throw new TypeError(
+        `2 arguments required, but got only ${arguments.length}`
+      );
+    }
+    // FIXME This currently ignores parameters
+    return new EventSource(`${this.prefix}/${endpoint}/${method}`);
+  }
 
   // Re-use flow loading indicator when fetching endpoints
   private loading(action: boolean) {
