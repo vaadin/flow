@@ -186,7 +186,7 @@ public class VaadinConnectControllerTest {
         HttpSession sessionMock = mock(HttpSession.class);
         when(sessionMock.getAttribute(com.vaadin.flow.server.VaadinService.getCsrfTokenAttributeName()))
                 .thenReturn("Vaadin CCDM");
-        when(requestMock.getSession()).thenReturn(sessionMock);
+        when(requestMock.getSession(false)).thenReturn(sessionMock);
     }
 
     @Test
