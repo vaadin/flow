@@ -6,6 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
+// @ts-ignore
 import { DeferrableResult } from '@vaadin/flow-frontend/Connect';
 
 function _hello(
