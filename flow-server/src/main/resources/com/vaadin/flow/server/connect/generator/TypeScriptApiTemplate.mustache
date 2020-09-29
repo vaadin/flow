@@ -65,7 +65,7 @@ function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
       %><%name%><%#if @last%><%else%>, <%/if%><%!
     %><%/each%>);
   eventSource.addEventListener("message", (e) => {
-    dataCallback(e.data);
+    dataCallback(JSON.parse(e.data));
   });
 <%/vendorExtensions.x-vaadin-connect-subscribe%>
 <%^vendorExtensions.x-vaadin-connect-subscribe%>
