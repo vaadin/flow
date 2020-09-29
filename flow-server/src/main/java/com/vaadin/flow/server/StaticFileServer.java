@@ -427,6 +427,9 @@ public class StaticFileServer implements StaticFileHandler {
         String content = FrontendUtils.streamToString(stream);
         JsonObject manifest = Json.parse(content);
         return Arrays.stream(manifest.keys())
+                // Skip "index.html", as it should go through
+                // IndexHtmlRequestHandler
+                .filter(key -> !FrontendUtils.INDEX_HTML.equals(key))
                 .map(key -> "/" + manifest.getString(key))
                 .collect(Collectors.toList());
     }

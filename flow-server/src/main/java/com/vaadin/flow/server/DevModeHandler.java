@@ -562,6 +562,8 @@ public final class DevModeHandler implements RequestHandler {
                 FrontendUtils.streamToString(connection.getInputStream());
         JsonObject manifest = Json.parse(content);
         manifestPaths = Arrays.stream(manifest.keys())
+                // Skip "index.html", as it should go through
+                // IndexHtmlRequestHandler
                 .map(key -> "/" + manifest.getString(key))
                 .collect(Collectors.toList());
         getLogger().debug("Got asset paths from webpack manifest.json: \n    {}"
