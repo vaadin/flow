@@ -70,7 +70,7 @@ import elemental.json.JsonValue;
  *             Vaadin blog.</a>
  */
 @Deprecated
-public class PublishedServerEventHandlerRpcHandler {
+public class PublishedServerEventHandlerRpcHandler implements Serializable {
 
     private static final Collection<RpcDecoder> DECODERS = loadDecoders();
 
