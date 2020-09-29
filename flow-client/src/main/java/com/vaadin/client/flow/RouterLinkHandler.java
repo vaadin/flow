@@ -196,11 +196,23 @@ public class RouterLinkHandler {
             if (isAnchorElement(target)) {
                 return (AnchorElement) target;
             }
-            target = target.getParentElement();
+
+            Element parentTarget = target.getParentElement();
+
+            if (parentTarget == null) {
+                target = getShadowHostElement(target);
+            } else {
+                target = parentTarget;
+            }
         }
 
         return null;
     }
+
+    private static native Element getShadowHostElement(Element shadowChild)
+    /*-{
+        return shadowChild.getRootNode().host;
+    }-*/;
 
     private static native Element getTargetElement(Event clickEvent)
     /*-{
