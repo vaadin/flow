@@ -837,6 +837,26 @@ public class UITest {
         assertEquals("Handler should have run once", 1, runCount.get());
     }
 
+    @Test
+    public void csrfToken_differentUIs_shouldBeUnique() {
+        String token1 = new UI().getCsrfToken();
+        String token2 = new UI().getCsrfToken();
+
+        Assert.assertNotEquals("Each UI should have a unique CSRF token",
+                token1, token2);
+    }
+
+    @Test
+    public void csrfToken_sameUI_shouldBeSame() {
+        UI ui = new UI();
+        String token1 = ui.getCsrfToken();
+        String token2 = ui.getCsrfToken();
+
+        Assert.assertEquals(
+                "getCsrfToken() should always return the same value for the same UI",
+                token1, token2);
+    }
+
     @Test(expected = NullPointerException.class)
     public void accessLaterConsumer_nullHandler_exception() {
         UI ui = createAccessableTestUI();
