@@ -1,10 +1,12 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.testutil.TestBenchHelpers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.openqa.selenium.WebElement;
 
 public class RouterLinkIT extends ChromeBrowserTest {
 
@@ -67,6 +69,35 @@ public class RouterLinkIT extends ChromeBrowserTest {
 
         verifyInsideServletLocation("image/link");
         verifyPopStateEvent("image/link");
+    }
+
+    @Test
+    public void testShadowDomRouterLink() {
+        open();
+
+        verifySamePage();
+
+        final WebElement routerLinkWithShadow = findElement(
+                By.id("router-link-with-shadow"));
+
+        final WebElement routerLinkShadowComponent = routerLinkWithShadow
+                .findElement(By.tagName("shadow-component"));
+
+        testInsideServlet(
+                findInShadowRoot(routerLinkShadowComponent,
+                        By.id("router-link-with-shadow-red")).get(0),
+                "shadow", "shadow");
+
+        testInsideServlet(findElement(By.id("router-link-with-shadow-green")),
+                "shadow", "shadow");
+    }
+
+    private void testInsideServlet(WebElement elementToClick, String popStateLocation,
+                                   String pathAfterServletMapping) {
+        elementToClick.click();
+        verifyInsideServletLocation(pathAfterServletMapping);
+        verifyPopStateEvent(popStateLocation);
+        verifySamePage();
     }
 
     private void testInsideServlet(String linkToTest, String popStateLocation,

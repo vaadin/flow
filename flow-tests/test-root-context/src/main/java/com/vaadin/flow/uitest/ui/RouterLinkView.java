@@ -1,13 +1,18 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.router.Route;
 
+import com.vaadin.flow.router.RouterLink;
 import elemental.json.JsonObject;
 
 @Route("com.vaadin.flow.uitest.ui.RouterLinkView")
@@ -38,6 +43,8 @@ public class RouterLinkView extends AbstractDivView {
         });
 
         addImageLink();
+        
+        addShadowLink();
     }
 
     private void addImageLink() {
@@ -78,4 +85,44 @@ public class RouterLinkView extends AbstractDivView {
         return ElementFactory.createRouterLink(target, target);
     }
 
+    @Tag("shadow-component")
+    private static class ShadowComponent extends Component {
+
+        public ShadowComponent() {
+            ShadowRoot shadowRoot = this.getElement().attachShadow();
+
+            Div shadowDiv = new Div();
+            shadowDiv.setId("router-link-with-shadow-red");
+            shadowDiv.setHeight("100px");
+            shadowDiv.setWidth("300px");
+            shadowDiv.getStyle().set("background-color", "red");
+            shadowRoot.appendChild(shadowDiv.getElement());
+
+            Element slot = new Element("slot");
+            shadowRoot.appendChild(slot);
+
+            Div lightDiv = new Div();
+            lightDiv.setId("router-link-with-shadow-green");
+            lightDiv.setHeight("100px");
+            lightDiv.setWidth("300px");
+            lightDiv.getStyle().set("background-color", "green");
+            this.getElement().appendChild(lightDiv.getElement());
+        }
+
+    }
+
+    @Route("shadow")
+    public static class ShadowTargetView extends H1 {
+
+        public ShadowTargetView() {
+            super("Shadow");
+        }
+    }
+
+    private void addShadowLink() {
+        RouterLink link = new RouterLink(null, ShadowTargetView.class);
+        link.setId("router-link-with-shadow");
+        link.add(new ShadowComponent());
+        this.add(link);
+    }
 }
