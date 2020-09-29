@@ -273,7 +273,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 boolean allow = propertyMap.updateFromClientFilter.test(key);
                 if (!allow && log) {
                     getLogger().warn("Ignoring model update for {}. "
-                            + "For security reasons, the property must have a "
+                            + "For security reasons, the property must be "
                             + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
                             key, ALLOW_CLIENT_UPDATES_POLYMER);
                 }
