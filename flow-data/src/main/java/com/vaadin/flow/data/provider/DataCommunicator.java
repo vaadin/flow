@@ -591,14 +591,14 @@ public class DataCommunicator<T> implements Serializable {
                 // Always fetch explicit count from data provider
                 requestFlush();
             } else
-                /*
-                 * Only do a new estimate if scrolled to end to increase the
-                 * estimated size. If there was a previous defined size used, then
-                 * that is kept until a reset occurs.
-                 */
-                if (requestedRange.contains(assumedSize - 1)) {
-                    requestFlush();
-                }
+            /*
+             * Only do a new estimate if scrolled to end to increase the
+             * estimated size. If there was a previous defined size used, then
+             * that is kept until a reset occurs.
+             */
+            if (requestedRange.contains(assumedSize - 1)) {
+                requestFlush();
+            }
         }
     }
 
@@ -837,7 +837,7 @@ public class DataCommunicator<T> implements Serializable {
         if (stream.isParallel()) {
             LoggerFactory.getLogger(DataCommunicator.class)
                     .debug("Data provider {} has returned "
-                                    + "parallel stream on 'fetch' call",
+                            + "parallel stream on 'fetch' call",
                             getDataProvider().getClass());
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
@@ -1064,7 +1064,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void passivateInactiveKeys(Set<String> oldActive, Update update,
-                                       boolean updated) {
+            boolean updated) {
         /*
          * We cannot immediately unregister keys that we have asked the client
          * to remove, since the client might send a message using that key
@@ -1084,7 +1084,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private boolean collectChangesToSend(final Range previousActive,
-                                         final Range effectiveRequested, Update update) {
+            final Range effectiveRequested, Update update) {
         boolean updated = false;
         if (assumeEmptyClient || resendEntireRange) {
             if (!assumeEmptyClient) {
@@ -1122,7 +1122,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private Activation collectKeysToFlush(final Range previousActive,
-                                          final Range effectiveRequested) {
+            final Range effectiveRequested) {
         /*
          * Collecting all items even though only some small sub range would
          * actually be useful can be optimized away once we have some actual

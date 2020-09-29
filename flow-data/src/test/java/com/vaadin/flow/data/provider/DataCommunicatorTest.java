@@ -272,7 +272,7 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getOffset() or getPage()"));
+              "The data provider hasn't ever called getOffset() or getPage()"));
         dataCommunicator.fetchFromProvider(1, 1);
     }
 
