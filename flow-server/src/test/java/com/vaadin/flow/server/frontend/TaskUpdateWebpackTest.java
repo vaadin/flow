@@ -137,7 +137,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .map(String::trim).collect(Collectors.toSet());
 
         Assert.assertTrue(webpackContents.contains(
-                "const frontendFolder = require('path').resolve(__dirname, 'my-custom-frontend');"));
+                "const frontendFolder = path.resolve(__dirname, 'my-custom-frontend');"));
     }
 
     @Test
@@ -263,19 +263,18 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
                 webpackContents.contains(
-                        "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
+                        "const fileNameOfTheFlowGeneratedMainEntryPoint = path.resolve(__dirname, '"
                                 + entryPoint + "');"));
 
         Assert.assertTrue(
                 "webpack config should update mavenOutputFolderForFlowBundledFiles",
                 webpackContents.contains(
-                        "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
+                        "const mavenOutputFolderForFlowBundledFiles = path.resolve(__dirname, '"
                                 + outputFolder + "');"));
         Assert.assertTrue(
                 "webpack config should update mavenOutputFolderForResourceFiles",
                 webpackContents.contains(
-                        "const mavenOutputFolderForResourceFiles = require"
-                                + "('path').resolve(__dirname, '"
+                        "const mavenOutputFolderForResourceFiles = path.resolve(__dirname, '"
                                 + resourceFolder + "');"));
 
     }

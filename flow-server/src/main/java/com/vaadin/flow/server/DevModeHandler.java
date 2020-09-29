@@ -285,11 +285,7 @@ public final class DevModeHandler implements RequestHandler {
             return true;
         }
 
-        if (manifestPaths.contains(pathInfo)) {
-            return true;
-        }
-
-        return false;
+        return manifestPaths.contains(pathInfo);
     }
 
     /**
@@ -484,7 +480,8 @@ public final class DevModeHandler implements RequestHandler {
             try {
                 readManifestPaths();
             } catch (IOException e) {
-                getLogger().error("Error connecting to webpack-dev-server");
+                getLogger().error("Error when reading manifest.json " +
+                        "from webpack-dev-server", e);
             }
 
             // Notify DevModeHandler to continue
@@ -566,8 +563,10 @@ public final class DevModeHandler implements RequestHandler {
                 // IndexHtmlRequestHandler
                 .map(key -> "/" + manifest.getString(key))
                 .collect(Collectors.toList());
-        getLogger().debug("Got asset paths from webpack manifest.json: \n    {}"
-                , String.join("\n    ", manifestPaths));
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Got asset paths from webpack manifest.json: \n    {}"
+                    , String.join("\n    ", manifestPaths));
+        }
     }
 
     private void saveRunningDevServerPort() {

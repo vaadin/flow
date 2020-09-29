@@ -173,36 +173,26 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private List<Pair<String, String>> getReplacements() {
         return Arrays.asList(
                 new Pair<>("const frontendFolder",
-                        "require('path').resolve" + "(__dirname, '"
-                                + getEscapedRelativeWebpackPath(
-                                        frontendDirectory)
-                                + "')"),
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                frontendDirectory))),
                 new Pair<>("const mavenOutputFolderForFlowBundledFiles",
-                        "require('path').resolve(__dirname, '"
-                                + getEscapedRelativeWebpackPath(
-                                        webpackOutputPath)
-                                + "')"),
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                webpackOutputPath))),
                 new Pair<>("const mavenOutputFolderForResourceFiles",
-                        "require('path').resolve(__dirname, '"
-                                + getEscapedRelativeWebpackPath(
-                                resourceOutputPath)
-                                + "')"),
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                resourceOutputPath))),
                 new Pair<>("const fileNameOfTheFlowGeneratedMainEntryPoint",
-                        "require('path').resolve(__dirname, '"
-                                + getEscapedRelativeWebpackPath(
-                                        flowImportsFilePath)
-                                + "')"),
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                flowImportsFilePath))),
                 new Pair<>("const useClientSideIndexFileForBootstrapping",
                         Boolean.toString(!useV14Bootstrapping)),
                 new Pair<>("const clientSideIndexHTML", getIndexHtmlPath()),
                 new Pair<>("const clientSideIndexEntryPoint",
                         getClientEntryPoint()),
                 new Pair<>("const devmodeGizmoJS",
-                        "require('path').resolve(__dirname, '"
-                                + getEscapedRelativeWebpackPath(
-                                        flowResourcesFolder.resolve(
-                                                "VaadinDevmodeGizmo.js"))
-                                + "')"),
+                        formatPathResolve(getEscapedRelativeWebpackPath(
+                                flowResourcesFolder
+                                        .resolve("VaadinDevmodeGizmo.js")))),
                 new Pair<>("const offlineResources",
                         getOfflineResourcesJsArray()));
     }
@@ -214,8 +204,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             Path path = Paths.get(
                     getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
                     INDEX_HTML);
-            return String.format("require('path').resolve(__dirname, '%s')",
-                    getEscapedRelativeWebpackPath(path));
+            return formatPathResolve(getEscapedRelativeWebpackPath(path));
         } else {
             return "'./" + INDEX_HTML +"'";
         }
@@ -229,9 +218,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
             Path path = Paths.get(
                     getEscapedRelativeWebpackPath(webpackConfigPath), TARGET,
                     INDEX_TS);
-            String relativePath = String.format(
-                    "require('path').resolve(__dirname, '%s')",
-                    getEscapedRelativeWebpackPath(path).replaceFirst("\\.[tj]s$", ""));
+            String relativePath = formatPathResolve(
+                    getEscapedRelativeWebpackPath(path)
+                            .replaceFirst("\\.[tj]s$", ""));
+
             return relativePath;
         } else {
             return "'./index'";
@@ -249,6 +239,10 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private String getOfflineResourcesJsArray() {
         return pwaConfiguration.getOfflineResources().stream().map(Json::create)
                 .collect(JsonUtils.asArray()).toJson();
+    }
+
+    private String formatPathResolve(String path) {
+        return String.format("path.resolve(__dirname, '%s')", path);
     }
 
     private Logger log() {

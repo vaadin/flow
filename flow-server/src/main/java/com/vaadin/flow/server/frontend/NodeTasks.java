@@ -195,7 +195,11 @@ public class NodeTasks implements FallibleCommand {
          *
          * @param webpackOutputDirectory
          *            the directory to set for webpack to output its build
-         *            results.
+         *            results, meant for serving from context root.
+         * @param resourceOutputDirectory
+         *            the directory to output generated non-served resources,
+         *            such as the "config/stats.json" stats file, and the
+         *            "config/flow-build-info.json" token file.
          * @param webpackTemplate
          *            name of the webpack resource to be used as template when
          *            creating the <code>webpack.config.js</code> file.
