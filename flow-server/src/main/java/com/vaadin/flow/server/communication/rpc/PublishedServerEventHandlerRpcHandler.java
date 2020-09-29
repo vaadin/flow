@@ -61,7 +61,8 @@ public class PublishedServerEventHandlerRpcHandler
                             + PublishedServerEventHandlerRpcHandler.class
                                     .getSimpleName());
             Method handleMethod = Stream.of(clazz.getDeclaredMethods())
-                    .filter(method -> Modifier.isStatic(method.getModifiers()))
+                    .filter(method -> Modifier.isStatic(method.getModifiers())
+                            && Modifier.isPublic(method.getModifiers()))
                     .findFirst().get();
             handleMethod.invoke(null, node, invocationJson);
         } catch (ClassNotFoundException e) {
