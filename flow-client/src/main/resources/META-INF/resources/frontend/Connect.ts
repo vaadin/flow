@@ -361,14 +361,31 @@ export class ConnectClient {
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
   }
-  subscribe(endpoint: string, method: string, _params?: any): EventSource {
+  subscribe<T>(
+    dataCallback: (data: T) => void,
+    endpoint: string,
+    method: string,
+    _params?: any
+  ): Subscription {
     if (arguments.length < 2) {
       throw new TypeError(
         `2 arguments required, but got only ${arguments.length}`
       );
     }
     // FIXME This currently ignores parameters
-    return new EventSource(`${this.prefix}/${endpoint}/${method}`);
+    const eventSource = new EventSource(`${this.prefix}/${endpoint}/${method}`);
+
+    const listener = (e: MessageEvent) => {
+      const data: T = JSON.parse(e.data);
+      dataCallback(data);
+    };
+    eventSource.addEventListener("message", listener);
+    return {
+      unsubscribe: () => {
+        eventSource.removeEventListener("message", listener);
+        eventSource.close();
+      },
+    };
   }
 
   // Re-use flow loading indicator when fetching endpoints
@@ -377,4 +394,8 @@ export class ConnectClient {
       $wnd.Vaadin.Flow.loading(action);
     }
   }
+}
+
+export interface Subscription {
+  unsubscribe(): void;
 }
