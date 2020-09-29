@@ -62,9 +62,9 @@ function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
 }}>{{/vendorExtensions.x-vaadin-connect-subscribe}} {
 {{=<% %>=}}
 <%#vendorExtensions.x-vaadin-connect-subscribe%>
-  return client.subscribe(dataCallback, '<%vendorExtensions.x-vaadin-connect-endpoint-name%>', '<%vendorExtensions.x-vaadin-connect-method-name%>',<%#each bodyParam.vendorExtensions.x-vaadin-connect-parameters%><%!
+  return client.subscribe(dataCallback, '<%vendorExtensions.x-vaadin-connect-endpoint-name%>', '<%vendorExtensions.x-vaadin-connect-method-name%>',{<%#each bodyParam.vendorExtensions.x-vaadin-connect-parameters%><%!
       %><%name%><%#if @last%><%else%>, <%/if%><%!
-    %><%/each%>);
+    %><%/each%>});
 <%/vendorExtensions.x-vaadin-connect-subscribe%>
 <%^vendorExtensions.x-vaadin-connect-subscribe%>
   return client.call(<%!

@@ -220,7 +220,7 @@ public class VaadinConnectController {
          * @param request      the current request which triggers the endpoint call
          * @return execution result as a JSON string or an error message string
          */
-        @GetMapping(path = "/{endpoint}/{method}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+        @PostMapping(path = "/stream/{endpoint}/{method}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
         public ResponseEntity<Flux> subscribe(@PathVariable("endpoint") String endpointName,
                         @PathVariable("method") String methodName, @RequestBody(required = false) ObjectNode body,
                         HttpServletRequest request) {
@@ -399,11 +399,12 @@ public class VaadinConnectController {
         private ResponseEntity<Flux> invokeVaadinFluxEndpointMethod(String endpointName, String methodName,
                         Method methodToInvoke, ObjectNode body, VaadinEndpointData vaadinEndpointData,
                         HttpServletRequest request) throws JsonProcessingException {
-                /*
-                 * String checkError = accessChecker.check(methodToInvoke, request); if
-                 * (checkError != null) { getLogger().warn("D"); return
-                 * ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); }
-                 */
+
+                String checkError = accessChecker.check(methodToInvoke, request);
+                if (checkError != null) {
+                        getLogger().warn("D");
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
 
                 Map<String, JsonNode> requestParameters = getRequestParameters(body);
                 Type[] javaParameters = getJavaParameters(methodToInvoke,

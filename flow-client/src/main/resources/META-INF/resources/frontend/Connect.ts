@@ -365,25 +365,76 @@ export class ConnectClient {
     dataCallback: (data: T) => void,
     endpoint: string,
     method: string,
-    _params?: any
+    params?: any
   ): Subscription {
     if (arguments.length < 2) {
       throw new TypeError(
         `2 arguments required, but got only ${arguments.length}`
       );
     }
-    // FIXME This currently ignores parameters
-    const eventSource = new EventSource(`${this.prefix}/${endpoint}/${method}`);
-
-    const listener = (e: MessageEvent) => {
-      const data: T = JSON.parse(e.data);
-      dataCallback(data);
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-CSRF-Token":
+        ($wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.csrfToken) || "",
     };
-    eventSource.addEventListener("message", listener);
+
+    // helper to keep the undefined value in object after JSON.stringify
+    const nullForUndefined = (obj: any): any => {
+      for (const property in obj) {
+        if (obj[property] === undefined) {
+          obj[property] = null;
+        }
+      }
+      return obj;
+    };
+
+    const decoder = new TextDecoder();
+
+    let buffer = "";
+    const processValue = (input: string) => {
+      buffer += input;
+      const re = /data:(.*?)(\r\n|\r|\n)/g;
+      let lastIndex = 0;
+
+      while (true) {
+        const result = re.exec(buffer);
+        if (!result) {
+          break;
+        }
+        const data = result[1];
+        if (data.trim()) {
+          dataCallback(JSON.parse(data));
+        }
+        ({ lastIndex } = re);
+      }
+      buffer = buffer.slice(lastIndex);
+    };
+
+    let reader: ReadableStreamDefaultReader<Uint8Array>;
+    fetch(`${this.prefix}/stream/${endpoint}/${method}`, {
+      method: "POST",
+      headers,
+      body:
+        params !== undefined
+          ? JSON.stringify(nullForUndefined(params))
+          : undefined,
+    }).then((response) => {
+      reader = response.body!.getReader();
+      const readNext = () => {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            return;
+          }
+          processValue(decoder.decode(value));
+          readNext();
+        });
+      };
+      readNext();
+    });
+
     return {
       unsubscribe: () => {
-        eventSource.removeEventListener("message", listener);
-        eventSource.close();
+        reader.cancel();
       },
     };
   }
