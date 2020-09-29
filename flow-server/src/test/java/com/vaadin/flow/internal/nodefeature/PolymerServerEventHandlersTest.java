@@ -21,7 +21,6 @@ import static org.junit.Assert.assertNotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -66,16 +65,6 @@ public class PolymerServerEventHandlersTest extends HasCurrentService {
 
     private static class AbstractTemplate extends Component
             implements DeprecatedPolymerTemplate {
-
-        @Override
-        public boolean isSupportedClass(Class<?> type) {
-            return false;
-        }
-
-        @Override
-        public Object getModelType(Type type) {
-            return null;
-        }
 
     }
 
