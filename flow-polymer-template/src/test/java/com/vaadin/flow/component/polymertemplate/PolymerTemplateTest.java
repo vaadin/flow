@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasCurrentService;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.Uses;
@@ -67,8 +68,7 @@ import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class PolymerTemplateTest
-        extends com.vaadin.flow.component.HasCurrentService {
+public class PolymerTemplateTest extends HasCurrentService {
     private static final String TAG = "FFS";
 
     private DeploymentConfiguration configuration;
@@ -78,25 +78,6 @@ public class PolymerTemplateTest
 
     // Field to prevent current instance from being garbage collected
     private UI ui;
-
-    private VaadinService service;
-
-    @Override
-    @Before
-    public void setUpCurrentService() {
-        clearCurrentService();
-        assertNull(VaadinService.getCurrent());
-
-        service = createService();
-        VaadinService.setCurrent(service);
-    }
-
-    @Override
-    @After
-    public void clearCurrentService() {
-        VaadinService.setCurrent(null);
-        service = null;
-    }
 
     private static class TestTemplateParser implements TemplateParser {
 

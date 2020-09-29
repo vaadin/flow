@@ -1,7 +1,5 @@
 package com.vaadin.flow.component;
 
-import static org.junit.Assert.assertEquals;
-
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Before;
@@ -10,7 +8,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -84,11 +81,4 @@ public class CompositeTest {
         ui.add(component);
     }
 
-    public static void assertElementChildren(Element parent,
-            Element... expected) {
-        assertEquals(expected.length, parent.getChildCount());
-        for (int i = 0; i < parent.getChildCount(); i++) {
-            assertEquals(expected[i], parent.getChild(i));
-        }
-    }
 }

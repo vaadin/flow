@@ -61,8 +61,6 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         EXPLICITLY_ALLOW, EXPLICITLY_DISALLOW, NO_EXPLICIT_STATUS
     }
 
-    private static final String ALLOW_CLIENT_UPDATES_POLYMER = "AllowClientUpdates";
-
     /**
      * Creates a new element property map for the given node.
      *
@@ -274,8 +272,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 if (!allow && log) {
                     getLogger().warn("Ignoring model update for {}. "
                             + "For security reasons, the property must have a "
-                            + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
-                            key, ALLOW_CLIENT_UPDATES_POLYMER);
+                            + "two-way binding in the template, be annotated"
+                            + " with @AllowClientUpdates in the model, or be defined as synchronized.",
+                            key);
                 }
                 return allow ? AllowUpdate.EXPLICITLY_ALLOW
                         : AllowUpdate.EXPLICITLY_DISALLOW;

@@ -18,6 +18,11 @@ package com.vaadin.flow.internal;
 import static org.junit.Assert.assertSame;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +45,21 @@ public class ReflectToolsTest {
         public NonStaticInnerClass() {
 
         }
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    public @interface TestAnnotation {
+        String value();
+    }
+
+    @TestAnnotation("foo")
+    public static class ClassWithAnnotation {
+
+    }
+
+    public static class ClassWithoutAnnotation {
+
     }
 
     private class PrivateInnerClass {
@@ -276,8 +296,8 @@ public class ReflectToolsTest {
     @Test
     public void findClosestCommonClassLoaderAncestor_findAncestor_whenBothArgumentsAreTheSame() {
         CustomClassLoader loader = new CustomClassLoader();
-        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(loader,
-                loader).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(loader, loader).get();
 
         Assert.assertEquals(loader, ret);
     }
@@ -286,9 +306,8 @@ public class ReflectToolsTest {
         CustomClassLoader loader1 = new CustomClassLoader();
         CustomClassLoader loader2 = new CustomClassLoader();
 
-        Optional<ClassLoader> ret =
-                ReflectTools.findClosestCommonClassLoaderAncestor(loader1,
-                        loader2);
+        Optional<ClassLoader> ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(loader1, loader2);
 
         Assert.assertFalse(ret.isPresent());
     }
@@ -297,8 +316,8 @@ public class ReflectToolsTest {
     public void findClosestCommonClassLoaderAncestor_findsAncestor_whenOneIsParentOfTheOther() {
         CustomClassLoader parent = new CustomClassLoader();
         CustomClassLoader child = new CustomClassLoader(parent);
-        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(parent,
-                child).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(parent, child).get();
 
         Assert.assertEquals(parent, ret);
     }
@@ -308,8 +327,8 @@ public class ReflectToolsTest {
         CustomClassLoader parent = new CustomClassLoader();
         CustomClassLoader childA = new CustomClassLoader(parent);
         CustomClassLoader childB = new CustomClassLoader(parent);
-        ClassLoader ret = ReflectTools.findClosestCommonClassLoaderAncestor(childA,
-                childB).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(childA, childB).get();
 
         Assert.assertEquals(parent, ret);
     }
@@ -321,9 +340,8 @@ public class ReflectToolsTest {
         CustomClassLoader childA = new CustomClassLoader(parent);
         CustomClassLoader childB = new CustomClassLoader(grandParent);
 
-        ClassLoader ret =
-                ReflectTools.findClosestCommonClassLoaderAncestor(childA,
-                        childB).get();
+        ClassLoader ret = ReflectTools
+                .findClosestCommonClassLoaderAncestor(childA, childB).get();
 
         Assert.assertEquals(grandParent, ret);
     }
@@ -342,6 +360,49 @@ public class ReflectToolsTest {
 
         ret = ReflectTools.findClosestCommonClassLoaderAncestor(null, null);
         Assert.assertFalse(ret.isPresent());
+    }
+
+    @Test
+    public void hasAnnotation_annotationPresents_returnsTrue() {
+        Assert.assertTrue(ReflectTools.hasAnnotation(ClassWithAnnotation.class,
+                TestAnnotation.class.getName()));
+    }
+
+    @Test
+    public void hasAnnotation_annotationIsAbsent_returnsFalse() {
+        Assert.assertFalse(ReflectTools.hasAnnotation(
+                ClassWithoutAnnotation.class, TestAnnotation.class.getName()));
+    }
+
+    @Test
+    public void getAnnotationMethodValue_annotaitonHasMethod_theValueIsReturned() {
+        Assert.assertEquals("foo", ReflectTools.getAnnotationMethodValue(
+                ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
+                "value"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getAnnotationMethodValue_annotationHasNoMethod_throws() {
+        ReflectTools.getAnnotationMethodValue(
+                ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
+                "foo");
+    }
+
+    @Test
+    public void getAnnotation_annotationPresents_returnsAnnotation() {
+        Optional<Annotation> annotation = ReflectTools.getAnnotation(
+                ClassWithAnnotation.class, TestAnnotation.class.getName());
+        Assert.assertTrue(annotation.isPresent());
+        Assert.assertEquals(
+                ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
+                annotation.get());
+    }
+
+    @Test
+    public void getAnnotation_annotationIsAbsent_returnsEmpty() {
+        Optional<Annotation> annotation = ReflectTools.getAnnotation(
+                ClassWithoutAnnotation.class, TestAnnotation.class.getName());
+        Assert.assertFalse(annotation.isPresent());
     }
 
     private Class<?> createProxyClass(Class<?> originalClass) {

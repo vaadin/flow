@@ -799,7 +799,7 @@ public class ReflectTools implements Serializable {
         } catch (NoSuchMethodException | SecurityException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
-            throw new RuntimeException("Couldn't invoke the method "
+            throw new IllegalArgumentException("Couldn't invoke the method "
                     + methodName + " on the annotation "
                     + annotation.annotationType(), e);
         }
