@@ -130,22 +130,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected boolean requireHomeNodeExec;
 
     /**
-     * Check if the plugin is running in legacy V14 bootstrap mode or not.
-     * Default: false.
-     *
-     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
-     */
-    public boolean useDeprecatedV14Bootstrapping() {
-        if (useDeprecatedV14Bootstrapping == null) {
-            return false;
-        }
-        if (useDeprecatedV14Bootstrapping.isEmpty()) {
-            return true;
-        }
-        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
-    }
-
-    /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
@@ -163,4 +147,20 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
     protected String nodeDownloadRoot;
+
+    /**
+     * Check if the plugin is running in legacy V14 bootstrap mode or not.
+     * Default: false.
+     *
+     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
+     */
+    public boolean useDeprecatedV14Bootstrapping() {
+        if (useDeprecatedV14Bootstrapping == null) {
+            return false;
+        }
+        if (useDeprecatedV14Bootstrapping.isEmpty()) {
+            return true;
+        }
+        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
+    }
 }
