@@ -38,6 +38,7 @@ import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
@@ -62,10 +63,19 @@ import elemental.json.JsonValue;
  */
 public class DataCommunicator<T> implements Serializable {
     public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
+
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
     private final StateNode stateNode;
+
+    // Keys that can be discarded once some specific update id gets confirmed
+    private final HashMap<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
+
+    // Update ids that have been confirmed since the last flush
+    private final HashSet<Integer> confirmedUpdates = new HashSet<>();
+
+    private final ArrayList<QuerySortOrder> backEndSorting = new ArrayList<>();
 
     private DataKeyMapper<T> keyMapper = new KeyMapper<>();
 
@@ -87,19 +97,11 @@ public class DataCommunicator<T> implements Serializable {
 
     private int nextUpdateId = 0;
 
-    // Keys that can be discarded once some specific update id gets confirmed
-    private final HashMap<Integer, Set<String>> passivatedByUpdate = new HashMap<>();
-
-    // Update ids that have been confirmed since the last flush
-    private final HashSet<Integer> confirmedUpdates = new HashSet<>();
-
-    private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
+    private DataProvider<T, ?> dataProvider = new EmptyDataProvider<>();
 
     // Serializability of filter is up to the application
     private Object filter;
     private SerializableComparator<T> inMemorySorting;
-
-    private final ArrayList<QuerySortOrder> backEndSorting = new ArrayList<>();
 
     private Registration dataProviderUpdateRegistration;
     private HashSet<T> updatedData = new HashSet<>();
@@ -117,6 +119,27 @@ public class DataCommunicator<T> implements Serializable {
 
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;
+
+    /**
+     * In-memory data provider with no items.
+     * <p>
+     * Data Communicator is initialised with this data provider by default
+     * until a new data provider is assigned with
+     * {@link #setDataProvider(DataProvider, Object)}.
+     *
+     * @param <T1> item type
+     *
+     * @see AbstractDataView#AbstractDataView(SerializableSupplier, Component)
+     */
+    public static final class EmptyDataProvider<T1> extends ListDataProvider<T1> {
+        /**
+         * Create in-memory data provider instance with no items in the
+         * backed collection.
+         */
+        public EmptyDataProvider() {
+            super(new ArrayList<>(0));
+        }
+    }
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
