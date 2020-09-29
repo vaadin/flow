@@ -252,8 +252,8 @@ public class DataCommunicatorTest {
 
         expectedException.expect(IllegalStateException.class);
         expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit() or "
-                        + "getPageSize()"));
+                "The data provider hasn't ever called getLimit() or " +
+                        "getPageSize()"));
         dataCommunicator.fetchFromProvider(0, 1);
     }
 
@@ -550,8 +550,7 @@ public class DataCommunicatorTest {
     @Test
     public void setInitialItemCountEstimateAndIncrease_requestedItemsMuchHigherThanExactCount_exactCountIsResolvedOnServer() {
         final int exactSize = 200;
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                exactSize);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(exactSize);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -564,8 +563,7 @@ public class DataCommunicatorTest {
 
         // if the user scrolls far from the exact size of the backend,
         // the exact size is resolved on the server side without causing a new
-        // roundtrip where the client will request items because it received
-        // less
+        // roundtrip where the client will request items because it received less
         // items than expected
         dataCommunicator.setRequestedRange(900, 100);
         fakeClientCommunication();
@@ -584,8 +582,7 @@ public class DataCommunicatorTest {
     @Test
     public void setInitialItemCountEstimateAndIncrease_backendEmpty_noEndlessFlushLoop() {
         final int exactSize = 0;
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                exactSize);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(exactSize);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1008,15 +1005,13 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
         Assert.assertNull(cachedEvent.get());
 
-        // creating a new data provider with same exact size -> no new event
-        // fired
+        // creating a new data provider with same exact size -> no new event fired
         dataCommunicator.setDataProvider(createDataProvider(500), null);
         fakeClientCommunication();
         Assert.assertNull(cachedEvent.get());
 
         // new data provider with different size
-        dataCommunicator.setDataProvider(createDataProvider(exactCount = 1000),
-                null);
+        dataCommunicator.setDataProvider(createDataProvider(exactCount = 1000), null);
         fakeClientCommunication();
         event = cachedEvent.getAndSet(null);
 
@@ -1112,8 +1107,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_pageSizeLessThanLimit_multiplePagedQueries() {
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                100);
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(100);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setPageSize(10);
@@ -1124,14 +1119,15 @@ public class DataCommunicatorTest {
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
 
-        Mockito.verify(dataProvider, Mockito.times(3))
-                .fetch(queryCaptor.capture());
+        Mockito.verify(dataProvider, Mockito.times(3)).fetch(
+                queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(30, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 30).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        Assert.assertEquals(
+                IntStream.range(0, 30).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         Assert.assertEquals(3, allQueries.size());
@@ -1163,8 +1159,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_limitEqualsPageSize_singleQuery() {
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                100);
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(100);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1178,8 +1174,9 @@ public class DataCommunicatorTest {
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(50, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 50).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        Assert.assertEquals(
+                IntStream.range(0, 50).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
         Assert.assertEquals(0, query.getOffset());
@@ -1190,8 +1187,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_limitLessThanPageSize_singleQuery() {
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                100);
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(100);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1205,8 +1202,9 @@ public class DataCommunicatorTest {
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(50, items.size());
 
-        Assert.assertEquals(IntStream.range(10, 60).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        Assert.assertEquals(
+                IntStream.range(10, 60).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
         Assert.assertEquals(10, query.getOffset());
@@ -1217,8 +1215,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_disablePaging_singleQueryWithLimit() {
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                200);
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(200);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setPagingEnabled(false);
@@ -1234,8 +1232,9 @@ public class DataCommunicatorTest {
         List<Item> items = stream.collect(Collectors.toList());
         Assert.assertEquals(123, items.size());
 
-        Assert.assertEquals(IntStream.range(0, 123).mapToObj(Item::new)
-                .collect(Collectors.toList()), items);
+        Assert.assertEquals(
+                IntStream.range(0, 123).mapToObj(Item::new)
+                        .collect(Collectors.toList()), items);
 
         List<Query> allQueries = queryCaptor.getAllValues();
         Assert.assertEquals(1, allQueries.size());
@@ -1249,8 +1248,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_maxLimitValue_pagesCalculatedProperly() {
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                42);
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(42);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -1265,8 +1264,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void fetchFromProvider_backendRunsOutOfItems_secondPageRequestSkipped() {
-        AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
-                42);
+        AbstractDataProvider<Item, Object> dataProvider =
+                createDataProvider(42);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);

@@ -378,8 +378,8 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the item at the given index from the data available to the
      * component. Data is filtered and sorted the same way as in the component.
      * <p>
-     * Call to the backend is triggered if the item for a requested index is not
-     * present in the cached active items.
+     * Call to the backend is triggered if the item for a requested index is
+     * not present in the cached active items.
      *
      * @param index
      *            the index of the item to get
@@ -396,35 +396,36 @@ public class DataCommunicator<T> implements Serializable {
         int activeDataEnd = activeStart + activeKeyOrder.size() - 1;
         /*
          * Check if the item on a requested index is already in the cache of
-         * active items. No matter is this currently a defined or undefined mode
+         * active items. No matter is this currently a defined or undefined
+         * mode
          */
         if (index >= activeStart && index <= activeDataEnd) {
             return getKeyMapper().get(activeKeyOrder.get(index - activeStart));
         } else {
             final int itemCount = getItemCount();
             /*
-             * The exception is thrown if the exact size is used and the data is
-             * empty, or the index is outside of the item count range, because
-             * we definitely know the item count from a backend.
+             * The exception is thrown if the exact size is used and the data
+             * is empty, or the index is outside of the item count range,
+             * because we definitely know the item count from a backend.
              */
             if (isDefinedSize()) {
                 if (itemCount == 0) {
-                    throw new IndexOutOfBoundsException(String.format(
-                            "Requested index %d on empty data.", index));
+                    throw new IndexOutOfBoundsException(String
+                            .format("Requested index %d on empty data.", index));
                 } else if (index >= itemCount) {
                     throw new IndexOutOfBoundsException(String.format(
                             "Given index %d is outside of the accepted range '0 - %d'",
                             index, itemCount - 1));
                 }
             }
-
             /*
-             * In case of undefined size we don't check the empty data or the
-             * item count, because item count = 0 may mean the flush (fetch)
-             * action hasn't been made yet. And even if the requested index is
-             * outside of the item count estimation, we can make the request,
-             * because the backend can have the item on that index (we simply
-             * not yet fetched this item during the scrolling).
+             * In case of undefined size we don't check the empty data or
+             * the item count, because item count = 0 may mean the
+             * flush (fetch) action hasn't been made yet. And even
+             * if the requested index is outside of the item count
+             * estimation, we can make the request, because the backend can
+             * have the item on that index (we simply not yet fetched
+             * this item during the scrolling).
              */
             return (T) getDataProvider().fetch(buildQuery(index, 1)).findFirst()
                     .orElse(null);
@@ -590,14 +591,14 @@ public class DataCommunicator<T> implements Serializable {
                 // Always fetch explicit count from data provider
                 requestFlush();
             } else
-            /*
-             * Only do a new estimate if scrolled to end to increase the
-             * estimated size. If there was a previous defined size used, then
-             * that is kept until a reset occurs.
-             */
-            if (requestedRange.contains(assumedSize - 1)) {
-                requestFlush();
-            }
+                /*
+                 * Only do a new estimate if scrolled to end to increase the
+                 * estimated size. If there was a previous defined size used, then
+                 * that is kept until a reset occurs.
+                 */
+                if (requestedRange.contains(assumedSize - 1)) {
+                    requestFlush();
+                }
         }
     }
 
@@ -822,8 +823,7 @@ public class DataCommunicator<T> implements Serializable {
                     doFetchFromDataProvider(newOffset, pageSize)
                             .forEach(addItemAndCheckConsumer);
                     page++;
-                } while (page < pages
-                        && fetchedPerPage.getAndSet(0) == pageSize);
+                } while (page < pages && fetchedPerPage.getAndSet(0) == pageSize);
 
                 stream = streamBuilder.build();
             } else {
@@ -837,7 +837,7 @@ public class DataCommunicator<T> implements Serializable {
         if (stream.isParallel()) {
             LoggerFactory.getLogger(DataCommunicator.class)
                     .debug("Data provider {} has returned "
-                            + "parallel stream on 'fetch' call",
+                                    + "parallel stream on 'fetch' call",
                             getDataProvider().getClass());
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
@@ -1064,7 +1064,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void passivateInactiveKeys(Set<String> oldActive, Update update,
-            boolean updated) {
+                                       boolean updated) {
         /*
          * We cannot immediately unregister keys that we have asked the client
          * to remove, since the client might send a message using that key
@@ -1084,7 +1084,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private boolean collectChangesToSend(final Range previousActive,
-            final Range effectiveRequested, Update update) {
+                                         final Range effectiveRequested, Update update) {
         boolean updated = false;
         if (assumeEmptyClient || resendEntireRange) {
             if (!assumeEmptyClient) {
@@ -1122,7 +1122,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private Activation collectKeysToFlush(final Range previousActive,
-            final Range effectiveRequested) {
+                                          final Range effectiveRequested) {
         /*
          * Collecting all items even though only some small sub range would
          * actually be useful can be optimized away once we have some actual
@@ -1161,14 +1161,15 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private static void withMissing(Range expected, Range actual,
-            Consumer<Range> action) {
+                                    Consumer<Range> action) {
         Range[] partition = expected.partitionWith(actual);
 
         applyIfNotEmpty(partition[0], action);
         applyIfNotEmpty(partition[2], action);
     }
 
-    private static void applyIfNotEmpty(Range range, Consumer<Range> action) {
+    private static void applyIfNotEmpty(Range range,
+                                        Consumer<Range> action) {
         if (!range.isEmpty()) {
             action.accept(range);
         }
