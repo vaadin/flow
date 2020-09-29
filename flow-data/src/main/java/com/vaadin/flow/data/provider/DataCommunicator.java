@@ -387,8 +387,6 @@ public class DataCommunicator<T> implements Serializable {
      * @throws IndexOutOfBoundsException
      *             requested index is outside of the filtered and sorted data
      *             set
-     * @throws IllegalStateException
-     *             if the calls to data provider are disabled.
      */
     @SuppressWarnings("unchecked")
     public T getItem(int index) {
@@ -418,14 +416,6 @@ public class DataCommunicator<T> implements Serializable {
                             "Given index %d is outside of the accepted range '0 - %d'",
                             index, itemCount - 1));
                 }
-            }
-
-            if (fetchDisabled) {
-                throw new IllegalStateException(
-                        "Data Communicator cannot fetch the item from Data "
-                                + "Provider when the fetch is disabled. Please "
-                                + "enable it by calling "
-                                + "'dataCommunicator.setFetchDisabled(false)'");
             }
 
             /*
@@ -559,8 +549,8 @@ public class DataCommunicator<T> implements Serializable {
                     "itemCountEstimateIncrease cannot be less than 1");
         }
         this.itemCountEstimateIncrease = itemCountEstimateIncrease;
-        this.countCallback = null;
-        this.definedSize = false;
+        countCallback = null;
+        definedSize = false;
     }
 
     /**
@@ -594,8 +584,8 @@ public class DataCommunicator<T> implements Serializable {
     public void setDefinedSize(boolean definedSize) {
         if (this.definedSize != definedSize) {
             this.definedSize = definedSize;
-            this.countCallback = null;
-            this.skipCountIncreaseUntilReset = false;
+            countCallback = null;
+            skipCountIncreaseUntilReset = false;
             if (definedSize) {
                 // Always fetch explicit count from data provider
                 requestFlush();
@@ -747,21 +737,10 @@ public class DataCommunicator<T> implements Serializable {
      * overridden by a subclass that uses a specific type of DataProvider and/or
      * query.
      *
-     * @throws IllegalStateException
-     *             if the calls to data provider are disabled.
-     *
      * @return the size of data provider with current filter
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected int getDataProviderSize() {
-        if (fetchDisabled) {
-            throw new IllegalStateException(
-                    "Data Communicator cannot get the items count from Data "
-                            + "Provider when the fetch is disabled. Please "
-                            + "enable it by calling "
-                            + "'dataCommunicator.setFetchDisabled(false)'");
-        }
-
         assert definedSize : "This method should never be called when using undefined size";
         if (countCallback != null) {
             return countCallback.count(new Query(getFilter()));

@@ -1278,30 +1278,22 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchDisabled_getItemCount_throws() {
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(
-                "Data Communicator cannot get the items count from Data "
-                        + "Provider when the fetch is disabled. Please "
-                        + "enable it by calling "
-                        + "'dataCommunicator.setFetchDisabled(false)'");
-
+    public void fetchDisabled_getItemCount_stillReturnsItemsCount() {
         dataCommunicator.setFetchDisabled(true);
-        dataCommunicator.getItemCount();
+        Assert.assertEquals(0, dataCommunicator.getItemCount());
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertEquals(100, dataCommunicator.getItemCount());
     }
 
     @Test
-    public void fetchDisabled_getItem_throws() {
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(
-                "Data Communicator cannot fetch the item from Data "
-                        + "Provider when the fetch is disabled. Please "
-                        + "enable it by calling "
-                        + "'dataCommunicator.setFetchDisabled(false)'");
-
+    public void fetchDisabled_getItem_stillReturnsItem() {
         dataCommunicator.setFetchDisabled(true);
-        dataCommunicator.setItemCountEstimate(42);
-        dataCommunicator.getItem(10);
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertNotNull(dataCommunicator.getItem(42));
     }
 
     @Test
