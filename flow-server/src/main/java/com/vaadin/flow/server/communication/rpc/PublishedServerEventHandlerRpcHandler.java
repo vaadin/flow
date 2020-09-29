@@ -63,8 +63,7 @@ public class PublishedServerEventHandlerRpcHandler
             Method handleMethod = Stream.of(clazz.getDeclaredMethods())
                     .filter(method -> Modifier.isStatic(method.getModifiers()))
                     .findFirst().get();
-            handleMethod.invoke(node, invocationJson);
-
+            handleMethod.invoke(null, node, invocationJson);
         } catch (ClassNotFoundException e) {
             LoggerFactory.getLogger(PublishedServerEventHandlerRpcHandler.class)
                     .debug("Polymer handler is called even though the polymer module is not in the classpath");
