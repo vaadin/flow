@@ -261,8 +261,7 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
             throw new IllegalArgumentException(
                     "Unsupported element property type: " + clazz.getName()
                             + ". Supported types are: "
-                            + typeHandlers.keySet().parallelStream()
-                                    .map(Class::getName)
+                            + typeHandlers.keySet().stream().map(Class::getName)
                                     .collect(Collectors.joining(", ")));
         }
         return typeHandler;
