@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.template.internal;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 
 import com.vaadin.flow.component.littemplate.LitTemplate;
 
@@ -35,19 +34,4 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
 @Deprecated
 public interface DeprecatedPolymerTemplate extends Serializable {
 
-    /**
-     * Check if the given Class {@code type} is found in the Model.
-     *
-     * @param type
-     *            Class to check support for
-     * @return True if supported by this DeprecatedPolymerTemplate
-     */
-    boolean isSupportedClass(Class<?> type);
-
-    /**
-     * Gets the type of the template model to use with with this template.
-     *
-     * @return the model type, not <code>null</code>
-     */
-    Object getModelType(Type type);
 }

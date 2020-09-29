@@ -133,7 +133,6 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      *            Class to check support for
      * @return True if supported by this PolymerTemplate
      */
-    @Override
     public boolean isSupportedClass(Class<?> type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
                 .getPropertyNames().map(this::getModelType)
