@@ -89,7 +89,7 @@ if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
 
-const rootUrl = String.fromCharCode(47); // equivalent of '/'
+const rootUrl = '/';
 
 const swManifestTransform = (manifestEntries) => {
   const warnings = [];
