@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.dependency;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -24,21 +27,23 @@ import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import com.vaadin.flow.component.littemplate.LitTemplate;
 
 /**
  * Marks that an annotated component implicitly uses another component. This
  * will ensure that any dependencies of the used component are also loaded. For
- * {@link PolymerTemplate} implementations, used components will also be
+ * {@code PolymerTemplate} implementations, used components will also be
  * instantiated if an element with the corresponding {@link Tag @Tag} value is
  * defined in the template.
  * <p>
  * Marking class A with <code>@Uses(B.class)</code> will ensure all
  * {@link StyleSheet}, {@link JavaScript} dependencies for class <code>B</code>
  * are loaded when class <code>A</code> is used.
+ * 
+ * @deprecated Polymer template support is deprecated - we recommend you to use
+ *             {@link LitTemplate} instead. Read more details from <a href=
+ *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
+ *             Vaadin blog.</a>
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -47,6 +52,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target(TYPE)
 @Repeatable(Uses.Container.class)
+@Deprecated
 public @interface Uses {
 
     /**

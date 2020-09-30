@@ -5,8 +5,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.polymertemplate.HasCurrentService;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.HasCurrentService;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModelTemplate;

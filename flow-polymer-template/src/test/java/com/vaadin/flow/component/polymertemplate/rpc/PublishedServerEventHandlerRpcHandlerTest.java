@@ -13,12 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.communication.rpc;
+package com.vaadin.flow.component.polymertemplate.rpc;
 
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.jsoup.nodes.Element;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,35 +32,31 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.templatemodel.TemplateModel;
-import com.vaadin.tests.util.MockUI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
 
     private VaadinService service;
 
+    private VaadinSession session;
+
     @Tag("a")
-    public static class ComponentWithMethod
-            extends PolymerTemplate<TemplateModel> {
+    public static class ComponentWithMethod extends Component
+            implements DeprecatedPolymerTemplate {
 
         private boolean isInvoked;
-
-        public ComponentWithMethod() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    new Element("a")));
-        }
 
         protected void intMethod(int i) {
         }
@@ -84,14 +78,10 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Tag(Tag.DIV)
-    public static class EnabledHandler extends PolymerTemplate<TemplateModel> {
+    public static class EnabledHandler extends Component
+            implements DeprecatedPolymerTemplate {
 
         private boolean isInvoked;
-
-        EnabledHandler() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    new Element("div")));
-        }
 
         @EventHandler(DisabledUpdateMode.ALWAYS)
         private void method() {
@@ -102,6 +92,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         private void operation() {
             isInvoked = true;
         }
+
     }
 
     enum Title {
@@ -223,6 +214,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
         VaadinService.setCurrent(service);
+
+        session = Mockito.mock(VaadinSession.class);
+        Mockito.when(session.hasLock()).thenReturn(true);
     }
 
     @After
@@ -301,7 +295,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         args.set(0, 36);
 
         ComponentWithMethod component = new ComponentWithMethod();
-        MockUI ui = new MockUI();
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
         ui.add(component);
 
         // Get rid of attach invocations
@@ -311,8 +306,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "compute", args, promiseId);
 
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
-                .dumpPendingJsInvocations();
+                .getInternals().dumpPendingJavaScriptInvocations();
         Assert.assertEquals(1, pendingJavaScriptInvocations.size());
 
         JavaScriptInvocation invocation = pendingJavaScriptInvocations.get(0)
@@ -342,7 +338,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         args.set(0, -36);
 
         ComponentWithMethod component = new ComponentWithMethod();
-        MockUI ui = new MockUI();
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
         ui.add(component);
 
         // Get rid of attach invocations
@@ -357,8 +354,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
             Assert.assertTrue(e.getCause() instanceof ArithmeticException);
         }
 
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         List<PendingJavaScriptInvocation> pendingJavaScriptInvocations = ui
-                .dumpPendingJsInvocations();
+                .getInternals().dumpPendingJavaScriptInvocations();
         Assert.assertEquals(1, pendingJavaScriptInvocations.size());
 
         JavaScriptInvocation invocation = pendingJavaScriptInvocations.get(0)

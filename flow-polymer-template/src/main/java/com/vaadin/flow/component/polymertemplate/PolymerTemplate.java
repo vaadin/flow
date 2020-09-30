@@ -107,8 +107,9 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
-        this(VaadinService.getCurrent().getInstantiator().getTemplateParser(),
-                VaadinService.getCurrent());
+        this(VaadinService.getCurrent().getInstantiator()
+                .getOrCreate(TemplateParser.TemplateParserFactory.class)
+                .createParser(), VaadinService.getCurrent());
     }
 
     /**

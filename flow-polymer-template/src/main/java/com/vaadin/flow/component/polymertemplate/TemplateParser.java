@@ -19,6 +19,7 @@ import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.littemplate.LitTemplateParser;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -78,6 +79,38 @@ public interface TemplateParser {
          */
         public Element getTemplateElement() {
             return templateElement;
+        }
+    }
+
+    /**
+     * Template parser factory.
+     * <p>
+     * To be able to create a parser which can be provided as SPI use
+     * {@link Instantiator} to create the factory and then get a parser from it:
+     * 
+     * <pre>
+     * <code>
+     * Instantiator instantiator = ...;
+     * TemplateParserFactory factory = instantiator.getOrCreate(TemplateParserFactory.class);
+     * TemplateParser parser = factory.createParser();
+     * </code>
+     * </pre>
+     * <p>
+     * 
+     * @author Vaadin Ltd
+     * @see LitTemplateParser
+     * @since
+     *
+     */
+    class TemplateParserFactory {
+
+        /**
+         * Creates a template parser instance.
+         * 
+         * @return a template parser instance
+         */
+        public TemplateParser createParser() {
+            return NpmTemplateParser.getInstance();
         }
     }
 

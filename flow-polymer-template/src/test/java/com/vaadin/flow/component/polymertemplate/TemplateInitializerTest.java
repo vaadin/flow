@@ -28,13 +28,15 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.MockServletServiceSessionSetup;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -46,8 +48,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class TemplateInitializerTest {
     private TemplateParser templateParser;
-    private MockServletServiceSessionSetup mocks;
-    private TestVaadinServletService service;
+    private VaadinService service;
 
     @Tag("template-initializer-test")
     public class InTemplateClass extends PolymerTemplate<TemplateModel> {
@@ -71,8 +72,14 @@ public class TemplateInitializerTest {
 
     @Before
     public void setUp() throws Exception {
-        mocks = new MockServletServiceSessionSetup();
-        service = mocks.getService();
+        service = Mockito.mock(VaadinService.class);
+        VaadinService.setCurrent(service);
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        Mockito.when(service.getDeploymentConfiguration())
+                .thenReturn(configuration);
+
         String parentTemplateId = InTemplateClass.class.getAnnotation(Tag.class)
                 .value();
         assertThat("Both classes should have the same '@Tag' annotation",
@@ -96,7 +103,7 @@ public class TemplateInitializerTest {
 
     @After
     public void tearDown() {
-        mocks.cleanup();
+        CurrentInstance.clearAll();
     }
 
     @Test(expected = IllegalStateException.class)
