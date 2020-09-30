@@ -23,8 +23,7 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import com.vaadin.flow.component.internal.ComponentMetaData;
-import com.vaadin.flow.component.polymertemplate.Id;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.PropertyChangeListener;
@@ -454,9 +453,9 @@ public abstract class Component
     /**
      * Checks whether this component is currently attached to a UI.
      * <p>
-     * When {@link UI#close()} is called, the UI and the components are not detached immediately;
-     * the UI cleanup is performed at the end of the current request which also detaches the
-     * UI and its components.
+     * When {@link UI#close()} is called, the UI and the components are not
+     * detached immediately; the UI cleanup is performed at the end of the
+     * current request which also detaches the UI and its components.
      *
      * @return true if the component is attached to an active UI.
      */
@@ -575,9 +574,8 @@ public abstract class Component
     }
 
     /**
-     * Gets whether this component was attached as part of a
-     * {@link PolymerTemplate} (by being mapped by an {@link Id} annotation), or
-     * if it was created directly.
+     * Gets whether this component was attached as part of a template (by being
+     * mapped by an {@link Id} annotation), or if it was created directly.
      *
      * @return <code>true</code> when it was mapped inside a template,
      *         <code>false</code> otherwise

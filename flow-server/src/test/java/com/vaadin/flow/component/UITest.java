@@ -217,7 +217,7 @@ public class UITest {
             ui.getInternals().setSession(session);
 
             RouteConfiguration routeConfiguration = RouteConfiguration
-                    .forRegistry(ui.getRouter().getRegistry());
+                    .forRegistry(ui.getInternals().getRouter().getRegistry());
 
             routeConfiguration.update(() -> {
                 routeConfiguration.getHandledRegistry().clean();
@@ -228,7 +228,7 @@ public class UITest {
             });
 
             ui.doInit(request, 0);
-            ui.getRouter().initializeUI(ui, request);
+            ui.getInternals().getRouter().initializeUI(ui, request);
 
             session.unlock();
 
@@ -279,12 +279,8 @@ public class UITest {
     public void navigateWithParameters_delegateToRouter() {
         final String route = "params";
         Router router = Mockito.mock(Router.class);
-        UI ui = new MockUI() {
-            @Override
-            public com.vaadin.flow.router.Router getRouter() {
-                return router;
-            }
-        };
+        UI ui = new MockUI(router);
+
         QueryParameters params = QueryParameters
                 .simple(Collections.singletonMap("test", "indeed"));
 
@@ -835,6 +831,26 @@ public class UITest {
         wrapped.run();
 
         assertEquals("Handler should have run once", 1, runCount.get());
+    }
+
+    @Test
+    public void csrfToken_differentUIs_shouldBeUnique() {
+        String token1 = new UI().getCsrfToken();
+        String token2 = new UI().getCsrfToken();
+
+        Assert.assertNotEquals("Each UI should have a unique CSRF token",
+                token1, token2);
+    }
+
+    @Test
+    public void csrfToken_sameUI_shouldBeSame() {
+        UI ui = new UI();
+        String token1 = ui.getCsrfToken();
+        String token2 = ui.getCsrfToken();
+
+        Assert.assertEquals(
+                "getCsrfToken() should always return the same value for the same UI",
+                token1, token2);
     }
 
     @Test(expected = NullPointerException.class)

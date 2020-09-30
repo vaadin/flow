@@ -19,8 +19,6 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.function.Function;
 
@@ -103,15 +101,6 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         String pushURL = context.getSession().getConfiguration().getPushURL();
         if (pushURL == null) {
             pushURL = serviceUrl;
-        } else {
-            try {
-                URI uri = new URI(serviceUrl);
-                pushURL = uri.resolve(new URI(pushURL)).toASCIIString();
-            } catch (URISyntaxException exception) {
-                throw new IllegalStateException(String.format(
-                        "Can't resolve pushURL '%s' based on the service URL '%s'",
-                        pushURL, serviceUrl), exception);
-            }
         }
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
@@ -143,7 +132,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             // to know that in future navigation calls
             ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
 
-            ui.getRouter().initializeUI(ui, location);
+            ui.getInternals().getRouter().initializeUI(ui, location);
         }
     }
 

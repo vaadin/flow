@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
@@ -242,6 +241,12 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
         propertyReader = typeHandler.createReader(element, propertyName,
                 presentationToModel);
 
+        // if underlying element already has a property value then it should be
+        // set for the component
+        if (getElement().getPropertyRaw(propertyName) != null) {
+            doSetModelValue(false);
+        }
+
         doSetSynchronizedEvent(
                 SharedUtil.camelCaseToDashSeparated(propertyName) + "-changed");
     }
@@ -256,8 +261,7 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
             throw new IllegalArgumentException(
                     "Unsupported element property type: " + clazz.getName()
                             + ". Supported types are: "
-                            + typeHandlers.keySet().parallelStream()
-                                    .map(Class::getName)
+                            + typeHandlers.keySet().stream().map(Class::getName)
                                     .collect(Collectors.joining(", ")));
         }
         return typeHandler;
@@ -345,12 +349,15 @@ public class AbstractSinglePropertyField<C extends AbstractField<C, T>, T>
 
     private void handlePropertyChange(PropertyChangeEvent event) {
         if (hasValidValue()) {
-            @SuppressWarnings("unchecked")
-            T presentationValue = propertyReader.apply((C) this,
-                    getEmptyValue());
-
-            setModelValue(presentationValue, event.isUserOriginated());
+            doSetModelValue(event.isUserOriginated());
         }
+    }
+
+    private void doSetModelValue(boolean userOriginated) {
+        @SuppressWarnings("unchecked")
+        T presentationValue = propertyReader.apply((C) this, getEmptyValue());
+
+        setModelValue(presentationValue, userOriginated);
     }
 
     @SuppressWarnings("unchecked")

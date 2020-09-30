@@ -624,39 +624,55 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     .setValue(true);
             restoreInitialHiddenAttribute(element, visibilityData);
         } else {
-            updateVisibility(element, visibilityData, Boolean.TRUE);
+            setElementInvisible(element, visibilityData);
         }
     }
 
-    private void updateVisibility(Element element, NodeMap visibilityData,
-            Boolean visibility) {
+    private void setElementInvisible(Element element, NodeMap visibilityData) {
         storeInitialHiddenAttribute(element, visibilityData);
         updateAttributeValue(
                 visibilityData.getNode().getTree().getRegistry()
                         .getApplicationConfiguration(),
-                element, HIDDEN_ATTRIBUTE, visibility);
+                element, HIDDEN_ATTRIBUTE, Boolean.TRUE);
+        if (PolymerUtils.isInShadowRoot(element)) {
+            element.getStyle().setDisplay("none");
+        }
     }
 
     private void restoreInitialHiddenAttribute(Element element,
             NodeMap visibilityData) {
-        MapProperty initialVisibility = storeInitialHiddenAttribute(element,
-                visibilityData);
+        storeInitialHiddenAttribute(element, visibilityData);
+        MapProperty initialVisibility = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
         if (initialVisibility.hasValue()) {
             updateAttributeValue(
                     visibilityData.getNode().getTree().getRegistry()
                             .getApplicationConfiguration(),
                     element, HIDDEN_ATTRIBUTE, initialVisibility.getValue());
         }
+
+        MapProperty initialDisplay = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+        if (initialDisplay.hasValue()) {
+            final String initialValue = initialDisplay.getValue().toString();
+            element.getStyle().setDisplay(initialValue);
+        }
     }
 
-    private MapProperty storeInitialHiddenAttribute(Element element,
+    private void storeInitialHiddenAttribute(Element element,
             NodeMap visibilityData) {
         MapProperty initialVisibility = visibilityData
                 .getProperty(NodeProperties.VISIBILITY_HIDDEN_PROPERTY);
         if (!initialVisibility.hasValue()) {
             initialVisibility.setValue(element.getAttribute(HIDDEN_ATTRIBUTE));
         }
-        return initialVisibility;
+
+        MapProperty initialDisplay = visibilityData
+                .getProperty(NodeProperties.VISIBILITY_STYLE_DISPLAY_PROPERTY);
+        if (PolymerUtils.isInShadowRoot(element) && !initialDisplay.hasValue()
+                && element.getStyle() != null) {
+            initialDisplay.setValue(element.getStyle().getDisplay());
+        }
     }
 
     private void doBind(StateNode node, BinderContext nodeFactory) {

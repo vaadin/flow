@@ -58,6 +58,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.only;
@@ -73,6 +74,11 @@ public class VaadinConnectControllerTest {
     private static final Method TEST_VALIDATION_METHOD;
     private HttpServletRequest requestMock;
     private Principal principal;
+    /**
+     * Make the server a field instance to prevent it from garbage collected,
+     * which could fail unit test randomly.
+     */
+    private MockVaadinServletService service = new MockVaadinServletService();
 
     static {
         TEST_METHOD = Stream.of(TEST_ENDPOINT.getClass().getDeclaredMethods())
@@ -415,7 +421,6 @@ public class VaadinConnectControllerTest {
 
     @Test
     public void should_bePossibeToGetPrincipalInEndpoint() {
-        MockVaadinServletService service = new MockVaadinServletService();
         VaadinService.setCurrent(service);
         when(principal.getName()).thenReturn("foo");
 
@@ -1003,7 +1008,8 @@ public class VaadinConnectControllerTest {
                 ExplicitNullableTypeChecker.class);
 
         when(explicitNullableTypeChecker.checkValueForType(
-                NullCheckerTestClass.OK_RESPONSE, String.class))
+                eq(NullCheckerTestClass.OK_RESPONSE), 
+                eq(String.class)))
                         .thenReturn(null);
 
         String testOkMethod = "testOkMethod";

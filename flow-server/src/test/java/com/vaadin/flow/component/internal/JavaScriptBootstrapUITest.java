@@ -290,7 +290,7 @@ public class JavaScriptBootstrapUITest  {
     @Test
     public void should_initializeUI_when_wrapperElement_null() {
         VaadinRequest request = mocks.createRequest(mocks, "/foo");
-        ui.getRouter().initializeUI(ui, request);
+        ui.getInternals().getRouter().initializeUI(ui, request);
         assertNull(ui.wrapperElement);
         // attached to body
         assertTrue(ui.getElement().toString().contains("Available routes:"));
@@ -355,8 +355,7 @@ public class JavaScriptBootstrapUITest  {
         ui = Mockito.spy(ui);
         Page page = mockPage();
 
-        UIInternals internals = Mockito.mock(UIInternals.class);
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+        UIInternals internals = mockUIInternals();
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
@@ -387,8 +386,7 @@ public class JavaScriptBootstrapUITest  {
         ui = Mockito.spy(ui);
         Page page = mockPage();
 
-        UIInternals internals = Mockito.mock(UIInternals.class);
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+        UIInternals internals = mockUIInternals();
 
         Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
@@ -514,6 +512,16 @@ public class JavaScriptBootstrapUITest  {
         Mockito.when(page.getHistory()).thenReturn(history);
 
         return page;
+    }
+
+    private UIInternals mockUIInternals() {
+        UIInternals internals = Mockito.mock(UIInternals.class);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
+
+        Mockito.when(internals.getRouter())
+                .thenReturn(mocks.getService().getRouter());
+
+        return internals;
     }
 
 }
