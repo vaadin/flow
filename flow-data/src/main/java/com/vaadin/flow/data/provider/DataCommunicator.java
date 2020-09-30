@@ -120,6 +120,8 @@ public class DataCommunicator<T> implements Serializable {
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;
 
+    private boolean fetchDisabled;
+
     /**
      * In-memory data provider with no items.
      * <p>
@@ -179,10 +181,40 @@ public class DataCommunicator<T> implements Serializable {
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
+        this(dataGenerator, arrayUpdater, dataUpdater, stateNode, false);
+    }
+
+    /**
+     * Creates a new instance.
+     * <p>
+     * Allows to setup whether the data communicator will ignore fetch and size
+     * queries to data provider until further configuration. This mode is useful
+     * when the component needs to postpone the calls to data provider until
+     * some event, i.e. dropdown open event of the combo box, but needs to
+     * configure the data communicator preliminary.
+     *
+     * @param dataGenerator
+     *            the data generator function
+     * @param arrayUpdater
+     *            array updater strategy
+     * @param dataUpdater
+     *            data updater strategy
+     * @param stateNode
+     *            the state node used to communicate for
+     * @param fetchDisabled
+     *            if {@code fetchDisabled} is {@code true} then the data
+     *            provider won't be called to fetch the items and/or to get the
+     *            items count until it's set to {@code false}
+     */
+    public DataCommunicator(DataGenerator<T> dataGenerator,
+            ArrayUpdater arrayUpdater,
+            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
+            boolean fetchDisabled) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
         this.dataUpdater = dataUpdater;
         this.stateNode = stateNode;
+        this.fetchDisabled = fetchDisabled;
 
         stateNode.addAttachListener(this::handleAttach);
         stateNode.addDetachListener(this::handleDetach);
@@ -518,7 +550,7 @@ public class DataCommunicator<T> implements Serializable {
                     "itemCountEstimateIncrease cannot be less than 1");
         }
         this.itemCountEstimateIncrease = itemCountEstimateIncrease;
-        this.countCallback = null;
+        countCallback = null;
         definedSize = false;
     }
 
@@ -669,6 +701,36 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void setPagingEnabled(boolean pagingEnabled) {
         this.pagingEnabled = pagingEnabled;
+    }
+
+    /**
+     * Returns whether the data communicator will call Data Provider for
+     * fetching the items and/or getting the items count, or ignore such a
+     * calls.
+     *
+     * @return {@code true} if the calls to data provider are ignored,
+     *         {@code false} otherwise
+     */
+    public boolean isFetchDisabled() {
+        return fetchDisabled;
+    }
+
+    /**
+     * Sets whether the data communicator will call Data Provider for fetching
+     * the items and/or getting the items count, or ignore such a calls.
+     * <p>
+     * One may need to disable the data provider calls in order to configure the
+     * data communicator and to postpone these calls until some event, i.e.
+     * dropdown open event of the combo box.
+     * <p>
+     * This sets to {@code false} by default.
+     *
+     * @param fetchDisabled
+     *            if {@code true} then the calls to data provider are ignored,
+     *            otherwise the data provider is queried when needed.
+     */
+    public void setFetchDisabled(boolean fetchDisabled) {
+        this.fetchDisabled = fetchDisabled;
     }
 
     /**
@@ -848,7 +910,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if (flushRequest == null || forced) {
+        if ((flushRequest == null || forced) && !fetchDisabled) {
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();

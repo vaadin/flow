@@ -1276,6 +1276,57 @@ public class DataCommunicatorTest {
                 .fetch(Mockito.any(Query.class));
     }
 
+    @Test
+    public void fetchDisabled_getItemCount_stillReturnsItemsCount() {
+        dataCommunicator.setFetchDisabled(true);
+        Assert.assertEquals(0, dataCommunicator.getItemCount());
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertEquals(100, dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void fetchDisabled_getItem_stillReturnsItem() {
+        dataCommunicator.setFetchDisabled(true);
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertNotNull(dataCommunicator.getItem(42));
+    }
+
+    @Test
+    public void fetchDisabled_requestRange_fetchIgnored() {
+        DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
+                dataGenerator, arrayUpdater, data -> {
+                }, element.getNode(), true);
+        dataCommunicator.setPageSize(pageSize);
+
+        DataProvider<Item, ?> dataProvider = Mockito
+                .spy(DataProvider.ofItems(new Item(0)));
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setRequestedRange(0, 0);
+
+        fakeClientCommunication();
+
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .size(Mockito.any(Query.class));
+
+        // Switch back to normal mode
+        dataCommunicator.setFetchDisabled(false);
+        dataCommunicator.setRequestedRange(0, 10);
+
+        fakeClientCommunication();
+
+        Mockito.verify(dataProvider)
+                .fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider)
+                .size(Mockito.any(Query.class));
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
     }
