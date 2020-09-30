@@ -35,6 +35,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
@@ -70,7 +71,8 @@ public class DevModeClassFinderTest {
             CssImport.Container.class,
             Theme.class,
             NoTheme.class,
-            HasErrorParameter.class);
+            HasErrorParameter.class,
+            PWA.class);
 
         for (Class<?> clz : classes) {
             assertTrue("should be a known class " + clz.getName(), knownClasses.contains(clz));

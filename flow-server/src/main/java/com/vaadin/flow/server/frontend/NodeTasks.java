@@ -504,7 +504,11 @@ public class NodeTasks implements FallibleCommand {
                 builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
-        if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
+        boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
+                && !builder.webpackTemplate.isEmpty();
+
+        if (builder.enablePackagesUpdate || builder.enableImportsUpdate
+                || enableWebpackConfigUpdate) {
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
@@ -559,15 +563,15 @@ public class NodeTasks implements FallibleCommand {
             }
         }
 
-        if (builder.webpackTemplate != null
-                && !builder.webpackTemplate.isEmpty()) {
+        if (enableWebpackConfigUpdate) {
+            PwaConfiguration pwaConfiguration = frontendDependencies
+                    .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.webpackTemplate, builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
-                    builder.flowResourcesFolder,
-                    new PwaConfiguration()));
+                    builder.flowResourcesFolder, pwaConfiguration));
         }
 
         if (builder.enableImportsUpdate) {

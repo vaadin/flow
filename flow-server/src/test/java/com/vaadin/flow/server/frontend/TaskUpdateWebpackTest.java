@@ -45,7 +45,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
-    @PWA(name = "foo", shortName = "bar")
+    @PWA(name = "foo", shortName = "bar", offlineResources = { "foo.css",
+            "bar.js" })
     class AppShell {
     }
 
@@ -211,6 +212,16 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                         .contains(
                                 "const useClientSideIndexFileForBootstrapping = true;"));
 
+    }
+
+    @Test
+    public void should_setOfflineResources() throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("offlineResources should contain foo.css and bar" +
+                ".js", webpackGeneratedContents.contains("const " +
+                "offlineResources = [\"foo.css\",\"bar.js\"];"));
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,
