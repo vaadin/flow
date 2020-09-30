@@ -32,6 +32,10 @@ import elemental.json.JsonObject;
 /**
  * RPC handler for events triggered through <code>element.$server</code> or
  * simply <code>$server</code> in template event handlers.
+ * <p>
+ * The implementation is in the flow-polymer-template module since the handler
+ * itslef is a part of the core and can't be moved but the logic is Polymer
+ * related.
  *
  * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
  *

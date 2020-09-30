@@ -268,6 +268,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             ElementPropertyMap propertyMap = node
                     .getFeature(ElementPropertyMap.class);
             if (propertyMap.updateFromClientFilter != null) {
+                //// TODO to be removed with polymer template support removal
                 boolean allow = propertyMap.updateFromClientFilter.test(key);
                 if (!allow && log) {
                     getLogger().warn("Ignoring model update for {}. "

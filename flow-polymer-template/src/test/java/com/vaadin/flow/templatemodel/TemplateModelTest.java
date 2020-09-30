@@ -21,8 +21,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.HasCurrentService;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.polymertemplate.HasCurrentService;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.function.DeploymentConfiguration;
