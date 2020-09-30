@@ -38,7 +38,7 @@ public class VaadinConnectAccessCheckerTest {
         sessionMock = mock(HttpSession.class);
         when(sessionMock.getAttribute(VaadinService.getCsrfTokenAttributeName()))
                 .thenReturn("Vaadin CCDM");
-        when(requestMock.getSession()).thenReturn(sessionMock);
+        when(requestMock.getSession(false)).thenReturn(sessionMock);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
         when(requestMock.getHeader("X-CSRF-Token"))
                 .thenReturn("Vaadin CCDM");
@@ -57,6 +57,15 @@ public class VaadinConnectAccessCheckerTest {
     private void createNullTokenContextInHeaderRequest() {
         when(requestMock.getHeader("X-CSRF-Token"))
                 .thenReturn(null);
+    }
+
+    private void createNullTokenSession() {
+        when(sessionMock.getAttribute(VaadinService.getCsrfTokenAttributeName())).thenReturn(null);
+    }
+
+    private void createNullSession() {
+        when(requestMock.getSession(false)).thenReturn(null);
+        when(requestMock.getSession()).thenReturn(null);
     }
 
     private void shouldPass(Class<?> test) throws Exception {
@@ -80,6 +89,50 @@ public class VaadinConnectAccessCheckerTest {
     }
 
     @Test
+    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header() throws Exception {
+        class Test {
+            public void test() {
+            }
+        }
+        createNullTokenSession();
+        shouldFail(Test.class);
+    }
+
+    @Test
+    public void should_fail_When_not_having_token_in_session_but_have_token_in_request_header_And_AnonymousAllowed() throws Exception {
+        @AnonymousAllowed
+        class Test {
+            public void test() {
+            }
+        }
+        createNullTokenSession();
+        shouldFail(Test.class);
+    }
+
+    @Test
+    public void should_pass_When_not_having_session_And_not_having_token_in_request_header() throws Exception {
+        class Test {
+            public void test() {
+            }
+        }
+        createNullSession();
+        createNullTokenContextInHeaderRequest();
+        shouldPass(Test.class);
+    }
+
+    @Test
+    public void should_pass_When_not_having_session_And_not_having_token_in_request_header_And_AnonymousAllowed() throws Exception {
+        @AnonymousAllowed
+        class Test {
+            public void test() {
+            }
+        }
+        createNullSession();
+        createNullTokenContextInHeaderRequest();
+        shouldPass(Test.class);
+    }
+
+    @Test
     public void should_pass_When_csrf_disabled() throws Exception {
         class Test {
             public void test() {
@@ -96,6 +149,18 @@ public class VaadinConnectAccessCheckerTest {
             public void test() {
             }
         }
+        createDifferentSessionToken();
+        shouldFail(Test.class);
+    }
+
+    @Test
+    public void should_fail_When_having_different_token_between_session_and_headerRequest_and_NoAuthentication_AnonymousAllowed() throws Exception {
+        class Test {
+            @AnonymousAllowed
+            public void test() {
+            }
+        }
+        createAnonymousContext();
         createDifferentSessionToken();
         shouldFail(Test.class);
     }
