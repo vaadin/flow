@@ -304,7 +304,8 @@ public class DevModeInitializer
                 PACKAGE_JSON);
 
         // Regenerate webpack configuration, as it may be necessary to update it
-        // TODO: make sure target directories are aligned with build config
+        // TODO: make sure target directories are aligned with build config,
+        // see https://github.com/vaadin/flow/issues/9082
         File target = new File(baseDir, TARGET);
         builder.withWebpack(new File(target, VAADIN_WEBAPP_RESOURCES),
                 new File(target, VAADIN_SERVLET_RESOURCES),
