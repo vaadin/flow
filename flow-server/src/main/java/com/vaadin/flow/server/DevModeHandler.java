@@ -37,7 +37,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -50,9 +49,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -555,14 +551,9 @@ public final class DevModeHandler implements RequestHandler {
             return;
         }
 
-        String content =
-                FrontendUtils.streamToString(connection.getInputStream());
-        JsonObject manifest = Json.parse(content);
-        manifestPaths = Arrays.stream(manifest.keys())
-                // Skip "index.html", as it should go through
-                // IndexHtmlRequestHandler
-                .map(key -> "/" + manifest.getString(key))
-                .collect(Collectors.toList());
+        String manifestJson = FrontendUtils
+                .streamToString(connection.getInputStream());
+        manifestPaths = FrontendUtils.parseManifestPaths(manifestJson);
         if (getLogger().isDebugEnabled()) {
             getLogger().debug("Got asset paths from webpack manifest.json: \n    {}"
                     , String.join("\n    ", manifestPaths));

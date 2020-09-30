@@ -25,10 +25,8 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +34,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -424,14 +419,8 @@ public class StaticFileServer implements StaticFileHandler {
             return new ArrayList<>();
         }
 
-        String content = FrontendUtils.streamToString(stream);
-        JsonObject manifest = Json.parse(content);
-        return Arrays.stream(manifest.keys())
-                // Skip "index.html", as it should go through
-                // IndexHtmlRequestHandler
-                .filter(key -> !FrontendUtils.INDEX_HTML.equals(key))
-                .map(key -> "/" + manifest.getString(key))
-                .collect(Collectors.toList());
+        return FrontendUtils
+                .parseManifestPaths(FrontendUtils.streamToString(stream));
     }
 
     private static Logger getLogger() {
