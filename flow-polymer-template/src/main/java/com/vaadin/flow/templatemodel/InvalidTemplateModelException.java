@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
-
 /**
  * Exception thrown when encountering an invalid type in a template model.
  *
@@ -24,7 +22,7 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
  * @since 1.0
  * 
  * @deprecated Template model and polymer template support is deprecated - we
- *             recommend you to use {@link LitTemplate} instead. Read more
+ *             recommend you to use {@code LitTemplate} instead. Read more
  *             details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a> For lit templates, you can use {@code @Id}

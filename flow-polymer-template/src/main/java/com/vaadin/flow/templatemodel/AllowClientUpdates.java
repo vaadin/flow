@@ -22,8 +22,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
-
 /**
  * Defines the access control setting for a model property. By default, updates
  * are allowed only for properties that are defined with a two-way binding in
@@ -39,7 +37,7 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
  *             supported for lit template. You can use {@code @Id} mapping and
  *             the component API or the element API with property
  *             synchronization instead. Polymer template support is deprecated -
- *             we recommend you to use {@link LitTemplate} instead. Read more
+ *             we recommend you to use {@code LitTemplate} instead. Read more
  *             details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>

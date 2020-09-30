@@ -32,10 +32,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.littemplate.BundleLitParser;
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.internal.StringUtil;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
@@ -47,9 +46,9 @@ import elemental.json.JsonType;
  * @since 2.0
  *
  * @see NpmTemplateParser
- * @deprecated Use {@link BundleLitParser} to parse Lit template since polymer
+ * @deprecated Use {@code BundleLitParser} to parse Lit template since polymer
  *             template is deprecated, we recommend you to use
- *             {@link LitTemplate} instead. Read more details from <a href=
+ *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  */
@@ -96,6 +95,9 @@ public final class BundleParser {
     private static final Pattern NO_TEMPLATE_PATTERN = Pattern.compile(
             "innerHTML[\\s]*=[\\s]*([\\`\\'\\\"])([\\s]*<dom-module\\s+[\\s\\S]*)\\1;");
 
+    private static final Pattern HASH_PATTERN = Pattern
+            .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
+
     private static final String TEMPLATE_TAG_NAME = "template";
 
     private BundleParser() {
@@ -110,7 +112,8 @@ public final class BundleParser {
      * @return the hash
      */
     public static String getHashFromStatistics(String fileContents) {
-        return BundleLitParser.getHashFromStatistics(fileContents);
+        Matcher matcher = HASH_PATTERN.matcher(fileContents);
+        return matcher.find() ? matcher.group(1) : "" + fileContents.length();
     }
 
     /**
@@ -121,7 +124,7 @@ public final class BundleParser {
      * @return a JsonObject with the stats
      */
     public static JsonObject parseJsonStatistics(String fileContents) {
-        return BundleLitParser.parseJsonStatistics(fileContents);
+        return Json.parse(fileContents);
     }
 
     /**
@@ -135,7 +138,7 @@ public final class BundleParser {
      */
     public static String getSourceFromStatistics(String fileName,
             JsonObject statistics) {
-        return BundleLitParser.getSourceFromStatistics(fileName, statistics);
+        return getSourceFromObject(statistics, fileName);
     }
 
     /**

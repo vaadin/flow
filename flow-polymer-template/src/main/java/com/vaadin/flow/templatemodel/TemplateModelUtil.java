@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
@@ -35,7 +34,7 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
  * 
  * @deprecated This functionality is internal and bound to template model which
  *             is not supported for lit template. Polymer template support is
- *             deprecated - we recommend you to use {@link LitTemplate} instead.
+ *             deprecated - we recommend you to use {@code LitTemplate} instead.
  *             Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>

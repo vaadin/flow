@@ -26,8 +26,6 @@ import java.util.function.BiConsumer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.Uses;
-import com.vaadin.flow.component.littemplate.LitTemplate;
-import com.vaadin.flow.component.littemplate.LitTemplateInitializer;
 import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.PolymerParserData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -44,9 +42,9 @@ import elemental.json.JsonArray;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use {@link LitTemplateInitializer} for {@link LitTemplate}
+ * @deprecated Use {@code LitTemplateInitializer} for {@code LitTemplate}
  *             components. Polymer template support is deprecated - we recommend
- *             you to use {@link LitTemplate} instead. Read more details from
+ *             you to use {@code LitTemplate} instead. Read more details from
  *             <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>

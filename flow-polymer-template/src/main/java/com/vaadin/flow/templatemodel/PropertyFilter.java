@@ -17,8 +17,6 @@ package com.vaadin.flow.templatemodel;
 
 import java.util.function.Predicate;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
-
 /**
  * Property name filter that supports composition for resolving sub properties.
  *
@@ -27,7 +25,7 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
  * 
  * @deprecated This functionality is internal and bound to template model which
  *             is not supported for lit template. Polymer template support is
- *             deprecated - we recommend you to use {@link LitTemplate} instead.
+ *             deprecated - we recommend you to use {@code LitTemplate} instead.
  *             Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>

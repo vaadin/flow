@@ -22,15 +22,13 @@ import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
-
 /**
  * Utilities for JSOUP DOM manipulations.
  *
  * @author Vaadin Ltd
  * @deprecated This class is internal and used only for Polymer templates.
  *             Polymer template support is deprecated - we recommend you to use
- *             {@link LitTemplate} instead. Read more details from <a href=
+ *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  */
