@@ -264,6 +264,23 @@ public class FrontendUtilsTest {
                 wrappedCommand);
     }
 
+    @Test
+    public void parseManifestJson_returnsValidPaths() {
+        String manifestJson = "{\"index.html\": \"index.html\", \"sw.js\": " +
+                "\"sw.js\", \"favicon.ico\": \"favicon.ico\", \"index.ts\": " +
+                "\"VAADIN/build/vaadin-bundle-index.js\"}";
+        List<String> manifestPaths =
+                FrontendUtils.parseManifestPaths(manifestJson);
+        Assert.assertTrue("Should list bundle path",
+                manifestPaths.contains("/VAADIN/build/vaadin-bundle-index.js"));
+        Assert.assertTrue("Should list /sw.js",
+                manifestPaths.contains("/sw.js"));
+        Assert.assertTrue("Should list /favicon.ico",
+                manifestPaths.contains("/favicon.ico"));
+        Assert.assertFalse("Should not list /index.html",
+                manifestPaths.contains("/index.html"));
+    }
+
     private VaadinService setupStatsAssetMocks(String statsFile)
             throws IOException {
         String stats = IOUtils.toString(FrontendUtilsTest.class.getClassLoader()

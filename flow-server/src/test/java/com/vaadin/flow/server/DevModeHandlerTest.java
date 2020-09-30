@@ -325,6 +325,36 @@ public class DevModeHandlerTest {
         assertTrue(handler.isDevModeRequest(request));
     }
 
+    @Test
+    public void should_HandleAnyAssetInManifestPaths() throws Exception {
+        final String manifestJsonResponse = "{ \"sw.js\": " +
+                "\"sw.js\", \"index.html\": \"index.html\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        devModeHandler.join();
+
+        HttpServletRequest request = prepareRequest("/sw.js");
+        assertTrue(devModeHandler.isDevModeRequest(request));
+    }
+
+    @Test
+    public void shouldNot_Handle_IndexHtmlInManifestPaths() throws Exception {
+        final String manifestJsonResponse = "{ \"sw.js\": " +
+                "\"sw.js\", \"index.html\": \"index.html\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        devModeHandler.join();
+
+        HttpServletRequest request = prepareRequest("/index.html");
+        assertFalse(devModeHandler.isDevModeRequest(request));
+    }
+
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {

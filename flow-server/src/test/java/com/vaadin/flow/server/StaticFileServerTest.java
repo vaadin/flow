@@ -135,7 +135,9 @@ public class StaticFileServerTest implements Serializable {
                 .thenReturn(configuration);
 
         // Use test class loader to enable reading `manifest.json` resource
-        Mockito.doAnswer(invocationOnMock -> servletService.getClass().getClassLoader()).when(servletService).getClassLoader();
+        Mockito.doAnswer(
+                invocationOnMock -> servletService.getClass().getClassLoader())
+                .when(servletService).getClassLoader();
 
         fileServer = new OverrideableStaticFileServer(servletService);
 
@@ -261,6 +263,38 @@ public class StaticFileServerTest implements Serializable {
                     }
                 }));
 
+        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
+    public void manifestPath_isResourceRequest() {
+        setupRequestURI("", "", "/sw.js");
+        Mockito.when(servletService.getStaticResource("/sw.js"))
+                .thenReturn(null);
+        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
+    public void manifestPath_isResourceRequest_withContextPath() {
+        setupRequestURI("/foo", "", "/sw.js");
+        Mockito.when(servletService.getStaticResource("/sw.js"))
+                .thenReturn(null);
+        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
+    public void manifestPath_indexHtml_isNotResourceRequest() {
+        setupRequestURI("", "", "/index.html");
+        Mockito.when(servletService.getStaticResource("/index.html"))
+                .thenReturn(null);
+        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
+    public void manifestPath_indexHtml_isNotResourceRequest_withContextPath() {
+        setupRequestURI("/foo", "", "/index.html");
+        Mockito.when(servletService.getStaticResource("/index.html"))
+                .thenReturn(null);
         Assert.assertFalse(fileServer.isStaticResourceRequest(request));
     }
 
@@ -563,6 +597,49 @@ public class StaticFileServerTest implements Serializable {
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
+                responseCode.get());
+    }
+
+    @Test
+    public void staticManifestPathResource_isServed() throws IOException {
+        String pathInfo ="/sw.js";
+        setupRequestURI("", "", pathInfo);
+        byte[] fileData = "function() {eval('foo');};"
+                .getBytes(StandardCharsets.UTF_8);
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
+                .thenReturn(createFileURLWithDataAndLength(
+                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertArrayEquals(fileData, out.getOutput());
+    }
+
+    @Test
+    public void staticManifestPathIndexHtmlResource_returnsNotFound() throws IOException {
+        String pathInfo ="/index.html";
+        setupRequestURI("", "", pathInfo);
+        byte[] fileData = "function() {eval('foo');};"
+                .getBytes(StandardCharsets.UTF_8);
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
+                .thenReturn(createFileURLWithDataAndLength(
+                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         CapturingServletOutputStream out = new CapturingServletOutputStream();
 
