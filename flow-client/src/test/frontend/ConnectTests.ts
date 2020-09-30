@@ -516,7 +516,7 @@ describe('ConnectClient', () => {
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
       sinon.stub(client, "cacheEndpointRequest").callsFake((request:any) => {
-        if(!request.id){
+        if (!request.id) {
           request.id = 100;
         }
         return request;

@@ -440,7 +440,7 @@ export class ConnectClient {
      */
     const shouldSubmit = await this.shouldSubmitCachedRequests(db);
 
-    if(shouldSubmit){
+    if (shouldSubmit) {
       await this.submitCachedRequests(db);
     }
 
