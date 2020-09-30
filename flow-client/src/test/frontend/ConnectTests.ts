@@ -6,7 +6,7 @@ const {sinon} = intern.getPlugin('sinon');
 
 import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
 
-import { clear, get, Store } from 'idb-keyval';
+import { openDB } from "idb";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -508,19 +508,19 @@ describe('ConnectClient', () => {
 
   describe("Defer Request", () => {
     let client: ConnectClient;
-    const offlineRequestQueue = new Store('cached-vaadin-endpoint-requests');
 
     beforeEach(() => {
       client = new ConnectClient();
     });
 
-    afterEach(() => {
-      fetchMock.restore();
-      clear(offlineRequestQueue);
-    });
-
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
+      sinon.stub(client, "cacheEndpointRequest").callsFake((request:any) => {
+        if (!request.id) {
+          request.id = 100;
+        }
+        return request;
+      });
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -535,16 +535,21 @@ describe('ConnectClient', () => {
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
-      const endpointRequetsStore = new Store('cached-vaadin-endpoint-requests');
-      const cachedRequest = await get(result.endpointRequest?.id as string, endpointRequetsStore);
+      const db = await openDB('request-queue');
+      const cachedRequest = await db.get('requests', result.endpointRequest?.id as number);
 
-      expect((cachedRequest as any).endpoint).to.equal('FooEndpoint');
-      expect((cachedRequest as any).method).to.equal('fooMethod');
-      expect((cachedRequest as any).params?.fooData).to.equal('foo');
+      expect(cachedRequest.endpoint).to.equal('FooEndpoint');
+      expect(cachedRequest.method).to.equal('fooMethod');
+      expect(cachedRequest.params?.fooData).to.equal('foo');
+
+      await db.clear('requests');
+      db.close();
     })
 
     it("Should not invoke the client.call method when invoking deferRequest offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
+      sinon.stub(client, "cacheEndpointRequest");
+
       const callMethod = sinon.stub(client, "call");
 
       await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
@@ -610,5 +615,112 @@ describe('ConnectClient', () => {
 
       expect(returnValue.endpointRequest).to.be.undefined;
     })
+  });
+
+  describe("submit cached request", () => {
+    let client: ConnectClient;
+    let clientCallStub: any;
+    const fakeClientCallFails = () => clientCallStub.callsFake(() => { throw (new Error()); });
+    const insertARequest = async (numberOfRequests=1) => {
+      const db = await (client as any).openOrCreateDB();
+      for(let i=0; i<numberOfRequests; i++){
+        await db.put('requests', {endpoint: 'FooEndpoint', method:'fooMethod', params:{ fooData: 'foo' }});
+      }
+      expect(await db.count('requests')).to.equal(numberOfRequests);
+      db.close();
+    }
+
+    const verifyNumberOfRequsetsInTheQueue = async (numberOfRequests=1) => {
+      const db = await (client as any).openOrCreateDB();
+      expect(await db.count('requests')).to.equal(numberOfRequests);
+      db.close();
+    }
+
+    beforeEach(async () => {
+      client = new ConnectClient();
+      clientCallStub = sinon.stub(client, 'call').callsFake(async () => {await new Promise(resolve => setTimeout(resolve, 10))});
+    });
+
+    afterEach(async () => {
+      const db = await (client as any).openOrCreateDB();
+      await db.clear('requests');
+      db.close();
+    });
+
+    it("should check and submit the cached requests when reicing online event", () => {
+      const submitMethod = sinon.stub(ConnectClient.prototype, "checkAndSubmitCachedRequests");
+      client = new ConnectClient();
+      self.dispatchEvent(new Event('online'));
+      expect(submitMethod.called).to.be.true;
+      submitMethod.restore();
+    })
+
+    it("should submit the cached request when reicing online event", async () => {
+      await insertARequest(3);
+
+      await (client as any).checkAndSubmitCachedRequests();
+
+      await verifyNumberOfRequsetsInTheQueue(0);
+    })
+
+    it("should keep the requst if submission fails", async () => {
+      await insertARequest();
+
+      fakeClientCallFails();
+
+      await (client as any).checkAndSubmitCachedRequests();
+      
+      await verifyNumberOfRequsetsInTheQueue(1);
+    })
+
+    it("should be able to resubmit cached request that was failed to submit", async () => {
+      await insertARequest();
+
+      fakeClientCallFails();
+
+      await (client as any).checkAndSubmitCachedRequests();
+      
+      await verifyNumberOfRequsetsInTheQueue(1);
+
+      clientCallStub.restore();
+      sinon.stub(client, "call");
+
+      await (client as any).checkAndSubmitCachedRequests();
+
+      await verifyNumberOfRequsetsInTheQueue(0);
+    })
+
+    it("should only submit once when receiving multiple online events", async () => {
+      await insertARequest();
+
+      await Promise.all([
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests()
+      ])
+
+      expect(clientCallStub.calledOnce).to.be.true;
+    })
+
+    it("should only submit once when receiving multiple online events after a failed submission", async () => {
+      await insertARequest();
+
+      fakeClientCallFails();
+
+      await (client as any).checkAndSubmitCachedRequests();
+      
+      await verifyNumberOfRequsetsInTheQueue(1);
+
+      clientCallStub.restore();
+      sinon.stub(client, "call");
+
+      await Promise.all([
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests(),
+        (client as any).checkAndSubmitCachedRequests()
+      ])
+
+      expect(clientCallStub.calledOnce).to.be.true;
+    });
   });
 });

@@ -1,6 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { set, Store } from 'idb-keyval';
-import { v4 as uuidv4 } from 'uuid';
+import { DBSchema, IDBPDatabase, openDB } from 'idb';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -8,6 +7,9 @@ $wnd.Vaadin.registrations = $wnd.Vaadin.registrations || [];
 $wnd.Vaadin.registrations.push({
   is: 'endpoint'
 });
+
+const REQUEST_QUEUE_DB_NAME = 'request-queue';
+const REQUEST_QUEUE_STORE_NAME = 'requests';
 
 interface ConnectExceptionData {
   message: string;
@@ -267,8 +269,6 @@ export class ConnectClient {
    */
   middlewares: Middleware[] = [];
 
-  private endpointRequetsQueue: Store | undefined;
-
   /**
    * @param options Constructor options.
    */
@@ -280,6 +280,10 @@ export class ConnectClient {
     if (options.middlewares) {
       this.middlewares = options.middlewares;
     }
+
+    this.checkAndSubmitCachedRequests = this.checkAndSubmitCachedRequests.bind(this);
+
+    self.addEventListener('online', this.checkAndSubmitCachedRequests);
   }
 
   /**
@@ -397,8 +401,8 @@ export class ConnectClient {
       const result = await this.call(endpoint, method, params);
       return { isDeferred: false, result };
     } else {
-      const endpointRequest = { id: uuidv4(), endpoint, method, params };
-      await this.cacheEndpointRequest(endpointRequest);
+      let endpointRequest:EndpointRequest = { endpoint, method, params };
+      endpointRequest = await this.cacheEndpointRequest(endpointRequest);
       return { isDeferred: true, endpointRequest };
     }
   }
@@ -407,15 +411,75 @@ export class ConnectClient {
     return navigator.onLine;
   }
 
-  private async cacheEndpointRequest(endpointRequest: EndpointRequest) {
-    await set(endpointRequest.id, endpointRequest, this.getOrCreateEndpointRequetsQueue());
+  private async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<EndpointRequest>{
+    const db = await this.openOrCreateDB();
+    const id = await db.add(REQUEST_QUEUE_STORE_NAME, endpointRequest);
+    db.close();
+    endpointRequest.id = id;
+    return endpointRequest;
   }
 
-  private getOrCreateEndpointRequetsQueue(): Store {
-    if (!this.endpointRequetsQueue) {
-      this.endpointRequetsQueue = new Store('cached-vaadin-endpoint-requests');
+  private async openOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
+    return openDB<RequestQueueDB>(REQUEST_QUEUE_DB_NAME, 1, {
+      upgrade(db) {
+        db.createObjectStore(REQUEST_QUEUE_STORE_NAME, {
+          keyPath: 'id',
+          autoIncrement: true
+        });
+      },
+    });
+  }
+
+  private async checkAndSubmitCachedRequests(){
+    const db = await this.openOrCreateDB();
+
+    /**
+     * Cannot wait for submitting the cached requests in the indexed db transaction, 
+     * as the transaction only wait for db operations. 
+     * See https://github.com/jakearchibald/idb#transaction-lifetime
+     */
+    const shouldSubmit = await this.shouldSubmitCachedRequests(db);
+
+    if (shouldSubmit) {
+      await this.submitCachedRequests(db);
     }
-    return this.endpointRequetsQueue;
+
+    db.close();
+  }
+
+  private async shouldSubmitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
+    let shouldSubmit = false;
+    if (db.objectStoreNames.contains(REQUEST_QUEUE_STORE_NAME) && await db.count(REQUEST_QUEUE_STORE_NAME) > 0) {
+      const tx = db.transaction(REQUEST_QUEUE_STORE_NAME, 'readwrite');
+
+      let cursor = await tx.store.openCursor();
+      while (cursor) {
+        const request = cursor.value;
+        if (!request.submitting) {
+          shouldSubmit = true;
+          request.submitting = true;
+          cursor.update(request);
+        }
+        cursor = await cursor.continue();
+      }
+      await tx.done;
+    }
+    return shouldSubmit;
+  }
+
+  private async submitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
+    const cachedRequests = await db.getAll(REQUEST_QUEUE_STORE_NAME);
+    for (const request of cachedRequests) {
+      if (request.submitting) {
+        try {
+          await this.call(request.endpoint, request.method, request.params);
+          await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
+        } catch (_) {
+          request.submitting = false;
+          await db.put(REQUEST_QUEUE_STORE_NAME, request);
+        }
+      }
+    }
   }
 
   // Re-use flow loading indicator when fetching endpoints
@@ -554,14 +618,22 @@ export class InvalidSessionMiddleware implements MiddlewareClass {
 }
 
 interface EndpointRequest{
-  id: string;
+  id?: number;
   endpoint: string;
   method: string;
   params?: any;
+  submitting?: boolean
 }
 
 export interface DeferrableResult<T> {
   isDeferred: boolean;
   endpointRequest?: EndpointRequest;
   result?: T;
+}
+
+interface RequestQueueDB extends DBSchema {
+  requests: {
+    value: EndpointRequest;
+    key: number;
+  };
 }
