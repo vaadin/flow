@@ -22,7 +22,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 
 /**
@@ -39,7 +38,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
  *             event directly on the client side and the server side may be
  *             called from this handler via {@code this.$server._some_method}.
  *             Polymer template support is deprecated - we recommend you to use
- *             {@link LitTemplate} instead. Read more details from <a href=
+ *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  */

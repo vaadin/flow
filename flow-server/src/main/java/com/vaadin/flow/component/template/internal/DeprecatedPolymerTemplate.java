@@ -17,8 +17,6 @@ package com.vaadin.flow.component.template.internal;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
-
 /**
  * Marker interface for Polymer Template.
  * 
@@ -26,7 +24,7 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
  * @since
  * 
  * @deprecated Polymer template support is deprecated - we recommend you to use
- *             {@link LitTemplate} instead. Read more details from <a href=
+ *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  *

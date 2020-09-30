@@ -35,7 +35,6 @@ import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
 
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.component.template.internal.InjectableFieldConsumer;
 import com.vaadin.flow.component.template.internal.ParserData;
@@ -51,9 +50,9 @@ import elemental.json.JsonArray;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * @deprecated Use {@code LitTemplateDataAnalyzer} for {@link LitTemplate}
+ * @deprecated Use {@code LitTemplateDataAnalyzer} for {@code LitTemplate}
  *             components. Polymer template support is deprecated - we recommend
- *             you to use {@link LitTemplate} instead. Read more details from
+ *             you to use {@code LitTemplate} instead. Read more details from
  *             <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>

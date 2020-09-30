@@ -18,7 +18,6 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.JsonValue;
@@ -39,7 +38,7 @@ import elemental.json.JsonValue;
  *             template, but you can use {@code @Id} mapping and the component
  *             API or the element API with property synchronization instead.
  *             Polymer template support is deprecated - we recommend you to use
- *             {@link LitTemplate} instead. Read more details from <a href=
+ *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  */

@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.EventData;
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
@@ -38,7 +37,7 @@ import com.vaadin.flow.internal.StateNode;
  * @since 1.0
  * 
  * @deprecated Polymer template support is deprecated - we recommend you to use
- *             {@link LitTemplate} instead. Read more details from <a href=
+ *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
  *

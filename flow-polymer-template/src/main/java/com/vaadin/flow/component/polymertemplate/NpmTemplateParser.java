@@ -30,8 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.littemplate.BundleLitParser;
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
@@ -59,9 +57,9 @@ import elemental.json.JsonObject;
  *
  * @see BundleParser
  * 
- * @deprecated Use {@code LitTemplateParserImpl} class for {@link LitTemplate}
+ * @deprecated Use {@code LitTemplateParserImpl} class for {@code LitTemplate}
  *             components. Polymer template support is deprecated - we recommend
- *             you to use {@link LitTemplate} instead. Read more details from
+ *             you to use {@code LitTemplate} instead. Read more details from
  *             <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
@@ -208,7 +206,7 @@ public class NpmTemplateParser implements TemplateParser {
         }
         if (!cache.containsKey(url) && jsonStats != null) {
             cache.put(url,
-                    BundleLitParser.getSourceFromStatistics(url, jsonStats));
+                    BundleParser.getSourceFromStatistics(url, jsonStats));
         }
         return cache.get(url);
     }
@@ -251,7 +249,7 @@ public class NpmTemplateParser implements TemplateParser {
 
     private void resetCache(String fileContents) {
         cache.clear();
-        jsonStats = BundleLitParser.parseJsonStatistics(fileContents);
+        jsonStats = BundleParser.parseJsonStatistics(fileContents);
     }
 
     private Logger getLogger() {

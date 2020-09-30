@@ -22,21 +22,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.dom.Element;
 
 /**
  * Defines the id of a component or an element to map to inside a lit template.
  * <p>
  * Use this annotation with an identifier of the element which you want to refer
- * to as a value for a field inside your {@link LitTemplate} class.
+ * to as a value for a field inside your {@code LitTemplate} class.
  * <p>
  * Here is a Java sample:
  *
  * <pre>
  * <code>
  * &#64;Tag("details")
- * public class Details extends {@link LitTemplate}{
+ * public class Details extends LitTemplate {
  *
  *      &#64;Id("name")
  *      private Div nestedDiv;

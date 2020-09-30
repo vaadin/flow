@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.vaadin.flow.component.littemplate.LitTemplate;
-
 /**
  * Represents a template model. Extending this interface and adding getters and
  * setters makes it possible to easily bind data to a template.
@@ -42,7 +40,7 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
  * @since 1.0
  * 
  * @deprecated Template model and polymer template support is deprecated - we
- *             recommend you to use {@link LitTemplate} instead. Read more
+ *             recommend you to use {@code LitTemplate} instead. Read more
  *             details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  *             Vaadin blog.</a>
