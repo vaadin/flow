@@ -260,6 +260,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward the navigation to use the provided navigation handler instead of
      * the currently used handler.
+     * <p>
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param forwardTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -275,6 +277,8 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Forward the navigation to the given navigation state.
+     * <p>
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param targetState
      *            the target navigation state, not {@code null}
@@ -287,6 +291,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -301,6 +307,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param forwardTargetComponent
      *            the component type to display, not {@code null}
@@ -317,6 +325,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward to navigation component registered for given location string
      * instead of the component about to be displayed.
+     * <p>
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param location
      *            forward target location string
@@ -337,9 +347,11 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward to navigation component registered for given location string with
      * given location parameter instead of the component about to be displayed.
+     * <p>
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param location
-     *            reroute target location string
+     *            forward target location string
      * @param locationParam
      *            location parameter
      * @param <T>
@@ -352,9 +364,11 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Forward to navigation component registered for given location string with
      * given location parameters instead of the component about to be displayed.
+     * <p>
+     * This function changes the browser URL as opposed to <code>rerouteTo()</code>.
      *
      * @param location
-     *            reroute target location string
+     *            forward target location string
      * @param locationParams
      *            location parameters
      * @param <T>
@@ -367,6 +381,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
+     * <p>
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -382,6 +398,8 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Reroutes the navigation to the given navigation state.
+     * <p>
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param targetState
      *            the target navigation state of the rerouting, not {@code null}
@@ -394,6 +412,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -408,6 +428,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param routeTargetType
      *            the component type to display, not {@code null}
@@ -424,6 +446,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroute to navigation component registered for given location string
      * instead of the component about to be displayed.
+     * <p>
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param route
      *            reroute target location string
@@ -444,6 +468,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroute to navigation component registered for given location string with
      * given route parameter instead of the component about to be displayed.
+     * <p>
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param route
      *            reroute target location string
@@ -459,6 +485,8 @@ public abstract class BeforeEvent extends EventObject {
     /**
      * Reroute to navigation component registered for given location string with
      * given route parameters instead of the component about to be displayed.
+     * <p>
+     * This function doesn't change the browser URL as opposed to <code>forwardTo()</code>.
      *
      * @param route
      *            reroute target location string
