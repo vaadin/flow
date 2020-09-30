@@ -21,7 +21,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -245,7 +244,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
-        int port = prepareHttpServer(0, HTTP_OK, "bar");
+        final String manifestJsonResponse = "{}";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
         DevModeHandler handler = DevModeHandler.start(port, configuration,
                 npmFolder, CompletableFuture.completedFuture(null));
         handler.join();
@@ -325,6 +325,36 @@ public class DevModeHandlerTest {
         assertTrue(handler.isDevModeRequest(request));
     }
 
+    @Test
+    public void should_HandleAnyAssetInManifestPaths() throws Exception {
+        final String manifestJsonResponse = "{ \"sw.js\": " +
+                "\"sw.js\", \"index.html\": \"index.html\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        devModeHandler.join();
+
+        HttpServletRequest request = prepareRequest("/sw.js");
+        assertTrue(devModeHandler.isDevModeRequest(request));
+    }
+
+    @Test
+    public void shouldNot_Handle_IndexHtmlInManifestPaths() throws Exception {
+        final String manifestJsonResponse = "{ \"sw.js\": " +
+                "\"sw.js\", \"index.html\": \"index.html\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+
+        DevModeHandler devModeHandler = DevModeHandler.start(port,
+                configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        devModeHandler.join();
+
+        HttpServletRequest request = prepareRequest("/index.html");
+        assertFalse(devModeHandler.isDevModeRequest(request));
+    }
+
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
@@ -340,7 +370,9 @@ public class DevModeHandlerTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_OK, "bar");
+        final String manifestJsonResponse = "{ \"VAADIN//foo.js\": " +
+                "\"VAADIN//foo.js\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         DevModeHandler devModeHandler = DevModeHandler.start(port,
                 configuration, npmFolder,
@@ -369,7 +401,9 @@ public class DevModeHandlerTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         HttpServletResponse response = prepareResponse();
-        int port = prepareHttpServer(0, HTTP_OK, "");
+        final String manifestJsonResponse = "{ \"VAADIN/foo.js\": " +
+                "\"VAADIN/foo.js\" }";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
 
         VaadinServlet servlet = prepareServlet(port);
         servlet.service(request, response);
@@ -402,7 +436,8 @@ public class DevModeHandlerTest {
 
     @Test
     public void should_reuseWebpackPort_AfterRestart() throws Exception {
-        int port = prepareHttpServer(0, HTTP_OK, "foo");
+        final String manifestJsonContents = "{}";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonContents);
 
         DevModeHandler.start(port, configuration, npmFolder,
                 CompletableFuture.completedFuture(null)).join();
@@ -444,10 +479,12 @@ public class DevModeHandlerTest {
 
     @Test(expected = CustomRuntimeException.class)
     public void startDevModeHandler_prepareTasksThrows_handleThrows()
-            throws IOException {
+            throws Exception {
         CompletableFuture<Void> throwFuture = new CompletableFuture<>();
         throwFuture.completeExceptionally(new CustomRuntimeException());
-        DevModeHandler handler = DevModeHandler.start(0, configuration,
+        final String manifestJsonResponse = "{}";
+        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+        DevModeHandler handler = DevModeHandler.start(port, configuration,
                 npmFolder, throwFuture);
         handler.handleRequest(Mockito.mock(VaadinSession.class),
                 Mockito.mock(VaadinRequest.class),

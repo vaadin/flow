@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -22,6 +20,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.connect.Endpoint;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -35,6 +35,7 @@ import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERV
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -50,6 +51,7 @@ public class PrepareFrontendMojoTest {
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
+    private File resourceOutputDirectory;
     private File tokenFile;
     private File defaultJavaSource;
     private File generatedTsFolder;
@@ -69,6 +71,8 @@ public class PrepareFrontendMojoTest {
         flowResourcesFolder = new File(projectBase, DEFAULT_FLOW_RESOURCES_FOLDER);
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase,
+                VAADIN_WEBAPP_RESOURCES);
+        resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         defaultJavaSource = new File(".", "src/test/java");
         generatedTsFolder = new File(projectBase, "frontend/generated");
@@ -79,6 +83,8 @@ public class PrepareFrontendMojoTest {
                 Constants.GENERATED_TOKEN, projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "resourceOutputDirectory", resourceOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 new File(projectBase, "frontend"));
 

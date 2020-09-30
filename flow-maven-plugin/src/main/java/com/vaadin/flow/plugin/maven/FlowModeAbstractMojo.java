@@ -17,14 +17,15 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
@@ -78,7 +79,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * files.
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
-            + VAADIN_SERVLET_RESOURCES)
+            + VAADIN_WEBAPP_RESOURCES)
     protected File webpackOutputDirectory;
 
     /**
@@ -106,6 +107,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
     protected File generatedTsFolder;
 
     /**
+     * Defines the output directory for generated non-served resources, such as
+     * the token file.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/"
+            + VAADIN_SERVLET_RESOURCES)
+    protected File resourceOutputDirectory;
+
+    /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
     @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = Constants.ENABLE_PNPM_DEFAULT_STRING)
@@ -119,22 +128,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(property = Constants.REQUIRE_HOME_NODE_EXECUTABLE, defaultValue = "false")
     protected boolean requireHomeNodeExec;
-
-    /**
-     * Check if the plugin is running in legacy V14 bootstrap mode or not.
-     * Default: false.
-     *
-     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
-     */
-    public boolean useDeprecatedV14Bootstrapping() {
-        if (useDeprecatedV14Bootstrapping == null) {
-            return false;
-        }
-        if (useDeprecatedV14Bootstrapping.isEmpty()) {
-            return true;
-        }
-        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
-    }
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -154,4 +147,20 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      */
     @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
     protected String nodeDownloadRoot;
+
+    /**
+     * Check if the plugin is running in legacy V14 bootstrap mode or not.
+     * Default: false.
+     *
+     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
+     */
+    public boolean useDeprecatedV14Bootstrapping() {
+        if (useDeprecatedV14Bootstrapping == null) {
+            return false;
+        }
+        if (useDeprecatedV14Bootstrapping.isEmpty()) {
+            return true;
+        }
+        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
+    }
 }

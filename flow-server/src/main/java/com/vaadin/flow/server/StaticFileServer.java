@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -25,6 +24,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -32,9 +33,11 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
@@ -61,6 +64,7 @@ public class StaticFileServer implements StaticFileHandler {
     private final ResponseWriter responseWriter;
     private final VaadinServletService servletService;
     private DeploymentConfiguration deploymentConfiguration;
+    private final List<String> manifestPaths;
 
     /**
      * Constructs a file server.
@@ -72,6 +76,7 @@ public class StaticFileServer implements StaticFileHandler {
         this.servletService = servletService;
         deploymentConfiguration = servletService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
+        manifestPaths = getManifestPathsFromJson();
     }
 
     @Override
@@ -92,6 +97,13 @@ public class StaticFileServer implements StaticFileHandler {
             // We rather serve 404 than let it fall through
             return true;
         }
+
+        if (manifestPaths.contains(requestFilename)) {
+            // The path is on the webpack manifest list, so it is a static
+            // resource as well.
+            return true;
+        }
+
         resource = servletService.getStaticResource(requestFilename);
 
         if (resource == null && shouldFixIncorrectWebjarPaths()
@@ -116,9 +128,11 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildUrl(filenameWithPath)) {
+        if (isAllowedVAADINBuildUrl(filenameWithPath)
+                || manifestPaths.contains(filenameWithPath)) {
             resourceUrl = servletService.getClassLoader()
-                    .getResource("META-INF" + filenameWithPath);
+                    .getResource(VAADIN_WEBAPP_RESOURCES
+                            + filenameWithPath.replaceFirst("^/", ""));
         }
         if (resourceUrl == null) {
             resourceUrl = servletService.getStaticResource(filenameWithPath);
@@ -386,6 +400,27 @@ public class StaticFileServer implements StaticFileHandler {
             getLogger().trace("Unable to parse If-Modified-Since", e);
         }
         return false;
+    }
+
+    /**
+     * Load manifest.json, if exists, and extract manifest paths.
+     *
+     * In development mode, this resource does not exist, an empty list is
+     * returned in that case.
+     *
+     * @return list of paths mapped to static webapp resources, or empty list
+     */
+    private List<String> getManifestPathsFromJson() {
+        InputStream stream = servletService.getClassLoader()
+                .getResourceAsStream(
+                        VAADIN_WEBAPP_RESOURCES + "manifest.json");
+        if (stream == null) {
+            // manifest.json resource does not exist, probably dev mode
+            return new ArrayList<>();
+        }
+
+        return FrontendUtils
+                .parseManifestPaths(FrontendUtils.streamToString(stream));
     }
 
     private static Logger getLogger() {

@@ -786,7 +786,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     chunkName = chunks.getString(key);
                 }
                 Element script = createJavaScriptElement(
-                        "./" + VAADIN_MAPPING + chunkName, false);
+                        "./" + chunkName, false);
                 head.appendChild(script.attr("type", "module")
                         .attr("data-app-id",
                                 context.getUI().getInternals().getAppId())
@@ -798,7 +798,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /**
          * Return the list of chunk keys that should be considered by the
          * bootstrap handler.
-         * 
+         *
          * @param chunks
          *            in the stat file
          * @return

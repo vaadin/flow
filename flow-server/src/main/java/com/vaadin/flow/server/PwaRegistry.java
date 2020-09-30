@@ -65,13 +65,9 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
-    public static final String WORKBOX_FOLDER = "VAADIN/static/server/workbox/";
-    private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
     private String manifestJson = "";
-    private String serviceWorkerJs = "";
-    private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
@@ -123,13 +119,9 @@ public class PwaRegistry implements Serializable {
             // Load offline page as string, from servlet context if
             // available, fall back to default page
             offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
-            offlineHash = offlineHtml.hashCode();
 
             // Initialize manifest.webmanifest
             manifestJson = initializeManifest().toJson();
-
-            // Initialize sw.js
-            serviceWorkerJs = initializeServiceWorker(servletContext);
         }
     }
 
@@ -225,54 +217,6 @@ public class PwaRegistry implements Serializable {
         }
         manifestData.put("icons", iconList);
         return manifestData;
-    }
-
-    private String initializeServiceWorker(ServletContext servletContext) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        // List of icons for precache
-        List<String> filesToCahe = getIcons().stream()
-                .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
-                .collect(Collectors.toList());
-
-        // Add offline page to precache
-        filesToCahe.add(offlinePageCache());
-        // Add manifest to precache
-        filesToCahe.add(manifestCache());
-
-        // Add user defined resources
-        for (String resource : pwaConfiguration.getOfflineResources()) {
-            filesToCahe.add(String.format(WORKBOX_CACHE_FORMAT,
-                    resource.replaceAll("'", ""), servletContext.hashCode()));
-        }
-
-        String workBoxAbsolutePath = servletContext.getContextPath() + "/"
-                + WORKBOX_FOLDER;
-        // Google Workbox import
-        stringBuilder.append("importScripts('").append(workBoxAbsolutePath)
-                .append("workbox-sw.js").append("');\n\n");
-
-        stringBuilder.append("workbox.setConfig({\n")
-                .append("  modulePathPrefix: '").append(workBoxAbsolutePath)
-                .append("'\n").append("});\n");
-
-        // Precaching
-        stringBuilder.append("workbox.precaching.precacheAndRoute([\n");
-        stringBuilder.append(String.join(",\n", filesToCahe));
-        stringBuilder.append("\n]);\n");
-
-        // Offline fallback
-        stringBuilder
-                .append("self.addEventListener('fetch', function(event) {\n")
-                .append("  var request = event.request;\n")
-                .append("  if (request.mode === 'navigate') {\n")
-                .append("    event.respondWith(\n      fetch(request)\n")
-                .append("        .catch(function() {\n")
-                .append(String.format("          return caches.match('%s');%n",
-                        getPwaConfiguration().getOfflinePath()))
-                .append("        })\n    );\n  }\n });");
-
-        return stringBuilder.toString();
     }
 
     /**
@@ -404,31 +348,6 @@ public class PwaRegistry implements Serializable {
      */
     public String getManifestJson() {
         return manifestJson;
-    }
-
-    /**
-     * sw.js (service worker javascript) as String.
-     *
-     * @return contents of sw.js
-     */
-    public String getServiceWorkerJs() {
-        return serviceWorkerJs;
-    }
-
-    /**
-     * Google Workbox cache resource String of offline page. example:
-     * {@code {url: 'offline.html', revision: '1234567'}}
-     *
-     * @return Google Workbox cache resource String of offline page
-     */
-    public String offlinePageCache() {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                pwaConfiguration.getOfflinePath(), offlineHash);
-    }
-
-    private String manifestCache() {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                pwaConfiguration.getManifestPath(), manifestJson.hashCode());
     }
 
     /**

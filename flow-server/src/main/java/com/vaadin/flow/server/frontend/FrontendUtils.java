@@ -29,10 +29,12 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -48,13 +50,14 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static java.lang.String.format;
 
 /**
@@ -456,25 +459,21 @@ public class FrontendUtils {
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
-        String indexHtmlPathInDevMode = "/" + VAADIN_MAPPING + INDEX_HTML;
-        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
-                + INDEX_HTML;
-        return getFileContent(service, indexHtmlPathInDevMode,
-                indexHtmlPathInProductionMode);
+        return getFileContent(service, INDEX_HTML);
     }
 
     private static String getFileContent(VaadinService service,
-            String pathInDevMode, String pathInProductionMode)
+            String path)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         InputStream content = null;
 
         if (!config.isProductionMode() && config.enableDevServer()) {
-            content = getFileFromWebpack(pathInDevMode);
+            content = getFileFromWebpack(path);
         }
 
         if (content == null) {
-            content = getFileFromClassPath(service, pathInProductionMode);
+            content = getFileFromClassPath(service, path);
         }
         return content != null ? streamToString(content) : null;
     }
@@ -482,7 +481,7 @@ public class FrontendUtils {
     private static InputStream getFileFromClassPath(VaadinService service,
             String filePath) {
         InputStream stream = service.getClassLoader()
-                .getResourceAsStream(filePath);
+                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + filePath);
         if (stream == null) {
             getLogger().error("Cannot get the '{}' from the classpath",
                     filePath);
@@ -610,7 +609,7 @@ public class FrontendUtils {
     private static InputStream getFileFromWebpack(String filePath)
             throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        return handler.prepareConnection(filePath, "GET").getInputStream();
+        return handler.prepareConnection("/" + filePath, "GET").getInputStream();
     }
 
     /**
@@ -1035,6 +1034,23 @@ public class FrontendUtils {
         retval.append(curLine.toString());
         retval.append("\n");
         return retval.toString();
+    }
+
+    /**
+     * Parse "manifest.json" file contents obtained from webpack and extract
+     * the list of request paths to handle as static resources.
+     *
+     * @param manifestJson
+     * @return list of paths, each starting with "/"
+     */
+    public static List<String> parseManifestPaths(String manifestJson) {
+        JsonObject manifest = Json.parse(manifestJson);
+        return Arrays.stream(manifest.keys())
+                // Skip "index.html", as it should go through
+                // IndexHtmlRequestHandler
+                .filter(key -> !INDEX_HTML.equals(key))
+                .map(key -> "/" + manifest.getString(key))
+                .collect(Collectors.toList());
     }
 
     /**

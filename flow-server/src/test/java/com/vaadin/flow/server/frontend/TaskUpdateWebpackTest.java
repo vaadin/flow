@@ -36,8 +36,8 @@ import org.junit.rules.TemporaryFolder;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -72,7 +72,9 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 AppShell.class.getAnnotation(PWA.class));
 
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
-                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
+                new File(baseDir, TARGET + "webapp"),
+                new File(baseDir, TARGET + "classes"),
+                WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
                 new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
@@ -103,7 +105,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 webpackGenerated.exists());
         assertWebpackConfigContent();
         assertWebpackGeneratedConfigContent(
-                "target/frontend/generated-flow-imports.js", "target/classes");
+                "target/frontend/generated-flow-imports.js", "target/webapp",
+                "target/classes");
     }
 
     @Test
@@ -116,6 +119,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         frontendFolder = new File(baseDir, "my-custom-frontend");
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
+                new File(baseDir, TARGET + "webapp"),
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
@@ -133,7 +137,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .map(String::trim).collect(Collectors.toSet());
 
         Assert.assertTrue(webpackContents.contains(
-                "const frontendFolder = require('path').resolve(__dirname, 'my-custom-frontend');"));
+                "const frontendFolder = path.resolve(__dirname, 'my-custom-frontend');"));
     }
 
     @Test
@@ -163,13 +167,13 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         FileUtils.writeLines(webpackConfig, lines);
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
-                baseDir, new File(baseDir, "foo"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED, new File(baseDir, "bar"), false,
-                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
+                baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
+                WEBPACK_CONFIG, WEBPACK_GENERATED, new File(baseDir, "bar"),
+                false, new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
         newUpdater.execute();
 
-        assertWebpackGeneratedConfigContent("bar", "foo");
+        assertWebpackGeneratedConfigContent("bar", "baz", "foo");
         List<String> webpackContents = Files.lines(webpackConfig.toPath())
                 .collect(Collectors.toList());
 
@@ -196,10 +200,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     @Test
     public void should_setClientSideBootstrapMode_when_runningV15Bootsrapping()
             throws IOException {
-        webpackUpdater = new TaskUpdateWebpack(
-                frontendFolder, baseDir,
-                new File(baseDir, TARGET + "classes"),
-                WEBPACK_CONFIG, WEBPACK_GENERATED,
+        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
+                new File(baseDir, TARGET + "webapp"),
+                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
+                WEBPACK_GENERATED,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
                 new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
@@ -225,7 +229,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,
-            String outputFolder) throws IOException {
+            String outputFolder, String resourceFolder) throws IOException {
 
         List<String> webpackContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.toList());
@@ -236,7 +240,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         verifyNoAbsolutePathsPresent(webpackContents);
 
-        verifyUpdate(webpackContents, entryPoint, outputFolder);
+        verifyUpdate(webpackContents, entryPoint, outputFolder, resourceFolder);
     }
 
     private void assertWebpackConfigContent() throws IOException {
@@ -255,18 +259,23 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     private void verifyUpdate(List<String> webpackContents, String entryPoint,
-            String outputFolder) {
+            String outputFolder, String resourceFolder) {
         Assert.assertTrue(
                 "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
                 webpackContents.contains(
-                        "const fileNameOfTheFlowGeneratedMainEntryPoint = require('path').resolve(__dirname, '"
+                        "const fileNameOfTheFlowGeneratedMainEntryPoint = path.resolve(__dirname, '"
                                 + entryPoint + "');"));
 
         Assert.assertTrue(
-                "webpack config should update fileNameOfTheFlowGeneratedMainEntryPoint",
+                "webpack config should update mavenOutputFolderForFlowBundledFiles",
                 webpackContents.contains(
-                        "const mavenOutputFolderForFlowBundledFiles = require('path').resolve(__dirname, '"
+                        "const mavenOutputFolderForFlowBundledFiles = path.resolve(__dirname, '"
                                 + outputFolder + "');"));
+        Assert.assertTrue(
+                "webpack config should update mavenOutputFolderForResourceFiles",
+                webpackContents.contains(
+                        "const mavenOutputFolderForResourceFiles = path.resolve(__dirname, '"
+                                + resourceFolder + "');"));
 
     }
 
@@ -276,8 +285,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .filter(line -> line.contains("/"))
                 // trim the whitespaces
                 .map(line -> line.replaceAll("\\s", ""))
-                // publicPath is URI which should start with slash
-                .filter(line -> !line.startsWith("publicPath:"))
+                // rootUrl is URI which should start with slash
+                .filter(line -> !line.startsWith("constrootUrl="))
                 // check the equals ( a=something ) and object declarations (
                 // {a: something} )
                 .map(line -> {

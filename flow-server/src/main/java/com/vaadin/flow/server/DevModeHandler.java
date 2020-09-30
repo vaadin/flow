@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -127,6 +126,11 @@ public final class DevModeHandler implements RequestHandler {
     private final boolean reuseDevServer;
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
     private final File devServerPortFile;
+
+    /**
+     * The list of static resource paths from webpack manifest.
+     */
+    private volatile List<String> manifestPaths = new ArrayList<>();
 
     private StringBuilder cumulativeOutput = new StringBuilder();
 
@@ -271,9 +275,13 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && pathInfo.startsWith("/" + VAADIN_MAPPING)
+        if (pathInfo != null && pathInfo.startsWith("/" + VAADIN_MAPPING)
                 && !pathInfo
-                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX)) {
+            return true;
+        }
+
+        return manifestPaths.contains(pathInfo);
     }
 
     /**
@@ -357,7 +365,7 @@ public final class DevModeHandler implements RequestHandler {
 
     private boolean checkWebpackConnection() {
         try {
-            prepareConnection("/", "GET").getResponseCode();
+            readManifestPaths();
             return true;
         } catch (IOException e) {
             getLogger().debug("Error checking webpack dev server connection",
@@ -464,6 +472,14 @@ public final class DevModeHandler implements RequestHandler {
             // reset cumulative buffer for the next compilation
             cumulativeOutput = new StringBuilder();
 
+            // Read webpack asset manifest json
+            try {
+                readManifestPaths();
+            } catch (IOException e) {
+                getLogger().error("Error when reading manifest.json " +
+                        "from webpack-dev-server", e);
+            }
+
             // Notify DevModeHandler to continue
             doNotify();
 
@@ -511,6 +527,36 @@ public final class DevModeHandler implements RequestHandler {
         } catch (ExecutionFailedException exception) {
             getLogger().error(null, exception);
             throw new CompletionException(exception);
+        }
+    }
+
+    /**
+     * Get and parse /manifest.json from webpack-dev-server, extracting
+     * paths to all resources in the webpack output.
+     *
+     * Those paths do not necessarily start with /VAADIN, as some resources
+     * must be served from the root directory, e. g., service worker JS.
+     *
+     * @throws IOException
+     */
+    private void readManifestPaths() throws IOException {
+        getLogger().debug("Reading manifest.json from webpack");
+        HttpURLConnection connection = prepareConnection("/manifest.json",
+                "GET");
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HTTP_OK) {
+            getLogger().error("Unable to get manifest.json from " +
+                    "webpack-dev-server, got {} {}", responseCode,
+                    connection.getResponseMessage());
+            return;
+        }
+
+        String manifestJson = FrontendUtils
+                .streamToString(connection.getInputStream());
+        manifestPaths = FrontendUtils.parseManifestPaths(manifestJson);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Got asset paths from webpack manifest.json: \n    {}"
+                    , String.join("\n    ", manifestPaths));
         }
     }
 

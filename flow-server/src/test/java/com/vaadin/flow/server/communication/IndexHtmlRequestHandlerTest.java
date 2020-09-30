@@ -60,7 +60,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
@@ -119,7 +119,7 @@ public class IndexHtmlRequestHandlerTest {
         VaadinService vaadinService = vaadinServletRequest.getService();
 
         // Finding index.html URL
-        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
+        String indexHtmlPathInProductionMode = VAADIN_WEBAPP_RESOURCES
                 + INDEX_HTML;
         URL url = vaadinService.getClassLoader().getResource(indexHtmlPathInProductionMode);
 
