@@ -1,16 +1,15 @@
 package com.vaadin.flow.component.internal;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NAVIGATE_TO;
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -19,6 +18,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
@@ -31,15 +31,17 @@ import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NAVIGATE_TO;
+import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class JavaScriptBootstrapUITest  {
 
@@ -202,6 +204,101 @@ public class JavaScriptBootstrapUITest  {
     public void getChildren_should_notReturnAnEmptyList() {
         ui.connectClient("foo", "bar", "/clean", "");
         assertEquals(1, ui.getChildren().count());
+    }
+
+    @Test
+    public void addRemoveComponent_clientSideRouting_addsToBody() {
+        final Element uiElement = ui.getElement();
+
+        ui.connectClient("foo", "bar", "/clean", "");
+        // router outlet is a virtual child that is not reflected on element level
+        assertEquals(1, ui.getChildren().count());
+        assertEquals(0, uiElement.getChildCount());
+        assertEquals(0, ui.getElement().getChildCount());
+
+        final RouterLink routerLink = new RouterLink();
+        ui.add(routerLink);
+
+        assertEquals(2, ui.getChildren().count());
+        assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(1, uiElement.getChildCount());
+
+        ui.add(new RouterLink());
+
+        assertEquals(3, ui.getChildren().count());
+        assertEquals(2, ui.getElement().getChildCount());
+        assertEquals(2, uiElement.getChildCount());
+
+        ui.remove(routerLink);
+
+        assertEquals(2, ui.getChildren().count());
+        assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(1, uiElement.getChildCount());
+    }
+
+    @Test
+    public void addRemoveComponent_serverSideRouting_addsDirectlyToUI() {
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.TRUE);
+
+        assertEquals(0, ui.getElement().getChildCount());
+        assertEquals(0, ui.getChildren().count());
+
+        // use any server side route
+        ui.navigate("product");
+
+        assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(1, ui.getChildren().count());
+
+        final RouterLink routerLink = new RouterLink();
+        ui.add(routerLink);
+        assertEquals(2, ui.getElement().getChildCount());
+        assertEquals(2, ui.getChildren().count());
+
+        ui.remove(routerLink);
+
+        assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(1, ui.getChildren().count());
+    }
+
+    @Test
+    public void addComponent_clientSideRouterAndNavigation_componentsRemain() {
+        final Element uiElement = ui.getElement();
+        // trigger route via client
+        ui.connectClient("foo", "bar", "/clean", "");
+        final RouterLink routerLink = new RouterLink();
+        ui.add(routerLink);
+
+        assertEquals(2, ui.getChildren().count());
+        assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(1, uiElement.getChildCount());
+
+        ui.navigate("product");
+
+        assertEquals(2, ui.getChildren().count());
+        assertEquals(1, ui.getElement().getChildCount());
+        assertEquals(1, uiElement.getChildCount());
+    }
+
+    @Test
+    public void addComponent_serverSideRouterAndNavigation_componentsRemain() {
+        Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
+                .thenReturn(Boolean.TRUE);
+        final Element uiElement = ui.getElement();
+
+        ui.navigate("clean");
+        final RouterLink routerLink = new RouterLink();
+        ui.add(routerLink);
+
+        assertEquals(2, ui.getChildren().count());
+        assertEquals(2, ui.getElement().getChildCount());
+        assertEquals(2, uiElement.getChildCount());
+
+        ui.navigate("product");
+
+        assertEquals(2, ui.getChildren().count());
+        assertEquals(2, ui.getElement().getChildCount());
+        assertEquals(2, uiElement.getChildCount());
     }
 
     @Test
@@ -452,7 +549,7 @@ public class JavaScriptBootstrapUITest  {
         String dynamicTitle = UUID.randomUUID().toString();
         ui.connectClient("foo", "bar", "clean", dynamicTitle);
         assertEquals(dynamicTitle, ui.getInternals().getTitle());
-        
+
         String anotherDynamicTitle = UUID.randomUUID().toString();
         JavaScriptBootstrapUI anotherUI = new JavaScriptBootstrapUI();
         anotherUI.getInternals().setSession(mocks.getSession());
