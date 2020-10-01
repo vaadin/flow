@@ -1277,8 +1277,8 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchDisabled_getItemCount_stillReturnsItemsCount() {
-        dataCommunicator.setFetchDisabled(true);
+    public void fetchEnabled_getItemCount_stillReturnsItemsCount() {
+        dataCommunicator.setFetchEnabled(false);
         Assert.assertEquals(0, dataCommunicator.getItemCount());
 
         // data provider stores 100 items
@@ -1287,8 +1287,8 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchDisabled_getItem_stillReturnsItem() {
-        dataCommunicator.setFetchDisabled(true);
+    public void fetchEnabled_getItem_stillReturnsItem() {
+        dataCommunicator.setFetchEnabled(false);
 
         // data provider stores 100 items
         dataCommunicator.setDataProvider(createDataProvider(), null);
@@ -1296,10 +1296,10 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchDisabled_requestRange_fetchIgnored() {
+    public void fetchEnabled_requestRange_fetchIgnored() {
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {
-                }, element.getNode(), true);
+                }, element.getNode(), false);
         dataCommunicator.setPageSize(pageSize);
 
         DataProvider<Item, ?> dataProvider = Mockito
@@ -1316,7 +1316,7 @@ public class DataCommunicatorTest {
                 .size(Mockito.any(Query.class));
 
         // Switch back to normal mode
-        dataCommunicator.setFetchDisabled(false);
+        dataCommunicator.setFetchEnabled(true);
         dataCommunicator.setRequestedRange(0, 10);
 
         fakeClientCommunication();

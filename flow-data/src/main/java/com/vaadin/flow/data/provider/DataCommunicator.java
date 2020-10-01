@@ -120,7 +120,7 @@ public class DataCommunicator<T> implements Serializable {
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;
 
-    private boolean fetchDisabled;
+    private boolean fetchEnabled;
 
     /**
      * In-memory data provider with no items.
@@ -181,7 +181,7 @@ public class DataCommunicator<T> implements Serializable {
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
-        this(dataGenerator, arrayUpdater, dataUpdater, stateNode, false);
+        this(dataGenerator, arrayUpdater, dataUpdater, stateNode, true);
     }
 
     /**
@@ -201,20 +201,20 @@ public class DataCommunicator<T> implements Serializable {
      *            data updater strategy
      * @param stateNode
      *            the state node used to communicate for
-     * @param fetchDisabled
-     *            if {@code fetchDisabled} is {@code true} then the data
-     *            provider won't be called to fetch the items and/or to get the
+     * @param fetchEnabled
+     *            if {@code fetchEnabled} is {@code true} then the data
+     *            provider will be called to fetch the items and/or to get the
      *            items count until it's set to {@code false}
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
-            boolean fetchDisabled) {
+            boolean fetchEnabled) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
         this.dataUpdater = dataUpdater;
         this.stateNode = stateNode;
-        this.fetchDisabled = fetchDisabled;
+        this.fetchEnabled = fetchEnabled;
 
         stateNode.addAttachListener(this::handleAttach);
         stateNode.addDetachListener(this::handleDetach);
@@ -708,11 +708,11 @@ public class DataCommunicator<T> implements Serializable {
      * fetching the items and/or getting the items count, or ignore such a
      * calls.
      *
-     * @return {@code true} if the calls to data provider are ignored,
+     * @return {@code true} if the calls to data provider are enabled,
      *         {@code false} otherwise
      */
-    public boolean isFetchDisabled() {
-        return fetchDisabled;
+    public boolean isFetchEnabled() {
+        return fetchEnabled;
     }
 
     /**
@@ -723,14 +723,15 @@ public class DataCommunicator<T> implements Serializable {
      * data communicator and to postpone these calls until some event, i.e.
      * dropdown open event of the combo box.
      * <p>
-     * This sets to {@code false} by default.
+     * This sets to {@code true} by default.
      *
-     * @param fetchDisabled
-     *            if {@code true} then the calls to data provider are ignored,
-     *            otherwise the data provider is queried when needed.
+     * @param fetchEnabled
+     *            if {@code true} then the calls to data provider are enabled,
+     *            otherwise the data provider won't be called to fetch the
+     *            items.
      */
-    public void setFetchDisabled(boolean fetchDisabled) {
-        this.fetchDisabled = fetchDisabled;
+    public void setFetchEnabled(boolean fetchEnabled) {
+        this.fetchEnabled = fetchEnabled;
     }
 
     /**
@@ -910,7 +911,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if ((flushRequest == null || forced) && !fetchDisabled) {
+        if ((flushRequest == null || forced) && fetchEnabled) {
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
