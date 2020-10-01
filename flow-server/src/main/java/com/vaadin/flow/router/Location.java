@@ -21,7 +21,9 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -241,8 +245,9 @@ public class Location implements Serializable {
         if (index == -1) {
             return Collections.singletonList(paramAndValue);
         }
-        String param = paramAndValue.substring(0, index);
-        String value = paramAndValue.substring(index + 1);
+        String param = decode(paramAndValue.substring(0, index), "parameter");
+        String value = decode(paramAndValue.substring(index + 1),
+                "parameter value");
         return Arrays.asList(param, value);
     }
 
@@ -278,6 +283,8 @@ public class Location implements Serializable {
             basePath = path;
         }
 
+        basePath = decode(basePath, "path");
+
         verifyRelativePath(basePath);
 
         List<String> splitList = Arrays.asList(basePath.split(PATH_SEPARATOR));
@@ -291,6 +298,24 @@ public class Location implements Serializable {
         } else {
             return splitList;
         }
+    }
+
+    private static String decode(String value, String entityDebugName) {
+        String result = value;
+        try {
+            result = URLDecoder.decode(result, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException exception) {
+            // may not happen since UTF-8 is a standard encoding, but if it
+            // happens then everything is totally broken
+            throw new IllegalStateException(
+                    "Cannot decode " + entityDebugName + " '" + result + "'",
+                    exception);
+        } catch (IllegalArgumentException exception) {
+            LoggerFactory.getLogger(Location.class).warn(
+                    "Couldn't decode {} '{}', it will be used as is",
+                    entityDebugName, result);
+        }
+        return result;
     }
 
     /**

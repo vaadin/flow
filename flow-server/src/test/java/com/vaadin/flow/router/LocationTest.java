@@ -296,4 +296,24 @@ public class LocationTest {
         List<String> segments = location.getSegments();
         Assert.assertEquals("space man", segments.get(0));
     }
+
+    @Test
+    public void locationWithEncodedParameter_parameterIsDecoded() {
+        Location location = new Location("url?space%20man=%D0%B0");
+        Map<String, List<String>> parameters = location.getQueryParameters()
+                .getParameters();
+        Assert.assertEquals(1, parameters.size());
+        Assert.assertEquals(1, parameters.get("space man").size());
+        Assert.assertEquals("а", parameters.get("space man").get(0));
+    }
+
+    @Test
+    public void locationWithEncodedParameterWhichCannotBeEncoded_parameterStaysAsIs() {
+        Location location = new Location("url?space%man=%0");
+        Map<String, List<String>> parameters = location.getQueryParameters()
+                .getParameters();
+        Assert.assertEquals(1, parameters.size());
+        Assert.assertEquals(1, parameters.get("space%man").size());
+        Assert.assertEquals("%0", parameters.get("space%man").get(0));
+    }
 }
