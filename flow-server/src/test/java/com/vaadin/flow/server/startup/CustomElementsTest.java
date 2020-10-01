@@ -24,17 +24,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.jsoup.Jsoup;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
-import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
-import com.vaadin.flow.templatemodel.TemplateModel;
 
 /**
  * @author Vaadin Ltd
@@ -104,15 +99,8 @@ public class CustomElementsTest {
         return clazz.getAnnotation(Tag.class).value();
     }
 
-    private static final TemplateParser TEST_PARSER = (clazz, tag,
-            service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='" + tag + "'></dom-module>"));
-
     @Tag("custom-element")
-    private static class CustomElement extends PolymerTemplate<TemplateModel> {
-        public CustomElement() {
-            super(TEST_PARSER);
-        }
+    private static class CustomElement extends Component {
     }
 
     @Tag("custom-element")

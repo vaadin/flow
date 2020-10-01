@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinServlet;
@@ -35,6 +36,8 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 public class MockVaadinServletService extends VaadinServletService {
 
     private Instantiator instantiator;
+
+    private Router router;
 
     public MockVaadinServletService() {
         this(new MockDeploymentConfiguration());
@@ -54,6 +57,15 @@ public class MockVaadinServletService extends VaadinServletService {
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setRouter(Router router) {
+        this.router = router;
+    }
+
+    @Override
+    public Router getRouter() {
+        return router != null ? router : super.getRouter();
     }
 
     @Override

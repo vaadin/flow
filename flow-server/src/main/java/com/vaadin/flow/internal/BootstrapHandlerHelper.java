@@ -16,8 +16,6 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
@@ -71,15 +69,6 @@ public final class BootstrapHandlerHelper implements Serializable {
         String pushURL = vaadinSession.getConfiguration().getPushURL();
         if (pushURL == null) {
             pushURL = serviceUrl;
-        } else {
-            try {
-                URI uri = new URI(serviceUrl);
-                pushURL = uri.resolve(new URI(pushURL)).toASCIIString();
-            } catch (URISyntaxException exception) {
-                throw new IllegalStateException(String.format(
-                        "Can't resolve pushURL '%s' based on the service URL '%s'",
-                        pushURL, serviceUrl), exception);
-            }
         }
         String contextPath = vaadinRequest.getService()
                 .getContextRootRelativePath(vaadinRequest);

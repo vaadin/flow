@@ -1,8 +1,5 @@
 package com.vaadin.flow.router.internal;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -10,6 +7,11 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class ConfigureRoutesTest {
@@ -37,6 +39,9 @@ public class ConfigureRoutesTest {
         }
     }
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Test
     public void mutableConfiguration_canSetRouteTarget() {
         ConfigureRoutes mutable = new ConfigureRoutes();
@@ -60,6 +65,72 @@ public class ConfigureRoutesTest {
 
         Assert.assertEquals("Configuration should have registered base target.",
                 "", mutable.getTemplate(BaseTarget.class));
+    }
+
+    @Test
+    public void mutableConfigurationClear_removesRegisteredRoutes() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
+        assertSetRoutes(mutable);
+
+        mutable.clear();
+
+        Assert.assertFalse(mutable.hasRouteTarget(BaseTarget.class));
+        Assert.assertFalse(mutable.hasRouteTarget(ParamTarget.class));
+
+        Assert.assertNull(
+                mutable.getNavigationRouteTarget("").getRouteTarget());
+        Assert.assertNull(
+                mutable.getNavigationRouteTarget("123").getRouteTarget());
+
+        assertSetRoutes(mutable);
+    }
+
+    @Test
+    public void mutableConfigurationClear_preservesErrorRoute() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
+        mutable.setErrorRoute(IndexOutOfBoundsException.class, BaseError.class);
+
+        mutable.clear();
+
+        Assert.assertEquals("ErrorRoute shouldn't be cleared.",
+                BaseError.class, mutable.getExceptionHandlerByClass(
+                        IndexOutOfBoundsException.class));
+    }
+
+    @Test
+    public void duplicateRootPathRegistration_throwsException() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
+        mutable.setRoute("", BaseTarget.class);
+        Assert.assertTrue(mutable.hasRouteTarget(BaseTarget.class));
+        Assert.assertEquals(BaseTarget.class, mutable
+                .getNavigationRouteTarget("").getRouteTarget().getTarget());
+
+        exceptionRule.expect(AmbiguousRouteConfigurationException.class);
+        exceptionRule.reportMissingExceptionWithMessage(
+                "Duplicate routes shouldn't be accepted.");
+        exceptionRule.expectMessage(
+                "Navigation targets must have unique routes, found navigation targets 'com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget' and 'com.vaadin.flow.router.internal.ConfigureRoutesTest$BaseTarget' with the same route.");
+        mutable.setRoute("", BaseTarget.class);
+    }
+
+    @Test
+    public void duplicateParameterPathRegistration_throwsException() {
+        ConfigureRoutes mutable = new ConfigureRoutes();
+
+        mutable.setRoute(":param", ParamTarget.class);
+        Assert.assertTrue(mutable.hasRouteTarget(ParamTarget.class));
+        Assert.assertEquals(ParamTarget.class, mutable
+                .getNavigationRouteTarget("123").getRouteTarget().getTarget());
+
+        exceptionRule.expect(AmbiguousRouteConfigurationException.class);
+        exceptionRule.reportMissingExceptionWithMessage(
+                "Duplicate parameter routes shouldn't be accepted.");
+        exceptionRule.expectMessage(
+                "Navigation targets must have unique routes, found navigation targets 'com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget' and 'com.vaadin.flow.router.internal.ConfigureRoutesTest$ParamTarget' with parameter have the same route.");
+        mutable.setRoute(":param", ParamTarget.class);
     }
 
     @Test
@@ -117,6 +188,19 @@ public class ConfigureRoutesTest {
         Assert.assertFalse(
                 "After clear  exception targets should still be available.",
                 mutable.getExceptionHandlers().isEmpty());
+    }
+
+    private void assertSetRoutes(ConfigureRoutes mutable) {
+        mutable.setRoute("", BaseTarget.class);
+        mutable.setRoute(":param", ParamTarget.class);
+
+        Assert.assertTrue(mutable.hasRouteTarget(BaseTarget.class));
+        Assert.assertTrue(mutable.hasRouteTarget(ParamTarget.class));
+
+        Assert.assertEquals(BaseTarget.class, mutable
+                .getNavigationRouteTarget("").getRouteTarget().getTarget());
+        Assert.assertEquals(ParamTarget.class, mutable
+                .getNavigationRouteTarget("123").getRouteTarget().getTarget());
     }
 
 }

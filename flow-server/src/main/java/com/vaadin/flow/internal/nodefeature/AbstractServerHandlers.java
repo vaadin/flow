@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -147,13 +146,25 @@ public abstract class AbstractServerHandlers<T>
      */
     protected void collectHandlerMethods(Class<?> clazz,
             Collection<Method> methods) {
+        if (clazz == null || clazz.equals(Object.class)) {
+            return;
+        }
         if (clazz.equals(getType())) {
             return;
         }
         Stream.of(clazz.getDeclaredMethods()).filter(
-                method -> method.isAnnotationPresent(getHandlerAnnotation()))
+                method -> hasAnnotation(method, getHandlerAnnotationFqn()))
                 .forEach(method -> addHandlerMethod(method, methods));
         collectHandlerMethods(clazz.getSuperclass(), methods);
+    }
+
+    private boolean hasAnnotation(Method method, String fqn) {
+        for (Annotation annotation : method.getAnnotations()) {
+            if (annotation.annotationType().getName().equals(fqn)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -177,7 +188,7 @@ public abstract class AbstractServerHandlers<T>
                             + " and annotated with '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     checkedException.get().getName(),
-                    getHandlerAnnotation().getName());
+                    getHandlerAnnotationFqn());
             throw new IllegalStateException(msg);
         }
         methods.add(method);
@@ -195,7 +206,7 @@ public abstract class AbstractServerHandlers<T>
                     "Only void handler methods are supported. "
                             + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but \"%s\"",
                     method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotation().getName(),
+                    getHandlerAnnotationFqn(),
                     method.getReturnType().getSimpleName());
             throw new IllegalStateException(msg);
         }
@@ -205,8 +216,19 @@ public abstract class AbstractServerHandlers<T>
      * Gets the annotation which is used to mark methods as handlers.
      *
      * @return the handler marker annotation
+     * @deprecated Implement {@link #getHandlerAnnotationFqn()} instead
      */
+    @Deprecated
     protected abstract Class<? extends Annotation> getHandlerAnnotation();
+
+    /**
+     * Gets the annotation FQN which is used to mark methods as handlers.
+     *
+     * @return the handler marker annotation
+     */
+    protected String getHandlerAnnotationFqn() {
+        return getHandlerAnnotation().getName();
+    }
 
     /**
      * Returns method's RPC communication mode from the client side to the

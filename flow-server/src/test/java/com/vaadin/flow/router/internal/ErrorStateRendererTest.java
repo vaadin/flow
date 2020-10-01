@@ -129,16 +129,16 @@ public class ErrorStateRendererTest {
     public void handle_openNPEErrorTarget_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
-        NavigationState state = new NavigationStateBuilder(ui.getRouter())
+        NavigationState state = new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(InfiniteLoopErrorTarget.class).build();
         ErrorStateRenderer renderer = new ErrorStateRenderer(state);
 
-        RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
+        RouteConfiguration.forRegistry(ui.getInternals().getRouter().getRegistry())
                 .setAnnotatedRoute(InfiniteLoopNPEView.class);
 
         ErrorParameter<Exception> parameter = new ErrorParameter<>(
                 Exception.class, new NullPointerException());
-        ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getRouter(),
+        ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getInternals().getRouter(),
                 new Location("error"), ui, NavigationTrigger.CLIENT_SIDE,
                 parameter);
         // event should route to ErrorTarget whose layout forwards to NPEView
@@ -150,17 +150,17 @@ public class ErrorStateRendererTest {
     public void handle_openNPEView_infiniteReroute_noStackOverflow_throws() {
         UI ui = configureMocks();
 
-        NavigationState state = new NavigationStateBuilder(ui.getRouter())
+        NavigationState state = new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(InfiniteLoopNPEView.class).build();
         NavigationStateRenderer renderer = new NavigationStateRenderer(state);
 
-        RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
+        RouteConfiguration.forRegistry(ui.getInternals().getRouter().getRegistry())
                 .setAnnotatedRoute(InfiniteLoopNPEView.class);
-        ((ApplicationRouteRegistry) ui.getRouter().getRegistry())
+        ((ApplicationRouteRegistry) ui.getInternals().getRouter().getRegistry())
                 .setErrorNavigationTargets(
                         Collections.singleton(InfiniteLoopErrorTarget.class));
 
-        NavigationEvent event = new NavigationEvent(ui.getRouter(),
+        NavigationEvent event = new NavigationEvent(ui.getInternals().getRouter(),
                 new Location("npe"), ui, NavigationTrigger.CLIENT_SIDE);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
@@ -171,7 +171,7 @@ public class ErrorStateRendererTest {
         routerLinkState.put("scrollPositionX", 0d);
         routerLinkState.put("scrollPositionY", 0d);
 
-        event = new NavigationEvent(ui.getRouter(), new Location("npe"), ui,
+        event = new NavigationEvent(ui.getInternals().getRouter(), new Location("npe"), ui,
                 NavigationTrigger.ROUTER_LINK, routerLinkState, false);
         // event should route to ErrorTarget whose layout forwards to NPEView
         // which reroute to ErrorTarget and this is an infinite loop
@@ -182,16 +182,16 @@ public class ErrorStateRendererTest {
     public void handle_errorViewLayoutForwardsToAView_viewIsNavigated() {
         UI ui = configureMocks();
 
-        NavigationState state = new NavigationStateBuilder(ui.getRouter())
+        NavigationState state = new NavigationStateBuilder(ui.getInternals().getRouter())
                 .withTarget(HappyPathErrorTarget.class).build();
         ErrorStateRenderer renderer = new ErrorStateRenderer(state);
 
-        RouteConfiguration.forRegistry(ui.getRouter().getRegistry())
+        RouteConfiguration.forRegistry(ui.getInternals().getRouter().getRegistry())
                 .setAnnotatedRoute(HappyPathViewView.class);
 
         ErrorParameter<Exception> parameter = new ErrorParameter<>(
                 Exception.class, new NullPointerException());
-        ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getRouter(),
+        ErrorNavigationEvent event = new ErrorNavigationEvent(ui.getInternals().getRouter(),
                 new Location("error"), ui, NavigationTrigger.CLIENT_SIDE,
                 parameter);
         Assert.assertEquals(200, renderer.handle(event));

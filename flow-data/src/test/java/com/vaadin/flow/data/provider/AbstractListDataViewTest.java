@@ -894,6 +894,29 @@ public class AbstractListDataViewTest {
         dataView.getItem(items.size());
     }
 
+    @Test
+    public void dataViewCreatedAndAPIUsed_beforeSettingDataProvider_verificationPassed() {
+        // Data provider verification should pass even if the developer
+        // hasn't setup any data provider to a component. In the example
+        // below, we just create a data communicator instance but don't call
+        // 'setDataProvider' method.
+        DataCommunicator<String> dataCommunicator =
+                new DataCommunicator<>((item, jsonObject) -> {
+        }, null, null, component.getElement().getNode());
+
+        AbstractListDataView<String> dataView = new AbstractListDataView<String>(
+                dataCommunicator::getDataProvider, component) {
+        };
+
+        // Check that we can add a listener even if not data provider set by
+        // user
+        dataView.addItemCountChangeListener(event -> {});
+
+        // Check that the verification is still passed during data view API
+        // usage, because the default data provider is an in-memory one
+        dataView.addItem("foo");
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(

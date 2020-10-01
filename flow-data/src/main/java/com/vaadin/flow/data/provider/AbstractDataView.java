@@ -56,13 +56,30 @@ public abstract class AbstractDataView<T> implements DataView<T> {
                 "DataProvider supplier cannot be null");
         this.dataProviderSupplier = dataProviderSupplier;
         this.component = component;
-        verifyDataProviderType(dataProviderSupplier.get().getClass());
+        final Class<?> dataProviderType = dataProviderSupplier.get().getClass();
+        /*
+         * Skip verification if the verified data provider has not been
+         * initialized yet.
+         *
+         * This mainly refers to the following cases: 1. Component uses data
+         * communicator which initialises data provider lazily and meanwhile has
+         * a default empty one. Good example is a ComboBox. 2. Developer wants
+         * to set the ItemCountChangeListener before the data provider has been
+         * set.
+         *
+         * NOTE: In-memory data view API is supported without explicitly setting
+         * the data provider.
+         */
+        if (isDataProviderInitialized(dataProviderType)) {
+            verifyDataProviderType(dataProviderType);
+        }
     }
 
     @Override
     public Registration addItemCountChangeListener(
             ComponentEventListener<ItemCountChangeEvent<?>> listener) {
-        Objects.requireNonNull(listener, "ItemCountChangeListener cannot be null");
+        Objects.requireNonNull(listener,
+                "ItemCountChangeListener cannot be null");
         return ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 (ComponentEventListener) listener);
     }
@@ -84,7 +101,6 @@ public abstract class AbstractDataView<T> implements DataView<T> {
      *             if data provider type is incompatible with data view type
      */
     protected final void verifyDataProviderType(Class<?> dataProviderType) {
-        // TODO https://github.com/vaadin/flow/issues/8583
         Class<?> supportedDataProviderType = getSupportedDataProviderType();
         if (!supportedDataProviderType.isAssignableFrom(dataProviderType)) {
             final String message = String.format(
@@ -147,5 +163,10 @@ public abstract class AbstractDataView<T> implements DataView<T> {
                         NULL_IDENTIFIER_ERROR_MESSAGE),
                 Objects.requireNonNull(getIdentifierProvider().apply(compareTo),
                         NULL_IDENTIFIER_ERROR_MESSAGE));
+    }
+
+    private boolean isDataProviderInitialized(Class<?> dataProviderType) {
+        return !DataCommunicator.EmptyDataProvider.class
+                .isAssignableFrom(dataProviderType);
     }
 }
