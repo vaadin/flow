@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,8 +28,6 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import static org.junit.Assert.assertEquals;
 
 public class LocationTest {
     @Test
@@ -277,9 +277,23 @@ public class LocationTest {
     }
 
     @Test
-    public void locaitonWithSpacesInPath_segmentIsDecoded() {
+    public void locationWithSpacesInPath_segmentIsDecoded() {
         Location location = new Location("space in path");
         List<String> segments = location.getSegments();
         Assert.assertEquals("space in path", segments.get(0));
+    }
+
+    @Test
+    public void locationWithSymbolWhichCanNotBeDecoded_segmentStaysAsIs() {
+        Location location = new Location("percent%man");
+        List<String> segments = location.getSegments();
+        Assert.assertEquals("percent%man", segments.get(0));
+    }
+
+    @Test
+    public void locationWithEncodedSymbol_segmentIsDecoded() {
+        Location location = new Location("space%20man");
+        List<String> segments = location.getSegments();
+        Assert.assertEquals("space man", segments.get(0));
     }
 }

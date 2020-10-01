@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.router;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -30,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -288,6 +290,10 @@ public class Location implements Serializable {
             // happens then everything is totally broken
             throw new IllegalStateException("Cannot decode URL " + basePath,
                     exception);
+        } catch (IllegalArgumentException exception) {
+            LoggerFactory.getLogger(Location.class).warn(
+                    "Couldn't decode path '{}', it will be used as is",
+                    basePath);
         }
 
         verifyRelativePath(basePath);
