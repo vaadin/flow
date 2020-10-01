@@ -4,9 +4,18 @@ const {expect} = intern.getPlugin('chai');
 const {fetchMock} = intern.getPlugin('fetchMock');
 const {sinon} = intern.getPlugin('sinon');
 
-import { ConnectClient, EndpointCallContinue, EndpointError, EndpointResponseError, EndpointValidationError, InvalidSessionMiddleware, login, logout } from "../../main/resources/META-INF/resources/frontend/Connect";
+import {
+  ConnectClient,
+  EndpointCallContinue,
+  EndpointError,
+  EndpointResponseError,
+  EndpointValidationError,
+  InvalidSessionMiddleware,
+  login,
+  logout
+} from "../../main/resources/META-INF/resources/frontend/Connect";
 
-import { openDB } from "idb";
+import {openDB} from "idb";
 
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
@@ -299,6 +308,7 @@ describe('ConnectClient', () => {
           expect(context.method).to.equal('fooMethod');
           expect(context.params).to.deep.equal({fooParam: 'foo'});
           expect(context.request).to.be.instanceOf(Request);
+          expect(context.isDeferred).to.be.false;
           return next(context);
         });
         client.middlewares = [spyMiddleware];
@@ -321,7 +331,7 @@ describe('ConnectClient', () => {
             myUrl,
             {
               method: 'POST',
-              headers: {...context.request.headers, 
+              headers: {...context.request.headers,
                 'X-Foo': 'Bar'},
               body: '{"baz": "qux"}'
             }
@@ -472,7 +482,7 @@ describe('ConnectClient', () => {
 
     it("should invoke the onInvalidSession callback on 401 response", async ()=>{
       fetchMock.post(base + '/connect/FooEndpoint/fooMethod', 401)
-      
+
       const invalidSessionCallback = sinon.spy((continueFunc: EndpointCallContinue)=>{
         // mock to pass authentication
         fetchMock.restore();
@@ -480,11 +490,11 @@ describe('ConnectClient', () => {
         continueFunc("csrf-token");
       });
       const middleware = new InvalidSessionMiddleware(invalidSessionCallback);
-      
+
       const client = new ConnectClient({middlewares:[middleware]});
-        
+
       await client.call('FooEndpoint','fooMethod');
-      
+
       expect(invalidSessionCallback.calledOnce).to.be.true;
 
       const headers = fetchMock.lastOptions().headers;
@@ -495,13 +505,13 @@ describe('ConnectClient', () => {
 
     it("should not invoke the onInvalidSession callback on 200 response", async ()=>{
       fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'})
-      
+
       const invalidSessionCallback = sinon.spy();
       const middleware = new InvalidSessionMiddleware(invalidSessionCallback);
-      
+
       const client = new ConnectClient({middlewares:[middleware]});
       await client.call('FooEndpoint', 'fooMethod');
-      
+
       expect(invalidSessionCallback.called).to.be.false;
     })
   });
@@ -619,9 +629,15 @@ describe('ConnectClient', () => {
 
   describe("submit cached request", () => {
     let client: ConnectClient;
-    let clientCallStub: any;
-    const fakeClientCallFails = () => clientCallStub.callsFake(() => { throw (new Error()); });
-    const insertARequest = async (numberOfRequests=1) => {
+    let requestCallStub: any;
+
+    function fakeRequestCallFails() {
+      requestCallStub.callsFake(() => {
+        throw new Error();
+      });
+    }
+
+    async function insertARequest(numberOfRequests=1) {
       const db = await (client as any).openOrCreateDB();
       for(let i=0; i<numberOfRequests; i++){
         await db.put('requests', {endpoint: 'FooEndpoint', method:'fooMethod', params:{ fooData: 'foo' }});
@@ -630,7 +646,7 @@ describe('ConnectClient', () => {
       db.close();
     }
 
-    const verifyNumberOfRequsetsInTheQueue = async (numberOfRequests=1) => {
+    async function verifyNumberOfRequsetsInTheQueue(numberOfRequests=1) {
       const db = await (client as any).openOrCreateDB();
       expect(await db.count('requests')).to.equal(numberOfRequests);
       db.close();
@@ -638,7 +654,9 @@ describe('ConnectClient', () => {
 
     beforeEach(async () => {
       client = new ConnectClient();
-      clientCallStub = sinon.stub(client, 'call').callsFake(async () => {await new Promise(resolve => setTimeout(resolve, 10))});
+      requestCallStub = sinon.stub(client, 'requestCall').callsFake(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10))
+      });
     });
 
     afterEach(async () => {
@@ -647,7 +665,7 @@ describe('ConnectClient', () => {
       db.close();
     });
 
-    it("should check and submit the cached requests when reicing online event", () => {
+    it("should check and submit the cached requests when receiving online event", () => {
       const submitMethod = sinon.stub(ConnectClient.prototype, "checkAndSubmitCachedRequests");
       client = new ConnectClient();
       self.dispatchEvent(new Event('online'));
@@ -655,7 +673,7 @@ describe('ConnectClient', () => {
       submitMethod.restore();
     })
 
-    it("should submit the cached request when reicing online event", async () => {
+    it("should submit the cached request when receiving online event", async () => {
       await insertARequest(3);
 
       await (client as any).checkAndSubmitCachedRequests();
@@ -663,32 +681,57 @@ describe('ConnectClient', () => {
       await verifyNumberOfRequsetsInTheQueue(0);
     })
 
-    it("should keep the requst if submission fails", async () => {
+    it("should keep the request if submission fails", async () => {
       await insertARequest();
 
-      fakeClientCallFails();
+      fakeRequestCallFails();
 
-      await (client as any).checkAndSubmitCachedRequests();
-      
-      await verifyNumberOfRequsetsInTheQueue(1);
-    })
+      try {
+        await (client as any).checkAndSubmitCachedRequests();
+      } catch (_) {
+        // expected
+      } finally {
+        await verifyNumberOfRequsetsInTheQueue(1);
+      }
+    });
+
+    it('should reject if submission fails', async () => {
+      await insertARequest();
+
+      fakeRequestCallFails();
+
+      let error: Error | undefined;
+
+      try {
+        await (client as any).checkAndSubmitCachedRequests();
+      } catch (e) {
+        // expected
+        error = e;
+      }
+
+      expect(error).to.be.instanceOf(Error);
+    });
 
     it("should be able to resubmit cached request that was failed to submit", async () => {
       await insertARequest();
 
-      fakeClientCallFails();
+      fakeRequestCallFails();
 
-      await (client as any).checkAndSubmitCachedRequests();
-      
-      await verifyNumberOfRequsetsInTheQueue(1);
+      try {
+        await (client as any).checkAndSubmitCachedRequests();
+      } catch (_) {
+        // expected
+      } finally {
+        await verifyNumberOfRequsetsInTheQueue(1);
 
-      clientCallStub.restore();
-      sinon.stub(client, "call");
+        requestCallStub.restore();
+        sinon.stub(client, "requestCall");
 
-      await (client as any).checkAndSubmitCachedRequests();
+        await (client as any).checkAndSubmitCachedRequests();
 
-      await verifyNumberOfRequsetsInTheQueue(0);
-    })
+        await verifyNumberOfRequsetsInTheQueue(0);
+      }
+    });
 
     it("should only submit once when receiving multiple online events", async () => {
       await insertARequest();
@@ -699,28 +742,57 @@ describe('ConnectClient', () => {
         (client as any).checkAndSubmitCachedRequests()
       ])
 
-      expect(clientCallStub.calledOnce).to.be.true;
+      expect(requestCallStub.calledOnce).to.be.true;
     })
 
     it("should only submit once when receiving multiple online events after a failed submission", async () => {
       await insertARequest();
 
-      fakeClientCallFails();
+      fakeRequestCallFails();
+
+      try {
+        await (client as any).checkAndSubmitCachedRequests();
+      } catch (_) {
+        // expected
+      } finally {
+        await verifyNumberOfRequsetsInTheQueue(1);
+
+        requestCallStub.restore();
+        sinon.stub(client, "requestCall");
+
+        await Promise.all([
+          (client as any).checkAndSubmitCachedRequests(),
+          (client as any).checkAndSubmitCachedRequests(),
+          (client as any).checkAndSubmitCachedRequests()
+        ])
+
+        expect(requestCallStub.calledOnce).to.be.true;
+      }
+    });
+
+    it('should invoke middleware with isDeferred context', async () => {
+      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'});
+
+      requestCallStub.restore();
+      const spyMiddleware = sinon.spy(async(context: any, next?: any) => {
+        expect(context.endpoint).to.equal('FooEndpoint');
+        expect(context.method).to.equal('fooMethod');
+        expect(context.params).to.deep.equal({fooData: 'foo'});
+        expect(context.request).to.be.instanceOf(Request);
+        expect(context.isDeferred).to.be.true;
+        return next(context);
+      });
+      client.middlewares = [spyMiddleware];
+
+      await insertARequest();
+
+      expect(spyMiddleware.called).to.be.false;
 
       await (client as any).checkAndSubmitCachedRequests();
-      
-      await verifyNumberOfRequsetsInTheQueue(1);
 
-      clientCallStub.restore();
-      sinon.stub(client, "call");
+      expect(spyMiddleware.called).to.be.true;
 
-      await Promise.all([
-        (client as any).checkAndSubmitCachedRequests(),
-        (client as any).checkAndSubmitCachedRequests(),
-        (client as any).checkAndSubmitCachedRequests()
-      ])
-
-      expect(clientCallStub.calledOnce).to.be.true;
+      fetchMock.restore();
     });
   });
 });
