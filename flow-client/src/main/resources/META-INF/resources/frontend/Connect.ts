@@ -201,6 +201,11 @@ export interface MiddlewareContext {
    * The Fetch API Request object reflecting the other properties.
    */
   request: Request;
+
+  /**
+   * Indicates that the call is from deferred queue.
+   */
+  isDeferred: boolean
 }
 
 /**
@@ -308,6 +313,30 @@ export class ConnectClient {
       );
     }
 
+    return this.requestCall(false, endpoint, method, params);
+  }
+
+  async deferrableCall(
+    endpoint: string,
+    method: string,
+    params?: any,
+  ): Promise<DeferrableResult<any>> {
+    if (this.checkOnline()) {
+      const result = await this.call(endpoint, method, params);
+      return { isDeferred: false, result };
+    } else {
+      let endpointRequest:EndpointRequest = { endpoint, method, params };
+      endpointRequest = await this.cacheEndpointRequest(endpointRequest);
+      return { isDeferred: true, endpointRequest };
+    }
+  }
+
+  private async requestCall(
+    isDeferred: boolean,
+    endpoint: string,
+    method: string,
+    params?: any
+  ): Promise<any> {
     const headers: Record<string, string> = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -325,15 +354,16 @@ export class ConnectClient {
     }
 
     const request = new Request(
-       `${this.prefix}/${endpoint}/${method}`, {
-         method: 'POST',
-         headers,
-         body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
-        });
+      `${this.prefix}/${endpoint}/${method}`, {
+        method: 'POST',
+        headers,
+        body: params !== undefined ? JSON.stringify(nullForUndefined(params)) : undefined
+      });
 
     // The middleware `context`, includes the call arguments and the request
     // constructed from them
     const initialContext: MiddlewareContext = {
+      isDeferred,
       endpoint,
       method,
       params,
@@ -377,9 +407,9 @@ export class ConnectClient {
         // invokes the current middleware with the context and the further chain
         // as the next argument
         return (context => {
-          if(typeof middleware === 'function'){
+          if (typeof middleware === 'function') {
             return middleware(context, next);
-          }else {
+          } else {
             return (middleware as MiddlewareClass).invoke(context, next);
           }
         }) as MiddlewareNext;
@@ -390,21 +420,6 @@ export class ConnectClient {
 
     // Invoke all the folded async middlewares and return
     return chain(initialContext);
-  }
-
-  async deferrableCall(
-    endpoint: string,
-    method: string,
-    params?: any,
-  ): Promise<DeferrableResult<any>> {
-    if (this.checkOnline()) {
-      const result = await this.call(endpoint, method, params);
-      return { isDeferred: false, result };
-    } else {
-      let endpointRequest:EndpointRequest = { endpoint, method, params };
-      endpointRequest = await this.cacheEndpointRequest(endpointRequest);
-      return { isDeferred: true, endpointRequest };
-    }
   }
 
   private checkOnline(): boolean {
@@ -434,8 +449,8 @@ export class ConnectClient {
     const db = await this.openOrCreateDB();
 
     /**
-     * Cannot wait for submitting the cached requests in the indexed db transaction, 
-     * as the transaction only wait for db operations. 
+     * Cannot wait for submitting the cached requests in the indexed db transaction,
+     * as the transaction only wait for db operations.
      * See https://github.com/jakearchibald/idb#transaction-lifetime
      */
     const shouldSubmit = await this.shouldSubmitCachedRequests(db);
@@ -472,11 +487,12 @@ export class ConnectClient {
     for (const request of cachedRequests) {
       if (request.submitting) {
         try {
-          await this.call(request.endpoint, request.method, request.params);
+          await this.requestCall(true, request.endpoint, request.method, request.params);
           await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
-        } catch (_) {
+        } catch (error) {
           request.submitting = false;
           await db.put(REQUEST_QUEUE_STORE_NAME, request);
+          throw error;
         }
       }
     }
@@ -509,8 +525,8 @@ export interface LogoutOptions{
 
 /**
  * A helper method for Spring Security based form login.
- * @param username 
- * @param password 
+ * @param username
+ * @param password
  * @param options defines additional options, e.g, the loginProcessingUrl, failureUrl, defaultSuccessUrl etc.
  */
 export async function login(username: string, password: string, options?: LoginOptions): Promise<LoginResult> {
@@ -520,10 +536,10 @@ export async function login(username: string, password: string, options?: LoginO
     data.append('username', username);
     data.append('password', password);
 
-    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login'; 
+    const loginProcessingUrl = options && options.loginProcessingUrl ? options.loginProcessingUrl : '/login';
     const response = await fetch(loginProcessingUrl, {method: 'POST', body: data});
 
-    const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error'; 
+    const failureUrl = options && options.failureUrl ? options.failureUrl : '/login?error';
     const defaultSuccessUrl = options && options.defaultSuccessUrl ? options.defaultSuccessUrl : '/'
     // this assumes the default Spring Security form login configuration (handler URL and responses)
     if (response.ok && response.redirected && response.url.endsWith(failureUrl)) {
@@ -582,13 +598,13 @@ const getCsrfTokenFromResponseBody = (body: string): string | undefined => {
   return match ? match[1] : undefined;
 }
 
-type EndpointCallContinue = (token: string) => void;
+export type EndpointCallContinue = (token: string) => void;
 
 /**
- * It defines what to do when it detects a session is invalid. E.g., 
+ * It defines what to do when it detects a session is invalid. E.g.,
  * show a login view.
- * It takes an <code>EndpointCallContinue</code> parameter, which can be 
- * used to continue the endpoint call.  
+ * It takes an <code>EndpointCallContinue</code> parameter, which can be
+ * used to continue the endpoint call.
  */
 export type OnInvalidSessionCallback = (continueFunc: EndpointCallContinue) => void;
 
