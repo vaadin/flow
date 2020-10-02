@@ -308,7 +308,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                             ((Class<?>) invokeAnnotationMethod(theme, "baseClass"))
                                     .getName(),
                             invokeAnnotationMethodAsString(theme, "variant"),
-                            invokeAnnotationMethodAsString(theme, "name")))
+                            invokeAnnotationMethodAsString(theme, "value")))
                     .collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()

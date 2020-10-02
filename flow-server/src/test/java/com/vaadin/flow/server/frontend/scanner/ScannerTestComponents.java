@@ -107,8 +107,7 @@ public class ScannerTestComponents {
 
     }
 
-
-    @Theme(value = Theme1.class, variant = Theme0.DARK)
+    @Theme(baseClass = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-1.js")
     public class RouterLayout1 implements RouterLayout {
         @Override
@@ -117,7 +116,7 @@ public class ScannerTestComponents {
         }
     }
 
-    @Theme(value = Theme1.class, variant = Theme0.DARK)
+    @Theme(baseClass = Theme1.class, variant = Theme0.DARK)
     @JsModule("./router-layout-2.js")
     public class RouterLayout2 extends RouterLayout1 {
     }
@@ -151,7 +150,7 @@ public class ScannerTestComponents {
     }
 
     @Route(value = "", layout = RouterLayout2.class)
-    @Theme(value = Theme2.class, variant = Theme2.FOO)
+    @Theme(baseClass = Theme2.class, variant = Theme2.FOO)
     @JsModule("./view-2.js")
     public static class RootViewWithMultipleTheme extends Component {
 

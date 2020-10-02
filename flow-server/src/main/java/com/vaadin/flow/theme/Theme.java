@@ -109,5 +109,5 @@ public @interface Theme {
      * If this is not specified, no application theme is used.
      * 
      */
-    String name() default "";
+    String value() default "";
 }
