@@ -178,7 +178,14 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ["css-loader"],
+        use: [
+          {
+            loader: "css-loader",
+            options: {
+              url: false,
+            },
+          },
+        ],
       },
       {
         test: /\.(svg|eot|woff|woff2|ttf)$/,
