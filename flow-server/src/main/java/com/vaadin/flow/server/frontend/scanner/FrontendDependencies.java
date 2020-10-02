@@ -97,7 +97,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 computeExporterEndpoints(WebComponentExporter.class);
                 computeExporterEndpoints(WebComponentExporterFactory.class);
             }
-            computeComponentTheme();
+            computeTheme();
             computePackages();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visited.size(), ms);
@@ -255,7 +255,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * If no theme is found and the application has endpoints, it uses lumo if
      * found in the class-path
      */
-    private void computeComponentTheme() throws ClassNotFoundException,
+    private void computeTheme() throws ClassNotFoundException,
             InstantiationException, IllegalAccessException, IOException {
 
         // Re-visit theme related classes, because they might be skipped

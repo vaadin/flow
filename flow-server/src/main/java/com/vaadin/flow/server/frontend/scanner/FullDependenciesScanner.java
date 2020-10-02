@@ -305,7 +305,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .flatMap(clazz -> annotationFinder
                             .apply(clazz, loadedThemeAnnotation).stream())
                     .map(theme -> new ThemeData(
-                            ((Class<?>) invokeAnnotationMethod(theme, VALUE))
+                            ((Class<?>) invokeAnnotationMethod(theme, "baseClass"))
                                     .getName(),
                             invokeAnnotationMethodAsString(theme, "variant"),
                             invokeAnnotationMethodAsString(theme, "name")))
