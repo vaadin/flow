@@ -178,7 +178,7 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ["lit-css-loader", "extract-loader", "css-loader"],
+        use: ["css-loader"],
       },
       {
         test: /\.(svg|eot|woff|woff2|ttf)$/,
