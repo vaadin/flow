@@ -123,8 +123,7 @@ public class SpringServlet extends VaadinServlet {
     @Override
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
-        Properties properties = new Properties(initParameters);
-        config(properties);
+        Properties properties = config(initParameters);
         if (rootMapping) {
             // in the case of root mapping, push requests should go to
             // /vaadinServlet/pushUrl
@@ -157,14 +156,19 @@ public class SpringServlet extends VaadinServlet {
         return request;
     }
 
-    private void config(Properties properties) {
-        setProperties(PROPERTY_NAMES, properties);
-    }
-
-    private void setProperties(List<String> propertyNames,
-            Properties properties) {
-        propertyNames.stream()
+    private Properties config(Properties initParameters) {
+        Properties properties = new Properties(initParameters);
+        PROPERTY_NAMES
                 .forEach(property -> setProperty(property, properties));
+
+        // transfer non-string init parameters (such as
+        // DeploymentConfigurationFactory.FALLBACK_CHUNK)
+        initParameters.forEach((key, value) -> {
+            if (!(key instanceof String)) {
+                properties.put(key, value);
+            }
+        });
+        return properties;
     }
 
     private void setProperty(String property, Properties properties) {
