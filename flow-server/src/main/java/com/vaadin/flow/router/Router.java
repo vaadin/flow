@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +108,6 @@ public class Router implements Serializable {
         }
     }
 
-
     private Location getLocationForRequest(String pathInfo,
             Map<String, String[]> parameterMap) {
         final String path;
@@ -145,7 +145,7 @@ public class Router implements Serializable {
             LoggerFactory.getLogger(Router.class.getName())
                     .warn("Exception when encoding path {}", path, e);
         }
-        return new Location(encodedPath);
+        return new Location(Location.parsePath(encodedPath, false));
     }
 
     /**

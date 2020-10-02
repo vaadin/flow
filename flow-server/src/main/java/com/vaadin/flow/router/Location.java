@@ -274,7 +274,16 @@ public class Location implements Serializable {
         return result;
     }
 
-    private static List<String> parsePath(String path) {
+    /**
+     * Parses the given {@code path} and produces the path segments.
+     * 
+     * @param path
+     *            the given path
+     * @param decode
+     *            whether the path should be decoded
+     * @return the path segments
+     */
+    public static List<String> parsePath(String path, boolean decode) {
         String basePath;
         int endIndex = path.indexOf(QUERY_SEPARATOR);
         if (endIndex >= 0) {
@@ -283,8 +292,9 @@ public class Location implements Serializable {
             basePath = path;
         }
 
-        basePath = decode(basePath, "path");
-
+        if (decode) {
+            basePath = decode(basePath, "path");
+        }
         verifyRelativePath(basePath);
 
         List<String> splitList = Arrays.asList(basePath.split(PATH_SEPARATOR));
@@ -298,6 +308,11 @@ public class Location implements Serializable {
         } else {
             return splitList;
         }
+
+    }
+
+    private static List<String> parsePath(String path) {
+        return parsePath(path, true);
     }
 
     private static String decode(String value, String entityDebugName) {
