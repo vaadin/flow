@@ -303,7 +303,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 variant = themeData.getVariant();
-                theme = getFinder().loadClass(themeData.getThemeBaseClass());
+                theme = getFinder().loadClass(themeData.getThemeClass());
                 themeName = themeData.getThemeName();
             }
 

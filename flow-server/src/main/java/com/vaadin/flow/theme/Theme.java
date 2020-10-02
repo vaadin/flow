@@ -94,7 +94,7 @@ public @interface Theme {
      * 
      * @return theme handler
      */
-    Class<? extends AbstractTheme> baseClass() default AbstractTheme.class;
+    Class<? extends AbstractTheme> themeClass() default AbstractTheme.class;
 
     /**
      * The theme variant, if any.

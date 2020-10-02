@@ -273,11 +273,12 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         try {
             Class<? extends AbstractTheme> theme = getFinder()
-                    .loadClass(data.getThemeBaseClass());
+                    .loadClass(data.getThemeClass());
             setupTheme(theme, data.getVariant(), data.getThemeName());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
-                    "Could not load theme class " + data.getThemeBaseClass(), exception);
+                    "Could not load theme class " + data.getThemeClass(),
+                    exception);
         }
     }
 
@@ -305,8 +306,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .flatMap(clazz -> annotationFinder
                             .apply(clazz, loadedThemeAnnotation).stream())
                     .map(theme -> new ThemeData(
-                            ((Class<?>) invokeAnnotationMethod(theme, "baseClass"))
-                                    .getName(),
+                            ((Class<?>) invokeAnnotationMethod(theme,
+                                    "themeClass")).getName(),
                             invokeAnnotationMethodAsString(theme, "variant"),
                             invokeAnnotationMethodAsString(theme, "value")))
                     .collect(Collectors.toSet());
@@ -336,14 +337,16 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             }
             return themes.isEmpty() ? null : themes.iterator().next();
         } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load theme annotation class", exception);
+            throw new IllegalStateException(
+                    "Could not load theme annotation class", exception);
         }
     }
 
     private String getThemesList(Collection<ThemeData> themes) {
-        return themes
-                .stream().map(theme -> "themeBaseClass = '" + theme.getThemeBaseClass()
-                        + "' and variant = '" + theme.getVariant() + "' and name = '" + theme.getThemeName() + "'")
+        return themes.stream()
+                .map(theme -> "themeClass = '" + theme.getThemeClass()
+                        + "' and variant = '" + theme.getVariant()
+                        + "' and name = '" + theme.getThemeName() + "'")
                 .collect(Collectors.joining(", "));
     }
 

@@ -59,7 +59,7 @@ public class ThemeDefinition implements Serializable {
      *            the annotation to get the definition from
      */
     public ThemeDefinition(Theme themeAnnotation) {
-        this(themeAnnotation.baseClass(), themeAnnotation.variant(), themeAnnotation.value());
+        this(themeAnnotation.themeClass(), themeAnnotation.variant(), themeAnnotation.value());
     }
 
     /**
