@@ -385,9 +385,11 @@ export const injectGlobalCss = (css, target) => {
   globalFiles.forEach((global) => {
     const filename = path.basename(global);
     const variable = camelCase(filename);
-    imports.push(`import ${variable} from "!!css-loader!./${filename}";\n`);
+    imports.push(`import ${variable} from "./${filename}";\n`);
     if (filename == themeFileAlwaysAddToDocument) {
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n`);
+      globalCssCode.push(
+        `injectGlobalCss(${variable}.toString(), document);\n`
+      );
     }
     globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
   });
@@ -396,16 +398,18 @@ export const injectGlobalCss = (css, target) => {
   if (themeProperties.css) {
     themeProperties.css.forEach((cssImport) => {
       const variable = "module" + i++;
-      imports.push(`import ${variable} from "!!css-loader!${cssImport}";\n`);
+      imports.push(`import ${variable} from "${cssImport}";\n`);
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
     });
   }
   if (themeProperties.documentCss) {
     themeProperties.documentCss.forEach((cssImport) => {
       const variable = "module" + i++;
-      imports.push(`import ${variable} from "!!css-loader!${cssImport}";\n`);
+      imports.push(`import ${variable} from "${cssImport}";\n`);
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n`);
+      globalCssCode.push(
+        `injectGlobalCss(${variable}.toString(), document);\n`
+      );
     });
   }
 
@@ -414,7 +418,7 @@ export const injectGlobalCss = (css, target) => {
     const tag = filename.replace(".css", "");
     const variable = camelCase(filename);
     imports.push(
-      `import ${variable} from "!!css-loader!./${themeComponentsFolder}/${filename}";\n`
+      `import ${variable} from "./${themeComponentsFolder}/${filename}";\n`
     );
     componentCssCode.push(`registerStyles(
   "${tag}",
