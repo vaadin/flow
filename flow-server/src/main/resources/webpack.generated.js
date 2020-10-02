@@ -362,6 +362,7 @@ const generateThemeFile = (themeFolder, themeName, themeProperties) => {
 
   let themeFile = `
 import { css, unsafeCSS, registerStyles } from "@vaadin/vaadin-themable-mixin/register-styles";
+import 'construct-style-sheets-polyfill';
 `;
 
   if (themeProperties.parent) {
@@ -372,7 +373,6 @@ import { css, unsafeCSS, registerStyles } from "@vaadin/vaadin-themable-mixin/re
   themeFile += `
 // target: Document | ShadowRoot
 export const injectGlobalCss = (css, target) => {
-    // FIXME: not all browsers support constructable stylesheets
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(css);
   target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
@@ -387,9 +387,9 @@ export const injectGlobalCss = (css, target) => {
     const variable = camelCase(filename);
     imports.push(`import ${variable} from "!!css-loader!./${filename}";\n`);
     if (filename == themeFileAlwaysAddToDocument) {
-      globalCssCode.push(`injectGlobalCss(${variable}, document);\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n`);
     }
-    globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
+    globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
   });
 
   let i = 0;
@@ -397,15 +397,15 @@ export const injectGlobalCss = (css, target) => {
     themeProperties.css.forEach((cssImport) => {
       const variable = "module" + i++;
       imports.push(`import ${variable} from "!!css-loader!${cssImport}";\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
     });
   }
   if (themeProperties.documentCss) {
     themeProperties.documentCss.forEach((cssImport) => {
       const variable = "module" + i++;
       imports.push(`import ${variable} from "!!css-loader!${cssImport}";\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}, target);\n`);
-      globalCssCode.push(`injectGlobalCss(${variable}, document);\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
+      globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n`);
     });
   }
 
@@ -419,7 +419,7 @@ export const injectGlobalCss = (css, target) => {
     componentCssCode.push(`registerStyles(
   "${tag}",
   css\`
-    \${unsafeCSS(${variable})}
+    \${unsafeCSS(${variable}.toString())}
   \`
 );
 `);
