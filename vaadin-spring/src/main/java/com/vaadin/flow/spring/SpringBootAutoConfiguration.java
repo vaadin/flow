@@ -76,9 +76,6 @@ public class SpringBootAutoConfiguration {
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
-                    VaadinMVCWebAppInitializer
-                            .makeContextRelative(mapping.replace("*", "")));
         }
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);

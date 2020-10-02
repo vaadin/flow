@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationContext;
@@ -71,7 +72,7 @@ public class SpringServlet extends VaadinServlet {
             }).collect(Collectors.toList());
 
     private final ApplicationContext context;
-    private final boolean forwardingEnforced;
+    private final boolean rootMapping;
 
     /**
      * Creates a new Vaadin servlet instance with the application
@@ -91,14 +92,16 @@ public class SpringServlet extends VaadinServlet {
      *
      * @param context
      *            the Spring application context
-     * @param forwardingEnforced
+     * @param rootMapping
      *            the incoming HttpServletRequest is wrapped in
-     *            ForwardingRequestWrapper if {@code true}
+     *            ForwardingRequestWrapper if {@code true} and push URL is
+     *            prefixed with
+     *            {@link VaadinServletConfiguration#VAADIN_SERVLET_MAPPING}
      */
     public SpringServlet(ApplicationContext context,
-            boolean forwardingEnforced) {
+            boolean rootMapping) {
         this.context = context;
-        this.forwardingEnforced = forwardingEnforced;
+        this.rootMapping = rootMapping;
     }
 
     @Override
@@ -122,11 +125,28 @@ public class SpringServlet extends VaadinServlet {
             Properties initParameters) {
         Properties properties = new Properties(initParameters);
         config(properties);
+        if (rootMapping) {
+            // in the case of root mapping, push requests should go to
+            // /vaadinServlet/pushUrl
+            String customPushUrl = properties
+                    .getProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL);
+            if (customPushUrl == null) {
+                customPushUrl = "";
+            }
+            final String mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING
+                    .replace("/*", "");
+            customPushUrl = customPushUrl.replaceFirst(Pattern.quote(mapping),
+                    ""); // if workaround "/vaadinServlet/myCustomUrl" used
+            customPushUrl = customPushUrl.replaceFirst("^/","");
+            properties.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
+                    VaadinMVCWebAppInitializer.makeContextRelative(
+                            mapping + "/" + customPushUrl));
+        }
         return super.createDeploymentConfiguration(properties);
     }
 
     private HttpServletRequest wrapRequest(HttpServletRequest request) {
-        if (forwardingEnforced && request.getPathInfo() == null) {
+        if (rootMapping && request.getPathInfo() == null) {
             /*
              * We need to apply a workaround in case of forwarding
              *
