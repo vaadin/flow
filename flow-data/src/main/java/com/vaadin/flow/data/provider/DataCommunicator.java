@@ -64,6 +64,8 @@ import elemental.json.JsonValue;
 public class DataCommunicator<T> implements Serializable {
     public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
 
+    private static final int DEFAULT_PAGE_SIZE = 50;
+
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
@@ -115,7 +117,7 @@ public class DataCommunicator<T> implements Serializable {
     private boolean definedSize = true;
     private boolean skipCountIncreaseUntilReset;
     private boolean sizeReset;
-    private int pageSize;
+    private int pageSize = DEFAULT_PAGE_SIZE;
 
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;
