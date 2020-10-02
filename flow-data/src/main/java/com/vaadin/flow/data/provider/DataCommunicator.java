@@ -113,7 +113,7 @@ public class DataCommunicator<T> implements Serializable {
     private boolean definedSize = true;
     private boolean skipCountIncreaseUntilReset;
     private boolean sizeReset;
-    private int pageSize;
+    private int pageSize = DEFAULT_PAGE_SIZE;
 
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;

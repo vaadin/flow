@@ -93,7 +93,6 @@ public class AbstractLazyDataViewTest {
         }, arrayUpdater, null, component.getElement().getNode());
         // need to set a lazy data provider to communicator or type check fails
         dataCommunicator.setDataProvider(dataProvider, null);
-        dataCommunicator.setPageSize(50);
         dataView = new AbstractLazyDataView<String>(dataCommunicator,
                 component) {
         };
