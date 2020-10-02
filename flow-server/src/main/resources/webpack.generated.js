@@ -384,6 +384,16 @@ export const injectGlobalCss = (css, target) => {
   sheet.replaceSync(css);
   target.adoptedStyleSheets = [...target.adoptedStyleSheets, sheet];
 };
+export const importCssUrl = (url, target) => {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = url;
+  if (target.head) {
+    target.head.appendChild(link);
+  } else {
+    target.appendChild(link);
+  }
+}
 `;
   const imports = [];
   const globalCssCode = [];
@@ -419,7 +429,12 @@ export const injectGlobalCss = (css, target) => {
       );
     });
   }
-
+  if (themeProperties.externalCss) {
+    themeProperties.externalCss.forEach((cssUrl) => {
+      globalCssCode.push(`importCssUrl("${cssUrl}", target);\n`);
+      globalCssCode.push(`importCssUrl("${cssUrl}", document);\n`);
+    });
+  }
   componentsFiles.forEach((componentCss) => {
     const filename = path.basename(componentCss);
     const tag = filename.replace(".css", "");
