@@ -30,6 +30,7 @@ public class ThemeDefinition implements Serializable {
 
     private final Class<? extends AbstractTheme> theme;
     private final String variant;
+    private final String name;
 
     /**
      * Creates a definition with the given them class and variant.
@@ -40,13 +41,14 @@ public class ThemeDefinition implements Serializable {
      *            the variant of the theme, not <code>null</code>
      */
     public ThemeDefinition(Class<? extends AbstractTheme> theme,
-            String variant) {
+            String variant, String name) {
 
         Objects.requireNonNull(theme);
         Objects.requireNonNull(variant);
 
         this.theme = theme;
         this.variant = variant;
+        this.name = name;
     }
 
     /**
@@ -57,7 +59,7 @@ public class ThemeDefinition implements Serializable {
      *            the annotation to get the definition from
      */
     public ThemeDefinition(Theme themeAnnotation) {
-        this(themeAnnotation.value(), themeAnnotation.variant());
+        this(themeAnnotation.value(), themeAnnotation.variant(), themeAnnotation.name());
     }
 
     /**
@@ -76,6 +78,10 @@ public class ThemeDefinition implements Serializable {
      */
     public String getVariant() {
         return variant;
+    }
+
+    public String getName() {
+        return name;
     }
 
 }

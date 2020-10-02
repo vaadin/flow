@@ -106,7 +106,6 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        lines.addAll(getApplicationThemeLines());
         collectModules(lines);
 
         writeImportLines(lines);
@@ -159,8 +158,6 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     protected abstract Set<CssData> getCss();
 
-    protected abstract String getApplicationTheme();
-
     /**
      * Get exported modules.
      *
@@ -194,25 +191,13 @@ abstract class AbstractUpdateImports implements Runnable {
     protected abstract Logger getLogger();
 
     List<String> resolveModules(Collection<String> modules) {
-        return modules.stream().filter(module ->
-                !module.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                        && !module
-                        .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX))
+        return modules.stream()
+                .filter(module -> !module.startsWith(
+                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                        && !module.startsWith(
+                                ApplicationConstants.BASE_PROTOCOL_PREFIX))
                 .map(module -> resolveResource(module)).sorted()
                 .collect(Collectors.toList());
-    }
-
-    protected Collection<String> getApplicationThemeLines() {
-        String applicationTheme = getApplicationTheme();
-        if (applicationTheme == null) {
-            return Collections.emptyList();
-        }
-        Collection<String> lines = new ArrayList<>();
-
-        lines.add("import {applyTheme} from 'theme/" + applicationTheme + "/" + applicationTheme
-                + ".js';");
-        lines.add("applyTheme(document);");
-        return lines;
     }
 
     protected Collection<String> getCssLines() {
@@ -542,7 +527,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 // don't do anything if such file doesn't exist at all
                 continue;
             }
-            resolvedPath  = normalizePath(resolvedPath);
+            resolvedPath = normalizePath(resolvedPath);
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)

@@ -37,6 +37,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * Writes web components generated from
@@ -67,7 +68,7 @@ public final class WebComponentModulesWriter implements Serializable {
      *            {@code true} to generated html modules, {@code false} to
      *            generate JavaScript modules
      * @param themeName
-     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not defined
      * @return generated files
      * @throws java.lang.NullPointerException
      *             if {@code exportedClasses} or {@code outputDirectory} is null
@@ -104,7 +105,7 @@ public final class WebComponentModulesWriter implements Serializable {
      * @param outputDirectory
      *            folder into which the generate file is written
      * @param themeName
-     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not defined
      * @return the generated module content
      */
     private static File writeWebComponentToDirectory(

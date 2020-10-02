@@ -160,8 +160,8 @@ final class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (VALUE.equals(name)) {
-                    endPoint.theme.name = ((Type) value).getClassName();
-                    children.add(endPoint.theme.name);
+                    endPoint.theme.themeBaseClass = ((Type) value).getClassName();
+                    children.add(endPoint.theme.themeBaseClass);
                 } else if (VARIANT.equals(name)) {
                     endPoint.theme.variant = value.toString();
                 }
@@ -171,7 +171,7 @@ final class FrontendClassVisitor extends ClassVisitor {
         themeLayoutVisitor = new RepeatedAnnotationVisitor() {
             @Override
             public void visit(String name, Object value) {
-                if (VALUE.equals(name) && endPoint.theme.name == null) {
+                if (VALUE.equals(name) && endPoint.theme.themeBaseClass == null) {
                     themeRouteVisitor.visit(name, value);
                 } else if (VARIANT.equals(name)
                         && endPoint.theme.variant.isEmpty()) {

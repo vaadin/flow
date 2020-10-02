@@ -25,24 +25,30 @@ import java.util.Objects;
  * @since 2.0
  */
 final class ThemeData implements Serializable {
-    String name;
+    String themeBaseClass;
     String variant = "";
+    String themeName;
     boolean notheme;
 
-    ThemeData(String name, String variant) {
-        this.name = name;
+    ThemeData(String themeBaseClass, String variant, String themeName) {
+        this.themeBaseClass = themeBaseClass;
         this.variant = variant;
+        this.themeName = themeName;
     }
 
     ThemeData() {
     }
 
-    String getName() {
-        return name;
+    String getThemeBaseClass() {
+        return themeBaseClass;
     }
 
     String getVariant() {
         return variant;
+    }
+
+    public String getThemeName() {
+        return themeName;
     }
 
     boolean isNotheme() {
@@ -61,7 +67,7 @@ final class ThemeData implements Serializable {
             return false;
         }
         ThemeData that = (ThemeData) other;
-        return notheme == that.notheme && Objects.equals(name, that.name);
+        return notheme == that.notheme && Objects.equals(themeBaseClass, that.themeBaseClass);
     }
 
     @Override
@@ -69,12 +75,12 @@ final class ThemeData implements Serializable {
         // We might need to add variant when we wanted to fail in the
         // case of same theme class with different variant, which was
         // right in v13
-        return Objects.hash(name, notheme);
+        return Objects.hash(themeBaseClass, notheme);
     }
 
     @Override
     public String toString() {
-        return " notheme: " + notheme + "\n name:" + name + "\n variant: "
+        return " notheme: " + notheme + "\n themeBaseClass:" + themeBaseClass + "\n variant: "
                 + variant;
     }
 }

@@ -5,19 +5,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import org.apache.commons.io.FileUtils;
 
-public class TaskUpdateApplicationThemeImport implements FallibleCommand {
+public class TaskUpdateThemeImport implements FallibleCommand {
 
     private File themeImportFile;
-    private String applicationTheme;
+    private ThemeDefinition theme;
 
-    protected TaskUpdateApplicationThemeImport(File npmFolder, File generatedDirectory, String applicationTheme) {
+    protected TaskUpdateThemeImport(File npmFolder, File generatedDirectory, ThemeDefinition theme) {
         File nodeModules = new File(npmFolder, FrontendUtils.NODE_MODULES);
         File flowFrontend = new File(nodeModules, FrontendUtils.FLOW_NPM_PACKAGE_NAME);
-        this.themeImportFile = new File(new File(flowFrontend, "theme"), "applicationTheme.js");
-        this.applicationTheme = applicationTheme;
+        this.themeImportFile = new File(new File(flowFrontend, "theme"), "theme.js");
+        this.theme = theme;
     }
 
     @Override
@@ -26,8 +27,8 @@ public class TaskUpdateApplicationThemeImport implements FallibleCommand {
 
         try {
             FileUtils.write(
-                    themeImportFile, "import {applyTheme as _applyTheme} from './" + applicationTheme + "/"
-                            + applicationTheme + ".js';\nexport const applyTheme = _applyTheme;\n",
+                    themeImportFile, "import {applyTheme as _applyTheme} from './" + theme.getName() + "/"
+                            + theme.getName() + ".js';\nexport const applyTheme = _applyTheme;\n",
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException("Unable to write theme import file", e);

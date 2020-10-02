@@ -30,6 +30,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.shared.util.SharedUtil;
+import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
@@ -91,7 +92,7 @@ public class WebComponentGenerator {
      *            {@code true} to generate Polymer2 template, {@code false} to
      *            generate Polymer3 template
      * @param themeName
-     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not defined
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
@@ -117,7 +118,7 @@ public class WebComponentGenerator {
      *            {@code true} to generate Polymer2 template, {@code false} to
      *            generate Polymer3 template
      * @param themeName
-     *            the theme defined using {@link com.vaadin.flow.server.ApplicationTheme} or {@code null} if not defined
+     *            the theme defined using {@link Theme} or {@code null} if not defined
      * @return generated web component html/JS to be served to the client
      */
     public static String generateModule(
@@ -158,7 +159,7 @@ public class WebComponentGenerator {
         Map<String, String> replacements = new HashMap<>();
 
         if (themeName != null) {
-            replacements.put("ThemeImport","import {applyTheme} from 'theme/applicationTheme.js';");
+            replacements.put("ThemeImport","import {applyTheme} from 'theme/theme.js';");
             replacements.put("ApplyTheme","applyTheme(shadow);");
         } else {
             replacements.put("ThemeImport","");

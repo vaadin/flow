@@ -177,7 +177,7 @@ public class ScannerThemeTest {
         FrontendDependencies deps = getFrontendDependencies(RootViewWithLayoutTheme.class, RootView2WithLayoutTheme.class);
         assertEquals(Theme1.class, deps.getThemeDefinition().getTheme());
         deps.getEndPoints().forEach(endPoint -> {
-            assertEquals(Theme1.class.getName(), endPoint.getTheme().getName());
+            assertEquals(Theme1.class.getName(), endPoint.getTheme().getThemeBaseClass());
         });
     }
 }

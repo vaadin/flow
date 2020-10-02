@@ -100,4 +100,12 @@ public @interface Theme {
      * @return the theme variant
      */
     String variant() default "";
+
+    /**
+     * The name of the application theme to use
+     * 
+     * If this is not specified, no application theme is used.
+     * 
+     */
+    String name() default "";
 }

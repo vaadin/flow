@@ -113,12 +113,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         }
 
         @Override
-        protected String getApplicationTheme() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
         protected List<String> getModules() {
             return scanner.getModules();
         }

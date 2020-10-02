@@ -129,9 +129,16 @@ public class TaskUpdateImports extends NodeUpdater {
 
         @Override
         protected Collection<String> getThemeLines() {
-            Collection<String> lines = new ArrayList<>();
-            AbstractTheme theme = getTheme();
             ThemeDefinition themeDef = getThemeDefinition();
+            String themeName = getThemeDefinition().getName();
+            Collection<String> lines = new ArrayList<>();
+
+            if (!themeName.equals("")) {
+                lines.add("import {applyTheme} from 'theme/theme.js';");
+                lines.add("applyTheme(document);");
+            }
+
+            AbstractTheme theme = getTheme();
             if (theme != null) {
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add("");
@@ -184,11 +191,6 @@ public class TaskUpdateImports extends NodeUpdater {
         @Override
         protected Set<CssData> getCss() {
             return frontDeps.getCss();
-        }
-
-        @Override
-        protected String getApplicationTheme() {
-            return frontDeps.getApplicationTheme();
         }
 
         @Override
@@ -252,11 +254,6 @@ public class TaskUpdateImports extends NodeUpdater {
                     fallbackScanner.getScripts());
             set.removeAll(frontDeps.getScripts());
             return set;
-        }
-
-        @Override
-        protected String getApplicationTheme() {
-            return null;
         }
 
         @Override

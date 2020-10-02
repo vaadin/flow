@@ -39,7 +39,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.server.ApplicationTheme;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -64,7 +63,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private Set<String> scripts = new LinkedHashSet<>();
     private Set<CssData> cssData;
     private List<String> modules;
-    private String applicationTheme;
 
     private final Class<?> abstractTheme;
 
@@ -121,7 +119,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         cssData = discoverCss();
 
         discoverTheme();
-        this.applicationTheme = verifyApplicationTheme();
         modules = calculateModules(regularModules, themeModules);
         getLogger().info("Visited {} classes. Took {} ms.", getClasses().size(),
                 System.currentTimeMillis() - start);
@@ -266,7 +263,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         ThemeData data = verifyTheme();
 
         if (data == null) {
-            setupTheme(getLumoTheme(), "");
+            setupTheme(getLumoTheme(), "", "");
             return;
         }
 
@@ -276,18 +273,18 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         try {
             Class<? extends AbstractTheme> theme = getFinder()
-                    .loadClass(data.name);
-            setupTheme(theme, data.variant);
+                    .loadClass(data.getThemeBaseClass());
+            setupTheme(theme, data.getVariant(), data.getThemeName());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
-                    "Could not load theme class " + data.name, exception);
+                    "Could not load theme class " + data.getThemeBaseClass(), exception);
         }
     }
 
     private void setupTheme(Class<? extends AbstractTheme> theme,
-            String variant) {
+            String variant, String name) {
         if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant);
+            themeDefinition = new ThemeDefinition(theme, variant, name);
             try {
                 themeInstance = new ThemeWrapper(theme);
             } catch (InstantiationException | IllegalAccessException e) {
@@ -310,7 +307,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .map(theme -> new ThemeData(
                             ((Class<?>) invokeAnnotationMethod(theme, VALUE))
                                     .getName(),
-                            invokeAnnotationMethodAsString(theme, "variant")))
+                            invokeAnnotationMethodAsString(theme, "variant"),
+                            invokeAnnotationMethodAsString(theme, "name")))
                     .collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
@@ -342,32 +340,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
-    private String verifyApplicationTheme() {
-        try {
-            Class<? extends Annotation> loadedApplicationThemeAnnotation = getFinder()
-                    .loadClass(ApplicationTheme.class.getName());
-
-            Set<Class<?>> annotatedClasses = getFinder().getAnnotatedClasses(loadedApplicationThemeAnnotation);
-            Set<String> applicationThemes = annotatedClasses.stream()
-                    .flatMap(clazz -> annotationFinder.apply(clazz, loadedApplicationThemeAnnotation).stream())
-                    .map(ann -> (String) invokeAnnotationMethod(ann, VALUE)).collect(Collectors.toSet());
-
-            if (applicationThemes.isEmpty()) {
-                return null;
-            } else if (applicationThemes.size() != 1) {
-                throw new IllegalStateException(
-                        "Using multiple different ApplicationTheme configurations is not " + "supported.");
-            }
-            return applicationThemes.iterator().next();
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load theme annotation class", exception);
-        }
-    }
-
     private String getThemesList(Collection<ThemeData> themes) {
         return themes
-                .stream().map(theme -> "name = '" + theme.getName()
-                        + "' and variant = '" + theme.getVariant() + "'")
+                .stream().map(theme -> "themeBaseClass = '" + theme.getThemeBaseClass()
+                        + "' and variant = '" + theme.getVariant() + "' and name = '" + theme.getThemeName() + "'")
                 .collect(Collectors.joining(", "));
     }
 
@@ -432,11 +408,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(this.getClass());
-    }
-
-    @Override
-    public String getApplicationTheme() {
-        return applicationTheme;
     }
 
 }
