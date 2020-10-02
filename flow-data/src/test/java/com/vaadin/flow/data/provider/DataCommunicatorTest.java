@@ -143,8 +143,7 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
+        pageSize = dataCommunicator.getPageSize();
     }
 
     @Test
@@ -981,8 +980,6 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, component.getElement().getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
@@ -1027,8 +1024,6 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, component.getElement().getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
         AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
         ComponentUtil.addListener(component, ItemCountChangeEvent.class,
                 ((ComponentEventListener) event -> {
@@ -1082,7 +1077,6 @@ public class DataCommunicatorTest {
         StateNode stateNode = Mockito.spy(element.getNode());
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {}, stateNode);
-        dataCommunicator.setPageSize(pageSize);
 
         // the items size returned by this data provider will be 100
         dataCommunicator.setDataProvider(createDataProvider(), null);
@@ -1103,6 +1097,15 @@ public class DataCommunicatorTest {
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
         Assert.assertEquals(300, dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void pageSize_defaultPageSizeUsed_returnsItemNormally() {
+        dataCommunicator.setDataProvider(DataProvider.ofItems(new Item(0)),
+                null);
+        Stream<Item> itemStream = dataCommunicator.fetchFromProvider(0, 100);
+        Assert.assertNotNull(itemStream);
+        Assert.assertEquals(1, itemStream.count());
     }
 
     @Test
@@ -1300,7 +1303,6 @@ public class DataCommunicatorTest {
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {
                 }, element.getNode(), false);
-        dataCommunicator.setPageSize(pageSize);
 
         DataProvider<Item, ?> dataProvider = Mockito
                 .spy(DataProvider.ofItems(new Item(0)));
@@ -1325,6 +1327,14 @@ public class DataCommunicatorTest {
                 .fetch(Mockito.any(Query.class));
         Mockito.verify(dataProvider)
                 .size(Mockito.any(Query.class));
+    }
+
+    @Test
+    public void setPageSize_setIncorrectPageSize_throws() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException
+                .expectMessage("Page size cannot be less than 1, got 0");
+        dataCommunicator.setPageSize(0);
     }
 
     @Tag("test-component")
