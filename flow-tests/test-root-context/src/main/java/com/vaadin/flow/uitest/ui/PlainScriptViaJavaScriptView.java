@@ -20,7 +20,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PlainScriptViaJavaScriptView")
-@JavaScript("context://plain-script.js")
+@JavaScript("context://context/plain-script.js")
 public class PlainScriptViaJavaScriptView extends Div {
 
 }
