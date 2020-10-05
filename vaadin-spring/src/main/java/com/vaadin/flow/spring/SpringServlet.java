@@ -134,6 +134,7 @@ public class SpringServlet extends VaadinServlet {
             }
             final String mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING
                     .replace("/*", "");
+            customPushUrl = customPushUrl.replaceFirst("context://", "/");
             customPushUrl = customPushUrl.replaceFirst(Pattern.quote(mapping),
                     ""); // if workaround "/vaadinServlet/myCustomUrl" used
             customPushUrl = customPushUrl.replaceFirst("^/","");
