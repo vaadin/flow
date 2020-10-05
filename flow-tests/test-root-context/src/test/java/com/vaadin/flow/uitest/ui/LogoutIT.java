@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -28,6 +30,13 @@ public class LogoutIT extends ChromeBrowserTest {
 
         $(NativeButtonElement.class).first().click();
 
-        checkLogsForErrors();
+        // There can be "Session Expired" message because of heartbeat
+        checkLogsForErrors(msg -> msg.equals("Session Expired"));
+
+        // There can't be any error dialog
+        Assert.assertFalse(isElementPresent(By.className("v-system-error")));
+
+        // The base href view should be shown
+        waitForElementPresent(By.tagName("a"));
     }
 }
