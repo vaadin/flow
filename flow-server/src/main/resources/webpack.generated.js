@@ -182,13 +182,30 @@ module.exports = {
           {
             loader: "css-loader",
             options: {
-              url: false,
+              url: (url, resourcePath) => {
+                // resourcePath - path to css file
+                // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
+                const resolveUrl = resourcePath.includes("/node_modules/");
+                if (resolveUrl) {
+                  console.log("Inlining ", url);
+                }
+                return resolveUrl;
+              },
+              import: (url, media, resourcePath) => {
+                // resourcePath - path to css file
+                // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
+                const resolveUrl = resourcePath.includes("/node_modules/");
+                if (resolveUrl) {
+                  console.log("Inlining ", url);
+                }
+                return resolveUrl;
+              },
             },
           },
         ],
       },
       {
-        test: /\.(svg|eot|woff|woff2|ttf)$/,
+        test: /\.(png|gif|jpg|svg|eot|woff|woff2|ttf)$/,
         use: ["file-loader"],
       },
     ],
