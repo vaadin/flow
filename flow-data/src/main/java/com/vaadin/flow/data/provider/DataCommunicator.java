@@ -62,6 +62,9 @@ import elemental.json.JsonValue;
  */
 public class DataCommunicator<T> implements Serializable {
     public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
+
+    private static final int DEFAULT_PAGE_SIZE = 50;
+
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
