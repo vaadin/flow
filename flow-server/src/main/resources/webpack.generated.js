@@ -8,7 +8,7 @@ const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const { GenerateSW } = require('workbox-webpack-plugin');
+const { InjectManifest } = require('workbox-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
 
@@ -109,21 +109,19 @@ const swManifestTransform = (manifestEntries) => {
   return { manifest, warnings };
 };
 
-const serviceWorkerPlugin = new GenerateSW({
+const serviceWorkerPlugin = new InjectManifest({
+  swSrc: path.resolve(__dirname, 'sw.js'),
   swDest: serviceWorkerPath,
-  clientsClaim: true,
-  skipWaiting: true,
   manifestTransforms: [swManifestTransform],
   maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
   dontCacheBustURLsMatching: /.*-[a-z0-9]{20}\.cache\.js/,
-  navigateFallback: rootUrl,
-  inlineWorkboxRuntime: true,
-  runtimeCaching: [
+  //navigateFallback: rootUrl,
+  /*runtimeCaching: [
     {
-      urlPattern: /.*/,
+      urlPattern: /.* /,
       handler: "NetworkFirst",
     },
-  ],
+  ],*/
 });
 
 if (devMode) {

@@ -104,10 +104,17 @@ public class FrontendUtils {
      * The name of the webpack configuration file.
      */
     public static final String WEBPACK_CONFIG = "webpack.config.js";
+
     /**
      * The name of the webpack generated configuration file.
      */
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
+
+    /**
+     * The name of the service worker source file for InjectManifest method of
+     * workbox-webpack-plugin.
+     */
+    public static final String SERVICE_WORKER_SRC = "sw.js";
 
     /**
      * Default target folder for the java project.

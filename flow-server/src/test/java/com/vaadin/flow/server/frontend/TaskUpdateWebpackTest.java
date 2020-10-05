@@ -39,6 +39,7 @@ import com.vaadin.flow.server.PwaConfiguration;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -76,6 +77,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir, TARGET + "classes"),
                 WEBPACK_CONFIG,
                 WEBPACK_GENERATED,
+                SERVICE_WORKER_SRC,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
                 new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
@@ -121,7 +123,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "webapp"),
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED,
+                WEBPACK_GENERATED, SERVICE_WORKER_SRC,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
                 new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
@@ -168,7 +170,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
-                WEBPACK_CONFIG, WEBPACK_GENERATED, new File(baseDir, "bar"),
+                WEBPACK_CONFIG, WEBPACK_GENERATED, SERVICE_WORKER_SRC, new File(baseDir, "bar"),
                 false, new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
         newUpdater.execute();
@@ -203,7 +205,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "webapp"),
                 new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED,
+                WEBPACK_GENERATED, SERVICE_WORKER_SRC,
                 new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
                 new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
