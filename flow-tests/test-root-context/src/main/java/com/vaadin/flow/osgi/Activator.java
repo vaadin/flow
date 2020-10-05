@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.osgi;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-
 import java.util.Dictionary;
 import java.util.Hashtable;
+
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -105,6 +105,7 @@ public class Activator implements BundleActivator {
                 // HTTP service is no longer available, unregister our
                 // servlet...
                 service.unregister("/view/*");
+                service.unregister("/context/*");
                 service.unregister("/frontend/*");
                 service.unregister("/new-router-session/*");
                 service.unregister("/view-production/*");
@@ -123,6 +124,8 @@ public class Activator implements BundleActivator {
                         Boolean.TRUE.toString());
                 try {
                     httpService.registerServlet("/view/*",
+                            new FixedViewServlet(), dictionary, null);
+                    httpService.registerServlet("/context/*",
                             new FixedViewServlet(), dictionary, null);
                     httpService.registerServlet("/frontend/*",
                             new WebJarsServlet(), dictionary, null);
