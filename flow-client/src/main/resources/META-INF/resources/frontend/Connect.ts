@@ -289,6 +289,9 @@ export class ConnectClient {
     this.checkAndSubmitCachedRequests = this.checkAndSubmitCachedRequests.bind(this);
 
     self.addEventListener('online', this.checkAndSubmitCachedRequests);
+    if (navigator.onLine) {
+      this.checkAndSubmitCachedRequests();
+    }
   }
 
   /**

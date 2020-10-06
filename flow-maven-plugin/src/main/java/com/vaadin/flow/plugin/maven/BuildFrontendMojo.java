@@ -180,7 +180,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .runNpmInstall(runNpmInstall)
                         .withWebpack(webpackOutputDirectory,
                                 resourceOutputDirectory,
-                                webpackTemplate, webpackGeneratedTemplate)
+                                webpackTemplate, webpackGeneratedTemplate, "sw.js")
                         .useV14Bootstrap(useDeprecatedV14Bootstrapping())
                         .enablePackagesUpdate(true)
                         .useByteCodeScanner(optimizeBundle)
