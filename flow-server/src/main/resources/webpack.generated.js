@@ -187,7 +187,7 @@ module.exports = {
                 // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
                 const resolveUrl = resourcePath.includes("/node_modules/");
                 if (resolveUrl) {
-                  console.log("Inlining ", url);
+                  console.debug("Inlining ", url);
                 }
                 return resolveUrl;
               },
@@ -196,7 +196,7 @@ module.exports = {
                 // If the import happens from within a node_modules file, we must resolve and inline. Otherwise resources will not be found at runtime as node_modules is not deployed
                 const resolveUrl = resourcePath.includes("/node_modules/");
                 if (resolveUrl) {
-                  console.log("Inlining ", url);
+                  console.debug("Inlining ", url);
                 }
                 return resolveUrl;
               },
