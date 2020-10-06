@@ -1013,13 +1013,13 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Fire an item count change event if the last event was fired for a
+     * Fires an item count change event if the last event was fired for a
      * different count from the last sent one.
      *
      * @param itemCount
      *            item count to send
      */
-    private void fireItemCountEvent(int itemCount) {
+    public void fireItemCountEvent(int itemCount) {
         if (lastSent != itemCount) {
             final Optional<Component> component = Element.get(stateNode)
                     .getComponent();
