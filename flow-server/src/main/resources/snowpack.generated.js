@@ -6,15 +6,6 @@ const path = require('path');
 const cwd = process.cwd();
 const isTS = fs.existsSync(path.join(cwd, 'tsconfig.json'));
 
-// This is just a hack to monitor files in ./frontend for live reload.
-// This should be done by a suitable hook into Snowpack or parsing console log
-// in DevModeHandler (this is problematic due to the dashboard).
-const chokidar = require('chokidar');
-const watcher = chokidar.watch('./frontend', { persistent: true });
-watcher
-  .on('change', path =>
-    process.stdout.write(`Frontend file has been changed: ${path}\n`))
-
 module.exports = {
   mount: {
     frontend: '/VAADIN',
@@ -23,7 +14,8 @@ module.exports = {
   plugins: [ './snowpack-plugin-css-string.js' ],
   devOptions: {
     hmr: false,
-    open: 'none'
+    open: 'none',
+    output: 'stream'
   },
   buildOptions: {
     webModulesUrl: '/VAADIN/webmodules'

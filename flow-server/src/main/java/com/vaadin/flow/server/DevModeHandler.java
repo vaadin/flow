@@ -537,13 +537,7 @@ public final class DevModeHandler implements RequestHandler {
 
             // trigger a live-reload since webpack has recompiled the bundle
             // if failure, ensures the webpack error is shown in the browser
-            if (liveReload != null && !useSnowpack) {
-                liveReload.reload();
-            }
-        }
-        if (useSnowpack && liveReload != null) {
-            if ((useSnowpackBuildWatch && line.contains("File changed") ||
-                    (!useSnowpackBuildWatch && line.contains("Frontend file has been changed")))) {
+            if (liveReload != null) {
                 liveReload.reload();
             }
         }
@@ -679,11 +673,7 @@ public final class DevModeHandler implements RequestHandler {
 
             final Pattern succeed ;
             if (config.useSnowpack()) {
-                if (config.useSnowpackBuildWatch()) {
-                    succeed = Pattern.compile("Watching for changes");
-                } else {
-                    succeed = Pattern.compile("Server started");
-                }
+                succeed = Pattern.compile("Watching for changes|Server started|File changed\\.\\.\\.");
 
             } else {
                 succeed = Pattern.compile(config.getStringProperty(
