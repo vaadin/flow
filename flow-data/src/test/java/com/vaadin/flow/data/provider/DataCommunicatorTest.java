@@ -975,17 +975,9 @@ public class DataCommunicatorTest {
 
     @Test
     public void itemCountChangeEvent_exactSize_correctCountAndIsCountEstimated() {
-        final TestComponent component = new TestComponent();
-        ui.add(component);
-        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
-                data -> {
-                }, component.getElement().getNode());
-        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
-        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
-                ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
-                    cachedEvent.set((ItemCountChangeEvent<?>) event);
-                }));
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
         int exactCount = 500;
         dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
         dataCommunicator.setRequestedRange(0, 50);
@@ -1019,17 +1011,9 @@ public class DataCommunicatorTest {
 
     @Test
     public void itemCountChangeEvent_estimatedCount_estimateUsedUntilEndReached() {
-        final TestComponent component = new TestComponent();
-        ui.add(component);
-        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
-                data -> {
-                }, component.getElement().getNode());
-        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
-        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
-                ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
-                    cachedEvent.set((ItemCountChangeEvent<?>) event);
-                }));
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
         int exactCount = 500;
         dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
         dataCommunicator.setRequestedRange(0, 50);
@@ -1337,8 +1321,71 @@ public class DataCommunicatorTest {
         dataCommunicator.setPageSize(0);
     }
 
+    @Test
+    public void fireItemCountEvent_differentItemCountObtained_eventFired() {
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
+
+        dataCommunicator.fireItemCountEvent(1);
+
+        ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
+
+        Assert.assertNotNull("Event hasn't been fired, but expected", event);
+        Assert.assertEquals("Invalid item count", 1, event.getItemCount());
+
+        dataCommunicator.fireItemCountEvent(2);
+
+        event = cachedEvent.get();
+
+        Assert.assertNotNull("Event hasn't been fired, but expected", event);
+        Assert.assertEquals("Invalid item count", 2, event.getItemCount());
+    }
+
+    @Test
+    public void fireItemCountEvent_sameItemCountObtained_eventNotFired() {
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
+
+        dataCommunicator.fireItemCountEvent(1);
+        cachedEvent.set(null);
+
+        // Fire the same item count
+        dataCommunicator.fireItemCountEvent(1);
+
+        ItemCountChangeEvent<?> event = cachedEvent.get();
+
+        Assert.assertNull("Event fired, but not expected", event);
+    }
+
+    @Test
+    public void fireItemCountEvent_emptyComponent_returnsNormally() {
+        dataCommunicator.fireItemCountEvent(42);
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
+    }
+
+    private AtomicReference<ItemCountChangeEvent<?>> addItemCountChangeListener(
+            TestComponent component) {
+        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
+        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
+                ((ComponentEventListener) event -> {
+                    Assert.assertNull(cachedEvent.get());
+                    cachedEvent.set((ItemCountChangeEvent<?>) event);
+                }));
+        return cachedEvent;
+    }
+
+    private TestComponent initDataCommunicatorWithTestComponent() {
+        final TestComponent component = new TestComponent();
+        ui.add(component);
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
+                data -> {
+                }, component.getElement().getNode());
+        return component;
     }
 
     private int getPageSizeIncrease() {

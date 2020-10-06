@@ -737,6 +737,27 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
+     * Fires an item count change event if the last event was fired for a
+     * different count from the last sent one.
+     *
+     * @param itemCount
+     *            item count to send
+     */
+    public void fireItemCountEvent(int itemCount) {
+        if (lastSent != itemCount) {
+            final Optional<Component> component = Element.get(stateNode)
+                    .getComponent();
+            if (component.isPresent()) {
+                ComponentUtil.fireEvent(component.get(),
+                        new ItemCountChangeEvent<>(component.get(), itemCount,
+                                !(isDefinedSize()
+                                        || skipCountIncreaseUntilReset)));
+            }
+            lastSent = itemCount;
+        }
+    }
+
+    /**
      * Getter method for determining the item count of the data. Can be
      * overridden by a subclass that uses a specific type of DataProvider and/or
      * query.
@@ -1010,27 +1031,6 @@ public class DataCommunicator<T> implements Serializable {
         unregisterPassivatedKeys();
 
         fireItemCountEvent(assumedSize);
-    }
-
-    /**
-     * Fires an item count change event if the last event was fired for a
-     * different count from the last sent one.
-     *
-     * @param itemCount
-     *            item count to send
-     */
-    public void fireItemCountEvent(int itemCount) {
-        if (lastSent != itemCount) {
-            final Optional<Component> component = Element.get(stateNode)
-                    .getComponent();
-            if (component.isPresent()) {
-                ComponentUtil.fireEvent(component.get(),
-                        new ItemCountChangeEvent<>(component.get(), itemCount,
-                                !(isDefinedSize()
-                                        || skipCountIncreaseUntilReset)));
-            }
-            lastSent = itemCount;
-        }
     }
 
     private void flushUpdatedData() {
