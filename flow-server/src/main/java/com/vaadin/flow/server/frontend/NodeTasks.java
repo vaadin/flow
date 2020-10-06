@@ -208,6 +208,9 @@ public class NodeTasks implements FallibleCommand {
          * @param webpackGeneratedTemplate
          *            name of the webpack resource to be used as template when
          *            creating the <code>webpack.generated.js</code> file.
+         * @param serviceWorkerTemplate
+         *            name of the service worker resource to be used as template
+         *            when creating the <code>sw.ts</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webpackOutputDirectory,
