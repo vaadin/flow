@@ -72,7 +72,7 @@ public class DevModeInitializerClassLoaderTest {
 
         Assert.assertTrue(
                 "The package.json file for client-side form should be copied",
-                files.contains("form/package.json"));
+                files.contains("form" + File.separator + "package.json"));
     }
 
 }
