@@ -1,5 +1,4 @@
 import {html, LitElement} from 'lit-element';
-import './lit-template-inner.js';
 
 class DisabledLitTemplateElement extends LitElement {
 
