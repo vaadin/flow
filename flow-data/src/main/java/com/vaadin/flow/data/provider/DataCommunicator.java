@@ -64,6 +64,8 @@ import elemental.json.JsonValue;
 public class DataCommunicator<T> implements Serializable {
     public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
 
+    private static final int DEFAULT_PAGE_SIZE = 50;
+
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
@@ -115,12 +117,12 @@ public class DataCommunicator<T> implements Serializable {
     private boolean definedSize = true;
     private boolean skipCountIncreaseUntilReset;
     private boolean sizeReset;
-    private int pageSize;
+    private int pageSize = DEFAULT_PAGE_SIZE;
 
     // Paged queries are enabled by default
     private boolean pagingEnabled = true;
 
-    private boolean fetchDisabled;
+    private boolean fetchEnabled;
 
     /**
      * In-memory data provider with no items.
@@ -181,7 +183,7 @@ public class DataCommunicator<T> implements Serializable {
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
-        this(dataGenerator, arrayUpdater, dataUpdater, stateNode, false);
+        this(dataGenerator, arrayUpdater, dataUpdater, stateNode, true);
     }
 
     /**
@@ -201,20 +203,20 @@ public class DataCommunicator<T> implements Serializable {
      *            data updater strategy
      * @param stateNode
      *            the state node used to communicate for
-     * @param fetchDisabled
-     *            if {@code fetchDisabled} is {@code true} then the data
-     *            provider won't be called to fetch the items and/or to get the
+     * @param fetchEnabled
+     *            if {@code fetchEnabled} is {@code true} then the data
+     *            provider will be called to fetch the items and/or to get the
      *            items count until it's set to {@code false}
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
-            boolean fetchDisabled) {
+            boolean fetchEnabled) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
         this.dataUpdater = dataUpdater;
         this.stateNode = stateNode;
-        this.fetchDisabled = fetchDisabled;
+        this.fetchEnabled = fetchEnabled;
 
         stateNode.addAttachListener(this::handleAttach);
         stateNode.addDetachListener(this::handleDetach);
@@ -708,11 +710,11 @@ public class DataCommunicator<T> implements Serializable {
      * fetching the items and/or getting the items count, or ignore such a
      * calls.
      *
-     * @return {@code true} if the calls to data provider are ignored,
+     * @return {@code true} if the calls to data provider are enabled,
      *         {@code false} otherwise
      */
-    public boolean isFetchDisabled() {
-        return fetchDisabled;
+    public boolean isFetchEnabled() {
+        return fetchEnabled;
     }
 
     /**
@@ -723,14 +725,38 @@ public class DataCommunicator<T> implements Serializable {
      * data communicator and to postpone these calls until some event, i.e.
      * dropdown open event of the combo box.
      * <p>
-     * This sets to {@code false} by default.
+     * This sets to {@code true} by default.
      *
-     * @param fetchDisabled
-     *            if {@code true} then the calls to data provider are ignored,
-     *            otherwise the data provider is queried when needed.
+     * @param fetchEnabled
+     *            if {@code true} then the calls to data provider are enabled,
+     *            otherwise the data provider won't be called to fetch the
+     *            items.
      */
-    public void setFetchDisabled(boolean fetchDisabled) {
-        this.fetchDisabled = fetchDisabled;
+    public void setFetchEnabled(boolean fetchEnabled) {
+        this.fetchEnabled = fetchEnabled;
+    }
+
+    /**
+     * Notifies the component about item count changes.
+     * <p>
+     * {@link ItemCountChangeEvent} is fired if the passed item count differs
+     * from the item count passed on the previous call of this method.
+     *
+     * @param itemCount
+     *            item count to send
+     */
+    public void fireItemCountEvent(int itemCount) {
+        if (lastSent != itemCount) {
+            final Optional<Component> component = Element.get(stateNode)
+                    .getComponent();
+            if (component.isPresent()) {
+                ComponentUtil.fireEvent(component.get(),
+                        new ItemCountChangeEvent<>(component.get(), itemCount,
+                                !(isDefinedSize()
+                                        || skipCountIncreaseUntilReset)));
+            }
+            lastSent = itemCount;
+        }
     }
 
     /**
@@ -910,7 +936,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if ((flushRequest == null || forced) && !fetchDisabled) {
+        if ((flushRequest == null || forced) && fetchEnabled) {
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -1007,27 +1033,6 @@ public class DataCommunicator<T> implements Serializable {
         unregisterPassivatedKeys();
 
         fireItemCountEvent(assumedSize);
-    }
-
-    /**
-     * Fire an item count change event if the last event was fired for a
-     * different count from the last sent one.
-     *
-     * @param itemCount
-     *            item count to send
-     */
-    private void fireItemCountEvent(int itemCount) {
-        if (lastSent != itemCount) {
-            final Optional<Component> component = Element.get(stateNode)
-                    .getComponent();
-            if (component.isPresent()) {
-                ComponentUtil.fireEvent(component.get(),
-                        new ItemCountChangeEvent<>(component.get(), itemCount,
-                                !(isDefinedSize()
-                                        || skipCountIncreaseUntilReset)));
-            }
-            lastSent = itemCount;
-        }
     }
 
     private void flushUpdatedData() {

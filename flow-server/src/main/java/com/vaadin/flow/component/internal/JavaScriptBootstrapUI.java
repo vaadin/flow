@@ -73,12 +73,13 @@ public class JavaScriptBootstrapUI extends UI {
             return super.getChildren();
         }
 
-        // client-side routing,
-        // since virtual child is used, it is necessary to change the original
-        // UI element to the wrapperElement
+        // #9069 with client-side routing, since routing component is a virtual
+        // child, its children need to be included separately (there should only
+        // be one)
         Builder<Component> childComponents = Stream.builder();
         wrapperElement.getChildren().forEach(childElement -> ComponentUtil
                 .findComponents(childElement, childComponents::add));
+        super.getChildren().forEach(childComponents::add);
         return childComponents.build();
     }
 
@@ -221,7 +222,7 @@ public class JavaScriptBootstrapUI extends UI {
     private void acknowledgeClient() {
         serverConnected(false);
     }
-    
+
     private void cancelClient() {
         serverConnected(true);
     }

@@ -143,8 +143,7 @@ public class DataCommunicatorTest {
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
+        pageSize = dataCommunicator.getPageSize();
     }
 
     @Test
@@ -976,19 +975,9 @@ public class DataCommunicatorTest {
 
     @Test
     public void itemCountChangeEvent_exactSize_correctCountAndIsCountEstimated() {
-        final TestComponent component = new TestComponent();
-        ui.add(component);
-        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
-                data -> {
-                }, component.getElement().getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
-        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
-        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
-                ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
-                    cachedEvent.set((ItemCountChangeEvent<?>) event);
-                }));
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
         int exactCount = 500;
         dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
         dataCommunicator.setRequestedRange(0, 50);
@@ -1022,19 +1011,9 @@ public class DataCommunicatorTest {
 
     @Test
     public void itemCountChangeEvent_estimatedCount_estimateUsedUntilEndReached() {
-        final TestComponent component = new TestComponent();
-        ui.add(component);
-        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
-                data -> {
-                }, component.getElement().getNode());
-        pageSize = 50;
-        dataCommunicator.setPageSize(pageSize);
-        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
-        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
-                ((ComponentEventListener) event -> {
-                    Assert.assertNull(cachedEvent.get());
-                    cachedEvent.set((ItemCountChangeEvent<?>) event);
-                }));
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
         int exactCount = 500;
         dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
         dataCommunicator.setRequestedRange(0, 50);
@@ -1082,7 +1061,6 @@ public class DataCommunicatorTest {
         StateNode stateNode = Mockito.spy(element.getNode());
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {}, stateNode);
-        dataCommunicator.setPageSize(pageSize);
 
         // the items size returned by this data provider will be 100
         dataCommunicator.setDataProvider(createDataProvider(), null);
@@ -1103,6 +1081,15 @@ public class DataCommunicatorTest {
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
         Assert.assertEquals(300, dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void pageSize_defaultPageSizeUsed_returnsItemNormally() {
+        dataCommunicator.setDataProvider(DataProvider.ofItems(new Item(0)),
+                null);
+        Stream<Item> itemStream = dataCommunicator.fetchFromProvider(0, 100);
+        Assert.assertNotNull(itemStream);
+        Assert.assertEquals(1, itemStream.count());
     }
 
     @Test
@@ -1277,8 +1264,8 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchDisabled_getItemCount_stillReturnsItemsCount() {
-        dataCommunicator.setFetchDisabled(true);
+    public void fetchEnabled_getItemCount_stillReturnsItemsCount() {
+        dataCommunicator.setFetchEnabled(false);
         Assert.assertEquals(0, dataCommunicator.getItemCount());
 
         // data provider stores 100 items
@@ -1287,8 +1274,8 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchDisabled_getItem_stillReturnsItem() {
-        dataCommunicator.setFetchDisabled(true);
+    public void fetchEnabled_getItem_stillReturnsItem() {
+        dataCommunicator.setFetchEnabled(false);
 
         // data provider stores 100 items
         dataCommunicator.setDataProvider(createDataProvider(), null);
@@ -1296,11 +1283,10 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchDisabled_requestRange_fetchIgnored() {
+    public void fetchEnabled_requestRange_fetchIgnored() {
         DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
                 dataGenerator, arrayUpdater, data -> {
-                }, element.getNode(), true);
-        dataCommunicator.setPageSize(pageSize);
+                }, element.getNode(), false);
 
         DataProvider<Item, ?> dataProvider = Mockito
                 .spy(DataProvider.ofItems(new Item(0)));
@@ -1316,7 +1302,7 @@ public class DataCommunicatorTest {
                 .size(Mockito.any(Query.class));
 
         // Switch back to normal mode
-        dataCommunicator.setFetchDisabled(false);
+        dataCommunicator.setFetchEnabled(true);
         dataCommunicator.setRequestedRange(0, 10);
 
         fakeClientCommunication();
@@ -1327,8 +1313,79 @@ public class DataCommunicatorTest {
                 .size(Mockito.any(Query.class));
     }
 
+    @Test
+    public void setPageSize_setIncorrectPageSize_throws() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException
+                .expectMessage("Page size cannot be less than 1, got 0");
+        dataCommunicator.setPageSize(0);
+    }
+
+    @Test
+    public void fireItemCountEvent_differentItemCountObtained_eventFired() {
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
+
+        dataCommunicator.fireItemCountEvent(1);
+
+        ItemCountChangeEvent<?> event = cachedEvent.getAndSet(null);
+
+        Assert.assertNotNull("Event hasn't been fired, but expected", event);
+        Assert.assertEquals("Invalid item count", 1, event.getItemCount());
+
+        dataCommunicator.fireItemCountEvent(2);
+
+        event = cachedEvent.get();
+
+        Assert.assertNotNull("Event hasn't been fired, but expected", event);
+        Assert.assertEquals("Invalid item count", 2, event.getItemCount());
+    }
+
+    @Test
+    public void fireItemCountEvent_sameItemCountObtained_eventNotFired() {
+        final TestComponent component = initDataCommunicatorWithTestComponent();
+        final AtomicReference<ItemCountChangeEvent<?>> cachedEvent = addItemCountChangeListener(
+                component);
+
+        dataCommunicator.fireItemCountEvent(1);
+        cachedEvent.set(null);
+
+        // Fire the same item count
+        dataCommunicator.fireItemCountEvent(1);
+
+        ItemCountChangeEvent<?> event = cachedEvent.get();
+
+        Assert.assertNull("Event fired, but not expected", event);
+    }
+
+    @Test
+    public void fireItemCountEvent_emptyComponent_returnsNormally() {
+        dataCommunicator.fireItemCountEvent(42);
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
+    }
+
+    private AtomicReference<ItemCountChangeEvent<?>> addItemCountChangeListener(
+            TestComponent component) {
+        AtomicReference<ItemCountChangeEvent<?>> cachedEvent = new AtomicReference<>();
+        ComponentUtil.addListener(component, ItemCountChangeEvent.class,
+                ((ComponentEventListener) event -> {
+                    Assert.assertNull(cachedEvent.get());
+                    cachedEvent.set((ItemCountChangeEvent<?>) event);
+                }));
+        return cachedEvent;
+    }
+
+    private TestComponent initDataCommunicatorWithTestComponent() {
+        final TestComponent component = new TestComponent();
+        ui.add(component);
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
+                data -> {
+                }, component.getElement().getNode());
+        return component;
     }
 
     private int getPageSizeIncrease() {

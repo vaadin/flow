@@ -13,30 +13,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
-public class LogoutIT extends ChromeBrowserTest {
+public abstract class AbstractDisabledTemplateElementIT
+        extends ChromeBrowserTest {
 
     @Test
-    public void setLocation_noErrorMessages() {
+    public void enableDisabledViaTemplateElement() {
         open();
 
-        $(NativeButtonElement.class).first().click();
+        TestBenchElement template = $(TestBenchElement.class)
+                .id("disabled-element");
+        TestBenchElement injected = template.$(TestBenchElement.class)
+                .id("injected");
 
-        // There can be "Session Expired" message because of heartbeat
-        checkLogsForErrors(msg -> msg.equals("Session Expired"));
+        // initial attribute value
+        Assert.assertEquals(Boolean.TRUE.toString(),
+                injected.getAttribute("disabled"));
 
-        // There can't be any error dialog
-        Assert.assertFalse(isElementPresent(By.className("v-system-error")));
+        template.$(TestBenchElement.class).id("enable").click();
 
-        // The base href view should be shown
-        waitForElementPresent(By.tagName("a"));
+        Assert.assertFalse(injected.hasAttribute("disabled"));
     }
 }
