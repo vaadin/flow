@@ -46,8 +46,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
-import java.io.File;
-
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static com.vaadin.flow.shared.ApplicationConstants.CSRF_TOKEN;
@@ -217,10 +215,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String frontendDir = FrontendUtils.getProjectFrontendDir(
                 service.getDeploymentConfiguration());
         String indexHtmlFilePath;
-        if(frontendDir.endsWith(File.separator)) {
+        if(frontendDir.endsWith("/")) {
             indexHtmlFilePath = frontendDir + "index.html";
         } else {
-            indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
+            indexHtmlFilePath = frontendDir + "/index.html";
         }
         String message = String
                 .format("Failed to load content of '%1$s'. "
