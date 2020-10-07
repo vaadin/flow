@@ -737,8 +737,10 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Fires an item count change event if the passed item count differs from
-     * the item count passed on the previous call of this method.
+     * Notifies the component about item count changes.
+     * <p>
+     * {@link ItemCountChangeEvent} is fired if the passed item count differs
+     * from the item count passed on the previous call of this method.
      *
      * @param itemCount
      *            item count to send
