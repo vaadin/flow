@@ -188,8 +188,8 @@ public class JavaScriptBootstrapUI extends UI {
             }
 
             navigationInProgress = true;
-            Optional<NavigationState>  navigationState = this.getRouter()
-                    .resolveNavigationTarget(location);
+            Optional<NavigationState> navigationState = getInternals()
+                    .getRouter().resolveNavigationTarget(location);
 
             if (navigationState.isPresent()) {
                 // Navigation can be done in server side without extra
@@ -232,8 +232,8 @@ public class JavaScriptBootstrapUI extends UI {
     private void navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
-                    this.getRouter()).withTarget(ClientViewPlaceholder.class)
-                    .build();
+                    getInternals().getRouter())
+                            .withTarget(ClientViewPlaceholder.class).build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
@@ -246,7 +246,7 @@ public class JavaScriptBootstrapUI extends UI {
             return;
         }
         getInternals().setLastHandledNavigation(location);
-        Optional<NavigationState> navigationState = this.getRouter()
+        Optional<NavigationState> navigationState = getInternals().getRouter()
                 .resolveNavigationTarget(location);
         if (navigationState.isPresent()) {
             // There is a valid route in flow.
@@ -280,8 +280,8 @@ public class JavaScriptBootstrapUI extends UI {
 
     private void handleNavigation(Location location, NavigationState navigationState, NavigationTrigger trigger) {
         try {
-            NavigationEvent navigationEvent = new NavigationEvent(getRouter(),
-                    location, this, trigger);
+            NavigationEvent navigationEvent = new NavigationEvent(
+                    getInternals().getRouter(), location, this, trigger);
 
             JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
                     navigationState);
@@ -300,8 +300,8 @@ public class JavaScriptBootstrapUI extends UI {
 
     private boolean handleExceptionNavigation(Location location,
             Exception exception) {
-        Optional<ErrorTargetEntry> maybeLookupResult = this.getRouter()
-                .getErrorNavigationTarget(exception);
+        Optional<ErrorTargetEntry> maybeLookupResult = getInternals()
+                .getRouter().getErrorNavigationTarget(exception);
         if (maybeLookupResult.isPresent()) {
             ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
@@ -309,12 +309,12 @@ public class JavaScriptBootstrapUI extends UI {
                     lookupResult.getHandledExceptionType(), exception,
                     exception.getMessage());
             ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
-                    new NavigationStateBuilder(this.getRouter())
+                    new NavigationStateBuilder(getInternals().getRouter())
                             .withTarget(lookupResult.getNavigationTarget())
                             .build());
 
             ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                    this.getRouter(), location, this,
+                    getInternals().getRouter(), location, this,
                     NavigationTrigger.CLIENT_SIDE, errorParameter);
 
             errorStateRenderer.handle(errorNavigationEvent);
@@ -343,7 +343,7 @@ public class JavaScriptBootstrapUI extends UI {
     }
 
     private void handleErrorNavigation(Location location) {
-        NavigationState errorNavigationState = this.getRouter()
+        NavigationState errorNavigationState = getInternals().getRouter()
                 .resolveRouteNotFoundNavigationTarget()
                 .orElse(getDefaultNavigationError());
         ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
@@ -353,13 +353,13 @@ public class JavaScriptBootstrapUI extends UI {
         ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
                 NotFoundException.class, notFoundException);
         ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                this.getRouter(), location, this, NavigationTrigger.CLIENT_SIDE,
+                getInternals().getRouter(), location, this, NavigationTrigger.CLIENT_SIDE,
                 errorParameter);
         errorStateRenderer.handle(errorNavigationEvent);
     }
 
     private NavigationState getDefaultNavigationError() {
-        return new NavigationStateBuilder(this.getRouter())
+        return new NavigationStateBuilder(getInternals().getRouter())
                 .withTarget(RouteNotFoundError.class).build();
     }
 

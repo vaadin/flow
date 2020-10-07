@@ -39,6 +39,7 @@ import static org.mockito.Mockito.verify;
 
 public class ExplicitNullableTypeCheckerTest {
     private ExplicitNullableTypeChecker explicitNullableTypeChecker;
+    private ExplicitNullableTypeCheckerHelper helper;
     private Type stringListType;
     private Type stringToDateMapType;
     private Type stringArrayType;
@@ -46,6 +47,7 @@ public class ExplicitNullableTypeCheckerTest {
     @Before
     public void setup() throws NoSuchMethodException {
         explicitNullableTypeChecker = new ExplicitNullableTypeChecker();
+        helper = new ExplicitNullableTypeCheckerHelper();
 
         stringListType = getClass()
                 .getMethod("parametrizedListMethod", String[].class)
@@ -218,7 +220,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_List_Items() {
-        ExplicitNullableTypeChecker checker = spy(explicitNullableTypeChecker);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         List<String> list = parametrizedListMethod("foo", "bar");
 
@@ -249,7 +251,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_Map_Values() {
-        ExplicitNullableTypeChecker checker = spy(explicitNullableTypeChecker);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         Date dateOne = new Date();
         Date dateTwo = new Date();
@@ -284,7 +286,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_GenericArray_Items() {
-        ExplicitNullableTypeChecker checker = spy(explicitNullableTypeChecker);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         String[] array = arrayMethod("foo", "bar");
 
@@ -320,7 +322,7 @@ public class ExplicitNullableTypeCheckerTest {
 
     @Test
     public void should_Recursively_Check_BeanProperties() {
-        ExplicitNullableTypeChecker checker = spy(explicitNullableTypeChecker);
+        ExplicitNullableTypeCheckerHelper checker = spy(helper);
 
         final Bean bean = new Bean();
         bean.setTitle("foo");
@@ -364,7 +366,7 @@ public class ExplicitNullableTypeCheckerTest {
         Assert.assertNull("Should allow not null value", error);
 
         verify(explicitNullableTypeChecker).checkValueForType(notNullValue,
-                String.class);
+            String.class);
     }
 
     @Test

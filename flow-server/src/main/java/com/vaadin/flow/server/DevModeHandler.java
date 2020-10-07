@@ -15,9 +15,19 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
+import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
+import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.server.frontend.FrontendUtils.console;
+import static java.lang.String.format;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +48,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -49,19 +63,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
-import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
-import static java.lang.String.format;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Handles getting resources from <code>webpack-dev-server</code>.
@@ -136,9 +137,12 @@ public final class DevModeHandler implements RequestHandler {
 
     private final CompletableFuture<Void> devServerStartFuture;
 
+    private final File npmFolder;
+
     private DevModeHandler(DeploymentConfiguration config, int runningPort,
             File npmFolder, CompletableFuture<Void> waitFor) {
 
+        this.npmFolder = npmFolder;
         port = runningPort;
         reuseDevServer = config.reuseDevServer();
         devServerPortFile = getDevServerPortFile(npmFolder);
@@ -147,7 +151,7 @@ public final class DevModeHandler implements RequestHandler {
             // this will throw an exception if an exception has been thrown by
             // the waitFor task
             waitFor.getNow(null);
-            runOnFutureComplete(config, npmFolder);
+            runOnFutureComplete(config);
         });
 
     }
@@ -192,8 +196,10 @@ public final class DevModeHandler implements RequestHandler {
                 || !configuration.enableDevServer()) {
             return null;
         }
-        atomicHandler.compareAndSet(null,
-                createInstance(runningPort, configuration, npmFolder, waitFor));
+        if (atomicHandler.get() == null) {
+            atomicHandler.compareAndSet(null, createInstance(runningPort,
+                    configuration, npmFolder, waitFor));
+        }
         return getDevModeHandler();
     }
 
@@ -257,11 +263,6 @@ public final class DevModeHandler implements RequestHandler {
     private static DevModeHandler createInstance(int runningPort,
             DeploymentConfiguration configuration, File npmFolder,
             CompletableFuture<Void> waitFor) {
-
-        if (runningPort == 0) {
-            runningPort = getRunningDevServerPort(npmFolder);
-        }
-
         return new DevModeHandler(configuration, runningPort, npmFolder,
                 waitFor);
     }
@@ -520,10 +521,9 @@ public final class DevModeHandler implements RequestHandler {
         FileUtils.deleteQuietly(devServerPortFile);
     }
 
-    private void runOnFutureComplete(DeploymentConfiguration config,
-            File npmFolder) {
+    private void runOnFutureComplete(DeploymentConfiguration config) {
         try {
-            doStartDevModeServer(config, npmFolder);
+            doStartDevModeServer(config);
         } catch (ExecutionFailedException exception) {
             getLogger().error(null, exception);
             throw new CompletionException(exception);
@@ -569,22 +569,45 @@ public final class DevModeHandler implements RequestHandler {
         }
     }
 
-    private void doStartDevModeServer(DeploymentConfiguration config,
-            File npmFolder) throws ExecutionFailedException {
+    private boolean checkPort() {
+        if (checkWebpackConnection()) {
+            getLogger().info("Reusing webpack-dev-server running at {}:{}",
+                    WEBPACK_HOST, port);
+
+            // Save running port for next usage
+            saveRunningDevServerPort();
+            watchDog.set(null);
+            return false;
+        }
+        throw new IllegalStateException(format(
+                "%s webpack-dev-server port '%d' is defined but it's not working properly",
+                START_FAILURE, port));
+
+    }
+
+    private void doStartDevModeServer(DeploymentConfiguration config)
+            throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
         if (port > 0) {
-            if (checkWebpackConnection()) {
-                getLogger().info("Reusing webpack-dev-server running at {}:{}",
-                        WEBPACK_HOST, port);
-
-                // Save running port for next usage
-                saveRunningDevServerPort();
-                watchDog.set(null);
-                return;
+            if (!checkWebpackConnection()) {
+                throw new IllegalStateException(format(
+                        "%s webpack-dev-server port '%d' is defined but it's not working properly",
+                        START_FAILURE, port));
             }
-            throw new IllegalStateException(format(
-                    "%s webpack-dev-server port '%d' is defined but it's not working properly",
-                    START_FAILURE, port));
+            reuseExistingPort(port);
+            return;
+        }
+        port = getRunningDevServerPort(npmFolder);
+        if (port > 0) {
+            if (checkWebpackConnection()) {
+                reuseExistingPort(port);
+                return;
+            } else {
+                getLogger().warn(
+                        "webpack-dev-server port '%d' is defined but it's not working properly. Using a new free port...",
+                        port);
+                port = 0;
+            }
         }
         // here the port == 0
         Pair<File, File> webPackFiles = validateFiles(npmFolder);
@@ -596,7 +619,21 @@ public final class DevModeHandler implements RequestHandler {
 
         // Look for a free port
         port = getFreePort();
+        // save the port immediately before start a webpack server, see #8981
+        saveRunningDevServerPort();
+        boolean success = false;
 
+        try {
+            success = doStartWebpack(config, webPackFiles, start);
+        } finally {
+            if (!success) {
+                removeRunningDevServerPort();
+            }
+        }
+    }
+
+    private boolean doStartWebpack(DeploymentConfiguration config,
+            Pair<File, File> webPackFiles, long start) {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
@@ -624,6 +661,7 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         processBuilder.command(command);
+
         try {
             webpackProcess.set(
                     processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
@@ -665,10 +703,20 @@ public final class DevModeHandler implements RequestHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(LOG_END, ms);
-            saveRunningDevServerPort();
+            return true;
         } catch (IOException | InterruptedException e) {
             getLogger().error("Failed to start the webpack process", e);
         }
+        return false;
+    }
+
+    private void reuseExistingPort(int port) {
+        getLogger().info("Reusing webpack-dev-server running at {}:{}",
+                WEBPACK_HOST, port);
+
+        // Save running port for next usage
+        saveRunningDevServerPort();
+        watchDog.set(null);
     }
 
     private List<String> makeCommands(DeploymentConfiguration config,

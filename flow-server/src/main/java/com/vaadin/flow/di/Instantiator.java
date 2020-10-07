@@ -22,8 +22,6 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.polymertemplate.NpmTemplateParser;
-import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.server.BootstrapListener;
@@ -228,12 +226,4 @@ public interface Instantiator extends Serializable {
         return getOrCreate(I18NProvider.class);
     }
 
-    /**
-     * Returns {@link TemplateParser} for this service.
-     *
-     * @return A non-null template parser.
-     */
-    default TemplateParser getTemplateParser() {
-        return NpmTemplateParser.getInstance();
-    }
 }

@@ -50,13 +50,9 @@ import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.tests.util.MockUI;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
@@ -577,27 +573,6 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
-    public static class RouterTestUI extends MockUI {
-        final Router router;
-
-        public RouterTestUI(Router router) {
-            super(createMockSession());
-            this.router = router;
-        }
-
-        private static VaadinSession createMockSession() {
-            MockVaadinServletService service = new MockVaadinServletService();
-            service.init();
-            return new MockVaadinSession(service);
-        }
-
-        @Override
-        public Router getRouter() {
-            return router;
-        }
-
-    }
-
     @Route("navigationEvents")
     @Tag(Tag.DIV)
     public static class NavigationEvents extends Component {
@@ -975,7 +950,7 @@ public class RouterTest extends RoutingTestBase {
         public void beforeEnter(BeforeEnterEvent event) {
             events.add(event);
             UI ui = UI.getCurrent();
-            ui.getRouter().navigate(ui, new Location("loop"),
+            ui.getInternals().getRouter().navigate(ui, new Location("loop"),
                     NavigationTrigger.PROGRAMMATIC);
         }
     }
@@ -1599,13 +1574,48 @@ public class RouterTest extends RoutingTestBase {
     public static class RedirectWithRouteParametersView
             extends RouteParametersBase {
     }
-    
+
+    @Route("forward/setParameter/back")
+    @Tag(Tag.DIV)
+    public static class ForwardSetParameterBackView extends Component implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            ForwardSetParameterView.backBeforeEnterInvoked = true;
+        }
+    }
+
+    @Route("forward/setParameter")
+    @Tag(Tag.DIV)
+    public static class ForwardSetParameterView extends Component implements HasUrlParameter<String>, AfterNavigationObserver {
+
+        static boolean afterNavigationInvoked = false;
+        static boolean backBeforeEnterInvoked = false;
+
+        private static void clear() {
+            afterNavigationInvoked = false;
+            backBeforeEnterInvoked = false;
+        }
+
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            afterNavigationInvoked = false;
+
+            event.forwardTo(ForwardSetParameterBackView.class);
+        }
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            afterNavigationInvoked = true;
+        }
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
             IllegalArgumentException, IllegalAccessException {
         super.init();
-        ui = new RouterTestUI(router);
+        ui = new RouterTestMockUI(router);
         ui.getSession().lock();
         ui.getSession().setConfiguration(configuration);
 
@@ -3780,6 +3790,22 @@ public class RouterTest extends RoutingTestBase {
                 RedirectWithRouteParametersView.class);
 
         assertWrongRouteParametersRedirect();
+    }
+
+    @Test // #5173
+    public void forward_fromSetParameters_withoutBeforeEnterObserver() {
+        ForwardSetParameterView.clear();
+
+        setNavigationTargets(ForwardSetParameterView.class,
+                ForwardSetParameterBackView.class);
+
+        navigate("forward/setParameter/test");
+
+        Assert.assertFalse(
+                "afterNavigation must not be invoked after forwardTo in setParameter",
+                ForwardSetParameterView.afterNavigationInvoked);
+        Assert.assertTrue("forwardTo ForwardSetParameterBackView failed",
+                ForwardSetParameterView.backBeforeEnterInvoked);
     }
 
     private void assertWrongRouteParametersRedirect() {

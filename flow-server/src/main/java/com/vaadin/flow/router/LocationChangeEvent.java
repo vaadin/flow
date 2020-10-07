@@ -179,6 +179,8 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Reroutes the navigation to use the provided navigation handler instead of
      * the currently used handler.
+     * <p>
+     * This function doesn't change the browser URL.
      *
      * @param rerouteTarget
      *            the navigation handler to use, or {@code null} to clear a
@@ -191,6 +193,8 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Reroutes the navigation to show the given component instead of the
      * component that is currently about to be displayed.
+     * <p>
+     * This function doesn't change the browser URL.
      *
      * @param rerouteTargetState
      *            the target navigation state of the rerouting, not {@code null}

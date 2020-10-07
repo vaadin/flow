@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -117,6 +118,14 @@ public class UI extends Component
     private final UIInternals internals;
 
     private final Page page = new Page(this);
+
+    /*
+     * Despite section 6 of RFC 4122, this particular use of UUID *is* adequate
+     * for security capabilities. Type 4 UUIDs contain 122 bits of random data,
+     * and UUID.randomUUID() is defined to use a cryptographically secure random
+     * generator.
+     */
+    private final String csrfToken = UUID.randomUUID().toString();
 
     /**
      * Creates a new empty UI.
@@ -785,6 +794,8 @@ public class UI extends Component
     /**
      * Gets the framework data object for this UI.
      *
+     * This method is for internal use only.
+     *
      * @return the framework data object
      */
     public UIInternals getInternals() {
@@ -883,7 +894,7 @@ public class UI extends Component
     public void navigate(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getRouter().getRegistry());
+                .forRegistry(getInternals().getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
     }
     
@@ -929,15 +940,30 @@ public class UI extends Component
         Objects.requireNonNull(location, "Location must not be null");
         Objects.requireNonNull(queryParameters, "Query parameters must not be null");
 
-        getRouter().navigate(this, new Location(location, queryParameters),
+        getInternals().getRouter().navigate(this,
+                new Location(location, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
+    }
+
+    /**
+     * Returns true if this UI instance supports navigation.
+     *
+     * @return true if this UI instance supports navigation, otherwise false.
+     */
+    public boolean isNavigationSupported() {
+        // By default any UI supports navigation. Override this to return false
+        // if navigation is not supported.
+        return true;
     }
 
     /**
      * Gets the router used for navigating in this UI.
      *
      * @return a router
+     *
+     * @deprecated For internal use only. Will be removed in the future.
      */
+    @Deprecated
     public Router getRouter() {
         return internals.getRouter();
     }
@@ -1164,7 +1190,7 @@ public class UI extends Component
      * @since 2.0
      */
     public String getCsrfToken() {
-        return getSession().getCsrfToken();
+        return csrfToken;
     }
 
 }

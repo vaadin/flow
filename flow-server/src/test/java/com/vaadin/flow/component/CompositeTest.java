@@ -1,31 +1,27 @@
 package com.vaadin.flow.component;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
 import com.vaadin.flow.component.CompositeNestedTest.TestLayout;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.tests.util.TestUtil;
 
-import static org.junit.Assert.assertEquals;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class CompositeTest {
@@ -39,29 +35,6 @@ public class CompositeTest {
     CompositeWithComponent compositeWithComponent;
     TestLayout layoutInsideComposite;
     Component componentInsideLayoutInsideComposite;
-
-    @Tag("div")
-    public static class MyTemplate extends PolymerTemplate<TemplateModel> {
-
-        public MyTemplate() {
-            super((clazz, tag, service) -> new TemplateData("",
-                    Jsoup.parse("<dom-module id='div'></dom-module>")));
-        }
-    }
-
-    public static class KeyNotifierComposite extends Composite<MyTemplate>
-            implements KeyNotifier {
-
-        @Override
-        protected MyTemplate initContent() {
-            MyTemplate template = new MyTemplate();
-
-            addKeyUpListener(Key.ENTER, event -> {
-            }, KeyModifier.CONTROL);
-
-            return template;
-        }
-    }
 
     protected Component createTestComponent() {
         return new TestComponent(
@@ -423,29 +396,6 @@ public class CompositeTest {
 
         TestUtil.assertArrays(triggered.toArray(),
                 new Integer[] { -1, -2, -3, -4, -5, -6, 1, 2, 3, 4, 5, 6 });
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void getContent_compositeIsKeyNotifier() {
-        KeyNotifierComposite composite = new KeyNotifierComposite();
-        composite.getContent();
-    }
-
-    /*
-     * This is just a test for #1181.
-     */
-    @Test
-    @Ignore("Failing after adding connect client generators")
-    public void templateInsideComposite_compositeCanBeAdded() {
-        class MyComponent extends Composite<MyTemplate> {
-
-        }
-
-        MyComponent component = new MyComponent();
-
-        UI ui = new UI();
-        // Doesn't throw any exception
-        ui.add(component);
     }
 
     public static void assertElementChildren(Element parent,

@@ -37,7 +37,6 @@ import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.templatemodel.AllowClientUpdates;
 
 /**
  * Map for element property values.
@@ -269,12 +268,14 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             ElementPropertyMap propertyMap = node
                     .getFeature(ElementPropertyMap.class);
             if (propertyMap.updateFromClientFilter != null) {
+                //// TODO to be removed with polymer template support removal
                 boolean allow = propertyMap.updateFromClientFilter.test(key);
                 if (!allow && log) {
                     getLogger().warn("Ignoring model update for {}. "
                             + "For security reasons, the property must have a "
-                            + "two-way binding in the template, be annotated with @{} in the model, or be defined as synchronized.",
-                            key, AllowClientUpdates.class.getSimpleName());
+                            + "two-way binding in the template, be annotated"
+                            + " with @AllowClientUpdates in the model, or be defined as synchronized.",
+                            key);
                 }
                 return allow ? AllowUpdate.EXPLICITLY_ALLOW
                         : AllowUpdate.EXPLICITLY_DISALLOW;

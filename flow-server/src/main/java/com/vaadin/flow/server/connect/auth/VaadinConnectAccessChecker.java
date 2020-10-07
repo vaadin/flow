@@ -139,14 +139,14 @@ public class VaadinConnectAccessChecker {
         if (!xsrfProtectionEnabled) {
             return false;
         }
+
         HttpSession session = request.getSession(false);
-        String csrfTokenInHeader = request.getHeader("X-CSRF-Token");
         if (session == null) {
-            return csrfTokenInHeader != null;
-        } else {
-            String csrfTokenInSession = (String) session.getAttribute(VaadinService.getCsrfTokenAttributeName());
-            return csrfTokenInSession == null || !csrfTokenInSession.equals(csrfTokenInHeader);
+            return false;
         }
+
+        String csrfTokenInSession = (String) session.getAttribute(VaadinService.getCsrfTokenAttributeName());
+        return csrfTokenInSession == null || !csrfTokenInSession.equals(request.getHeader("X-CSRF-Token"));
     }
 
     private boolean entityForbidden(AnnotatedElement entity,

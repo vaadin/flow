@@ -5,8 +5,8 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
+import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -22,6 +22,11 @@ public class TemplateAttributeView extends PolymerTemplate<TemplateModel>
 
     @Id("disabled")
     private Div disabledDiv;
+    @Id("hasText")
+    private Div hasText;
+
+    @Id("hasTextAndChild")
+    private Div hasTextAndChild;
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
@@ -36,6 +41,11 @@ public class TemplateAttributeView extends PolymerTemplate<TemplateModel>
         div = new Div();
         div.setId("disabledInfo");
         div.setText("Enabled: " + disabledDiv.isEnabled());
+        add(div);
+
+        div = new Div();
+        div.setText(hasText.getText() + " " + hasTextAndChild.getText() + "|");
+        div.setId("text-info");
         add(div);
     }
 }

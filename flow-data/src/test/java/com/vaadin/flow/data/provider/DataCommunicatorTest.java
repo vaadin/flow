@@ -33,6 +33,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.Range;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -1073,6 +1074,38 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void setDefinedSize_rangeEndEqualsAssumedSize_flushRequested() {
+        // trigger client communication in order to initialise it and avoid
+        // infinite loop inside 'requestFlush()'
+        fakeClientCommunication();
+
+        StateNode stateNode = Mockito.spy(element.getNode());
+        DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
+                dataGenerator, arrayUpdater, data -> {}, stateNode);
+        dataCommunicator.setPageSize(pageSize);
+
+        // the items size returned by this data provider will be 100
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+
+        // Trigger flush() to set the assumedSize
+        fakeClientCommunication();
+
+        dataCommunicator.setRequestedRange(0, 100);
+        // clean flushRequest
+        fakeClientCommunication();
+
+        Mockito.reset(stateNode);
+        dataCommunicator.setDefinedSize(false);
+        fakeClientCommunication();
+
+        // Verify that requestFlush has been invoked
+        Mockito.verify(stateNode).runWhenAttached(Mockito.anyObject());
+
+        // Verify the estimated count is now 100 + 4 * pageSize = 300
+        Assert.assertEquals(300, dataCommunicator.getItemCount());
+    }
+
+    @Test
     public void fetchFromProvider_pageSizeLessThanLimit_multiplePagedQueries() {
         AbstractDataProvider<Item, Object> dataProvider =
                 createDataProvider(100);
@@ -1241,6 +1274,57 @@ public class DataCommunicatorTest {
         // 42 < pageSize (50), so the second page shouldn't be requested
         Mockito.verify(dataProvider, Mockito.times(1))
                 .fetch(Mockito.any(Query.class));
+    }
+
+    @Test
+    public void fetchDisabled_getItemCount_stillReturnsItemsCount() {
+        dataCommunicator.setFetchDisabled(true);
+        Assert.assertEquals(0, dataCommunicator.getItemCount());
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertEquals(100, dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void fetchDisabled_getItem_stillReturnsItem() {
+        dataCommunicator.setFetchDisabled(true);
+
+        // data provider stores 100 items
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        Assert.assertNotNull(dataCommunicator.getItem(42));
+    }
+
+    @Test
+    public void fetchDisabled_requestRange_fetchIgnored() {
+        DataCommunicator<Item> dataCommunicator = new DataCommunicator<>(
+                dataGenerator, arrayUpdater, data -> {
+                }, element.getNode(), true);
+        dataCommunicator.setPageSize(pageSize);
+
+        DataProvider<Item, ?> dataProvider = Mockito
+                .spy(DataProvider.ofItems(new Item(0)));
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setRequestedRange(0, 0);
+
+        fakeClientCommunication();
+
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider, Mockito.times(0))
+                .size(Mockito.any(Query.class));
+
+        // Switch back to normal mode
+        dataCommunicator.setFetchDisabled(false);
+        dataCommunicator.setRequestedRange(0, 10);
+
+        fakeClientCommunication();
+
+        Mockito.verify(dataProvider)
+                .fetch(Mockito.any(Query.class));
+        Mockito.verify(dataProvider)
+                .size(Mockito.any(Query.class));
     }
 
     @Tag("test-component")
