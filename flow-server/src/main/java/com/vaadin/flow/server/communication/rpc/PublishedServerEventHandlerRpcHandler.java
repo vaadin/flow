@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -166,10 +165,9 @@ public class PublishedServerEventHandlerRpcHandler
 
     private static boolean hasMethodAnnotation(Method method) {
         // Check for polymer event handler annotation.
-        final Optional<Annotation> eventHandler = ReflectTools
-                .getAnnotation(method,
-                        "com.vaadin.flow.component.polymertemplate.EventHandler");
-        return eventHandler.isPresent() || method
+        final boolean hasEventHandler = ReflectTools.hasAnnotation(method,
+                "com.vaadin.flow.component.polymertemplate.EventHandler");
+        return hasEventHandler || method
                 .isAnnotationPresent(ClientCallable.class);
     }
 
@@ -310,15 +308,22 @@ public class PublishedServerEventHandlerRpcHandler
                             .invoke(polymerUtil, instance, argValue,
                                     method.getGenericParameterTypes()[index]);
                 }
-            } catch (ClassNotFoundException | NoSuchMethodException e) {
+            } catch (ClassNotFoundException e) {
                 // NO-OP we just try to check if the polymer library is added
                 LoggerFactory
                         .getLogger(PublishedServerEventHandlerRpcHandler.class)
                         .trace("Tried finding polymer dependency classes.", e);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                LoggerFactory
-                        .getLogger(PublishedServerEventHandlerRpcHandler.class)
-                        .warn("Exception calling Polymer util methods", e);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException(
+                        "Utility method was not found even though class is available",
+                        e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException(
+                        "Access exception invoking method that should be public",
+                        e);
+            } catch (InvocationTargetException e) {
+                throw new IllegalStateException(
+                        "Could not invoke utility method", e);
             }
 
             Optional<RpcDecoder> decoder = getDecoder(argValue, convertedType);

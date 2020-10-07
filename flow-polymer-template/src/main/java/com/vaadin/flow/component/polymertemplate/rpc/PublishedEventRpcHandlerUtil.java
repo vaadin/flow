@@ -17,8 +17,10 @@ package com.vaadin.flow.component.polymertemplate.rpc;
 
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.templatemodel.ModelType;
@@ -42,7 +44,7 @@ public class PublishedEventRpcHandlerUtil implements Serializable {
      * @param argValue
      *         received value
      * @param convertedType
-     *         taget type that value sould be converted to
+     *         target type that value should be converted to
      * @return true if valid template model value
      */
     public static boolean isTemplateModelValue(Component instance,
@@ -64,16 +66,23 @@ public class PublishedEventRpcHandlerUtil implements Serializable {
      * @param convertedType
      *         value type
      * @return the provided model value
-     */
-    public static Object getTemplateItem(Component template,
-            JsonObject argValue, Type convertedType) {
-        StateNode node = template.getUI().get().getInternals().getStateTree()
-                .getNodeById((int) argValue.getNumber("nodeId"));
+     * @throws IllegalStateException
+     *         if the component is not attached to the UI
+         */
+        public static Object getTemplateItem(Component template,
+                JsonObject argValue, Type convertedType) {
+            final Optional<UI> ui = template.getUI();
+            if (ui.isPresent()) {
+                StateNode node = ui.get().getInternals().getStateTree()
+                        .getNodeById((int) argValue.getNumber("nodeId"));
 
-        ModelType propertyType = ((PolymerTemplate<?>) template)
-                .getModelType(convertedType);
+                ModelType propertyType = ((PolymerTemplate<?>) template)
+                        .getModelType(convertedType);
 
-        return propertyType.modelToApplication(node);
-    }
+                return propertyType.modelToApplication(node);
+            }
+            throw new IllegalStateException(
+                    "Event sent for a non attached template component");
+        }
 
 }
