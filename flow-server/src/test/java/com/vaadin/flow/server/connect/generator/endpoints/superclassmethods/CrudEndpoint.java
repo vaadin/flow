@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.connect.generator.endpoints.superclassmethods;
 
+import com.vaadin.flow.server.connect.Deferrable;
 import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
@@ -11,5 +12,10 @@ public abstract class CrudEndpoint<T, ID> extends ReadOnlyEndpoint<T, ID> {
     }
 
     public void delete(ID id) {
+    }
+
+    @Deferrable
+    public T deferrableMethod(T entity) {
+        return entity;
     }
 }

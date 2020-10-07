@@ -571,7 +571,7 @@ public class OpenApiObjectGenerator {
                         operation
                             .setOperationId(String.join("_", endpointName,
                                     methodName, httpMethod.name()));
-                        boolean isDefferable = isDefferable(methodDeclaration, typeDeclaration, compilationUnit);
+                        boolean isDefferable = isDefferable(methodDeclaration, typeDeclaration);
                         if (isDefferable) {
                             operation.addExtension(EXTENSION_VAADIN_CONNECT_DEFERRABLE, true);
                             if (!needsDeferrableImport) {
@@ -592,10 +592,9 @@ public class OpenApiObjectGenerator {
         return newPathItems;
     }
 
-    private boolean isDefferable(MethodDeclaration methodDeclaration, ClassOrInterfaceDeclaration typeDeclaration,
-            CompilationUnit compilationUnit) {
-        return GeneratorUtils.hasAnnotation(methodDeclaration, compilationUnit, Deferrable.class)
-                || GeneratorUtils.hasAnnotation(typeDeclaration, compilationUnit, Deferrable.class);
+    private boolean isDefferable(MethodDeclaration methodDeclaration, ClassOrInterfaceDeclaration typeDeclaration) {
+        return methodDeclaration.isAnnotationPresent(Deferrable.class)
+                || typeDeclaration.isAnnotationPresent(Deferrable.class);
     }
 
     private boolean isAccessForbidden(

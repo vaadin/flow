@@ -6,7 +6,16 @@
 
 // @ts-ignore
 import client from './connect-client.default';
+// @ts-ignore
+import { DeferrableResult } from '@vaadin/flow-frontend/Connect';
 import Person from './com/vaadin/flow/server/connect/generator/endpoints/superclassmethods/PersonEndpoint/Person';
+
+function _deferrableMethod(
+  entity: Person
+): Promise<DeferrableResult<Person>> {
+  return client.deferrableCall('PersonEndpoint', 'deferrableMethod', {entity});
+}
+export {_deferrableMethod as deferrableMethod};
 
 function _delete(
   id: number
