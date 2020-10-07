@@ -17,7 +17,6 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -27,11 +26,9 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
-import org.jsoup.nodes.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +39,6 @@ import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NA
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -213,7 +209,7 @@ public class JavaScriptBootstrapUITest  {
     public void addRemoveComponent_clientSideRouting_addsToBody() {
         final Element uiElement = ui.getElement();
 
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         // router outlet is a virtual child that is not reflected on element level
         assertEquals(1, ui.getChildren().count());
         assertEquals(0, uiElement.getChildCount());
@@ -268,7 +264,7 @@ public class JavaScriptBootstrapUITest  {
     public void addComponent_clientSideRouterAndNavigation_componentsRemain() {
         final Element uiElement = ui.getElement();
         // trigger route via client
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         final RouterLink routerLink = new RouterLink();
         ui.add(routerLink);
 
