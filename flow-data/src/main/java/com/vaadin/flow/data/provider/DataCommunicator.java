@@ -737,8 +737,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Fires an item count change event if the last event was fired for a
-     * different count from the last sent one.
+     * Fires an item count change event if the passed item count differs from
+     * the item count passed on the previous call of this method.
      *
      * @param itemCount
      *            item count to send
