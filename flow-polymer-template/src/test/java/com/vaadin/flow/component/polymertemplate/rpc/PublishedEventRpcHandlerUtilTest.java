@@ -166,7 +166,7 @@ public class PublishedEventRpcHandlerUtilTest {
                 "Event sent for a non attached template component");
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void templateNotConnectedToUI_throws() throws NoSuchMethodException {
         TestModule instance = new TestModule();
 
