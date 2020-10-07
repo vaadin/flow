@@ -309,7 +309,8 @@ public class DevModeInitializer
         File target = new File(baseDir, TARGET);
         builder.withWebpack(new File(target, VAADIN_WEBAPP_RESOURCES),
                 new File(target, VAADIN_SERVLET_RESOURCES),
-                FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
+                FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED,
+                FrontendUtils.SERVICE_WORKER_SRC);
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 

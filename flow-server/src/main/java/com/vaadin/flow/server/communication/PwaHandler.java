@@ -101,6 +101,18 @@ public class PwaHandler implements RequestHandler {
                     }
                     return true;
                 });
+
+        // sw-runtime.js handling (service worker import for precaching runtime generated assets)
+        requestHandlerMap.put(
+                // pwaRegistry.getPwaConfiguration().relServiceWorkerPath(),
+                "/sw-runtime-resources-precache.js",
+                (session, request, response) -> {
+                    response.setContentType("application/javascript");
+                    try (PrintWriter writer = response.getWriter()) {
+                        writer.write(pwaRegistry.getRuntimeServiceWorkerJs());
+                    }
+                    return true;
+                });
     }
 
     @Override

@@ -65,9 +65,12 @@ public class PwaRegistry implements Serializable {
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
     private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
             + "and (-webkit-device-pixel-ratio: %d)";
+    private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
     private String offlineHtml = "";
     private String manifestJson = "";
+    private String runtimeServiceWorkerJs = "";
+    private long offlineHash;
     private List<PwaIcon> icons = new ArrayList<>();
     private final PwaConfiguration pwaConfiguration;
 
@@ -119,9 +122,13 @@ public class PwaRegistry implements Serializable {
             // Load offline page as string, from servlet context if
             // available, fall back to default page
             offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
+            offlineHash = offlineHtml.hashCode();
 
             // Initialize manifest.webmanifest
             manifestJson = initializeManifest().toJson();
+
+            // Initialize sw-runtime.js
+            runtimeServiceWorkerJs = initializeRuntimeServiceWorker();
         }
     }
 
@@ -217,6 +224,27 @@ public class PwaRegistry implements Serializable {
         }
         manifestData.put("icons", iconList);
         return manifestData;
+    }
+
+    private String initializeRuntimeServiceWorker() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        // List of icons for precache
+        List<String> filesToCache = getIcons().stream()
+                .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
+                .collect(Collectors.toList());
+
+        // Add offline page to precache
+        filesToCache.add(offlinePageCache());
+        // Add manifest to precache
+        filesToCache.add(manifestCache());
+
+        // Precaching
+        stringBuilder.append("self.additionalManifestEntries = [\n");
+        stringBuilder.append(String.join(",\n", filesToCache));
+        stringBuilder.append("\n];\n");
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -351,6 +379,32 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
+     * sw-runtime.js (service worker JavaScript for precaching runtime generated
+     * resources) as a String.
+     *
+     * @return contents of sw-runtime.js
+     */
+    public String getRuntimeServiceWorkerJs() {
+        return runtimeServiceWorkerJs;
+    }
+
+    /**
+     * Google Workbox cache resource String of offline page. example:
+     * {@code {url: 'offline.html', revision: '1234567'}}
+     *
+     * @return Google Workbox cache resource String of offline page
+     */
+    public String offlinePageCache() {
+        return String.format(WORKBOX_CACHE_FORMAT,
+                pwaConfiguration.getOfflinePath(), offlineHash);
+    }
+
+    private String manifestCache() {
+        return String.format(WORKBOX_CACHE_FORMAT,
+                pwaConfiguration.getManifestPath(), manifestJson.hashCode());
+    }
+
+    /**
      * List of {@link PwaIcon}:s that should be added to header.
      *
      * @return List of {@link PwaIcon}:s that should be added to header
@@ -400,7 +454,7 @@ public class PwaRegistry implements Serializable {
         // Basic icons
         icons.add(new PwaIcon(16, 16, baseName, PwaIcon.Domain.HEADER, true,
                 "shortcut icon", ""));
-        icons.add(new PwaIcon(32, 32, baseName));
+        icons.add(new PwaIcon(32, 32, baseName, PwaIcon.Domain.HEADER, true));
         icons.add(new PwaIcon(96, 96, baseName));
 
         // IOS basic icon

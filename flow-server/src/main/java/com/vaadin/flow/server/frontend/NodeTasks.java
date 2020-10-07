@@ -63,6 +63,8 @@ public class NodeTasks implements FallibleCommand {
 
         private String webpackGeneratedTemplate = null;
 
+        private String serviceWorkerTemplate = null;
+
         private boolean enablePackagesUpdate = false;
 
         private boolean createMissingPackageJson = false;
@@ -206,15 +208,19 @@ public class NodeTasks implements FallibleCommand {
          * @param webpackGeneratedTemplate
          *            name of the webpack resource to be used as template when
          *            creating the <code>webpack.generated.js</code> file.
+         * @param serviceWorkerTemplate
+         *            name of the service worker resource to be used as template
+         *            when creating the <code>sw.ts</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webpackOutputDirectory,
                 File resourceOutputDirectory, String webpackTemplate,
-                String webpackGeneratedTemplate) {
+                String webpackGeneratedTemplate, String serviceWorkerTemplate) {
             this.webpackOutputDirectory = webpackOutputDirectory;
             this.resourceOutputDirectory = resourceOutputDirectory;
             this.webpackTemplate = webpackTemplate;
             this.webpackGeneratedTemplate = webpackGeneratedTemplate;
+            this.serviceWorkerTemplate = serviceWorkerTemplate;
             return this;
         }
 
@@ -578,6 +584,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.npmFolder, builder.webpackOutputDirectory,
                     builder.resourceOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
+                    builder.serviceWorkerTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration));

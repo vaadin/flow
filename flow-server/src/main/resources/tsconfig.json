@@ -3,9 +3,9 @@
     "sourceMap": true,
     "inlineSources": true,
     "module": "esNext",
-    "target": "es2015",
+    "target": "es2017",
     "lib": [
-      "es2015",
+      "es2017",
       "dom",
       "dom.iterable",
       "webworker"
@@ -19,12 +19,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "experimentalDecorators": true,
-    "outDir": "target/classes/META-INF/resources/frontend",
-    "declaration": true,
-    "skipLibCheck": true
-  },
-  "include": [
-    "src/main/resources/META-INF/resources/frontend/**/*.ts"
-  ],
-  "exclude": []
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "*", "../../../../flow-client/node_modules/*"
+      ]
+    }
+  }
 }
