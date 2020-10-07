@@ -180,43 +180,4 @@ public class PublishedEventRpcHandlerUtilTest {
         PublishedEventRpcHandlerUtil
                 .getTemplateItem(instance, json, messageType);
     }
-
-    @Test
-    public void correctItemReturnedFromTemplate() throws NoSuchMethodException {
-        TestModule instance = new TestModule();
-
-        MockUI ui = new MockUI();
-        ui.add(instance);
-        ui.dumpPendingJsInvocations();
-
-        JsonObject json = Json.createObject();
-        json.put("nodeId", 0);
-        json.put("message", "bar");
-        final Type messageType = ModelClass.class
-                .getMethod("setMessage", String.class)
-                .getGenericParameterTypes()[0];
-
-        final Object templateItem = PublishedEventRpcHandlerUtil
-                .getTemplateItem(instance, json, messageType);
-
-        // We test against the null node as it is impractical to get the
-        // full model setup in junit test.
-        Assert.assertNull("Null node should get a null template item", templateItem);
-    }
-
-    public class MockUI extends UI {
-
-        public MockUI() {
-            getInternals().setSession(Mockito.mock(VaadinSession.class));
-            setCurrent(this);
-        }
-
-        public List<PendingJavaScriptInvocation> dumpPendingJsInvocations() {
-            // Ensure element invocations are also flushed
-            getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-            return getInternals().dumpPendingJavaScriptInvocations();
-        }
-    }
-
 }

@@ -81,7 +81,7 @@ public class PublishedEventRpcHandlerUtil implements Serializable {
 
                 return propertyType.modelToApplication(node);
             }
-            throw new IllegalStateException(
+            throw new IllegalArgumentException(
                     "Event sent for a non attached template component");
         }
 
