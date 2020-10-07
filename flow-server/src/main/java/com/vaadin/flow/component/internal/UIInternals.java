@@ -167,6 +167,8 @@ public class UIInternals implements Serializable {
 
     private String title;
 
+    private String appShellTitle;
+
     private PendingJavaScriptInvocation pendingTitleUpdateCanceler;
 
     private Location viewLocation = new Location("");
@@ -607,6 +609,18 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Records the text content of the title tag in the application shell.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @param appShellTitle
+     *            the appShellTitle to set
+     */
+    public void setAppShellTitle(String appShellTitle){
+        this.appShellTitle = appShellTitle;
+    }
+
+    /**
      * Gets the page title recorded with {@link Page#setTitle(String)}.
      * <p>
      * <b>NOTE</b> this might not be up to date with the actual title set since
@@ -618,6 +632,17 @@ public class UIInternals implements Serializable {
      */
     public String getTitle() {
         return title;
+    }
+
+    /**
+     * Gets the stored app shell title.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @return the app shell title
+     */
+    public String getAppShellTitle() {
+        return appShellTitle;
     }
 
     /**

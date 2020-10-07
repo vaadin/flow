@@ -110,6 +110,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // and on the AppShellConfigurator
         registry.modifyIndexHtml(indexDocument, request);
 
+        // the bootstrap page title could be used as a fallback title to
+        // a server-side route that doesn't have a title
+        storeAppShellTitleToUI(indexDocument);
+
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
@@ -124,6 +128,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void storeAppShellTitleToUI(Document indexDocument) {
+        if(UI.getCurrent()!=null){
+            Element elm = indexDocument.head().selectFirst("title");
+            if (elm != null) {
+                String appShellTitle = elm.text().isEmpty() ? elm.data() : elm.text();
+                UI.getCurrent().getInternals().setAppShellTitle(appShellTitle);
+            }
+        }
     }
 
     private void addDevmodeGizmo(Document indexDocument, VaadinSession session,

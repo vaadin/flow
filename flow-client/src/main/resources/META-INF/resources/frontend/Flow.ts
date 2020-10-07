@@ -170,7 +170,7 @@ export class Flow {
 
       // Call server side to navigate to the given route
       flowRoot.$server
-          .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx));
+          .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx), document.title);
     });
   }
 
