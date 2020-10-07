@@ -128,7 +128,7 @@ public class PwaRegistry implements Serializable {
             manifestJson = initializeManifest().toJson();
 
             // Initialize sw-runtime.js
-            runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
+            runtimeServiceWorkerJs = initializeRuntimeServiceWorker();
         }
     }
 
@@ -226,7 +226,7 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeRuntimeServiceWorker(ServletContext servletContext) {
+    private String initializeRuntimeServiceWorker() {
         StringBuilder stringBuilder = new StringBuilder();
 
         // List of icons for precache
@@ -243,18 +243,6 @@ public class PwaRegistry implements Serializable {
         stringBuilder.append("self.additionalManifestEntries = [\n");
         stringBuilder.append(String.join(",\n", filesToCache));
         stringBuilder.append("\n];\n");
-
-        // Offline fallback
-        /*stringBuilder
-                .append("self.addEventListener('fetch', function(event) {\n")
-                .append("  var request = event.request;\n")
-                .append("  if (request.mode === 'navigate') {\n")
-                .append("    event.respondWith(\n      fetch(request)\n")
-                .append("        .catch(function() {\n")
-                .append(String.format("          return caches.match('%s');%n",
-                        getPwaConfiguration().getOfflinePath()))
-                .append("        })\n    );\n  }\n });");
-        */
 
         return stringBuilder.toString();
     }
