@@ -737,29 +737,6 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Notifies the component about item count changes.
-     * <p>
-     * {@link ItemCountChangeEvent} is fired if the passed item count differs
-     * from the item count passed on the previous call of this method.
-     *
-     * @param itemCount
-     *            item count to send
-     */
-    public void fireItemCountEvent(int itemCount) {
-        if (lastSent != itemCount) {
-            final Optional<Component> component = Element.get(stateNode)
-                    .getComponent();
-            if (component.isPresent()) {
-                ComponentUtil.fireEvent(component.get(),
-                        new ItemCountChangeEvent<>(component.get(), itemCount,
-                                !(isDefinedSize()
-                                        || skipCountIncreaseUntilReset)));
-            }
-            lastSent = itemCount;
-        }
-    }
-
-    /**
      * Getter method for determining the item count of the data. Can be
      * overridden by a subclass that uses a specific type of DataProvider and/or
      * query.
@@ -1033,6 +1010,29 @@ public class DataCommunicator<T> implements Serializable {
         unregisterPassivatedKeys();
 
         fireItemCountEvent(assumedSize);
+    }
+
+    /**
+     * Notifies the component about item count changes.
+     * <p>
+     * {@link ItemCountChangeEvent} is fired if the passed item count differs
+     * from the item count passed on the previous call of this method.
+     *
+     * @param itemCount
+     *            item count to send
+     */
+    private void fireItemCountEvent(int itemCount) {
+        if (lastSent != itemCount) {
+            final Optional<Component> component = Element.get(stateNode)
+                    .getComponent();
+            if (component.isPresent()) {
+                ComponentUtil.fireEvent(component.get(),
+                        new ItemCountChangeEvent<>(component.get(), itemCount,
+                                !(isDefinedSize()
+                                        || skipCountIncreaseUntilReset)));
+            }
+            lastSent = itemCount;
+        }
     }
 
     private void flushUpdatedData() {
