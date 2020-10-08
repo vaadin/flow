@@ -16,23 +16,15 @@
 package com.vaadin.flow.component.littemplate;
 
 import org.jsoup.Jsoup;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.template.Id;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 public class LitTemplateTest {
 
@@ -59,25 +51,16 @@ public class LitTemplateTest {
 
     }
 
-    @Tag(Tag.DIV)
-    public static class TestDiv extends Component implements HasEnabled {
-
-    }
-
     @Tag("foo-bar")
     private static class DisabledElementTemplate extends LitTemplate {
 
         @Id("labelId")
         private com.vaadin.flow.dom.Element label;
 
-        @Id("div")
-        private TestDiv div;
-
         public DisabledElementTemplate(VaadinService service) {
             this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
                     Jsoup.parse("<foo-bar id='" + tag
-                            + "'><label id='labelId' disabled>"
-                            + "<div id='div' disabled></div></foo-bar>")),
+                            + "'><label id='labelId' disabled></foo-bar>")),
                     service);
         }
 
@@ -111,36 +94,12 @@ public class LitTemplateTest {
 
     }
 
-    private UI ui;
-
-    @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
-
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        VaadinService service = Mockito.mock(VaadinService.class);
-
-        Mockito.when(session.getService()).thenReturn(service);
-
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
-
-        Mockito.when(instantiator.createComponent(Mockito.any()))
-                .thenAnswer(invocation -> ReflectTools.createInstance(
-                        invocation.getArgumentAt(0, Class.class)));
-
-        ui = new UI();
-        ui.getInternals().setSession(session);
-        UI.setCurrent(ui);
-    }
-
-    @After
-    public void tearDown() {
-        CurrentInstance.clearAll();
     }
 
     @Test
@@ -181,21 +140,6 @@ public class LitTemplateTest {
 
         Assert.assertTrue(template.label.hasAttribute("id"));
         Assert.assertFalse(template.label.isEnabled());
-
-        // Yes, it's weird: if Element has no mapped Component then "disabled"
-        // attribute is not set
-        Assert.assertFalse(template.label.hasAttribute("disabled"));
-
-        Assert.assertTrue(template.div.getElement().hasAttribute("id"));
-        Assert.assertFalse(template.div.isEnabled());
-
-        // For a component setEnabled sets the "disabled" attribute
-
-        Assert.assertTrue(template.div.getElement().hasAttribute("disabled"));
-
-        template.div.setEnabled(true);
-        Assert.assertTrue(template.div.isEnabled());
-        Assert.assertFalse(template.div.getElement().hasAttribute("disabled"));
     }
 
     public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
