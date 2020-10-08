@@ -42,6 +42,7 @@ describe('ConnectClient', () => {
   it('should instantiate without arguments', () => {
     const client = new ConnectClient();
     expect(client).to.be.instanceOf(ConnectClient);
+
   });
 
   describe('constructor options', () => {
@@ -55,6 +56,15 @@ describe('ConnectClient', () => {
       expect(client).to.have.property('middlewares')
         .deep.equal([myMiddleware]);
     });
+
+    it('should support onDeferredCall', () => {
+      const defaultClient = new ConnectClient();
+      expect(defaultClient.onDeferredCall).to.be.undefined;
+
+      const onDeferredCall = sinon.stub().resolves();
+      const client = new ConnectClient({onDeferredCall});
+      expect(client).to.have.property('onDeferredCall').equal(onDeferredCall);
+    })
   });
 
   describe('prefix', () => {
@@ -349,7 +359,7 @@ describe('ConnectClient', () => {
       });
 
       it('should allow modified response', async() => {
-        const myMiddleware = async(context: any, next?: any) => {
+        const myMiddleware = async(_context: any, _next?: any) => {
           return new Response('{"baz": "qux"}');
         };
 
@@ -389,7 +399,7 @@ describe('ConnectClient', () => {
         const myResponse = new Response('{}');
         const myContext = {foo: 'bar', request: myRequest};
 
-        const firstMiddleware = async(context?: any, next?: any) => {
+        const firstMiddleware = async(_context?: any, next?: any) => {
           // Pass modified context
           const response = await next(myContext);
           // Expect modified response
@@ -397,7 +407,7 @@ describe('ConnectClient', () => {
           return response;
         };
 
-        const secondMiddleware = async(context: any, next?: any) => {
+        const secondMiddleware = async(context: any, _next?: any) => {
           // Expect modified context
           expect(context).to.equal(myContext);
           // Pass modified response
@@ -627,7 +637,7 @@ describe('ConnectClient', () => {
     })
   });
 
-  describe("submit cached request", () => {
+  describe("submit deferred calls", () => {
     let client: ConnectClient;
     let requestCallStub: any;
 
@@ -666,7 +676,7 @@ describe('ConnectClient', () => {
     });
 
     it("should check and submit the cached requests when receiving online event", () => {
-      const submitMethod = sinon.stub(ConnectClient.prototype, "checkAndSubmitCachedRequests");
+      const submitMethod = sinon.stub(ConnectClient.prototype, "processDeferredCalls");
       client = new ConnectClient();
       self.dispatchEvent(new Event('online'));
       expect(submitMethod.called).to.be.true;
@@ -676,7 +686,7 @@ describe('ConnectClient', () => {
     it("should submit the cached request when receiving online event", async () => {
       await insertARequest(3);
 
-      await (client as any).checkAndSubmitCachedRequests();
+      await client.processDeferredCalls();
 
       await verifyNumberOfRequsetsInTheQueue(0);
     })
@@ -687,7 +697,7 @@ describe('ConnectClient', () => {
       fakeRequestCallFails();
 
       try {
-        await (client as any).checkAndSubmitCachedRequests();
+        await client.processDeferredCalls();
       } catch (_) {
         // expected
       } finally {
@@ -703,7 +713,7 @@ describe('ConnectClient', () => {
       let error: Error | undefined;
 
       try {
-        await (client as any).checkAndSubmitCachedRequests();
+        await client.processDeferredCalls();
       } catch (e) {
         // expected
         error = e;
@@ -718,7 +728,7 @@ describe('ConnectClient', () => {
       fakeRequestCallFails();
 
       try {
-        await (client as any).checkAndSubmitCachedRequests();
+        await client.processDeferredCalls();
       } catch (_) {
         // expected
       } finally {
@@ -727,7 +737,7 @@ describe('ConnectClient', () => {
         requestCallStub.restore();
         sinon.stub(client, "requestCall");
 
-        await (client as any).checkAndSubmitCachedRequests();
+        await client.processDeferredCalls();
 
         await verifyNumberOfRequsetsInTheQueue(0);
       }
@@ -737,9 +747,9 @@ describe('ConnectClient', () => {
       await insertARequest();
 
       await Promise.all([
-        (client as any).checkAndSubmitCachedRequests(),
-        (client as any).checkAndSubmitCachedRequests(),
-        (client as any).checkAndSubmitCachedRequests()
+        client.processDeferredCalls(),
+        client.processDeferredCalls(),
+        client.processDeferredCalls()
       ])
 
       expect(requestCallStub.calledOnce).to.be.true;
@@ -751,7 +761,7 @@ describe('ConnectClient', () => {
       fakeRequestCallFails();
 
       try {
-        await (client as any).checkAndSubmitCachedRequests();
+        await client.processDeferredCalls();
       } catch (_) {
         // expected
       } finally {
@@ -761,9 +771,9 @@ describe('ConnectClient', () => {
         sinon.stub(client, "requestCall");
 
         await Promise.all([
-          (client as any).checkAndSubmitCachedRequests(),
-          (client as any).checkAndSubmitCachedRequests(),
-          (client as any).checkAndSubmitCachedRequests()
+          client.processDeferredCalls(),
+          client.processDeferredCalls(),
+          client.processDeferredCalls()
         ])
 
         expect(requestCallStub.calledOnce).to.be.true;
@@ -774,6 +784,7 @@ describe('ConnectClient', () => {
       fetchMock.post(base + '/connect/FooEndpoint/fooMethod', {fooData: 'foo'});
 
       requestCallStub.restore();
+
       const spyMiddleware = sinon.spy(async(context: any, next?: any) => {
         expect(context.endpoint).to.equal('FooEndpoint');
         expect(context.method).to.equal('fooMethod');
@@ -784,15 +795,87 @@ describe('ConnectClient', () => {
       });
       client.middlewares = [spyMiddleware];
 
+      try {
+        await insertARequest();
+
+        expect(spyMiddleware.called).to.be.false;
+
+        await client.processDeferredCalls();
+
+        expect(spyMiddleware.called).to.be.true;
+      } finally {
+        fetchMock.restore();
+      }
+    });
+
+    it('should invoke onDeferredCall callback', async () => {
       await insertARequest();
 
-      expect(spyMiddleware.called).to.be.false;
+      const onDeferredCallStub = sinon.stub().resolves();
+      client.onDeferredCall = onDeferredCallStub;
 
-      await (client as any).checkAndSubmitCachedRequests();
+      await client.processDeferredCalls();
 
-      expect(spyMiddleware.called).to.be.true;
+      expect(onDeferredCallStub.callCount).to.equal(1);
+      const [call, promiseResult] = onDeferredCallStub.getCall(0).args;
+      expect(call.endpoint).to.equal('FooEndpoint');
+      expect(call.method).to.equal('fooMethod');
+      expect(call.params).to.deep.equal({fooData: 'foo'});
+      expect(promiseResult).to.be.instanceOf(Promise);
 
-      fetchMock.restore();
+      await verifyNumberOfRequsetsInTheQueue(0);
+    });
+
+    it('should provide result promise in onDeferredCall callback', async () => {
+      const resultData = {fooData: 'bar'};
+      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', resultData);
+      requestCallStub.restore();
+
+      const onDeferredCallStub = sinon.stub().callsFake(async (_call: any, resultPromise: Promise<any>) => {
+        const result = await resultPromise;
+        expect(result).to.deep.equal(resultData);
+      });
+      client.onDeferredCall = onDeferredCallStub;
+
+      try {
+        await insertARequest();
+        await client.processDeferredCalls();
+
+        await verifyNumberOfRequsetsInTheQueue(0);
+      } finally {
+        fetchMock.restore();
+      }
+    });
+
+    it('should reject if onDeferredCall callback rejects', async () => {
+      const onDeferredCallStub = sinon.stub().rejects();
+      client.onDeferredCall = onDeferredCallStub;
+
+      let error: Error | undefined;
+
+      try {
+        await insertARequest();
+        await client.processDeferredCalls();
+      } catch (e) {
+        // expected
+        error = e;
+      } finally {
+        expect(error).to.be.instanceOf(Error);
+      }
+    });
+
+    it('should keep request in the queue when onDeferredCall callback rejects', async () => {
+      const onDeferredCallStub = sinon.stub().rejects();
+      client.onDeferredCall = onDeferredCallStub;
+
+      try {
+        await insertARequest();
+        await client.processDeferredCalls();
+      } catch(_) {
+        // expected
+      } finally {
+        await verifyNumberOfRequsetsInTheQueue(1);
+      }
     });
   });
 });

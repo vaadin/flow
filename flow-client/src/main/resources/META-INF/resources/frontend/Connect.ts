@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { DBSchema, IDBPDatabase, openDB } from 'idb';
+import {DBSchema, IDBPDatabase, openDB} from 'idb';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -163,6 +163,11 @@ export class ValidationErrorData {
 }
 
 /**
+ * The callback for deferred calls
+ */
+export type OnDeferredCallCallback = (call: EndpointRequest, resultPromise: Promise<any>) => Promise<void>;
+
+/**
  * The `ConnectClient` constructor options.
  */
 export interface ConnectClientOptions {
@@ -175,6 +180,11 @@ export interface ConnectClientOptions {
    * The `middlewares` property value.
    */
   middlewares?: Middleware[];
+
+  /**
+   * The `onDeferredCall` property value
+   */
+  onDeferredCall?: OnDeferredCallCallback
 }
 
 /**
@@ -275,6 +285,11 @@ export class ConnectClient {
   middlewares: Middleware[] = [];
 
   /**
+   * The callback for deferred calls
+   */
+  onDeferredCall?: OnDeferredCallCallback;
+
+  /**
    * @param options Constructor options.
    */
   constructor(options: ConnectClientOptions = {}) {
@@ -286,9 +301,11 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    this.checkAndSubmitCachedRequests = this.checkAndSubmitCachedRequests.bind(this);
+    this.onDeferredCall = options.onDeferredCall;
 
-    self.addEventListener('online', this.checkAndSubmitCachedRequests);
+    this.processDeferredCalls = this.processDeferredCalls.bind(this);
+
+    self.addEventListener('online', this.processDeferredCalls);
   }
 
   /**
@@ -329,6 +346,23 @@ export class ConnectClient {
       endpointRequest = await this.cacheEndpointRequest(endpointRequest);
       return { isDeferred: true, endpointRequest };
     }
+  }
+
+  async processDeferredCalls() {
+    const db = await this.openOrCreateDB();
+
+    /**
+     * Cannot wait for submitting the cached requests in the indexed db transaction,
+     * as the transaction only wait for db operations.
+     * See https://github.com/jakearchibald/idb#transaction-lifetime
+     */
+    const shouldSubmit = await this.shouldSubmitCachedRequests(db);
+
+    if (shouldSubmit) {
+      await this.submitCachedRequests(db);
+    }
+
+    db.close();
   }
 
   private async requestCall(
@@ -445,23 +479,6 @@ export class ConnectClient {
     });
   }
 
-  private async checkAndSubmitCachedRequests(){
-    const db = await this.openOrCreateDB();
-
-    /**
-     * Cannot wait for submitting the cached requests in the indexed db transaction,
-     * as the transaction only wait for db operations.
-     * See https://github.com/jakearchibald/idb#transaction-lifetime
-     */
-    const shouldSubmit = await this.shouldSubmitCachedRequests(db);
-
-    if (shouldSubmit) {
-      await this.submitCachedRequests(db);
-    }
-
-    db.close();
-  }
-
   private async shouldSubmitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
     let shouldSubmit = false;
     if (db.objectStoreNames.contains(REQUEST_QUEUE_STORE_NAME) && await db.count(REQUEST_QUEUE_STORE_NAME) > 0) {
@@ -487,7 +504,12 @@ export class ConnectClient {
     for (const request of cachedRequests) {
       if (request.submitting) {
         try {
-          await this.requestCall(true, request.endpoint, request.method, request.params);
+          const resultPromise = this.requestCall(true, request.endpoint, request.method, request.params);
+          if (this.onDeferredCall) {
+            await this.onDeferredCall(request, resultPromise);
+          } else {
+            await resultPromise;
+          }
           await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
         } catch (error) {
           request.submitting = false;
@@ -633,7 +655,7 @@ export class InvalidSessionMiddleware implements MiddlewareClass {
   }
 }
 
-interface EndpointRequest{
+export interface EndpointRequest {
   id?: number;
   endpoint: string;
   method: string;

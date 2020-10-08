@@ -46,6 +46,8 @@
     "typescript": "^3.8.3",
     "webpack": "^4.39.1",
     "webpack-cli": "^3.3.6",
+    "workbox-core": "^5.1.4",
+    "workbox-precaching": "^5.1.4",
     "xhr-mock": "^2.5.0"
   },
   "dependencies": {

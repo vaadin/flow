@@ -68,6 +68,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
@@ -150,6 +151,8 @@ public class BuildFrontendMojoTest {
                 WEBPACK_CONFIG);
         ReflectionUtils.setVariableValueInObject(mojo,
                 "webpackGeneratedTemplate", WEBPACK_GENERATED);
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "serviceWorkerTemplate", SERVICE_WORKER_SRC);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,
