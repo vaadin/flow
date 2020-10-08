@@ -63,6 +63,7 @@ export class Flow {
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
   private baseRegex = /^\//;
+  private appShellTitle: string;
 
   constructor(config?: FlowConfig) {
     flowRoot.$ = flowRoot.$ || [];
@@ -87,7 +88,7 @@ export class Flow {
         // IE11 does not support document.baseURI
         (document.baseURI || elm && elm.href || '/')
             .replace(/^https?:\/\/[^\/]+/i, ''));
-
+    this.appShellTitle = document.title;
     // Put a flow progress-bar in the dom
     this.addLoadingIndicator();
   }
@@ -170,7 +171,7 @@ export class Flow {
 
       // Call server side to navigate to the given route
       flowRoot.$server
-          .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx), document.title);
+          .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx), this.appShellTitle);
     });
   }
 
