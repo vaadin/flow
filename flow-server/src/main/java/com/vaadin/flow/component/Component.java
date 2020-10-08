@@ -189,13 +189,6 @@ public abstract class Component
                     + elementTag);
         }
         setElement(this, wrapData.element, wrapData.mapElementToComponent);
-        if (wrapData.mapElementToComponent) {
-            // This is no-op for the element itself but it has an effect for a
-            // component mapped to the element since the code related to this
-            // functionality implemented in Component has not been executed
-            // without the component
-            element.setEnabled(element.isEnabled());
-        }
     }
 
     /**

@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.Uses;
@@ -326,11 +325,6 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     }
 
-    @Tag(Tag.DIV)
-    public static class TestDiv extends Component implements HasEnabled {
-
-    }
-
     @Tag(TAG)
     private static class DisabledElementTemplate
             extends PolymerTemplate<ModelClass> {
@@ -338,13 +332,10 @@ public class PolymerTemplateTest extends HasCurrentService {
         @Id("labelId")
         private com.vaadin.flow.dom.Element label;
 
-        @Id("div")
-        private TestDiv div;
-
         public DisabledElementTemplate() {
             this((clazz, tag, service) -> new TemplateData("",
                     Jsoup.parse("<dom-module id='" + tag
-                            + "'><label id='labelId' disabled> <div id='div' disabled></div></dom-module>")));
+                            + "'><label id='labelId' disabled></dom-module>")));
         }
 
         DisabledElementTemplate(TemplateParser parser) {
@@ -859,21 +850,6 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         Assert.assertTrue(template.label.hasAttribute("id"));
         Assert.assertFalse(template.label.isEnabled());
-
-        // Yes, it's weird: if Element has no mapped Component then "disabled"
-        // attribute is not set
-        Assert.assertFalse(template.label.hasAttribute("disabled"));
-
-        Assert.assertTrue(template.div.getElement().hasAttribute("id"));
-        Assert.assertFalse(template.div.isEnabled());
-
-        // For a component setEnabled sets the "disabled" attribute
-
-        Assert.assertTrue(template.div.getElement().hasAttribute("disabled"));
-
-        template.div.setEnabled(true);
-        Assert.assertTrue(template.div.isEnabled());
-        Assert.assertFalse(template.div.getElement().hasAttribute("disabled"));
     }
 
     public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
