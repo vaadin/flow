@@ -16,12 +16,10 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -48,8 +46,8 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
@@ -58,15 +56,11 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class IndexHtmlRequestHandlerTest {
     private MockServletServiceSessionSetup mocks;
@@ -115,36 +109,35 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException()
             throws IOException {
-        VaadinServletRequest vaadinServletRequest = createVaadinRequest("/");
-        VaadinService vaadinService = vaadinServletRequest.getService();
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        VaadinServletService vaadinService = Mockito
+                .mock(VaadinServletService.class);
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(deploymentConfiguration);
+        Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
+        Mockito.when(mockLoader.getResourceAsStream(Mockito.anyString()))
+                .thenReturn(null);
 
-        // Finding index.html URL
-        String indexHtmlPathInProductionMode = VAADIN_SERVLET_RESOURCES
-                + INDEX_HTML;
-        URL url = vaadinService.getClassLoader().getResource(indexHtmlPathInProductionMode);
+        VaadinServletRequest vaadinRequest = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        assertNotNull(url);
-        File indexHtmlFile = new File(url.getPath());
-        File indexHtmlFileTmp = new File(url.getPath() + "_tmp");
-        try {
-            // Renaming file to simulate the absence of index.html
-            boolean renamed = indexHtmlFile.renameTo(indexHtmlFileTmp);
-            assertTrue(renamed);
-
-            String expectedError = "Failed to load content of './frontend/index.html'. " +
-                    "It is required to have './frontend/index.html' file " +
-                    "when using client side bootstrapping.";
-
-            exceptionRule.expect(IOException.class);
-            exceptionRule.expectMessage(expectedError);
-
-            indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                    vaadinServletRequest, response);
-        } finally {
-            // Restoring index.html
-            boolean renamed = indexHtmlFileTmp.renameTo(indexHtmlFile);
-            assertTrue(renamed);
+        String path;
+        if(DEFAULT_FRONTEND_DIR.endsWith(File.separator)) {
+            path = DEFAULT_FRONTEND_DIR + "index.html";
+        } else {
+            path = DEFAULT_FRONTEND_DIR + File.separatorChar + "/index.html";
         }
+        String expectedError = String
+                .format("Failed to load content of '%1$s'. "
+                        + "It is required to have '%1$s' file when "
+                        + "using client side bootstrapping.", path);
+
+        exceptionRule.expect(IOException.class);
+        exceptionRule.expectMessage(expectedError);
+
+        indexHtmlRequestHandler
+                .synchronizedHandleRequest(session, vaadinRequest, response);
     }
 
     @Test
