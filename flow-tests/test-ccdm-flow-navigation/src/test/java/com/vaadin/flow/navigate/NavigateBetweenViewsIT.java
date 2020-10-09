@@ -39,9 +39,8 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
         // Wait for component inside shadowroot as there is no vaadin
         // to wait for as with server-side
-        waitUntil(
-                input -> getInShadowRoot(findElement(By.tagName("about-view")),
-                        By.id("navigate-hello")).isDisplayed());
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
+                .isDisplayed());
 
         Assert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/about"));
@@ -56,15 +55,17 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
         // Wait for component inside shadowroot as there is no vaadin
         // to wait for as with server-side
-        waitUntil(
-                input -> getInShadowRoot(findElement(By.tagName("about-view")),
-                        By.id("navigate-hello")).isDisplayed());
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
+                .isDisplayed());
 
         getInShadowRoot(findElement(By.tagName("about-view")),
                 By.id("navigate-hello")).click();
 
         Assert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
+
+        Assert.assertTrue("Missing expected native button on page",
+                $(NativeButtonElement.class).id(NAVIGATE_ABOUT).isDisplayed());
     }
 
 }
