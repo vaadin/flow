@@ -203,6 +203,7 @@ public class ResponseWriter implements Serializable {
 
         response.setStatus(206);
         ServletOutputStream outputStream = response.getOutputStream();
+
         if (ranges.size() == 1) {
             // single range: calculate Content-Length
             long start = ranges.get(0).getFirst();
@@ -222,49 +223,50 @@ public class ResponseWriter implements Serializable {
             } finally {
                 closeStreamAndLogFailure(dataStream);
             }
-        } else {
-            // multipart range: use chunked transfer mode because calculating
-            // Content-Length is difficult
-            String boundary = UUID.randomUUID().toString();
-            response.setContentType(String
-                    .format("multipart/byteranges; boundary=%s", boundary));
-            response.setHeader("Transfer-Encoding", "chunked");
-
-            long position = 0L;
-            String mimeType = response.getContentType();
-            InputStream dataStream = connection.getInputStream();
-             try {
-                 for (Pair<Long, Long> rangePair : ranges) {
-                     outputStream.write(
-                             String.format("\r\n--%s\r\n", boundary).getBytes());
-                     long start = rangePair.getFirst();
-                     long end = rangePair.getSecond();
-                     if (mimeType != null) {
-                         outputStream.write(
-                                 String.format("Content-Type: %s\r\n", mimeType)
-                                         .getBytes());
-                     }
-                     outputStream.write(String.format("Content-Range: %s\r\n\r\n",
-                             createContentRangeHeader(start, end, resourceLength))
-                             .getBytes());
-
-                     if (position > start) {
-                         // out-of-sequence range -> open new stream to the file
-                         // alternative: use single stream with mark / reset
-                         closeStreamAndLogFailure(connection.getInputStream());
-                         connection = resourceURL.openConnection();
-                         dataStream = connection.getInputStream();
-                         position = 0L;
-                     }
-                     dataStream.skip(start - position);
-                     writeStream(outputStream, dataStream, end - start + 1);
-                     position = end + 1;
-                 }
-             } finally {
-                 closeStreamAndLogFailure(dataStream);
-             }
-            outputStream.write(String.format("\r\n--%s", boundary).getBytes());
+            return;
         }
+
+        // multipart range: use chunked transfer mode because calculating
+        // Content-Length is difficult
+        String boundary = UUID.randomUUID().toString();
+        response.setContentType(
+                String.format("multipart/byteranges; boundary=%s", boundary));
+        response.setHeader("Transfer-Encoding", "chunked");
+
+        long position = 0L;
+        String mimeType = response.getContentType();
+        InputStream dataStream = connection.getInputStream();
+        try {
+            for (Pair<Long, Long> rangePair : ranges) {
+                outputStream.write(
+                        String.format("\r\n--%s\r\n", boundary).getBytes());
+                long start = rangePair.getFirst();
+                long end = rangePair.getSecond();
+                if (mimeType != null) {
+                    outputStream.write(
+                            String.format("Content-Type: %s\r\n", mimeType)
+                                    .getBytes());
+                }
+                outputStream.write(String.format("Content-Range: %s\r\n\r\n",
+                        createContentRangeHeader(start, end, resourceLength))
+                        .getBytes());
+
+                if (position > start) {
+                    // out-of-sequence range -> open new stream to the file
+                    // alternative: use single stream with mark / reset
+                    closeStreamAndLogFailure(connection.getInputStream());
+                    connection = resourceURL.openConnection();
+                    dataStream = connection.getInputStream();
+                    position = 0L;
+                }
+                dataStream.skip(start - position);
+                writeStream(outputStream, dataStream, end - start + 1);
+                position = end + 1;
+            }
+        } finally {
+            closeStreamAndLogFailure(dataStream);
+        }
+        outputStream.write(String.format("\r\n--%s", boundary).getBytes());
     }
 
     private String createContentRangeHeader(long start, long end, long size) {
