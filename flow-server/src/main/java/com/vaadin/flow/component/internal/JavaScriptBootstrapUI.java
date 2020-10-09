@@ -41,8 +41,6 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 
 /**
@@ -106,7 +104,10 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoute) {
+            String flowRoute, String appShellTitle) {
+        if (appShellTitle != null && !appShellTitle.isEmpty()) {
+            getInternals().setAppShellTitle(appShellTitle);
+        }
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -291,6 +292,7 @@ public class JavaScriptBootstrapUI extends UI {
             forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
 
             adjustPageTitle();
+
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
@@ -332,13 +334,11 @@ public class JavaScriptBootstrapUI extends UI {
         // new title is empty if the flow route does not have a title
         String newTitle = getInternals().getTitle();
         // app shell title is computed from the title tag in index.html
-        String appTitle = AppShellRegistry
-                .getInstance(VaadinService.getCurrent().getContext())
-                .getTitle();
+        String appShellTitle = getInternals().getAppShellTitle();
         // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && !appTitle.isEmpty()) {
+        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().cancelPendingTitleUpdate();
-            getInternals().setTitle(appTitle);
+            getInternals().setTitle(appShellTitle);
         }
     }
 

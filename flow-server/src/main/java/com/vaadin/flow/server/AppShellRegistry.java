@@ -70,8 +70,6 @@ public class AppShellRegistry implements Serializable {
 
     private Class<? extends AppShellConfigurator> appShellClass;
 
-    private String title = "";
-
     /**
      * A wrapper class for storing the {@link AppShellRegistry} instance in the
      * servlet context.
@@ -163,12 +161,16 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * Return the text content of the title tag in the application shell.
-     *
-     * @return title;
+     * @return {code null};
+     * 
+     * @deprecated this method does not work, to get the application shell title, 
+     * use {code UI.getCurrent().getInternals().getAppShellTitle()} instead.
      */
+    @Deprecated
     public String getTitle() {
-        return title;
+        throw new UnsupportedOperationException("AppShellRegistry.getTitle() does not work, "
+                + "to get the application shell title, "
+                + "use UI.getCurrent().getInternals().getAppShellTitle() instead.");
     }
 
     /**
@@ -265,11 +267,6 @@ public class AppShellRegistry implements Serializable {
         settings.getInlineElements(request, TargetElement.BODY, Position.APPEND)
                 .forEach(elm -> insertInlineElement(elm,
                         document.body()::appendChild));
-
-        Element elm = document.head().selectFirst("title");
-        if (elm != null) {
-            title = elm.text().isEmpty() ? elm.data() : elm.text();
-        }
     }
 
     /**
