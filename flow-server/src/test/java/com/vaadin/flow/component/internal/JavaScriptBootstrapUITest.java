@@ -3,6 +3,7 @@ package com.vaadin.flow.component.internal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -16,7 +17,6 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
@@ -26,11 +26,9 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
-import org.jsoup.nodes.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +39,6 @@ import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NA
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -185,26 +182,26 @@ public class JavaScriptBootstrapUITest  {
 
     @Test
     public void should_allow_navigation() {
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // Dirty view is allowed after clean view
-        ui.connectClient("foo", "bar", "/dirty");
+        ui.connectClient("foo", "bar", "/dirty", "");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
     public void should_navigate_when_endingSlash() {
-        ui.connectClient("foo", "bar", "/clean/");
+        ui.connectClient("foo", "bar", "/clean/", "");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
     public void getChildren_should_notReturnAnEmptyList() {
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         assertEquals(1, ui.getChildren().count());
     }
 
@@ -212,7 +209,7 @@ public class JavaScriptBootstrapUITest  {
     public void addRemoveComponent_clientSideRouting_addsToBody() {
         final Element uiElement = ui.getElement();
 
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         // router outlet is a virtual child that is not reflected on element level
         assertEquals(1, ui.getChildren().count());
         assertEquals(0, uiElement.getChildCount());
@@ -267,7 +264,7 @@ public class JavaScriptBootstrapUITest  {
     public void addComponent_clientSideRouterAndNavigation_componentsRemain() {
         final Element uiElement = ui.getElement();
         // trigger route via client
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         final RouterLink routerLink = new RouterLink();
         ui.add(routerLink);
 
@@ -305,22 +302,22 @@ public class JavaScriptBootstrapUITest  {
 
     @Test
     public void should_prevent_navigation_on_dirty() {
-        ui.connectClient("foo", "bar", "/dirty");
+        ui.connectClient("foo", "bar", "/dirty", "");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // clean view cannot be rendered after dirty
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
         // an error route cannot be rendered after dirty
-        ui.connectClient("foo", "bar", "/errr");
+        ui.connectClient("foo", "bar", "/errr", "");
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
     }
 
     @Test
     public void should_remove_content_on_leaveNavigation() {
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
@@ -331,7 +328,7 @@ public class JavaScriptBootstrapUITest  {
 
     @Test
     public void should_keep_content_on_leaveNavigation_postpone() {
-        ui.connectClient("foo", "bar", "/dirty");
+        ui.connectClient("foo", "bar", "/dirty", "");
         assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H1, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
@@ -342,28 +339,28 @@ public class JavaScriptBootstrapUITest  {
 
     @Test
     public void should_handle_forward_to_client_side_view_on_beforeEnter() {
-        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeEnter");
+        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeEnter", "");
 
         assertEquals("client-view", ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_not_handle_forward_to_client_side_view_on_beforeLeave() {
-        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeLeave");
+        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnBeforeLeave", "");
 
         assertNull(ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_not_handle_forward_to_client_side_view_on_reroute() {
-        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnReroute");
+        ui.connectClient("foo", "bar", "/forwardToClientSideViewOnReroute", "");
 
         assertNull(ui.getForwardToClientUrl());
     }
 
     @Test
     public void should_handle_forward_to_server_side_view_on_beforeEnter_and_update_url() {
-        ui.connectClient("foo", "bar", "/forwardToServerSideViewOnBeforeEnter");
+        ui.connectClient("foo", "bar", "/forwardToServerSideViewOnBeforeEnter", "");
 
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
@@ -380,7 +377,7 @@ public class JavaScriptBootstrapUITest  {
 
     @Test
     public void should_show_error_page() {
-        ui.connectClient("foo", "bar", "/err");
+        ui.connectClient("foo", "bar", "/err", "");
         assertEquals(Tag.DIV, ui.wrapperElement.getChild(0).getTag());
         assertTrue(ui.wrapperElement.toString().contains("Available routes:"));
     }
@@ -396,7 +393,7 @@ public class JavaScriptBootstrapUITest  {
 
     @Test
     public void should_navigate_when_server_routing() {
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
@@ -496,7 +493,7 @@ public class JavaScriptBootstrapUITest  {
 
     @Test
     public void server_should_not_doClientRoute_when_navigatingToServer() {
-        ui.connectClient("foo", "bar", "/clean");
+        ui.connectClient("foo", "bar", "/clean", "");
         assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
         assertEquals(Tag.H2, ui.wrapperElement.getChild(0).getChild(0).getTag());
 
@@ -537,37 +534,27 @@ public class JavaScriptBootstrapUITest  {
     }
 
     @Test
-    public void should_restoreAppShellTitle() {
-        AppShellRegistry registry = new AppShellRegistry();
-        registry.setShell(AppShell.class);
-        mocks.setAppShellRegistry(registry);
-
-        registry.modifyIndexHtml(Document.createShell(""),
-                mocks.createRequest(mocks, "/foo"));
-
-        ui.navigate("empty");
-        assertNull(ui.getInternals().getTitle());
-        ui.navigate("dirty");
+    public void should_restoreIndexHtmlTitle() {
+        ui.connectClient("foo", "bar", "empty", "app-shell-title");
+        assertEquals("", ui.getInternals().getTitle());
+        ui.connectClient("foo", "bar", "dirty", "app-shell-title");
         assertEquals("app-shell-title", ui.getInternals().getTitle());
     }
 
     @Test
-    public void should_restoreIndexHtmlTitle() {
-        AppShellRegistry registry = new AppShellRegistry();
-        mocks.setAppShellRegistry(registry);
-        VaadinRequest request = mocks.createRequest(mocks, "/foo");
+    public void should_not_share_dynamic_app_title_for_different_UIs(){
+        String dynamicTitle = UUID.randomUUID().toString();
+        ui.connectClient("foo", "bar", "clean", dynamicTitle);
+        assertEquals(dynamicTitle, ui.getInternals().getTitle());
+        
+        String anotherDynamicTitle = UUID.randomUUID().toString();
+        JavaScriptBootstrapUI anotherUI = new JavaScriptBootstrapUI();
+        anotherUI.getInternals().setSession(mocks.getSession());
+        anotherUI.connectClient("foo", "bar", "clean", anotherDynamicTitle);
+        assertEquals(anotherDynamicTitle, anotherUI.getInternals().getTitle());
 
-        Document document = Document.createShell("");
-        org.jsoup.nodes.Element title = document.createElement("title");
-        title.appendText("index-html-title");
-        document.head().appendChild(title);
-
-        registry.modifyIndexHtml(document, request);
-
-        ui.navigate("empty");
-        assertNull(ui.getInternals().getTitle());
         ui.navigate("dirty");
-        assertEquals("index-html-title", ui.getInternals().getTitle());
+        assertEquals(dynamicTitle, ui.getInternals().getTitle());
     }
 
     @Test
