@@ -22,12 +22,18 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +50,9 @@ import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
  */
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
+
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile("^bytes=(([0-9]+-[0-9]+,?\\s*)+)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile("([0-9]+)-([0-9]+)");
 
     private final int bufferSize;
     private final boolean brotliEnabled;
@@ -84,13 +93,14 @@ public class ResponseWriter implements Serializable {
             throws IOException {
         writeContentType(filenameWithPath, request, response);
 
+        URL url = null;
         URLConnection connection = null;
         InputStream dataStream = null;
 
         if (brotliEnabled && acceptsBrotliResource(request)) {
             String brotliFilenameWithPath = filenameWithPath + ".br";
             try {
-                URL url = getResource(request, brotliFilenameWithPath);
+                url = getResource(request, brotliFilenameWithPath);
                 if (url != null) {
                     connection = url.openConnection();
                     dataStream = connection.getInputStream();
@@ -107,7 +117,7 @@ public class ResponseWriter implements Serializable {
             // try to serve a gzipped version if available
             String gzippedFilenameWithPath = filenameWithPath + ".gz";
             try {
-                URL url = getResource(request, gzippedFilenameWithPath);
+                url = getResource(request, gzippedFilenameWithPath);
                 if (url != null) {
                     connection = url.openConnection();
                     dataStream = connection.getInputStream();
@@ -122,6 +132,7 @@ public class ResponseWriter implements Serializable {
 
         if (dataStream == null) {
             // compressed resource not available, get non compressed
+            url = resourceUrl;
             connection = resourceUrl.openConnection();
             dataStream = connection.getInputStream();
         } else {
@@ -129,24 +140,144 @@ public class ResponseWriter implements Serializable {
         }
 
         try {
-            long length = connection.getContentLengthLong();
-            if (length >= 0L) {
-                response.setContentLengthLong(length);
+            String range = request.getHeader("Range");
+            if (range != null) {
+                closeStreamAndLogFailure(dataStream);
+                dataStream = null;
+                writeRangeContents(range, response, url);
+            } else {
+                final long contentLength = connection.getContentLengthLong();
+                if (0 <= contentLength) {
+                    setContentLength(response, contentLength);
+                }
+                writeStream(response.getOutputStream(), dataStream,
+                        Long.MAX_VALUE);
             }
-        } catch (Exception e) {
-            getLogger().debug("Error setting the content length", e);
-        }
-
-        try {
-            writeStream(response.getOutputStream(), dataStream);
         } catch (IOException e) {
             getLogger().debug("Error writing static file to user", e);
         } finally {
-            try {
-                dataStream.close();
-            } catch (IOException e) {
-                getLogger().debug("Error closing input stream for resource", e);
+            if (dataStream !=null ) {
+                closeStreamAndLogFailure(dataStream);
             }
+        }
+    }
+
+    private void closeStreamAndLogFailure(Closeable stream) {
+        try {
+            stream.close();
+        } catch (IOException e) {
+            getLogger().debug("Error closing input stream for resource", e);
+        }
+    }
+
+    private void writeRangeContents(String range, HttpServletResponse response,
+            URL resourceURL) throws IOException {
+        response.setHeader("Accept-Ranges", "bytes");
+
+        URLConnection connection = resourceURL.openConnection();
+
+        Matcher headerMatcher = RANGE_HEADER_PATTERN.matcher(range);
+        if (!headerMatcher.matches()) {
+            response.setContentLengthLong(0L);
+            response.setStatus(416); // Range Not Satisfiable
+            return;
+        }
+        String byteRanges = headerMatcher.group(1);
+
+        long resourceLength = connection.getContentLengthLong();
+        Matcher rangeMatcher = BYTE_RANGE_PATTERN.matcher(byteRanges);
+
+        List<Pair<Long, Long>> ranges = new ArrayList<>();
+        while (rangeMatcher.find()) {
+            final long start = Long.parseLong(rangeMatcher.group(1));
+            final long end = Long.parseLong(rangeMatcher.group(2));
+            if (end < start
+                    || (resourceLength >= 0 && start >= resourceLength)) {
+                // illegal range -> 416
+                response.setContentLengthLong(0L);
+                response.setStatus(416);
+                return;
+            }
+            ranges.add(new Pair<>(start, end));
+        }
+
+        response.setStatus(206);
+        ServletOutputStream outputStream = response.getOutputStream();
+        if (ranges.size() == 1) {
+            // single range: calculate Content-Length
+            long start = ranges.get(0).getFirst();
+            long end = ranges.get(0).getSecond();
+            if (resourceLength >= 0) {
+                end = Math.min(end, resourceLength - 1);
+            }
+            setContentLength(response, end - start + 1);
+            response.setHeader("Content-Range",
+                    createContentRangeHeader(start, end, resourceLength));
+
+            final InputStream dataStream = connection.getInputStream();
+            try {
+                dataStream.skip(start);
+                writeStream(outputStream, dataStream,
+                        end - start + 1);
+            } finally {
+                closeStreamAndLogFailure(dataStream);
+            }
+        } else {
+            // multipart range: use chunked transfer mode because calculating
+            // Content-Length is difficult
+            String boundary = UUID.randomUUID().toString();
+            response.setContentType(String
+                    .format("multipart/byteranges; boundary=%s", boundary));
+            response.setHeader("Transfer-Encoding", "chunked");
+
+            long position = 0L;
+            String mimeType = response.getContentType();
+            InputStream dataStream = connection.getInputStream();
+             try {
+                 for (Pair<Long, Long> rangePair : ranges) {
+                     outputStream.write(
+                             String.format("\r\n--%s\r\n", boundary).getBytes());
+                     long start = rangePair.getFirst();
+                     long end = rangePair.getSecond();
+                     if (mimeType != null) {
+                         outputStream.write(
+                                 String.format("Content-Type: %s\r\n", mimeType)
+                                         .getBytes());
+                     }
+                     outputStream.write(String.format("Content-Range: %s\r\n\r\n",
+                             createContentRangeHeader(start, end, resourceLength))
+                             .getBytes());
+
+                     if (position > start) {
+                         // out-of-sequence range -> open new stream to the file
+                         // alternative: use single stream with mark / reset
+                         closeStreamAndLogFailure(connection.getInputStream());
+                         connection = resourceURL.openConnection();
+                         dataStream = connection.getInputStream();
+                         position = 0L;
+                     }
+                     dataStream.skip(start - position);
+                     writeStream(outputStream, dataStream, end - start + 1);
+                     position = end + 1;
+                 }
+             } finally {
+                 closeStreamAndLogFailure(dataStream);
+             }
+            outputStream.write(String.format("\r\n--%s", boundary).getBytes());
+        }
+    }
+
+    private String createContentRangeHeader(long start, long end, long size) {
+        String lengthString = size >= 0 ? Long.toString(size) : "*";
+        return String.format("bytes %d-%d/%s", start, end, lengthString);
+    }
+    
+    private void setContentLength(HttpServletResponse response,
+            long contentLength) {
+        try {
+            response.setContentLengthLong(contentLength);
+        } catch (Exception e) {
+            getLogger().debug("Error setting the content length", e);
         }
     }
 
@@ -186,13 +317,16 @@ public class ResponseWriter implements Serializable {
     }
 
     private void writeStream(ServletOutputStream outputStream,
-            InputStream inputStream) throws IOException {
+            InputStream dataStream, long count) throws IOException {
         final byte[] buffer = new byte[bufferSize];
-        int bytes;
-        while ((bytes = inputStream.read(buffer)) >= 0) {
-            outputStream.write(buffer, 0, bytes);
-        }
 
+        long bytesTotal = 0L;
+        int bytes;
+        while (bytesTotal < count && (bytes = dataStream.read(buffer, 0,
+                (int)Long.min(bufferSize, count - bytesTotal))) >= 0) {
+            outputStream.write(buffer, 0, bytes);
+            bytesTotal += bytes;
+        }
     }
 
     /**
