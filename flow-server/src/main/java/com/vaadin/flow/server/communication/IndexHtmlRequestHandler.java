@@ -131,7 +131,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void storeAppShellTitleToUI(Document indexDocument) {
-        if(UI.getCurrent()!=null){
+        if (UI.getCurrent() != null) {
             Element elm = indexDocument.head().selectFirst("title");
             if (elm != null) {
                 String appShellTitle = elm.text().isEmpty() ? elm.data() : elm.text();
