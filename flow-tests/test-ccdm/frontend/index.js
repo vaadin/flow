@@ -45,3 +45,7 @@ document.getElementById("loadVaadinRouter").addEventListener('click', async(e) =
     clientRouter.loadRouter(flow);
 });
 
+document.getElementById("updatePageTitle").addEventListener('click', async(e) => {
+    document.title = 'client-side-updated-title';
+});
+

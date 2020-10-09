@@ -374,7 +374,7 @@ public class IndexHtmlRequestHandlerTest {
                 Boolean.FALSE);
 
         ((JavaScriptBootstrapUI) UI.getCurrent()).connectClient("foo", "bar",
-                "/foo");
+                "/foo", "");
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);
@@ -568,6 +568,15 @@ public class IndexHtmlRequestHandlerTest {
         Elements bodyInlineElements = document.body()
                 .getElementsByTag("script");
         assertEquals(1, bodyInlineElements.size());
+    }
+
+    @Test
+    public void should_store_IndexHtmltitleToUI_When_LoadingServerEagerly() 
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        assertEquals("Flow Test CCDM", UI.getCurrent().getInternals().getAppShellTitle());
     }
 
     @After
