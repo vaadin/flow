@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -215,10 +216,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String frontendDir = FrontendUtils.getProjectFrontendDir(
                 service.getDeploymentConfiguration());
         String indexHtmlFilePath;
-        if(frontendDir.endsWith("/")) {
+        if(frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
         } else {
-            indexHtmlFilePath = frontendDir + "/index.html";
+            indexHtmlFilePath = frontendDir + File.separatorChar + "/index.html";
         }
         String message = String
                 .format("Failed to load content of '%1$s'. "

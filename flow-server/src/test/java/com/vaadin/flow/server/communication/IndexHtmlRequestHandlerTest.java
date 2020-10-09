@@ -58,6 +58,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.DevModeHandlerTest.createStubWebpackTcpListener;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 import static org.junit.Assert.assertEquals;
 
@@ -121,10 +122,16 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        String expectedError =
-                "Failed to load content of './frontend/index.html'. "
-                        + "It is required to have './frontend/index.html' file "
-                        + "when using client side bootstrapping.";
+        String path;
+        if(DEFAULT_FRONTEND_DIR.endsWith(File.separator)) {
+            path = DEFAULT_FRONTEND_DIR + "index.html";
+        } else {
+            path = DEFAULT_FRONTEND_DIR + File.separatorChar + "/index.html";
+        }
+        String expectedError = String
+                .format("Failed to load content of '%1$s'. "
+                        + "It is required to have '%1$s' file when "
+                        + "using client side bootstrapping.", path);
 
         exceptionRule.expect(IOException.class);
         exceptionRule.expectMessage(expectedError);
