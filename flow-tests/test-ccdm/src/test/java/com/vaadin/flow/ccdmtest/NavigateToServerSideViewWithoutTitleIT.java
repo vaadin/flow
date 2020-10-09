@@ -39,6 +39,8 @@ public class NavigateToServerSideViewWithoutTitleIT extends CCDMTest {
 
         // update document.title on the client-side
         findElement(By.id("updatePageTitle")).click();
+        Assert.assertEquals("Client-side should have updated the shell title", 
+            "client-side-updated-title", getDriver().getTitle());
         
         findAnchor("view-with-server-view-button").click();
 
