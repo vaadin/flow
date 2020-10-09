@@ -4,10 +4,11 @@
   "vaadin": {
     "dependencies": {
       "@vaadin/router": "1.7.2",
-      "@polymer/polymer": "3.2.0"
+      "@polymer/polymer": "3.2.0",
+      "lit-element": "2.3.1"
     },
     "devDependencies": {
-      "compression-webpack-plugin": "3.1.0",
+      "compression-webpack-plugin": "4.0.1",
       "raw-loader": "4.0.0",
       "webpack-cli": "3.3.11",
       "script-ext-html-webpack-plugin": "2.1.4",
@@ -18,19 +19,28 @@
       "webpack": "4.42.0",
       "progress-webpack-plugin": "0.0.24",
       "html-webpack-plugin": "3.2.0",
-      "typescript": "3.8.3",
+      "typescript": "4.0.3",
       "webpack-merge": "4.2.2",
-      "webpack-dev-server": "3.10.3"
+      "webpack-dev-server": "3.10.3",
+      "css-loader": "4.2.1",
+      "validator": "12.0.0",
+      "lit-css-loader": "0.0.4",
+      "lit-html": "1.2.1",
+      "@types/validator": "10.11.3",
+      "chokidar": "^3.4.0",
+      "extract-loader": "5.1.0"
     },
-    "hash": "ef51f922bf1bf051c5a797844cef73ec710990189f97e2dc15ee4c3123551de0"
+    "hash": "3c460c3e8e77167a0900e6826029cb2b5ea7e3ce7d772e6945e6609f54961fdb"
   },
   "dependencies": {
     "@vaadin/router": "1.7.2",
     "@polymer/polymer": "3.2.0",
-    "@vaadin/flow-frontend": "./target/flow-frontend"
+    "@vaadin/flow-frontend": "./target/flow-frontend",
+    "lit-element": "2.3.1",
+    "@vaadin/form": "./target/flow-frontend/form"
   },
   "devDependencies": {
-    "compression-webpack-plugin": "3.1.0",
+    "compression-webpack-plugin": "4.0.1",
     "raw-loader": "4.0.0",
     "webpack-cli": "3.3.11",
     "script-ext-html-webpack-plugin": "2.1.4",
@@ -41,8 +51,15 @@
     "webpack": "4.42.0",
     "progress-webpack-plugin": "0.0.24",
     "html-webpack-plugin": "3.2.0",
-    "typescript": "3.8.3",
+    "typescript": "4.0.3",
     "webpack-merge": "4.2.2",
-    "webpack-dev-server": "3.10.3"
+    "webpack-dev-server": "3.10.3",
+    "css-loader": "4.2.1",
+    "validator": "12.0.0",
+    "lit-css-loader": "0.0.4",
+    "lit-html": "1.2.1",
+    "@types/validator": "10.11.3",
+    "chokidar": "^3.4.0",
+    "extract-loader": "5.1.0"
   }
 }

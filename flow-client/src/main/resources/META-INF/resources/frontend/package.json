@@ -1,0 +1,6 @@
+{
+    "name": "@vaadin/flow-frontend",
+    "license": "UNLICENSED",
+    "main": "index",
+    "version": "1.0.0"
+  }
