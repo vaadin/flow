@@ -161,19 +161,6 @@ public class AppShellRegistry implements Serializable {
     }
 
     /**
-     * @return {code null};
-     * 
-     * @deprecated this method does not work, to get the application shell title, 
-     * use {code UI.getCurrent().getInternals().getAppShellTitle()} instead.
-     */
-    @Deprecated
-    public String getTitle() {
-        throw new UnsupportedOperationException("AppShellRegistry.getTitle() does not work, "
-                + "to get the application shell title, "
-                + "use UI.getCurrent().getInternals().getAppShellTitle() instead.");
-    }
-
-    /**
      * Checks whether a class have annotations that should only be in
      * {@link AppShellConfigurator} classes.
      *
