@@ -142,7 +142,7 @@ public class ResponseWriter implements Serializable {
         try {
             String range = request.getHeader("Range");
             if (range != null) {
-                closeStreamAndLogFailure(dataStream);
+                closeStream(dataStream);
                 dataStream = null;
                 writeRangeContents(range, response, url);
             } else {
@@ -157,12 +157,12 @@ public class ResponseWriter implements Serializable {
             getLogger().debug("Error writing static file to user", e);
         } finally {
             if (dataStream !=null ) {
-                closeStreamAndLogFailure(dataStream);
+                closeStream(dataStream);
             }
         }
     }
 
-    private void closeStreamAndLogFailure(Closeable stream) {
+    private void closeStream(Closeable stream) {
         try {
             stream.close();
         } catch (IOException e) {
@@ -170,6 +170,15 @@ public class ResponseWriter implements Serializable {
         }
     }
 
+    /**
+     * Handle a "Header:" request. The handling logic is splits on single or
+     * multiple ranges: for a single range, send a regular response with
+     * Content-Length; for multiple ranges, send a "Content-Type:
+     * multipart/byteranges" response. If the byte ranges are satisfiable, the
+     * response code is 206, otherwise it is 416. See e.g.
+     * https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests for
+     * protocol details.
+     */
     private void writeRangeContents(String range, HttpServletResponse response,
             URL resourceURL) throws IOException {
         response.setHeader("Accept-Ranges", "bytes");
@@ -202,9 +211,10 @@ public class ResponseWriter implements Serializable {
         }
 
         response.setStatus(206);
-        ServletOutputStream outputStream = response.getOutputStream();
 
         if (ranges.size() == 1) {
+            ServletOutputStream outputStream = response.getOutputStream();
+
             // single range: calculate Content-Length
             long start = ranges.get(0).getFirst();
             long end = ranges.get(0).getSecond();
@@ -217,29 +227,39 @@ public class ResponseWriter implements Serializable {
 
             final InputStream dataStream = connection.getInputStream();
             try {
-                dataStream.skip(start);
-                writeStream(outputStream, dataStream,
-                        end - start + 1);
+                long skipped = dataStream.skip(start);
+                assert(skipped == start);
+                writeStream(outputStream, dataStream, end - start + 1);
             } finally {
-                closeStreamAndLogFailure(dataStream);
+                closeStream(dataStream);
             }
-            return;
+        } else {
+            writeMultipartRangeContents(ranges, connection, response,
+                    resourceURL);
         }
+    }
 
-        // multipart range: use chunked transfer mode because calculating
-        // Content-Length is difficult
-        String boundary = UUID.randomUUID().toString();
-        response.setContentType(
-                String.format("multipart/byteranges; boundary=%s", boundary));
+    /**
+     * Write a multi-part request with MIME type "multipart/byteranges",
+     * separated by boundaries and use "Transfer-Encoding: chunked" mode to
+     * avoid computing "Content-Length".
+     */
+    private void writeMultipartRangeContents(List<Pair<Long, Long>> ranges,
+            URLConnection connection, HttpServletResponse response,
+            URL resourceURL) throws IOException {
+        String partBoundary = UUID.randomUUID().toString();
+        response.setContentType(String
+                .format("multipart/byteranges; boundary=%s", partBoundary));
         response.setHeader("Transfer-Encoding", "chunked");
 
         long position = 0L;
         String mimeType = response.getContentType();
         InputStream dataStream = connection.getInputStream();
+        ServletOutputStream outputStream = response.getOutputStream();
         try {
             for (Pair<Long, Long> rangePair : ranges) {
                 outputStream.write(
-                        String.format("\r\n--%s\r\n", boundary).getBytes());
+                        String.format("\r\n--%s\r\n", partBoundary).getBytes());
                 long start = rangePair.getFirst();
                 long end = rangePair.getSecond();
                 if (mimeType != null) {
@@ -247,28 +267,31 @@ public class ResponseWriter implements Serializable {
                             String.format("Content-Type: %s\r\n", mimeType)
                                     .getBytes());
                 }
-                outputStream.write(String.format("Content-Range: %s\r\n\r\n",
-                        createContentRangeHeader(start, end, resourceLength))
+                outputStream.write(String
+                        .format("Content-Range: %s\r\n\r\n",
+                                createContentRangeHeader(start, end,
+                                        connection.getContentLengthLong()))
                         .getBytes());
 
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
                     // alternative: use single stream with mark / reset
-                    closeStreamAndLogFailure(connection.getInputStream());
+                    closeStream(connection.getInputStream());
                     connection = resourceURL.openConnection();
                     dataStream = connection.getInputStream();
                     position = 0L;
                 }
-                dataStream.skip(start - position);
+                long skipped = dataStream.skip(start - position);
+                assert(skipped == start - position);
                 writeStream(outputStream, dataStream, end - start + 1);
                 position = end + 1;
             }
         } finally {
-            closeStreamAndLogFailure(dataStream);
+            closeStream(dataStream);
         }
-        outputStream.write(String.format("\r\n--%s", boundary).getBytes());
+        outputStream.write(String.format("\r\n--%s", partBoundary).getBytes());
     }
-
+    
     private String createContentRangeHeader(long start, long end, long size) {
         String lengthString = size >= 0 ? Long.toString(size) : "*";
         return String.format("bytes %d-%d/%s", start, end, lengthString);
