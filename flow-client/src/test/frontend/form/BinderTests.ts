@@ -311,5 +311,28 @@ suite("form/Binder", () => {
       binder.for(binder.model.supervisor.supervisor);
       assert.isFalse(binder.dirty);
     });
+
+    test('should not fail validation for non-initialised object', async () => {
+      await binder.validate();
+      assert.isFalse(binder.invalid);
+
+      // Populate non-initialised optional field with data
+      binder.value = {...binder.value, supervisor: expectedEmptyEmployee};
+
+      await binder.validate();
+      assert.isFalse(binder.invalid);
+
+      // Populate non-initialised optional field with deep optional data
+      binder.value = {
+        ...binder.value,
+        supervisor: {
+          ...expectedEmptyEmployee,
+          supervisor: expectedEmptyEmployee
+        }
+      };
+
+      await binder.validate();
+      assert.isFalse(binder.invalid);
+    });
   });
 });

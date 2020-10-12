@@ -323,8 +323,15 @@ export class BinderNode<T, M extends AbstractModel<T>> {
 
   private *getChildBinderNodes(): Generator<BinderNode<any, AbstractModel<any>>> {
     if (this.model instanceof ObjectModel) {
-      if (this.value) {
-        for (const key of Object.keys(this.value)) {
+      // We need to skip all non-initialised optional fields here in order to
+      // prevent infinite recursion for circular references in the model.
+      // Here we rely on presence of keys in `defaultValue` to detect all
+      // initialised fields. The keys in `defaultValue` are defined for all
+      // non-optional fields plus those optional fields whose values were set
+      // from initial `binder.read()` or `binder.clear()` or by using a
+      // binder node (e. g., form biding) for a nested field.
+      if (this.defaultValue) {
+        for (const key of Object.keys(this.defaultValue)) {
           const childModel = (this.model as any)[key] as AbstractModel<any>;
           if (childModel) {
             yield getBinderNode(childModel);
