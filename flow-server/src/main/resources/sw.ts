@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+
 importScripts('sw-runtime-resources-precache.js');
 import {skipWaiting, clientsClaim} from 'workbox-core';
 import {precacheAndRoute} from 'workbox-precaching';
