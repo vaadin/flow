@@ -3,10 +3,10 @@
 import { MiddlewareClass, MiddlewareContext, MiddlewareNext } from "./Connect";
 
 export interface LoginResult {
-  token?: string;
   error: boolean;
-  errorTitle: string;
-  errorMessage: string;
+  token?: string;
+  errorTitle?: string;
+  errorMessage?: string;
 }
 
 export interface LoginOptions{
