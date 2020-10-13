@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.component.littemplate;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParserFactory;
 import com.vaadin.flow.component.template.internal.IdMapper;
 import com.vaadin.flow.component.template.internal.ParserData;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.VaadinService;
 
@@ -94,6 +97,31 @@ public class LitTemplateInitializer {
                     .parseTemplate();
         }
         parserData = data;
+        validateDisabledNotUsed();
+    }
+
+    private void validateDisabledNotUsed() {
+        List<Pair<String, String>> disabled = new ArrayList<>(0);
+        parserData.forEachInjectedField((field, id, tag) -> {
+            if (parserData.getAttributes(id).containsKey("disabled")) {
+                disabled.add(new Pair<>(tag, id));
+            }
+        });
+        if(!disabled.isEmpty()) {
+            StringBuilder faulty = new StringBuilder();
+            disabled.forEach(
+                field -> faulty.append(" * Element '").append(field.getFirst())
+                    .append("' with id '").append(field.getSecond()).append("'")
+                    .append("\n")
+            );
+            String errorMessage = String.format(
+                "Lit template '%s' injected element(s):%n"
+                    + "%s%nuses the disabled attribute.%n"
+                    + "Mapped components should instead be disabled "
+                    + "using the 'setEnabled(false)' method on the server side.",
+                templateClass.getName(), faulty.toString());
+            throw new IllegalAttributeException(errorMessage);
+        }
     }
 
     /**
