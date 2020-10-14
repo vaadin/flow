@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.littemplate;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +36,6 @@ public class InjectableLitElementInitializer
 
     private static final String DYNAMIC_ATTRIBUTE_PREFIX = "Template {} contains an attribute {} in element {} which";
     private final Class<? extends Component> templateClass;
-
     /**
      * Creates an initializer for the {@code element}.
      * 
@@ -47,6 +48,20 @@ public class InjectableLitElementInitializer
             Class<? extends Component> templateClass) {
         super(element);
         this.templateClass = templateClass;
+    }
+
+    @Override
+    public void accept(Map<String, String> templateAttributes) {
+        if(templateAttributes.containsKey("disabled")) {
+            String errorMessage = String.format(
+                "Lit template '%s' injected element '%s' with id '%s'"
+                    + " uses the disabled attribute.%n"
+                    + "Mapped components should instead be disabled "
+                    + "using the 'setEnabled(false)' method on the server side.",
+                templateClass.getName(), getElement().getTag(), templateAttributes.get("id"));
+            throw new IllegalAttributeException(errorMessage);
+        }
+        super.accept(templateAttributes);
     }
 
     @Override
@@ -84,7 +99,7 @@ public class InjectableLitElementInitializer
             // this is a dynamic value
             getLogger().debug(
                     "Template {} contains an attribute {} in element {} whose value"
-                            + " is dynamic and it's ignored by initilization",
+                            + " is dynamic and it's ignored by initialization",
                     templateClass.getSimpleName(), name, getElement().getTag());
             return false;
         }

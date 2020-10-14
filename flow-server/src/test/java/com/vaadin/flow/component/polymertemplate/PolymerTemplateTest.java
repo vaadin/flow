@@ -16,12 +16,6 @@
 
 package com.vaadin.flow.component.polymertemplate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -63,7 +58,11 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import net.jcip.annotations.NotThreadSafe;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class PolymerTemplateTest extends HasCurrentService {
@@ -843,10 +842,15 @@ public class PolymerTemplateTest extends HasCurrentService {
     public void attachExistingElementWithAttributeValue_elementIsDisabled() {
         DisabledElementTemplate template = new DisabledElementTemplate();
 
-        Assert.assertTrue(template.label.hasAttribute("id"));
-        Assert.assertFalse(template.label.isEnabled());
+        Assert.assertTrue("Element is missing id",
+            template.label.hasAttribute("id"));
+        Assert.assertTrue("Server side element should be enabled",
+            template.label.isEnabled());
+        Assert.assertTrue("Element should contain 'disabled' property",
+            template.label.hasProperty("disabled"));
     }
 
+    @Test
     public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
         ElementWithTextTemplate template = new ElementWithTextTemplate();
 

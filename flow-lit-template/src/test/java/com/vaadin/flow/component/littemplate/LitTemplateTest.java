@@ -15,18 +15,25 @@
  */
 package com.vaadin.flow.component.littemplate;
 
+import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.template.Id;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 
 public class LitTemplateTest {
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
 
     private VaadinService service = Mockito.mock(VaadinService.class);
 
@@ -55,7 +62,7 @@ public class LitTemplateTest {
     private static class DisabledElementTemplate extends LitTemplate {
 
         @Id("labelId")
-        private com.vaadin.flow.dom.Element label;
+        private Element label;
 
         public DisabledElementTemplate(VaadinService service) {
             this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
@@ -69,6 +76,7 @@ public class LitTemplateTest {
             super(parser, service);
         }
     }
+
 
     @Tag("foo-bar")
     private static class ElementWithTextLitTemplate extends LitTemplate {
@@ -135,14 +143,16 @@ public class LitTemplateTest {
     }
 
     @Test
-    public void attachExistingElementWithAttributeValue_elementIsDisabled() {
-        DisabledElementTemplate template = new DisabledElementTemplate(service);
+    public void attachExistingElementWithDisabledAttributeValue_exceptionIsThrown() {
+        expectedEx.expect(IllegalAttributeException.class);
+        expectedEx.expectMessage(
+            Matchers.containsString("element 'label' with id 'labelId'"));
 
-        Assert.assertTrue(template.label.hasAttribute("id"));
-        Assert.assertFalse(template.label.isEnabled());
+        DisabledElementTemplate template = new DisabledElementTemplate(service);
     }
 
-    public void attachExistingElementWithoutChidlrenWithText_elementHasText() {
+    @Test
+    public void attachExistingElementWithoutChildrenWithText_elementHasText() {
         ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
                 service);
 
@@ -150,7 +160,7 @@ public class LitTemplateTest {
     }
 
     @Test
-    public void attachExistingElementWithChidlrenWithText_elementHasNoText() {
+    public void attachExistingElementWithChildrenWithText_elementHasNoText() {
         ElementWithTextLitTemplate template = new ElementWithTextLitTemplate(
                 service);
 

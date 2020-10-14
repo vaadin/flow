@@ -13,29 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.template.internal;
 
-import java.io.Serializable;
-
-import com.vaadin.flow.dom.Element;
+package com.vaadin.flow.component.littemplate;
 
 /**
- * Initializes Element via enabling/disabling it.
- * 
- * @author Vaadin Ltd
- * @since
+ * Thrown to indicate that an element had an illegal or
+ * inappropriate attribute.
  *
+ * @since
  */
-class DisabledInitializationStrategy
-        implements ElementInitializationStrategy, Serializable {
+public class IllegalAttributeException extends RuntimeException {
 
-    @Override
-    public void initialize(Element element, String name, String value) {
-        assert "disabled".equals(name);
-        // this is a boolean attribute
-        assert value == null || value.isEmpty()
-                || value.equals(Boolean.TRUE.toString());
-        element.setEnabled(false);
+    /**
+     * Constructs an <code>IllegalAttributeException</code> with the
+     * specified detail message.
+     *
+     * @param   s   the detail message.
+     */
+    public IllegalAttributeException(String s) {
+        super(s);
     }
-
 }
