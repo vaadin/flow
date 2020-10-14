@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
@@ -30,7 +30,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessTest;
-import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
@@ -201,21 +200,31 @@ public class PushHandlerTest {
     }
 
     @Test
-    public void connectionLost_currentInstancesAreCleared()
+    public void connectionLost_noSession_currentInstancesAreCleared()
             throws SessionExpiredException {
-        MockVaadinSession session = new MockVaadinSession() {
-            @Override
-            public Future<Void> access(Command command) {
-                command.execute();
-                return Mockito.mock(Future.class);
-            }
-        };
-        VaadinSession.setCurrent(session);
+        mockConnectionLost(new MockVaadinSession(), false);
+
+        Assert.assertNull(VaadinSession.getCurrent());
+    }
+
+    @Test
+    public void connectionLost_sessionIsSetViaCurrent_currentInstancesAreCleared()
+            throws SessionExpiredException {
+        VaadinSession session = new MockVaadinSession();
+
+        mockConnectionLost(session, true);
         Assert.assertNotNull(VaadinSession.getCurrent());
+    }
+
+    private void mockConnectionLost(VaadinSession session, boolean setSession) {
+        AtomicBoolean sessionIsSet = new AtomicBoolean();
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
             public com.vaadin.flow.server.VaadinSession findVaadinSession(
                     VaadinRequest request) throws SessionExpiredException {
+                VaadinSession.setCurrent(session);
+                sessionIsSet.set(true);
+                Assert.assertNotNull(VaadinSession.getCurrent());
                 return session;
             }
 
@@ -226,6 +235,10 @@ public class PushHandlerTest {
         };
 
         service.init();
+
+        if (setSession) {
+            VaadinSession.setCurrent(session);
+        }
         PushHandler handler = new PushHandler(service);
 
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
@@ -237,7 +250,7 @@ public class PushHandlerTest {
         Mockito.when(event.getResource()).thenReturn(resource);
         handler.connectionLost(event);
 
-        Assert.assertNull(VaadinSession.getCurrent());
+        Assert.assertTrue(sessionIsSet.get());
     }
 
     private VaadinServletService runTest(VaadinServletService service,

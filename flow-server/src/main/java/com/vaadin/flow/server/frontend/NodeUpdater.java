@@ -76,8 +76,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
     protected static final String DEP_NAME_FORM_JARS = "@vaadin/form";
     private static final String FORM_FOLDER = "form";
-    private static final String DEP_MAIN_FLOW_JARS = "Flow";
-    private static final String DEP_MAIN_FORM_JARS = "index";
+    private static final String DEP_MAIN_VALUE = "index";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     private static final String ROUTER_VERSION = "1.7.2";
@@ -220,7 +219,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FLOW_JARS);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_VALUE);
             packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
         }
         return packageJson;
@@ -233,7 +232,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson = Json.createObject();
             packageJson.put(DEP_NAME_KEY, DEP_NAME_FORM_JARS);
             packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_FORM_JARS);
+            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_VALUE);
             packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
             packageJson.put("sideEffects", false);
         }
@@ -294,7 +293,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("html-webpack-plugin", "3.2.0");
         defaults.put("script-ext-html-webpack-plugin", "2.1.4");
-        defaults.put("typescript", "3.8.3");
+        defaults.put("typescript", "4.0.3");
         defaults.put("awesome-typescript-loader", "5.2.1");
 
         defaults.put("webpack", "4.42.0");

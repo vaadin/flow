@@ -42,11 +42,6 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-polymer-template</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>flow-dnd</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -326,6 +321,7 @@
                 <module>test-multi-war</module>
                 <module>test-ccdm</module>
                 <module>test-ccdm/pom-production.xml</module>
+                <module>test-ccdm-flow-navigation</module>
 
                 <module>test-root-context</module>
 

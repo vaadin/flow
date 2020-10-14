@@ -13,10 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.polymertemplate.rpc;
+package com.vaadin.flow.server.communication.rpc;
 
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,8 +32,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
-import com.vaadin.flow.component.polymertemplate.EventHandler;
-import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
@@ -43,7 +42,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -53,15 +51,14 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     private VaadinSession session;
 
     @Tag("a")
-    public static class ComponentWithMethod extends Component
-            implements DeprecatedPolymerTemplate {
+    public static class ComponentWithCompute extends Component {
 
         private boolean isInvoked;
 
         protected void intMethod(int i) {
         }
 
-        @EventHandler
+        @ClientCallable
         private void method() {
             isInvoked = true;
         }
@@ -78,16 +75,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Tag(Tag.DIV)
-    public static class EnabledHandler extends Component
-            implements DeprecatedPolymerTemplate {
+    public static class EnabledHandler extends Component {
 
         private boolean isInvoked;
-
-        @EventHandler(DisabledUpdateMode.ALWAYS)
-        private void method() {
-            isInvoked = true;
-        }
-
         @ClientCallable(DisabledUpdateMode.ALWAYS)
         private void operation() {
             isInvoked = true;
@@ -110,21 +100,36 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         }
     }
 
-    public static class ComponentWithTwoEventHandlerMethodSameName
-            extends ComponentWithMethod {
+    public static class ComponentWithNoClientCallableMethod
+            extends ComponentWithCompute {
 
-        @EventHandler
-        @Override
-        protected void intMethod(int i) {
-
-        }
-
-        @EventHandler
-        private void intMethod() {
+        /**
+         * No {@link ClientCallable} annotation.
+         */
+        public void operation() {
         }
     }
 
-    public static class MethodWithParameters extends ComponentWithMethod {
+    public static class CompositeOfComponentWithCompute
+            extends Composite<ComponentWithCompute> {
+    }
+
+    public static class CompositeOfComposite
+            extends Composite<CompositeOfComponentWithCompute> {
+    }
+
+    public static class MethodWithVarArgParameter extends ComponentWithCompute {
+
+        private String[] varArg;
+
+        @ClientCallable
+        protected void varArgMethod(@EventData("foo") String... args) {
+            varArg = args;
+        }
+
+    }
+
+    public static class MethodWithParameters extends ComponentWithCompute {
 
         private int intArg;
         private String strArg;
@@ -135,72 +140,35 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         private JsonValue jsonValue;
 
         @Override
-        @EventHandler
+        @ClientCallable
         protected void intMethod(@EventData("foo") int i) {
             intArg = i;
         }
 
-        @EventHandler
+        @ClientCallable
         protected void method1(@EventData("foo") String str,
                 @EventData("bar") boolean[] array) {
             strArg = str;
             arrayArg = array;
         }
 
-        @EventHandler
+        @ClientCallable
         protected void method2(@EventData("foo") Double[] arg1,
                 @EventData("bar") Integer... varArg) {
             doubleArg = arg1;
             this.varArg = varArg;
         }
 
-        @EventHandler
+        @ClientCallable
         protected void method3(@EventData("foo") int[][] array) {
             doubleArray = array;
         }
 
-        @EventHandler
-        protected void method4(@EventData("foo") JsonValue value) {
+        @ClientCallable
+        protected void method4(@EventData("foo")
+                JsonValue value) {
             jsonValue = value;
         }
-    }
-
-    public static class MethodWithVarArgParameter extends ComponentWithMethod {
-
-        private String[] varArg;
-
-        @EventHandler
-        protected void varArgMethod(@EventData("foo") String... args) {
-            varArg = args;
-        }
-
-    }
-
-    public static class ComponentWithMethodThrowingException
-            extends ComponentWithMethod {
-
-        @EventHandler
-        private void method() {
-            throw new NullPointerException();
-        }
-    }
-
-    public static class ComponentWithNoEventHandlerMethod
-            extends ComponentWithMethod {
-
-        /**
-         * No {@link EventHandler} annotation.
-         */
-        public void operation() {
-        }
-    }
-
-    public static class CompositeOfComponentWithMethod
-            extends Composite<ComponentWithMethod> {
-    }
-
-    public static class CompositeOfComposite
-            extends Composite<CompositeOfComponentWithMethod> {
     }
 
     @Before
@@ -227,7 +195,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodIsInvoked() {
-        ComponentWithMethod component = new ComponentWithMethod();
+        ComponentWithCompute component = new ComponentWithCompute();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", Json.createArray(), -1);
 
@@ -236,8 +204,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodIsInvokedOnCompositeContent() {
-        CompositeOfComponentWithMethod composite = new CompositeOfComponentWithMethod();
-        ComponentWithMethod component = composite.getContent();
+        CompositeOfComponentWithCompute composite = new CompositeOfComponentWithCompute();
+        ComponentWithCompute component = composite.getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
                 composite.getClass(), "method", Json.createArray(), -1);
 
@@ -247,7 +215,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     @Test
     public void methodIsInvokectOnCompositeOfComposite() {
         CompositeOfComposite composite = new CompositeOfComposite();
-        ComponentWithMethod component = composite.getContent().getContent();
+        ComponentWithCompute component = composite.getContent().getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
                 composite.getClass(), "method", Json.createArray(), -1);
 
@@ -282,7 +250,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public void methodWithoutArgs_argsProvided() {
         JsonArray args = Json.createArray();
         args.set(0, true);
-        ComponentWithMethod component = new ComponentWithMethod();
+        ComponentWithCompute component = new ComponentWithCompute();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", args, -1);
     }
@@ -294,7 +262,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         JsonArray args = Json.createArray();
         args.set(0, 36);
 
-        ComponentWithMethod component = new ComponentWithMethod();
+        ComponentWithCompute component = new ComponentWithCompute();
         UI ui = new UI();
         ui.getInternals().setSession(session);
         ui.add(component);
@@ -337,7 +305,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         JsonArray args = Json.createArray();
         args.set(0, -36);
 
-        ComponentWithMethod component = new ComponentWithMethod();
+        ComponentWithCompute component = new ComponentWithCompute();
         UI ui = new UI();
         ui.getInternals().setSession(session);
         ui.add(component);
@@ -375,149 +343,6 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.getElement(), parameters.get(1));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void twoEventHandlerMethodsWithTheSameName() {
-        ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", Json.createArray(), -1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void methodWithParametersInvokedWithoutParameters() {
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", Json.createArray(), -1);
-    }
-
-    @Test
-    public void methodWithParameterInvokedWithProperParameter() {
-        JsonArray array = Json.createArray();
-        array.set(0, 65);
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", array, -1);
-
-        Assert.assertEquals(65, component.intArg);
-    }
-
-    @Test
-    public void methodWithArrayParamIsInvoked() {
-        JsonArray array = Json.createArray();
-        array.set(0, "foo");
-        JsonArray secondArg = Json.createArray();
-        secondArg.set(0, true);
-        secondArg.set(1, false);
-        array.set(1, secondArg);
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method1", array, -1);
-
-        Assert.assertEquals("foo", component.strArg);
-        Assert.assertArrayEquals(new boolean[] { true, false },
-                component.arrayArg);
-    }
-
-    @Test
-    public void methodWithVarArgIsInvoked_varArgsAreNotArray() {
-        JsonArray array = Json.createArray();
-
-        JsonArray firstArg = Json.createArray();
-        firstArg.set(0, 3.1d);
-        firstArg.set(1, 65.57d);
-
-        array.set(0, firstArg);
-
-        array.set(1, Json.createNull());
-        array.set(2, 56);
-
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method2", array, -1);
-
-        Assert.assertArrayEquals(
-                new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
-                component.doubleArg);
-
-        Assert.assertNotNull(component.varArg);
-        Assert.assertNull(component.varArg[0]);
-        Assert.assertEquals(Integer.valueOf(56), component.varArg[1]);
-        Assert.assertEquals(2, component.varArg.length);
-    }
-
-    @Test
-    public void methodWithDoubleArrayIsInvoked() {
-        JsonArray array = Json.createArray();
-
-        JsonArray arg = Json.createArray();
-
-        JsonArray first = Json.createArray();
-        first.set(0, 1);
-        first.set(1, 2);
-
-        arg.set(0, first);
-
-        JsonArray second = Json.createArray();
-        second.set(0, 3);
-        second.set(1, 4);
-
-        arg.set(1, second);
-
-        array.set(0, arg);
-
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method3", array, -1);
-
-        Assert.assertArrayEquals(new int[] { (int) first.getNumber(0),
-                (int) first.getNumber(1) }, component.doubleArray[0]);
-
-        Assert.assertArrayEquals(new int[] { (int) second.getNumber(0),
-                (int) second.getNumber(1) }, component.doubleArray[1]);
-    }
-
-    @Test
-    public void methodWithJsonValueIsInvoked() {
-        JsonArray array = Json.createArray();
-
-        JsonObject json = Json.createObject();
-        json.put("foo", "bar");
-        array.set(0, json);
-
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method4", array, -1);
-
-        Assert.assertEquals(component.jsonValue, json);
-    }
-
-    @Test
-    public void methodWithVarArgIsInvoked_varArgsIsArray() {
-        JsonArray array = Json.createArray();
-
-        JsonArray firstArg = Json.createArray();
-        firstArg.set(0, 5.6d);
-        firstArg.set(1, 78.36d);
-
-        array.set(0, firstArg);
-
-        JsonArray secondArg = Json.createArray();
-        secondArg.set(0, 5);
-        secondArg.set(1, Json.createNull());
-        secondArg.set(2, 2);
-        array.set(1, secondArg);
-
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method2", array, -1);
-
-        Assert.assertArrayEquals(
-                new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
-                component.doubleArg);
-
-        Assert.assertNotNull(component.varArg);
-        Assert.assertArrayEquals(new Integer[] { (int) secondArg.getNumber(0),
-                null, (int) secondArg.getNumber(2) }, component.varArg);
-    }
 
     @Test
     public void methodWithVarArg_acceptNoValues() {
@@ -582,44 +407,24 @@ public class PublishedServerEventHandlerRpcHandlerTest {
                 component.varArg);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void nullValueIsNotAcceptedForPrimitive() {
-        JsonArray array = Json.createArray();
-        array.set(0, Json.createNull());
-        MethodWithParameters component = new MethodWithParameters();
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", array, -1);
-    }
-
     @Test(expected = IllegalStateException.class)
-    public void noEventHandlerMethodException() {
-        ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
+    public void noClientCallableMethodException() {
+        ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "operation", Json.createArray(), -1);
     }
 
     @Test(expected = IllegalStateException.class)
     public void noMethodException() {
-        ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
+        ComponentWithNoClientCallableMethod component = new ComponentWithNoClientCallableMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "operation1", Json.createArray(), -1);
     }
 
     @Test
-    public void methodThrowsException_exceptionHasCorrectCause() {
-        ComponentWithMethodThrowingException component = new ComponentWithMethodThrowingException();
-        try {
-            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "method", Json.createArray(), -1);
-        } catch (RuntimeException e) {
-            Assert.assertTrue(e.getCause() instanceof NullPointerException);
-        }
-    }
-
-    @Test
     public void enabledElement_methodIsInvoked() {
         UI ui = new UI();
-        ComponentWithMethod component = new ComponentWithMethod();
+        ComponentWithCompute component = new ComponentWithCompute();
         ui.add(component);
 
         requestInvokeMethod(component);
@@ -628,9 +433,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void disabledElement_eventHandlerIsNotInvoked() {
+    public void disabledElement_ClientCallableIsNotInvoked() {
         UI ui = new UI();
-        ComponentWithMethod component = new ComponentWithMethod();
+        ComponentWithCompute component = new ComponentWithCompute();
         ui.add(component);
 
         component.getElement().setEnabled(false);
@@ -638,34 +443,6 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         requestInvokeMethod(component);
 
         Assert.assertFalse(component.isInvoked);
-    }
-
-    @Test
-    public void implicitelyDisabledElement_eventHandlerIsNotInvoked() {
-        UI ui = new UI();
-        ComponentWithMethod component = new ComponentWithMethod();
-        ui.add(component);
-
-        ui.setEnabled(false);
-
-        requestInvokeMethod(component);
-
-        Assert.assertFalse(component.isInvoked);
-    }
-
-    @Test
-    public void disabledElement_eventHandlerAllowsRPC_methodIsInvoked() {
-        UI ui = new UI();
-        EnabledHandler component = new EnabledHandler();
-        ui.add(component);
-
-        component.getElement().setEnabled(false);
-
-        Assert.assertFalse(component.isInvoked);
-
-        requestInvokeMethod(component);
-
-        Assert.assertTrue(component.isInvoked);
     }
 
     @Test
