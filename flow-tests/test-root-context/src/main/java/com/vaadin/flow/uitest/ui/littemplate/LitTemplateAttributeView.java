@@ -19,9 +19,6 @@ public class LitTemplateAttributeView extends LitTemplate
     @Id("div")
     private Div injectedDiv;
 
-    @Id("disabled")
-    private Div disabledDiv;
-
     @Id("hasText")
     private Div hasText;
 
@@ -36,11 +33,6 @@ public class LitTemplateAttributeView extends LitTemplate
                 + injectedDiv.getElement().getProperty("foo") + " "
                 + injectedDiv.getElement().getProperty("baz"));
         div.setId("info");
-        add(div);
-
-        div = new Div();
-        div.setId("disabledInfo");
-        div.setText("Enabled: " + disabledDiv.isEnabled());
         add(div);
 
         div = new Div();

@@ -45,8 +45,8 @@ public abstract class AbstractInjectableElementInitializer
 
     private final Element element;
 
-    private static final Map<String, ElementInitializationStrategy> INIT_STRATEGIES = createStategies();
-    private static final IdentityHashMap<Pattern, ElementInitializationStrategy> PATTERN_STRATEGIES = createPatternStategies();
+    private static final Map<String, ElementInitializationStrategy> INIT_STRATEGIES = createStrategies();
+    private static final IdentityHashMap<Pattern, ElementInitializationStrategy> PATTERN_STRATEGIES = createPatternStrategies();
 
     private static final ElementInitializationStrategy DEFAULT_STRATEGY = new PropertyInitializationStrategy();
 
@@ -111,7 +111,7 @@ public abstract class AbstractInjectableElementInitializer
         return strategy;
     }
 
-    private static IdentityHashMap<Pattern, ElementInitializationStrategy> createPatternStategies() {
+    private static IdentityHashMap<Pattern, ElementInitializationStrategy> createPatternStrategies() {
         ElementInitializationStrategy attributeStrategy = new AttributeInitializationStrategy();
         IdentityHashMap<Pattern, ElementInitializationStrategy> map = new IdentityHashMap<>(
                 1);
@@ -119,7 +119,7 @@ public abstract class AbstractInjectableElementInitializer
         return map;
     }
 
-    private static Map<String, ElementInitializationStrategy> createStategies() {
+    private static Map<String, ElementInitializationStrategy> createStrategies() {
         Map<String, ElementInitializationStrategy> result = new HashMap<>();
         AttributeInitializationStrategy attributeStrategy = new AttributeInitializationStrategy();
         // this is the list of global attributes:
@@ -138,8 +138,6 @@ public abstract class AbstractInjectableElementInitializer
         result.put("spellcheck", attributeStrategy);
         result.put("tabindex", attributeStrategy);
         result.put("translate", attributeStrategy);
-
-        result.put("disabled", new DisabledInitializationStrategy());
 
         result.put(TEXT_DATA, new TextInitializationStrategy());
         return result;
