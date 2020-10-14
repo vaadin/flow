@@ -57,7 +57,7 @@ import elemental.json.JsonObject;
  *
  * @see BundleLitParser
  */
-class LitTemplateParserImpl implements LitTemplateParser {
+public class LitTemplateParserImpl implements LitTemplateParser {
 
     private static final LitTemplateParser INSTANCE = new LitTemplateParserImpl();
 
