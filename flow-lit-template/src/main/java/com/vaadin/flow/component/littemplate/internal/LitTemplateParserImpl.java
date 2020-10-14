@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.littemplate;
+package com.vaadin.flow.component.littemplate.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +24,9 @@ import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.littemplate.BundleLitParser;
+import com.vaadin.flow.component.littemplate.LitTemplate;
+import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
@@ -60,7 +63,7 @@ import elemental.json.JsonObject;
  *
  * @see BundleParser
  */
-class LitTemplateParserImpl implements LitTemplateParser {
+public class LitTemplateParserImpl implements LitTemplateParser {
 
     private static final LitTemplateParser INSTANCE = new LitTemplateParserImpl();
 
@@ -76,7 +79,7 @@ class LitTemplateParserImpl implements LitTemplateParser {
     protected LitTemplateParserImpl() {
     }
 
-    static LitTemplateParser getInstance() {
+    public static LitTemplateParser getInstance() {
         return INSTANCE;
     }
 
