@@ -77,28 +77,6 @@ public class LitTemplateTest {
         }
     }
 
-    @Tag("foo-bar")
-    private static class MultipleDisabledElementsTemplate extends LitTemplate {
-
-        @Id("labelId")
-        private Element label;
-
-        @Id("send-button")
-        private Element button;
-
-        public MultipleDisabledElementsTemplate(VaadinService service) {
-            this((clazz, tag, svc) -> new LitTemplateParser.TemplateData("",
-                Jsoup.parse(
-                    "<foo-bar id='" + tag + "'><label id='labelId' disabled>"
-                        + "<button id='send-button' disabled></button>"
-                        + "</foo-bar>")), service);
-        }
-
-        MultipleDisabledElementsTemplate(LitTemplateParser parser,
-                VaadinService service) {
-            super(parser, service);
-        }
-    }
 
     @Tag("foo-bar")
     private static class ElementWithTextLitTemplate extends LitTemplate {
@@ -168,21 +146,9 @@ public class LitTemplateTest {
     public void attachExistingElementWithDisabledAttributeValue_exceptionIsThrown() {
         expectedEx.expect(IllegalAttributeException.class);
         expectedEx.expectMessage(
-            Matchers.containsString("Element 'label' with id 'labelId'"));
+            Matchers.containsString("element 'label' with id 'labelId'"));
 
         DisabledElementTemplate template = new DisabledElementTemplate(service);
-    }
-
-    @Test
-    public void attachExistingElementsWithDisabledAttributeValue_exceptionContainsAllInstances() {
-        expectedEx.expect(IllegalAttributeException.class);
-        expectedEx.expectMessage(Matchers
-            .allOf(Matchers.containsString("Element 'label' with id 'labelId'"),
-                Matchers
-                    .containsString("Element 'button' with id 'send-button'")));
-
-        MultipleDisabledElementsTemplate template = new MultipleDisabledElementsTemplate(
-            service);
     }
 
     @Test
