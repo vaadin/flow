@@ -13,12 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.littemplate;
+package com.vaadin.flow.component.littemplate.internal;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 import java.util.Collections;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
