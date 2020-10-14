@@ -412,6 +412,8 @@ public final class Constants implements Serializable {
     // Non-default port currently not supported (#7970)
     public static final int SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT = 35729;
 
+    public static final String VAADIN_ENDPINT_ENABLED = "endpoint.enabled";
+
     private Constants() {
         // prevent instantiation constants class only
     }

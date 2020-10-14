@@ -96,6 +96,8 @@ import com.vaadin.flow.server.connect.EndpointExposed;
 import com.vaadin.flow.server.connect.EndpointNameChecker;
 import com.vaadin.flow.server.connect.auth.AnonymousAllowed;
 
+import static com.vaadin.flow.server.Constants.VAADIN_ENDPINT_ENABLED;
+
 /**
  * Java parser class which scans for all {@link Endpoint} classes and
  * produces OpenApi json.
@@ -315,6 +317,9 @@ public class OpenApiObjectGenerator {
                         classOrInterfaceDeclaration, compilationUnit)));
         pathItems.forEach((pathName, pathItem) -> openApiModel.getPaths()
                 .addPathItem(pathName, pathItem));
+        if(!pathItems.isEmpty()){
+            System.setProperty(VAADIN_ENDPINT_ENABLED, Boolean.TRUE.toString());
+        }
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 

@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
@@ -75,6 +76,8 @@ import com.vaadin.flow.server.connect.exception.EndpointValidationException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException.ValidationErrorData;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
+import static com.vaadin.flow.server.Constants.VAADIN_ENDPINT_ENABLED;
+
 /**
  * The controller that is responsible for processing Vaadin Connect requests.
  * Each class that is annotated with {@link Endpoint} gets its public methods
@@ -94,6 +97,7 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 @RestController
 @Import({ VaadinConnectControllerConfiguration.class,
         VaadinEndpointProperties.class })
+@ConditionalOnProperty(value = VAADIN_ENDPINT_ENABLED, havingValue = "true")
 public class VaadinConnectController {
     /**
      * A qualifier to override the request and response default json mapper.
