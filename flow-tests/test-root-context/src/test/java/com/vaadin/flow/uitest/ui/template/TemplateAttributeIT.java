@@ -9,16 +9,12 @@ import com.vaadin.testbench.TestBenchElement;
 public class TemplateAttributeIT extends ChromeBrowserTest {
 
     @Test
-    public void readTemplateAttribiute() {
+    public void readTemplateAttribute() {
         open();
 
         TestBenchElement template = $(TestBenchElement.class).id("template");
         TestBenchElement info = template.$(TestBenchElement.class).id("info");
         Assert.assertEquals("foo bar true", info.getText());
-
-        TestBenchElement isDisabled = template.$(TestBenchElement.class)
-                .id("disabledInfo");
-        Assert.assertEquals("Enabled: false", isDisabled.getText());
 
         TestBenchElement textInfo = template.$(TestBenchElement.class)
                 .id("text-info");
