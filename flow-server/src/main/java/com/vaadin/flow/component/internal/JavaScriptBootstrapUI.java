@@ -41,8 +41,6 @@ import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.PathUtil;
-import com.vaadin.flow.server.AppShellRegistry;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
 
 /**
@@ -75,12 +73,13 @@ public class JavaScriptBootstrapUI extends UI {
             return super.getChildren();
         }
 
-        // client-side routing,
-        // since virtual child is used, it is necessary to change the original
-        // UI element to the wrapperElement
+        // #9069 with client-side routing, since routing component is a virtual
+        // child, its children need to be included separately (there should only
+        // be one)
         Builder<Component> childComponents = Stream.builder();
         wrapperElement.getChildren().forEach(childElement -> ComponentUtil
                 .findComponents(childElement, childComponents::add));
+        super.getChildren().forEach(childComponents::add);
         return childComponents.build();
     }
 
@@ -106,7 +105,10 @@ public class JavaScriptBootstrapUI extends UI {
      */
     @ClientCallable
     public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoute) {
+            String flowRoute, String appShellTitle) {
+        if (appShellTitle != null && !appShellTitle.isEmpty()) {
+            getInternals().setAppShellTitle(appShellTitle);
+        }
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
             wrapperElement = new Element(clientElementTag);
@@ -220,7 +222,7 @@ public class JavaScriptBootstrapUI extends UI {
     private void acknowledgeClient() {
         serverConnected(false);
     }
-    
+
     private void cancelClient() {
         serverConnected(true);
     }
@@ -291,6 +293,7 @@ public class JavaScriptBootstrapUI extends UI {
             forwardToClientUrl = clientNavigationStateRenderer.getClientForwardRoute();
 
             adjustPageTitle();
+
         } catch (Exception exception) {
             handleExceptionNavigation(location, exception);
         } finally {
@@ -332,13 +335,11 @@ public class JavaScriptBootstrapUI extends UI {
         // new title is empty if the flow route does not have a title
         String newTitle = getInternals().getTitle();
         // app shell title is computed from the title tag in index.html
-        String appTitle = AppShellRegistry
-                .getInstance(VaadinService.getCurrent().getContext())
-                .getTitle();
+        String appShellTitle = getInternals().getAppShellTitle();
         // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && !appTitle.isEmpty()) {
+        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().cancelPendingTitleUpdate();
-            getInternals().setTitle(appTitle);
+            getInternals().setTitle(appShellTitle);
         }
     }
 

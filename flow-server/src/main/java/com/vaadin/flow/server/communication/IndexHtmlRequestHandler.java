@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
@@ -45,8 +46,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import java.io.File;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
@@ -110,6 +109,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // and on the AppShellConfigurator
         registry.modifyIndexHtml(indexDocument, request);
 
+        // the bootstrap page title could be used as a fallback title to
+        // a server-side route that doesn't have a title
+        storeAppShellTitleToUI(indexDocument);
+
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
@@ -124,6 +127,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void storeAppShellTitleToUI(Document indexDocument) {
+        if (UI.getCurrent() != null) {
+            Element elm = indexDocument.head().selectFirst("title");
+            if (elm != null) {
+                String appShellTitle = elm.text().isEmpty() ? elm.data() : elm.text();
+                UI.getCurrent().getInternals().setAppShellTitle(appShellTitle);
+            }
+        }
     }
 
     private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
@@ -220,7 +233,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if(frontendDir.endsWith(File.separator)) {
             indexHtmlFilePath = frontendDir + "index.html";
         } else {
-            indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
+            indexHtmlFilePath = frontendDir + File.separatorChar + "/index.html";
         }
         String message = String
                 .format("Failed to load content of '%1$s'. "

@@ -25,5 +25,6 @@ public class AppShell implements AppShellConfigurator {
     @Override
     public void configurePage(AppShellSettings settings) {
         settings.addMetaTag("test-resource-url", url);
+        settings.setPageTitle("app-shell-title");
     }
 }

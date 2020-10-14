@@ -277,12 +277,22 @@ public class PushHandler {
     }
 
     void connectionLost(AtmosphereResourceEvent event) {
-        VaadinSession session = null;
+        /*
+         * There are two ways being called here: one is from
+         * VaadinService:handleRequest (via several interim calls), another is
+         * directly from Atmosphere (PushAtmosphereHandler,
+         * AtmosphereResourceListener::onDisconnect).
+         * 
+         * In the first case everything will be cleaned up out of the box. In
+         * the second case "clear" should be done here otherwise instances will
+         * stay in the threads.
+         */
+        boolean needsClear = VaadinSession.getCurrent() == null;
         try {
-            session = handleConnectionLost(event);
+            handleConnectionLost(event);
         } finally {
-            if (session != null) {
-                session.access(CurrentInstance::clearAll);
+            if (needsClear) {
+                CurrentInstance.clearAll();
             }
         }
     }

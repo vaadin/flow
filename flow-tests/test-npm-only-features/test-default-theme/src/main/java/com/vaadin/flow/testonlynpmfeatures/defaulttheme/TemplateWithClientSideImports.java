@@ -15,16 +15,15 @@
  */
 package com.vaadin.flow.testonlynpmfeatures.defaulttheme;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
-import com.vaadin.flow.templatemodel.TemplateModel;
 
 @JsModule("./src/template-with-client-side-imports.js")
 @NpmPackage(value = "@vaadin/vaadin-button", version = "2.2.0")
 @Tag("template-with-client-side-imports")
 public class TemplateWithClientSideImports
-        extends PolymerTemplate<TemplateModel> {
+        extends Component {
 
 }

@@ -16,17 +16,20 @@
 package com.vaadin.flow.server.connect.generator.tsmodel;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.vaadin.flow.server.connect.generator.TestUtils;
 import com.vaadin.flow.server.connect.generator.endpoints.AbstractEndpointGeneratorBaseTest;
 import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntity;
 import com.vaadin.flow.server.connect.generator.tsmodel.TsFormEndpoint.MyEntityId;
 
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.connect.generator.OpenApiObjectGenerator.CONSTRAINT_ANNOTATIONS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -66,7 +69,7 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
     }
 
     @Test
-    public void should_generate_FormModels() {
+    public void should_generate_FormModels() throws IOException {
         generateOpenApi(null);
 
         generateTsEndpoints();
@@ -84,10 +87,28 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         assertTrue(entityFile.exists());
         assertTrue(formModelFile.exists());
 
-        String content = readFile(formModelFile.toPath());
-        String expected = TestUtils.readResource(
-                getClass().getResource("expected-TsFormEndpoint.ts"));
+        final List<String> content = Files.lines(formModelFile.toPath())
+                .collect(Collectors.toList());
+        final List<String> expected = Files.lines(new File(
+                getClass().getResource("expected-TsFormEndpoint.ts").getFile())
+                .toPath()).collect(Collectors.toList());
 
-        assertEquals(expected, content);
+        assertEquals("Rows in generated and expected files differ",
+                expected.size(), content.size());
+
+        int line = 0;
+        List<String> faultyLines = new ArrayList<>();
+        for (String expectedLine : expected) {
+            if (!expectedLine.equals(content.get(line))) {
+                faultyLines.add(String
+                        .format("L%d :: expected: [%s] got [%s]", line + 1,
+                                expectedLine, content.get(line)));
+            }
+            line++;
+        }
+        assertTrue(
+                "Found differences in generated file: " + faultyLines.stream()
+                        .collect(Collectors.joining("\n")),
+                faultyLines.isEmpty());
     }
 }
