@@ -567,13 +567,21 @@ public class FrontendUtils {
         return null;
     }
 
-    private static URL getOSGiUrl(VaadinService service, String path) {
-        if (OSGiAccess.getInstance().getOsgiServletContext() == null
-                || !(service instanceof VaadinServletService)) {
+    /**
+     * Gets an {@code URL} of the resource with given {@code path} inside the
+     * bundle containing {@code bundleClass}.
+     * 
+     * @param bundleClass
+     *            a class in the bundle which contains a resource
+     * @param path
+     *            the resource path
+     * @return the resource URL or null if it's not found
+     */
+    public static URL getOSGiUrl(Class<?> bundleClass, String path) {
+        if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return null;
         }
-        VaadinServlet servlet = ((VaadinServletService) service).getServlet();
-        Bundle bundle = FrameworkUtil.getBundle(servlet.getClass());
+        Bundle bundle = FrameworkUtil.getBundle(bundleClass);
         Bundle flowServerBundle = FrameworkUtil.getBundle(VaadinServlet.class);
         if (flowServerBundle.getBundleId() == bundle.getBundleId()) {
             // throw for now: at the moment the expectation is that a WAB
@@ -590,6 +598,15 @@ public class FrontendUtils {
                             + "register the servlet and read it here");
         }
         return bundle.getResource(path);
+    }
+
+    private static URL getOSGiUrl(VaadinService service, String path) {
+        if (service instanceof VaadinServletService) {
+            VaadinServlet servlet = ((VaadinServletService) service)
+                    .getServlet();
+            return getOSGiUrl(servlet.getClass(), path);
+        }
+        return null;
     }
 
     /**
