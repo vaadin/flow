@@ -22,7 +22,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,10 +33,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.remote.Command;
 
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchDriverProxy;
 
 public class PwaTestIT extends ChromeBrowserTest {
 
@@ -121,6 +126,70 @@ public class PwaTestIT extends ChromeBrowserTest {
                     matcher.group(1) + " didn't respond with resource",
                     exists(matcher.group(1)));
         }
+    }
+
+    @Test
+    public void testPwaOfflinePath() throws IOException {
+        open();
+
+        // Confirm that app shell is loaded
+        Assert.assertNotNull("Should have outlet when loaded online",
+                findElement(By.id("outlet")));
+
+        // Set offline network conditions through ChromeDriver
+        ChromeDriver chromeDriver = (ChromeDriver) ((TestBenchDriverProxy) getDriver())
+                .getWrappedDriver();
+        final Map<String, Object> conditions = new HashMap<>();
+        conditions.put("offline", true);
+        conditions.put("latency", 0);
+        conditions.put("upload_throughput", 0);
+        conditions.put("download_throughput", 0);
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put("network_conditions", conditions);
+        if (chromeDriver.getCommandExecutor()
+                .execute(new Command(chromeDriver.getSessionId(),
+                        "setNetworkConditions", parameters))
+                .getStatus() != 0) {
+            throw new RuntimeException(
+                    "Unable to set offline network conditions");
+        }
+
+        try {
+            Assert.assertEquals("navigator.onLine should be false", false,
+                    executeScript("return navigator.onLine"));
+
+            // Reload the page in offline mode
+            executeScript("window.location.reload()");
+
+            // Assert page title
+            WebElement head = findElement(By.tagName("head"));
+            WebElement title = head.findElement(By.tagName("title"));
+            Assert.assertEquals(ParentLayout.PWA_NAME,
+                    executeScript("return arguments[0].textContent", title));
+            Assert.assertEquals(ParentLayout.PWA_NAME,
+                    executeScript("return document.title;"));
+
+            // Assert default offline.html page contents
+            WebElement body = findElement(By.tagName("body"));
+            Assert.assertTrue("Should not have outlet when loaded offline",
+                    body.findElements(By.id("outlet")).isEmpty());
+
+            WebElement offline = body.findElement(By.id("offline"));
+            Assert.assertEquals(ParentLayout.PWA_NAME,
+                    offline.findElement(By.tagName("h1")).getText());
+            WebElement message = offline.findElement(By.className("message"));
+            Assert.assertTrue("Should have “offline” in message",
+                    message.getText().toLowerCase().contains("offline"));
+        } finally {
+            // Reset network conditions back
+            chromeDriver.getCommandExecutor().execute(new Command(
+                    chromeDriver.getSessionId(), "deleteNetworkConditions"));
+        }
+    }
+
+    @Override
+    protected String getTestPath() {
+        return "";
     }
 
     private void checkIcons(List<WebElement> icons, int expected) {
