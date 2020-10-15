@@ -15,12 +15,6 @@
  */
 package com.vaadin.flow.server.osgi;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.annotation.HandlesTypes;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,19 +32,27 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType.Builder;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+import javax.servlet.annotation.HandlesTypes;
+
 import org.osgi.framework.Bundle;
 import org.slf4j.LoggerFactory;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
+import com.vaadin.flow.server.startup.DevModeInitializer;
+
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 
 /**
  * Manages scanned classes inside OSGi container.
@@ -113,7 +115,8 @@ public final class OSGiAccess {
         public String getInitParameter(String name) {
             // OSGi is supported in compatibiity mode only. So set it by default
             // for every ServletContainerInitializer
-            if (InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE.equals(name)) {
+            if (InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE
+                    .equals(name)) {
                 return Boolean.TRUE.toString();
             }
             return null;
@@ -212,8 +215,13 @@ public final class OSGiAccess {
     }
 
     private void resetContextInitializers() {
-        initializerClasses.get().stream().map(ReflectTools::createInstance)
-                .forEach(this::handleTypes);
+        // exclude dev mode initializer (at least for now) because it doesn't
+        // work in its current state anyway (so it's no-op) but its initial
+        // calls
+        // breaks assumptions about Servlet registration in OSGi
+        initializerClasses.get().stream()
+                .filter(clazz -> !clazz.equals(DevModeInitializer.class))
+                .map(ReflectTools::createInstance).forEach(this::handleTypes);
     }
 
     private void handleTypes(ServletContainerInitializer initializer) {
