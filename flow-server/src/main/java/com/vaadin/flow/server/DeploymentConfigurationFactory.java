@@ -16,6 +16,27 @@
 
 package com.vaadin.flow.server;
 
+import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
+import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
+import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -43,27 +64,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE;
-import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_FILE_TOKEN;
-import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL;
-import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
-import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
-import static com.vaadin.flow.server.Constants.NPM_TOKEN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Creates {@link DeploymentConfiguration} filled with all parameters specified
@@ -162,12 +162,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     vaadinConfig.getConfigParameter(name));
         }
 
-        readBuildInfo(initParameters);
+        readBuildInfo(systemPropertyBaseClass, initParameters);
         return initParameters;
     }
 
-    private static void readBuildInfo(Properties initParameters) {
-        String json = getTokenFileContents(initParameters);
+    private static void readBuildInfo(Class<?> systemPropertyBaseClass,
+            Properties initParameters) {
+        String json = getTokenFileContents(systemPropertyBaseClass,
+                initParameters);
 
         // Read the json and set the appropriate system properties if not
         // already set.
@@ -282,28 +284,33 @@ public final class DeploymentConfigurationFactory implements Serializable {
             Properties initParameters, JsonObject buildInfo) {
         // read dev mode properties from the token and set init parameter only
         // if it's not yet set
-        if (initParameters
-                .getProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM) == null
-                && buildInfo.hasKey(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
-            initParameters.setProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+        if (initParameters.getProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM) == null
+                && buildInfo
+                        .hasKey(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
+            initParameters.setProperty(
+                    InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                     String.valueOf(buildInfo.getBoolean(
                             InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)));
         }
-        if (initParameters
-                .getProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE) == null
-                && buildInfo.hasKey(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
-            initParameters.setProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
+        if (initParameters.getProperty(
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE) == null
+                && buildInfo
+                        .hasKey(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)) {
+            initParameters.setProperty(
+                    InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                     String.valueOf(buildInfo.getBoolean(
                             InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)));
         }
     }
 
-    private static String getTokenFileContents(Properties initParameters) {
+    private static String getTokenFileContents(Class<?> systemPropertyBaseClass,
+            Properties initParameters) {
         String json = null;
         try {
             json = getResourceFromFile(initParameters);
             if (json == null) {
-                json = getResourceFromClassloader();
+                json = getTokenFileFromClassloader(systemPropertyBaseClass);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -326,26 +333,31 @@ public final class DeploymentConfigurationFactory implements Serializable {
         return json;
     }
 
-    private static String getResourceFromClassloader() throws IOException {
-        String json = null;
+    private static String getTokenFileFromClassloader(
+            Class<?> systemPropertyBaseClass) throws IOException {
         // token file is in the class-path of the application
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-        List<URL> resources = Collections.list(DeploymentConfiguration.class
-                .getClassLoader().getResources(tokenResource));
-        // Accept resource that doesn't contain
-        // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
-        URL resource = resources.stream()
-                .filter(url -> !url.getPath().endsWith("jar!/" + tokenResource))
-                .findFirst().orElse(null);
-        if (resource == null && !resources.isEmpty()) {
-            // For no non jar build info, in production mode check for
-            // webpack.generated.json if it's in a jar in a jar then accept
-            // single jar flow-build-info.
-            json = getPossibleJarResource(resources);
-        } else if (resource != null) {
-            json = FrontendUtils.streamToString(resource.openStream());
+        URL resource = FrontendUtils.getOSGiUrl(systemPropertyBaseClass,
+                tokenResource);
+
+        if (resource == null) {
+            // token file is in the class-path of the application
+            List<URL> resources = Collections.list(DeploymentConfiguration.class
+                    .getClassLoader().getResources(tokenResource));
+            // Accept resource that doesn't contain
+            // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
+            resource = resources.stream().filter(
+                    url -> !url.getPath().endsWith("jar!/" + tokenResource))
+                    .findFirst().orElse(null);
+            if (resource == null && !resources.isEmpty()) {
+                // For no non jar build info, in production mode check for
+                // webpack.generated.json if it's in a jar in a jar then accept
+                // single jar flow-build-info.
+                return getPossibleJarResource(resources);
+            }
         }
-        return json;
+        return resource == null ? null
+                : FrontendUtils.streamToString(resource.openStream());
     }
 
     /**
