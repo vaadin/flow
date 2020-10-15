@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +41,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,14 +52,13 @@ import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.server.osgi.OSGiAccess;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -278,22 +283,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the first non null value from the given array.
-     *
-     * @param valueArray
-     *            array of values to get non null from
-     * @return first non null value or null if no values found
-     */
-    private static String getNonNull(String... valueArray) {
-        for (String value : valueArray) {
-            if (value != null) {
-                return value;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Read a stream and copy the content in a String.
      *
      * @param inputStream
@@ -393,7 +382,7 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the latest has for the stats file in development mode. This is
+     * Get the latest hash for the stats file in development mode. This is
      * requested from the webpack-dev-server.
      * <p>
      * In production mode and disabled dev server mode an empty string is
@@ -499,8 +488,20 @@ public class FrontendUtils {
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        InputStream stream = service.getClassLoader()
-                .getResourceAsStream(stats);
+        URL statsUrl = getOSGiUrl(service, stats);
+        InputStream stream;
+        if (statsUrl == null) {
+            stream = service.getClassLoader().getResourceAsStream(stats);
+        } else {
+            try {
+                stream = statsUrl.openStream();
+            } catch (Exception IOException) {
+                getLogger().warn(
+                        "Couldn't read content of stats file {} via OSGi bundle",
+                        stats);
+                stream = null;
+            }
+        }
         if (stream == null) {
             getLogger().error(
                     "Cannot get the 'stats.json' from the classpath '{}'",
@@ -525,15 +526,7 @@ public class FrontendUtils {
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
-            DevModeHandler handler = DevModeHandler.getDevModeHandler();
-            HttpURLConnection assetsConnection = handler
-                    .prepareConnection("/assetsByChunkName", "GET");
-            if (assetsConnection
-                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
-                        NO_CONNECTION, "getting assets by chunk name."));
-            }
-            return streamToString(assetsConnection.getInputStream());
+            return streamToString(getStatsFromWebpack());
         }
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {
@@ -572,6 +565,31 @@ public class FrontendUtils {
                     .error("Could not parse assetsByChunkName from stats.json");
         }
         return null;
+    }
+
+    private static URL getOSGiUrl(VaadinService service, String path) {
+        if (OSGiAccess.getInstance().getOsgiServletContext() == null
+                || !(service instanceof VaadinServletService)) {
+            return null;
+        }
+        VaadinServlet servlet = ((VaadinServletService) service).getServlet();
+        Bundle bundle = FrameworkUtil.getBundle(servlet.getClass());
+        Bundle flowServerBundle = FrameworkUtil.getBundle(VaadinServlet.class);
+        if (flowServerBundle.getBundleId() == bundle.getBundleId()) {
+            // throw for now: at the moment the expectation is that a WAB
+            // servlet will be registered by the developer manually so that it's
+            // inside the bundle, once we implement automatic servlet
+            // registration we should pass some context (may be via a property)
+            // which is 1:1 with bundle so that it can be read here to identify
+            // the bundle via VaadinServlet
+            throw new IllegalStateException(
+                    "Implementation error: if servlet is registered automatically "
+                            + "then it should provide a way to identify "
+                            + "the bundle for which it's registered. "
+                            + "Pass the bundle context somehow via the code which "
+                            + "register the servlet and read it here");
+        }
+        return bundle.getResource(path);
     }
 
     /**
