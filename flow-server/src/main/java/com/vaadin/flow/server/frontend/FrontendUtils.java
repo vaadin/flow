@@ -583,6 +583,11 @@ public class FrontendUtils {
         }
         Bundle bundle = FrameworkUtil.getBundle(bundleClass);
         Bundle flowServerBundle = FrameworkUtil.getBundle(VaadinServlet.class);
+        if (flowServerBundle == null || bundle == null) {
+            // apparently we are not in OSGi container even though there is OSGi
+            // related class
+            return null;
+        }
         if (flowServerBundle.getBundleId() == bundle.getBundleId()) {
             // throw for now: at the moment the expectation is that a WAB
             // servlet will be registered by the developer manually so that it's

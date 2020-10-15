@@ -352,7 +352,8 @@ public final class DeploymentConfigurationFactory implements Serializable {
                 return getPossibleJarResource(resources);
             }
         }
-        return FrontendUtils.streamToString(resource.openStream());
+        return resource == null ? null
+                : FrontendUtils.streamToString(resource.openStream());
     }
 
     /**
