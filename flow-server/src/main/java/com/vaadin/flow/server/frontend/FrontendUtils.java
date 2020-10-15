@@ -414,12 +414,17 @@ public class FrontendUtils {
     }
 
     private static InputStream getStatsFromWebpack() throws IOException {
+        return getResourceFromWebpack("/stats.json", "downloading stats.json");
+    }
+
+    private static InputStream getResourceFromWebpack(String resource,
+            String exceptionMessage) throws IOException {
         DevModeHandler handler = DevModeHandler.getDevModeHandler();
-        HttpURLConnection statsConnection = handler
-                .prepareConnection("/stats.json", "GET");
+        HttpURLConnection statsConnection = handler.prepareConnection(resource,
+                "GET");
         if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new WebpackConnectionException(
-                    String.format(NO_CONNECTION, "downloading stats.json"));
+                    String.format(NO_CONNECTION, exceptionMessage));
         }
         return statsConnection.getInputStream();
     }
@@ -526,7 +531,8 @@ public class FrontendUtils {
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
         if (!config.isProductionMode() && config.enableDevServer()) {
-            return streamToString(getStatsFromWebpack());
+            return streamToString(getResourceFromWebpack("/assetsByChunkName",
+                    "getting assets by chunk name."));
         }
         InputStream resourceAsStream;
         if (config.isStatsExternal()) {
