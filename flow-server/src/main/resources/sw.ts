@@ -3,7 +3,9 @@
 importScripts('sw-runtime-resources-precache.js');
 import {skipWaiting, clientsClaim} from 'workbox-core';
 import {precacheAndRoute} from 'workbox-precaching';
+import {NavigationRoute, registerRoute} from 'workbox-routing';
 import {PrecacheEntry} from 'workbox-precaching/_types';
+import {NetworkFirst} from 'workbox-strategies';
 
 skipWaiting();
 clientsClaim();
@@ -17,3 +19,12 @@ if (additionalManifestEntries && additionalManifestEntries.length) {
 }
 
 precacheAndRoute(manifestEntries);
+
+const appShellCacheKey = '/';
+const navigationFallback = new NavigationRoute(new NetworkFirst({
+    plugins: [
+        // Always use app shell cache key instead of original request URL
+        { cacheKeyWillBeUsed: async () => appShellCacheKey },
+    ]
+}));
+registerRoute(navigationFallback);
