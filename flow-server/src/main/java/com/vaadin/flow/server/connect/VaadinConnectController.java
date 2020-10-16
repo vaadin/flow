@@ -76,7 +76,7 @@ import com.vaadin.flow.server.connect.exception.EndpointValidationException;
 import com.vaadin.flow.server.connect.exception.EndpointValidationException.ValidationErrorData;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 
-import static com.vaadin.flow.server.Constants.VAADIN_ENDPINT_ENABLED;
+import static com.vaadin.flow.internal.InternalConstants.VAADIN_ENDPOINT_ENABLED;
 
 /**
  * The controller that is responsible for processing Vaadin Connect requests.
@@ -97,7 +97,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_ENDPINT_ENABLED;
 @RestController
 @Import({ VaadinConnectControllerConfiguration.class,
         VaadinEndpointProperties.class })
-@ConditionalOnProperty(value = VAADIN_ENDPINT_ENABLED, havingValue = "true")
+@ConditionalOnProperty(value = VAADIN_ENDPOINT_ENABLED, havingValue = "true")
 public class VaadinConnectController {
     /**
      * A qualifier to override the request and response default json mapper.
