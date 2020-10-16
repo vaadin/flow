@@ -18,7 +18,7 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 
 /**
- * A collection of constants that are intended to be used only internally
+ * A collection of constants that are intended to be used only internally.
  */
 public final class InternalConstants implements Serializable{
     public static final String VAADIN_ENDPOINT_ENABLED = "endpoint.enabled";
