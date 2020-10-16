@@ -250,7 +250,8 @@ suite("form/Binder", () => {
     const expectedEmptyEmployee: Employee = {
       idString: '',
       fullName: '',
-      supervisor: undefined
+      supervisor: undefined,
+      colleagues: undefined
     };
 
     beforeEach(() => {
@@ -312,7 +313,7 @@ suite("form/Binder", () => {
       assert.isFalse(binder.dirty);
     });
 
-    test('should not fail validation for non-initialised object', async () => {
+    test('should not fail validation for non-initialised object or array', async () => {
       await binder.validate();
       assert.isFalse(binder.invalid);
 

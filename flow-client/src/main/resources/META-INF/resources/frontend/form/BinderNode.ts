@@ -339,8 +339,11 @@ export class BinderNode<T, M extends AbstractModel<T>> {
         }
       }
     } else if (this.model instanceof ArrayModel) {
-      for (const childModel of this.model) {
-        yield childModel;
+      // Only iterate if optional array is initialised
+      if (this.value !== undefined) {
+        for (const childModel of this.model) {
+          yield childModel;
+        }
       }
     }
   }
