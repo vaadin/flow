@@ -249,8 +249,12 @@ public final class BundleParser {
                 && validKey(module, SOURCE, STRING)) {
             String name = module.getString(NAME);
 
-            // append `.js` extension if not yet as webpack does
-            fileName = fileName.replaceFirst("(\\.js|)$", ".js");
+
+            // don't append extension for ts files
+            if(!fileName.endsWith(".ts")) {
+                // append `.js` extension if not yet as webpack does
+                fileName = fileName.replaceFirst("(\\.js|)$", ".js");
+            }
 
             String alternativeFileName = fileName
                     // Replace frontend part since webpack entry-point is

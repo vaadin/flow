@@ -125,6 +125,25 @@ public class LitTemplateParserImplTest {
     }
 
     @Test
+    public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
+        LitTemplateParser instance = LitTemplateParserImpl.getInstance();
+        TemplateData templateContent = instance.getTemplateContent(
+            MyForm.class, "my-form", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "my-form",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'label'",
+                "vaadin-text-field", templateContent.getTemplateElement()
+                        .getElementById("nameField").tag().toString());
+    }
+
+    @Test
     public void getTemplateContent_localFileNotFound_returnsNull() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
@@ -274,4 +293,8 @@ public class LitTemplateParserImplTest {
     public class SeveralJsModuleAnnotations extends LitTemplate {
     }
 
+    @Tag("my-form")
+    @JsModule("./frontend/my-form.ts")
+    public class MyForm extends LitTemplate {
+    }
 }

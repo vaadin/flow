@@ -74,14 +74,14 @@ public final class BundleLitParser {
      * <p>
      * <code>render\(\)[\s]*\{</code> finds the template getter method
      * <p>
-     * <code>[\s]*return[\s]*html`</code> finds the return statement
+     * <code>[\s]*return[\s]*html[\s]*`</code> finds the return statement
      * <p>
      * </p>
      * <code>(([^`]|\\\\.)*)</code> captures all text until we encounter the end
      * character with <code>;}</code> e.g. <code>';}</code>
      */
     private static final Pattern LIT_TEMPLATE_PATTERN = Pattern.compile(
-            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html`(([^`]|\\\\.)*)`;[\\s]*\\}");
+            "render\\(\\)[\\s]*\\{[\\s]*return[\\s]*html[\\s]*`(([^`]|\\\\.)*)`;[\\s]*\\}");
 
     private static final Pattern HASH_PATTERN = Pattern
             .compile("\"hash\"\\s*:\\s*\"([^\"]+)\"\\s*,");
@@ -181,8 +181,11 @@ public final class BundleLitParser {
                 && validKey(module, SOURCE, STRING)) {
             String name = module.getString(NAME);
 
-            // append `.js` extension if not yet as webpack does
-            fileName = fileName.replaceFirst("(\\.js|)$", ".js");
+            // don't append extension for ts files
+            if(!fileName.endsWith(".ts")) {
+                // append `.js` extension if not yet as webpack does
+                fileName = fileName.replaceFirst("(\\.js|)$", ".js");
+            }
 
             String alternativeFileName = fileName
                     // Replace frontend part since webpack entry-point is

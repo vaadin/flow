@@ -154,11 +154,11 @@ public class LitTemplateParserImpl implements LitTemplateParser {
 
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
         String url = dependency.getUrl();
-        if (url.equalsIgnoreCase(tag + ".js")) {
+        if (url.equalsIgnoreCase(tag + ".js") || url.equalsIgnoreCase(tag + ".ts")) {
             return true;
         }
         url = url.toLowerCase(Locale.ENGLISH);
-        return url.endsWith("/" + tag + ".js");
+        return url.endsWith("/" + tag + ".js") || url.endsWith("/" + tag + ".ts");
     }
 
     /**

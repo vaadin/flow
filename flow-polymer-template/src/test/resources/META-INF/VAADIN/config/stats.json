@@ -20,8 +20,13 @@
         {
             "name": "./frontend/LikeableElementFaultyMethods.js",
             "source": "// Import an element\nimport '@polymer/paper-checkbox/paper-checkbox.js';\n\n// Import the PolymerElement base class and html helper\nimport {PolymerElement, html} from '@polymer/polymer';\n\n// Define an element class\nclass LikeableElement extends PolymerElement {\n\n  // Define public API properties\n  static get properties() { return { liked: Boolean }}\n\n  // Define the element's template\n  static get template() {\n    return `\n      <style>\n        :host{ \n          margin: 5px; \n        }\n      \n        .response { margin-top: 10px; } \n      </style>\n      <paper-checkbox checked=\"{{liked}}\">I like web components!</paper-checkbox>\n\n      <div id=\"test\" hidden$=\"[[!liked]]\" class=\"response\">Web components like you, too.</div>\n    `;\n  }\n}\n\n// Register the element with the browser\ncustomElements.define('likeable-element', LikeableElement);"
+        },
+        {
+          "id": "./frontend/my-form.ts",
+          "name": "./frontend/my-form.ts",
+          "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\n\nclass MyFormElement extends PolymerElement {\n  static get template() {\n    return html`\n        <h2>Hello</h2>\n        <vaadin-text-field id=\"nameField\"></vaadin-text-field>`;\n  }\n\n  static get is() {\n    return 'my-form';\n  }\n\n}\n\ncustomElements.define(MyFormElement.is, MyFormElement);\r\n"
         }
-      ]
+  ]
       ,
 
       "chunks" : [
