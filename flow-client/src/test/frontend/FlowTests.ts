@@ -97,6 +97,7 @@ suite("Flow", () => {
 
   beforeEach(() => {
     delete $wnd.Vaadin;
+    Object.defineProperty(window.navigator, 'onLine', {value: true, configurable: true});
     mock.setup();
     const indicator = $wnd.document.body.querySelector('.v-loading-indicator');
     if (indicator) {
@@ -594,6 +595,56 @@ suite("Flow", () => {
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
     await route.action({pathname: "Foo/Bar.baz", search:""});
+  });
+
+  test("should show stub when navigating to server view offline", async () => {
+    stubServerRemoteFunction('foobar-123');
+    Object.defineProperty(window.navigator, 'onLine', {
+      value: false,
+      configurable: true
+    });
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    const params: NavigationParameters = {
+      pathname: 'Foo/Bar.baz',
+      search: ''
+    };
+    const view = await route.action(params);
+    assert.equal(view.tagName, 'VAADIN-OFFLINE-STUB');
+
+    // @ts-ignore
+    let onBeforeEnterReturns = await view.onBeforeEnter(params, {});
+    assert.equal(view, onBeforeEnterReturns);
+
+    // @ts-ignore
+    let onBeforeLeaveReturns = await view.onBeforeLeave(params, {});
+    assert.deepEqual({}, onBeforeLeaveReturns);
+  });
+
+  test("should show stub when navigating to server view and Flow initialization fails due to network error", async () => {
+    mock.get(/^.*\?v-r=init.*/, () => {
+      throw new Error("unable to connect");
+    });
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+    const params: NavigationParameters = {
+      pathname: 'Foo/Bar.baz',
+      search: ''
+    };
+
+    const view = await route.action(params);
+    assert.equal(view.tagName, 'VAADIN-OFFLINE-STUB');
+
+    const indicator = $wnd.document.querySelector('.v-loading-indicator');
+    assert.equal('none', indicator.getAttribute('style'));
+
+    // @ts-ignore
+    let onBeforeEnterReturns = await view.onBeforeEnter(params, {});
+    assert.equal(view, onBeforeEnterReturns);
+
+    // @ts-ignore
+    let onBeforeLeaveReturns = await view.onBeforeLeave(params, {});
+    assert.deepEqual({}, onBeforeLeaveReturns);
   });
 });
 
