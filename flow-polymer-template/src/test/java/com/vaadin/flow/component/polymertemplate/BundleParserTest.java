@@ -52,6 +52,13 @@ public class BundleParserTest {
     }
 
     @Test
+    public void typeScriptExtension_sourcesShouldBeFound() {
+        final String source = BundleParser.getSourceFromStatistics(
+                "./frontend/my-form.ts", stats);
+        Assert.assertNotNull("TypeScript sources expected in stats.json", source);
+    }
+
+    @Test
     public void frontendProtocol_sourcesShouldBeFound() {
         final String source = BundleParser.getSourceFromStatistics(
                 "frontend:///src/hello-world.js", stats);
