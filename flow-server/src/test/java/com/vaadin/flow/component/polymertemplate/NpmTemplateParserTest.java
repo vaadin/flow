@@ -144,6 +144,25 @@ public class NpmTemplateParserTest {
                         .getElementById("test").tag().toString());
     }
 
+    @Test
+    public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
+        TemplateParser instance = NpmTemplateParser.getInstance();
+        TemplateData templateContent = instance.getTemplateContent(
+            MyForm.class, "my-form", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+            "my-form",
+            templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+            templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+            "Template element should have contained a div element with the id 'label'",
+            "vaadin-text-field", templateContent.getTemplateElement()
+                .getElementById("nameField").tag().toString());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void should_throwException_when_LocalFileNotFound() {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
@@ -411,6 +430,11 @@ public class NpmTemplateParserTest {
     public class SeveralDomModulesTemplateContent
             extends PolymerTemplate<TemplateModel> {
 
+    }
+
+    @Tag("my-form")
+    @JsModule("./frontend/my-form.ts")
+    public class MyForm extends PolymerTemplate<TemplateModel>  {
     }
 
 }

@@ -32,6 +32,11 @@
         {
             "name": "./frontend/MySuperLitElement.js",
             "source": "// Import an element\nimport { LitElement, html } from 'lit-element'; \nimport { SimpleLitTemplateShadowRoot } from './MyLitElement.js';\n export class MySuperLitElement extends MyLitElement { createRenderRoot() { return this; }} customElements.define('my-super-lit-element', MySuperLitElement);"
+        },
+        {
+            "id": "./frontend/my-form.ts",
+            "name": "./frontend/my-form.ts",
+            "source": "import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';\n\nclass MyFormElement extends PolymerElement {\n  static get template() {\n    return html`\n        <h2>Hello</h2>\n        <vaadin-text-field id=\"nameField\"></vaadin-text-field>`;\n  }\n\n  static get is() {\n    return 'my-form';\n  }\n\n}\n\ncustomElements.define(MyFormElement.is, MyFormElement);\r\n"
         }
       ]
       ,

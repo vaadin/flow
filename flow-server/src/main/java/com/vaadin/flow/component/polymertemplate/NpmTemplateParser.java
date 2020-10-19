@@ -24,6 +24,7 @@ import java.util.Locale;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
@@ -150,14 +151,21 @@ public class NpmTemplateParser implements TemplateParser {
                 JsModule.class.getSimpleName()));
     }
 
+    /**
+     * Dependency should match the tag name  ignoring the extension of the file.
+     *
+     * @param dependency
+     *     dependency to check
+     * @param tag
+     *     tag name for element
+     * @return true if dependency file matches the tag name.
+     */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
-        String url = dependency.getUrl();
-        if (url.equalsIgnoreCase(tag + ".js")) {
-            return true;
-        }
-        url = url.toLowerCase(Locale.ENGLISH);
-        return url.endsWith("/" + tag + ".js");
+        String url = FilenameUtils.removeExtension(dependency.getUrl())
+            .toLowerCase(Locale.ENGLISH);
+        return url.endsWith("/" + tag);
     }
+
 
     /**
      * Finds the JavaScript sources for given tag.
