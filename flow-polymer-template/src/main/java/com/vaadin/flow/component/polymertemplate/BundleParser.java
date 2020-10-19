@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -250,8 +251,8 @@ public final class BundleParser {
             String name = module.getString(NAME);
 
 
-            // don't append extension for ts files
-            if(!fileName.endsWith(".ts")) {
+            // don't append extension if one already exists
+            if(FilenameUtils.getExtension(fileName).isEmpty()) {
                 // append `.js` extension if not yet as webpack does
                 fileName = fileName.replaceFirst("(\\.js|)$", ".js");
             }
