@@ -123,7 +123,7 @@
         <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
         <bnd.version>3.3.0</bnd.version>
         <osgi.core.version>6.0.0</osgi.core.version>
-        <osgi.compendium.version>6.0.0</osgi.compendium.version>
+        <osgi.compendium.version>7.0.0</osgi.compendium.version>
 
         <maven.test.skip>false</maven.test.skip>
 
