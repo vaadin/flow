@@ -917,6 +917,37 @@ public class AbstractListDataViewTest {
         dataView.addItem("foo");
     }
 
+    @Test
+    public void createListDataProviderFromArrayOfItems_addingOneItem_itemCountShouldBeIncreasedByOne() {
+        ListDataProvider<Item> localListDataProvider = DataProvider.ofItems(
+                new Item(1L, "First"), new Item(2L, "Second")
+        );
+
+        ListDataView<Item, AbstractListDataView<Item>> listDataView =
+                new ItemListDataView(() -> localListDataProvider, component);
+
+        long itemCount = listDataView.getItemCount();
+
+        listDataView.addItem(new Item(3L, "Third"));
+        Assert.assertEquals(itemCount + 1, listDataView.getItemCount());
+    }
+
+    @Test
+    public void createListDataProviderFromArrayOfItems_removingOneItem_itemCountShouldBeDecreasedByOne() {
+        Item first = new Item(1L, "First");
+        Item second = new Item(2L, "Second");
+        ListDataProvider<Item> localListDataProvider = DataProvider.ofItems(
+                first, second);
+
+        ListDataView<Item, AbstractListDataView<Item>> listDataView =
+                new ItemListDataView(() -> localListDataProvider, component);
+
+        long itemCount = listDataView.getItemCount();
+
+        listDataView.removeItem(first);
+        Assert.assertEquals(itemCount - 1, listDataView.getItemCount());
+    }
+
     private static class ListDataViewImpl extends AbstractListDataView<String> {
 
         public ListDataViewImpl(
