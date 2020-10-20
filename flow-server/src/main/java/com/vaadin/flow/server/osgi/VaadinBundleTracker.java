@@ -176,3 +176,4 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     }
 
 }
+
