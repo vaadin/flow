@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
-
 import java.util.Enumeration;
 import java.util.function.Supplier;
+
+import javax.servlet.ServletContext;
+
+import com.vaadin.flow.di.Lookup;
 
 /**
  * {@link VaadinContext} that goes with {@link VaadinServletService}.
@@ -80,15 +82,19 @@ public class VaadinServletContext implements VaadinContext {
         if (value == null) {
             removeAttribute(clazz);
         } else {
-            ensureServletContext();
-            context.setAttribute(clazz.getName(), value);
+            synchronized (this) {
+                checkType(clazz);
+                context.setAttribute(clazz.getName(), value);
+            }
         }
     }
 
     @Override
     public void removeAttribute(Class<?> clazz) {
-        ensureServletContext();
-        context.removeAttribute(clazz.getName());
+        synchronized (this) {
+            checkType(clazz);
+            context.removeAttribute(clazz.getName());
+        }
     }
 
     @Override
@@ -101,6 +107,18 @@ public class VaadinServletContext implements VaadinContext {
     public String getContextParameter(String name) {
         ensureServletContext();
         return context.getInitParameter(name);
+    }
+
+    private Object doGetAttribute(Class<?> clazz) {
+        ensureServletContext();
+        return context.getAttribute(clazz.getName());
+    }
+
+    private void checkType(Class<?> type) {
+        if (Lookup.class.equals(type) && doGetAttribute(type) != null) {
+            throw new IllegalArgumentException("The attribute " + Lookup.class
+                    + " has been already set once. It's not possible to everride its value");
+        }
     }
 
 }
