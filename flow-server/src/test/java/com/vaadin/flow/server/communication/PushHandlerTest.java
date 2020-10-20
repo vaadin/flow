@@ -122,8 +122,7 @@ public class PushHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
-
-        VaadinContext context = service.getContext();
+        service.init();
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {

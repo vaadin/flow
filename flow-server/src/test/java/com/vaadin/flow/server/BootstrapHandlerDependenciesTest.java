@@ -1,32 +1,5 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import net.jcip.annotations.NotThreadSafe;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.dependency.HtmlImport;
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.router.Router;
-import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
-import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.shared.ui.LoadMode;
-
 import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.either;
@@ -39,6 +12,39 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.router.Router;
+import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServlet;
+import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ui.LoadMode;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class BootstrapHandlerDependenciesTest {
@@ -244,9 +250,10 @@ public class BootstrapHandlerDependenciesTest {
     private TestVaadinServletService service;
     private MockServletServiceSessionSetup mocks;
 
+    private String clientEngine;
+
     @Before
     public void setup() throws Exception {
-        BootstrapHandler.clientEngineFile = () -> "foobar";
 
         mocks = new MockServletServiceSessionSetup();
         mocks.getDeploymentConfiguration().setCompatibilityMode(true);
@@ -262,6 +269,19 @@ public class BootstrapHandlerDependenciesTest {
                     "/frontend/2." + type);
         }
         servlet.addServletContextResource("/frontend/new.js");
+
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        InputStream stream = resourceProvider.getClientResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties");
+        Properties properties = new Properties();
+        properties.load(stream);
+        clientEngine = ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                + properties.getProperty("jsFile");
+
+        stream.close();
+
     }
 
     @After
@@ -503,10 +523,11 @@ public class BootstrapHandlerDependenciesTest {
                                 both(not(containsString("eager")))
                                         .and(not(containsString("lazy")))
                                         .and(not(containsString("inline"))));
-                        if (elementString.contains(
-                                BootstrapHandler.clientEngineFile.get())) {
+
+                        if (elementString.contains(clientEngine)) {
                             foundClientEngine = true;
                         }
+
                     } else {
                         assertThat(
                                 "uidl should not contain eager and inline dependencies",

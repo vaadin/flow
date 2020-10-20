@@ -1,7 +1,9 @@
 package com.vaadin.flow.component;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,21 +51,15 @@ import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -158,10 +154,8 @@ public class UITest {
             }
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-            ServletConfig servletConfig = new MockServletConfig();
-            VaadinServlet servlet = new VaadinServlet();
-            servlet.init(servletConfig);
-            VaadinService service = servlet.getService();
+            VaadinService service = new MockVaadinServletService();
+            service.init();
             service.setCurrentInstances(request, response);
 
             MockVaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -193,7 +187,7 @@ public class UITest {
             if (statusCodeCaptor != null) {
                 Mockito.verify(response).setStatus(statusCodeCaptor.capture());
             }
-        } catch (ServletException e) {
+        } catch (ServiceException e) {
             throw new RuntimeException(e);
         }
     }

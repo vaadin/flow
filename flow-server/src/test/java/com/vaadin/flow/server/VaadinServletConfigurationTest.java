@@ -15,16 +15,20 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Properties;
+
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-
-import java.util.Properties;
 
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockUIContainingServlet.ServletInUI;
 
@@ -32,8 +36,12 @@ public class VaadinServletConfigurationTest {
 
     @Test
     public void testEnclosingUIClass() throws Exception {
+        Properties servletInitParams = new Properties();
+        servletInitParams.setProperty(
+                InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                Boolean.TRUE.toString());
         ServletInUI servlet = new MockUIContainingServlet.ServletInUI();
-        servlet.init(new MockServletConfig());
+        servlet.init(createServletConfig(servletInitParams));
 
         Class<? extends UI> uiClass = BootstrapHandler
                 .getUIClass(new VaadinServletRequest(
@@ -45,14 +53,15 @@ public class VaadinServletConfigurationTest {
     @Test
     public void testValuesFromAnnotation() throws ServletException {
         Properties servletInitParams = new Properties();
-        servletInitParams.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
+        servletInitParams.setProperty(
+                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
         servletInitParams.setProperty(
                 InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();
-        servlet.init(new MockServletConfig(servletInitParams));
+        servlet.init(createServletConfig(servletInitParams));
 
         DeploymentConfiguration configuration = servlet.getService()
                 .getDeploymentConfiguration();
@@ -80,14 +89,15 @@ public class VaadinServletConfigurationTest {
         servletInitParams.setProperty(
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
                 Integer.toString(expectedInt));
-        servletInitParams.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
+        servletInitParams.setProperty(
+                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
                 Boolean.TRUE.toString());
         servletInitParams.setProperty(
                 InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 Boolean.TRUE.toString());
 
         TestServlet servlet = new TestServlet();
-        servlet.init(new MockServletConfig(servletInitParams));
+        servlet.init(createServletConfig(servletInitParams));
 
         DeploymentConfiguration configuration = servlet.getService()
                 .getDeploymentConfiguration();
@@ -105,6 +115,18 @@ public class VaadinServletConfigurationTest {
                         EasyMock.createMock(HttpServletRequest.class),
                         servlet.getService()));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
+    }
+
+    private MockServletConfig createServletConfig(Properties properties) {
+        MockServletConfig config = new MockServletConfig(properties);
+        ServletContext servletContext = config.getServletContext();
+        Lookup lookup = Mockito.mock(Lookup.class);
+        servletContext.setAttribute(Lookup.class.getName(), lookup);
+
+        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(provider);
+        return config;
     }
 
 }

@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -31,6 +30,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
 
 import org.slf4j.LoggerFactory;
 
@@ -201,12 +202,13 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * the context.
      *
      * @param context
-     *         the vaadin context for which to get a route registry, not
-     *         <code>null</code>
+     *            the vaadin context for which to get a route registry, not
+     *            <code>null</code>
      * @return a registry instance for the given servlet context, not
-     * <code>null</code>
-     * @deprecated this is deprecated in favor of {@code getInstance(VaadinContext)}
-     * and will be removed in a future release
+     *         <code>null</code>
+     * @deprecated this is deprecated in favor of
+     *             {@code getInstance(VaadinContext)} and will be removed in a
+     *             future release
      */
     @Deprecated
     public static ApplicationRouteRegistry getInstance(ServletContext context) {
@@ -224,7 +226,7 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
          * Create a application route registry wrapper.
          *
          * @param registry
-         *         application route registry to wrap
+         *            application route registry to wrap
          */
         public ApplicationRouteRegistryWrapper(
                 ApplicationRouteRegistry registry) {
@@ -247,10 +249,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
      * the context.
      *
      * @param context
-     *         the vaadin context for which to get a route registry, not
-     *         <code>null</code>
+     *            the vaadin context for which to get a route registry, not
+     *            <code>null</code>
      * @return a registry instance for the given servlet context, not
-     * <code>null</code>
+     *         <code>null</code>
      */
     public static ApplicationRouteRegistry getInstance(VaadinContext context) {
         assert context != null;
@@ -407,8 +409,9 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry {
 
     private static ApplicationRouteRegistry createRegistry(
             VaadinContext context) {
-        if (context != null && ((VaadinServletContext)context).getContext() == OSGiAccess.getInstance()
-                .getOsgiServletContext()) {
+        if (context != null
+                && ((VaadinServletContext) context).getContext() == OSGiAccess
+                        .getInstance().getOsgiServletContext()) {
             return new OSGiDataCollector();
         } else if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
             return new ApplicationRouteRegistry();
