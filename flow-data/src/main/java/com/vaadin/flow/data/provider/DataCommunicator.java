@@ -146,62 +146,69 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Wraps the component's filter object with its lifespan, i.e. the
-     * information whether this filter is set permanently or should it be
-     * discarded after the next request to data provider.
-     *
+     * information whether this filter is set permanently and used for any calls
+     * to data provider, or should it be used for just one requested range call
+     * to data provider, and then it will be erased and not took into account in
+     * the further calls.
+     * 
      * @param <F>
      *            filter's type
      */
     public static final class Filter<F> implements Serializable {
 
         // Serializability of filter is up to the application
-        private Object filter;
+        private F filterObject;
 
         private boolean permanent;
 
         /**
          * Creates the filter object and sets it as a permanent by default.
          *
-         * @param filter
+         * @param filterObject
          *            filter object of a component
          */
-        public Filter(F filter) {
-            this.filter = filter;
+        public Filter(F filterObject) {
+            this.filterObject = filterObject;
             this.permanent = true;
         }
 
         /**
          * Creates the filter object and sets its lifespan.
          *
-         * @param filter
+         * @param filterObject
          *            filter object of a component
          * @param permanent
          *            if {@code true}, then this filter is considered as a
-         *            permanent and won't be discarded after the next call to
-         *            data provider, otherwise it will be treated as a
-         *            disposable filter and will be discarded
+         *            permanent and will be stored in the data communicator and
+         *            used for any calls to data provider. Otherwise, it will be
+         *            considered as a disposable filter, i.e. with a lifespan of
+         *            just one requested range call to data provider, and then
+         *            it will be erased and not took into account in the further
+         *            calls.
          */
-        public Filter(F filter, boolean permanent) {
-            this.filter = filter;
+        public Filter(F filterObject, boolean permanent) {
+            this.filterObject = filterObject;
             this.permanent = permanent;
         }
 
         /**
-         * Returns a filter object for this component
+         * Returns a filter object for this component.
          * 
          * @return filter object
          */
-        public Object getFilter() {
-            return filter;
+        public F getFilterObject() {
+            return filterObject;
         }
 
         /**
          * Returns whether this filter is permanent or disposable.
          *
          * @return {@code true}, if this filter is considered as a permanent and
-         *         won't be discarded after the next call to data provider,
-         *         otherwise it will be treated as a disposable filter and will
-         *         be discarded.
+         *         will be stored in the data communicator and used for any
+         *         calls to data provider. {@code false} if it's considered as a
+         *         disposable filter, i.e. with a lifespan of just one requested
+         *         range call to data provider, and then it will be erased and
+         *         not took into account in the further calls.
          */
         public boolean isPermanent() {
             return permanent;
@@ -215,12 +222,12 @@ public class DataCommunicator<T> implements Serializable {
                 return false;
             Filter<?> filter1 = (Filter<?>) o;
             return permanent == filter1.permanent
-                    && Objects.equals(filter, filter1.filter);
+                    && Objects.equals(filterObject, filter1.filterObject);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(filter, permanent);
+            return Objects.hash(filterObject, permanent);
         }
     }
 
@@ -304,8 +311,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Sets the requested range of data to be sent and requests the data of this
-     * range from the data provider immediately.
+     * Sets the requested range of data to be sent.
      *
      * @param start
      *            the start of the requested range
@@ -313,27 +319,9 @@ public class DataCommunicator<T> implements Serializable {
      *            the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
-        setRequestedRange(start, length, true);
-    }
-
-    /**
-     * Sets the requested range of data to be sent and sets whether the data
-     * should be requested immediately or not.
-     * 
-     * @param start
-     *            the start of the requested range
-     * @param length
-     *            the end of the requested range
-     * @param requestNow
-     *            if {@code true}, the data will be requested immediately,
-     *            otherwise it will just set the range.
-     */
-    public void setRequestedRange(int start, int length, boolean requestNow) {
         requestedRange = Range.withLength(start, length);
 
-        if (requestNow) {
-            requestFlush();
-        }
+        requestFlush();
     }
 
     /**
@@ -374,9 +362,8 @@ public class DataCommunicator<T> implements Serializable {
     public void confirmUpdate(int updateId) {
         confirmedUpdates.add(Integer.valueOf(updateId));
 
-        // Not absolutely necessary, but doing it right away to release memory
-        // earlier
-        requestFlush();
+        // Release the memory for confirmed updates
+        unregisterPassivatedKeys();
     }
 
     /**
@@ -398,6 +385,14 @@ public class DataCommunicator<T> implements Serializable {
      * This method also sets the data communicator to defined size - meaning
      * that the given data provider is queried for size and previous size
      * estimates are discarded.
+     * <p>
+     * This method allows to define the lifespan for the given filter. It can be
+     * set as a permanent, i.e. it will be stored in the data communicator and
+     * used for any calls to data provider until further change through returned
+     * consumer. Otherwise, it will be considered as a disposable filter, i.e.
+     * with a lifespan of just one requested range call to data provider, and
+     * then it will be erased and not took into account in the further calls
+     * until further change through returned consumer.
      *
      * @param dataProvider
      *            the data provider to set, not <code>null</code>
@@ -406,9 +401,13 @@ public class DataCommunicator<T> implements Serializable {
      *            use any initial filter value
      * @param permanentFilter
      *            if {@code true}, then the initial filter is considered as a
-     *            permanent and won't be discarded after the next call to data
-     *            provider, otherwise it will be treated as a disposable filter
-     *            and will be discarded
+     *            permanent and will be stored in the data communicator and used
+     *            for any calls to data provider until further change through
+     *            returned consumer. Otherwise, it will be considered as a
+     *            disposable filter, i.e. with a lifespan of just one requested
+     *            range call to data provider, and then it will be erased and
+     *            not took into account in the further calls until further
+     *            change through returned consumer.
      *
      * @param <F>
      *            the filter type
@@ -477,7 +476,7 @@ public class DataCommunicator<T> implements Serializable {
             DataProvider<T, F> dataProvider, F initialFilter) {
         SerializableConsumer<Filter<F>> filterConsumer = setDataProvider(
                 dataProvider, initialFilter, true);
-        return filter -> filterConsumer.accept(new Filter<>(filter));
+        return newFilter -> filterConsumer.accept(new Filter<>(newFilter));
     }
 
     /**
@@ -910,7 +909,7 @@ public class DataCommunicator<T> implements Serializable {
      * @return the filter object of this data communicator
      */
     protected Object getFilter() {
-        return filter != null ? filter.getFilter() : null;
+        return filter != null ? filter.getFilterObject() : null;
     }
 
     /**
