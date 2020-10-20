@@ -32,7 +32,7 @@ import com.vaadin.flow.di.ResourceProvider;
  * @since
  *
  */
-@Component(immediate = true, service = OsgiVaadinStaticResource.class)
+@Component(immediate = true, service = ResourceProvider.class)
 public class OSGiResourceProvider implements ResourceProvider {
 
     @Override
