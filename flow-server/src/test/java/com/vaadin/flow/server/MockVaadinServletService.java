@@ -15,16 +15,15 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.List;
 
+import javax.servlet.ServletException;
+
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.RequestHandler;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
@@ -36,24 +35,33 @@ public class MockVaadinServletService extends VaadinServletService {
 
     private Instantiator instantiator;
 
+    private Lookup lookup;
+
+    private ResourceProvider resourceProvider;
+
+    private static class MockVaadinServlet extends VaadinServlet {
+
+        private final DeploymentConfiguration configuration;
+
+        private MockVaadinServlet(DeploymentConfiguration configuration) {
+            this.configuration = configuration;
+        }
+
+        @Override
+        protected DeploymentConfiguration createDeploymentConfiguration()
+                throws ServletException {
+            return configuration;
+        }
+    }
+
     public MockVaadinServletService() {
         this(new MockDeploymentConfiguration());
     }
 
     public MockVaadinServletService(
             DeploymentConfiguration deploymentConfiguration) {
-        this(new VaadinServlet(), deploymentConfiguration);
-    }
-
-    public MockVaadinServletService(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration) {
-        super(servlet, deploymentConfiguration);
-
-        try {
-            servlet.init(new MockServletConfig());
-        } catch (ServletException e) {
-            throw new RuntimeException(e);
-        }
+        super(new MockVaadinServlet(deploymentConfiguration),
+                deploymentConfiguration);
     }
 
     @Override
