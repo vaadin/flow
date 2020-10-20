@@ -52,6 +52,7 @@ public class MockVaadinServletService extends VaadinServletService {
                 throws ServletException {
             return configuration;
         }
+
     }
 
     public MockVaadinServletService() {
@@ -87,8 +88,9 @@ public class MockVaadinServletService extends VaadinServletService {
     @Override
     public void init() {
         try {
+            getServlet().init(new MockServletConfig());
             super.init();
-        } catch (ServiceException e) {
+        } catch (ServiceException | ServletException e) {
             throw new RuntimeException(e);
         }
     }
