@@ -280,8 +280,13 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         for (String className : classes) {
             Class<?> cls = Class.forName(className);
             // Don't add classes that have a @Ignore annotation on the class
-            if (isTestClass(cls)) {
-                continue;
+            try {
+                if (isTestClass(cls)) {
+                    continue;
+                }
+            } catch (Throwable throwable) {
+                System.out.println("Xxxxxxxxxxx " + className);
+                throw throwable;
             }
 
             // report fields that use lambda types that won't be serializable
