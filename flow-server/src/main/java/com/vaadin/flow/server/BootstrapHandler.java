@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.server;
 
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -37,7 +40,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,12 +54,13 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.client.ClientResourcesUtils;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -84,8 +87,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -132,8 +133,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String CAPTION = "caption";
     private static final String MESSAGE = "message";
     private static final String URL = "url";
-
-    static Supplier<String> clientEngineFile = () -> LazyClientEngineInit.CLIENT_ENGINE_FILE;
 
     private final PageBuilder pageBuilder;
 
@@ -581,10 +580,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return document;
         }
 
-        private String getClientEngine() {
-            return clientEngineFile.get();
-        }
-
         private void checkWebpackStatus(Document document) {
             DevModeHandler devMode = DevModeHandler.getDevModeHandler();
             if (devMode != null) {
@@ -595,12 +590,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     errorElement.attr("class", "v-system-error");
                     errorElement.attr("onclick",
                             "this.parentElement.removeChild(this)");
-                    errorElement
-                            .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
+                    errorElement.html(
+                            "<h3 style=\"display:inline;\">Webpack Error</h3>"
                                     + "<h6 style=\"display:inline; padding-left:10px;\">Click to close</h6>"
                                     + "<pre>" + errorMsg + "</pre>");
-                    document.body()
-                            .appendChild(errorElement);
+                    document.body().appendChild(errorElement);
                 }
             }
         }
@@ -909,26 +903,35 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 BootstrapContext context) throws IOException {
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
-                StringBuilder message = new StringBuilder("The stats file from webpack (stats.json) was not found.\n");
-                if(service.getDeploymentConfiguration().isProductionMode()) {
+                StringBuilder message = new StringBuilder(
+                        "The stats file from webpack (stats.json) was not found.\n");
+                if (service.getDeploymentConfiguration().isProductionMode()) {
                     message.append(
                             "The application is running in production mode.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                    message.append("Or switch application to development mode.");
-                } else if(!service.getDeploymentConfiguration().enableDevServer()) {
-                    message.append("Dev server is disabled for the application.");
-                    message.append("Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    message.append(
+                            "Or switch application to development mode.");
+                } else if (!service.getDeploymentConfiguration()
+                        .enableDevServer()) {
+                    message.append(
+                            "Dev server is disabled for the application.");
+                    message.append(
+                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
                 } else {
-                    message.append("This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
-                            message.append("If you are using Spring Boot and are launching the Application class directly, ");
-                                    message.append("you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+                    message.append(
+                            "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
+                    message.append(
+                            "If you are using Spring Boot and are launching the Application class directly, ");
+                    message.append(
+                            "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
                 }
                 throw new IOException(message.toString());
             }
             JsonObject chunks = Json.parse(content);
             for (String key : chunks.keys()) {
                 String chunkName;
-                if(chunks.get(key).getType().equals(JsonType.ARRAY)) {
+                if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
                     chunkName = getArrayChunkName(chunks, key);
                 } else {
                     chunkName = chunks.getString(key);
@@ -941,8 +944,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     context.getUI().getInternals().getAppId()));
                 } else {
                     Element script = createJavaScriptElement(
-                            "./" + VAADIN_MAPPING + chunkName,
-                            false);
+                            "./" + VAADIN_MAPPING + chunkName, false);
                     head.appendChild(script.attr("type", "module")
                             .attr("data-app-id",
                                     context.getUI().getInternals().getAppId())
@@ -955,9 +957,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private String getArrayChunkName(JsonObject chunks, String key) {
             JsonArray chunkArray = chunks.getArray(key);
 
-            for(int i = 0; i <chunkArray.length(); i++) {
+            for (int i = 0; i < chunkArray.length(); i++) {
                 String chunkName = chunkArray.getString(0);
-                if(chunkName.endsWith(".js")){
+                if (chunkName.endsWith(".js")) {
                     return chunkName;
                 }
             }
@@ -973,20 +975,50 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             final boolean productionMode = context.getSession()
                     .getConfiguration().isProductionMode();
 
-            boolean resolveNow = !productionMode || getClientEngine() == null;
+            boolean resolveNow = !productionMode
+                    || getClientEngine(context) == null;
+            ResourceProvider resourceProvider = context.getSession()
+                    .getService().getContext().getAttribute(Lookup.class)
+                    .lookup(ResourceProvider.class);
             if (resolveNow
-                    && ClientResourcesUtils.getResource("/META-INF/resources/"
+                    && resourceProvider.getClientResource("/META-INF/resources/"
                             + CLIENT_ENGINE_NOCACHE_FILE) != null) {
                 return context.getUriResolver().resolveVaadinUri(
                         "context://" + CLIENT_ENGINE_NOCACHE_FILE);
             }
 
-            if (getClientEngine() == null) {
+            if (getClientEngine(context) == null) {
                 throw new BootstrapException(
                         "Client engine file name has not been resolved during initialization");
             }
             return context.getUriResolver()
-                    .resolveVaadinUri("context://" + getClientEngine());
+                    .resolveVaadinUri("context://" + getClientEngine(context));
+        }
+
+        private String getClientEngine(BootstrapContext context) {
+            ResourceProvider provider = context.getSession().getService()
+                    .getContext().getAttribute(Lookup.class)
+                    .lookup(ResourceProvider.class);
+            // read client engine file name
+            try (InputStream prop = provider
+                    .getClientResourceAsStream("/META-INF/resources/"
+                            + ApplicationConstants.CLIENT_ENGINE_PATH
+                            + "/compile.properties")) {
+                // null when running SDM or tests
+                if (prop != null) {
+                    Properties properties = new Properties();
+                    properties.load(prop);
+                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                            + properties.getProperty("jsFile");
+                } else {
+                    getLogger().warn(
+                            "No compile.properties available on initialization, "
+                                    + "could not read client engine file name.");
+                }
+            } catch (IOException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+            return null;
         }
 
         private void inlineEs6Collections(Element head,
@@ -1019,7 +1051,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
-            styles.appendText(".v-reconnect-dialog, .v-system-error {" // @formatter:off
+            styles.appendText(
+                    ".v-reconnect-dialog, .v-system-error {" // @formatter:off
                     +   "position: absolute;"
                     +   "color: black;"
                     +   "background: white;"
@@ -1157,8 +1190,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
             Element wrapper = createJavaScriptElement(null, false);
-            wrapper.appendChild(
-                    new DataNode(javaScriptContents));
+            wrapper.appendChild(new DataNode(javaScriptContents));
             return wrapper;
         }
 
@@ -1387,9 +1419,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         : null;
 
                 if (liveReload != null) {
-                    appConfig.put("liveReloadUrl",
-                            BootstrapHandlerHelper.getPushURL(session,
-                                    request));
+                    appConfig.put("liveReloadUrl", BootstrapHandlerHelper
+                            .getPushURL(session, request));
                     if (liveReload.getBackend() != null) {
                         appConfig.put("liveReloadBackend",
                                 liveReload.getBackend().toString());
@@ -1429,7 +1460,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             appConfig.put("heartbeatInterval",
                     deploymentConfiguration.getHeartbeatInterval());
-            
+
             appConfig.put("maxMessageSuspendTimeout",
                     deploymentConfiguration.getMaxMessageSuspendTimeout());
 
@@ -1609,35 +1640,4 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    private static class LazyClientEngineInit {
-        private static final String CLIENT_ENGINE_FILE = readClientEngine();
-
-        private LazyClientEngineInit() {
-            // this is a utility class, instances should not be created
-        }
-
-        private static String readClientEngine() {
-            // read client engine file name
-            try (InputStream prop = ClientResourcesUtils
-                    .getResource("/META-INF/resources/"
-                            + ApplicationConstants.CLIENT_ENGINE_PATH
-                            + "/compile.properties")) {
-                // null when running SDM or tests
-                if (prop != null) {
-                    Properties properties = new Properties();
-                    properties.load(prop);
-                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                            + properties.getProperty("jsFile");
-                } else {
-                    getLogger().warn(
-                            "No compile.properties available on initialization, "
-                                    + "could not read client engine file name.");
-                }
-            } catch (IOException e) {
-                throw new ExceptionInInitializerError(e);
-            }
-            return null;
-        }
-
-    }
 }

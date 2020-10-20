@@ -39,6 +39,7 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.LoggerFactory;
 
 import com.googlecode.gentyref.GenericTypeReflector;
@@ -300,6 +301,13 @@ public final class OSGiAccess {
             try {
                 Class.forName("org.osgi.framework.FrameworkUtil");
 
+                Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
+                // even though the FrameworkUtil class is in the classpath it
+                // may be there not because of OSGi container but plain WAR with
+                // jar which contains the class
+                if (bundle == null) {
+                    return false;
+                }
                 UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());
 
                 return true;

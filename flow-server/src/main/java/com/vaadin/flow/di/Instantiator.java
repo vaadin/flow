@@ -64,7 +64,12 @@ public interface Instantiator extends Serializable {
      * @return <code>true</code> if this instance should be considered as a
      *         candidate for usage for the provided service; <code>false</code>
      *         to opt-out from the selection process
+     * @deprecated The {@link Instantiator} instance should be created by an
+     *             {@link InstantiatorFactory} which should just return
+     *             {@code null} if the provided {@code service} can't be handled
+     *             by it
      */
+    @Deprecated
     boolean init(VaadinService service);
 
     /**
