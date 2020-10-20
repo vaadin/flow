@@ -186,7 +186,11 @@ public class OpenApiObjectGenerator {
 
     Class<?> getClassFromReflection(ResolvedReferenceType resolvedType)
             throws ClassNotFoundException {
-        String fullyQualifiedName = getFullyQualifiedName(resolvedType);
+        return getClassFromReflection(getFullyQualifiedName(resolvedType));
+    }
+
+    private Class<?> getClassFromReflection(String fullyQualifiedName)
+            throws ClassNotFoundException {
         if (typeResolverClassLoader != null) {
             return Class.forName(fullyQualifiedName, true,
                     typeResolverClassLoader);
@@ -313,8 +317,25 @@ public class OpenApiObjectGenerator {
                 .map(this::appendNestedClasses).orElse(Collections.emptyList())
                 .forEach(classOrInterfaceDeclaration -> this.parseClass(
                         classOrInterfaceDeclaration, compilationUnit)));
-        pathItems.forEach((pathName, pathItem) -> openApiModel.getPaths()
-                .addPathItem(pathName, pathItem));
+        if (!pathItems.isEmpty()) {
+            /* #9005: To prevent interference registered endpoints are not
+             * served when `flow-server` is added to a non-Vaadin Spring project
+             * (see com.vaadin.flow.server.connect.VaadinConnectController).
+             * Warn about this when Vaadin SpringServlet is not in classpath.
+             */
+            String servletClass = "com.vaadin.flow.spring.SpringServlet";
+            try {
+                getClassFromReflection(servletClass);
+            } catch (ClassNotFoundException ex) {
+                getLogger().info(
+                        "Endpoints defined but this does not seem to be a "
+                                + "Vaadin Spring Boot application ({} not "
+                                + "found on classpath); endpoints will not be "
+                                + "served", servletClass);
+            }
+            pathItems.forEach((pathName, pathItem) -> openApiModel.getPaths()
+                    .addPathItem(pathName, pathItem));
+        }
         return SourceRoot.Callback.Result.DONT_SAVE;
     }
 
