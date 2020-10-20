@@ -187,7 +187,15 @@ public class LookupInitializer
 
         @Override
         public URL getResource(Class<?> clazz, String path) {
-            return Objects.requireNonNull(clazz).getResource(path);
+            return Objects.requireNonNull(clazz).getClassLoader()
+                    .getResource(path);
+        }
+
+        @Override
+        public List<URL> getResources(Class<?> clazz, String path)
+                throws IOException {
+            return Collections.list(Objects.requireNonNull(clazz)
+                    .getClassLoader().getResources(path));
         }
 
         @Override
