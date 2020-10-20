@@ -41,21 +41,18 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
-import com.vaadin.flow.server.osgi.OSGiAccess;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -493,19 +490,17 @@ public class FrontendUtils {
                         VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
                 // Remove absolute
                 .replaceFirst("^/", "");
-        URL statsUrl = getOSGiUrl(service, stats);
-        InputStream stream;
-        if (statsUrl == null) {
-            stream = service.getClassLoader().getResourceAsStream(stats);
-        } else {
-            try {
-                stream = statsUrl.openStream();
-            } catch (Exception IOException) {
-                getLogger().warn(
-                        "Couldn't read content of stats file {} via OSGi bundle",
-                        stats);
-                stream = null;
-            }
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        URL statsUrl = resourceProvider.getResource(service, stats);
+        InputStream stream = null;
+        try {
+            stream = statsUrl.openStream();
+        } catch (Exception IOException) {
+            getLogger().warn(
+                    "Couldn't read content of stats file {} via OSGi bundle",
+                    stats);
+            stream = null;
         }
         if (stream == null) {
             getLogger().error(
@@ -569,53 +564,6 @@ public class FrontendUtils {
             }
             getLogger()
                     .error("Could not parse assetsByChunkName from stats.json");
-        }
-        return null;
-    }
-
-    /**
-     * Gets an {@code URL} of the resource with given {@code path} inside the
-     * bundle containing {@code bundleClass}.
-     * 
-     * @param bundleClass
-     *            a class in the bundle which contains a resource
-     * @param path
-     *            the resource path
-     * @return the resource URL or null if it's not found
-     */
-    public static URL getOSGiUrl(Class<?> bundleClass, String path) {
-        if (OSGiAccess.getInstance().getOsgiServletContext() == null) {
-            return null;
-        }
-        Bundle bundle = FrameworkUtil.getBundle(bundleClass);
-        Bundle flowServerBundle = FrameworkUtil.getBundle(VaadinServlet.class);
-        if (flowServerBundle == null || bundle == null) {
-            // apparently we are not in OSGi container even though there is OSGi
-            // related class
-            return null;
-        }
-        if (flowServerBundle.getBundleId() == bundle.getBundleId()) {
-            // throw for now: at the moment the expectation is that a WAB
-            // servlet will be registered by the developer manually so that it's
-            // inside the bundle, once we implement automatic servlet
-            // registration we should pass some context (may be via a property)
-            // which is 1:1 with bundle so that it can be read here to identify
-            // the bundle via VaadinServlet
-            throw new IllegalStateException(
-                    "Implementation error: if servlet is registered automatically "
-                            + "then it should provide a way to identify "
-                            + "the bundle for which it's registered. "
-                            + "Pass the bundle context somehow via the code which "
-                            + "register the servlet and read it here");
-        }
-        return bundle.getResource(path);
-    }
-
-    private static URL getOSGiUrl(VaadinService service, String path) {
-        if (service instanceof VaadinServletService) {
-            VaadinServlet servlet = ((VaadinServletService) service)
-                    .getServlet();
-            return getOSGiUrl(servlet.getClass(), path);
         }
         return null;
     }
