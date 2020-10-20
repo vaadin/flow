@@ -15,12 +15,11 @@
     <dependencies>
 
         <!-- Project dependencies -->
-        
-        <!-- Atmosphere -->
+
         <dependency>
-            <groupId>com.vaadin.external.atmosphere</groupId>
-            <artifactId>atmosphere-runtime</artifactId>
-            <version>${atmosphere.runtime.version}</version>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-push</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -163,6 +162,12 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>${osgi.core.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+            <version>${osgi.compendium.version}</version>
             <scope>provided</scope>
         </dependency>
 
