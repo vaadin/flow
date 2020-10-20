@@ -57,6 +57,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.server.frontend.FallbackChunk;
@@ -162,14 +164,15 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     vaadinConfig.getConfigParameter(name));
         }
 
-        readBuildInfo(systemPropertyBaseClass, initParameters);
+        readBuildInfo(systemPropertyBaseClass, initParameters,
+                vaadinConfig.getVaadinContext());
         return initParameters;
     }
 
     private static void readBuildInfo(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+            Properties initParameters, VaadinContext context) {
         String json = getTokenFileContents(systemPropertyBaseClass,
-                initParameters);
+                initParameters, context);
 
         // Read the json and set the appropriate system properties if not
         // already set.
@@ -305,12 +308,13 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static String getTokenFileContents(Class<?> systemPropertyBaseClass,
-            Properties initParameters) {
+            Properties initParameters, VaadinContext context) {
         String json = null;
         try {
             json = getResourceFromFile(initParameters);
             if (json == null) {
-                json = getTokenFileFromClassloader(systemPropertyBaseClass);
+                json = getTokenFileFromClassloader(systemPropertyBaseClass,
+                        context);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -334,10 +338,15 @@ public final class DeploymentConfigurationFactory implements Serializable {
     }
 
     private static String getTokenFileFromClassloader(
-            Class<?> systemPropertyBaseClass) throws IOException {
+            Class<?> systemPropertyBaseClass, VaadinContext context)
+            throws IOException {
         // token file is in the class-path of the application
         String tokenResource = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-        URL resource = FrontendUtils.getOSGiUrl(systemPropertyBaseClass,
+
+        Lookup lookup = context.getAttribute(Lookup.class);
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        URL resource = resourceProvider.getResource(systemPropertyBaseClass,
                 tokenResource);
 
         if (resource == null) {

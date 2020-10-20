@@ -16,9 +16,7 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,6 +28,7 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,12 +47,18 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -83,8 +88,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * An abstraction of the underlying technology, e.g. servlets, for handling
@@ -288,7 +291,7 @@ public abstract class VaadinService implements Serializable {
                     .map(Object::toString).forEach(logger::debug);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
-            UsageStatistics.markAsUsed("flow/pnpm",null);
+            UsageStatistics.markAsUsed("flow/pnpm", null);
         }
 
         initialized = true;
@@ -407,11 +410,23 @@ public abstract class VaadinService implements Serializable {
      */
     protected Optional<Instantiator> loadInstantiators()
             throws ServiceException {
-        List<Instantiator> instantiators = StreamSupport
+        Lookup lookup = getContext().getAttribute(Lookup.class);
+        Collection<InstantiatorFactory> factories = lookup
+                .lookupAll(InstantiatorFactory.class);
+        List<Instantiator> instantiators = new ArrayList<>(factories.size());
+        for (InstantiatorFactory factory : factories) {
+            Instantiator instantiator = factory.createInstantitor(this);
+            if (instantiator != null && instantiator.init(this)) {
+                instantiators.add(instantiator);
+            }
+        }
+
+        // the code to support previous way of loading instantiators
+        StreamSupport
                 .stream(ServiceLoader.load(Instantiator.class, getClassLoader())
                         .spliterator(), false)
                 .filter(iterator -> iterator.init(this))
-                .collect(Collectors.toList());
+                .forEach(instantiators::add);
         if (instantiators.size() > 1) {
             throw new ServiceException(
                     "Cannot init VaadinService because there are multiple eligible instantiator implementations: "

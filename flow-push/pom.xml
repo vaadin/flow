@@ -13,12 +13,6 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <!-- Atmosphere -->
-        <dependency>
-            <groupId>com.vaadin.external.atmosphere</groupId>
-            <artifactId>atmosphere-runtime</artifactId>
-            <version>${atmosphere.runtime.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
