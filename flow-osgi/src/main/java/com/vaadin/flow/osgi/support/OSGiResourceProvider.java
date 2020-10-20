@@ -18,6 +18,9 @@ package com.vaadin.flow.osgi.support;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -37,12 +40,20 @@ public class OSGiResourceProvider implements ResourceProvider {
 
     @Override
     public URL getResource(Class<?> clazz, String path) {
-        return FrameworkUtil.getBundle(clazz).getResource(path);
+        return FrameworkUtil.getBundle(Objects.requireNonNull(clazz))
+                .getResource(path);
     }
 
     @Override
     public URL getResource(Object context, String path) {
-        return getResource(context.getClass(), path);
+        return getResource(Objects.requireNonNull(context).getClass(), path);
+    }
+
+    @Override
+    public List<URL> getResources(Class<?> clazz, String path)
+            throws IOException {
+        return Collections.list(FrameworkUtil
+                .getBundle(Objects.requireNonNull(clazz)).getResources(path));
     }
 
     @Override

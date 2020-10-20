@@ -1,3 +1,4 @@
+com.vaadin.flow.server.startup.LookupInitializer
 com.vaadin.flow.server.startup.ConnectEndpointsValidator
 com.vaadin.flow.server.startup.ServletVerifier
 com.vaadin.flow.server.startup.RouteRegistryInitializer
@@ -7,4 +8,3 @@ com.vaadin.flow.server.startup.WebComponentExporterAwareValidator
 com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer
 com.vaadin.flow.server.startup.DevModeInitializer
 com.vaadin.flow.server.startup.VaadinAppShellInitializer
-com.vaadin.flow.server.startup.LookupInitializer
