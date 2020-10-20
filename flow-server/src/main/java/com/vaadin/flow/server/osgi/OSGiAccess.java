@@ -16,6 +16,8 @@
 package com.vaadin.flow.server.osgi;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +41,6 @@ import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 import org.slf4j.LoggerFactory;
 
 import com.googlecode.gentyref.GenericTypeReflector;
@@ -291,19 +292,25 @@ public final class OSGiAccess {
 
         private static boolean isInOSGi() {
             try {
-                Class.forName("org.osgi.framework.FrameworkUtil");
+                Class<?> clazz = Class
+                        .forName("org.osgi.framework.FrameworkUtil");
 
-                Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
+                Method method = clazz.getDeclaredMethod("getBundle",
+                        Class.class);
+
                 // even though the FrameworkUtil class is in the classpath it
                 // may be there not because of OSGi container but plain WAR with
                 // jar which contains the class
-                if (bundle == null) {
+                if (method.invoke(null, OSGiAccess.class) == null) {
                     return false;
                 }
                 UsageStatistics.markAsUsed("flow/osgi", getOSGiVersion());
 
                 return true;
-            } catch (ClassNotFoundException exception) {
+            } catch (ClassNotFoundException | NoSuchMethodException
+                    | SecurityException | IllegalAccessException
+                    | IllegalArgumentException
+                    | InvocationTargetException exception) {
                 return false;
             }
         }

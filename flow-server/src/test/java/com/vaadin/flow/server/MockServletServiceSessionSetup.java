@@ -1,12 +1,5 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,10 +16,20 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
@@ -35,6 +38,7 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class MockServletServiceSessionSetup {
@@ -126,6 +130,7 @@ public class MockServletServiceSessionSetup {
         public void setContext(VaadinContext context) {
             this.context = context;
         }
+
     }
 
     public class TestVaadinServlet extends VaadinServlet {
@@ -269,6 +274,10 @@ public class MockServletServiceSessionSetup {
     private HttpSession httpSession;
     @Mock
     private ServletConfig servletConfig;
+    @Mock
+    private Lookup lookup;
+    @Mock
+    private ResourceProvider resourceProvider;
     private TestVaadinServlet servlet;
     private TestVaadinServletService service;
     private MockDeploymentConfiguration deploymentConfiguration = new MockDeploymentConfiguration();
@@ -289,6 +298,25 @@ public class MockServletServiceSessionSetup {
         Mockito.when(servletConfig.getServletContext())
                 .thenReturn(servletContext);
         deploymentConfiguration.setEnableDevServer(false);
+
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+
+        Mockito.when(resourceProvider.getClientResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties"))
+                .thenAnswer(invocation -> new ByteArrayInputStream(
+                        "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
+
+        Mockito.when(resourceProvider.getResource(
+                Mockito.any(VaadinService.class), Mockito.anyString()))
+                .thenAnswer(invocation -> {
+                    return MockServletServiceSessionSetup.class.getResource(
+                            "/" + invocation.getArgumentAt(1, String.class));
+                });
+
         servlet.init(servletConfig);
 
         if (sessionAvailable) {

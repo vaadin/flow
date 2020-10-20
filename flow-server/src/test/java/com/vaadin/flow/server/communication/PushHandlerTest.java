@@ -94,6 +94,7 @@ public class PushHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
+        service.init();
 
         VaadinContext context = service.getContext();
         BrowserLiveReload liveReload = BrowserLiveReloadAccessTest
@@ -123,6 +124,8 @@ public class PushHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
+
+        service.init();
 
         VaadinContext context = service.getContext();
         BrowserLiveReload liveReload = BrowserLiveReloadAccessTest

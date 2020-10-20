@@ -1,7 +1,10 @@
 package com.vaadin.flow.component;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,6 +12,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.hamcrest.CoreMatchers;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
@@ -40,36 +51,23 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockServletConfig;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
-import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -118,7 +116,6 @@ public class UITest {
         }
 
     }
-
 
     private static class AttachableComponent extends Component {
         public AttachableComponent() {
@@ -183,7 +180,7 @@ public class UITest {
     }
 
     private static void initUI(UI ui, String initialLocation,
-                               ArgumentCaptor<Integer> statusCodeCaptor)
+            ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException {
         try {
             VaadinServletRequest request = Mockito
@@ -199,10 +196,8 @@ public class UITest {
             }
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-            ServletConfig servletConfig = new MockServletConfig();
-            VaadinServlet servlet = new VaadinServlet();
-            servlet.init(servletConfig);
-            VaadinService service = servlet.getService();
+            VaadinService service = new MockVaadinServletService();
+            service.init();
             service.setCurrentInstances(request, response);
 
             MockVaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -235,7 +230,7 @@ public class UITest {
             if (statusCodeCaptor != null) {
                 Mockito.verify(response).setStatus(statusCodeCaptor.capture());
             }
-        } catch (ServletException e) {
+        } catch (ServiceException e) {
             throw new RuntimeException(e);
         }
     }
@@ -317,7 +312,6 @@ public class UITest {
         Assert.assertThat(chain.get(1), CoreMatchers
                 .instanceOf(FooBarParamParentNavigationTarget.class));
     }
-
 
     @Test
     public void localeSet_directionUpdated() {
@@ -952,7 +946,8 @@ public class UITest {
         }
 
         try {
-            ui.navigate(Parameterized.class, new RouteParameters("some", "value"));
+            ui.navigate(Parameterized.class,
+                    new RouteParameters("some", "value"));
             Assert.fail("IllegalArgumentException expected.");
         } catch (IllegalArgumentException e) {
             Assert.assertTrue(e.getMessage().endsWith("requires a parameter."));
@@ -975,8 +970,7 @@ public class UITest {
             ui.navigate((String) null, QueryParameters.empty());
             Assert.fail("NullPointerException expected.");
         } catch (NullPointerException e) {
-            Assert.assertEquals("Location must not be null",
-                    e.getMessage());
+            Assert.assertEquals("Location must not be null", e.getMessage());
         }
 
         try {
