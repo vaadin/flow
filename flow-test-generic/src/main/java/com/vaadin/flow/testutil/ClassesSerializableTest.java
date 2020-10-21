@@ -120,9 +120,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\.ServletContainerInitializerExtender",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess(\\$.*)",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.VaadinBundleTracker",
+                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.osgi\\.VaadinBundleTracker(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletVerifier",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
@@ -280,13 +279,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         for (String className : classes) {
             Class<?> cls = Class.forName(className);
             // Don't add classes that have a @Ignore annotation on the class
-            try {
-                if (isTestClass(cls)) {
-                    continue;
-                }
-            } catch (Throwable throwable) {
-                System.out.println("Xxxxxxxxxxx " + className);
-                throw throwable;
+            if (isTestClass(cls)) {
+                continue;
             }
 
             // report fields that use lambda types that won't be serializable
