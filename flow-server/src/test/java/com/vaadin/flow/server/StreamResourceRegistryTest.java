@@ -31,9 +31,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 
-import net.jcip.annotations.NotThreadSafe;
-
-@NotThreadSafe
 public class StreamResourceRegistryTest {
 
     private UI ui;

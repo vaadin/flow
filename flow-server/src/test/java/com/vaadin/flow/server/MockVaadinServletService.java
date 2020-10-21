@@ -43,6 +43,8 @@ public class MockVaadinServletService extends VaadinServletService {
 
         private final DeploymentConfiguration configuration;
 
+        private VaadinServletService service;
+
         private MockVaadinServlet(DeploymentConfiguration configuration) {
             this.configuration = configuration;
         }
@@ -51,6 +53,13 @@ public class MockVaadinServletService extends VaadinServletService {
         protected DeploymentConfiguration createDeploymentConfiguration()
                 throws ServletException {
             return configuration;
+        }
+
+        @Override
+        protected VaadinServletService createServletService(
+                DeploymentConfiguration deploymentConfiguration)
+                throws ServiceException {
+            return service;
         }
 
     }
@@ -88,6 +97,8 @@ public class MockVaadinServletService extends VaadinServletService {
     @Override
     public void init() {
         try {
+            MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
+            servlet.service = this;
             getServlet().init(new MockServletConfig());
             super.init();
         } catch (ServiceException | ServletException e) {

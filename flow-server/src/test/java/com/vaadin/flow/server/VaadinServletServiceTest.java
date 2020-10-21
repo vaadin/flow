@@ -1,11 +1,15 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.replay;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -16,10 +20,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
-
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
 
 /**
  * Test class for testing es5 and es6 resolution by browser capability. This is
@@ -49,8 +49,7 @@ public class VaadinServletServiceTest {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
 
-        servlet = new VaadinServlet();
-        servlet.init(new MockServletConfig());
+        servlet = mocks.getServlet();
     }
 
     @After
