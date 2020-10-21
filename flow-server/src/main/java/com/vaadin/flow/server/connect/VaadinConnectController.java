@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
@@ -94,6 +95,7 @@ import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 @RestController
 @Import({ VaadinConnectControllerConfiguration.class,
         VaadinEndpointProperties.class })
+@ConditionalOnBean(annotation = Endpoint.class)
 public class VaadinConnectController {
     /**
      * A qualifier to override the request and response default json mapper.
