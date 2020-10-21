@@ -16,6 +16,11 @@
         {
             "name": "./frontend/MySuperLitElement.js",
             "source": "// Import an element\nimport { LitElement, html } from 'lit-element'; \nimport { SimpleLitTemplateShadowRoot } from './MyLitElement.js';\n export class MySuperLitElement extends MyLitElement { createRenderRoot() { return this; }} customElements.define('my-super-lit-element', MySuperLitElement);"
+        },
+        {
+          "id": "./frontend/my-form.ts",
+          "name": "./frontend/my-form.ts",
+          "source": "import { html, LitElement } from 'lit-element';\r\n// @customElement(\"my-form\")\r\nexport class MyFormElement extends LitElement {\r\n    render() {\r\n        return html `\n      <h2>Hello</h2>\n      <vaadin-text-field id=\"nameField\"></vaadin-text-field>\n    `;\r\n    }\r\n}\r\ncustomElements.define(\"my-form\", MyFormElement);\r\n"
         }
       ]
       ,

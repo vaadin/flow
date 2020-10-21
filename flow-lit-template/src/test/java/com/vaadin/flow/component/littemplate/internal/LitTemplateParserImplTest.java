@@ -13,12 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.littemplate;
+package com.vaadin.flow.component.littemplate.internal;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
 import java.util.Collections;
 
+import com.vaadin.flow.component.littemplate.LitTemplate;
+import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -120,6 +122,25 @@ public class LitTemplateParserImplTest {
                 "Template element should have contained a div element with the id 'label'",
                 "div", templateContent.getTemplateElement()
                         .getElementById("label").tag().toString());
+    }
+
+    @Test
+    public void getTypescriptTemplateContent_templateExists_getTemplateContent() {
+        LitTemplateParser instance = LitTemplateParserImpl.getInstance();
+        TemplateData templateContent = instance.getTemplateContent(
+            MyForm.class, "my-form", service);
+
+        Assert.assertEquals("Parent element ID not the expected one.",
+                "my-form",
+                templateContent.getTemplateElement().parent().id());
+
+        Assert.assertEquals("Expected template element to have 2 children", 2,
+                templateContent.getTemplateElement().childNodeSize());
+
+        Assert.assertEquals(
+                "Template element should have contained a div element with the id 'label'",
+                "vaadin-text-field", templateContent.getTemplateElement()
+                        .getElementById("nameField").tag().toString());
     }
 
     @Test
@@ -272,4 +293,8 @@ public class LitTemplateParserImplTest {
     public class SeveralJsModuleAnnotations extends LitTemplate {
     }
 
+    @Tag("my-form")
+    @JsModule("./frontend/my-form.ts")
+    public class MyForm extends LitTemplate {
+    }
 }

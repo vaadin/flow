@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.littemplate;
 
+import com.vaadin.flow.component.littemplate.internal.LitTemplateParserImpl;
 import org.jsoup.nodes.Element;
 
 import com.vaadin.flow.di.Instantiator;
