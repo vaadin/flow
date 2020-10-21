@@ -32,6 +32,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinRequest;
@@ -1337,8 +1338,137 @@ public class DataCommunicatorTest {
         dataCommunicator.setPageSize(0);
     }
 
+    @Test
+    public void filter_setFilterAsPermanent_shouldRetainFilter() {
+        SerializableConsumer<SerializablePredicate<Item>> filterConsumer = dataCommunicator
+                .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
+                        new Item(3)), item -> item.id > 1);
+
+        Assert.assertNotNull("Expected initial filter to be set",
+                dataCommunicator.getFilter());
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNotNull(
+                "Permanent filter should be retained after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 2,
+                dataCommunicator.getItemCount());
+
+        // Check that the filter change works properly
+        filterConsumer.accept(item -> item.id > 2);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNotNull(
+                "Permanent filter should be retained after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 1,
+                dataCommunicator.getItemCount());
+    }
+
+    @Test
+    public void filter_setFilterAsDisposable_shouldDiscardFilterAfterFirstFlush() {
+        SerializableConsumer<DataCommunicator.Filter<SerializablePredicate<Item>>> filterConsumer = dataCommunicator
+                .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
+                        new Item(3)), item -> item.id > 1, false);
+
+        Assert.assertNotNull("Expected initial filter to be set",
+                dataCommunicator.getFilter());
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNull(
+                "Disposable filter should be discarded after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 2,
+                dataCommunicator.getItemCount());
+
+        // Check that the filter change works properly
+        filterConsumer.accept(
+                new DataCommunicator.Filter<>(item -> item.id > 2, false));
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNull(
+                "Disposable filter should be discarded after data request",
+                dataCommunicator.getFilter());
+
+        Assert.assertEquals("Unexpected items count", 1,
+                dataCommunicator.getItemCount());
+
+        // Change to permanent and check that it's not discarded
+        filterConsumer.accept(
+                new DataCommunicator.Filter<>(item -> item.id > 2, true));
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertNotNull(
+                "Permanent filter should be retained after data request",
+                dataCommunicator.getFilter());
+    }
+
+    @Test
+    public void filter_setFilterAsPermanent_firesItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
+        AtomicBoolean eventTriggered = new AtomicBoolean(false);
+
+        testComponent.addItemChangeListener(event -> {
+            eventTriggered.set(true);
+            Assert.assertEquals("Unexpected item count", 2,
+                    event.getItemCount());
+        });
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
+                item -> item.id > 1);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+
+        Assert.assertTrue("Expected event to be triggered for permanent filter",
+                eventTriggered.get());
+    }
+
+    @Test
+    public void filter_setFilterAsDisposable_doesNotFireItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
+        testComponent.addItemChangeListener(event -> Assert
+                .fail("Event triggering not expected for disposable filter"));
+
+        dataCommunicator.setDataProvider(
+                DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
+                item -> item.id > 1, false);
+
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
+
+        public TestComponent() {
+        }
+
+        public TestComponent(Element element) {
+            super(element);
+        }
+
+        void addItemChangeListener(
+                ComponentEventListener<ItemCountChangeEvent<?>> listener) {
+            ComponentUtil.addListener(this, ItemCountChangeEvent.class,
+                    (ComponentEventListener) listener);
+        }
     }
 
     private int getPageSizeIncrease() {
