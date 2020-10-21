@@ -32,7 +32,9 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -383,6 +385,9 @@ public class BootstrapHandlerTest {
     private MockDeploymentConfiguration deploymentConfiguration;
     private MockServletServiceSessionSetup mocks;
     private BootstrapHandler.BootstrapPageBuilder pageBuilder = new BootstrapHandler.BootstrapPageBuilder();
+
+    @Rule
+    public final TemporaryFolder tmpDir = new TemporaryFolder();
 
     @Before
     public void setup() throws Exception {
@@ -1730,7 +1735,6 @@ public class BootstrapHandlerTest {
 
         initUI(testUI);
 
-        File file = File.createTempFile("test", "stats.json");
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
                 + "    \"build/vaadin-bundle-e77008557c8d410bf0dc.cache.js\",\n"
@@ -1740,14 +1744,16 @@ public class BootstrapHandlerTest {
                 + "    \"build/vaadin-bundle.es5-e71a5a09679e828010c4.cache.js.map\"\n"
                 + "  ]" + " }" + "}";
 
-        IOUtils.write(statsJson, new FileOutputStream(file),
-                StandardCharsets.UTF_8);
+        File tmpFile = tmpDir.newFile();
+        try (FileOutputStream stream = new FileOutputStream(tmpFile)) {
+            IOUtils.write(statsJson, stream, StandardCharsets.UTF_8);
+        }
 
         Lookup lookup = testUI.getSession().getService().getContext()
                 .getAttribute(Lookup.class);
         ResourceProvider provider = lookup.lookup(ResourceProvider.class);
         Mockito.when(provider.getResource(Mockito.any(VaadinService.class),
-                Mockito.anyString())).thenReturn(file.toURI().toURL());
+                Mockito.anyString())).thenReturn(tmpFile.toURI().toURL());
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);

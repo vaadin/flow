@@ -1,7 +1,12 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
+import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -17,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletRegistration;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -24,6 +32,8 @@ import org.junit.Before;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.DevModeHandlerTest;
 import com.vaadin.flow.server.InitParameters;
@@ -32,14 +42,6 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubNode;
-import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.createStubWebpackServer;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -77,6 +79,15 @@ public class DevModeInitializerTestBase {
         servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
+
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
 
         Mockito.when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());

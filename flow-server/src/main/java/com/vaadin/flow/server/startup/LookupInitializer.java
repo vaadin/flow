@@ -240,13 +240,35 @@ public class LookupInitializer
     public void process(Set<Class<?>> classSet, ServletContext servletContext)
             throws ServletException {
         OSGiAccess osgiAccess = OSGiAccess.getInstance();
+        VaadinServletContext vaadinContext = new VaadinServletContext(
+                servletContext);
         if (osgiAccess.getOsgiServletContext() == null) {
             initStandardLookup(classSet, servletContext);
         } else {
-            VaadinServletContext vaadinContext = new VaadinServletContext(
-                    servletContext);
-            vaadinContext.setAttribute(Lookup.class, new OsgiLookupImpl());
+            synchronized (servletContext) {
+                if (vaadinContext.getAttribute(Lookup.class) == null) {
+                    vaadinContext.setAttribute(Lookup.class,
+                            new OsgiLookupImpl());
+                }
+            }
         }
+
+        DeferredServletContextInitializers initializers;
+        synchronized (servletContext) {
+            initializers = vaadinContext
+                    .getAttribute(DeferredServletContextInitializers.class);
+            vaadinContext
+                    .removeAttribute(DeferredServletContextInitializers.class);
+        }
+
+        if (initializers != null) {
+            initializers.runInitializers(servletContext);
+        }
+    }
+
+    @Override
+    public boolean requiresLookup() {
+        return false;
     }
 
     private void initStandardLookup(Set<Class<?>> classSet,
