@@ -36,9 +36,9 @@ The following actions are performed when creating a package:
 ##### `build-frontend` configuration options
 * **generateBundle** `boolean` - Whether to generate a bundle from the project frontend sources or not.
  Default value is: true
-* **runNpmInstall** `boolea` - Whether to run <code>npm install</code> after updating dependencies.
+* **runNpmInstall** `boolean` - Whether to run <code>npm install</code> after updating dependencies.
  Default value is: true
-* **generateEmbeddableWebComponents** `` - Whether to generate embeddable web components from WebComponentExporter inheritors.
+* **generateEmbeddableWebComponents** `boolean` - Whether to generate embeddable web components from WebComponentExporter inheritors.
  Default value is: true
 * **frontendResourcesDirectory** `File` - Defines the project frontend directory from where resources should be copied from for use with webpack.
  Default value is: ${project.basedir}/" + Constants.LOCAL_FRONTEND_RESOURCES_PATH)
