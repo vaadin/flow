@@ -16,14 +16,6 @@
 
 package com.vaadin.flow.server.webcomponent;
 
-import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.server.startup.EnableOSGiRunner;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -36,9 +28,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.server.startup.EnableOSGiRunner;
+
+import net.jcip.annotations.NotThreadSafe;
+
 @NotThreadSafe
 @RunWith(EnableOSGiRunner.class)
-public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfigurationRegistryTest {
+public class OSGiWebComponentConfigurationRegistryTest
+        extends WebComponentConfigurationRegistryTest {
 
     @Override
     protected WebComponentConfigurationRegistry createRegistry() {
@@ -48,20 +51,23 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
     @Test
     @Override
     public void assertRegistryIsSingleton() {
-        Assert.assertSame("OSGiWebComponentConfigurationRegistry instance should be singleton",
-            registry, OSGiWebComponentConfigurationRegistry.getInstance(context));
+        Assert.assertSame(
+                "OSGiWebComponentConfigurationRegistry instance should be singleton",
+                registry,
+                OSGiWebComponentConfigurationRegistry.getInstance(context));
     }
 
     @After
     public void cleanUpOSGi() {
-        OSGiAccess.getInstance().getOsgiServletContext().setAttribute(
-                WebComponentConfigurationRegistry.class.getName(),
-                null);
+        OSGiAccess.getInstance().getOsgiServletContext().removeAttribute(
+                WebComponentConfigurationRegistry.class.getName());
     }
 
+    @Override
     @Test
     public void assertWebComponentRegistry() {
-        Assert.assertEquals(OSGiWebComponentConfigurationRegistry.class.getName(),
+        Assert.assertEquals(
+                OSGiWebComponentConfigurationRegistry.class.getName(),
                 registry.getClass().getName());
     }
 
@@ -82,17 +88,19 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
         Assert.assertFalse("Registry should have no configurations",
                 registry.hasConfigurations());
 
-        Assert.assertTrue("Registry should have accepted the " +
-                        "WebComponentExporters",
-                registry.setConfigurations(createConfigurations(MyComponentExporter.class)));
+        Assert.assertTrue(
+                "Registry should have accepted the " + "WebComponentExporters",
+                registry.setConfigurations(
+                        createConfigurations(MyComponentExporter.class)));
 
         Assert.assertTrue(
-                "OSGi registry should have accept the second set of " +
-                        "WebComponentExporters.",
-                registry.setConfigurations(createConfigurations(UserBoxExporter.class)));
+                "OSGi registry should have accept the second set of "
+                        + "WebComponentExporters.",
+                registry.setConfigurations(
+                        createConfigurations(UserBoxExporter.class)));
 
-        Assert.assertEquals("Registry should contain only one builder",
-                1, registry.getConfigurations().size());
+        Assert.assertEquals("Registry should contain only one builder", 1,
+                registry.getConfigurations().size());
 
         Assert.assertEquals("Builder should be linked to UserBox.class",
                 UserBox.class, registry.getConfiguration("user-box").get()
@@ -135,7 +143,6 @@ public class OSGiWebComponentConfigurationRegistryTest extends WebComponentConfi
             results.add(resultFuture.get());
         }
         Assert.assertEquals("All threads should have updated for OSGi", 0,
-                results.stream().filter(result -> !result.get())
-                        .count());
+                results.stream().filter(result -> !result.get()).count());
     }
 }

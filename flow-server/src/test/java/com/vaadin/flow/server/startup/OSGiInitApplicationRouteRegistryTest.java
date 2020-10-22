@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletContext;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +33,8 @@ import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
+
+import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance which is initialized via
@@ -54,14 +56,15 @@ public class OSGiInitApplicationRouteRegistryTest
 
         // In case new attributes are added to OsgiServletContext, they should
         // also be set to null here
-        OSGiAccess.getInstance().getOsgiServletContext()
-                .setAttribute(ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class.getName(), null);
+        OSGiAccess.getInstance().getOsgiServletContext().removeAttribute(
+                ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class
+                        .getName());
 
         registry = ApplicationRouteRegistry.getInstance(
                 new VaadinServletContext(Mockito.mock(ServletContext.class)));
 
-        osgiCollectorRegistry = ApplicationRouteRegistry.getInstance(
-                new VaadinServletContext(
+        osgiCollectorRegistry = ApplicationRouteRegistry
+                .getInstance(new VaadinServletContext(
                         OSGiAccess.getInstance().getOsgiServletContext()));
     }
 
