@@ -65,7 +65,13 @@ public class EnableOSGiRunner extends BlockJUnit4ClassRunner {
                     .getName();
             vaadinPackagePrefix = vaadinPackagePrefix.substring(0,
                     vaadinPackagePrefix.lastIndexOf('.'));
-            if (name.equals("org.osgi.framework.FrameworkUtil")) {
+            if (name.equals("org.osgi.framework.InvalidSyntaxException")) {
+                Builder<Exception> builder = new ByteBuddy()
+                        .subclass(Exception.class);
+                return builder.name("org.osgi.framework.InvalidSyntaxException")
+                        .make().load(this, ClassLoadingStrategy.Default.WRAPPER)
+                        .getLoaded();
+            } else if (name.equals("org.osgi.framework.FrameworkUtil")) {
                 Builder<Object> builder = new ByteBuddy()
                         .subclass(Object.class);
 

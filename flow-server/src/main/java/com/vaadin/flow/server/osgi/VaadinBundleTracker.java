@@ -83,7 +83,7 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
             }
             URL resource = bundle.getResource(
-                    "/META-INF/resources/VAADIN/static/push/" + pathInfo);
+                    "/META-INF/resources/VAADIN/static/push" + pathInfo);
             if (resource == null) {
                 resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
             }
@@ -154,7 +154,7 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     }
 
     private boolean isPushModule(Bundle bundle) {
-        return bundle.getSymbolicName().equals("com.vaadin.flow.push");
+        return "com.vaadin.flow.push".equals(bundle.getSymbolicName());
     }
 
     @SuppressWarnings("unchecked")

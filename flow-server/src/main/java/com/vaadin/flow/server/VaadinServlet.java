@@ -15,22 +15,26 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Properties;
+
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Optional;
-import java.util.Properties;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.osgi.OSGiAccess;
 import com.vaadin.flow.server.webjar.WebJarServer;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -68,6 +72,7 @@ public class VaadinServlet extends HttpServlet {
     public void init(ServletConfig servletConfig) throws ServletException {
         CurrentInstance.clearAll();
         super.init(servletConfig);
+
         try {
             servletService = createServletService();
         } catch (ServiceException e) {
@@ -439,7 +444,7 @@ public class VaadinServlet extends HttpServlet {
      *             if the application is denied access to the persistent data
      *             store represented by the given URL.
      *
-     * @deprecated As of 1.0. Will be removed in 3.0. 
+     * @deprecated As of 1.0. Will be removed in 3.0.
      *
      * @return current application URL
      */
@@ -495,7 +500,7 @@ public class VaadinServlet extends HttpServlet {
      * @return a safe string to be added inside an html tag
      *
      * @deprecated As of 1.0. Will be removed in 3.0. Use
-     * {@link org.jsoup.nodes.Entities#escape(String)} instead.
+     *             {@link org.jsoup.nodes.Entities#escape(String)} instead.
      */
     @Deprecated
     public static String safeEscapeForHtml(String unsafe) {
@@ -533,5 +538,23 @@ public class VaadinServlet extends HttpServlet {
      */
     protected Optional<WebJarServer> getWebJarServer() {
         return Optional.ofNullable(webJarServer);
+    }
+
+    @Override
+    public void init() {
+        ServletContext osgiServletContext = OSGiAccess.getInstance()
+                .getOsgiServletContext();
+        if (osgiServletContext != null) {
+            synchronized (getServletContext()) {
+                ArrayList<String> attributes = Collections
+                        .list(getServletContext().getAttributeNames());
+                if (attributes.isEmpty()) {
+                    ArrayList<String> list = Collections
+                            .list(osgiServletContext.getAttributeNames());
+                    list.forEach(attr -> getServletContext().setAttribute(attr,
+                            osgiServletContext.getAttribute(attr)));
+                }
+            }
+        }
     }
 }
