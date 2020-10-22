@@ -91,7 +91,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
 
     private Stream<String> getExcludedPatterns() {
         return Stream.of("com\\.vaadin\\.flow\\..*osgi\\..*",
-                "org\\.osgi\\.framework\\..*");
+                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer\\$OsgiLookupImpl");
     }
 
     private boolean isBadSubType(Class<?> clazz) {
