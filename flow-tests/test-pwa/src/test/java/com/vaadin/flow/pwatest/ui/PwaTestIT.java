@@ -33,8 +33,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.remote.Command;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
@@ -136,8 +136,8 @@ public class PwaTestIT extends ChromeBrowserTest {
         Assert.assertNotNull("Should have outlet when loaded online",
                 findElement(By.id("outlet")));
 
-        // Set offline network conditions through ChromeDriver
-        ChromeDriver chromeDriver = (ChromeDriver) ((TestBenchDriverProxy) getDriver())
+        // Set offline network conditions in ChromeDriver
+        RemoteWebDriver driver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
                 .getWrappedDriver();
         final Map<String, Object> conditions = new HashMap<>();
         conditions.put("offline", true);
@@ -146,8 +146,8 @@ public class PwaTestIT extends ChromeBrowserTest {
         conditions.put("download_throughput", 0);
         final Map<String, Object> parameters = new HashMap<>();
         parameters.put("network_conditions", conditions);
-        if (chromeDriver.getCommandExecutor()
-                .execute(new Command(chromeDriver.getSessionId(),
+        if (driver.getCommandExecutor()
+                .execute(new Command(driver.getSessionId(),
                         "setNetworkConditions", parameters))
                 .getStatus() != 0) {
             throw new RuntimeException(
@@ -182,8 +182,8 @@ public class PwaTestIT extends ChromeBrowserTest {
                     message.getText().toLowerCase().contains("offline"));
         } finally {
             // Reset network conditions back
-            chromeDriver.getCommandExecutor().execute(new Command(
-                    chromeDriver.getSessionId(), "deleteNetworkConditions"));
+            driver.getCommandExecutor().execute(new Command(
+                    driver.getSessionId(), "deleteNetworkConditions"));
         }
     }
 
