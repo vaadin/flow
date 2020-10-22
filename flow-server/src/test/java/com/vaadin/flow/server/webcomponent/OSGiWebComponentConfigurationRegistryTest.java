@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.server.startup;
+package com.vaadin.flow.server.webcomponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.vaadin.flow.server.osgi.OSGiAccess;
-import com.vaadin.flow.server.webcomponent.OSGiWebComponentConfigurationRegistry;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistryTest;
+import com.vaadin.flow.server.startup.EnableOSGiRunner;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -61,8 +59,8 @@ public class OSGiWebComponentConfigurationRegistryTest
 
     @After
     public void cleanUpOSGi() {
-        OSGiAccess.getInstance().getOsgiServletContext().setAttribute(
-                WebComponentConfigurationRegistry.class.getName(), null);
+        OSGiAccess.getInstance().getOsgiServletContext().removeAttribute(
+                WebComponentConfigurationRegistry.class.getName());
     }
 
     @Override
