@@ -28,6 +28,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.annotations.Component;
 
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.server.VaadinServletService;
 
 /**
  * OSGi capable implementation of {@link ResourceProvider}.
@@ -47,7 +48,11 @@ public class OSGiResourceProvider implements ResourceProvider {
 
     @Override
     public URL getResource(Object context, String path) {
-        return getResource(Objects.requireNonNull(context).getClass(), path);
+        Class<?> clazz = Objects.requireNonNull(context).getClass();
+        if (context instanceof VaadinServletService) {
+            clazz = ((VaadinServletService) context).getServlet().getClass();
+        }
+        return getResource(clazz, path);
     }
 
     @Override
