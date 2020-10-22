@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 
@@ -52,8 +53,12 @@ public class OSGiResourceProvider implements ResourceProvider {
     @Override
     public List<URL> getResources(Class<?> clazz, String path)
             throws IOException {
-        return Collections.list(FrameworkUtil
-                .getBundle(Objects.requireNonNull(clazz)).getResources(path));
+        Bundle bundle = FrameworkUtil.getBundle(Objects.requireNonNull(clazz));
+        Enumeration<URL> resources = bundle.getResources(path);
+        if (resources == null) {
+            return Collections.emptyList();
+        }
+        return Collections.list(resources);
     }
 
     @Override

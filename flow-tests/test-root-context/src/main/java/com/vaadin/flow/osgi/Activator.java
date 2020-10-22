@@ -21,9 +21,12 @@ import java.util.Hashtable;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
@@ -37,7 +40,8 @@ import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
 import com.vaadin.flow.uitest.servlet.WebJarsServlet;
 
-public class Activator implements BundleActivator {
+@Component(immediate = true)
+public class Activator {
 
     private ServiceTracker<HttpService, HttpService> httpTracker;
 
@@ -95,8 +99,10 @@ public class Activator implements BundleActivator {
 
     }
 
-    @Override
-    public void start(BundleContext context) throws Exception {
+    @Activate
+    void activate() throws NamespaceException {
+        BundleContext context = FrameworkUtil.getBundle(Activator.class)
+                .getBundleContext();
         httpTracker = new ServiceTracker<HttpService, HttpService>(context,
                 HttpService.class.getName(), null) {
             @Override
@@ -120,8 +126,6 @@ public class Activator implements BundleActivator {
                 // HTTP service is available, register our servlet...
                 HttpService httpService = this.context.getService(reference);
                 Dictionary dictionary = new Hashtable<>();
-                dictionary.put(Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
-                        Boolean.TRUE.toString());
                 try {
                     httpService.registerServlet("/view/*",
                             new FixedViewServlet(), dictionary, null);
@@ -149,8 +153,8 @@ public class Activator implements BundleActivator {
         httpTracker.open();
     }
 
-    @Override
-    public void stop(BundleContext context) throws Exception {
+    @Deactivate
+    void deactivate() {
         // stop tracking all HTTP services...
         httpTracker.close();
     }
