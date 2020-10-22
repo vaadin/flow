@@ -15,23 +15,37 @@
  */
 package com.vaadin.flow.server.osgi;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContainerInitializer;
-
+import org.apache.commons.compress.utils.IOUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +64,34 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     private final Bundle flowServerBundle;
 
     private Executor executor = Executors.newSingleThreadExecutor();
+
+    private final AtomicReference<ServiceRegistration<Servlet>> servletRegistration = new AtomicReference<>();
+
+    private static class PushResourceServlet extends HttpServlet {
+
+        private final Bundle bundle;
+
+        public PushResourceServlet(Bundle pushBundle) {
+            bundle = pushBundle;
+        }
+
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+                throws ServletException, IOException {
+            String pathInfo = req.getPathInfo();
+            if (pathInfo == null) {
+                resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
+            }
+            URL resource = bundle.getResource(
+                    "/META-INF/resources/VAADIN/static/push" + pathInfo);
+            if (resource == null) {
+                resp.setStatus(HttpURLConnection.HTTP_NOT_FOUND);
+            }
+            try (InputStream stream = resource.openStream()) {
+                IOUtils.copy(stream, resp.getOutputStream());
+            }
+        }
+    }
 
     /**
      * Creates a new instance of a bundle tracker.
@@ -73,6 +115,8 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
                 // Now scan all active bundles for all classes instead of
                 // scanning every inidividual activated bundle/
                 executor.execute(this::scanActiveBundles);
+            } else if (isPushModule(bundle)) {
+                registerPushResources(bundle);
             } else if ((flowServerBundle.getState() & Bundle.ACTIVE) != 0) {
                 // If flow-server bundle is already active then scan bundle for
                 // classes
@@ -80,13 +124,39 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
             }
         } else if (event != null && (event.getType() & BundleEvent.STOPPED) > 0
                 && isVaadinExtender(bundle)) {
-            // Remove all bundle classes once the bundle becomes stopped
-            OSGiAccess.getInstance().removeScannedClasses(bundle.getBundleId());
+            if (isPushModule(bundle)) {
+                unregisterPushResource(bundle);
+            } else {
+                // Remove all bundle classes once the bundle becomes stopped
+                OSGiAccess.getInstance()
+                        .removeScannedClasses(bundle.getBundleId());
+            }
         }
         return bundle;
     }
 
-    @SuppressWarnings("unchecked")
+    private void registerPushResources(Bundle pushBundle) {
+        Hashtable<String, Object> properties = new Hashtable<>();
+        properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN,
+                "/VAADIN/static/push/*");
+        servletRegistration.compareAndSet(null,
+                pushBundle.getBundleContext().registerService(Servlet.class,
+                        new PushResourceServlet(pushBundle), properties));
+    }
+
+    private void unregisterPushResource(Bundle pushBundle) {
+        ServiceRegistration<Servlet> registration = servletRegistration.get();
+        if (registration != null && registration.getReference().getBundle()
+                .getBundleId() == pushBundle.getBundleId()) {
+            registration.unregister();
+            servletRegistration.compareAndSet(registration, null);
+        }
+    }
+
+    private boolean isPushModule(Bundle bundle) {
+        return "com.vaadin.flow.push".equals(bundle.getSymbolicName());
+    }
+
     private void scanContextInitializers() {
         Map<Long, Collection<Class<?>>> map = new HashMap<>();
         scanClasses(flowServerBundle, map, this::handleFlowServerClassError);
@@ -176,4 +246,3 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
     }
 
 }
-
