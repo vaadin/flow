@@ -38,11 +38,6 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.HandlesTypes;
 
 import org.apache.commons.io.IOUtils;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
@@ -128,48 +123,6 @@ public class LookupInitializer
         }
     }
 
-    private static class OsgiLookupImpl implements Lookup {
-
-        @Override
-        public <T> T lookup(Class<T> serviceClass) {
-            Bundle bundle = FrameworkUtil.getBundle(LookupInitializer.class);
-            ServiceReference<T> reference = bundle.getBundleContext()
-                    .getServiceReference(serviceClass);
-            if (reference == null) {
-                LoggerFactory.getLogger(OsgiLookupImpl.class)
-                        .debug("No service found for '{}' SPI", serviceClass);
-                return null;
-            }
-            return bundle.getBundleContext().getService(reference);
-        }
-
-        @Override
-        public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-            Bundle bundle = FrameworkUtil.getBundle(LookupInitializer.class);
-            try {
-                Collection<ServiceReference<T>> references = bundle
-                        .getBundleContext()
-                        .getServiceReferences(serviceClass, null);
-                List<T> services = new ArrayList<>(references.size());
-                for (ServiceReference<T> reference : references) {
-                    T service = bundle.getBundleContext().getService(reference);
-                    if (service != null) {
-                        services.add(service);
-                    }
-                }
-                return services;
-            } catch (InvalidSyntaxException e) {
-                LoggerFactory.getLogger(OsgiLookupImpl.class).error(
-                        "Unexpected exception which is not expected to be thrown",
-                        e);
-                assert false : "Serveice filter is null so this may not happen";
-            }
-
-            return Collections.emptyList();
-        }
-
-    }
-
     private static class CachedStreamData {
 
         private final byte[] data;
@@ -242,15 +195,10 @@ public class LookupInitializer
         OSGiAccess osgiAccess = OSGiAccess.getInstance();
         VaadinServletContext vaadinContext = new VaadinServletContext(
                 servletContext);
+        // OSGi case is out of the scope: the Lookup instance is set in the fake
+        // context when it's created
         if (osgiAccess.getOsgiServletContext() == null) {
             initStandardLookup(classSet, servletContext);
-        } else {
-            synchronized (servletContext) {
-                if (vaadinContext.getAttribute(Lookup.class) == null) {
-                    vaadinContext.setAttribute(Lookup.class,
-                            new OsgiLookupImpl());
-                }
-            }
         }
 
         DeferredServletContextInitializers initializers;
@@ -296,7 +244,7 @@ public class LookupInitializer
     private void collectResourceProviders(Set<Class<?>> classSet,
             Map<Class<?>, Collection<Object>> services) {
         Set<Class<?>> providers = filterResourceProviders(classSet);
-        if (classSet.isEmpty()) {
+        if (providers.isEmpty()) {
             services.put(ResourceProvider.class,
                     Collections.singletonList(new ResourceProviderImpl()));
         } else if (providers.size() > 1) {
