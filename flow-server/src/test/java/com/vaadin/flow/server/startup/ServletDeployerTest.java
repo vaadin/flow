@@ -1,38 +1,5 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.Registration;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.easymock.Capture;
-import org.easymock.CaptureType;
-import org.easymock.EasyMock;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -46,6 +13,41 @@ import static org.easymock.EasyMock.newCapture;
 import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.Registration;
+import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
+import org.easymock.Capture;
+import org.easymock.CaptureType;
+import org.easymock.EasyMock;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 
 public class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
@@ -193,13 +195,15 @@ public class ServletDeployerTest {
     public void frontendServletIsRegisteredWhenAtLeastOneServletHasDevelopmentAndCompatibilityMode()
             throws Exception {
         Map<String, String> productionMode = new HashMap<>();
-        productionMode.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "true");
+        productionMode.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                "true");
         productionMode.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 "true");
 
         Map<String, String> devMode = new HashMap<>();
         devMode.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
-        devMode.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE, "true");
+        devMode.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                "true");
 
         dynamicMockCheck = registration -> EasyMock
                 .expect(registration.setInitParameters(Collections.singletonMap(
@@ -222,7 +226,8 @@ public class ServletDeployerTest {
             throws Exception {
         Map<String, String> params = new HashMap<>();
         params.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
-        params.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE, "false");
+        params.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                "false");
         deployer.contextInitialized(getContextEvent(
                 true, true,
                 getServletRegistration("testServlet1", TestVaadinServlet.class,
@@ -335,6 +340,22 @@ public class ServletDeployerTest {
                 .andReturn(Collections.emptySet()).anyTimes();
 
         ServletContext contextMock = mock(ServletContext.class);
+
+        Lookup lookup = mock(Lookup.class);
+        expect(contextMock.getAttribute(Lookup.class.getName()))
+                .andReturn(lookup).anyTimes();
+
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
+
+        expect(resourceProvider.getResources(anyObject(), anyObject()))
+                .andReturn(Collections.emptyList()).anyTimes();
+
+        replay(resourceProvider);
+
+        expect(lookup.lookup(ResourceProvider.class))
+                .andReturn(resourceProvider).anyTimes();
+
+        replay(lookup);
 
         expect(contextMock.getContextPath()).andReturn("").once();
         expect(contextMock.getClassLoader())
