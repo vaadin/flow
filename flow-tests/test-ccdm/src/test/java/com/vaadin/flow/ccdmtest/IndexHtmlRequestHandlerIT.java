@@ -21,6 +21,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.JavascriptExecutor;
 
 public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
@@ -600,9 +601,9 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     @Test
     public void should_installServiceWorker() {
         openTestUrl("/");
-        getCommandExecutor().waitForVaadin();
-        waitUntil(drv -> (boolean) getCommandExecutor()
-                        .executeScript("return !!navigator.serviceWorker && navigator.serviceWorker.controller !== null; "),
-                30);
+        boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("const resolve = arguments[arguments.length - 1];"
+                        + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
+        Assert.assertTrue("service worker not installed", serviceWorkerActive);
     }
 }
