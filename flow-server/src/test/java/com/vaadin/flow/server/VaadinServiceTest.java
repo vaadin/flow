@@ -20,8 +20,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,9 +35,13 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.InstantiatorFactory;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -329,6 +335,56 @@ public class VaadinServiceTest {
         Assert.assertEquals(1, filters.size());
 
         Assert.assertSame(applicationFilter, filters.get(0));
+    }
+
+    @Test
+    public void loadInstantiators_instantiatorIsLoadedUsingFactoryFromLookup()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+
+        service.getContext().setAttribute(Lookup.class, lookup);
+
+        InstantiatorFactory factory = createInstantiatorFactory(lookup);
+
+        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+                .thenReturn(Collections.singletonList(factory));
+
+        Optional<Instantiator> loadedInstantiator = service.loadInstantiators();
+
+        Instantiator instantiator = factory.createInstantitor(null);
+
+        Assert.assertSame(instantiator, loadedInstantiator.get());
+    }
+
+    @Test(expected = ServiceException.class)
+    public void loadInstantiators_twoFactoriesInLookup_throws()
+            throws ServiceException {
+        VaadinService service = createService();
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+
+        service.getContext().setAttribute(Lookup.class, lookup);
+
+        InstantiatorFactory factory1 = createInstantiatorFactory(lookup);
+        InstantiatorFactory factory2 = createInstantiatorFactory(lookup);
+
+        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+                .thenReturn(Arrays.asList(factory1, factory2));
+
+        service.loadInstantiators();
+    }
+
+    private InstantiatorFactory createInstantiatorFactory(Lookup lookup) {
+        InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
+
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when((factory.createInstantitor(Mockito.any())))
+                .thenReturn(instantiator);
+
+        Mockito.when(instantiator.init(Mockito.any())).thenReturn(true);
+        return factory;
     }
 
     private static VaadinService createService() throws ServiceException {
