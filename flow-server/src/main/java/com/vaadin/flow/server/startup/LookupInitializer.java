@@ -139,31 +139,38 @@ public class LookupInitializer
         private Map<String, CachedStreamData> cache = new ConcurrentHashMap<>();
 
         @Override
-        public URL getResource(Class<?> clazz, String path) {
+        public URL getApplicationResource(Class<?> clazz, String path) {
             return Objects.requireNonNull(clazz).getClassLoader()
                     .getResource(path);
         }
 
         @Override
-        public List<URL> getResources(Class<?> clazz, String path)
+        public List<URL> getApplicationResources(Object context, String path)
+                throws IOException {
+            return Collections.list(
+                    context.getClass().getClassLoader().getResources(path));
+        }
+
+        @Override
+        public List<URL> getApplicationResources(Class<?> clazz, String path)
                 throws IOException {
             return Collections.list(Objects.requireNonNull(clazz)
                     .getClassLoader().getResources(path));
         }
 
         @Override
-        public URL getResource(Object context, String path) {
+        public URL getApplicationResource(Object context, String path) {
             Objects.requireNonNull(context);
             if (context instanceof VaadinService) {
                 return ((VaadinService) context).getClassLoader()
                         .getResource(path);
             }
-            return getResource(context.getClass(), path);
+            return getApplicationResource(context.getClass(), path);
         }
 
         @Override
         public URL getClientResource(String path) {
-            return getResource(ResourceProviderImpl.class, path);
+            return getApplicationResource(ResourceProviderImpl.class, path);
         }
 
         @Override

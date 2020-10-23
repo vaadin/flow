@@ -41,22 +41,33 @@ import com.vaadin.flow.server.VaadinServletService;
 public class OSGiResourceProvider implements ResourceProvider {
 
     @Override
-    public URL getResource(Class<?> clazz, String path) {
+    public URL getApplicationResource(Class<?> clazz, String path) {
         return FrameworkUtil.getBundle(Objects.requireNonNull(clazz))
                 .getResource(path);
     }
 
     @Override
-    public URL getResource(Object context, String path) {
-        Class<?> clazz = Objects.requireNonNull(context).getClass();
-        if (context instanceof VaadinServletService) {
-            clazz = ((VaadinServletService) context).getServlet().getClass();
+    public URL getApplicationResource(Object context, String path) {
+        Class<?> appClass = getApplicationClass(context);
+        if (appClass == null) {
+            return null;
         }
-        return getResource(clazz, path);
+        return getApplicationResource(appClass, path);
     }
 
     @Override
-    public List<URL> getResources(Class<?> clazz, String path)
+    public List<URL> getApplicationResources(Object context, String path)
+            throws IOException {
+        Class<?> appClass = getApplicationClass(context);
+        if (appClass == null) {
+            return Collections.emptyList();
+        }
+        return getApplicationResources(appClass, path);
+
+    }
+
+    @Override
+    public List<URL> getApplicationResources(Class<?> clazz, String path)
             throws IOException {
         Bundle bundle = FrameworkUtil.getBundle(Objects.requireNonNull(clazz));
         Enumeration<URL> resources = bundle.getResources(path);
@@ -83,5 +94,17 @@ public class OSGiResourceProvider implements ResourceProvider {
             throws IOException {
         // No any caching !: flow-client may be reinstalled at any moment
         return getClientResource(path).openStream();
+    }
+
+    private Class<?> getApplicationClass(Object context) {
+        Class<?> clazz = Objects.requireNonNull(context).getClass();
+        if (context instanceof VaadinServletService) {
+            clazz = ((VaadinServletService) context).getServlet().getClass();
+        }
+        if (!"com.vaadin.flow.server"
+                .equals(FrameworkUtil.getBundle(clazz).getSymbolicName())) {
+            return clazz;
+        }
+        return null;
     }
 }
