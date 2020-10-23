@@ -74,7 +74,7 @@ public class NpmTemplateParserTest {
 
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getResource(service,
+        Mockito.when(resourceProvider.getApplicationResource(service,
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(NpmTemplateParser.class.getResource(
                         "/" + VAADIN_SERVLET_RESOURCES + "config/stats.json"));
@@ -105,7 +105,7 @@ public class NpmTemplateParserTest {
     public void getTemplateContent_polymer2TemplateStyleInsertion_contentParsedCorrectly() {
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getResource(service,
+        Mockito.when(resourceProvider.getApplicationResource(service,
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(NpmTemplateParser.class
                         .getResource("/" + VAADIN_SERVLET_RESOURCES
@@ -125,7 +125,7 @@ public class NpmTemplateParserTest {
     public void getTemplateContent_polymer2TemplateStyleInsertion_severalDomModules_correctTemplateContentIsChosen() {
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getResource(service,
+        Mockito.when(resourceProvider.getApplicationResource(service,
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(NpmTemplateParser.class
                         .getResource("/" + VAADIN_SERVLET_RESOURCES
@@ -166,7 +166,7 @@ public class NpmTemplateParserTest {
     public void should_throwException_when_LocalFileNotFound() {
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getResource(service,
+        Mockito.when(resourceProvider.getApplicationResource(service,
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(NpmTemplateParser.class
                         .getResource("/META-INF/resources/foo-bar.json"));
@@ -228,7 +228,7 @@ public class NpmTemplateParserTest {
     public void bableStats_shouldAlwaysParseCorrectly() {
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getResource(service,
+        Mockito.when(resourceProvider.getApplicationResource(service,
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(NpmTemplateParser.class
                         .getResource("/" + VAADIN_SERVLET_RESOURCES
@@ -287,7 +287,7 @@ public class NpmTemplateParserTest {
     public void hierarchicalTemplate_templateHasChild_childHasCorrectPosition() {
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getResource(service,
+        Mockito.when(resourceProvider.getApplicationResource(service,
                 VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                 .thenReturn(NpmTemplateParser.class
                         .getResource("/" + VAADIN_SERVLET_RESOURCES

@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
@@ -327,8 +328,23 @@ public final class DeploymentConfigurationFactory implements Serializable {
         Lookup lookup = context.getAttribute(Lookup.class);
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
-        List<URL> resources = resourceProvider.getResources(contextClass,
-                tokenResource);
+
+        List<URL> classResources = resourceProvider
+                .getApplicationResources(contextClass, tokenResource);
+        List<URL> contextResources = resourceProvider
+                .getApplicationResources(contextClass, tokenResource);
+
+        List<URL> resources;
+        if (classResources.isEmpty()) {
+            resources = contextResources;
+        } else if (contextResources.isEmpty()) {
+            resources = classResources;
+        } else {
+            resources = new ArrayList<>(
+                    classResources.size() + contextResources.size());
+            resources.addAll(classResources);
+            resources.addAll(contextResources);
+        }
 
         // Accept resource that doesn't contain
         // 'jar!/META-INF/Vaadin/config/flow-build-info.json'
@@ -339,8 +355,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
             // For no non jar build info, in production mode check for
             // webpack.generated.json if it's in a jar then accept
             // single jar flow-build-info.
-            return getPossibleJarResource(resourceProvider, contextClass,
-                    resources);
+            return getPossibleJarResource(contextClass, context, resources);
         }
         return resource == null ? null
                 : FrontendUtils.streamToString(resource.openStream());
@@ -354,23 +369,27 @@ public final class DeploymentConfigurationFactory implements Serializable {
      * <p>
      * Else we will accept any flow-build-info and log a warning that it may not
      * be the correct file, but it's the best we could find.
-     *
-     * @param resources
-     *            flow-build-info url resource files, not null or empty
-     * @return flow-build-info json string
-     * @throws IOException
-     *             exception reading stream
      */
-    private static String getPossibleJarResource(ResourceProvider provider,
-            Class<?> contextClass, List<URL> resources) throws IOException {
+    private static String getPossibleJarResource(Class<?> contextClass,
+            VaadinContext context, List<URL> resources) throws IOException {
         Objects.requireNonNull(resources);
+
+        Lookup lookup = context.getAttribute(Lookup.class);
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+
         assert !resources
                 .isEmpty() : "Possible jar resource requires resources to be available.";
-        URL webpackGenerated = provider.getResource(contextClass,
-                FrontendUtils.WEBPACK_GENERATED);
+        URL webpackGenerated = resourceProvider.getApplicationResource(
+                contextClass, FrontendUtils.WEBPACK_GENERATED);
+        if (webpackGenerated == null) {
+            webpackGenerated = resourceProvider.getApplicationResource(context,
+                    FrontendUtils.WEBPACK_GENERATED);
+        }
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar
-        if (countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
+        if (webpackGenerated != null
+                && countInstances(webpackGenerated.getPath(), "jar!/") >= 2) {
             for (URL resource : resources) {
                 // As we now know that we are running from a jar we can accept a
                 // build info with a single jar in the path

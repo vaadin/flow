@@ -46,6 +46,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static java.util.Collections.emptyMap;
+import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.mock;
@@ -633,9 +634,13 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
 
-        expect(provider.getResources(VaadinServlet.class,
+        expect(provider.getApplicationResources(VaadinServlet.class,
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                         .andAnswer(() -> Collections.emptyList()).anyTimes();
+
+        expect(provider.getApplicationResources(anyObject(Object.class),
+                anyObject())).andAnswer(() -> Collections.emptyList())
+                        .anyTimes();
 
         replay(provider);
 
