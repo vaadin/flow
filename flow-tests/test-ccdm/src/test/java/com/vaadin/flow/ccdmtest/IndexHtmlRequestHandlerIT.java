@@ -596,4 +596,13 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         Assert.assertEquals("Should have content sent from server using push mechanism",
                 "Message pushed from server", content);
     }
+
+    @Test
+    public void should_installServiceWorker() {
+        openTestUrl("/");
+        getCommandExecutor().waitForVaadin();
+        waitUntil(drv -> (boolean) getCommandExecutor()
+                        .executeScript("return !!navigator.serviceWorker && navigator.serviceWorker.controller !== null; "),
+                30);
+    }
 }
