@@ -610,14 +610,13 @@ public class FrontendUtils {
                 .replaceFirst("^/", "");
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        URL statsUrl = resourceProvider.getResource(service, stats);
+        URL statsUrl = resourceProvider.getApplicationResource(service, stats);
         InputStream stream = null;
         try {
-            stream = statsUrl.openStream();
-        } catch (Exception IOException) {
-            getLogger().warn(
-                    "Couldn't read content of stats file {} via OSGi bundle",
-                    stats);
+            stream = statsUrl == null ? null : statsUrl.openStream();
+        } catch (IOException exception) {
+            getLogger().warn("Couldn't read content of stats file {}", stats,
+                    exception);
             stream = null;
         }
         if (stream == null) {
