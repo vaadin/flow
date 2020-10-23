@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
@@ -556,6 +558,69 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
+    public void createInitParameters_readTokenFileFromContext()
+            throws VaadinConfigurationException, IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        DeploymentConfigurationFactory.createInitParameters(
+                DeploymentConfigurationFactoryTest.class, config);
+
+        Mockito.verify(resourceProvider).getApplicationResources(
+                DeploymentConfigurationFactoryTest.class,
+                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+        Mockito.verify(resourceProvider).getApplicationResources(context,
+                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+    }
+
+    @Test
+    public void createInitParameters_checkWebpackGeneratedFromContext()
+            throws VaadinConfigurationException, IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
+
+        File tmpFile = temporaryFolder.newFile();
+        Files.write(tmpFile.toPath(), Collections.singletonList("{}"));
+
+        URLStreamHandler handler = new URLStreamHandler() {
+
+            @Override
+            protected URLConnection openConnection(URL u) throws IOException {
+                return tmpFile.toURI().toURL().openConnection();
+            }
+        };
+        URL url = new URL("file", "", -1, "foo.jar!/" + path, handler);
+
+        Mockito.when(resourceProvider.getApplicationResources(
+                DeploymentConfigurationFactoryTest.class, path))
+                .thenReturn(Collections.singletonList(url));
+
+        Mockito.when(resourceProvider.getApplicationResource(
+                DeploymentConfigurationFactoryTest.class,
+                FrontendUtils.WEBPACK_GENERATED))
+                .thenReturn(tmpFile.toURI().toURL());
+
+        DeploymentConfigurationFactory.createInitParameters(
+                DeploymentConfigurationFactoryTest.class, config);
+
+        Mockito.verify(resourceProvider).getApplicationResource(
+                DeploymentConfigurationFactoryTest.class,
+                FrontendUtils.WEBPACK_GENERATED);
+
+        Mockito.verify(resourceProvider).getApplicationResource(context,
+                FrontendUtils.WEBPACK_GENERATED);
+
+    }
+
+    @Test
     public void createInitParameters_initParamtersAreSet_tokenDevModePropertiesAreNotSet()
             throws Exception {
         FileUtils.writeLines(tokenFile,
@@ -596,6 +661,25 @@ public class DeploymentConfigurationFactoryTest {
             Map<String, String> servletContextParameters) throws Exception {
         return new VaadinServletConfig(createServletConfigMock(
                 servletConfigParameters, servletContextParameters));
+    }
+
+    private ResourceProvider mockResourceProvider(VaadinConfig config,
+            VaadinContext context) throws VaadinConfigurationException {
+        Mockito.when(config.getVaadinContext()).thenReturn(context);
+
+        Mockito.when(context.getContextParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(config.getConfigParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
+        return resourceProvider;
     }
 
     private ServletConfig createServletConfigMock(

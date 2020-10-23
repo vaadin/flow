@@ -147,6 +147,10 @@ public class LookupInitializer
         @Override
         public List<URL> getApplicationResources(Object context, String path)
                 throws IOException {
+            if (context instanceof VaadinService) {
+                return Collections.list(((VaadinService) context)
+                        .getClassLoader().getResources(path));
+            }
             return Collections.list(
                     context.getClass().getClassLoader().getResources(path));
         }
