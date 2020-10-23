@@ -302,7 +302,7 @@ public class FrontendUtilsTest {
                     tmpFile)) {
                 IOUtils.write(content, outputStream, StandardCharsets.UTF_8);
             }
-            Mockito.when(provider.getResource(service,
+            Mockito.when(provider.getApplicationResource(service,
                     VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
                     .thenReturn(tmpFile.toURI().toURL());
         }
