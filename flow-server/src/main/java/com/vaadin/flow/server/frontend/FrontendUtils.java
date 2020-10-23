@@ -495,7 +495,7 @@ public class FrontendUtils {
         URL statsUrl = resourceProvider.getApplicationResource(service, stats);
         InputStream stream = null;
         try {
-            stream = statsUrl.openStream();
+            stream = statsUrl == null ? null : statsUrl.openStream();
         } catch (IOException exception) {
             getLogger().warn("Couldn't read content of stats file {}", stats,
                     exception);
