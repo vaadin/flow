@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.osgi;
 
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+
+import java.net.URL;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -119,13 +123,20 @@ public class Activator {
                 service.unregister("/view-es6-url/*");
             }
 
-            @SuppressWarnings({ "unchecked", "rawtypes" })
+            @SuppressWarnings({ "rawtypes", "unchecked" })
             @Override
             public HttpService addingService(
                     ServiceReference<HttpService> reference) {
                 // HTTP service is available, register our servlet...
                 HttpService httpService = this.context.getService(reference);
                 Dictionary dictionary = new Hashtable<>();
+                URL tokenFile = context.getBundle()
+                        .getResource(VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+                if (tokenFile == null) {
+                    dictionary.put(
+                            Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                            Boolean.TRUE.toString());
+                }
                 try {
                     httpService.registerServlet("/view/*",
                             new FixedViewServlet(), dictionary, null);

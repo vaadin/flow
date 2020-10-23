@@ -344,7 +344,7 @@ public final class DeploymentConfigurationFactory implements Serializable {
         List<URL> classResources = resourceProvider
                 .getApplicationResources(contextClass, tokenResource);
         List<URL> contextResources = resourceProvider
-                .getApplicationResources(contextClass, tokenResource);
+                .getApplicationResources(context, tokenResource);
 
         List<URL> resources;
         if (classResources.isEmpty()) {
@@ -392,12 +392,14 @@ public final class DeploymentConfigurationFactory implements Serializable {
 
         assert !resources
                 .isEmpty() : "Possible jar resource requires resources to be available.";
-        URL webpackGenerated = resourceProvider.getApplicationResource(
-                contextClass, FrontendUtils.WEBPACK_GENERATED);
+
+        URL webpackGenerated = resourceProvider.getApplicationResource(context,
+                FrontendUtils.WEBPACK_GENERATED);
         if (webpackGenerated == null) {
-            webpackGenerated = resourceProvider.getApplicationResource(context,
-                    FrontendUtils.WEBPACK_GENERATED);
+            webpackGenerated = resourceProvider.getApplicationResource(
+                    contextClass, FrontendUtils.WEBPACK_GENERATED);
         }
+
         // If jar!/ exists 2 times for webpack.generated.json then we are
         // running from a jar
         if (webpackGenerated != null
