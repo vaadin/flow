@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -41,6 +42,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinContext;
@@ -246,6 +248,53 @@ public class FrontendUtilsTest {
         Assert.assertEquals("\n" + "./node/node \\ \n"
                 + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
                 wrappedCommand);
+    }
+
+    @Test
+    public void getStatsContent_getStatsFromClassPath_delegateToGetApplicationResource()
+            throws IOException {
+        VaadinService service = Mockito.mock(VaadinService.class);
+
+        ResourceProvider provider = mockResourceProvider(service);
+
+        FrontendUtils.getStatsContent(service);
+
+        Mockito.verify(provider).getApplicationResource(service, "foo");
+    }
+
+    @Test
+    public void getStatsAssetsByChunkName_getStatsFromClassPath_delegateToGetApplicationResource()
+            throws IOException {
+        VaadinService service = Mockito.mock(VaadinService.class);
+
+        ResourceProvider provider = mockResourceProvider(service);
+
+        FrontendUtils.getStatsAssetsByChunkName(service);
+
+        Mockito.verify(provider).getApplicationResource(service, "foo");
+    }
+
+    private ResourceProvider mockResourceProvider(VaadinService service) {
+        DeploymentConfiguration config = Mockito
+                .mock(DeploymentConfiguration.class);
+
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
+        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(provider);
+
+        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        Mockito.when(service.getContext()).thenReturn(context);
+
+        Mockito.when(config.isProductionMode()).thenReturn(true);
+
+        Mockito.when(config.getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
+                .thenReturn("foo");
+        return provider;
     }
 
     private VaadinService setupStatsAssetMocks(String statsFile)
