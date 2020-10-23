@@ -377,6 +377,13 @@ public final class OSGiAccess {
                     | SecurityException | IllegalAccessException
                     | IllegalArgumentException
                     | InvocationTargetException exception) {
+                if (LoggerFactory.getLogger(OSGiAccess.class)
+                        .isTraceEnabled()) {
+                    LoggerFactory.getLogger(OSGiAccess.class)
+                            .trace("Exception in OSGi container check "
+                                    + "(which most likely means that this is not OSGi container)",
+                                    exception);
+                }
                 return false;
             }
         }

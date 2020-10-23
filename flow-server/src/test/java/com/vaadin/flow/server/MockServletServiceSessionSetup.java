@@ -247,7 +247,7 @@ public class MockServletServiceSessionSetup {
                 .thenAnswer(invocation -> new ByteArrayInputStream(
                         "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
 
-        Mockito.when(resourceProvider.getResource(
+        Mockito.when(resourceProvider.getApplicationResource(
                 Mockito.any(VaadinService.class), Mockito.anyString()))
                 .thenAnswer(invocation -> {
                     return MockServletServiceSessionSetup.class.getResource(

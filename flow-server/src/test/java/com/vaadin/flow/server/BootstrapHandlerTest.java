@@ -1752,7 +1752,7 @@ public class BootstrapHandlerTest {
         Lookup lookup = testUI.getSession().getService().getContext()
                 .getAttribute(Lookup.class);
         ResourceProvider provider = lookup.lookup(ResourceProvider.class);
-        Mockito.when(provider.getResource(Mockito.any(VaadinService.class),
+        Mockito.when(provider.getApplicationResource(Mockito.any(VaadinService.class),
                 Mockito.anyString())).thenReturn(tmpFile.toURI().toURL());
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
