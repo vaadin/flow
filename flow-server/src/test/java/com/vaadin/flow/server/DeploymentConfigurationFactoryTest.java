@@ -621,8 +621,8 @@ public class DeploymentConfigurationFactoryTest {
                         .andAnswer(() -> Collections.emptyList()).anyTimes();
 
         expect(provider.getApplicationResources(anyObject(Object.class),
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
-                        .andAnswer(() -> Collections.emptyList()).anyTimes();
+                anyObject())).andAnswer(() -> Collections.emptyList())
+                        .anyTimes();
 
         replay(provider);
 
