@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -196,10 +197,15 @@ public class PwaTestIT extends ChromeBrowserTest {
                     executeScript("return navigator.onLine"));
 
             // Reload the page in offline mode
-            executeScript("window.location.reload()");
+            executeScript("window.location.reload();");
+            waitUntil(webDriver -> ((JavascriptExecutor) driver)
+                    .executeScript("return document.readyState")
+                    .equals("complete"));
 
             // Assert page title
+            waitForElementPresent(By.tagName("head"));
             WebElement head = findElement(By.tagName("head"));
+            waitForElementPresent(By.tagName("title"));
             WebElement title = head.findElement(By.tagName("title"));
             Assert.assertEquals(ParentLayout.PWA_NAME,
                     executeScript("return arguments[0].textContent", title));
