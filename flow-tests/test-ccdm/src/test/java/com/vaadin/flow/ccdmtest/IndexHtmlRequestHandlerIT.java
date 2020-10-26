@@ -18,6 +18,7 @@ package com.vaadin.flow.ccdmtest;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -599,6 +600,7 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
     }
 
     @Test
+    @Ignore // until serviceworker installation works in test hub browser
     public void should_installServiceWorker() {
         openTestUrl("/");
         boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())
