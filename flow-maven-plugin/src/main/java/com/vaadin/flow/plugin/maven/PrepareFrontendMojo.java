@@ -46,7 +46,6 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.common.FlowPluginFrontendUtils.getClassFinder;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_GENERATED_TS_DIR_TOKEN;
@@ -62,9 +61,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURC
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
- * This goal checks that node and npm tools are installed, copies frontend
- * resources available inside `.jar` dependencies to `node_modules`, and creates
+ * This goal checks that node and npm tools are installed and creates
  * or updates `package.json` and `webpack.config.json` files.
+ * <p>
+ * Copies frontend resources available inside `.jar` dependencies to
+ * `node_modules` when building a jar package.
  *
  * @since 2.0
  */
@@ -119,8 +120,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .withNodeDownloadRoot(nodeDownloadRootURI)
                             .withHomeNodeExecRequired(requireHomeNodeExec);
             // If building a jar project copy jar artifact contents now as we
-            // might
-            // not be able to read files from jar path.
+            // might not be able to read files from jar path.
             if ("jar".equals(project.getPackaging())) {
                 Set<File> jarFiles = project.getArtifacts().stream()
                         .filter(artifact -> "jar".equals(artifact.getType()))
