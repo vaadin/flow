@@ -19,18 +19,19 @@
         <felix.home>felix-framework-${felix.version}</felix.home>
         <jetty.version>9.4.11.v20180605</jetty.version>
         <test.excludegroup>com.vaadin.flow.testcategory.IgnoreOSGi</test.excludegroup>
+        <vaadin.mode></vaadin.mode>
     </properties>
 
-
     <dependencies>
+    
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-root-context</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-            <classifier>ui</classifier>
+           <groupId>com.vaadin</groupId>
+           <artifactId>flow-test-root-context${vaadin.mode}</artifactId>
+           <version>${project.version}</version>
+           <type>jar</type>
+           <classifier>ui</classifier>
         </dependency>
-
+    
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-osgi</artifactId>
@@ -288,5 +289,15 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+           <id>npm</id>
+           
+           <properties>
+                <vaadin.mode>-npm</vaadin.mode>
+           </properties>
+           
+        </profile>
+     </profiles>
 
 </project>
