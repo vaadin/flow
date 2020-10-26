@@ -89,7 +89,7 @@ if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
 }
 
-const rootUrl = '.';
+const appShellUrl = '.';
 
 const swManifestTransform = (manifestEntries) => {
   const warnings = [];
@@ -103,7 +103,7 @@ const swManifestTransform = (manifestEntries) => {
   // of the index.html file
   const indexEntryIdx = manifest.findIndex(entry => entry.url === 'index.html');
   if (indexEntryIdx !== -1) {
-    manifest[indexEntryIdx].url = rootUrl;
+    manifest[indexEntryIdx].url = appShellUrl;
   }
 
   return { manifest, warnings };
