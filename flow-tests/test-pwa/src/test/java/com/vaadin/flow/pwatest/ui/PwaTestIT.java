@@ -75,6 +75,13 @@ public class PwaTestIT extends ChromeBrowserTest {
             chromeOptions.addArguments("--headless", "--disable-gpu");
         }
 
+        if (!getDeploymentHostname().equals("localhost")) {
+            // Enable service workers over http remote connection
+            chromeOptions.addArguments(String.format(
+                    "--unsafely-treat-insecure-origin-as-secure=%s",
+                    getRootURL()));
+        }
+
         if (Browser.CHROME == getRunLocallyBrowser()) {
             setDriver(new ChromeDriver(chromeOptions));
         } else {
@@ -170,6 +177,21 @@ public class PwaTestIT extends ChromeBrowserTest {
     @Test
     public void testPwaOfflinePath() throws IOException {
         open();
+
+        Assert.assertTrue("Should have navigator.serviceWorker",
+                (Boolean) executeScript("return !!navigator.serviceWorker;"));
+
+        // Wait until service worker is ready
+        Assert.assertTrue("Should have service worker registered",
+                (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                        "const done = arguments[arguments.length - 1];"
+                                + "const timeout = new Promise("
+                                + "  resolve => setTimeout(resolve, 100000)"
+                                + ");"
+                                + "Promise.race(["
+                                + "  navigator.serviceWorker.ready,"
+                                + "  timeout])"
+                                + ".then(result => done(!!result));"));
 
         // Confirm that app shell is loaded
         Assert.assertNotNull("Should have outlet when loaded online",
