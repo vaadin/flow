@@ -31,7 +31,6 @@ import org.osgi.service.http.HttpService;
 import org.osgi.service.http.NamespaceException;
 import org.osgi.util.tracker.ServiceTracker;
 
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServletConfiguration;
 import com.vaadin.flow.uitest.servlet.Es6UrlViewTestServlet;
 import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
@@ -119,7 +118,7 @@ public class Activator {
                 service.unregister("/view-es6-url/*");
             }
 
-            @SuppressWarnings({ "unchecked", "rawtypes" })
+            @SuppressWarnings("rawtypes")
             @Override
             public HttpService addingService(
                     ServiceReference<HttpService> reference) {
