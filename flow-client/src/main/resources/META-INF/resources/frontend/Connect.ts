@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import {DBSchema, IDBPDatabase, openDB} from 'idb';
+import { DBSchema, IDBPDatabase, openDB } from 'idb';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -165,7 +165,11 @@ export class ValidationErrorData {
 /**
  * The callback for deferred calls
  */
-export type OnDeferredCallCallback = (call: EndpointRequest, resultPromise: Promise<any>) => Promise<void>;
+export type OnDeferredCallCallback = (call: EndpointRequest, invoke: (call: EndpointRequest)=>Promise<any>) => Promise<boolean>;
+
+export interface DeferredCallHandler {
+  handleDeferredCall: OnDeferredCallCallback;
+}
 
 /**
  * The `ConnectClient` constructor options.
@@ -288,6 +292,8 @@ export class ConnectClient {
    * The callback for deferred calls
    */
   onDeferredCall?: OnDeferredCallCallback;
+
+  deferredCallHandler?: DeferredCallHandler;
 
   /**
    * @param options Constructor options.
@@ -504,13 +510,18 @@ export class ConnectClient {
     for (const request of cachedRequests) {
       if (request.submitting) {
         try {
-          const resultPromise = this.requestCall(true, request.endpoint, request.method, request.params);
-          if (this.onDeferredCall) {
-            await this.onDeferredCall(request, resultPromise);
+          let shouldDelete = true;
+          if (this.deferredCallHandler) {
+            shouldDelete = await this.deferredCallHandler.handleDeferredCall(request, ({endpoint, method, params}) => this.requestCall(true, endpoint, method, params));
           } else {
-            await resultPromise;
+            await this.requestCall(true, request.endpoint, request.method, request.params);
           }
-          await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
+          if(shouldDelete){
+            await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
+          }else{
+            request.submitting = false;
+            await db.put(REQUEST_QUEUE_STORE_NAME, request);
+          }
         } catch (error) {
           request.submitting = false;
           await db.put(REQUEST_QUEUE_STORE_NAME, request);
