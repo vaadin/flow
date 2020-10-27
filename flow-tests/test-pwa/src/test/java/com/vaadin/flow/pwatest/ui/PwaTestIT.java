@@ -19,69 +19,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.mobile.NetworkConnection;
-import org.openqa.selenium.remote.Command;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.Response;
 
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchDriverProxy;
-import com.vaadin.testbench.parallel.Browser;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
 
-public class PwaTestIT extends ChromeBrowserTest {
-
-    @Before
-    @Override
-    public void setup() throws Exception {
-        // Unfortunately using offline emulation ("setNetworkConnection"
-        // session command) in Chrome requires the "networkConnectionEnabled"
-        // capability, which is:
-        //   - Not W3C WebDriver API compliant, so we disable W3C protocol
-        //   - device mode: mobileEmulation option with some device settings
-
-        final Map<String, Object> mobileEmulationParams = new HashMap<>();
-        mobileEmulationParams.put("deviceName", "Laptop with touch");
-
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.setExperimentalOption("w3c", false);
-        chromeOptions.setExperimentalOption("mobileEmulation",
-                mobileEmulationParams);
-        chromeOptions.setCapability("networkConnectionEnabled", true);
-
-        if (!getDeploymentHostname().equals("localhost")) {
-            // Enable service workers over http remote connection
-            chromeOptions.addArguments(String.format(
-                    "--unsafely-treat-insecure-origin-as-secure=%s",
-                    getRootURL()));
-        }
-
-        if (Browser.CHROME == getRunLocallyBrowser()) {
-            setDriver(new ChromeDriver(chromeOptions));
-        } else {
-            setDriver(new RemoteWebDriver(new URL(getHubURL()), chromeOptions));
-        }
-    }
+public class PwaTestIT extends ChromeDeviceTest {
 
     @Test
     public void testPwaResources() throws IOException, JSONException {
@@ -193,20 +150,6 @@ public class PwaTestIT extends ChromeBrowserTest {
 
         // Set offline network conditions in ChromeDriver
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
-//        final Map<String, Object> conditions = new HashMap<>();
-//        conditions.put("offline", true);
-//        conditions.put("latency", 0);
-//        conditions.put("upload_throughput", 0);
-//        conditions.put("download_throughput", 0);
-//        final Map<String, Object> parameters = new HashMap<>();
-//        parameters.put("network_conditions", conditions);
-//        if (driver.getCommandExecutor()
-//                .execute(new Command(driver.getSessionId(),
-//                        "setNetworkConditions", parameters))
-//                .getStatus() != 0) {
-//            throw new RuntimeException(
-//                    "Unable to set offline network conditions");
-//        }
 
         try {
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -291,22 +234,5 @@ public class PwaTestIT extends ChromeBrowserTest {
     private static JSONObject readJsonFromUrl(String url)
             throws IOException, JSONException {
         return new JSONObject(readStringFromUrl(url));
-    }
-
-    private void setConnectionType(
-            NetworkConnection.ConnectionType connectionType)
-            throws IOException {
-        RemoteWebDriver driver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
-                .getWrappedDriver();
-        final Map<String, Integer> parameters = new HashMap<>();
-        parameters.put("type", connectionType.hashCode());
-        final Map<String, Object> connectionParams = new HashMap<>();
-        connectionParams.put("parameters", parameters);
-        Response response = driver.getCommandExecutor()
-                .execute(new Command(driver.getSessionId(),
-                        "setNetworkConnection", connectionParams));
-        if (response.getStatus() != 0) {
-            throw new RuntimeException("Unable to set connection type");
-        }
     }
 }
