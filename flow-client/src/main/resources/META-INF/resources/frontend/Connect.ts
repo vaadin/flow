@@ -165,7 +165,7 @@ export class ValidationErrorData {
 /**
  * The callback for deferred calls
  */
-export type OnDeferredCallCallback = (call: EndpointRequest, invoke: (call: EndpointRequest)=>Promise<any>) => Promise<boolean>;
+export type OnDeferredCallCallback = (call: EndpointRequest, command: DeferredCallCommand) => Promise<void>;
 
 export interface DeferredCallHandler {
   handleDeferredCall: OnDeferredCallCallback;
@@ -505,6 +505,7 @@ export class ConnectClient {
     return shouldSubmit;
   }
 
+  
   private async submitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
     const cachedRequests = await db.getAll(REQUEST_QUEUE_STORE_NAME);
     for (const request of cachedRequests) {
@@ -512,7 +513,9 @@ export class ConnectClient {
         try {
           let shouldDelete = true;
           if (this.deferredCallHandler) {
-            shouldDelete = await this.deferredCallHandler.handleDeferredCall(request, ({endpoint, method, params}) => this.requestCall(true, endpoint, method, params));
+            const command = new DeferredCallCommand(({endpoint, method, params}) => this.requestCall(true, endpoint, method, params));
+            await this.deferredCallHandler.handleDeferredCall(request, command);
+            shouldDelete = !command.shouldKeepInTheQueue();
           } else {
             await this.requestCall(true, request.endpoint, request.method, request.params);
           }
@@ -539,6 +542,22 @@ export class ConnectClient {
   }
 }
 
+export class DeferredCallCommand {
+  private _keepInTheQueue = false;
+  private _submitFunction: (call: EndpointRequest)=>Promise<any>;
+  constructor(submitFunction: (call: EndpointRequest)=>Promise<any>){
+    this._submitFunction = submitFunction;
+  }
+  submit(call: EndpointRequest){
+    this._submitFunction(call);
+  }
+  keepInTheQueue(){
+    this._keepInTheQueue = true;
+  }
+  shouldKeepInTheQueue(){
+    return this._keepInTheQueue;
+  }
+}
 export interface EndpointRequest {
   id?: number;
   endpoint: string;
