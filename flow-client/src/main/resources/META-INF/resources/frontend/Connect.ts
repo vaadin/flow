@@ -339,12 +339,18 @@ export class ConnectClient {
     params?: any,
   ): Promise<DeferrableResult<any>> {
     if (this.checkOnline()) {
-      const result = await this.call(endpoint, method, params);
-      return { isDeferred: false, result };
+      try {
+        const result = await this.call(endpoint, method, params);
+        return { isDeferred: false, result };
+      } catch (error) {
+        if (error.message === 'Failed to fetch') {
+          return this.cacheEndpointRequest({ endpoint, method, params });
+        } else {
+          throw error;
+        }
+      }
     } else {
-      let endpointRequest:EndpointRequest = { endpoint, method, params };
-      endpointRequest = await this.cacheEndpointRequest(endpointRequest);
-      return { isDeferred: true, endpointRequest };
+      return this.cacheEndpointRequest({ endpoint, method, params });
     }
   }
 
@@ -460,12 +466,12 @@ export class ConnectClient {
     return navigator.onLine;
   }
 
-  private async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<EndpointRequest>{
+  private async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<DeferrableResult<any>>{
     const db = await this.openOrCreateDB();
     const id = await db.add(REQUEST_QUEUE_STORE_NAME, endpointRequest);
     db.close();
     endpointRequest.id = id;
-    return endpointRequest;
+    return { isDeferred: true, endpointRequest };
   }
 
   private async openOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
