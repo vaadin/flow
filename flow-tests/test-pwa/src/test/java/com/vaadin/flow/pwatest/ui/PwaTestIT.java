@@ -69,12 +69,6 @@ public class PwaTestIT extends ChromeBrowserTest {
                 mobileEmulationParams);
         chromeOptions.setCapability("networkConnectionEnabled", true);
 
-        // Also use headless mode, unless Java is in debug mode
-        if (!ManagementFactory.getRuntimeMXBean().getInputArguments()
-                    .toString().contains("jdwp")) {
-            chromeOptions.addArguments("--headless", "--disable-gpu");
-        }
-
         if (!getDeploymentHostname().equals("localhost")) {
             // Enable service workers over http remote connection
             chromeOptions.addArguments(String.format(
