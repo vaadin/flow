@@ -165,7 +165,7 @@ export class ValidationErrorData {
 /**
  * The callback for deferred calls
  */
-export type OnDeferredCallCallback = (call: EndpointRequest, command: DeferredCallCommand) => Promise<void>;
+export type OnDeferredCallCallback = (deferrableCall: DeferredCall) => Promise<void>;
 
 export interface DeferredCallHandler {
   handleDeferredCall: OnDeferredCallCallback;
@@ -513,9 +513,9 @@ export class ConnectClient {
         try {
           let shouldDelete = true;
           if (this.deferredCallHandler) {
-            const command = new DeferredCallCommand(({endpoint, method, params}) => this.requestCall(true, endpoint, method, params));
-            await this.deferredCallHandler.handleDeferredCall(request, command);
-            shouldDelete = !command.shouldKeepInTheQueue();
+            const deferredCall = new DeferredCall(request, ({endpoint, method, params}) => this.requestCall.bind(this)(true, endpoint, method, params));
+            await this.deferredCallHandler.handleDeferredCall(deferredCall);
+            shouldDelete = !deferredCall._shouldKeepInTheQueue();
           } else {
             await this.requestCall(true, request.endpoint, request.method, request.params);
           }
@@ -542,19 +542,30 @@ export class ConnectClient {
   }
 }
 
-export class DeferredCallCommand {
+export class DeferredCall implements EndpointRequest{
+  id?: number;
+  endpoint: string;
+  method: string;
+  params?: any;
+  submitting?: boolean;
   private _keepInTheQueue = false;
   private _submitFunction: (call: EndpointRequest)=>Promise<any>;
-  constructor(submitFunction: (call: EndpointRequest)=>Promise<any>){
+  constructor(endpointCall: EndpointRequest, submitFunction: (call: EndpointRequest)=>Promise<any>){
+    this.id = endpointCall.id;
+    this.endpoint = endpointCall.endpoint;
+    this.method = endpointCall.method;
+    this.params = endpointCall.params;
     this._submitFunction = submitFunction;
   }
-  submit(call: EndpointRequest){
-    this._submitFunction(call);
+  
+  async submit(): Promise<any>{
+    return this._submitFunction(this);
   }
+
   keepInTheQueue(){
     this._keepInTheQueue = true;
   }
-  shouldKeepInTheQueue(){
+  _shouldKeepInTheQueue(){
     return this._keepInTheQueue;
   }
 }
