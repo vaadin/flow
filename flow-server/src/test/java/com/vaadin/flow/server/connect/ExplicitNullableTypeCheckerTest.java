@@ -369,7 +369,7 @@ public class ExplicitNullableTypeCheckerTest {
         error = explicitNullableTypeChecker.checkValueForAnnotatedElement(
                 1l, getClass().getMethod("methodWithIdAnnotation"));
 
-        Assert.assertNull("Method with @Id annotation should allow null value",
+        Assert.assertNull("Method with @Id annotation should allow non-null value",
                 error);
     }
 
@@ -446,9 +446,8 @@ public class ExplicitNullableTypeCheckerTest {
      * Method for testing
      */
     @Id
-    @Nullable
-    public Long methodWithIdAnnotation(){
-        return null;
+    public Long methodWithIdAnnotation() {
+        return 1L;
     }
 
     /**
