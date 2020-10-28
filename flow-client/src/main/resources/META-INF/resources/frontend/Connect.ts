@@ -343,10 +343,12 @@ export class ConnectClient {
         const result = await this.call(endpoint, method, params);
         return { isDeferred: false, result };
       } catch (error) {
-        if (error.message === 'Failed to fetch') {
-          return this.cacheEndpointRequest({ endpoint, method, params });
-        } else {
+        if ((error instanceof EndpointResponseError) || (error instanceof EndpointError)) {
+          // Error thrown in the client, carry to the user
           throw error;
+        } else {
+          // Network error
+          return this.cacheEndpointRequest({ endpoint, method, params });
         }
       }
     } else {
