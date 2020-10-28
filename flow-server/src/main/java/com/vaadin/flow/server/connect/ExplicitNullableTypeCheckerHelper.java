@@ -240,13 +240,17 @@ class ExplicitNullableTypeCheckerHelper {
             return !Modifier.isStatic(field.getModifiers())
                     && !Modifier.isTransient(field.getModifiers())
                     && !field.isAnnotationPresent(JsonIgnore.class)
-                    && !field.isAnnotationPresent(Nullable.class)
-                    && !ReflectTools.hasAnnotationWithSimpleName(field, "Id");
+                    && !isNullable(field);
         } catch (NoSuchFieldException e) {
             getLogger().error("Unexpected missing declared field in Java Bean",
                     e);
             return false;
         }
+    }
+
+    private boolean isNullable(Field field){
+        return field.isAnnotationPresent(Nullable.class)
+                    || ReflectTools.hasAnnotationWithSimpleName(field, "Id");
     }
 
 }
