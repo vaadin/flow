@@ -23,11 +23,16 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -38,7 +43,20 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
+@NotThreadSafe
 public class PwaTestIT extends ChromeDeviceTest {
+
+    static private Lock lock = new ReentrantLock();
+
+    @Before
+    public void start() {
+        lock.lock();
+    }
+
+    @After
+    public void done() {
+        lock.unlock();
+    }
 
     @Test
     public void testPwaResources() throws IOException, JSONException {
