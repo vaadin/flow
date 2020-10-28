@@ -275,4 +275,18 @@ public class PwaConfiguration implements Serializable {
     public boolean isEnabled() {
         return enabled;
     }
+
+    /**
+     * Is static offline HTML used for offline mode.
+     *
+     * Disabled by default, meaning that application shell (`index.html`)
+     * and client-side views are served offline.
+     *
+     * Set {@link PWA#offlinePath()} value in PWA annotation to enable.
+     *
+     * @return true when static offline HTML is used
+     */
+    public boolean isOfflinePathEnabled() {
+        return !offlinePath.isEmpty();
+    }
 }
