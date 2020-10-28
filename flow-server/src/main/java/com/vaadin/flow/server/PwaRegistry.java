@@ -234,8 +234,6 @@ public class PwaRegistry implements Serializable {
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
                 .collect(Collectors.toList());
 
-        // Add offline page to precache
-        filesToCache.add(offlinePageCache());
         // Add manifest to precache
         filesToCache.add(manifestCache());
 
@@ -386,17 +384,6 @@ public class PwaRegistry implements Serializable {
      */
     public String getRuntimeServiceWorkerJs() {
         return runtimeServiceWorkerJs;
-    }
-
-    /**
-     * Google Workbox cache resource String of offline page. example:
-     * {@code {url: 'offline.html', revision: '1234567'}}
-     *
-     * @return Google Workbox cache resource String of offline page
-     */
-    public String offlinePageCache() {
-        return String.format(WORKBOX_CACHE_FORMAT,
-                pwaConfiguration.getOfflinePath(), offlineHash);
     }
 
     private String manifestCache() {

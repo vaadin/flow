@@ -80,16 +80,19 @@ public class PwaHandler implements RequestHandler {
                         return true;
                     });
         }
-        // Offline page handling
-        requestHandlerMap.put(
-                pwaRegistry.getPwaConfiguration().relOfflinePath(),
-                (session, request, response) -> {
-                    response.setContentType("text/html");
-                    try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getOfflineHtml());
-                    }
-                    return true;
-                });
+
+        if (pwaRegistry.getPwaConfiguration().isOfflinePathEnabled()) {
+            // Offline page handling
+            requestHandlerMap.put(
+                    pwaRegistry.getPwaConfiguration().relOfflinePath(),
+                    (session, request, response) -> {
+                        response.setContentType("text/html");
+                        try (PrintWriter writer = response.getWriter()) {
+                            writer.write(pwaRegistry.getOfflineHtml());
+                        }
+                        return true;
+                    });
+        }
 
         // manifest.webmanifest handling
         requestHandlerMap.put(

@@ -30,13 +30,15 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
 
-public class PwaTestIT extends ChromeBrowserTest {
+public class PwaTestIT extends ChromeDeviceTest {
 
     @Test
     public void testPwaResources() throws IOException, JSONException {
@@ -123,6 +125,74 @@ public class PwaTestIT extends ChromeBrowserTest {
         }
     }
 
+    @Test
+    public void testPwaOfflinePath() throws IOException {
+        open();
+
+        Assert.assertTrue("Should have navigator.serviceWorker",
+                (Boolean) executeScript("return !!navigator.serviceWorker;"));
+
+        // Wait until service worker is ready
+        Assert.assertTrue("Should have service worker registered",
+                (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                        "const done = arguments[arguments.length - 1];"
+                                + "const timeout = new Promise("
+                                + "  resolve => setTimeout(resolve, 100000)"
+                                + ");"
+                                + "Promise.race(["
+                                + "  navigator.serviceWorker.ready,"
+                                + "  timeout])"
+                                + ".then(result => done(!!result));"));
+
+        // Confirm that app shell is loaded
+        Assert.assertNotNull("Should have outlet when loaded online",
+                findElement(By.id("outlet")));
+
+        // Set offline network conditions in ChromeDriver
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+
+        try {
+            Assert.assertEquals("navigator.onLine should be false", false,
+                    executeScript("return navigator.onLine"));
+
+            // Reload the page in offline mode
+            executeScript("window.location.reload();");
+            waitUntil(webDriver -> ((JavascriptExecutor) driver)
+                    .executeScript("return document.readyState")
+                    .equals("complete"));
+
+            // Assert page title
+            waitForElementPresent(By.tagName("head"));
+            WebElement head = findElement(By.tagName("head"));
+            waitForElementPresent(By.tagName("title"));
+            WebElement title = head.findElement(By.tagName("title"));
+            Assert.assertEquals(ParentLayout.PWA_NAME,
+                    executeScript("return arguments[0].textContent", title));
+            Assert.assertEquals(ParentLayout.PWA_NAME,
+                    executeScript("return document.title;"));
+
+            // Assert default offline.html page contents
+            WebElement body = findElement(By.tagName("body"));
+            Assert.assertTrue("Should not have outlet when loaded offline",
+                    body.findElements(By.id("outlet")).isEmpty());
+
+            WebElement offline = body.findElement(By.id("offline"));
+            Assert.assertEquals(ParentLayout.PWA_NAME,
+                    offline.findElement(By.tagName("h1")).getText());
+            WebElement message = offline.findElement(By.className("message"));
+            Assert.assertTrue("Should have “offline” in message",
+                    message.getText().toLowerCase().contains("offline"));
+        } finally {
+            // Reset network conditions back
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Override
+    protected String getTestPath() {
+        return "";
+    }
+
     private void checkIcons(List<WebElement> icons, int expected) {
         Assert.assertEquals(expected, icons.size());
         for (WebElement element : icons) {
@@ -165,5 +235,4 @@ public class PwaTestIT extends ChromeBrowserTest {
             throws IOException, JSONException {
         return new JSONObject(readStringFromUrl(url));
     }
-
 }
