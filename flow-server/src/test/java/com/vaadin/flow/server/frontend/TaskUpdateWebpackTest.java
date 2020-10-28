@@ -51,6 +51,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     class AppShell {
     }
 
+    @PWA(name = "foo", shortName = "bar", offlinePath = "off.html")
+    class AppShellWithOfflinePath {
+    }
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -228,6 +232,47 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         Assert.assertTrue("offlineResources should contain foo.css and bar" +
                 ".js", webpackGeneratedContents.contains("const " +
                 "offlineResources = [\"foo.css\",\"bar.js\"];"));
+    }
+
+    @Test
+    public void should_disableOfflinePath_when_defaultInPwa()
+            throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("offlinePathEnabled should be false by default",
+                webpackGeneratedContents
+                        .contains("const offlinePathEnabled = false;"));
+        Assert.assertTrue("offlinePath should be empty by default",
+                webpackGeneratedContents.contains("const offlinePath = '';"));
+    }
+
+    @Test
+    public void should_enableCustomOfflinePath_when_customisedInPwa()
+        throws IOException {
+        PwaConfiguration customOfflinePathPwaConfiguration =
+                new PwaConfiguration(AppShellWithOfflinePath.class.getAnnotation(
+                        PWA.class));
+        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
+                new File(baseDir, TARGET + "webapp"),
+                new File(baseDir, TARGET + "classes"),
+                WEBPACK_CONFIG,
+                WEBPACK_GENERATED,
+                SERVICE_WORKER_SRC,
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
+                customOfflinePathPwaConfiguration);
+
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+
+        Assert.assertTrue("offlinePathEnabled should be true",
+                webpackGeneratedContents
+                        .contains("const offlinePathEnabled = true;"));
+        Assert.assertTrue("offlinePath should be customizable",
+                webpackGeneratedContents
+                        .contains("const offlinePath = 'off.html';"));
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,
