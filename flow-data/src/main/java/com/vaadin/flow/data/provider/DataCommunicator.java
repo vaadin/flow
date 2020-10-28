@@ -872,14 +872,18 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
-     * Getter method for determining the item count of the data. Can be
-     * overridden by a subclass that uses a specific type of DataProvider and/or
-     * query.
+     * Getter method for determining the item count of the data.
+     * <p>
+     * This method should be used only with defined size, i.e. when
+     * {@link #isDefinedSize()} returns {@code code}.
+     * <p>
+     * Can be overridden by a subclass that uses a specific type of DataProvider
+     * and/or query.
      *
      * @return the size of data provider with current filter
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    protected int getDataProviderSize() {
+    public int getDataProviderSize() {
         assert definedSize : "This method should never be called when using undefined size";
         if (countCallback != null) {
             return countCallback.count(new Query(getFilter()));
