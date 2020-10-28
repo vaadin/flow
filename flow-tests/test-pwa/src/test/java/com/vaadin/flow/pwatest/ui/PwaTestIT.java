@@ -19,9 +19,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,7 +43,6 @@ public class PwaTestIT extends ChromeDeviceTest {
     @Test
     public void testPwaResources() throws IOException, JSONException {
         open();
-
         WebElement head = findElement(By.tagName("head"));
 
         // test mobile capable
@@ -114,14 +113,34 @@ public class PwaTestIT extends ChromeDeviceTest {
                 exists(serviceWorkerUrl));
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
-        // find precache resources from service worker
-        pattern = Pattern.compile("\\{ url: '([^']+)', revision: '[^']+' }");
+        // parse the precache resources (the app bundles) from service worker JS
+        pattern = Pattern.compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
         matcher = pattern.matcher(serviceWorkerJS);
-        // Test that all precache resources are available
+        ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
-            Assert.assertTrue(
-                    matcher.group(1) + " didn't respond with resource",
-                    exists(matcher.group(1)));
+            precacheUrls.add(matcher.group(2));
+        }
+        Assert.assertFalse("Expected at least one precache URL", precacheUrls.isEmpty());
+        checkResources(precacheUrls.toArray(new String[] {}));
+        checkResources("yes.png", "offline.html");
+    }
+
+    @Test
+    public void testPwaResourcesOffline() throws IOException, JSONException {
+        open();
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        try {
+            // Ensure we are offline
+            Assert.assertEquals("navigator.onLine should be false", false,
+                    executeScript("return navigator.onLine"));
+
+            // Check the that one icon, a file served from '/public' and
+            // offline.html can be loaded from cache. In principle we should
+            // check all files checked in testPwaResources, however, currently
+            // not all icons are precached.
+            checkResources("icons/icon-32x32.png", "yes.png", "offline.html");
+        } finally {
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
         }
     }
 
@@ -188,20 +207,20 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
-    private boolean exists(String URLName) {
-        URLName = URLName.startsWith("http") ? URLName
-                : getRootURL() + "/" + URLName;
-        try {
-            HttpURLConnection.setFollowRedirects(false);
-            HttpURLConnection con = (HttpURLConnection) new URL(URLName)
-                    .openConnection();
-            con.setInstanceFollowRedirects(false);
-            con.setRequestMethod("HEAD");
-            return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+    private void checkResources(String... resources) {
+        for (String url : resources) {
+            Assert.assertTrue(url + " didn't respond with resource",
+                    exists(url));
         }
+    }
+
+    private boolean exists(String url) {
+        final String script = "const resolve = arguments[0];" + "fetch('" + url
+                + "', {method: 'HEAD'})"
+                + ".then(response => resolve(response.status===200 && !response.redirected))"
+                + ".catch(err => resolve(false));";
+        return (boolean) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(script);
     }
 
     private static String readStringFromUrl(String url) throws IOException {
