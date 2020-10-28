@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vaadin.flow.internal.ReflectTools;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,11 +240,13 @@ class ExplicitNullableTypeCheckerHelper {
             return !Modifier.isStatic(field.getModifiers())
                     && !Modifier.isTransient(field.getModifiers())
                     && !field.isAnnotationPresent(JsonIgnore.class)
-                    && !field.isAnnotationPresent(Nullable.class);
+                    && !field.isAnnotationPresent(Nullable.class)
+                    && !ReflectTools.hasAnnotationWithSimpleName(field, "Id");
         } catch (NoSuchFieldException e) {
             getLogger().error("Unexpected missing declared field in Java Bean",
                     e);
             return false;
         }
     }
+
 }

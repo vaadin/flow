@@ -664,12 +664,16 @@ public class OpenApiObjectGenerator {
                 .replaceAll(methodDeclaration.resolve().getReturnType());
         Schema schema = parseResolvedTypeToSchema(resolvedType);
         schema.setDescription("");
-        if (methodDeclaration.isAnnotationPresent(Nullable.class)) {
+        if (isNullable(methodDeclaration)) {
             schema = schemaResolver.createNullableWrapper(schema);
         }
         usedTypes.putAll(collectUsedTypesFromSchema(schema));
         mediaItem.schema(schema);
         return mediaItem;
+    }
+
+    private boolean isNullable(MethodDeclaration methodDeclaration) {
+        return methodDeclaration.isAnnotationPresent(Nullable.class) || methodDeclaration.isAnnotationPresent("Id");
     }
 
     private RequestBody createRequestBody(MethodDeclaration methodDeclaration,
@@ -707,7 +711,8 @@ public class OpenApiObjectGenerator {
             }
             requestSchema.addProperties(name, paramSchema);
             if (GeneratorUtils.isNotTrue(paramSchema.getNullable())
-                    && !parameter.isAnnotationPresent(Nullable.class)) {
+                    && !parameter.isAnnotationPresent(Nullable.class)
+                    && !parameter.isAnnotationPresent("Id")) {
                 requestSchema.addRequiredItem(name);
             }
             paramSchema.setNullable(null);

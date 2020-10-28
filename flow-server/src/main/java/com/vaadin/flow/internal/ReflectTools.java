@@ -781,6 +781,23 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Checks whether the {@code element} has annotation whose simple name is
+     * {@code simpleName}.
+     * 
+     * @param element
+     *            annotated element (field, method, etc.)
+     * @param simpleName
+     *            annotation simple name
+     * @return {@code true} is {@code element} has annotation whose simple name is
+     *         {@code simpleName}, {@code false} otherwise
+     */
+    public static boolean hasAnnotationWithSimpleName(AnnotatedElement element, 
+            String simpleName) {
+        return Stream.of(element.getAnnotations())
+                .anyMatch(anno -> simpleName.equals(anno.annotationType().getSimpleName()));
+    }
+
+    /**
      * Gets the annotation method return value.
      * 
      * @param annotation
