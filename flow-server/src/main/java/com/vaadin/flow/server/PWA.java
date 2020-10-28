@@ -69,8 +69,8 @@ public @interface PWA {
      * Defaults to empty value, meaning that the application shell (`index
      * .html` file) is used offline.
      *
-     * If offline file is not found, falls back to using the application shell
-     * offline.
+     * If offline file is not found, the browser’s default “unreachable site”
+     * message is shown.
      *
      * @return path to the static offline html file
      */
