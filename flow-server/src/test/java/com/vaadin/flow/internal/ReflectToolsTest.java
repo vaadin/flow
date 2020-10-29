@@ -375,6 +375,18 @@ public class ReflectToolsTest {
     }
 
     @Test
+    public void hasAnnotationWithSimpleName_annotationPresents_returnsTrue() {
+        Assert.assertTrue(ReflectTools.hasAnnotationWithSimpleName(ClassWithAnnotation.class,
+                TestAnnotation.class.getSimpleName()));
+    }
+
+    @Test
+    public void hasAnnotationWithSimpleName_annotationIsAbsent_returnsFalse() {
+        Assert.assertFalse(ReflectTools.hasAnnotationWithSimpleName(
+                ClassWithoutAnnotation.class, TestAnnotation.class.getSimpleName()));
+    }
+
+    @Test
     public void getAnnotationMethodValue_annotaitonHasMethod_theValueIsReturned() {
         Assert.assertEquals("foo", ReflectTools.getAnnotationMethodValue(
                 ClassWithAnnotation.class.getAnnotation(TestAnnotation.class),
