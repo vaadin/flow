@@ -22,9 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -153,5 +155,22 @@ public class ChromeDeviceTest extends ViewOrUITest {
         if (response.getStatus() != 0) {
             throw new RuntimeException("Unable to set connection type");
         }
+    }
+
+    public void waitForServiceWorkerReady() {
+        Assert.assertTrue("Should have navigator.serviceWorker",
+                (Boolean) executeScript("return !!navigator.serviceWorker;"));
+
+        // Wait until service worker is ready
+        Assert.assertTrue("Should have service worker registered",
+                (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                        "const done = arguments[arguments.length - 1];"
+                                + "const timeout = new Promise("
+                                + "  resolve => setTimeout(resolve, 100000)"
+                                + ");"
+                                + "Promise.race(["
+                                + "  navigator.serviceWorker.ready,"
+                                + "  timeout])"
+                                + ".then(result => done(!!result));"));
     }
 }

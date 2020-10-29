@@ -32,22 +32,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     @Test
     public void testOfflineStart() throws IOException {
         getDriver().get(getRootURL() + "/");
-        waitForDevServer();
-
-        Assert.assertTrue("Should have navigator.serviceWorker",
-                (Boolean) executeScript("return !!navigator.serviceWorker;"));
-
-        // Wait until service worker is ready
-        Assert.assertTrue("Should have service worker registered",
-                (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                        "const done = arguments[arguments.length - 1];"
-                                + "const timeout = new Promise("
-                                + "  resolve => setTimeout(resolve, 100000)"
-                                + ");"
-                                + "Promise.race(["
-                                + "  navigator.serviceWorker.ready,"
-                                + "  timeout])"
-                                + ".then(result => done(!!result));"));
+        waitForServiceWorkerReady();
 
         // Confirm that app shell is loaded
         Assert.assertNotNull("Should have outlet when loaded online",
@@ -86,7 +71,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     @Test
     public void openTsView_goOffline_navigateToOtherTsView_navigationSuccessful() throws IOException {
         getDriver().get(getRootURL() + "/about");
-        waitForDevServer();
+        waitForServiceWorkerReady();
 
         MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/about"));
