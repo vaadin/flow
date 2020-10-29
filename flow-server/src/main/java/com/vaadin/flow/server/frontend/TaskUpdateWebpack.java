@@ -177,7 +177,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
         for (int i = 0; i < lines.size(); i++) {
             for (int j = 0; j < replacements.size(); j++) {
                 Pair<String, String> pair = replacements.get(j);
-                if (lines.get(i).startsWith(pair.getFirst())) {
+                if (lines.get(i).startsWith(pair.getFirst() + " ")) {
                     lines.set(i, String.format(declaration, pair.getFirst(),
                             pair.getSecond()));
                 }
@@ -210,7 +210,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 flowResourcesFolder
                                         .resolve("VaadinDevmodeGizmo.js")))),
                 new Pair<>("const offlineResources",
-                        getOfflineResourcesJsArray()));
+                        getOfflineResourcesJsArray()),
+                new Pair<>("const offlinePathEnabled",
+                        Boolean.toString(
+                                pwaConfiguration.isOfflinePathEnabled())),
+                new Pair<>("const offlinePath", getOfflinePath()));
     }
 
     private String getIndexHtmlPath() {
@@ -255,6 +259,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private String getOfflineResourcesJsArray() {
         return pwaConfiguration.getOfflineResources().stream().map(Json::create)
                 .collect(JsonUtils.asArray()).toJson();
+    }
+
+    private String getOfflinePath() {
+        return "'" + getEscapedRelativeWebpackPath(
+                Paths.get(pwaConfiguration.getOfflinePath())) + "'";
     }
 
     private String formatPathResolve(String path) {

@@ -18,9 +18,11 @@ package com.vaadin.flow.ccdmtest;
 import java.util.Optional;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.JavascriptExecutor;
 
 public class IndexHtmlRequestHandlerIT extends CCDMTest {
 
@@ -595,5 +597,15 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         String content = findElement(By.id("pushedContent")).getText();
         Assert.assertEquals("Should have content sent from server using push mechanism",
                 "Message pushed from server", content);
+    }
+
+    @Test
+    @Ignore // until serviceworker installation works in test hub browser
+    public void should_installServiceWorker() {
+        openTestUrl("/");
+        boolean serviceWorkerActive = (boolean) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("const resolve = arguments[arguments.length - 1];"
+                        + "navigator.serviceWorker.ready.then( function(reg) { resolve(!!reg.active); });");
+        Assert.assertTrue("service worker not installed", serviceWorkerActive);
     }
 }
