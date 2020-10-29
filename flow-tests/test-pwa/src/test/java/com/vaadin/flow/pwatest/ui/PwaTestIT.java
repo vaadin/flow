@@ -20,19 +20,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -43,20 +39,7 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
-@NotThreadSafe
 public class PwaTestIT extends ChromeDeviceTest {
-
-    static private Lock lock = new ReentrantLock();
-
-    @Before
-    public void start() {
-        lock.lock();
-    }
-
-    @After
-    public void done() {
-        lock.unlock();
-    }
 
     @Test
     public void testPwaResources() throws IOException, JSONException {
@@ -233,12 +216,19 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private boolean exists(String url) {
-        final String script = "const resolve = arguments[0];" + "fetch('" + url
-                + "', {method: 'HEAD'})"
-                + ".then(response => resolve(response.status===200 && !response.redirected))"
+        // If the mimetype can be guessed from the file name, check consistency
+        // with the actual served file
+        String expectedMimeType = URLConnection
+                .guessContentTypeFromName(url);
+        String script = "const mimeType = arguments[0];"
+                + "const resolve = arguments[1];"
+                + "fetch('" + url + "', {method: 'HEAD'})"
+                + ".then(response => resolve(response.status===200"
+                + "      && !response.redirected"
+                + "      && (mimeType===null || response.headers.get('Content-Type')===mimeType)))"
                 + ".catch(err => resolve(false));";
         return (boolean) ((JavascriptExecutor) getDriver())
-                .executeAsyncScript(script);
+                .executeAsyncScript(script, expectedMimeType);
     }
 
     private static String readStringFromUrl(String url) throws IOException {
