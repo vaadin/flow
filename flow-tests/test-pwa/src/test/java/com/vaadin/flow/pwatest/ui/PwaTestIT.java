@@ -127,8 +127,9 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void testPwaResourcesOffline() throws IOException, JSONException {
+    public void testPwaResourcesOffline() throws IOException {
         open();
+        waitForServiceWorkerReady();
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
             // Ensure we are offline
