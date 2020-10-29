@@ -163,7 +163,6 @@ public class ChromeDeviceTest extends ViewOrUITest {
                 (Boolean) executeScript("return !!navigator.serviceWorker;"));
 
         // Wait until service worker is ready
-        getDriver().manage().timeouts().setScriptTimeout(15, TimeUnit.SECONDS);
         Assert.assertTrue("Should have service worker registered",
                 (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
                         "const done = arguments[arguments.length - 1];"
