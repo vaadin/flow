@@ -237,7 +237,7 @@ public class PwaRegistry implements Serializable {
 
         // When offlinePath is in use, it is also an offline resource to
         // precache
-        if (pwaConfiguration.isEnabled()) {
+        if (pwaConfiguration.isOfflinePathEnabled()) {
             filesToCache.add(offlinePageCache());
         }
 
