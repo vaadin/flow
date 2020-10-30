@@ -56,6 +56,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -553,6 +555,24 @@ public class DevModeHandlerTest {
         DevModeHandler handler = DevModeHandler.start(port, configuration,
                 npmFolder, CompletableFuture.completedFuture(null));
         handler.join();
+    }
+
+    @Test
+    public void devModeNotReady_handleRequest_returnsHtml() throws Exception {
+        DevModeHandler handler = DevModeHandler.start(configuration, npmFolder,
+                CompletableFuture.completedFuture(null));
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+        handler.handleRequest(Mockito.mock(VaadinSession.class),
+                Mockito.mock(VaadinRequest.class), response);
+        String devModeNotReadyContents = stream.toString("UTF-8");
+        Document document = Jsoup.parse(devModeNotReadyContents);
+        Assert.assertTrue("expected a head child",
+                document.head().children().size() > 0);
+        Assert.assertTrue("expected a body child",
+                document.body().children().size() > 0);
+        Mockito.verify(response).setContentType("text/html;charset=utf-8");
     }
 
     private VaadinServlet prepareServlet(int port)
