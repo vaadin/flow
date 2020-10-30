@@ -425,13 +425,15 @@ describe('ConnectClient', () => {
       client = new ConnectClient();
     });
 
+    afterEach(() => fetchMock.restore());
+
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
       sinon.stub(client, "cacheEndpointRequest").callsFake((request:any) => {
         if (!request.id) {
           request.id = 100;
         }
-        return request;
+        return { isDeferred: true, endpointRequest: request };
       });
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
@@ -469,24 +471,14 @@ describe('ConnectClient', () => {
       expect(callMethod.called).to.be.false;
     })
 
-    it("should return true when checking the isDefered prooperty of the return value of invoking deferRequest method offline", async () => {
+    it("should cache the endpoint call when invoking deferRequest method offline", async () => {
       sinon.stub(client, "checkOnline").callsFake(() => false);
       sinon.stub(client, "call");
-      sinon.stub(client, "cacheEndpointRequest");
+      const cacheEndpointRequest = sinon.stub(client, "cacheEndpointRequest");
 
-      const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
+      await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
-      expect(result.isDeferred).to.be.true;
-    })
-
-    it("should return undefined when checking the result prooperty of the return value of invoking deferRequest method offline", async () => {
-      sinon.stub(client, "checkOnline").callsFake(() => false);
-      sinon.stub(client, "call");
-      sinon.stub(client, "cacheEndpointRequest");
-
-      const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
-
-      expect(returnValue.result).to.be.undefined;
+      expect(cacheEndpointRequest.called).to.be.true;
     })
 
     it("Should invoke the client.call method when invoking deferRequest online", async () => {
@@ -526,6 +518,40 @@ describe('ConnectClient', () => {
       const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
       expect(returnValue.endpointRequest).to.be.undefined;
+    })
+
+    it("should defer endpoint call when server is not reachable even though browser is online", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => true);
+      const cacheEndpointRequest = sinon.stub(client, "cacheEndpointRequest");
+      fetchMock.post(
+        base + '/connect/FooEndpoint/fooMethod',
+        Promise.reject(new TypeError('Failed to fetch'))
+      )
+
+      await client.deferrableCall('FooEndpoint', 'fooMethod');
+
+      expect(cacheEndpointRequest.called).to.be.true;
+    })
+
+    it("should NOT defer endpoint call when server return error", async () => {
+      sinon.stub(client, "checkOnline").callsFake(() => true);
+      sinon.stub(client, "cacheEndpointRequest");
+      const body = 'Unexpected error';
+      const errorResponse = new Response(
+        body,
+        {
+          status: 500,
+          statusText: 'Internal Server Error'
+        }
+      );
+      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', errorResponse);
+
+      try {
+        await client.deferrableCall('FooEndpoint', 'fooMethod');
+      } catch (error) {
+        expect(error).to.be.instanceOf(Error)
+          .and.have.property('message').that.has.string('Unexpected error');
+      }
     })
   });
 

@@ -54,7 +54,7 @@ const $wnd = window as any;
  */
 export class Flow {
   config: FlowConfig;
-  response!: AppInitResponse;
+  response?: AppInitResponse = undefined;
   pathname = '';
 
   // @ts-ignore
@@ -117,7 +117,22 @@ export class Flow {
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
-      await this.flowInit();
+      if (navigator.onLine) {
+        // @ts-ignore
+        try {
+          await this.flowInit();
+        } catch(error) {
+          if (error instanceof FlowUiInitializationError) {
+            // error initializing Flow: show offline stub
+            this.hideLoading();
+            await this.showOfflineStub();
+          }
+        }
+      } else {
+        // insert an offline stub
+        await this.showOfflineStub();
+      }
+
       // When an action happens, navigation will be resolved `onBeforeEnter`
       this.container.onBeforeEnter = (ctx, cmd) => this.flowNavigate(ctx, cmd);
       // For covering the 'server -> client' use case
@@ -133,8 +148,8 @@ export class Flow {
       ctx: NavigationParameters,
       cmd?: PreventCommands): Promise<any> {
 
-    // server -> server
-    if (this.pathname === ctx.pathname) {
+    // server -> server or at the offline page
+    if (this.pathname === ctx.pathname || this.response === undefined) {
       return Promise.resolve({});
     }
     // 'server -> client'
@@ -154,25 +169,30 @@ export class Flow {
   // Send the remote call to `JavaScriptBootstrapUI` to render the flow
   // route specified by the context
   private async flowNavigate(ctx: NavigationParameters, cmd?: PreventAndRedirectCommands): Promise<HTMLElement> {
-    return new Promise(resolve => {
-      this.showLoading()
-      // The callback to run from server side once the view is ready
-      this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
-        if (cmd && cancel) {
-          resolve(cmd.prevent());
-        } else if (cmd && cmd.redirect && redirectContext) {
-          resolve(cmd.redirect(redirectContext.pathname));
-        } else {
-          this.container.style.display = '';
-          resolve(this.container);
-        }
-        this.hideLoading();
-      };
+    if (this.response) {
+      return new Promise(resolve => {
+        this.showLoading()
+        // The callback to run from server side once the view is ready
+        this.container.serverConnected = (cancel, redirectContext?: NavigationParameters) => {
+          if (cmd && cancel) {
+            resolve(cmd.prevent());
+          } else if (cmd && cmd.redirect && redirectContext) {
+            resolve(cmd.redirect(redirectContext.pathname));
+          } else {
+            this.container.style.display = '';
+            resolve(this.container);
+          }
+          this.hideLoading();
+        };
 
-      // Call server side to navigate to the given route
-      flowRoot.$server
-          .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx), this.appShellTitle);
-    });
+        // Call server side to navigate to the given route
+        flowRoot.$server
+            .connectClient(this.container.localName, this.container.id, this.getFlowRoute(ctx), this.appShellTitle);
+      });
+    } else {
+      // No server response => offline or erroneous connection
+      return Promise.resolve(this.container);
+    }
   }
 
   private getFlowRoute(context: NavigationParameters | Location): string {
@@ -290,7 +310,7 @@ export class Flow {
 
       httpRequest.open('GET', requestPath);
 
-      httpRequest.onerror = () => reject(new Error(
+      httpRequest.onerror = () => reject(new FlowUiInitializationError(
           `Invalid server response when initializing Flow UI.
         ${httpRequest.status}
         ${httpRequest.responseText}`));
@@ -397,5 +417,19 @@ export class Flow {
         loading.setAttribute('style', 'none');
       }
     };
+  }
+
+  private async showOfflineStub() {
+    await import('./OfflineStub');
+    this.container = document.createElement('vaadin-offline-stub');
+    this.response = undefined;
+    document.body.appendChild(this.container);
+  }
+}
+
+/* tslint:disable: max-classes-per-file */
+class FlowUiInitializationError extends Error {
+  constructor(message: any) {
+    super(message);
   }
 }
