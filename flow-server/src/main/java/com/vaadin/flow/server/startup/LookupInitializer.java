@@ -46,6 +46,7 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.osgi.OSGiAccess;
+import com.vaadin.flow.server.osgi.OSGiResourceProvider;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
@@ -274,7 +275,8 @@ public class LookupInitializer
                 : classes.stream()
                         .filter(ResourceProvider.class::isAssignableFrom)
                         .filter(clazz -> !ResourceProvider.class.equals(clazz)
-                                && !ResourceProviderImpl.class.equals(clazz))
+                                && !ResourceProviderImpl.class.equals(clazz)
+                                && !OSGiResourceProvider.class.equals(clazz))
                         .collect(Collectors.toSet());
     }
 
