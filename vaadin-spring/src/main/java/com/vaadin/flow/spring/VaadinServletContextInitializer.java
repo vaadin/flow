@@ -120,9 +120,10 @@ public class VaadinServletContextInitializer
             "com/h2database", "com/helger", "com/vaadin/external/atmosphere",
             "com/vaadin/webjar", "junit", "net/bytebuddy", "org/apache",
             "org/aspectj", "org/bouncycastle", "org/dom4j", "org/easymock",
-            "org/hamcrest", "org/hibernate", "org/javassist", "org/jboss",
-            "org/jsoup", "org/seleniumhq", "org/slf4j", "org/atmosphere",
-            "org/springframework", "org/webjars/bowergithub", "org/yaml",
+            "org/eclipse/persistence", "org/hamcrest", "org/hibernate",
+            "org/javassist", "org/jboss", "org/jsoup", "org/seleniumhq",
+            "org/slf4j", "org/atmosphere", "org/springframework", 
+            "org/webjars/bowergithub", "org/yaml",
 
             "java/", "javax/", "javafx/", "com/sun/", "oracle/deploy",
             "oracle/javafx", "oracle/jrockit", "oracle/jvm", "oracle/net",
