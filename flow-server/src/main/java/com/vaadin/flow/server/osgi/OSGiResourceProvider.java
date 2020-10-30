@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.osgi.support;
+package com.vaadin.flow.server.osgi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,6 @@ import java.util.Objects;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.service.component.annotations.Component;
 
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinServletService;
@@ -37,7 +36,6 @@ import com.vaadin.flow.server.VaadinServletService;
  * @since
  *
  */
-@Component(immediate = true, service = ResourceProvider.class)
 public class OSGiResourceProvider implements ResourceProvider {
 
     @Override
