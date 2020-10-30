@@ -128,21 +128,7 @@ public class PwaTestIT extends ChromeDeviceTest {
     @Test
     public void testPwaOfflinePath() throws IOException {
         open();
-
-        Assert.assertTrue("Should have navigator.serviceWorker",
-                (Boolean) executeScript("return !!navigator.serviceWorker;"));
-
-        // Wait until service worker is ready
-        Assert.assertTrue("Should have service worker registered",
-                (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                        "const done = arguments[arguments.length - 1];"
-                                + "const timeout = new Promise("
-                                + "  resolve => setTimeout(resolve, 100000)"
-                                + ");"
-                                + "Promise.race(["
-                                + "  navigator.serviceWorker.ready,"
-                                + "  timeout])"
-                                + ".then(result => done(!!result));"));
+        waitForServiceWorkerReady();
 
         // Confirm that app shell is loaded
         Assert.assertNotNull("Should have outlet when loaded online",
