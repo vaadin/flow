@@ -32,6 +32,7 @@ public class OfflineServerViewIT extends ChromeDeviceTest {
     public void should_showOfflineStub_whenNavigatingToServerSideView()
             throws IOException {
         open();
+        waitForServiceWorkerReady();
 
         waitForElementPresent(By.id("button3"));
 
