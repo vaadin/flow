@@ -24,7 +24,8 @@ import com.vaadin.flow.server.PWA;
         shortName = ParentLayout.PWA_SHORT_NAME,
         themeColor = ParentLayout.THEME_COLOR,
         backgroundColor = ParentLayout.BG_COLOR,
-        offlinePath = "offline.html")
+        offlinePath = "offline.html",
+        offlineResources = { "yes.png" })
 public class ParentLayout extends Div
         implements RouterLayout, AppShellConfigurator {
     static final String THEME_COLOR = "#1f1f1f";

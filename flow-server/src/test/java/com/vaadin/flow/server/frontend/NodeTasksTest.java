@@ -152,30 +152,6 @@ public class NodeTasksTest {
                         new File(dir, name).exists()));
     }
 
-    @Test
-    public void should_Set_PWA_Offline_Resources() throws Exception {
-        ClassFinder classFinder = new DefaultClassFinder(new HashSet<>(
-                new ArrayList<>(Arrays.asList(AppShellWithPwa.class))));
-
-        Builder builder = new Builder(classFinder, new File(userDir))
-                .withFlowResourcesFolder(
-                        new File(userDir, DEFAULT_FLOW_RESOURCES_FOLDER))
-                .withWebpack(new File(userDir, TARGET + "webapp"),
-                        new File(userDir, TARGET + "classes"), WEBPACK_CONFIG,
-                        WEBPACK_GENERATED, SERVICE_WORKER_SRC)
-                .enablePackagesUpdate(false).enableImportsUpdate(false)
-                .withEmbeddableWebComponents(false);
-
-        builder.build().execute();
-
-        String webpackGeneratedContent = Files
-                .lines(new File(userDir, WEBPACK_GENERATED).toPath())
-                .collect(Collectors.joining("\n"));
-        Assert.assertTrue("should contain pwa.js pwa.css offlineResources",
-                webpackGeneratedContent.contains("const offlineResources = "
-                        + "[\"pwa.js\",\"pwa.css\"];"));
-    }
-
     private Object getFieldValue(Object obj, String name) throws Exception {
         Field field = obj.getClass().getDeclaredField(name);
         field.setAccessible(true);

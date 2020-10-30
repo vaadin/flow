@@ -128,7 +128,8 @@ public class PwaRegistry implements Serializable {
             manifestJson = initializeManifest().toJson();
 
             // Initialize sw-runtime.js
-            runtimeServiceWorkerJs = initializeRuntimeServiceWorker();
+            runtimeServiceWorkerJs = initializeRuntimeServiceWorker(
+                    servletContext);
         }
     }
 
@@ -226,7 +227,7 @@ public class PwaRegistry implements Serializable {
         return manifestData;
     }
 
-    private String initializeRuntimeServiceWorker() {
+    private String initializeRuntimeServiceWorker(ServletContext servletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
         // List of icons for precache
@@ -234,8 +235,22 @@ public class PwaRegistry implements Serializable {
                 .filter(PwaIcon::shouldBeCached).map(PwaIcon::getCacheFormat)
                 .collect(Collectors.toList());
 
+        // When offlinePath is in use, it is also an offline resource to
+        // precache
+        if (pwaConfiguration.isOfflinePathEnabled()) {
+            filesToCache.add(offlinePageCache());
+        }
+
         // Add manifest to precache
         filesToCache.add(manifestCache());
+
+        // Add user defined resources. Do not serve these via Webpack, as the
+        // file system location from which a resource is served depends on
+        // the (configurable) web app logic (#8996).
+        for (String resource : pwaConfiguration.getOfflineResources()) {
+            filesToCache.add(String.format(WORKBOX_CACHE_FORMAT,
+                    resource.replaceAll("'", ""), servletContext.hashCode()));
+        }
 
         // Precaching
         stringBuilder.append("self.additionalManifestEntries = [\n");
@@ -384,6 +399,11 @@ public class PwaRegistry implements Serializable {
      */
     public String getRuntimeServiceWorkerJs() {
         return runtimeServiceWorkerJs;
+    }
+
+    private String offlinePageCache() {
+        return String.format(WORKBOX_CACHE_FORMAT,
+                pwaConfiguration.getOfflinePath(), offlineHash);
     }
 
     private String manifestCache() {

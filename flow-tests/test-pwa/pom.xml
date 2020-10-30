@@ -45,6 +45,14 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
+                <configuration>
+                    <webApp>
+                        <baseResource implementation="org.eclipse.jetty.util.resource.ResourceCollection">
+                            <resourcesAsCSV>${project.basedir}/public,${project.basedir}/src/main/webapp</resourcesAsCSV>
+                        </baseResource>
+                    </webApp>
+                </configuration>
+
                 <executions>
                     <!-- start and stop jetty (running our app) when running
                         integration tests -->
