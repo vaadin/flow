@@ -67,6 +67,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 // Various utils with inner classes
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
+                "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
 
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
                 "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
@@ -120,9 +121,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.PushRequestHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.ServletContainerInitializerExtender",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.OSGiAccess(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.osgi\\.VaadinBundleTracker(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ServletVerifier",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
