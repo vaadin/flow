@@ -17,9 +17,9 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -233,72 +233,35 @@ public class HierarchyMapperWithDataTest {
     }
 
     @Test
-    public void expandingItems_getExpandedItems_shouldReturnCorrectExpandedItems() {
+    public void getExpandedItems_expandSomeItems_returnsCorrectExpandedItems() {
 
         TreeNode root = new TreeNode("root", null);
-        TreeNode first1 = new TreeNode("first-1", root);
         TreeNode second1 = new TreeNode("second-1", root);
-        TreeNode first11 = new TreeNode("first-1-1", first1);
-        TreeNode second11 = new TreeNode("second-1-1", second1);
+        TreeNode second2 = new TreeNode("second-2", root);
+        TreeNode third11 = new TreeNode("third-1-1", second1);
+        TreeNode third21 = new TreeNode("third-2-1", second2);
 
         HierarchicalDataProvider<TreeNode, Void> dataProvider =
-                new AbstractBackEndHierarchicalDataProvider<TreeNode, Void>() {
-
-                    @Override
-                    public int getChildCount(HierarchicalQuery<TreeNode, Void>
-                                                     query) {
-                        if (query.getParent() == null) {
-                            return 2;
-                        }
-                        if (query.getParent().getName().equals("first-1") ||
-                            query.getParent().getName().equals("second-1")) {
-                            return 1;
-                        }
-                        return 0;
-                    }
-
-                    @Override
-                    public boolean hasChildren(TreeNode item) {
-                        return item.getParent() == null ||
-                                item.getName().equals("first-1") ||
-                                item.getName().equals("second-1");
-                    }
-
-                    @Override
-                    protected Stream<TreeNode> fetchChildrenFromBackEnd(
-                            HierarchicalQuery<TreeNode, Void> query) {
-                        if (query.getParent() == null) {
-                            return Arrays.stream(new TreeNode[]{
-                                    first1, second1
-                            });
-                        }
-                        if (query.getParent().getName().equals("first-1")) {
-                            return Arrays.stream(new TreeNode[]{first11});
-                        }
-                        if (query.getParent().getName().equals("second-1")) {
-                            return Arrays.stream(new TreeNode[]{second11});
-                        }
-                        return Stream.<TreeNode>builder().build();
-                    }
-                };
+                new ThreeLevelStaticHierarchicalDataProvider(root,
+                        new TreeNode[]{second1, second2},
+                        new TreeNode[]{third11, third21});
 
         HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
                 dataProvider
         );
 
-        Map<Object, TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
-        Assert.assertEquals(0L, expandedItems.keySet().size());
+        Collection<TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
+        Assert.assertNotNull(expandedItems);
+        Assert.assertEquals(0L, expandedItems.size());
 
         hierarchyMapper.expand(root);
-        hierarchyMapper.expand(second1);
-
-        System.out.println(hierarchyMapper.getExpandedItems());
+        hierarchyMapper.expand(second2);
 
         expandedItems = hierarchyMapper.getExpandedItems();
         Assert.assertNotNull(expandedItems);
-        Assert.assertEquals(2L, expandedItems.keySet().size());
-        Assert.assertArrayEquals(new Object[]{"root", "second-1"},
-                expandedItems.values().stream()
+        Assert.assertEquals(2L, expandedItems.size());
+        Assert.assertArrayEquals(new Object[]{"root", "second-2"},
+                expandedItems.stream()
                         .map(TreeNode::getName)
                         .sorted().toArray());
     }
@@ -309,48 +272,15 @@ public class HierarchyMapperWithDataTest {
         exceptionRule.expect(UnsupportedOperationException.class);
 
         TreeNode root = new TreeNode("root", null);
-        TreeNode first1 = new TreeNode("first-1", root);
-        TreeNode second1 = new TreeNode("second-2", root);
-        TreeNode first11 = new TreeNode("first-1-1", first1);
-        TreeNode second11 = new TreeNode("second-1-1", second1);
+        TreeNode second1 = new TreeNode("second-1", root);
+        TreeNode second2 = new TreeNode("second-2", root);
+        TreeNode third11 = new TreeNode("third-1-1", second1);
+        TreeNode third21 = new TreeNode("third-2-1", second2);
 
         HierarchicalDataProvider<TreeNode, Void> dataProvider =
-                new AbstractBackEndHierarchicalDataProvider<TreeNode, Void>() {
-
-                    @Override
-                    public int getChildCount(HierarchicalQuery<TreeNode, Void>
-                                                     query) {
-                        if (query.getParent() == null) {
-                            return 2;
-                        }
-                        if (query.getParent().getName().equals("first-1") ||
-                            query.getParent().getName().equals("second-1")) {
-                            return 1;
-                        }
-                        return 0;
-                    }
-
-                    @Override
-                    public boolean hasChildren(TreeNode item) {
-                        return item.getParent() == null ||
-                                item.getParent().getName().equals("first-1") ||
-                                item.getParent().getName().equals("second-1");
-                    }
-
-                    @Override
-                    protected Stream<TreeNode> fetchChildrenFromBackEnd(
-                            HierarchicalQuery<TreeNode, Void> query) {
-                        if (query.getParent() == null) {
-                            return Arrays.stream(new TreeNode[]{
-                                    first1, second1
-                            });
-                        }
-                        if (query.getParent().getName().equals("first-1")) {
-                            return Arrays.stream(new TreeNode[]{first11});
-                        }
-                        return Arrays.stream(new TreeNode[]{second11});
-                    }
-                };
+                new ThreeLevelStaticHierarchicalDataProvider(root,
+                        new TreeNode[]{second1, second2},
+                        new TreeNode[]{third11, third21});
 
         HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
                 dataProvider
@@ -359,8 +289,8 @@ public class HierarchyMapperWithDataTest {
         hierarchyMapper.expand(root);
         hierarchyMapper.expand(second1);
 
-        Map<Object, TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
-        expandedItems.put(new Object(), new TreeNode("third-1"));
+        Collection<TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
+        expandedItems.add(new TreeNode("third-1"));
     }
 
     private void expand(Node node) {
@@ -446,4 +376,57 @@ public class HierarchyMapperWithDataTest {
             this.parent = parent;
         }
     }
+
+    private static class ThreeLevelStaticHierarchicalDataProvider
+            extends AbstractBackEndHierarchicalDataProvider<TreeNode, Void> {
+
+        private TreeNode root;
+        private TreeNode[] secondLevelNodes;
+        private TreeNode[] thirdLevelNodes;
+
+        public ThreeLevelStaticHierarchicalDataProvider(
+                TreeNode root,
+                TreeNode[] secondLevelNodes,
+                TreeNode[] thirdLevelNodes) {
+            this.root = root;
+            this.secondLevelNodes = secondLevelNodes;
+            this.thirdLevelNodes = thirdLevelNodes;
+        }
+
+        @Override
+        public int getChildCount(HierarchicalQuery<TreeNode, Void> query) {
+            // query node is the root:
+            if (query.getParent() == null) {
+                return secondLevelNodes.length;
+            }
+            // query node is among the last(third) layer:
+            if (Arrays.stream(secondLevelNodes)
+                    .anyMatch(node -> node == query.getParent())) {
+                return 0;
+            }
+            // count nodes of last(third) layer that are children of query's
+            // parent:
+            return (int) Arrays.stream(thirdLevelNodes)
+                    .filter(node -> node.getParent() == query.getParent())
+                    .count();
+        }
+
+        @Override
+        public boolean hasChildren(TreeNode item) {
+            return item.getParent() == null ||
+                    Arrays.stream(secondLevelNodes)
+                            .anyMatch(node -> node == item);
+        }
+
+        @Override
+        protected Stream<TreeNode> fetchChildrenFromBackEnd(
+                HierarchicalQuery<TreeNode, Void> query) {
+            if (query.getParent() == null) {
+                return Arrays.stream(secondLevelNodes);
+            }
+            return Arrays.stream(thirdLevelNodes)
+                    .filter(node -> node.getParent() == query.getParent());
+        }
+    }
+
 }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -631,14 +632,12 @@ public class HierarchyMapper<T, F> implements Serializable {
     }
 
     /**
-     * Returns the mappings between object-ids and their corresponding items for
-     * the expanded items. Object ids are the result of applying data provider's
-     * {@code IdentifierProvider} to the items.
+     * Returns the expanded items in form of an unmodifiable collection.
      *
-     * @return an unmodifiable {@code Map} between object-ids and their
-     * items corresponding items for the expanded items.
+     * @return an unmodifiable {@code Collection<T>} containing the expanded
+     * items.
      */
-    public Map<Object, T> getExpandedItems() {
-        return Collections.unmodifiableMap(expandedItems);
+    public Collection<T> getExpandedItems() {
+        return Collections.unmodifiableCollection(expandedItems.values());
     }
 }

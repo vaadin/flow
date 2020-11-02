@@ -159,7 +159,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
 
-            Collection<T> expandedItems = getHierarchyMapper().getExpandedItems().values();
+            Collection<T> expandedItems = getHierarchyMapper().getExpandedItems();
             update.enqueue("$connector.expandItems",
                     expandedItems
                             .stream()
