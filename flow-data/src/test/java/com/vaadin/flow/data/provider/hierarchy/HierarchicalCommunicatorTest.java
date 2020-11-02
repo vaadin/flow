@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +31,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.internal.nodefeature.ElementData;
 
 import elemental.json.JsonValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class HierarchicalCommunicatorTest {
 
@@ -198,9 +195,11 @@ public class HierarchicalCommunicatorTest {
         // any data controllers
         communicator.reset();
 
-        Assert.assertEquals(1, enqueueFunctions.size());
+        Assert.assertEquals(2, enqueueFunctions.size());
         Assert.assertEquals("$connector.ensureHierarchy",
                 enqueueFunctions.get(0));
+        Assert.assertEquals("$connector.expandItems",
+                enqueueFunctions.get(1));
     }
 
     @Tag("test")

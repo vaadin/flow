@@ -16,15 +16,20 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
@@ -44,6 +49,9 @@ public class HierarchyMapperWithDataTest {
     private List<Node> testData;
     private List<Node> roots;
     private int mapSize;
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private void setupData() {
         mapSize = ROOT_COUNT;
@@ -224,6 +232,137 @@ public class HierarchyMapperWithDataTest {
         verifyFetchIsCorrect(expectedResult, range);
     }
 
+    @Test
+    public void expandingItems_getExpandedItems_shouldReturnCorrectExpandedItems() {
+
+        TreeNode root = new TreeNode("root", null);
+        TreeNode first1 = new TreeNode("first-1", root);
+        TreeNode second1 = new TreeNode("second-1", root);
+        TreeNode first11 = new TreeNode("first-1-1", first1);
+        TreeNode second11 = new TreeNode("second-1-1", second1);
+
+        HierarchicalDataProvider<TreeNode, Void> dataProvider =
+                new AbstractBackEndHierarchicalDataProvider<TreeNode, Void>() {
+
+                    @Override
+                    public int getChildCount(HierarchicalQuery<TreeNode, Void>
+                                                     query) {
+                        if (query.getParent() == null) {
+                            return 2;
+                        }
+                        if (query.getParent().getName().equals("first-1") ||
+                            query.getParent().getName().equals("second-1")) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+
+                    @Override
+                    public boolean hasChildren(TreeNode item) {
+                        return item.getParent() == null ||
+                                item.getName().equals("first-1") ||
+                                item.getName().equals("second-1");
+                    }
+
+                    @Override
+                    protected Stream<TreeNode> fetchChildrenFromBackEnd(
+                            HierarchicalQuery<TreeNode, Void> query) {
+                        if (query.getParent() == null) {
+                            return Arrays.stream(new TreeNode[]{
+                                    first1, second1
+                            });
+                        }
+                        if (query.getParent().getName().equals("first-1")) {
+                            return Arrays.stream(new TreeNode[]{first11});
+                        }
+                        if (query.getParent().getName().equals("second-1")) {
+                            return Arrays.stream(new TreeNode[]{second11});
+                        }
+                        return Stream.<TreeNode>builder().build();
+                    }
+                };
+
+        HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
+                dataProvider
+        );
+
+        Map<Object, TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
+        Assert.assertEquals(0L, expandedItems.keySet().size());
+
+        hierarchyMapper.expand(root);
+        hierarchyMapper.expand(second1);
+
+        System.out.println(hierarchyMapper.getExpandedItems());
+
+        expandedItems = hierarchyMapper.getExpandedItems();
+        Assert.assertNotNull(expandedItems);
+        Assert.assertEquals(2L, expandedItems.keySet().size());
+        Assert.assertArrayEquals(new Object[]{"root", "second-1"},
+                expandedItems.values().stream()
+                        .map(TreeNode::getName)
+                        .sorted().toArray());
+    }
+
+    @Test
+    public void getExpandedItems_tryToAddItemsToCollection_shouldThrowException() {
+
+        exceptionRule.expect(UnsupportedOperationException.class);
+
+        TreeNode root = new TreeNode("root", null);
+        TreeNode first1 = new TreeNode("first-1", root);
+        TreeNode second1 = new TreeNode("second-2", root);
+        TreeNode first11 = new TreeNode("first-1-1", first1);
+        TreeNode second11 = new TreeNode("second-1-1", second1);
+
+        HierarchicalDataProvider<TreeNode, Void> dataProvider =
+                new AbstractBackEndHierarchicalDataProvider<TreeNode, Void>() {
+
+                    @Override
+                    public int getChildCount(HierarchicalQuery<TreeNode, Void>
+                                                     query) {
+                        if (query.getParent() == null) {
+                            return 2;
+                        }
+                        if (query.getParent().getName().equals("first-1") ||
+                            query.getParent().getName().equals("second-1")) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+
+                    @Override
+                    public boolean hasChildren(TreeNode item) {
+                        return item.getParent() == null ||
+                                item.getParent().getName().equals("first-1") ||
+                                item.getParent().getName().equals("second-1");
+                    }
+
+                    @Override
+                    protected Stream<TreeNode> fetchChildrenFromBackEnd(
+                            HierarchicalQuery<TreeNode, Void> query) {
+                        if (query.getParent() == null) {
+                            return Arrays.stream(new TreeNode[]{
+                                    first1, second1
+                            });
+                        }
+                        if (query.getParent().getName().equals("first-1")) {
+                            return Arrays.stream(new TreeNode[]{first11});
+                        }
+                        return Arrays.stream(new TreeNode[]{second11});
+                    }
+                };
+
+        HierarchyMapper<TreeNode, Void> hierarchyMapper = new HierarchyMapper<>(
+                dataProvider
+        );
+
+        hierarchyMapper.expand(root);
+        hierarchyMapper.expand(second1);
+
+        Map<Object, TreeNode> expandedItems = hierarchyMapper.getExpandedItems();
+        expandedItems.put(new Object(), new TreeNode("third-1"));
+    }
+
     private void expand(Node node) {
         insertRows(mapper.expand(node, mapper.getIndexOf(node).orElse(null)));
     }
@@ -276,5 +415,35 @@ public class HierarchyMapperWithDataTest {
         assertTrue("Index not in range",
                 0 <= range.getStart() && range.getStart() <= mapSize);
         mapSize += range.length();
+    }
+
+    private static class TreeNode {
+        private String name;
+        private TreeNode parent;
+
+        public TreeNode(String name) {
+            this.name = name;
+        }
+
+        public TreeNode(String name, TreeNode parent) {
+            this.name = name;
+            this.parent = parent;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public TreeNode getParent() {
+            return parent;
+        }
+
+        public void setParent(TreeNode parent) {
+            this.parent = parent;
+        }
     }
 }
