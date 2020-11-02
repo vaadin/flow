@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.io.IOUtils;
+
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.server.RequestHandler;
@@ -36,9 +40,13 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         event.addRequestHandler(
                 (RequestHandler) (session, request, response) -> {
                     if ("/reset_frontend".equals(request.getPathInfo())) {
-                        LiveReloadView.writeToFrontendJSFile(
-                                session.getService(),
-                                "/* Update to trigger Webpack */\n");
+                        LiveReloadView
+                                .resetFrontendFile(session.getService());
+                        return true;
+                    } else if ("/update_frontend".equals(request.getPathInfo())) {
+                        String code = IOUtils.toString(request.getInputStream(),
+                                StandardCharsets.UTF_8.name());
+                        LiveReloadView.replaceFrontendFile(session.getService(), code);
                         return true;
                     } else {
                         return false;

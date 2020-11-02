@@ -125,29 +125,49 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         final String initialViewId = findElement(
                 By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
 
-        waitForElementPresent(By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON));
+        // when: the frontend code is updated
+        WebElement codeField = findElement(
+                By.id(LiveReloadView.FRONTEND_CODE_TEXT));
+        String oldCode = codeField.getAttribute("value");
+        String newCode = oldCode.replace(
+                "Custom component contents", "Updated component contents");
+        codeField.clear();
+        codeField.sendKeys(newCode);
+
+        waitForElementPresent(By.id(LiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         WebElement liveReloadTrigger = findElement(
-                By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_TRIGGER_BUTTON));
+                By.id(LiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         liveReloadTrigger.click();
 
-        waitForElementPresent(By.id(LiveReloadView.PAGE_RELOADING));
-        waitForElementNotPresent(By.id(LiveReloadView.PAGE_RELOADING));
+        // when: the page has reloaded
+        waitUntil( d -> {
+            final String newViewId = findElement(
+                    By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
+            return !initialViewId.equals(newViewId);
+        });
 
-        final String newViewId = findElement(
-                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
-        Assert.assertNotEquals(initialViewId, newViewId);
+        // then: the frontend changes are visible in the DOM
+        WebElement customComponent = findElement(
+                By.id(LiveReloadView.CUSTOM_COMPONENT));
+        WebElement embeddedDiv = findInShadowRoot(customComponent,
+                By.id("custom-div")).get(0);
+        Assert.assertEquals("Updated component contents",
+                embeddedDiv.getText());
     }
 
     @Test
     public void webpackErrorIsShownAfterReloadAndHiddenAfterFix() {
         open();
 
-        final String initialViewId = findElement(
-                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
-
-        // when: a weback error occurs during frontend file edit
+        // when: a webpack error occurs during frontend file edit
+        WebElement codeField = findElement(
+                By.id(LiveReloadView.FRONTEND_CODE_TEXT));
+        String oldCode = codeField.getAttribute("value");
+        String erroneousCode = "{" + oldCode;
+        codeField.clear();
+        codeField.sendKeys(erroneousCode); // illegal TS
         WebElement insertWebpackError = findElement(
-                By.id(LiveReloadView.WEBPACK_LIVE_RELOAD_BREAK_BUTTON));
+                By.id(LiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
         insertWebpackError.click();
 
         // then: an error box is shown
@@ -156,11 +176,7 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         // when: the error is corrected
         resetFrontend();
 
-        // then the error box is not shown and the view is reloaded
+        // then: the error box is not shown and the view is reloaded
         waitForElementNotPresent(By.className("v-system-error"));
-
-        final String newViewId = findElement(
-                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
-        Assert.assertNotEquals(initialViewId, newViewId);
     }
 }

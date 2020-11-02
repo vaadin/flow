@@ -15,13 +15,18 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
 
-public abstract class AbstractLiveReloadIT extends ChromeBrowserTest {
+public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
 
     @Override
     protected String getTestPath() {
         return "/context" + super.getTestPath();
+    }
+
+    protected void open() {
+        open((String[]) null);
+        waitForServiceWorkerReady();
     }
 
 }
