@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { DeferrableResult, DeferredCallHandler, EndpointRequest, offline } from './Offline';
+import { DeferrableResult, DeferredCall, DeferredCallHandler, offline } from './Offline';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -334,14 +334,16 @@ export class ConnectClient {
       const result = await this.call(endpoint, method, params);
       return { isDeferred: false, result };
     } else {
-      let endpointRequest:EndpointRequest = { endpoint, method, params };
-      endpointRequest = await offline.cacheEndpointRequest(endpointRequest);
-      return { isDeferred: true, endpointRequest };
+      let endpointCall:DeferredCall = { endpoint, method, params };
+      endpointCall = await offline.cacheEndpointRequest(endpointCall);
+      return { isDeferred: true, deferredCall: endpointCall };
     }
   }
 
   async processDeferredCalls() {
-    await offline.processDeferredCalls(this.requestCall.bind(this), this.deferredCallHandler);
+    await offline.processDeferredCalls(
+      (endpoint, method, params) => this.requestCall(true, endpoint, method, params),
+      this.deferredCallHandler);
   }
 
   private async requestCall(

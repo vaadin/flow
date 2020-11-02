@@ -1,119 +1,58 @@
 /* tslint:disable:max-classes-per-file */
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
 
-const REQUEST_QUEUE_DB_NAME = 'request-queue';
-const REQUEST_QUEUE_STORE_NAME = 'requests';
+const VAADIN_DEFERRED_CALL_QUEUE_DB_NAME = 'vaadin-deferred-call-queue';
+const VAADIN_DEFERRED_CALL_STORE_NAME = 'deferredCalls';
 
 /**
- * The callback for deferred calls
+ * The helper class for the offlie featurs
  */
-export type OnDeferredCallCallback = (deferrableCall: DeferredCall) => Promise<void>;
-
-type EndpointCallSubmitFn = (
-  isDeferred: boolean,
-  endpoint: string,
-  method: string,
-  params?: any
-) =>  Promise<any>;
-
-export interface DeferredCallHandler {
-  handleDeferredCall: OnDeferredCallCallback;
-}
-
-export class DeferredCall implements EndpointRequest{
-  id?: number;
-  endpoint: string;
-  method: string;
-  params?: any;
-  submitting?: boolean;
-  private _keepInTheQueue = false;
-  private _submitFunction: (call: EndpointRequest)=>Promise<any>;
-  constructor(endpointCall: EndpointRequest, submitFunction: (call: EndpointRequest)=>Promise<any>){
-    this.id = endpointCall.id;
-    this.endpoint = endpointCall.endpoint;
-    this.method = endpointCall.method;
-    this.params = endpointCall.params;
-    this._submitFunction = submitFunction;
-  }
-  
-  async submit(): Promise<any>{
-    return this._submitFunction(this);
-  }
-
-  keepInTheQueue(){
-    this._keepInTheQueue = true;
-  }
-  _shouldKeepInTheQueue(){
-    return this._keepInTheQueue;
-  }
-}
-export interface EndpointRequest {
-  id?: number;
-  endpoint: string;
-  method: string;
-  params?: any;
-  submitting?: boolean
-}
-
-export interface DeferrableResult<T> {
-  isDeferred: boolean;
-  endpointRequest?: EndpointRequest;
-  result?: T;
-}
-
-export interface RequestQueueDB extends DBSchema {
-  requests: {
-    value: EndpointRequest;
-    key: number;
-  };
-}
-
 class Offline {
   checkOnline(): boolean {
     return navigator.onLine;
   }
-  
-  async cacheEndpointRequest(endpointRequest: EndpointRequest): Promise<EndpointRequest>{
+
+  async cacheEndpointRequest(endpointRequest: DeferredCall): Promise<DeferredCall> {
     const db = await this.openOrCreateDB();
-    const id = await db.add(REQUEST_QUEUE_STORE_NAME, endpointRequest);
+    const id = await db.add(VAADIN_DEFERRED_CALL_STORE_NAME, endpointRequest);
     db.close();
     endpointRequest.id = id;
     return endpointRequest;
   }
-  
-  async processDeferredCalls(submitFunction: EndpointCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
+
+  async processDeferredCalls(submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
     const db = await this.openOrCreateDB();
-  
+
     /**
      * Cannot wait for submitting the cached requests in the indexed db transaction,
      * as the transaction only wait for db operations.
      * See https://github.com/jakearchibald/idb#transaction-lifetime
      */
     const shouldSubmit = await this.shouldSubmitCachedRequests(db);
-  
+
     if (shouldSubmit) {
       await this.submitCachedRequests(db, submitFunction, deferredCallHandler);
     }
-  
+
     db.close();
   }
-  
-  async openOrCreateDB(): Promise<IDBPDatabase<RequestQueueDB>> {
-    return openDB<RequestQueueDB>(REQUEST_QUEUE_DB_NAME, 1, {
+
+  private async openOrCreateDB(): Promise<IDBPDatabase<DeferredCallQueueDB>> {
+    return openDB<DeferredCallQueueDB>(VAADIN_DEFERRED_CALL_QUEUE_DB_NAME, 1, {
       upgrade(db) {
-        db.createObjectStore(REQUEST_QUEUE_STORE_NAME, {
+        db.createObjectStore(VAADIN_DEFERRED_CALL_STORE_NAME, {
           keyPath: 'id',
           autoIncrement: true
         });
       },
     });
   }
-  
-  async shouldSubmitCachedRequests(db: IDBPDatabase<RequestQueueDB>) {
+
+  private async shouldSubmitCachedRequests(db: IDBPDatabase<DeferredCallQueueDB>) {
     let shouldSubmit = false;
-    if (db.objectStoreNames.contains(REQUEST_QUEUE_STORE_NAME) && await db.count(REQUEST_QUEUE_STORE_NAME) > 0) {
-      const tx = db.transaction(REQUEST_QUEUE_STORE_NAME, 'readwrite');
-  
+    if (db.objectStoreNames.contains(VAADIN_DEFERRED_CALL_STORE_NAME) && await db.count(VAADIN_DEFERRED_CALL_STORE_NAME) > 0) {
+      const tx = db.transaction(VAADIN_DEFERRED_CALL_STORE_NAME, 'readwrite');
+
       let cursor = await tx.store.openCursor();
       while (cursor) {
         const request = cursor.value;
@@ -128,35 +67,104 @@ class Offline {
     }
     return shouldSubmit;
   }
-  
-  
-  async submitCachedRequests(db: IDBPDatabase<RequestQueueDB>, submitFunction: EndpointCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
-    const cachedRequests = await db.getAll(REQUEST_QUEUE_STORE_NAME);
+
+  private async submitCachedRequests(db: IDBPDatabase<DeferredCallQueueDB>, submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
+    const errors: Error[] = [];
+    const cachedRequests = await db.getAll(VAADIN_DEFERRED_CALL_STORE_NAME);
     for (const request of cachedRequests) {
-      if (request.submitting) {
-        try {
-          let shouldDelete = true;
+      try {
+        if (request.submitting) {
+          let shouldDeleteTheCall = true;
           if (deferredCallHandler) {
-            const deferredCall = new DeferredCall(request, ({endpoint, method, params}) => submitFunction(true, endpoint, method, params));
+            const deferredCall = new SubmittableDeferredCall(request, submitFunction);
             await deferredCallHandler.handleDeferredCall(deferredCall);
-            shouldDelete = !deferredCall._shouldKeepInTheQueue();
+            shouldDeleteTheCall = !deferredCall._shouldKeepInTheQueue()
           } else {
-            await submitFunction(true, request.endpoint, request.method, request.params);
+            await submitFunction(request.endpoint, request.method, request.params);
           }
-          if(shouldDelete){
-            await db.delete(REQUEST_QUEUE_STORE_NAME, request.id!);
-          }else{
-            request.submitting = false;
-            await db.put(REQUEST_QUEUE_STORE_NAME, request);
+          if (shouldDeleteTheCall) {
+            await db.delete(VAADIN_DEFERRED_CALL_STORE_NAME, request.id!);
           }
-        } catch (error) {
-          request.submitting = false;
-          await db.put(REQUEST_QUEUE_STORE_NAME, request);
-          throw error;
         }
+      } catch (error) {
+        errors.push(error);
       }
     }
+
+    await this.resetSubmittingStatusForRemainingDeferredCalls(db);
+
+    if (errors.length > 0) {
+      throw errors;
+    }
   }
+
+  private async resetSubmittingStatusForRemainingDeferredCalls(db: IDBPDatabase<DeferredCallQueueDB>) {
+    const remainingRequests = await db.getAll(VAADIN_DEFERRED_CALL_STORE_NAME);
+    for (const request of remainingRequests) {
+      request.submitting = false;
+      await db.put(VAADIN_DEFERRED_CALL_STORE_NAME, request);
+    }
+  }
+}
+
+type DeferredCallSubmitFn = (
+  endpoint: string,
+  method: string,
+  params?: any
+) => Promise<any>;
+
+export interface DeferredCallHandler {
+  handleDeferredCall: (deferrableCall: SubmittableDeferredCall) => Promise<void>;
+}
+
+export interface DeferredCall {
+  id?: number;
+  endpoint: string;
+  method: string;
+  params?: any;
+  submitting?: boolean
+}
+
+export interface DeferrableResult<T> {
+  isDeferred: boolean;
+  deferredCall?: DeferredCall;
+  result?: T;
+}
+
+export class SubmittableDeferredCall implements DeferredCall {
+  id?: number;
+  endpoint: string;
+  method: string;
+  params?: any;
+  submitting?: boolean;
+  private _keepInTheQueue = false;
+  private _submitFunction: DeferredCallSubmitFn;
+  constructor(endpointCall: DeferredCall, submitFunction: DeferredCallSubmitFn) {
+    this.id = endpointCall.id;
+    this.endpoint = endpointCall.endpoint;
+    this.method = endpointCall.method;
+    this.params = endpointCall.params;
+    this._submitFunction = submitFunction;
+  }
+
+  async submit(): Promise<any> {
+    return this._submitFunction(this.endpoint, this.method, this.params);
+  }
+
+  keepInTheQueue() {
+    this._keepInTheQueue = true;
+  }
+
+  _shouldKeepInTheQueue() {
+    return this._keepInTheQueue;
+  }
+}
+
+interface DeferredCallQueueDB extends DBSchema {
+  deferredCalls: {
+    value: DeferredCall;
+    key: number;
+  };
 }
 
 export const offline = new Offline();
