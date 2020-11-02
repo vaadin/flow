@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import org.openqa.selenium.By;
+
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
+
+    private String initialAttachId = "";
 
     @Override
     protected String getTestPath() {
@@ -27,6 +31,17 @@ public abstract class AbstractLiveReloadIT extends ChromeDeviceTest {
     protected void open() {
         open((String[]) null);
         waitForServiceWorkerReady();
+        waitForElementPresent(
+                By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER));
+        initialAttachId = findElement(
+                By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
     }
 
+    protected void waitForLiveReload() {
+        waitUntil( d -> {
+            final String newViewId = findElement(
+                    By.id(AbstractLiveReloadView.ATTACH_IDENTIFIER)).getText();
+            return !initialAttachId.equals(newViewId);
+        });
+    }
 }

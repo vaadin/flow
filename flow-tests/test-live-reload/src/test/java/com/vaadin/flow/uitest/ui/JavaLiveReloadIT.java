@@ -18,23 +18,18 @@ package com.vaadin.flow.uitest.ui;
 import java.util.List;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 @NotThreadSafe
-public class LiveReloadIT extends AbstractLiveReloadIT {
-
-    @After
-    public void resetFrontend() {
-        executeScript("fetch('/context/view/reset_frontend')");
-    }
+public class JavaLiveReloadIT extends AbstractLiveReloadIT {
 
     @Test
     public void overlayShouldRender() {
         open();
+
         // Upon opening, the LiveReloadUI should show the indicator but not the
         // message window
         waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
@@ -63,10 +58,12 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
     @Test
     public void splashMessageShownOnAutoReloadAndClosedOnBodyClick() {
         open();
-        waitForElementPresent(By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
+
         WebElement liveReloadTrigger = findElement(
-                By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
+                By.id(JavaLiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
+
+        waitForLiveReload();
 
         WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
         Assert.assertNotNull(liveReload);
@@ -105,7 +102,7 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
 
         // when: live reload is triggered
         WebElement liveReloadTrigger = findElement(
-                By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
+                By.id(JavaLiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
 
         // then: page is not reloaded
@@ -116,67 +113,5 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertFalse(
                 gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
-    }
-
-    @Test
-    public void liveReloadOnTouchedFrontendFile() {
-        open();
-
-        final String initialViewId = findElement(
-                By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
-
-        // when: the frontend code is updated
-        WebElement codeField = findElement(
-                By.id(LiveReloadView.FRONTEND_CODE_TEXT));
-        String oldCode = codeField.getAttribute("value");
-        String newCode = oldCode.replace(
-                "Custom component contents", "Updated component contents");
-        codeField.clear();
-        codeField.sendKeys(newCode);
-
-        waitForElementPresent(By.id(LiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
-        WebElement liveReloadTrigger = findElement(
-                By.id(LiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
-        liveReloadTrigger.click();
-
-        // when: the page has reloaded
-        waitUntil( d -> {
-            final String newViewId = findElement(
-                    By.id(LiveReloadView.INSTANCE_IDENTIFIER)).getText();
-            return !initialViewId.equals(newViewId);
-        });
-
-        // then: the frontend changes are visible in the DOM
-        WebElement customComponent = findElement(
-                By.id(LiveReloadView.CUSTOM_COMPONENT));
-        WebElement embeddedDiv = findInShadowRoot(customComponent,
-                By.id("custom-div")).get(0);
-        Assert.assertEquals("Updated component contents",
-                embeddedDiv.getText());
-    }
-
-    @Test
-    public void webpackErrorIsShownAfterReloadAndHiddenAfterFix() {
-        open();
-
-        // when: a webpack error occurs during frontend file edit
-        WebElement codeField = findElement(
-                By.id(LiveReloadView.FRONTEND_CODE_TEXT));
-        String oldCode = codeField.getAttribute("value");
-        String erroneousCode = "{" + oldCode;
-        codeField.clear();
-        codeField.sendKeys(erroneousCode); // illegal TS
-        WebElement insertWebpackError = findElement(
-                By.id(LiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
-        insertWebpackError.click();
-
-        // then: an error box is shown
-        waitForElementPresent(By.className("v-system-error"));
-
-        // when: the error is corrected
-        resetFrontend();
-
-        // then: the error box is not shown and the view is reloaded
-        waitForElementNotPresent(By.className("v-system-error"));
     }
 }

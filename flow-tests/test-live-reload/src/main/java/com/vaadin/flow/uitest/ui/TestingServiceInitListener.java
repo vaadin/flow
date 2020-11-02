@@ -40,13 +40,14 @@ public class TestingServiceInitListener implements VaadinServiceInitListener {
         event.addRequestHandler(
                 (RequestHandler) (session, request, response) -> {
                     if ("/reset_frontend".equals(request.getPathInfo())) {
-                        LiveReloadView
+                        FrontendLiveReloadView
                                 .resetFrontendFile(session.getService());
                         return true;
                     } else if ("/update_frontend".equals(request.getPathInfo())) {
                         String code = IOUtils.toString(request.getInputStream(),
                                 StandardCharsets.UTF_8.name());
-                        LiveReloadView.replaceFrontendFile(session.getService(), code);
+                        FrontendLiveReloadView.replaceFrontendFile(
+                                session.getService(), code);
                         return true;
                     } else {
                         return false;
