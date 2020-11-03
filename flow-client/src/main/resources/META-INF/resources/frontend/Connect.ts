@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { DeferrableResult, DeferredCallSubmissionHandler, OfflineHelper, } from './Offline';
+import { DeferrableResult, DeferredCallSubmissionHandler, OfflineHelper } from './Offline';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
