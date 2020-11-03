@@ -478,7 +478,7 @@ describe("Offline", () => {
             try {
               await deferrableCall.submit();
             } catch (error) {
-              deferrableCall.keepInTheQueue();
+              deferrableCall.keepDeferredCallInTheQueue();
             }
           }
         };

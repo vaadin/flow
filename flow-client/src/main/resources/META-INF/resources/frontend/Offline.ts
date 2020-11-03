@@ -79,7 +79,7 @@ export class OfflineHelper {
           if (deferredCallHandler) {
             const deferredCall = new DeferredCallSubmitter(request, submitFunction);
             await deferredCallHandler.handleDeferredCallSubmission(deferredCall);
-            shouldDeleteTheCall = !deferredCall._shouldKeepInTheQueue()
+            shouldDeleteTheCall = !deferredCall._shouldKeepDeferredCallInTheQueue()
           } else {
             await submitFunction(request.endpoint, request.method, request.params);
           }
@@ -183,7 +183,7 @@ export interface DeferrableResult<T> {
  */
 export class DeferredCallSubmitter {
   private deferredCall: DeferredCall
-  private _keepInTheQueue = false;
+  private _keepDeferredCallInTheQueue = false;
   private _submitFunction: DeferredCallSubmitFn;
   constructor(endpointCall: DeferredCall, submitFunction: DeferredCallSubmitFn) {
     this.deferredCall = endpointCall;
@@ -201,12 +201,12 @@ export class DeferredCallSubmitter {
    * By default, if no error is detected when submitting a deferred call, the call will be removed
    * from the IndexedDB. Call this method to keep the deferred endpoint call in the IndexedDB.
    */
-  keepInTheQueue() {
-    this._keepInTheQueue = true;
+  keepDeferredCallInTheQueue() {
+    this._keepDeferredCallInTheQueue = true;
   }
 
-  _shouldKeepInTheQueue() {
-    return this._keepInTheQueue;
+  _shouldKeepDeferredCallInTheQueue() {
+    return this._keepDeferredCallInTheQueue;
   }
 }
 
