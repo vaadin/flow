@@ -67,6 +67,9 @@ public class VaadinBundleTracker extends BundleTracker<Bundle> {
 
     private final AtomicReference<ServiceRegistration<Servlet>> servletRegistration = new AtomicReference<>();
 
+    /**
+     * Dedicated servlet for serving resources in Flow bundles.
+     */
     private static class PushResourceServlet extends HttpServlet {
 
         private final Bundle bundle;
