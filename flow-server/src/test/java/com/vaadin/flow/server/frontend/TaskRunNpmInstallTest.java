@@ -69,7 +69,7 @@ public class TaskRunNpmInstallTest {
 
     @Before
     public void setUp() throws IOException {
-        File generatedFolder = temporaryFolder.newFolder();
+        generatedFolder = temporaryFolder.newFolder();
         npmFolder = temporaryFolder.newFolder();
         nodeUpdater = new NodeUpdater(Mockito.mock(ClassFinder.class),
                 Mockito.mock(FrontendDependencies.class), npmFolder,
@@ -217,7 +217,7 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsNotExecuted()
+    public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsExecuted()
             throws ExecutionFailedException {
         File nodeModules = getNodeUpdater().nodeModulesFolder;
         nodeModules.mkdir();
