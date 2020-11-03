@@ -299,9 +299,9 @@ export class ConnectClient {
 
     this.deferredCallSubmissionHandler = options.deferredCallHandler;
 
-    this.processDeferredCalls = this.processDeferredCalls.bind(this);
+    this.submitDeferredCalls = this.submitDeferredCalls.bind(this);
 
-    self.addEventListener('online', this.processDeferredCalls);
+    self.addEventListener('online', this.submitDeferredCalls);
   }
 
   /**
@@ -344,7 +344,7 @@ export class ConnectClient {
     }
   }
 
-  async processDeferredCalls() {
+  async submitDeferredCalls() {
     await this.offlineHelper.processDeferredCalls(
       (endpoint, method, params) => this.requestCall(true, endpoint, method, params),
       this.deferredCallSubmissionHandler);

@@ -187,7 +187,7 @@ describe("Offline", () => {
     it("should submit the cached request when receiving online event", async () => {
       await insertARequest(3);
 
-      await client.processDeferredCalls();
+      await client.submitDeferredCalls();
 
       await verifyNumberOfRequsetsInTheQueue(0);
     })
@@ -198,7 +198,7 @@ describe("Offline", () => {
       fakeRequestCallFails();
 
       try {
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
       } catch (_) {
         // expected
       } finally {
@@ -214,7 +214,7 @@ describe("Offline", () => {
       let errors: Error[] | undefined;
 
       try {
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
       } catch (e) {
         // expected
         errors = e;
@@ -229,7 +229,7 @@ describe("Offline", () => {
       fakeRequestCallFails();
 
       try {
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
       } catch (_) {
         // expected
       } finally {
@@ -238,7 +238,7 @@ describe("Offline", () => {
         requestCallStub.restore();
         sinon.stub(client, "requestCall");
 
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
 
         await verifyNumberOfRequsetsInTheQueue(0);
       }
@@ -248,9 +248,9 @@ describe("Offline", () => {
       await insertARequest();
 
       await Promise.all([
-        client.processDeferredCalls(),
-        client.processDeferredCalls(),
-        client.processDeferredCalls()
+        client.submitDeferredCalls(),
+        client.submitDeferredCalls(),
+        client.submitDeferredCalls()
       ])
 
       expect(requestCallStub.calledOnce).to.be.true;
@@ -262,7 +262,7 @@ describe("Offline", () => {
       fakeRequestCallFails();
 
       try {
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
       } catch (_) {
         // expected
       } finally {
@@ -272,9 +272,9 @@ describe("Offline", () => {
         sinon.stub(client, "requestCall");
 
         await Promise.all([
-          client.processDeferredCalls(),
-          client.processDeferredCalls(),
-          client.processDeferredCalls()
+          client.submitDeferredCalls(),
+          client.submitDeferredCalls(),
+          client.submitDeferredCalls()
         ])
 
         expect(requestCallStub.calledOnce).to.be.true;
@@ -301,7 +301,7 @@ describe("Offline", () => {
 
         expect(spyMiddleware.called).to.be.false;
 
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
 
         expect(spyMiddleware.called).to.be.true;
       } finally {
@@ -317,7 +317,7 @@ describe("Offline", () => {
         handleDeferredCallSubmission: onDeferredCallStub
       };
 
-      await client.processDeferredCalls();
+      await client.submitDeferredCalls();
 
       expect(onDeferredCallStub.callCount).to.equal(1);
       const [call] = onDeferredCallStub.getCall(0).args;
@@ -338,7 +338,7 @@ describe("Offline", () => {
 
       try {
         await insertARequest();
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
       } catch (e) {
         // expected
         errors = e;
@@ -351,7 +351,7 @@ describe("Offline", () => {
       try {
         await insertARequest(2);
         fakeRequestCallFails();
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
       } catch (e) {
         // expected
       } finally {
@@ -371,7 +371,7 @@ describe("Offline", () => {
       try {
         await insertARequest(3);
         fakeRequestCallFails();
-        await client.processDeferredCalls();
+        await client.submitDeferredCalls();
       } catch (e) {
         // expected
       } finally {
@@ -392,7 +392,7 @@ describe("Offline", () => {
 
         try {
           await insertARequest();
-          await client.processDeferredCalls();
+          await client.submitDeferredCalls();
         } finally {
           expect(notifyOnSucess.calledOnce).to.be.true;
         }
@@ -413,7 +413,7 @@ describe("Offline", () => {
         try {
           await insertARequest();
           fakeRequestCallFails()
-          await client.processDeferredCalls();
+          await client.submitDeferredCalls();
         } finally {
           expect(notifyOnFailure.calledOnce).to.be.true;
         }
@@ -428,7 +428,7 @@ describe("Offline", () => {
 
         try {
           await insertARequest();
-          await client.processDeferredCalls();
+          await client.submitDeferredCalls();
         } finally {
           await verifyNumberOfRequsetsInTheQueue(0);
         }
@@ -444,7 +444,7 @@ describe("Offline", () => {
         try {
           await insertARequest();
           fakeRequestCallFails();
-          await client.processDeferredCalls();
+          await client.submitDeferredCalls();
         } catch (_) {
           // expected
         } finally {
@@ -466,7 +466,7 @@ describe("Offline", () => {
         try {
           await insertARequest();
           fakeRequestCallFails();
-          await client.processDeferredCalls();
+          await client.submitDeferredCalls();
         } finally {
           await verifyNumberOfRequsetsInTheQueue(0);
         }
@@ -486,7 +486,7 @@ describe("Offline", () => {
         try {
           await insertARequest();
           fakeRequestCallFails();
-          await client.processDeferredCalls();
+          await client.submitDeferredCalls();
         } finally {
           await verifyNumberOfRequsetsInTheQueue(1);
         }
