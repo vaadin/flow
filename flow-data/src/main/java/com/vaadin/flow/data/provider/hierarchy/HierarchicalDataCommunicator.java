@@ -158,6 +158,19 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             HierarchicalUpdate update = arrayUpdater
                     .startUpdate(getHierarchyMapper().getRootSize());
             update.enqueue("$connector.ensureHierarchy");
+
+            Collection<T> expandedItems = getHierarchyMapper().getExpandedItems();
+            update.enqueue("$connector.expandItems",
+                    expandedItems
+                            .stream()
+                            .map(getKeyMapper()::key)
+                            .map(key -> {
+                                JsonObject json = Json.createObject();
+                                json.put("key", key);
+                                return json;
+                            }).collect(
+                            JsonUtils.asArray()));
+
             requestFlush(update);
         }
     }
