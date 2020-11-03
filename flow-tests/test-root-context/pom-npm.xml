@@ -119,6 +119,8 @@
                     </archive>
                 </configuration>
                 <executions>
+                    <!--  The jar with tests in NPM mode is needed for OSGi validation: 
+                    both jars with ITs and views are used to run this validation -->
                     <execution>
                         <id>ui-tests</id>
                         <goals>
