@@ -9,7 +9,7 @@ import {
 } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 import { openDB } from "idb";
-import { OfflineHelper, DeferredCallSubmitter } from "../../main/resources/META-INF/resources/frontend/Offline";
+import { DeferredCallSubmitter, OfflineHelper } from "../../main/resources/META-INF/resources/frontend/Offline";
 
 const VAADIN_DEFERRED_CALL_QUEUE_DB_NAME = 'vaadin-deferred-call-queue';
 const VAADIN_DEFERRED_CALL_STORE_NAME = 'deferredCalls';
@@ -25,6 +25,7 @@ describe("Offline", () => {
     // @ts-ignore
     delete window.Vaadin;
   });
+
   describe("Defer Request", () => {
     let client: ConnectClient;
 
@@ -32,15 +33,18 @@ describe("Offline", () => {
       client = new ConnectClient();
     });
 
-    afterEach(() => sinon.restore());
+    afterEach(() => {
+      sinon.restore();
+      fetchMock.restore();
+    });
 
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
       sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
-      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest").callsFake((request: any) => {
-        if (!request.id) {
-          request.id = 100;
+      sinon.stub(OfflineHelper.prototype, "storeDeferredCall").callsFake((deferredCall: any) => {
+        if (!deferredCall.id) {
+          deferredCall.id = 100;
         }
-        return request;
+        return { isDeferred: true, deferredCall };
       });
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
@@ -51,7 +55,7 @@ describe("Offline", () => {
       expect(result.deferredCall?.params?.fooData).to.equal('foo');
     })
 
-    it("Should cache the endpoint request when invoking deferRequest offline", async () => {
+    it("Should cache the endpoint call when invoking deferRequest offline", async () => {
       sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
@@ -69,33 +73,13 @@ describe("Offline", () => {
 
     it("Should not invoke the client.call method when invoking deferRequest offline", async () => {
       sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
-      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
       const callMethod = sinon.stub(client, "call");
 
       await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
       expect(callMethod.called).to.be.false;
-    })
-
-    it("should return true when checking the isDefered prooperty of the return value of invoking deferRequest method offline", async () => {
-      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
-      sinon.stub(client, "call");
-      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
-
-      const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
-
-      expect(result.isDeferred).to.be.true;
-    })
-
-    it("should return undefined when checking the result prooperty of the return value of invoking deferRequest method offline", async () => {
-      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
-      sinon.stub(client, "call");
-      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
-
-      const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
-
-      expect(returnValue.result).to.be.undefined;
     })
 
     it("Should invoke the client.call method when invoking deferRequest online", async () => {
@@ -107,20 +91,20 @@ describe("Offline", () => {
       expect(callMethod.called).to.be.true;
     })
 
-    it("Should not invoke the client.cacheEndpointRequest method when invoking deferRequest online", async () => {
+    it("Should not invoke the client.storeDeferredCall method when invoking deferRequest online", async () => {
       sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
       sinon.stub(client, "call");
-      const cacheEndpointRequestMock = sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
+      const storeDeferredCallMock = sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
       await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
-      expect(cacheEndpointRequestMock.called).to.be.false;
+      expect(storeDeferredCallMock.called).to.be.false;
     })
 
     it("should return false when checking the isDefered prooperty of the return value of invoking deferRequest method online", async () => {
       sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
       sinon.stub(client, "call");
-      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -130,11 +114,45 @@ describe("Offline", () => {
     it("should return undefined when checking the endpointRequest prooperty of the return value of invoking deferRequest method offline", async () => {
       sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
       sinon.stub(client, "call");
-      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
 
       const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
       expect(returnValue.deferredCall).to.be.undefined;
+    })
+
+    it("should defer endpoint call when server is not reachable even though browser is online", async () => {
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
+      const storeDeferredCall = sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
+      fetchMock.post(
+        base + '/connect/FooEndpoint/fooMethod',
+        Promise.reject(new TypeError('Failed to fetch'))
+      )
+  
+      await client.deferrableCall('FooEndpoint', 'fooMethod');
+  
+      expect(storeDeferredCall.called).to.be.true;
+    })
+  
+    it("should NOT defer endpoint call when server return error", async () => {
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
+      sinon.stub(OfflineHelper.prototype, "storeDeferredCall");
+      const body = 'Unexpected error';
+      const errorResponse = new Response(
+        body,
+        {
+          status: 500,
+          statusText: 'Internal Server Error'
+        }
+      );
+      fetchMock.post(base + '/connect/FooEndpoint/fooMethod', errorResponse);
+  
+      try {
+        await client.deferrableCall('FooEndpoint', 'fooMethod');
+      } catch (error) {
+        expect(error).to.be.instanceOf(Error)
+          .and.have.property('message').that.has.string('Unexpected error');
+      }
     })
   });
 
@@ -174,6 +192,7 @@ describe("Offline", () => {
       const db = await (offline as any).openOrCreateDB();
       await db.clear(VAADIN_DEFERRED_CALL_STORE_NAME);
       db.close();
+      fetchMock.restore();
     });
 
     it("should check and submit the cached requests when receiving online event", () => {
@@ -347,6 +366,22 @@ describe("Offline", () => {
       }
     });
 
+    it('should keep request in the queue when onDeferredCall callback rejects', async () => {
+      const onDeferredCallStub = sinon.stub().rejects();
+      client.deferredCallSubmissionHandler = {
+        handleDeferredCallSubmission: onDeferredCallStub
+      };;
+  
+      try {
+        await insertARequest();
+        await client.submitDeferredCalls();
+      } catch(_) {
+        // expected
+      } finally {
+        await verifyNumberOfRequsetsInTheQueue(1);
+      }
+    });
+
     it('should set submitting status to false for all the request in the queue', async () => {
       try {
         await insertARequest(2);
@@ -472,7 +507,7 @@ describe("Offline", () => {
         }
       });
 
-      it('should keep a failed endpoint call from the queue when user catches the error and calls deferrecCall.keepInTheQueue()', async () => {
+      it('should keep a failed endpoint call in the queue when user catches the error and calls deferrecCall.keepInTheQueue()', async () => {
         client.deferredCallSubmissionHandler = {
           async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             try {

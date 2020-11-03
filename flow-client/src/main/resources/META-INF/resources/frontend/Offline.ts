@@ -13,12 +13,12 @@ export class OfflineHelper {
     return navigator.onLine;
   }
 
-  async cacheEndpointRequest(endpointRequest: DeferredCall): Promise<DeferredCall> {
+  async storeDeferredCall(deferredCall: DeferredCall): Promise<DeferrableResult<any>> {
     const db = await this.openOrCreateDB();
-    const id = await db.add(VAADIN_DEFERRED_CALL_STORE_NAME, endpointRequest);
+    const id = await db.add(VAADIN_DEFERRED_CALL_STORE_NAME, deferredCall);
     db.close();
-    endpointRequest.id = id;
-    return endpointRequest;
+    deferredCall.id = id;
+    return { isDeferred: true, deferredCall };
   }
 
   async processDeferredCalls(submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallSubmissionHandler) {

@@ -29,11 +29,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.PwaConfiguration;
-
-import elemental.json.Json;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
@@ -209,8 +206,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 flowResourcesFolder
                                         .resolve("VaadinDevmodeGizmo.js")))),
-                new Pair<>("const offlineResources",
-                        getOfflineResourcesJsArray()),
                 new Pair<>("const offlinePathEnabled",
                         Boolean.toString(
                                 pwaConfiguration.isOfflinePathEnabled())),
@@ -254,11 +249,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
         } else {
             return FrontendUtils.getUnixPath(path);
         }
-    }
-
-    private String getOfflineResourcesJsArray() {
-        return pwaConfiguration.getOfflineResources().stream().map(Json::create)
-                .collect(JsonUtils.asArray()).toJson();
     }
 
     private String getOfflinePath() {

@@ -225,16 +225,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_setOfflineResources() throws IOException {
-        webpackUpdater.execute();
-        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
-                .collect(Collectors.joining("\n"));
-        Assert.assertTrue("offlineResources should contain foo.css and bar" +
-                ".js", webpackGeneratedContents.contains("const " +
-                "offlineResources = [\"foo.css\",\"bar.js\"];"));
-    }
-
-    @Test
     public void should_disableOfflinePath_when_defaultInPwa()
             throws IOException {
         webpackUpdater.execute();

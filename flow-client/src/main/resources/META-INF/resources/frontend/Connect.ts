@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { DeferrableResult, DeferredCall, DeferredCallSubmissionHandler, OfflineHelper, } from './Offline';
+import { DeferrableResult, DeferredCallSubmissionHandler, OfflineHelper, } from './Offline';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -335,12 +335,20 @@ export class ConnectClient {
     params?: any,
   ): Promise<DeferrableResult<any>> {
     if (this.offlineHelper.checkOnline()) {
-      const result = await this.call(endpoint, method, params);
-      return { isDeferred: false, result };
+      try {
+        const result = await this.call(endpoint, method, params);
+        return { isDeferred: false, result };
+      } catch (error) {
+        if ((error instanceof EndpointResponseError) || (error instanceof EndpointError)) {
+          // Error thrown in the client, carry to the user
+          throw error;
+        } else {
+          // Network error
+          return this.offlineHelper.storeDeferredCall({ endpoint, method, params });
+        }
+      }
     } else {
-      let endpointCall:DeferredCall = { endpoint, method, params };
-      endpointCall = await this.offlineHelper.cacheEndpointRequest(endpointCall);
-      return { isDeferred: true, deferredCall: endpointCall };
+      return this.offlineHelper.storeDeferredCall({ endpoint, method, params });
     }
   }
 
