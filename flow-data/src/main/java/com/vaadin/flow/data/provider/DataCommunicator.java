@@ -875,7 +875,7 @@ public class DataCommunicator<T> implements Serializable {
      * Getter method for determining the item count of the data.
      * <p>
      * This method should be used only with defined size, i.e. when
-     * {@link #isDefinedSize()} returns {@code code}.
+     * {@link #isDefinedSize()} returns {@code true}.
      * <p>
      * Can be overridden by a subclass that uses a specific type of DataProvider
      * and/or query.
