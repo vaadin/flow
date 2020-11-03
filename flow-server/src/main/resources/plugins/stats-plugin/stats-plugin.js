@@ -61,7 +61,7 @@ class StatsPlugin {
         // eslint-disable-next-line no-console
         logger.info("Serving the 'stats.json' file dynamically.");
 
-        this.options.setStats(customStats);
+        this.options.setResults(customStats);
         done();
       }
     });
