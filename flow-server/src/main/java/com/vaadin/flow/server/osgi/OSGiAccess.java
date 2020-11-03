@@ -106,7 +106,7 @@ public final class OSGiAccess {
 
         @Override
         public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-            Bundle bundle = FrameworkUtil.getBundle(LookupInitializer.class);
+            Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
             try {
                 Collection<ServiceReference<T>> references = bundle
                         .getBundleContext()

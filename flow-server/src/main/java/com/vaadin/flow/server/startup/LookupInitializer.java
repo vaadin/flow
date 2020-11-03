@@ -67,16 +67,16 @@ public class LookupInitializer
 
     private static class LookupImpl implements Lookup {
 
-        private final Map<Class<?>, Collection<Object>> services;
+        private final Map<Class<?>, Collection<Object>> serviceMap;
 
         private LookupImpl(Map<Class<?>, Collection<Object>> initialServices) {
-            services = Collections
+            serviceMap = Collections
                     .unmodifiableMap(new HashMap<>(initialServices));
         }
 
         @Override
         public <T> T lookup(Class<T> serviceClass) {
-            Collection<Object> registered = services.get(serviceClass);
+            Collection<Object> registered = serviceMap.get(serviceClass);
             if (registered == null || registered.isEmpty()) {
                 ServiceLoader<T> loader = ServiceLoader.load(serviceClass);
                 List<T> services = new ArrayList<>();
@@ -102,7 +102,7 @@ public class LookupInitializer
         @Override
         public <T> Collection<T> lookupAll(Class<T> serviceClass) {
             List<T> result = new ArrayList<>();
-            Collection<Object> registered = services.get(serviceClass);
+            Collection<Object> registered = serviceMap.get(serviceClass);
 
             Set<?> registeredClasses = registered == null
                     ? Collections.emptySet()

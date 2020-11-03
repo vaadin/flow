@@ -57,11 +57,10 @@ import com.vaadin.flow.server.VaadinServlet;
 public interface Lookup {
 
     /**
-     * Lookup for a service by the provided {@code serviceClass}.
+     * Lookup for a service of the given type.
      * <p>
-     * The {@code serviceClass} is usually an interface class (though it doesn't
-     * have to be) and the returned value is some implementation of this
-     * interface.
+     * The {@code serviceClass} is usually an interface (though it doesn't have
+     * to be) and the returned value is some implementation of this interface.
      * 
      * @param <T>
      *            a service type

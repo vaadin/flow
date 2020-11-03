@@ -54,11 +54,11 @@ public class VaadinServletContext implements VaadinContext {
      * Ensures there is a valid instance of {@link ServletContext}.
      */
     private void ensureServletContext() {
-        if (context == null
+        if (getContext() == null
                 && VaadinService.getCurrent() instanceof VaadinServletService) {
             context = ((VaadinServletService) VaadinService.getCurrent())
                     .getServlet().getServletContext();
-        } else if (context == null) {
+        } else if (getContext() == null) {
             throw new IllegalStateException(
                     "The underlying ServletContext of VaadinServletContext is null and there is no VaadinServletService to obtain it from.");
         }
@@ -67,11 +67,11 @@ public class VaadinServletContext implements VaadinContext {
     @Override
     public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
         ensureServletContext();
-        synchronized (this) {
-            Object result = context.getAttribute(type.getName());
+        synchronized (getContext()) {
+            Object result = getContext().getAttribute(type.getName());
             if (result == null && defaultValueSupplier != null) {
                 result = defaultValueSupplier.get();
-                context.setAttribute(type.getName(), result);
+                getContext().setAttribute(type.getName(), result);
             }
             return type.cast(result);
         }
@@ -82,42 +82,42 @@ public class VaadinServletContext implements VaadinContext {
         if (value == null) {
             removeAttribute(clazz);
         } else {
-            synchronized (this) {
+            synchronized (getContext()) {
                 checkType(clazz);
-                context.setAttribute(clazz.getName(), value);
+                getContext().setAttribute(clazz.getName(), value);
             }
         }
     }
 
     @Override
     public void removeAttribute(Class<?> clazz) {
-        synchronized (this) {
+        synchronized (getContext()) {
             checkType(clazz);
-            context.removeAttribute(clazz.getName());
+            getContext().removeAttribute(clazz.getName());
         }
     }
 
     @Override
     public Enumeration<String> getContextParameterNames() {
         ensureServletContext();
-        return context.getInitParameterNames();
+        return getContext().getInitParameterNames();
     }
 
     @Override
     public String getContextParameter(String name) {
         ensureServletContext();
-        return context.getInitParameter(name);
+        return getContext().getInitParameter(name);
     }
 
     private Object doGetAttribute(Class<?> clazz) {
         ensureServletContext();
-        return context.getAttribute(clazz.getName());
+        return getContext().getAttribute(clazz.getName());
     }
 
     private void checkType(Class<?> type) {
         if (Lookup.class.equals(type) && doGetAttribute(type) != null) {
             throw new IllegalArgumentException("The attribute " + Lookup.class
-                    + " has been already set once. It's not possible to everride its value");
+                    + " has been already set once. It's not possible to override its value");
         }
     }
 
