@@ -170,6 +170,7 @@
             <version>${osgi.core.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- There is a registered  OSGi service in the module -->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>osgi.cmpn</artifactId>
