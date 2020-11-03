@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     private List<QuerySortOrder> backEndSorting;
     private Comparator<T> inMemorySorting;
 
-    private Set<Object> expandedItemIds = new HashSet<>();
+    private Map<Object, T> expandedItems = new HashMap<>();
 
     /**
      * Constructs a new HierarchyMapper.
@@ -132,7 +133,7 @@ public class HierarchyMapper<T, F> implements Serializable {
             // Root nodes are always visible.
             return true;
         }
-        return expandedItemIds.contains(getDataProvider().getId(item));
+        return expandedItems.containsKey(getDataProvider().getId(item));
     }
 
     /**
@@ -177,7 +178,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     private boolean doExpand(T item) {
         boolean expanded = false;
         if (!isExpanded(item) && hasChildren(item)) {
-            expandedItemIds.add(getDataProvider().getId(item));
+            expandedItems.put(getDataProvider().getId(item), item);
             expanded = true;
         }
         return expanded;
@@ -194,7 +195,7 @@ public class HierarchyMapper<T, F> implements Serializable {
             return false;
         }
         if (isExpanded(item)) {
-            expandedItemIds.remove(getDataProvider().getId(item));
+            expandedItems.remove(getDataProvider().getId(item));
             return true;
         }
         return false;
@@ -217,7 +218,7 @@ public class HierarchyMapper<T, F> implements Serializable {
                 removedRows = Range.withLength(position + 1,
                         (int) getHierarchy(item, false).count());
             }
-            expandedItemIds.remove(getDataProvider().getId(item));
+            expandedItems.remove(getDataProvider().getId(item));
         }
         return removedRows;
     }
@@ -439,7 +440,7 @@ public class HierarchyMapper<T, F> implements Serializable {
                 iterator.remove();
             }
         }
-        expandedItemIds.remove(id);
+        expandedItems.remove(id);
         invalidatedChildren.stream().map(getDataProvider()::getId)
                 .forEach(x -> {
                     removeChildren(x);
@@ -616,7 +617,7 @@ public class HierarchyMapper<T, F> implements Serializable {
     public void destroyAllData() {
         childMap.clear();
         parentIdMap.clear();
-        expandedItemIds.clear();
+        expandedItems.clear();
     }
 
     /**
@@ -625,6 +626,16 @@ public class HierarchyMapper<T, F> implements Serializable {
      * @return {@code true} if there is any expanded items.
      */
     public boolean hasExpandedItems() {
-        return !expandedItemIds.isEmpty();
+        return !expandedItems.isEmpty();
+    }
+
+    /**
+     * Returns the expanded items in form of an unmodifiable collection.
+     *
+     * @return an unmodifiable {@code Collection<T>} containing the expanded
+     * items.
+     */
+    public Collection<T> getExpandedItems() {
+        return Collections.unmodifiableCollection(expandedItems.values());
     }
 }
