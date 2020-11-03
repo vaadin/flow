@@ -174,9 +174,9 @@ export interface ConnectClientOptions {
   middlewares?: Middleware[];
 
   /**
-   * The `deferredCallHandler` property valueThe
+   * The `deferredCallSubmissionHandler` property valueThe
    */
-  deferredCallHandler?: DeferredCallSubmissionHandler;
+  deferredCallSubmissionHandler?: DeferredCallSubmissionHandler;
 }
 
 export interface EndpointCallMetaInfo {
@@ -297,7 +297,7 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    this.deferredCallSubmissionHandler = options.deferredCallHandler;
+    this.deferredCallSubmissionHandler = options.deferredCallSubmissionHandler;
 
     this.submitDeferredCalls = this.submitDeferredCalls.bind(this);
 

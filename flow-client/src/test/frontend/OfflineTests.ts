@@ -177,7 +177,7 @@ describe("Offline", () => {
     });
 
     it("should check and submit the cached requests when receiving online event", () => {
-      const submitMethod = sinon.stub(ConnectClient.prototype, "processDeferredCalls");
+      const submitMethod = sinon.stub(ConnectClient.prototype, "submitDeferredCalls");
       client = new ConnectClient();
       self.dispatchEvent(new Event('online'));
       expect(submitMethod.called).to.be.true;

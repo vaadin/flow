@@ -55,9 +55,9 @@ describe('ConnectClient', () => {
       const defaultClient = new ConnectClient();
       expect(defaultClient.deferredCallSubmissionHandler).to.be.undefined;
 
-      const deferredCallHandler = sinon.stub().resolves();
-      const client = new ConnectClient({deferredCallHandler});
-      expect(client).to.have.property('deferredCallSubmissionHandler').equal(deferredCallHandler);
+      const deferredCallSubmissionHandler = sinon.stub().resolves();
+      const client = new ConnectClient({deferredCallSubmissionHandler});
+      expect(client).to.have.property('deferredCallSubmissionHandler').equal(deferredCallSubmissionHandler);
     })
   });
 

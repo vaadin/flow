@@ -134,7 +134,7 @@ type DeferredCallSubmitFn = (
  * </code>
  */
 export interface DeferredCallSubmissionHandler {
-  handleDeferredCallSubmission: (submittableDeferredCall: DeferredCallSubmitter) => Promise<void>;
+  handleDeferredCallSubmission: (deferredCallSubmitter: DeferredCallSubmitter) => Promise<void>;
 }
 
 /**
