@@ -7,12 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
@@ -371,6 +366,7 @@ public class BootstrapHandlerTest {
 
     @After
     public void tearDown() {
+        service.setDependencyFilters(null); // Reset to default
         session.unlock();
         mocks.cleanup();
     }
@@ -1075,28 +1071,29 @@ public class BootstrapHandlerTest {
     @Test
     public void useDependencyFilters_removeDependenciesAndAddNewOnes()
             throws ServiceException {
-        List<DependencyFilter> filters = (List<DependencyFilter>) service
-                .getDependencyFilters();
-        filters.add((list, context) -> {
-            list.clear(); // remove everything
-            return list;
-        });
-        filters.add((list, context) -> {
-            list.add(new Dependency(Dependency.Type.JAVASCRIPT,
-                    "imported-by-filter.js", LoadMode.EAGER));
-            list.add(new Dependency(Dependency.Type.JAVASCRIPT,
-                    "imported-by-filter2.js", LoadMode.EAGER));
-            return list;
-        });
-        filters.add((list, context) -> {
-            list.remove(1); // removes the imported-by-filter2.js
-            return list;
-        });
-        filters.add((list, context) -> {
-            list.add(new Dependency(Dependency.Type.STYLESHEET,
-                    "imported-by-filter.css", LoadMode.EAGER));
-            return list;
-        });
+        List<DependencyFilter> filters = Arrays.asList(
+                (list, context) -> {
+                    list.clear(); // remove everything
+                    return list;
+                },
+                (list, context) -> {
+                    list.add(new Dependency(Dependency.Type.JAVASCRIPT,
+                                            "imported-by-filter.js", LoadMode.EAGER));
+                    list.add(new Dependency(Dependency.Type.JAVASCRIPT,
+                                            "imported-by-filter2.js", LoadMode.EAGER));
+                    return list;
+                },
+                (list, context) -> {
+                    list.remove(1); // removes the imported-by-filter2.js
+                    return list;
+                },
+                (list, context) -> {
+                    list.add(new Dependency(Dependency.Type.STYLESHEET,
+                                            "imported-by-filter.css", LoadMode.EAGER));
+                    return list;
+                }
+        );
+        service.setDependencyFilters(filters);
 
         initUI(testUI);
 
@@ -1331,17 +1328,18 @@ public class BootstrapHandlerTest {
     @Test
     public void getBootstrapPage_jsModulesDoNotContainDeferAttribute()
             throws ServiceException {
-        List<DependencyFilter> filters = (List<DependencyFilter>) service
-                .getDependencyFilters();
-        filters.add((list, context) -> {
-            list.clear(); // remove everything
-            return list;
-        });
-        filters.add((list, context) -> {
-            list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
-                    LoadMode.EAGER));
-            return list;
-        });
+        List<DependencyFilter> filters = Arrays.asList(
+                (list, context) -> {
+                    list.clear(); // remove everything
+                    return list;
+                },
+                (list, context) -> {
+                    list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
+                                            LoadMode.EAGER));
+                    return list;
+                }
+        );
+        service.setDependencyFilters(filters);
 
         initUI(testUI);
 
