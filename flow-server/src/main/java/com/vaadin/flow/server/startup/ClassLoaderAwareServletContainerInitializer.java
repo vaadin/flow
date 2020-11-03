@@ -48,6 +48,7 @@ public interface ClassLoaderAwareServletContainerInitializer
     @Override
     default void onStartup(Set<Class<?>> set, ServletContext context)
             throws ServletException {
+        // see DeferredServletContextIntializers
         DeferredServletContextInitializers.Initializer deferredInitializer = ctx -> {
             ClassLoader webClassLoader = ctx.getClassLoader();
             ClassLoader classLoader = getClass().getClassLoader();

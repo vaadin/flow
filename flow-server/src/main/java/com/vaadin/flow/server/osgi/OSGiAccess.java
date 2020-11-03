@@ -106,7 +106,7 @@ public final class OSGiAccess {
 
         @Override
         public <T> Collection<T> lookupAll(Class<T> serviceClass) {
-            Bundle bundle = FrameworkUtil.getBundle(LookupInitializer.class);
+            Bundle bundle = FrameworkUtil.getBundle(OSGiAccess.class);
             try {
                 Collection<ServiceReference<T>> references = bundle
                         .getBundleContext()
@@ -120,10 +120,10 @@ public final class OSGiAccess {
                 }
                 return services;
             } catch (InvalidSyntaxException e) {
-                LoggerFactory.getLogger(OsgiLookupImpl.class).error(
-                        "Unexpected exception which is not expected to be thrown",
-                        e);
-                assert false : "Serveice filter is null so this may not happen";
+                LoggerFactory.getLogger(OsgiLookupImpl.class)
+                        .error("Unexpected invalid filter expression", e);
+                assert false : "Implementation error: Unexpected invalid filter exception is "
+                        + "thrown even though the service filter is null. Check the exception and update the impl";
             }
 
             return Collections.emptyList();
