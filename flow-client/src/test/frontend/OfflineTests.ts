@@ -9,7 +9,7 @@ import {
 } from "../../main/resources/META-INF/resources/frontend/Connect";
 
 import { openDB } from "idb";
-import { offline, SubmittableDeferredCall } from "../../main/resources/META-INF/resources/frontend/Offline";
+import { OfflineHelper, DeferredCallSubmitter } from "../../main/resources/META-INF/resources/frontend/Offline";
 
 const VAADIN_DEFERRED_CALL_QUEUE_DB_NAME = 'vaadin-deferred-call-queue';
 const VAADIN_DEFERRED_CALL_STORE_NAME = 'deferredCalls';
@@ -17,6 +17,7 @@ const VAADIN_DEFERRED_CALL_STORE_NAME = 'deferredCalls';
 // `connectClient.call` adds the host and context to the endpoint request.
 // we need to add this origin when configuring fetch-mock
 const base = window.location.origin;
+const offline = new OfflineHelper();
 describe("Offline", () => {
   beforeEach(() => localStorage.clear());
 
@@ -34,8 +35,8 @@ describe("Offline", () => {
     afterEach(() => sinon.restore());
 
     it("Should return a DeferrableResult that retains request meta when invoking deferRequest offline", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => false);
-      sinon.stub(offline, "cacheEndpointRequest").callsFake((request: any) => {
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
+      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest").callsFake((request: any) => {
         if (!request.id) {
           request.id = 100;
         }
@@ -51,7 +52,7 @@ describe("Offline", () => {
     })
 
     it("Should cache the endpoint request when invoking deferRequest offline", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => false);
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -67,8 +68,8 @@ describe("Offline", () => {
     })
 
     it("Should not invoke the client.call method when invoking deferRequest offline", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => false);
-      sinon.stub(offline, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
+      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
 
       const callMethod = sinon.stub(client, "call");
 
@@ -78,9 +79,9 @@ describe("Offline", () => {
     })
 
     it("should return true when checking the isDefered prooperty of the return value of invoking deferRequest method offline", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => false);
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
       sinon.stub(client, "call");
-      sinon.stub(offline, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -88,9 +89,9 @@ describe("Offline", () => {
     })
 
     it("should return undefined when checking the result prooperty of the return value of invoking deferRequest method offline", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => false);
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => false);
       sinon.stub(client, "call");
-      sinon.stub(offline, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
 
       const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -98,7 +99,7 @@ describe("Offline", () => {
     })
 
     it("Should invoke the client.call method when invoking deferRequest online", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => true);
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
       const callMethod = sinon.stub(client, "call");
 
       await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
@@ -107,9 +108,9 @@ describe("Offline", () => {
     })
 
     it("Should not invoke the client.cacheEndpointRequest method when invoking deferRequest online", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => true);
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
       sinon.stub(client, "call");
-      const cacheEndpointRequestMock = sinon.stub(offline, "cacheEndpointRequest");
+      const cacheEndpointRequestMock = sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
 
       await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -117,9 +118,9 @@ describe("Offline", () => {
     })
 
     it("should return false when checking the isDefered prooperty of the return value of invoking deferRequest method online", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => true);
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
       sinon.stub(client, "call");
-      sinon.stub(offline, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
 
       const result = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -127,9 +128,9 @@ describe("Offline", () => {
     })
 
     it("should return undefined when checking the endpointRequest prooperty of the return value of invoking deferRequest method offline", async () => {
-      sinon.stub(offline, "checkOnline").callsFake(() => true);
+      sinon.stub(OfflineHelper.prototype, "checkOnline").callsFake(() => true);
       sinon.stub(client, "call");
-      sinon.stub(offline, "cacheEndpointRequest");
+      sinon.stub(OfflineHelper.prototype, "cacheEndpointRequest");
 
       const returnValue = await client.deferrableCall('FooEndpoint', 'fooMethod', { fooData: 'foo' });
 
@@ -312,25 +313,25 @@ describe("Offline", () => {
       await insertARequest();
 
       const onDeferredCallStub = sinon.stub().resolves();
-      client.deferredCallHandler = {
-        handleDeferredCall: onDeferredCallStub
+      client.deferredCallSubmissionHandler = {
+        handleDeferredCallSubmission: onDeferredCallStub
       };
 
       await client.processDeferredCalls();
 
       expect(onDeferredCallStub.callCount).to.equal(1);
       const [call] = onDeferredCallStub.getCall(0).args;
-      expect(call.endpoint).to.equal('FooEndpoint');
-      expect(call.method).to.equal('fooMethod');
-      expect(call.params).to.deep.equal({ fooData: 'foo' });
+      expect(call.deferredCall.endpoint).to.equal('FooEndpoint');
+      expect(call.deferredCall.method).to.equal('fooMethod');
+      expect(call.deferredCall.params).to.deep.equal({ fooData: 'foo' });
 
       await verifyNumberOfRequsetsInTheQueue(0);
     });
 
     it('should reject if onDeferredCall callback rejects', async () => {
       const onDeferredCallStub = sinon.stub().rejects();
-      client.deferredCallHandler = {
-        handleDeferredCall: onDeferredCallStub
+      client.deferredCallSubmissionHandler = {
+        handleDeferredCallSubmission: onDeferredCallStub
       };
 
       let errors: Error[] | undefined;
@@ -382,8 +383,8 @@ describe("Offline", () => {
     describe('deferred call handler', () => {
       it('should be able to show a notification when a deferred call submission succeeds', async () => {
         const notifyOnSucess = sinon.stub();
-        client.deferredCallHandler = {
-          async handleDeferredCall(deferrableCall: SubmittableDeferredCall) {
+        client.deferredCallSubmissionHandler = {
+          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             await deferrableCall.submit();
             notifyOnSucess();
           }
@@ -399,8 +400,8 @@ describe("Offline", () => {
 
       it('should be able to show a notification when deferred call submission fails', async () => {
         const notifyOnFailure = sinon.stub();
-        client.deferredCallHandler = {
-          async handleDeferredCall(deferrableCall: SubmittableDeferredCall) {
+        client.deferredCallSubmissionHandler = {
+          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             try {
               await deferrableCall.submit();
             } catch (error) {
@@ -419,8 +420,8 @@ describe("Offline", () => {
       });
 
       it('should remove a succeeded endpoint call from the queue by default', async () => {
-        client.deferredCallHandler = {
-          async handleDeferredCall(deferrableCall: SubmittableDeferredCall) {
+        client.deferredCallSubmissionHandler = {
+          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             await deferrableCall.submit();
           }
         };
@@ -434,8 +435,8 @@ describe("Offline", () => {
       });
 
       it('should keep a failed endpoint in the queue by default', async () => {
-        client.deferredCallHandler = {
-          async handleDeferredCall(deferrableCall: SubmittableDeferredCall) {
+        client.deferredCallSubmissionHandler = {
+          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             await deferrableCall.submit();
           }
         };
@@ -452,8 +453,8 @@ describe("Offline", () => {
       });
 
       it('should remove a failed endpoint call from the queue when user catches the error without calling deferrecCall.keepInTheQueue()', async () => {
-        client.deferredCallHandler = {
-          async handleDeferredCall(deferrableCall: SubmittableDeferredCall) {
+        client.deferredCallSubmissionHandler = {
+          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             try {
               await deferrableCall.submit();
             } catch (error) {
@@ -472,8 +473,8 @@ describe("Offline", () => {
       });
 
       it('should keep a failed endpoint call from the queue when user catches the error and calls deferrecCall.keepInTheQueue()', async () => {
-        client.deferredCallHandler = {
-          async handleDeferredCall(deferrableCall: SubmittableDeferredCall) {
+        client.deferredCallSubmissionHandler = {
+          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             try {
               await deferrableCall.submit();
             } catch (error) {

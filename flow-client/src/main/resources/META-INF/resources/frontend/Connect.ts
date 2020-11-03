@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { DeferrableResult, DeferredCall, DeferredCallHandler, offline } from './Offline';
+import { DeferrableResult, DeferredCall, DeferredCallSubmissionHandler, OfflineHelper, } from './Offline';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -176,14 +176,10 @@ export interface ConnectClientOptions {
   /**
    * The `deferredCallHandler` property valueThe
    */
-  deferredCallHandler?: DeferredCallHandler;
+  deferredCallHandler?: DeferredCallSubmissionHandler;
 }
 
-/**
- * An object with the call arguments and the related Request instance.
- * See also {@link ConnectClient.call | the call() method in ConnectClient}.
- */
-export interface MiddlewareContext {
+export interface EndpointCallMetaInfo {
   /**
    * The endpoint name.
    */
@@ -198,7 +194,13 @@ export interface MiddlewareContext {
    * Optional object with method call arguments.
    */
   params?: any;
+}
 
+/**
+ * An object with the call arguments and the related Request instance.
+ * See also {@link ConnectClient.call | the call() method in ConnectClient}.
+ */
+export interface MiddlewareContext extends EndpointCallMetaInfo{
   /**
    * The Fetch API Request object reflecting the other properties.
    */
@@ -279,7 +281,9 @@ export class ConnectClient {
   /**
    * The handler for handling deferred calls
    */
-  deferredCallHandler?: DeferredCallHandler;
+  deferredCallSubmissionHandler?: DeferredCallSubmissionHandler;
+
+  private offlineHelper = new OfflineHelper();
 
   /**
    * @param options Constructor options.
@@ -293,7 +297,7 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    this.deferredCallHandler = options.deferredCallHandler;
+    this.deferredCallSubmissionHandler = options.deferredCallHandler;
 
     this.processDeferredCalls = this.processDeferredCalls.bind(this);
 
@@ -330,20 +334,20 @@ export class ConnectClient {
     method: string,
     params?: any,
   ): Promise<DeferrableResult<any>> {
-    if (offline.checkOnline()) {
+    if (this.offlineHelper.checkOnline()) {
       const result = await this.call(endpoint, method, params);
       return { isDeferred: false, result };
     } else {
       let endpointCall:DeferredCall = { endpoint, method, params };
-      endpointCall = await offline.cacheEndpointRequest(endpointCall);
+      endpointCall = await this.offlineHelper.cacheEndpointRequest(endpointCall);
       return { isDeferred: true, deferredCall: endpointCall };
     }
   }
 
   async processDeferredCalls() {
-    await offline.processDeferredCalls(
+    await this.offlineHelper.processDeferredCalls(
       (endpoint, method, params) => this.requestCall(true, endpoint, method, params),
-      this.deferredCallHandler);
+      this.deferredCallSubmissionHandler);
   }
 
   private async requestCall(

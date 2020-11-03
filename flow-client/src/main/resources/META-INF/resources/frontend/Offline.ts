@@ -1,5 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
+import { EndpointCallMetaInfo } from './Connect';
 
 const VAADIN_DEFERRED_CALL_QUEUE_DB_NAME = 'vaadin-deferred-call-queue';
 const VAADIN_DEFERRED_CALL_STORE_NAME = 'deferredCalls';
@@ -7,7 +8,7 @@ const VAADIN_DEFERRED_CALL_STORE_NAME = 'deferredCalls';
 /**
  * The helper class for the offlie featurs
  */
-class Offline {
+export class OfflineHelper {
   checkOnline(): boolean {
     return navigator.onLine;
   }
@@ -20,7 +21,7 @@ class Offline {
     return endpointRequest;
   }
 
-  async processDeferredCalls(submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
+  async processDeferredCalls(submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallSubmissionHandler) {
     const db = await this.openOrCreateDB();
 
     /**
@@ -68,7 +69,7 @@ class Offline {
     return shouldSubmit;
   }
 
-  private async submitCachedRequests(db: IDBPDatabase<DeferredCallQueueDB>, submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
+  private async submitCachedRequests(db: IDBPDatabase<DeferredCallQueueDB>, submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallSubmissionHandler) {
     const errors: Error[] = [];
     const cachedRequests = await db.getAll(VAADIN_DEFERRED_CALL_STORE_NAME);
     for (const request of cachedRequests) {
@@ -76,8 +77,8 @@ class Offline {
         if (request.submitting) {
           let shouldDeleteTheCall = true;
           if (deferredCallHandler) {
-            const deferredCall = new SubmittableDeferredCall(request, submitFunction);
-            await deferredCallHandler.handleDeferredCall(deferredCall);
+            const deferredCall = new DeferredCallSubmitter(request, submitFunction);
+            await deferredCallHandler.handleDeferredCallSubmission(deferredCall);
             shouldDeleteTheCall = !deferredCall._shouldKeepInTheQueue()
           } else {
             await submitFunction(request.endpoint, request.method, request.params);
@@ -113,44 +114,93 @@ type DeferredCallSubmitFn = (
   params?: any
 ) => Promise<any>;
 
-export interface DeferredCallHandler {
-  handleDeferredCall: (deferrableCall: SubmittableDeferredCall) => Promise<void>;
+/**
+ * The handler for handling submission of deferred endpoint calls. It is called when 
+ * Vaadin tries to submit a deferred endpoint call. You can use it e.g. to show
+ * notifications to the user when the submission is started, succeeded, or failed.
+ * 
+ * You can register a <code>DeferredCallSubmissionHandler</code> to <code>ConnectClient</code>
+ * by setting the `deferredCallSubmissionHandler` property of an existing `ConnectClient` instance
+ * <code>
+ * client.deferredCallSubmissionHandler = {
+ *  async handleDeferredCallSubmission(submittableDeferredCall: SubmittableDeferredCall) {
+ *    
+ *  }
+ * }
+ * <code>
+ * or as a `ConnectClient` constructor option when creating a new one.
+ * <code>
+ * const client = new ConnectClient({deferredCallSubmissionHandler});
+ * </code>
+ */
+export interface DeferredCallSubmissionHandler {
+  handleDeferredCallSubmission: (submittableDeferredCall: DeferredCallSubmitter) => Promise<void>;
 }
 
-export interface DeferredCall {
+/**
+ * An object with an endpoint call meta data. It's saved into IndexedDB when the 
+ * endpoint call is deferred so that it can be resubmitted later.
+ */
+export interface DeferredCall extends EndpointCallMetaInfo{
+  /**
+   * The id of the DeferredCall in IndexDB
+   */
   id?: number;
-  endpoint: string;
-  method: string;
-  params?: any;
+
+  /**
+   * Optional field indicating if a DeferredCall is being submitted.
+   * Intended for internal use, to prevent simultaneous submissions 
+   * from multiple browser tabs.
+   */
   submitting?: boolean
 }
 
+
 export interface DeferrableResult<T> {
+  /**
+   * Indicates if the deferrable endpoint call has been deferred
+   */
   isDeferred: boolean;
+
+  /**
+   * The deferred endpoint call in case the endpoint call is deferred,
+   * otherwise undefined.
+   */
   deferredCall?: DeferredCall;
+
+  /**
+   * The actual result in case the endopoint call is not deferred, 
+   * otherwise undefined.
+   */
   result?: T;
 }
 
-export class SubmittableDeferredCall implements DeferredCall {
-  id?: number;
-  endpoint: string;
-  method: string;
-  params?: any;
-  submitting?: boolean;
+/**
+ * A class that can submit a deferred endpoint call, 
+ * i.e. has the <code>submit()</code> method. Intended to 
+ * be used in <code>DeferredCallHandler</code> for a 
+ * fine-tuned control over the deferred call submission.
+ */
+export class DeferredCallSubmitter {
+  private deferredCall: DeferredCall
   private _keepInTheQueue = false;
   private _submitFunction: DeferredCallSubmitFn;
   constructor(endpointCall: DeferredCall, submitFunction: DeferredCallSubmitFn) {
-    this.id = endpointCall.id;
-    this.endpoint = endpointCall.endpoint;
-    this.method = endpointCall.method;
-    this.params = endpointCall.params;
+    this.deferredCall = endpointCall;
     this._submitFunction = submitFunction;
   }
 
+  /**
+   * Submit the deferred endpoint call.
+   */
   async submit(): Promise<any> {
-    return this._submitFunction(this.endpoint, this.method, this.params);
+    return this._submitFunction(this.deferredCall.endpoint, this.deferredCall.method, this.deferredCall.params);
   }
 
+  /**
+   * By default, if no error is detected when submitting a deferred call, the call will be removed
+   * from the IndexedDB. Call this method to keep the deferred endpoint call in the IndexedDB.
+   */
   keepInTheQueue() {
     this._keepInTheQueue = true;
   }
@@ -166,5 +216,3 @@ interface DeferredCallQueueDB extends DBSchema {
     key: number;
   };
 }
-
-export const offline = new Offline();
