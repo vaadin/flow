@@ -925,7 +925,7 @@ public abstract class VaadinService implements Serializable {
         storeSession(session, request.getWrappedSession());
 
         // Initial WebBrowser data comes from the request
-        session.getBrowser().updateRequestDetails(request);
+        session.setBrowser(new WebBrowser(request));
 
         session.setConfiguration(getDeploymentConfiguration());
 
