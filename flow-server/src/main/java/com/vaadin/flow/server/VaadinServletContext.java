@@ -115,9 +115,10 @@ public class VaadinServletContext implements VaadinContext {
     }
 
     private void checkType(Class<?> type) {
-        if (Lookup.class.equals(type) && doGetAttribute(type) != null) {
+        Object attribute = doGetAttribute(type);
+        if (attribute != null && Lookup.class.equals(type)) {
             throw new IllegalArgumentException("The attribute " + Lookup.class
-                    + " has been already set once. It's not possible to override its value");
+                    + " has been already set once. It's not possible to everride its value");
         }
     }
 
