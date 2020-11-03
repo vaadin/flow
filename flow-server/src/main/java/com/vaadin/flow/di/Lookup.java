@@ -66,6 +66,8 @@ public interface Lookup {
      *            a service type
      * @param serviceClass
      *            a service SPI class
+     * 
+     * @see Lookup#lookupAll(Class)
      * @return a service which implements the {@code serviceClass}, may be
      *         {@code null} if no services are registered for this SPI
      */

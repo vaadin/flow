@@ -83,7 +83,7 @@ public class VaadinServletContext implements VaadinContext {
             removeAttribute(clazz);
         } else {
             synchronized (getContext()) {
-                checkType(clazz);
+                checkLookupDuplicate(clazz);
                 getContext().setAttribute(clazz.getName(), value);
             }
         }
@@ -92,7 +92,7 @@ public class VaadinServletContext implements VaadinContext {
     @Override
     public void removeAttribute(Class<?> clazz) {
         synchronized (getContext()) {
-            checkType(clazz);
+            checkLookupDuplicate(clazz);
             getContext().removeAttribute(clazz.getName());
         }
     }
@@ -114,7 +114,7 @@ public class VaadinServletContext implements VaadinContext {
         return getContext().getAttribute(clazz.getName());
     }
 
-    private void checkType(Class<?> type) {
+    private void checkLookupDuplicate(Class<?> type) {
         if (Lookup.class.equals(type) && doGetAttribute(type) != null) {
             throw new IllegalArgumentException("The attribute " + Lookup.class
                     + " has been already set once. It's not possible to override its value");

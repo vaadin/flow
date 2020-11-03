@@ -61,7 +61,8 @@ public class LookupInitializer
 
     private static final String SPI = " SPI: ";
 
-    private static final String ONE_IMPL_REQUIRED = ". Only one implementation should be registered";
+    private static final String ONE_IMPL_REQUIRED = ". Only one implementation should be registered. "
+            + "Use lookupAll to get all instances of the given type.";
 
     private static final String SEVERAL_IMPLS = "Found several implementations in the classpath for ";
 
@@ -181,6 +182,10 @@ public class LookupInitializer
         @Override
         public InputStream getClientResourceAsStream(String path)
                 throws IOException {
+            // the client resource should be available in the classpath, so
+            // its content is cached once. If an exception is thrown then
+            // something is broken and it's also cached and will be rethrown on
+            // every subsequent access
             CachedStreamData cached = cache.computeIfAbsent(path, key -> {
                 URL url = getClientResource(key);
                 try (InputStream stream = url.openStream()) {
