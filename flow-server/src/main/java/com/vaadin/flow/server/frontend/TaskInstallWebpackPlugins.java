@@ -71,7 +71,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
 
     protected List<String> getPlugins() {
         try {
-            final JsonObject jsonFile = getJsonFile("plugins/",
+            final JsonObject jsonFile = getJsonFile("plugins",
                 "webpack-plugins.json");
             final JsonArray plugins = jsonFile.getArray("plugins");
             List<String> pluginsToInstall = new ArrayList<>(plugins.length());
