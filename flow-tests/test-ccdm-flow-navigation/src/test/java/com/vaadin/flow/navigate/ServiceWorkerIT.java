@@ -69,6 +69,38 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
+    public void testOfflineStart_nonRootReload() throws IOException {
+        getDriver().get(getRootURL() + "/");
+        waitForServiceWorkerReady();
+
+        // Set offline network conditions in ChromeDriver
+        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+
+        try {
+            $("main-view").first().$("a").id("menu-another").click();
+
+            // Wait for component inside shadow root as there is no vaadin
+            // to wait for as with server-side
+            waitUntil(input -> $("another-view").first().$("div").id("another-content")
+                    .isDisplayed());
+
+            // Reload the page in offline mode
+            executeScript("window.location.reload();");
+            waitUntil(webDriver -> ((JavascriptExecutor) driver)
+                    .executeScript("return document.readyState")
+                    .equals("complete"));
+
+            MatcherAssert.assertThat(getDriver().getCurrentUrl(),
+                    CoreMatchers.endsWith("/another"));
+            Assert.assertTrue(getInShadowRoot(findElement(By.tagName("another-view")),
+                    By.id("another-content")).isDisplayed());
+        } finally {
+            // Reset network conditions back
+            setConnectionType(NetworkConnection.ConnectionType.ALL);
+        }
+    }
+
+    @Test
     public void openTsView_goOffline_navigateToOtherTsView_navigationSuccessful() throws IOException {
         getDriver().get(getRootURL() + "/about");
         waitForServiceWorkerReady();
