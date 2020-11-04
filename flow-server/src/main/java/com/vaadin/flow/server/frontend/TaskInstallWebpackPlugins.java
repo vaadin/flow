@@ -71,12 +71,19 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         });
     }
 
+    /**
+     * Get names for plugins to install into node_modules.
+     *
+     * @return names of plugins to install
+     */
     protected List<String> getPlugins() {
         try {
             final JsonObject jsonFile = getJsonFile(
                 "plugins/webpack-plugins.json");
             if (jsonFile == null) {
-                log().error("Couldn't locate webpack-plugins.json");
+                log().error(
+                    "Couldn't locate plugins/webpack-plugins.json, no Webpack plugins for Flow will be installed."
+                        + "If webpack build fails validate flow-server jar content.");
                 return Collections.emptyList();
             }
 
@@ -94,26 +101,29 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
 
     private void generatePluginFiles(String pluginName) throws IOException {
         // Get the target folder where the plugin should be installed to
-        File pluginTargetFolder = new File(nodeModulesFolder,
+        File pluginTargetFile = new File(nodeModulesFolder,
             "@vaadin/" + pluginName);
 
-        final String pluginFolder = "plugins/" + pluginName + "/";
-        final JsonObject json = getJsonFile(pluginFolder + PACKAGE_JSON);
-        if (json == null) {
-            log().error("Couldn't locate files for plugin '{}'", pluginName);
+        final String pluginFolderName = "plugins/" + pluginName + "/";
+        final JsonObject packageJson = getJsonFile(
+            pluginFolderName + PACKAGE_JSON);
+        if (packageJson == null) {
+            log().error(
+                "Couldn't locate '{}' for plugin '{}'. Plugin will not be installed.",
+                PACKAGE_JSON, pluginName);
             return;
         }
 
         // Validate installed version and don't override if same
-        if (pluginTargetFolder.exists() && new File(pluginTargetFolder,
+        if (pluginTargetFile.exists() && new File(pluginTargetFile,
             PACKAGE_JSON).exists()) {
             String packageFile = FileUtils
-                .readFileToString(new File(pluginTargetFolder, PACKAGE_JSON),
+                .readFileToString(new File(pluginTargetFile, PACKAGE_JSON),
                     StandardCharsets.UTF_8);
             final FrontendVersion packageVersion = new FrontendVersion(
                 Json.parse(packageFile).getString("version"));
             FrontendVersion pluginVersion = new FrontendVersion(
-                json.getString("version"));
+                packageJson.getString("version"));
             if (packageVersion.isEqualTo(pluginVersion)) {
                 log().debug(
                     "Skipping install of {} for version {} already installed",
@@ -123,28 +133,28 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         }
 
         // Create target folder if necessary
-        FileUtils.forceMkdir(pluginTargetFolder);
+        FileUtils.forceMkdir(pluginTargetFile);
 
         // copy only files named in package.json { files }
-        final JsonArray files = json.getArray("files");
+        final JsonArray files = packageJson.getArray("files");
         for (int i = 0; i < files.length(); i++) {
             final String file = files.getString(i);
-            FileUtils.copyURLToFile(getUrlResource(pluginFolder + file),
-                new File(pluginTargetFolder, file));
+            FileUtils.copyURLToFile(getResourceUrl(pluginFolderName + file),
+                new File(pluginTargetFile, file));
         }
         // copy package.json to plugin directory
-        FileUtils.copyURLToFile(getUrlResource(pluginFolder + PACKAGE_JSON),
-            new File(pluginTargetFolder, PACKAGE_JSON));
+        FileUtils.copyURLToFile(getResourceUrl(pluginFolderName + PACKAGE_JSON),
+            new File(pluginTargetFile, PACKAGE_JSON));
     }
 
     private JsonObject getJsonFile(String jsonFilePath) throws IOException {
-        final URL urlResource = getUrlResource(jsonFilePath);
+        final URL urlResource = getResourceUrl(jsonFilePath);
         if (urlResource == null) {
             return null;
         }
-        File pluginPackageJson = new File(urlResource.getFile());
+        File jsonFile = new File(urlResource.getFile());
         String jsonString;
-        if (!pluginPackageJson.exists()) {
+        if (!jsonFile.exists()) {
             try (InputStream resourceAsStream = this.getClass().getClassLoader()
                 .getResourceAsStream(jsonFilePath)) {
                 if (resourceAsStream != null) {
@@ -154,12 +164,12 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
                 }
             }
         } else {
-            jsonString = FileUtils.readFileToString(pluginPackageJson, UTF_8);
+            jsonString = FileUtils.readFileToString(jsonFile, UTF_8);
         }
         return Json.parse(jsonString);
     }
 
-    private URL getUrlResource(String resource) {
+    private URL getResourceUrl(String resource) {
         return this.getClass().getClassLoader().getResource(resource);
     }
 

@@ -56,8 +56,8 @@ For creating a plugin see [Writing a plugin](https://webpack.js.org/contribute/w
 
 The flow plugins get installed to `node_modules/@vaadin` which means that using them we should use the for `@vaadin/${plugin-name}`
 
-In most cases the plugin should be added to `webpack.generated.js` as they are for
-internal use.
+As the plugins are meant for internal use the are added to `webpack.generated.js` and
+used from there.
 
 First we need to import the webpack plugin
 
