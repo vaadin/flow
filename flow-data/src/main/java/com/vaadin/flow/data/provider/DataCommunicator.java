@@ -419,6 +419,8 @@ public class DataCommunicator<T> implements Serializable {
             boolean permanentFilter) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
 
+        removeFilteringAndSorting();
+
         filter = initialFilter != null
                 ? new Filter<>(initialFilter, permanentFilter)
                 : null;
@@ -1373,6 +1375,16 @@ public class DataCommunicator<T> implements Serializable {
                     filterValue -> new Filter<>(filterValue.getFilter(), true))
                     .orElse(null);
         }
+    }
+
+    private void removeFilteringAndSorting() {
+        Optional<Component> component = Element.get(stateNode).getComponent();
+        assert component
+                .isPresent() : "DataCommunicator is supposed to have a bound component";
+
+        ComponentUtil.setData(component.get(), ComponentInMemoryFilter.class,
+                null);
+        ComponentUtil.setData(component.get(), ComponentSorting.class, null);
     }
 
     private static class Activation implements Serializable {
