@@ -29,6 +29,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -58,10 +63,6 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -461,26 +462,26 @@ class BootstrapUtils {
         // found" target
         return resolveRouteNotFoundNavigationTarget(
                 ui.getSession().getService().getContext())
-                .map(errorNavigationTarget -> {
-                    /*
-                     * {@code resolveTopParentLayout} is theoretically the
-                     * correct way to get the parent layout. But in fact it does
-                     * work for non route targets.
-                     */
-                    List<Class<? extends RouterLayout>> layouts = RouteUtil
-                            .getParentLayoutsForNonRouteTarget(
-                                    errorNavigationTarget);
-                    if (layouts.isEmpty()) {
-                        return errorNavigationTarget;
-                    } else {
-                        return layouts.get(layouts.size() - 1);
-                    }
-                });
+                        .map(errorNavigationTarget -> {
+                            /*
+                             * {@code resolveTopParentLayout} is theoretically
+                             * the correct way to get the parent layout. But in
+                             * fact it does work for non route targets.
+                             */
+                            List<Class<? extends RouterLayout>> layouts = RouteUtil
+                                    .getParentLayoutsForNonRouteTarget(
+                                            errorNavigationTarget);
+                            if (layouts.isEmpty()) {
+                                return errorNavigationTarget;
+                            } else {
+                                return layouts.get(layouts.size() - 1);
+                            }
+                        });
     }
 
     /*
-     * NOTE: this code doesn't belong in this class, but is just
-     * c/p from Router to avoid adding new API to 2.1.
+     * NOTE: this code doesn't belong in this class, but is just c/p from Router
+     * to avoid adding new API to 2.1.
      */
     private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget(
             VaadinContext context) {
