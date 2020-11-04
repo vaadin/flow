@@ -255,7 +255,6 @@ public class HierarchicalCommunicatorTest {
 
         dataCommunicator.reset();
 
-
         Assert.assertTrue(enqueueFunctionsWithParams
                 .containsKey("$connector.expandItems"));
         JsonArray arguments = (JsonArray) enqueueFunctionsWithParams
