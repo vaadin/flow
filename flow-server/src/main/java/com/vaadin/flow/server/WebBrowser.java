@@ -35,11 +35,37 @@ import com.vaadin.flow.shared.BrowserDetails;
 public class WebBrowser implements Serializable {
 
     private String browserApplication = null;
-    private Locale locale;
-    private String address;
-    private boolean secureConnection;
+    private Locale locale = null;
+    private String address = null;
+    private boolean secureConnection = false;
 
-    private BrowserDetails browserDetails;
+    private BrowserDetails browserDetails = null;
+
+    /**
+     * For internal use only. Configures all properties for the initial empty state.
+     */
+    WebBrowser() {}
+
+    /**
+     * For internal use only. Configures all properties in the class according to
+     * the given information.
+     *
+     * @param request
+     *            the Vaadin request to read the information from
+     */
+    WebBrowser(VaadinRequest request) {
+        locale = request.getLocale();
+        address = request.getRemoteAddr();
+        secureConnection = request.isSecure();
+        // Headers are case insensitive according to the specification but are
+        // case sensitive in Weblogic portal...
+        String agent = request.getHeader("User-Agent");
+
+        if (agent != null) {
+            browserApplication = agent;
+            browserDetails = new BrowserDetails(agent);
+        }
+    }
 
     /**
      * Get the browser user-agent string.
@@ -296,7 +322,12 @@ public class WebBrowser implements Serializable {
      *
      * @param request
      *            the Vaadin request to read the information from
+     *
+     * @deprecated Use {@link #WebBrowser(VaadinRequest)} constructor instead
+     *             and create a new instance of WebBrowser to apply the changes
+     *             from given {@link VaadinRequest}.
      */
+    @Deprecated
     public void updateRequestDetails(VaadinRequest request) {
         locale = request.getLocale();
         address = request.getRemoteAddr();
