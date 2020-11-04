@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -29,6 +30,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -37,6 +43,8 @@ import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
@@ -58,10 +66,6 @@ import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Parser;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -301,13 +305,24 @@ class BootstrapUtils {
 
     private static InputStream getInlineResourceStream(VaadinRequest request,
             String file) {
-        InputStream stream = request.getService().getClassLoader()
-                .getResourceAsStream(file);
+        VaadinService service = request.getService();
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        URL appResource = resourceProvider.getApplicationResource(service,
+                file);
+
+        InputStream stream = null;
+        try {
+            stream = appResource == null ? null : appResource.openStream();
+        } catch (IOException e) {
+            throw new IllegalStateException(String.format(
+                    "Couldn't open application resource '%s' for inline resource",
+                    file), e);
+        }
 
         if (stream == null) {
             throw new IllegalStateException(String.format(
-                    "File '%s' for inline resource is not available through "
-                            + "the servlet context class loader.",
+                    "Application resource '%s' for inline resource is not available",
                     file));
         }
         return stream;
@@ -462,26 +477,26 @@ class BootstrapUtils {
         // found" target
         return resolveRouteNotFoundNavigationTarget(
                 ui.getSession().getService().getContext())
-                .map(errorNavigationTarget -> {
-                    /*
-                     * {@code resolveTopParentLayout} is theoretically the
-                     * correct way to get the parent layout. But in fact it does
-                     * work for non route targets.
-                     */
-                    List<Class<? extends RouterLayout>> layouts = RouteUtil
-                            .getParentLayoutsForNonRouteTarget(
-                                    errorNavigationTarget);
-                    if (layouts.isEmpty()) {
-                        return errorNavigationTarget;
-                    } else {
-                        return layouts.get(layouts.size() - 1);
-                    }
-                });
+                        .map(errorNavigationTarget -> {
+                            /*
+                             * {@code resolveTopParentLayout} is theoretically
+                             * the correct way to get the parent layout. But in
+                             * fact it does work for non route targets.
+                             */
+                            List<Class<? extends RouterLayout>> layouts = RouteUtil
+                                    .getParentLayoutsForNonRouteTarget(
+                                            errorNavigationTarget);
+                            if (layouts.isEmpty()) {
+                                return errorNavigationTarget;
+                            } else {
+                                return layouts.get(layouts.size() - 1);
+                            }
+                        });
     }
 
     /*
-     * NOTE: this code doesn't belong in this class, but is just
-     * c/p from Router to avoid adding new API to 2.1.
+     * NOTE: this code doesn't belong in this class, but is just c/p from Router
+     * to avoid adding new API to 2.1.
      */
     private static Optional<Class<? extends Component>> resolveRouteNotFoundNavigationTarget(
             VaadinContext context) {
