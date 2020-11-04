@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { DeferrableResult, DeferredCallSubmissionHandler, OfflineHelper } from './Offline';
+import { DeferrableResult, DeferredCallHandler, OfflineHelper } from './Offline';
 
 const $wnd = window as any;
 $wnd.Vaadin = $wnd.Vaadin || {};
@@ -174,9 +174,9 @@ export interface ConnectClientOptions {
   middlewares?: Middleware[];
 
   /**
-   * The `deferredCallSubmissionHandler` property valueThe
+   * The `deferredCallHandler` property value.
    */
-  deferredCallSubmissionHandler?: DeferredCallSubmissionHandler;
+  deferredCallHandler?: DeferredCallHandler;
 }
 
 export interface EndpointCallMetaInfo {
@@ -281,7 +281,7 @@ export class ConnectClient {
   /**
    * The handler for handling deferred calls
    */
-  deferredCallSubmissionHandler?: DeferredCallSubmissionHandler;
+  deferredCallHandler?: DeferredCallHandler;
 
   private offlineHelper = new OfflineHelper();
 
@@ -297,7 +297,7 @@ export class ConnectClient {
       this.middlewares = options.middlewares;
     }
 
-    this.deferredCallSubmissionHandler = options.deferredCallSubmissionHandler;
+    this.deferredCallHandler = options.deferredCallHandler;
 
     this.submitDeferredCalls = this.submitDeferredCalls.bind(this);
 
@@ -355,7 +355,7 @@ export class ConnectClient {
   async submitDeferredCalls() {
     await this.offlineHelper.processDeferredCalls(
       (endpoint, method, params) => this.requestCall(true, endpoint, method, params),
-      this.deferredCallSubmissionHandler);
+      this.deferredCallHandler);
   }
 
   private async requestCall(

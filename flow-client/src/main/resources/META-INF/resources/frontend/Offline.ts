@@ -21,7 +21,7 @@ export class OfflineHelper {
     return { isDeferred: true, deferredCall };
   }
 
-  async processDeferredCalls(submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallSubmissionHandler) {
+  async processDeferredCalls(submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
     const db = await this.openOrCreateDB();
 
     /**
@@ -69,7 +69,7 @@ export class OfflineHelper {
     return shouldSubmit;
   }
 
-  private async submitCachedRequests(db: IDBPDatabase<DeferredCallQueueDB>, submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallSubmissionHandler) {
+  private async submitCachedRequests(db: IDBPDatabase<DeferredCallQueueDB>, submitFunction: DeferredCallSubmitFn, deferredCallHandler?: DeferredCallHandler) {
     const errors: Error[] = [];
     const cachedRequests = await db.getAll(VAADIN_DEFERRED_CALL_STORE_NAME);
     for (const request of cachedRequests) {
@@ -119,10 +119,10 @@ type DeferredCallSubmitFn = (
  * Vaadin tries to submit a deferred endpoint call. You can use it e.g. to show
  * notifications to the user when the submission is started, succeeded, or failed.
  * 
- * You can register a <code>DeferredCallSubmissionHandler</code> to <code>ConnectClient</code>
- * by setting the `deferredCallSubmissionHandler` property of an existing `ConnectClient` instance
+ * You can register a <code>DeferredCallHandler</code> to <code>ConnectClient</code>
+ * by setting the `deferredCallHandler` property of an existing `ConnectClient` instance
  * <code>
- * client.deferredCallSubmissionHandler = {
+ * client.deferredCallHandler = {
  *  async handleDeferredCallSubmission(submittableDeferredCall: SubmittableDeferredCall) {
  *    
  *  }
@@ -130,10 +130,10 @@ type DeferredCallSubmitFn = (
  * <code>
  * or as a `ConnectClient` constructor option when creating a new one.
  * <code>
- * const client = new ConnectClient({deferredCallSubmissionHandler});
+ * const client = new ConnectClient({deferredCallHandler});
  * </code>
  */
-export interface DeferredCallSubmissionHandler {
+export interface DeferredCallHandler {
   handleDeferredCallSubmission: (deferredCallSubmitter: DeferredCallSubmitter) => Promise<void>;
 }
 

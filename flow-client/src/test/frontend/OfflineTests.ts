@@ -332,7 +332,7 @@ describe("Offline", () => {
       await insertARequest();
 
       const onDeferredCallStub = sinon.stub().resolves();
-      client.deferredCallSubmissionHandler = {
+      client.deferredCallHandler = {
         handleDeferredCallSubmission: onDeferredCallStub
       };
 
@@ -349,7 +349,7 @@ describe("Offline", () => {
 
     it('should reject if onDeferredCall callback rejects', async () => {
       const onDeferredCallStub = sinon.stub().rejects();
-      client.deferredCallSubmissionHandler = {
+      client.deferredCallHandler = {
         handleDeferredCallSubmission: onDeferredCallStub
       };
 
@@ -368,7 +368,7 @@ describe("Offline", () => {
 
     it('should keep request in the queue when onDeferredCall callback rejects', async () => {
       const onDeferredCallStub = sinon.stub().rejects();
-      client.deferredCallSubmissionHandler = {
+      client.deferredCallHandler = {
         handleDeferredCallSubmission: onDeferredCallStub
       };;
   
@@ -418,7 +418,7 @@ describe("Offline", () => {
     describe('deferred call handler', () => {
       it('should be able to show a notification when a deferred call submission succeeds', async () => {
         const notifyOnSucess = sinon.stub();
-        client.deferredCallSubmissionHandler = {
+        client.deferredCallHandler = {
           async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             await deferrableCall.submit();
             notifyOnSucess();
@@ -435,7 +435,7 @@ describe("Offline", () => {
 
       it('should be able to show a notification when deferred call submission fails', async () => {
         const notifyOnFailure = sinon.stub();
-        client.deferredCallSubmissionHandler = {
+        client.deferredCallHandler = {
           async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             try {
               await deferrableCall.submit();
@@ -455,7 +455,7 @@ describe("Offline", () => {
       });
 
       it('should remove a succeeded endpoint call from the queue by default', async () => {
-        client.deferredCallSubmissionHandler = {
+        client.deferredCallHandler = {
           async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             await deferrableCall.submit();
           }
@@ -470,7 +470,7 @@ describe("Offline", () => {
       });
 
       it('should keep a failed endpoint in the queue by default', async () => {
-        client.deferredCallSubmissionHandler = {
+        client.deferredCallHandler = {
           async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
             await deferrableCall.submit();
           }
@@ -487,11 +487,11 @@ describe("Offline", () => {
         }
       });
 
-      it('should remove a failed endpoint call from the queue when user catches the error without calling deferrecCall.keepInTheQueue()', async () => {
-        client.deferredCallSubmissionHandler = {
-          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
+      it('should remove a failed endpoint call from the queue when user catches the error without calling deferredCallSubmitter.keepInTheQueue()', async () => {
+        client.deferredCallHandler = {
+          async handleDeferredCallSubmission(deferredCallSubmitter: DeferredCallSubmitter) {
             try {
-              await deferrableCall.submit();
+              await deferredCallSubmitter.submit();
             } catch (error) {
               // swallow the error
             }
@@ -507,13 +507,13 @@ describe("Offline", () => {
         }
       });
 
-      it('should keep a failed endpoint call in the queue when user catches the error and calls deferrecCall.keepInTheQueue()', async () => {
-        client.deferredCallSubmissionHandler = {
-          async handleDeferredCallSubmission(deferrableCall: DeferredCallSubmitter) {
+      it('should keep a failed endpoint call in the queue when user catches the error and calls deferredCallSubmitter.keepInTheQueue()', async () => {
+        client.deferredCallHandler = {
+          async handleDeferredCallSubmission(deferredCallSubmitter: DeferredCallSubmitter) {
             try {
-              await deferrableCall.submit();
+              await deferredCallSubmitter.submit();
             } catch (error) {
-              deferrableCall.keepDeferredCallInTheQueue();
+              deferredCallSubmitter.keepDeferredCallInTheQueue();
             }
           }
         };
