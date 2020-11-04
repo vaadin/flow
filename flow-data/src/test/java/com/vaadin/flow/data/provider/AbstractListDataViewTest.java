@@ -130,13 +130,15 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void setFilter_filterReset_allItemsObtained() {
+    public void setFilter_resetFilterWithDataView_dataProviderFilterNotAffected() {
         dataProvider.setFilter(item -> item.equals("first"));
         dataView.setFilter(null);
-        Assert.assertEquals("Filter reset was not applied to data size",
-                items.size(), dataView.getItemCount());
-        Assert.assertArrayEquals("Filter reset was not applied to data set",
-                items.toArray(), dataView.getItems().toArray());
+        Assert.assertEquals(
+                "Filter reset in data view impacts the data provider filter", 1,
+                dataView.getItemCount());
+        Assert.assertArrayEquals(
+                "Filter reset in data view impacts the data provider filter",
+                new String[] { "first" }, dataView.getItems().toArray());
     }
 
     @Test
@@ -148,11 +150,13 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void setSortComparator_sortingReset_sortingResetToInitial() {
+    public void setSortComparator_resetSortingWithDataView_dataProviderSortingNotAffected() {
         dataProvider.setSortComparator(String::compareTo);
         dataView.setSortComparator(null);
-        Assert.assertArrayEquals("Sorting reset was not applied to data set",
-                items.toArray(), dataView.getItems().toArray());
+        Assert.assertArrayEquals(
+                "Sorting reset in data view impacts the sorting in data provider",
+                new String[] { "first", "last", "middle" },
+                dataView.getItems().toArray());
     }
 
     @Test
@@ -182,7 +186,7 @@ public class AbstractListDataViewTest {
     @Test
     public void addSortOrder_twoOrdersAdded_itemsSortedByCompositeOrders() {
         dataProvider = DataProvider.ofItems("b3", "a1", "a2");
-        dataView = new ListDataViewImpl(() -> dataProvider, null);
+        dataView = new ListDataViewImpl(() -> dataProvider, new TestComponent());
         dataView.addSortOrder((item) -> item.charAt(0),
                 SortDirection.DESCENDING);
         Assert.assertEquals("Unexpected data set order (order 1)", "b3,a1,a2",

@@ -1354,9 +1354,24 @@ public class DataCommunicator<T> implements Serializable {
         return json;
     }
 
+    @SuppressWarnings("unchecked")
     private void clearFilterIfDisposable() {
         if (filter != null && !filter.isPermanent()) {
-            filter = null;
+            Optional<Component> component = Element.get(stateNode).getComponent();
+            assert component
+                    .isPresent() : "DataCommunicator is supposed to have a bound component";
+
+            // Look up for the component's in-memory filter
+            Optional<ComponentInMemoryFilter<T>> componentFilter = Optional
+                    .ofNullable(ComponentUtil.getData(component.get(),
+                            ComponentInMemoryFilter.class));
+
+            // If the component's in-memory filter is present, then erase
+            // the client-side filter and re-apply the permanent
+            // component's filter
+            filter = componentFilter.map(
+                    filterValue -> new Filter<>(filterValue.getFilter(), true))
+                    .orElse(null);
         }
     }
 

@@ -1373,6 +1373,11 @@ public class DataCommunicatorTest {
 
     @Test
     public void filter_setFilterAsDisposable_shouldDiscardFilterAfterFirstFlush() {
+        // Data communicator needs a linked component as in real life,
+        // because in-memory filter handling logic stores this filter in the
+        // component
+        TestComponent testComponent = new TestComponent(element);
+
         SerializableConsumer<DataCommunicator.Filter<SerializablePredicate<Item>>> filterConsumer = dataCommunicator
                 .setDataProvider(DataProvider.ofItems(new Item(1), new Item(2),
                         new Item(3)), item -> item.id > 1, false);
