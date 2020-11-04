@@ -16,7 +16,6 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -627,15 +626,5 @@ public class HierarchyMapper<T, F> implements Serializable {
      */
     public boolean hasExpandedItems() {
         return !expandedItems.isEmpty();
-    }
-
-    /**
-     * Returns the expanded items in form of an unmodifiable collection.
-     *
-     * @return an unmodifiable {@code Collection<T>} containing the expanded
-     * items.
-     */
-    public Collection<T> getExpandedItems() {
-        return Collections.unmodifiableCollection(expandedItems.values());
     }
 }
