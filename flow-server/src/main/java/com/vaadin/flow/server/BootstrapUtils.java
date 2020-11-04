@@ -317,7 +317,7 @@ class BootstrapUtils {
         } catch (IOException e) {
             throw new IllegalStateException(String.format(
                     "Couldn't open application resource '%s' for inline resource",
-                    file, e));
+                    file), e);
         }
 
         if (stream == null) {

@@ -166,6 +166,8 @@ public class NpmTemplateParser implements TemplateParser {
     /**
      * Finds the JavaScript sources for given tag.
      *
+     * @param service
+     *            the related Vaadin service
      * @param tag
      *            the value of the {@link com.vaadin.flow.component.Tag}
      *            annotation, e.g. `my-component`
