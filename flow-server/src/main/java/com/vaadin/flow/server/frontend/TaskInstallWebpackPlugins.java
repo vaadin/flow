@@ -22,6 +22,7 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -31,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -71,8 +73,13 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
 
     protected List<String> getPlugins() {
         try {
-            final JsonObject jsonFile = getJsonFile("plugins",
-                "webpack-plugins.json");
+            final JsonObject jsonFile = getJsonFile(
+                "plugins/webpack-plugins.json");
+            if (jsonFile == null) {
+                log().error("Couldn't locate webpack-plugins.json");
+                return Collections.emptyList();
+            }
+
             final JsonArray plugins = jsonFile.getArray("plugins");
             List<String> pluginsToInstall = new ArrayList<>(plugins.length());
             for (int i = 0; i < plugins.length(); i++) {
@@ -90,8 +97,8 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         File pluginTargetFolder = new File(nodeModulesFolder,
             "@vaadin/" + pluginName);
 
-        final String pluginFolder = "plugins/" + pluginName;
-        final JsonObject json = getJsonFile(pluginFolder, "package.json");
+        final String pluginFolder = "plugins/" + pluginName + "/";
+        final JsonObject json = getJsonFile(pluginFolder + PACKAGE_JSON);
         if (json == null) {
             log().error("Couldn't locate files for plugin '{}'", pluginName);
             return;
@@ -99,9 +106,9 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
 
         // Validate installed version and don't override if same
         if (pluginTargetFolder.exists() && new File(pluginTargetFolder,
-            "package.json").exists()) {
+            PACKAGE_JSON).exists()) {
             String packageFile = FileUtils
-                .readFileToString(new File(pluginTargetFolder, "package.json"),
+                .readFileToString(new File(pluginTargetFolder, PACKAGE_JSON),
                     StandardCharsets.UTF_8);
             final FrontendVersion packageVersion = new FrontendVersion(
                 Json.parse(packageFile).getString("version"));
@@ -121,23 +128,25 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
         // copy only files named in package.json { files }
         final JsonArray files = json.getArray("files");
         for (int i = 0; i < files.length(); i++) {
-            final String string = files.getString(i);
-            FileUtils.copyURLToFile(getUrlResource(pluginFolder + "/" + string),
-                new File(pluginTargetFolder, string));
+            final String file = files.getString(i);
+            FileUtils.copyURLToFile(getUrlResource(pluginFolder + file),
+                new File(pluginTargetFolder, file));
         }
         // copy package.json to plugin directory
-        FileUtils.copyURLToFile(getUrlResource(pluginFolder + "/package.json"),
-            new File(pluginTargetFolder, "package.json"));
+        FileUtils.copyURLToFile(getUrlResource(pluginFolder + PACKAGE_JSON),
+            new File(pluginTargetFolder, PACKAGE_JSON));
     }
 
-    private JsonObject getJsonFile(String pluginFolder, String fileName)
-        throws IOException {
-        File pluginPackageJson = new File(
-            getUrlResource(pluginFolder + "/" + fileName).getFile());
+    private JsonObject getJsonFile(String jsonFilePath) throws IOException {
+        final URL urlResource = getUrlResource(jsonFilePath);
+        if (urlResource == null) {
+            return null;
+        }
+        File pluginPackageJson = new File(urlResource.getFile());
         String jsonString;
         if (!pluginPackageJson.exists()) {
             try (InputStream resourceAsStream = this.getClass().getClassLoader()
-                .getResourceAsStream(pluginFolder + "/" + fileName)) {
+                .getResourceAsStream(jsonFilePath)) {
                 if (resourceAsStream != null) {
                     jsonString = FrontendUtils.streamToString(resourceAsStream);
                 } else {
