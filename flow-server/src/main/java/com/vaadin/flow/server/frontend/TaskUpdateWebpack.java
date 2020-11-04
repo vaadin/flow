@@ -206,6 +206,9 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 flowResourcesFolder
                                         .resolve("VaadinDevmodeGizmo.js")))),
+                new Pair<>("const pwaEnabled",
+                        Boolean.toString(
+                                pwaConfiguration.isEnabled())),
                 new Pair<>("const offlinePathEnabled",
                         Boolean.toString(
                                 pwaConfiguration.isOfflinePathEnabled())),
