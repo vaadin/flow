@@ -6,6 +6,7 @@ module.exports = {
     flow: "./src/test/frontend/FlowTests.ts",
     connect: "./src/test/frontend/ConnectTests.ts",
     authentication: "./src/test/frontend/AuthenticationTests.ts",
+    offline: "./src/test/frontend/OfflineTests.ts",
     gizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js",
     form_binder: "./src/test/frontend/form/BinderTests.ts",
     form_field: "./src/test/frontend/form/FieldTests.ts",
