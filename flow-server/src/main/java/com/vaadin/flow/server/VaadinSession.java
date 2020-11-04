@@ -200,6 +200,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Set the web browser associated with this session.
+     *
+     * @param browser the web browser object
+     */
+    public void setBrowser(WebBrowser browser) {
+        checkHasLock();
+        this.browser = browser;
+    }
+
+    /**
      * @return The total time spent servicing requests in this session, in
      *         milliseconds.
      */
