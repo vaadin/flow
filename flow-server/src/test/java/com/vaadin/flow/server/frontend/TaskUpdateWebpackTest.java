@@ -64,6 +64,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private File baseDir;
     private File frontendFolder;
     private PwaConfiguration pwaConfiguration;
+    private boolean useV14Bootstrapping = false;
 
     @Before
     public void setup() throws Exception {
@@ -76,15 +77,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         pwaConfiguration = new PwaConfiguration(
                 AppShell.class.getAnnotation(PWA.class));
 
-        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
-                new File(baseDir, TARGET + "webapp"),
-                new File(baseDir, TARGET + "classes"),
-                WEBPACK_CONFIG,
-                WEBPACK_GENERATED,
-                SERVICE_WORKER_SRC,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
-                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                pwaConfiguration);
+        createWebpackUpdater();
 
         webpackConfig = new File(baseDir, WEBPACK_CONFIG);
         webpackGenerated = new File(baseDir, WEBPACK_GENERATED);
@@ -124,13 +117,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 webpackGenerated.exists());
 
         frontendFolder = new File(baseDir, "my-custom-frontend");
-        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
-                new File(baseDir, TARGET + "webapp"),
-                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED, SERVICE_WORKER_SRC,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                pwaConfiguration);
+        createWebpackUpdater();
 
         webpackUpdater.execute();
 
@@ -174,9 +161,11 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
-                WEBPACK_CONFIG, WEBPACK_GENERATED, SERVICE_WORKER_SRC, new File(baseDir, "bar"),
-                false, new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
+                WEBPACK_CONFIG, WEBPACK_GENERATED, SERVICE_WORKER_SRC,
+                new File(baseDir, "bar"), false,
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
                 pwaConfiguration);
+
         newUpdater.execute();
 
         assertWebpackGeneratedConfigContent("bar", "baz", "foo");
@@ -191,6 +180,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     @Test
     public void should_notSetClientSideBootstrapMode_when_runningV14Bootstrapping()
             throws IOException {
+        useV14Bootstrapping = true;
+        createWebpackUpdater();
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
@@ -200,19 +191,11 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 webpackGeneratedContents
                         .contains(
                                 "const useClientSideIndexFileForBootstrapping = false;"));
-
     }
 
     @Test
-    public void should_setClientSideBootstrapMode_when_runningV15Bootsrapping()
+    public void should_setClientSideBootstrapMode_when_runningV15Bootstrapping()
             throws IOException {
-        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
-                new File(baseDir, TARGET + "webapp"),
-                new File(baseDir, TARGET + "classes"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED, SERVICE_WORKER_SRC,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), false,
-                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                pwaConfiguration);
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
@@ -240,18 +223,9 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     @Test
     public void should_enableCustomOfflinePath_when_customisedInPwa()
         throws IOException {
-        PwaConfiguration customOfflinePathPwaConfiguration =
-                new PwaConfiguration(AppShellWithOfflinePath.class.getAnnotation(
-                        PWA.class));
-        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
-                new File(baseDir, TARGET + "webapp"),
-                new File(baseDir, TARGET + "classes"),
-                WEBPACK_CONFIG,
-                WEBPACK_GENERATED,
-                SERVICE_WORKER_SRC,
-                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME), true,
-                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
-                customOfflinePathPwaConfiguration);
+        pwaConfiguration = new PwaConfiguration(
+                AppShellWithOfflinePath.class.getAnnotation(PWA.class));
+        createWebpackUpdater();
 
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
@@ -263,6 +237,43 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         Assert.assertTrue("offlinePath should be customizable",
                 webpackGeneratedContents
                         .contains("const offlinePath = 'off.html';"));
+    }
+
+    @Test
+    public void should_setPwaEnabledFalse_when_noPwa()
+            throws IOException {
+        pwaConfiguration = new PwaConfiguration();
+        createWebpackUpdater();
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("pwaEnabled expected false",
+                webpackGeneratedContents
+                        .contains("const pwaEnabled = false;"));
+    }
+
+    @Test
+    public void should_setPwaEnabledTrue_when_Pwa()
+            throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("pwaEnabled expected true",
+                webpackGeneratedContents
+                        .contains("const pwaEnabled = true;"));
+    }
+
+    protected void createWebpackUpdater() {
+        webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
+                new File(baseDir, TARGET + "webapp"),
+                new File(baseDir, TARGET + "classes"),
+                WEBPACK_CONFIG,
+                WEBPACK_GENERATED,
+                SERVICE_WORKER_SRC,
+                new File(baseDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME),
+                useV14Bootstrapping,
+                new File(baseDir, DEFAULT_FLOW_RESOURCES_FOLDER),
+                pwaConfiguration);
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,
