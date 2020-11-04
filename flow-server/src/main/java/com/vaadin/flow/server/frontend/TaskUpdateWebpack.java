@@ -154,13 +154,15 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
         FileUtils.writeLines(generatedFile, lines);
 
-        File serviceWorkerFile = new File(webpackConfigPath.toFile(),
+        if(pwaConfiguration.isEnabled()){
+            File serviceWorkerFile = new File(frontendDirectory.toFile(),
                 SERVICE_WORKER_SRC);
-        if (!serviceWorkerFile.exists()) {
-            resource = this.getClass().getClassLoader()
-                    .getResource(serviceWorkerTemplate);
-            FileUtils.copyURLToFile(resource, serviceWorkerFile);
-            log().info("Created service worker file: '{}'", serviceWorkerFile);
+            if (!serviceWorkerFile.exists()) {
+                resource = this.getClass().getClassLoader()
+                        .getResource(serviceWorkerTemplate);
+                FileUtils.copyURLToFile(resource, serviceWorkerFile);
+                log().info("Created service worker file: '{}'", serviceWorkerFile);
+            }
         }
 
     }

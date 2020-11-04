@@ -263,6 +263,37 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                         .contains("const pwaEnabled = true;"));
     }
 
+    @Test
+    public void should_Not_generateServiceworkerFile_when_noPwa(){
+        pwaConfiguration = new PwaConfiguration();
+        createWebpackUpdater();
+        webpackUpdater.execute();
+
+        File serviceWorkerFile = new File(frontendFolder,
+                SERVICE_WORKER_SRC);
+        Assert.assertFalse(serviceWorkerFile.exists());
+    }
+
+    @Test
+    public void should_generateServiceworkerFile_when_pwa(){
+        createWebpackUpdater();
+        webpackUpdater.execute();
+
+        File serviceWorkerFile = new File(frontendFolder,
+                SERVICE_WORKER_SRC);
+        Assert.assertTrue(serviceWorkerFile.exists());
+    }
+
+    @Test
+    public void should_Not_generateServiceworkerFile_inProjectRootFoler_when_pwa(){
+        createWebpackUpdater();
+        webpackUpdater.execute();
+
+        File serviceWorkerFile = new File(baseDir,
+                SERVICE_WORKER_SRC);
+        Assert.assertFalse(serviceWorkerFile.exists());
+    }
+
     protected void createWebpackUpdater() {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "webapp"),

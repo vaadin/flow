@@ -112,7 +112,7 @@ const swManifestTransform = (manifestEntries) => {
 };
 
 const serviceWorkerPlugin = new InjectManifest({
-  swSrc: path.resolve(__dirname, 'sw.ts'),
+  swSrc: path.resolve(frontendFolder, 'sw.ts'),
   swDest: serviceWorkerPath,
   manifestTransforms: [swManifestTransform],
   maximumFileSizeToCacheInBytes: 100 * 1024 * 1024,
