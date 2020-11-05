@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import javax.servlet.annotation.HandlesTypes;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -55,7 +57,8 @@ import com.vaadin.flow.server.osgi.OSGiResourceProvider;
  * @since
  *
  */
-@HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class })
+@HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
+        DeprecatedPolymerPublishedEventHandler.class })
 public class LookupInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 
@@ -244,16 +247,18 @@ public class LookupInitializer
         Map<Class<?>, Collection<Object>> services = new HashMap<>();
 
         collectResourceProviders(classSet, services);
-        collectInstantiatorFactories(classSet, services);
+        collectSubclasses(InstantiatorFactory.class, classSet, services);
+        collectSubclasses(DeprecatedPolymerPublishedEventHandler.class,
+                classSet, services);
 
         LookupImpl lookup = new LookupImpl(services);
         vaadinContext.setAttribute(Lookup.class, lookup);
     }
 
-    private void collectInstantiatorFactories(Set<Class<?>> classSet,
+    private void collectSubclasses(Class<?> clazz, Set<Class<?>> classSet,
             Map<Class<?>, Collection<Object>> services) {
-        services.put(InstantiatorFactory.class,
-                filterInstantiatorFactories(classSet).stream()
+        services.put(clazz,
+                filterSubClasses(clazz, classSet).stream()
                         .map(ReflectTools::createInstance)
                         .collect(Collectors.toList()));
     }
@@ -279,18 +284,22 @@ public class LookupInitializer
         return classes == null ? Collections.emptySet()
                 : classes.stream()
                         .filter(ResourceProvider.class::isAssignableFrom)
+                        .filter(cls -> !cls.isInterface() && !cls.isSynthetic()
+                                && !Modifier.isAbstract(cls.getModifiers()))
                         .filter(clazz -> !ResourceProvider.class.equals(clazz)
                                 && !ResourceProviderImpl.class.equals(clazz)
                                 && !OSGiResourceProvider.class.equals(clazz))
                         .collect(Collectors.toSet());
     }
 
-    private Set<Class<?>> filterInstantiatorFactories(Set<Class<?>> classes) {
+    private Set<Class<?>> filterSubClasses(Class<?> clazz,
+            Set<Class<?>> classes) {
         return classes == null ? Collections.emptySet()
                 : classes.stream()
                         .filter(InstantiatorFactory.class::isAssignableFrom)
-                        .filter(clazz -> !InstantiatorFactory.class
-                                .equals(clazz))
+                        .filter(cls -> !cls.isInterface() && !cls.isSynthetic()
+                                && !Modifier.isAbstract(cls.getModifiers()))
+                        .filter(cls -> !clazz.equals(cls))
                         .collect(Collectors.toSet());
     }
 }
