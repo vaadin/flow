@@ -1360,31 +1360,30 @@ public class DataCommunicator<T> implements Serializable {
     private void clearFilterIfDisposable() {
         if (filter != null && !filter.isPermanent()) {
             Optional<Component> component = Element.get(stateNode).getComponent();
-            assert component
-                    .isPresent() : "DataCommunicator is supposed to have a bound component";
+            if (component.isPresent()) {
+                // Look up for the component's in-memory filter
+                Optional<ComponentInMemoryFilter<T>> componentFilter = Optional
+                        .ofNullable(ComponentUtil.getData(component.get(),
+                                ComponentInMemoryFilter.class));
 
-            // Look up for the component's in-memory filter
-            Optional<ComponentInMemoryFilter<T>> componentFilter = Optional
-                    .ofNullable(ComponentUtil.getData(component.get(),
-                            ComponentInMemoryFilter.class));
-
-            // If the component's in-memory filter is present, then erase
-            // the client-side filter and re-apply the permanent
-            // component's filter
-            filter = componentFilter.map(
-                    filterValue -> new Filter<>(filterValue.getFilter(), true))
-                    .orElse(null);
+                // If the component's in-memory filter is present, then erase
+                // the client-side filter and re-apply the permanent
+                // component's filter
+                filter = componentFilter.map(
+                        filterValue -> new Filter<>(filterValue.getFilter(), true))
+                        .orElse(null);
+            } else {
+                filter = null;
+            }
         }
     }
 
     private void removeFilteringAndSorting() {
-        Optional<Component> component = Element.get(stateNode).getComponent();
-        assert component
-                .isPresent() : "DataCommunicator is supposed to have a bound component";
-
-        ComponentUtil.setData(component.get(), ComponentInMemoryFilter.class,
-                null);
-        ComponentUtil.setData(component.get(), ComponentSorting.class, null);
+        Element.get(stateNode).getComponent().ifPresent(component -> {
+            ComponentUtil.setData(component, ComponentInMemoryFilter.class,
+                    null);
+            ComponentUtil.setData(component, ComponentSorting.class, null);
+        });
     }
 
     private static class Activation implements Serializable {

@@ -127,9 +127,6 @@ public class HierarchicalCommunicatorDataTest {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
         Element element = new Element("div");
-        // DataCommunicator requires a linked component
-        HierarchicalCommunicatorTest.TestComponent testComponent =
-                new HierarchicalCommunicatorTest.TestComponent(element);
         ui.getElement().appendChild(element);
 
         treeData = new TreeData<>();

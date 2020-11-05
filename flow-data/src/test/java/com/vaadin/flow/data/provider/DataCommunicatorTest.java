@@ -101,7 +101,6 @@ public class DataCommunicatorTest {
     private ArrayUpdater arrayUpdater;
 
     private Element element;
-    private TestComponent testComponent;
     private MockUI ui;
 
     private ArrayUpdater.Update update;
@@ -116,7 +115,6 @@ public class DataCommunicatorTest {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
         element = new Element("div");
-        testComponent = new TestComponent(element);
         ui.getElement().appendChild(element);
 
         lastClear = null;
@@ -1421,6 +1419,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void filter_setFilterAsPermanent_firesItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
         AtomicBoolean eventTriggered = new AtomicBoolean(false);
 
         testComponent.addItemChangeListener(event -> {
@@ -1442,6 +1442,8 @@ public class DataCommunicatorTest {
 
     @Test
     public void filter_setFilterAsDisposable_doesNotFireItemChangeEvent() {
+        TestComponent testComponent = new TestComponent(element);
+
         testComponent.addItemChangeListener(event -> Assert
                 .fail("Event triggering not expected for disposable filter"));
 
@@ -1460,7 +1462,7 @@ public class DataCommunicatorTest {
                 null);
 
         ListDataView<Item, ?> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, testComponent) {
+                dataCommunicator::getDataProvider, new TestComponent(element)) {
         };
 
         Assert.assertEquals("Unexpected items count before filter", 3,
@@ -1496,7 +1498,7 @@ public class DataCommunicatorTest {
                 disposableFilter, false);
 
         AbstractListDataView<Item> listDataView = new AbstractListDataView<Item>(
-                dataCommunicator::getDataProvider, testComponent) {
+                dataCommunicator::getDataProvider, new TestComponent(element)) {
         };
 
         listDataView.setFilter(permanentFilter);
